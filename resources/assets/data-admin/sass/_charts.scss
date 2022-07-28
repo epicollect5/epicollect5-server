@@ -1,0 +1,54 @@
+.ct-label {
+  font-size: 1em!important;
+  color: rgba(255,255,255,.9)!important;
+  fill: rgba(255,255,255,.9)!important;
+  font-weight: 700;
+}
+.ct-series-a {
+  .ct-slice-pie, .ct-slice-donut-solid {
+    fill: $light-purple !important;
+  }
+  .ct-line {
+    stroke: $deep-purple !important;
+  }
+  .ct-point {
+    stroke: $deep-purple !important;
+  }
+}
+
+.ct-series-b {
+  .ct-slice-pie, .ct-slice-donut-solid {
+    fill: $solid-green !important;
+  }
+}
+
+.ct-series-c {
+  .ct-slice-pie , .ct-slice-donut-solid{
+    fill: $very-light-purple !important;
+  }
+}
+
+.ct-horizontal-bars {
+  .ct-label {
+    color: #333333!important;
+  }
+  .ct-series-a .ct-bar {
+    stroke: $dark-teal;
+  }
+  .ct-series-b .ct-bar {
+    stroke: $hot-pink;
+  }
+}
+
+.ct-chart-line {
+  .ct-label {
+    color: #333333!important;
+  }
+}
+
+.users-stats {
+  .ct-label {
+    color: #333333!important;
+  }
+}
+

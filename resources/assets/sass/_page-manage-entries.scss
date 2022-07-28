@@ -1,0 +1,23 @@
+.page-manage-entries {
+  > .panel-body {
+    min-height: 368px;
+  }
+  .manage-entries-limits__table-container {
+    .form-group {
+      margin-bottom:0;
+    }
+    th {
+      text-align:center;
+    }
+    td {
+      vertical-align: middle;
+    }
+    margin-top: 5px;
+    .row__set-limit {
+      width:100px;
+    }
+    .row__limit-to {
+      width: 200px;
+    }
+  }
+}

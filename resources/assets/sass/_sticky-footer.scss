@@ -1,0 +1,79 @@
+/* Sticky footer styles
+-------------------------------------------------- */
+html {
+  position: relative;
+  min-height: 100%;
+}
+body {
+  /* Margin bottom by footer height */
+  margin-bottom: 120px;
+}
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  /* Set the fixed height of the footer here */
+  height: 120px;
+  background-color: #f5f5f5;
+}
+
+/* Custom page CSS
+-------------------------------------------------- */
+/* Not required for template or sticky footer method. */
+
+body > .container {
+  //padding: 60px 15px 0;
+}
+.container .text-muted {
+  margin: 20px 0;
+}
+
+.footer > .container {
+  padding-right: 15px;
+  padding-left: 15px;
+}
+
+code {
+  font-size: 80%;
+}
+
+.footer {
+  background-color: $deep-purple;
+  color: #fff;
+  padding:15px;
+  .footer-wellcome-trust {
+    margin-top:10px;
+    img {
+      width: 75px;
+      height: 75px;
+    }
+  }
+  .footer-bdi-logo {
+    margin-top:10px;
+    //img {
+    //  width: 180px;
+    //  height: 47px;
+    //}
+  }
+  .row > div {
+    text-align: center;
+  }
+  .footer-info {
+    p {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+  .footer-links {
+    ul {
+      list-style: none;
+      padding:0;
+    }
+    li {
+      a {
+        color: #ffffff;
+      }
+    }
+  }
+}

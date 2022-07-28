@@ -1,0 +1,64 @@
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title inputs-collection__header">
+            <span class="inputs-collection__header__edit-state">{edit-state}</span>
+            <span class="inputs-collection__header__element-name">{form-name}</span>
+        </h3>
+
+        <!-- Split button -->
+        <div class="inputs-collection__buttons btn-group pull-right">
+            <button type="button"
+                    class="inputs-collection__buttons--remove-form btn btn-default btn-sm"
+                    disabled
+            >
+                <i class="fa fa-trash-o fa-2x fa-fw"></i>
+            </button>
+            <button type="button"
+                    class="inputs-collection__buttons--edit-form-name btn btn-default btn-sm"
+                    data-toggle="modal" data-target=".main__modal--edit-form-name"
+            >
+                <i class="fa fa-edit fa-2x fa-fw"></i>
+
+            </button>
+            <button type="button"
+                    class="inputs-collection__buttons__more btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown"
+                    aria-haspopup="true" aria-expanded="false">
+                <span class="caret"></span>
+                <span class="sr-only">Toggle Dropdown</span>
+            </button>
+            <ul class="dropdown-menu">
+                <li class="dropdown-header text-center text-warning">Currently in beta.</li>
+                <li class="inputs-collection-more-action inputs-collection__export-form disabled">
+                    <a href="#">Export form</a>
+                </li>
+                <li class="inputs-collection-more-action inputs-collection__print-as-pdf disabled">
+                    <a href="#">Print form</a>
+                </li>
+                <li role="separator" class="divider"></li>
+                <li class="inputs-collection-more-action inputs-collection__delete-all-questions">
+                    <a href="#">Delete all questions</a>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+    <div class="panel-body sortable">
+        <div class="input-properties__no-questions-message">
+            <span> Drag and drop questions from the sidebar <br/>
+                (or import an Epicollect5 form file)
+            </span>
+            <i class="fa fa-question-circle fa-fw" data-toggle="modal" data-target="#info-import-form"></i>
+
+            <div class="inputs-collection__form-import">
+                <input type="file" id="file" class="" style="display:none" accept=".json,application/json">
+                <label for="file" class="btn btn-action">
+                    <i class="fa fa-upload fa-2x fa-fw"></i>
+                    Import <sup>beta</sup>
+                </label>
+            </div>
+        </div>
+
+        <div class="warning-well no-form-title-set hidden">No title set for this form yet <i
+                class="fa fa-question-circle fa-2x fa-fw" data-toggle="modal" data-target="#info-title"></i></div>
+    </div>
+</div>

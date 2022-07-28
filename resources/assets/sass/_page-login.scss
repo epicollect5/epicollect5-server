@@ -1,0 +1,29 @@
+.page-login {
+  margin-top: 15px;
+  .panel-body {
+    min-height: 320px;
+  }
+  .panel-body.page-login__google-login {
+    text-align: center;
+    position: relative;
+    img {
+      margin: 0 auto;
+    }
+  }
+  .btn-login-wrapper {
+    text-align: center;
+    text-align: -webkit-center;
+    text-align: -moz-center;
+    a {
+      margin-bottom: 15px;
+      display: block;
+      max-width: 210px;
+    }
+    .page-login__forgot-password {
+      margin-top: 8px;
+    }
+    .page-login__signup-row {
+      margin-top: -15px;
+    }
+  }
+}

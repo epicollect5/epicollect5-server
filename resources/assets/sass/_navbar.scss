@@ -1,0 +1,58 @@
+//targte only site nabvar, not formbuilder one
+.navbar.site-navbar, .navbar.primary-navbar  {
+  min-height: 60px !important;
+  padding-left: 10px;
+  padding-right: 10px;
+
+  span.beta-warning {
+    position: absolute;
+    left: 210px;
+    top: 5px;
+    font-size: 80%;
+    color: #673C90;
+    font-weight: bold;
+  }
+
+  .navbar-brand {
+    padding: 13px;
+  }
+  .navbar-toggle {
+    margin-top:13.5px;
+  }
+  .navbar-text {
+    margin-top: 18.5px;
+    color:$dark-grey!important;
+  }
+  .navbar-nav > li > a {
+    color: $deep-purple!important;
+    font-weight: bold;
+  }
+  .navbar-nav > li {
+    border-bottom:2px solid #fff;
+    margin-top:-2px;
+  }
+  .navbar-nav > li:hover , .navbar-nav > li.active{
+    border-color:$deep-purple;
+    background-color: #FFF;
+  }
+  .navbar-nav > li.active a {
+    background-color: #FFF;
+  }
+
+  img.navbar-brand.img-circle {
+    margin-top: 8px;
+    margin-right: 0;
+  }
+  .material-icons {
+    vertical-align: middle;
+    margin-top:-3px;
+  }
+  i {
+    //to avoid FOUC, but icon is still bliking a bit
+    min-width:24px;
+  }
+  .warning-no-js {
+    margin-right: -15px;
+    margin-left:-15px;
+  }
+}

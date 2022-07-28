@@ -1,0 +1,42 @@
+
+.stats-panel {
+  min-height: 230px;
+  .panel-body {
+    .bar-chart-bythreshold{
+      height:309px!important;
+    }
+    .pie-chart__active-inactive-projects {
+      height: 200px!important;
+    }
+  }
+  .entries-color-legend {
+    display: block!important;
+    width: 16px;
+    height: 16px;
+    float: left;
+    vertical-align: middle;
+    margin-top: 7px;
+    margin-right: 7px;
+    &.private {
+      background-color:  $light-purple;
+    }
+    &.public {
+      background-color:  $solid-green;
+    }
+  }
+  .projects-color-legend {
+    display: block!important;
+    width: 16px;
+    height: 16px;
+    float: left;
+    vertical-align: middle;
+    margin-top: 7px;
+    margin-right: 7px;
+    &.hidden {
+      background-color:  $hot-pink;
+    }
+    &.listed {
+      background-color:  $dark-teal;
+    }
+  }
+}

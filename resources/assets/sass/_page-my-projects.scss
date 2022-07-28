@@ -1,0 +1,144 @@
+.page-my-projects {
+  min-height: 620px;
+  .material-icons {
+    vertical-align: middle;
+  }
+  .account {
+    margin-bottom: 15px;
+    white-space: nowrap;
+    a {
+      color: #333333!important;
+    }
+
+  }
+
+  .panel {
+    min-height: 400px;
+    position: relative;
+    .thumbnail {
+      border: none;
+      position:relative;
+      .img-circle {
+        border: 2px solid $deep-purple;
+      }
+      .loader {
+        //override for thumbnail
+        position: absolute;
+        z-index:21;
+        border-bottom: 1.1em solid rgba($light-green, 0.2);
+      }
+      img {
+        //opacity:0;
+        z-index: 22;
+        position:relative;
+        min-height: 130px;
+      }
+    }
+
+    .project-name {
+      @include card-project-name();
+    }
+
+    .btn-action {
+      margin-top: 10px;
+    }
+    .project-small-description {
+      height: 60px;
+      overflow: hidden;
+    }
+  }
+  .project-summary {
+    div {
+      line-height: 2;
+      border-bottom: 1px solid $light-grey;
+    }
+  }
+
+  /* List/Grid view styling */
+
+  .list-group-item .panel {
+    min-height: 0;
+  }
+
+  .item.list-group-item {
+    float: none;
+    width: 100%;
+    background-color: #fff;
+    border: none;
+    padding: 0;
+    margin-bottom: -15px;
+  }
+
+  .item.list-group-item .project-name {
+    margin-left: 10px;
+  }
+
+  .item.list-group-item .project-small-description {
+    margin-left: 10px;
+  }
+
+  .item.list-group-item .thumbnail {
+    margin-bottom: 0;
+    padding: 0;
+  }
+
+  .item.list-group-item .thumbnail > img {
+    width: 50px;
+    float: left;
+  }
+
+  .item .list-group-item .project-summary {
+    display: none;
+  }
+  //filter controls, search and grid/list view
+  .projects-list__filter-controls {
+      margin-top: 4px;
+    //margin: 11px 0 !important;
+    .projects-list__project-search {
+      text-transform: uppercase;
+      text-overflow: ellipsis;
+    }
+    .dropdown-toggle[data-js="filter-dropdown"] {
+      width: 130px;
+      margin-left: 30px;
+    }
+  }
+  .my-projects {
+    .project-name-container {
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    .list-view {
+      .row {
+        .col-md-2 {
+          padding:0;
+        }
+        .list-view__created, .list-view__status, .list-view__role {
+          line-height:57px;
+        }
+        .list-view__project-details, .list-view__created, .list-view__status, .list-view__role {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          position:relative;
+          .loader {
+            //override for thumbnail
+            position: absolute;
+            z-index:21;
+            right: 93%;
+            top: 55px!important;
+            font-size: 3px!important;
+          }
+          img {
+            margin-top: 4px;
+            opacity:1;
+            z-index: 22;
+            position:relative;
+            min-height: 50px;
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,77 @@
+<hr>
+<div class="input-properties__form__possible-answers panel panel-default">
+    <!-- Default panel contents -->
+    <div class="panel-heading">
+        <strong>Possible answers</strong>
+
+        <!-- Split button -->
+        <div class="btn-group pull-right">
+            <button type="button"
+                    class="input-properties__form__possible-answers__add-answer btn btn-default btn-sm"
+                    {{disabled}}>
+                <i class="fa fa-plus 2x fa-fw"></i>
+                Add answer
+            </button>
+            <button type="button"
+                    class="input-properties__form__possible-answers__more btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown"
+                    aria-haspopup="true" aria-expanded="false">
+                <span class="caret"></span>
+                <span class="sr-only">Toggle Dropdown</span>
+            </button>
+            <ul class="dropdown-menu">
+                <li class="dropdown-header text-center text-warning">Currently in beta.</li>
+                <li class="possible_answer-more-action possible_answers__import-csv ">
+                    <input type="file" class="possible_answers__import-csv-input-file" style="display:none" accept=".csv">
+                    <a href="#">Import CSV</a>
+                </li>
+                <li class=" possible_answer-more-action possible_answers__export-csv">
+                    <a href="#">Export CSV</a>
+                </li>
+
+                <li role="separator" class="divider"></li>
+                <li class="text-center text-branding">Order</li>
+                <li class="possible_answer-more-action possible_answers__order-az">
+                    <a href="#">Ascending</a>
+                </li>
+                <li class="possible_answer-more-action possible_answers__order-za">
+                    <a href="#">Descending</a>
+                </li>
+                <li class="possible_answer-more-action possible_answers__order-shuffle">
+                    <a href="#">Shuffle</a>
+                </li>
+                <li role="separator" class="divider"></li>
+                <li class="possible_answer-more-action possible_answers__delete-all">
+                    <a href="#">Delete all answers</a>
+                </li>
+            </ul>
+        </div>
+
+
+    </div>
+    <div class="panel-body">
+        <!-- List group -->
+        <ul class="input-properties__form__possible-answers__list list-group">
+            {{possible-answers-list}}
+        </ul>
+
+    </div>
+    <div>
+        <ul class="pager hidden possible-answers__list_pager">
+            <li>
+                <a class="possible-answers__list_pager__prev" href="#">
+                    <i class="fa fa-chevron-left"></i>
+                </a>
+            </li>
+            <li>
+                <div class="possible-answers__list_pager__current">1</div>
+                /
+                <div class="possible-answers__list_pager__total">10</div>
+            </li>
+            <li>
+                <a class="possible-answers__list_pager__next" href="#">
+                    <i class="fa fa-chevron-right"></i>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>

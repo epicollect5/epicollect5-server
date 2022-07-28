@@ -1,0 +1,19 @@
+<li class="input-properties__form__jumps__list-item list-group-item">
+    <div class="input-properties__form__jumps__logic--when form-group ">
+        <label for="{{input-ref-logic-when}}">When</label>
+        <select id="{{input-ref-logic-when}}" class="form-control input-sm" data-jump-logic="when" disabled>
+            <option value="ALL" selected="selected">always</option>
+        </select>
+    </div>
+    <button class="input-properties__form__jumps__remove-jump btn btn-default btn-sm pull-right" type="button">
+        <i class="fa fa-times 2x fa-fw"></i>Remove
+    </button>
+    <div class="input-properties__form__jumps__logic--goto form-group ">
+        <label for="{{input-ref-logic-goto}}">Go to</label>
+        <select id="{{input-ref-logic-goto}}" class="form-control input-sm" data-jump-logic="goto">
+            {{logic-goto-saved-option}}
+        </select>
+        <i class="fa fa-2x fa-times form-control-feedback hidden"></i>
+        <span class="input-properties__form__error hidden">(error)</span>
+    </div>
+</li>

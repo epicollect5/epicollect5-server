@@ -1,0 +1,41 @@
+<!-- input-ref, it needs to be dynamically replaced by system generated ref-->
+<form class="input-properties__form hidden" data-index="index" data-input-ref="{{input-ref}}">
+    <!-- Nav tabs -->
+    <div class="input-properties__tabs tab-pane" role="tabpanel">
+        <!-- navtabs are injected here dynamically -->
+        {{nav-tabs}}
+        <!-- Tab panes -->
+        <div class="tab-content input-properties__tabs__content">
+            <!-- basic properties section injected dynamically-->
+            {{properties}}
+            <!-- advanced properties section depends on the type of input so it is here -->
+            <div id="{{advanced-input-ref}}" class="input-properties__form__advanced-properties panel panel-default tab-pane fade" role="tabpanel" data-input-ref="input-ref">
+                <div class="panel-body">
+                    <div class="input-properties__form__advanced-properties__default form-group">
+                        <label for="input-id-default">Initial answer</label>
+                        <input id="input-id-default" type="text" class="form-control" value="{{input-ref-default-value}}" maxlength="255">
+                        <i class="fa fa-2x fa-times form-control-feedback hidden"></i>
+                        <span class="input-properties__form__error hidden">(error)</span>
+                    </div>
+                    <div class=" input-properties__form__advanced-properties__regex form-group">
+                        <label for="input-id-regex">Match REGEX:
+                            <i class="fa fa-question-circle fa-2x fa-fw" data-toggle="modal" data-target="#info-regex"></i>
+                        </label>
+                        <input id="input-id-regex" type="text" class="form-control" value="{{input-ref-regex-value}}" maxlength="50">
+                    </div>
+                    <div class="input-properties__form__advanced-properties__double-entry checkbox form-group">
+                        <label>
+                            <input id="input-id-double-entry" type="checkbox" {{input-ref-double-entry-checked}}> Require double entry
+                        </label>
+                    </div>
+                    <!-- Uniqueness flag-->
+                    {{uniqueness}}
+                </div>
+            </div>
+
+
+            <!-- Jumps section is injected dynamically-->
+            {{jumps}}
+        </div>
+    </div>
+</form>

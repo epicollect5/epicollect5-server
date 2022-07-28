@@ -1,0 +1,42 @@
+<!-- input-ref, it needs to be dynamically replaced by system generated ref-->
+<form class="input-properties__form hidden"
+      data-index="index"
+      data-input-ref="{{input-ref}}">
+
+    <!-- Nav tabs -->
+    <div class="input-properties__tabs tab-pane"
+         role="tabpanel">
+
+        <!-- navtabs are injected here dynamically -->
+        {{nav-tabs}}
+
+        <!-- Tab panes -->
+        <div class="tab-content input-properties__tabs__content">
+
+            <!-- basic properties section injected dynamically-->
+            {{properties}}
+
+            <!-- advanced properties section depends on the type of input so it is here -->
+            <div id="{{advanced-input-ref}}"
+                 class="input-properties__form__advanced-properties panel panel-default"
+                 data-input-ref="input-ref">
+                <div class="panel-body">
+                    <div class="input-properties__form__advanced-properties__default form-group">
+                        <label for="{{input-ref-default}}">Initial answer</label>
+                        <select id="{{input-ref-default}}"
+                                class="form-control"
+                                data-initial-answer="true">
+                            <option value=""
+                                    {{selected}}>None</option>
+                            {{initial-answer}}
+                            <!-- Set other options dinamically based on possible answers-->
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Jumps section is injected dynamically-->
+            {{jumps}}
+        </div>
+    </div>
+</form>

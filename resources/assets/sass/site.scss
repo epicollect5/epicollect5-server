@@ -1,0 +1,334 @@
+//@import 'material-icons-font';
+@import "theme";
+@import "variables";
+@import "mixins";
+@import "bootstrap";
+@import "bootswatch";
+@import "sticky-footer";
+@import "loader";
+@import "media-queries";
+@import "navbar";
+@import "page-home";
+@import "page-admin-projects";
+@import "page-my-projects";
+@import "page-manage-users";
+@import "page-transfer-ownership";
+@import "page-manage-entries";
+@import "page-entries-deletion";
+@import "page-project-details";
+@import "page-create-project";
+@import "page-login";
+@import "page-profile";
+@import "page-project-home";
+@import "page-projects-list";
+@import "page-contact";
+@import "page-more";
+@import "page-verification";
+@import "cookie_consent";
+@import "custom-collapse";
+
+html,
+body {
+  font-family: $font-family-sans-serif;
+}
+
+.wait-overlay {
+  @include overlay;
+}
+
+.no-wrap {
+  white-space: nowrap;
+}
+
+.absolute {
+  position: absolute !important;
+}
+
+.underline {
+  text-decoration: underline;
+}
+
+.padding-15 {
+  padding: 15px;
+}
+
+.warning-well {
+  background-color: $light-warning;
+  padding: 15px;
+  border-radius: 2px;
+  text-align: center;
+}
+
+.warning__project-not-ready {
+  margin-bottom: 10px;
+}
+
+//---------flexbox fix for equal height column ----------------/
+.flexbox {
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  overflow: hidden;
+}
+
+.col-direction {
+  flex-direction: column;
+}
+
+.row-direction {
+  flex-direction: row;
+}
+
+.states {
+  flex-grow: 1;
+}
+
+.flexbox > div.equal-height {
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+.panel.panel-default {
+  width: 100%;
+}
+
+/* Added:  Flexbox break responsiveness of Bootstrap 3, so we remove it when we go lower then 'lg' breakpoints */
+@media screen and (min-width: 100px) and (max-width: 1170px) {
+  //.flexbox {
+  //  display: block;
+  //}
+  //.flexbox > div {
+  //  display: block;
+  //}
+}
+
+//-------------------------------------------------------------/
+
+.modal-loader {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.8) url("/images/ring.gif") 50% 50% no-repeat;
+}
+
+/* When the body has the loading class, we turn
+   the scrollbar off with overflow:hidden */
+body {
+  color: $dark-grey;
+  padding-top: 70px; //required when using navbar fixed
+  .loading {
+    overflow: hidden;
+  }
+}
+
+//toast notification
+#toast-container > div {
+  margin: 0 0 6px;
+  padding: 16px 15px 9px 50px !important;
+  width: 50% !important;
+  opacity: 0.9 !important;
+}
+.toast-message {
+  text-align: center;
+}
+
+.no-hover:hover {
+  border-bottom: none !important;
+}
+
+.no-margin {
+  margin: 0 !important;
+}
+
+.btn-action {
+  background-color: $solid-green;
+  color: #fff;
+}
+
+.btn-action-inverse {
+  background-color: $light-purple;
+  color: #fff;
+}
+
+.btn-action-inverse-bright {
+  background-color: $hot-pink;
+  color: #fff;
+}
+
+.btn-action:hover {
+  background-color: $light-green;
+  color: $dark-grey;
+}
+
+.btn-static {
+  background-color: #f5f5f5;
+  cursor: default;
+}
+
+.btn-static:active {
+  outline: none !important;
+}
+
+.panel-default > .panel-heading {
+  //background-color: $light-green;
+  color: $dark-grey;
+}
+
+/* Anytime the body has the loading class, our
+   modal element will be visible */
+body.loading .modal-loader {
+  display: block;
+}
+
+.page-title {
+  margin: 10px 0;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+  color: $dark-grey !important;
+  font-size: 24px;
+}
+
+label {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.ec5-show-block {
+  display: block;
+}
+
+.ec5-hide-block {
+  display: none;
+}
+
+.tab-content {
+  padding: 10px;
+}
+
+.page-login {
+  min-height: 800px;
+}
+
+.map-data-question {
+  display: block;
+  min-height: 50px;
+}
+
+.map-data__action-btns {
+  margin-bottom: 15px;
+}
+
+.map-data__include-checkbox-col {
+  max-width: 20px;
+}
+
+.btn-file {
+  position: relative;
+  overflow: hidden;
+  &:hover {
+    cursor: pointer;
+  }
+}
+
+.btn-file input[type="file"] {
+  position: absolute;
+  top: 0;
+  right: 0;
+  min-width: 100%;
+  min-height: 100%;
+  font-size: 100px;
+  text-align: right;
+  filter: alpha(opacity=0);
+  opacity: 0;
+  outline: none;
+  background: white;
+  cursor: inherit;
+  display: block;
+}
+
+//autocomplete list
+.autocomplete-suggestions {
+  background: #efefef;
+  max-height: 180px !important;
+  overflow: scroll;
+  .autocomplete-suggestion {
+    padding: 7px;
+    &:hover {
+      background-color: $light-green;
+      cursor: pointer;
+    }
+  }
+}
+
+.modal-title {
+  color: $deep-purple;
+}
+
+.cell {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  box-sizing: border-box;
+  display: block;
+  padding: 8px;
+  width: 100%;
+}
+
+.cell-overflow {
+  box-sizing: border-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+//h1 "Epicollect5" for Google searches
+.home-seo {
+  font-size: 0;
+  width: 1px;
+  height: 1px;
+  display: inline-block;
+  overflow: hidden;
+  position: absolute !important;
+  border: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  clip: rect(1px, 1px, 1px, 1px);
+}
+.text-warning {
+  color: $state-warning-text;
+}
+.thumbnail {
+  margin-bottom: 20px;
+  //margin-top:10px;
+}
+
+.project-api__endpoints {
+  td {
+    word-break: break-all;
+  }
+}
+
+div.hr-or {
+  margin: 20px;
+  border: 0;
+  border-top: 1px solid #eee;
+  text-align: center;
+  height: 0;
+  line-height: 0;
+}
+
+div.hr-or:before {
+  content: "OR";
+  background-color: #fff;
+}
+.ec5-img-responsive {
+  max-width: 100%;
+  height: auto;
+}

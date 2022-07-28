@@ -1,0 +1,16 @@
+<div id="{{jumps-input-ref}}" class="input-properties__form__jumps panel panel-default tab-pane fade">
+    <div class="panel-body">
+        <button class="input-properties__form__jumps__add-jump btn btn-default btn-sm pull-right"
+                type="button" {{add-jump-btn-state}}>
+            <i class="fa fa-plus 2x fa-fw"></i>Add jump
+        </button>
+
+        <div class="clearfix "></div>
+
+        <span class="input-properties__form__jumps__no-jumps-message {{no-jumps_message-hidden}}" >No jumps set yet</span>
+
+        <ul class="input-properties__form__jumps__list list-group">
+            {{jumps-list}}
+        </ul>
+    </div>
+</div>

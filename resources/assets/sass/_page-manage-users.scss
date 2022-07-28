@@ -1,0 +1,36 @@
+.page-manage-users {
+  min-height: 620px;
+  .tab-content {
+    .panel-heading {
+      min-height: 60px;
+      span {
+        line-height: 3;
+      }
+    }
+    .panel-body {
+      min-height: 200px;
+    }
+  }
+  .manage-user-more {
+    .btn {
+      padding: 6.7px 10px;
+    }
+  }
+  .manage-project-users__table {
+    td {
+      vertical-align: middle;
+      .form-group {
+        margin:0;
+      }
+    }
+  }
+
+}
+#ec5ModalImportUsers {
+  hr {
+    margin: 15px 0;
+  }
+}
+.manage-project-users_by-role {
+  margin-top:4px;
+}

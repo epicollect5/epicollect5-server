@@ -1,0 +1,291 @@
+@media all and (min-width: 768px) {
+  .navbar-nav > li > a {
+    padding-top: 18.5px !important;
+    padding-bottom: 16.5px;
+  }
+  .navbar-text {
+    margin-left: 0;
+  }
+  .navbar-right {
+    margin-right: 0;
+  }
+
+  .page-home {
+    .page-title {
+      font-size: 26px;
+    }
+    .panel-body {
+      height: 420px;
+    }
+  }
+}
+
+//less than 768, so mobile phones
+@media all and (max-width: 767px) {
+  .page-profile {
+    .btn {
+      width: 150px !important;
+    }
+  }
+  .page-verification {
+    .code-input {
+      width: 50% !important;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .code-btn {
+      width: 150px !important;
+    }
+  }
+
+  body {
+    /* Disable Margin bottom */
+    margin-bottom: 0 !important;
+  }
+
+  .page-home__find-project {
+    h2 {
+      font-size: 20px;
+      line-height: 40px;
+    }
+  }
+
+  .page-home-slider {
+    display: none;
+  }
+  .page-home-view-btn {
+    position: relative !important;
+  }
+  .page-home-featured-projects-small {
+    .panel-body {
+      height: 280px !important;
+    }
+    .page-home-view-btn {
+      position: relative !important;
+      bottom: 0 !important;
+      right: 0 !important;
+    }
+  }
+  .footer {
+    //disable sticky footer
+    position: relative;
+    height: auto !important;
+    text-align: center;
+    .row > div {
+      margin-bottom: 20px !important;
+    }
+  }
+
+  #project-create {
+    //margin-bottom: 0 !important;
+    .create-project-form {
+      padding: 15px;
+    }
+    .footer {
+      //position: absolute !important;
+      .row > div {
+        margin-bottom: 20px !important;
+      }
+    }
+  }
+
+  .page-manage-entries {
+    .limits-form__update-btn {
+      margin-bottom: 15px;
+      margin-top: 5px;
+    }
+  }
+
+  .page-project-home {
+    .project-home__stats {
+      margin-bottom: 20px;
+    }
+  }
+
+  .page-my-projects {
+    .projects-list__filter-controls {
+      margin-bottom: 15px;
+      overflow: hidden;
+      padding: 0;
+    }
+    .list-view__project-details {
+      .thumbnail {
+        display: none;
+      }
+    }
+  }
+
+  .page-search-projects {
+    .page-search-projects__filter-controls {
+      #projects-order {
+        margin-top: 15px;
+      }
+    }
+  }
+}
+//stats on home page circles ******************************
+@media (max-width: 320px) {
+  .circle {
+    width: 70% !important;
+    padding: 35% 0 !important;
+  }
+}
+@media all and (min-width: 321px) and (max-width: 479px) {
+  .circle {
+    width: 60% !important;
+    padding: 30% 0 !important;
+  }
+}
+@media all and (min-width: 481px) and (max-width: 767px) {
+  .circle {
+    width: 30% !important;
+    padding: 15% 0 !important;
+  }
+}
+@media all and (min-width: 768px) and (max-width: 1199px) {
+  .circle {
+    width: 70% !important;
+    padding: 35% 0 !important;
+  }
+}
+//**********************************************************
+
+@media all and (min-width: 768px) and (max-width: 991px) {
+  #project-create {
+    //margin-bottom: 0 !important;
+    .footer {
+      //position: absolute !important;
+      .row > div {
+        margin-bottom: 20px !important;
+      }
+    }
+  }
+
+  body {
+    /* Disable Margin bottom */
+    margin-bottom: 0 !important;
+  }
+
+  .footer {
+    //disable sticky footer
+    position: relative;
+    height: auto !important;
+    text-align: center;
+    .row > div {
+      margin-bottom: 40px !important;
+    }
+  }
+
+  .page-project-home {
+    .project-home__stats {
+      margin-bottom: 20px;
+    }
+  }
+
+  .page-my-projects {
+    .projects-list__filter-controls {
+      margin-bottom: 15px;
+      overflow: hidden;
+      padding: 0;
+    }
+    .list-view__project-details {
+      .thumbnail {
+        display: none;
+      }
+    }
+  }
+}
+
+@media all and (min-width: 992px) and (max-width: 1199px) {
+  #project-create {
+    //margin-bottom: 0 !important;
+    .footer {
+      min-height: 160px;
+      .row > div {
+        margin-bottom: 20px !important;
+      }
+    }
+  }
+
+  #project-details {
+    /* Disable Margin bottom */
+    margin-bottom: 0 !important;
+    .footer {
+      position: relative;
+      height: auto !important;
+      .row > div {
+        margin-bottom: 20px !important;
+      }
+    }
+  }
+
+  #admin {
+    .footer {
+      height: auto !important;
+      .row > div {
+        margin-bottom: 20px !important;
+      }
+    }
+  }
+  #home,
+  #myprojects {
+    /* Disable Margin bottom */
+    margin-bottom: 0 !important;
+    .footer {
+      position: relative;
+      height: auto !important;
+      .row > div {
+        margin-bottom: 40px !important;
+      }
+    }
+  }
+}
+
+@media all and (min-width: 1200px) {
+  .footer {
+    //disable sticky footer
+    position: absolute;
+  }
+}
+
+@media all and (max-width: 991px) {
+  #admin,
+  .page-manage-users {
+    .flexbox {
+      display: block;
+    }
+    .flexbox > div {
+      display: block;
+    }
+  }
+
+  .page-login__google-login {
+    min-height: 0 !important;
+    a img {
+      display: inline;
+    }
+  }
+}
+
+@media all and(max-width: 1199px) {
+  .page-manage-users,
+  .page-project-details {
+    .flexbox {
+      display: block;
+    }
+    .flexbox > div {
+      display: block;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .page-projects-list,
+  .page-search-projects {
+    .page-projects-list__nav {
+      .fa-2x {
+        font-size: 1.2em !important;
+      }
+    }
+  }
+}

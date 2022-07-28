@@ -1,0 +1,21 @@
+.page-create-project {
+  min-height: 620px;
+  .access-title {
+    font-weight: bold;
+    font-size: 16px;
+  }
+  .form-horizontal .has-feedback .form-control-feedback {
+    right: 0;
+  }
+  .has-feedback .form-control-feedback {
+    top: 40px;
+  }
+  .fa-circle-o-notch {
+    color: $light-green !important;
+  }
+  .create-project-form {
+    .fa-times {
+      margin-top:-5px;
+    }
+  }
+}

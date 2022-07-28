@@ -1,0 +1,69 @@
+<!-- input-ref, it needs to be dynamically replaced by system generated ref-->
+<form class="input-properties__form hidden" data-input-ref="{{input-ref}}">
+
+    <!-- Nav tabs -->
+    <div class="input-properties__tabs tab-pane" role="tabpanel">
+
+        <!-- navtabs are injected here dynamically -->
+        {{nav-tabs}}
+
+        <!-- Tab panes -->
+        <div class="tab-content input-properties__tabs__content">
+
+            <!-- basic properties section injected dynamically-->
+            {{properties}}
+
+            <div id="{{advanced-input-ref}}" class="input-properties__form__advanced-properties panel panel-default"
+                 data-input-ref="input-ref">
+
+                <div class="panel-body">
+                    <div class="input-properties__form__advanced-properties__dateformat form-group">
+                        <p><strong>Date Format</strong></p>
+
+                        <div class="radio">
+                            <label>
+                                <input type="radio" name="dateformatRadio" value="dd/MM/YYYY" {{is-checked-datetime-format-1}}>
+                                Day/Month/Year
+                            </label>
+                        </div>
+                        <div class="radio">
+                            <label>
+                                <input type="radio" name="dateformatRadio" value="MM/dd/YYYY" {{is-checked-datetime-format-2}}>
+                                Month/Day/Year
+                            </label>
+                        </div>
+                        <div class="radio">
+                            <label>
+                                <input type="radio" name="dateformatRadio" value="YYYY/MM/dd" {{is-checked-datetime-format-3}}>
+                                Year/Month/Day
+                            </label>
+                        </div>
+                        <div class="radio">
+                            <label>
+                                <input type="radio" name="dateformatRadio" value="MM/YYYY" {{is-checked-datetime-format-4}}>
+                                Month/Year
+                            </label>
+                        </div>
+                        <div class="radio">
+                            <label>
+                                <input type="radio" name="dateformatRadio" value="dd/MM" {{is-checked-datetime-format-5}}>
+                                Day/Month
+                            </label>
+                        </div>
+                    </div>
+                    <div class="input-properties__form__advanced-properties__default-to-current checkbox">
+                        <label>
+                            <input id="{{input-ref-default-to-current}}" type="checkbox" {{set-to-current-datetime}}> Set initial answer to current
+                            date
+                        </label>
+                    </div>
+                    <!-- Uniqueness flag-->
+                    {{uniqueness}}
+                </div>
+            </div>
+
+            <!-- jumps section is injected dynamically-->
+            {{jumps}}
+        </div>
+    </div>
+</form>

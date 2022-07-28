@@ -1,0 +1,100 @@
+{
+  "extends": "airbnb",
+  "plugins": [
+    "react",
+    "jsx-a11y",
+    "import"
+  ],
+  "settings": {
+    "import/resolver": "webpack"
+  },
+  "rules": {
+    "jsx-a11y/href-no-hash": "off",
+    "jsx-a11y/anchor-is-valid": [
+      "warn",
+      {
+        "aspects": [
+          "invalidHref"
+        ]
+      }
+    ],
+    "import/extensions": [
+      2,
+      {
+        "js": "never",
+        "jsx": "never"
+      }
+    ],
+    "no-console": "off",
+    "react/jsx-filename-extension": [
+      1,
+      {
+        "extensions": [
+          ".js",
+          ".jsx"
+        ]
+      }
+    ],
+    "brace-style": [
+      "error",
+      "1tbs",
+      {
+        "allowSingleLine": true
+      }
+    ],
+    "max-len": [
+      "off",
+      {
+        "ignoreComments": true
+      }
+    ],
+    "padded-blocks": "off",
+    "arrow-body-style": [
+      "error",
+      "always"
+    ],
+    "no-plusplus": "off",
+    "spaced-comment": [
+      "error",
+      "never"
+    ],
+    "prefer-template": "off",
+    "indent": 0,
+    "react/jsx-indent": "off",
+    "react/jsx-space-before-closing": "off",
+    "comma-dangle": [
+      "error",
+      "never"
+    ],
+    "react/jsx-indent-props": [
+      2,
+      4
+    ],
+    "react/forbid-prop-types": [
+      "off",
+      {
+        "forbid": [
+          "any"
+        ]
+      }
+    ],
+    "import/no-extraneous-dependencies": [
+      0,
+      {
+        "devDependencies": true,
+        "optionalDependencies": true,
+        "peerDependencies": true
+      }
+    ]
+  },
+  "globals": {
+    "document": true,
+    "window": true
+  },
+  "env": {
+    "browser": true,
+    "jquery": true,
+    "es6": true,
+    "jest": true
+  }
+}

@@ -1,0 +1,15 @@
+<!-- this tab appears by default, it needs the two classes 'active' and 'in'-->
+<div id="{{basic-input-ref}}"
+     class="input-properties__form__basic-properties panel panel-default tab-pane fade active in">
+    <div class="panel-body">
+        <div class="input-properties__form__question form-group">
+            <span class="input-properties__form__error hidden">{error}</span>
+            <textarea id="{{input-ref-question}}"
+                      class="form-control summernote"
+                      placeholder="Type text here..."
+                      rows="5"
+                      maxlength="1000">{{input-question-value}}</textarea>
+            <i class="fa fa-2x fa-times form-control-feedback hidden"></i>
+        </div>
+    </div>
+</div>

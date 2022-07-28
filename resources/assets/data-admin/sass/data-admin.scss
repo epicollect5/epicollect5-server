@@ -1,0 +1,26 @@
+@import "variables";
+@import "loader";
+@import "panel";
+@import "charts";
+
+body {
+  font-family: $font-family-sans-serif;
+  overflow-x: hidden;
+  overflow-y: scroll;
+}
+
+.centerVH {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center!important;
+}
+
+.admin-stats {
+  .page-title {
+    text-transform: capitalize;
+  }
+  //this is to fix the multiple "Loader" components triggering bars and increasing the viewport while spinning
+  overflow: hidden;
+}

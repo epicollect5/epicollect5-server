@@ -1,0 +1,232 @@
+.page-project-details {
+  min-height: 620px;
+  .page-title {
+    // margin-left: 25px;
+    padding-left: 10px;
+  }
+  .panel-heading {
+    background-color: #fff;
+    border-top: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+    height: 51px;
+    font-weight: 700;
+    h4 {
+      margin: 5px;
+      font-size: 16px;
+    }
+  }
+
+  .project-homepage-url {
+    font-size: 16px;
+    .copy-btn {
+      cursor: pointer;
+      color: $deep-purple;
+    }
+  }
+
+  .details-view__logo-wrapper {
+    img {
+      min-height: 130px;
+    }
+  }
+
+  .project-description {
+    max-height: 200px;
+    overflow: auto;
+    overflow-x: hidden;
+  }
+  td.project-logo {
+    min-width: 200px !important;
+    max-width: 265px;
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  a.list-group-item {
+    padding: 5px 10px;
+    color: $deep-purple;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  i.material-icons {
+    vertical-align: middle;
+    //margin-top: -4px;
+    //margin-right: 4px;
+  }
+  .table-responsive .btn {
+    min-width: 70px;
+    margin-bottom: 5px;
+  }
+
+  /* Hide for mobile, show later */
+  .sidebar {
+    //display: none;
+    .list-group {
+      .list-group-item.disabled {
+        color: #333 !important;
+        font-size: 16px;
+        padding: 10px 15px;
+        background-color: #fff;
+        &:hover {
+          cursor: default !important;
+          color: #333 !important;
+          background-color: #fff;
+        }
+      }
+    }
+  }
+  @media (min-width: 992px) {
+    .sidebar {
+      //removed this as it is causing problems with sticky footer
+      //position: fixed;
+      //top: 60px; //height of navbar
+      //bottom: 0;
+      //left: 0;
+      //z-index: 1000; check this, it overlaps the footer otherwise
+      display: block;
+      //padding: 20px;
+      overflow-x: hidden;
+      overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
+      //background-color: $light-green;
+      //border-right: 1px solid #eee;
+      padding: 0 15px 0 0;
+    }
+  }
+
+  /* Sidebar navigation */
+  .nav-sidebar {
+    margin-right: -21px; /* 20px padding + 1px border */
+    margin-bottom: 20px;
+    margin-left: -20px;
+  }
+  .nav-sidebar > li > a {
+    padding-right: 20px;
+    padding-left: 20px;
+  }
+
+  .main {
+    //padding: 20px;
+  }
+  @media (min-width: 992px) {
+    .main {
+      padding: 0 !important;
+      // padding-right: 40px;
+      // padding-left: 40px;
+    }
+  }
+  .main .page-header {
+    margin-top: 0;
+  }
+
+  .details-view__wrapper {
+    padding-right: 0;
+  }
+
+  .project-details-panel {
+    .btn.btn-action.project-details__edit {
+      width: 48px;
+      height: 48px;
+      border-radius: 50% !important;
+      margin-top: -14px;
+    }
+    img {
+      margin: 20px 20px 30px 20px;
+    }
+    .project-long-description {
+      border: 1px solid $light-grey;
+      box-shadow: none;
+    }
+  }
+  .details-view__project-details {
+    margin-top: 40px;
+  }
+  .form-group.file-upload-input {
+    input[type="text"] {
+      &:hover {
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  .page-mapping-data {
+    min-height: 620px;
+    #modal__mapping-data {
+      .modal-dialog {
+        margin-top: 62px;
+      }
+    }
+    .mapping-data__possible_answer__answer {
+      .cell-overflow {
+        height: 30px;
+        border-bottom: 1px solid #ddd;
+      }
+    }
+
+    .table-responsive {
+      margin: 15px auto;
+
+      table {
+        input[type="text"] {
+          height: 30px !important;
+          font-style: italic;
+        }
+        td {
+          //vertical-align: middle !important;
+          max-width: 300px;
+          .cell-overflow-disabled {
+            //margin:1px 0 0 0;
+            border-bottom: 1px solid #ddd;
+          }
+          &.mapping-data__hide-checkbox {
+            text-align: center;
+            width: 60px !important;
+          }
+          &.mapping-data__possible_answer__answer {
+            text-align: right;
+          }
+          &.mapping-data__branch {
+            background-color: #fff9c4;
+            span {
+              margin-left: 40px;
+            }
+          }
+          &.mapping-data__mapping-to {
+            width: 200px;
+          }
+          &.mapping-data__group {
+            background-color: #eee;
+            span {
+              margin-left: 40px;
+            }
+          }
+        }
+        thead {
+          th {
+            text-align: center;
+          }
+        }
+      }
+    }
+  }
+
+  .page-manage-entries {
+    .manage-entries-limits__table-container {
+      width: 100%;
+      padding-top: 10px;
+    }
+    .entries-limits-branch__row {
+      background-color: #fff9c4;
+      td span {
+        margin-left: 40px;
+      }
+    }
+  }
+
+  .project-details-panel--feedback {
+    hr {
+      margin: 10px;
+    }
+  }
+}

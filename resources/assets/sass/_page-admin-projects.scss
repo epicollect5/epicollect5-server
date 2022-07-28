@@ -1,0 +1,47 @@
+.projects__table .project-name {
+  @include card-project-name();
+  display: block; //hack
+  text-align: left;
+}
+
+.page-admin{
+
+  .panel-heading.navbar-default {
+    padding:0;
+  }
+
+  .projects-list__total, .user-list__total{
+    color: $deep-purple;
+    font-weight: 700;
+  }
+  .filter-controls__visibility, .filter-controls__access {
+    .filter-dropdown-label {
+      margin-top:6px;
+      margin-right: 5px;
+    }
+  }
+  .projects-list__filter-controls_dropdowns {
+    .btn-action.dropdown-toggle {
+      width:120px;
+    }
+  }
+
+  select.form-control.project-roles {
+    padding: 0 15px;
+    height: 30px;
+  }
+
+  .projects-list {
+    position:relative;
+    //320 is roughly footer height + navabr height +  page title etc... kinda working
+    min-height: calc(100vh - 320px);
+    .projects-loader {
+      position: absolute;
+    }
+  }
+
+  .project-logo {
+    border-radius: 50%;
+    border: 1px solid $deep-purple;
+  }
+}

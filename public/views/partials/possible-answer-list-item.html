@@ -1,0 +1,16 @@
+<li class="list-group-item">
+    <div class="input-properties__form__possible-answers__list__possible_answer_item input-group input-group-sm">
+        <div class="input-group-btn">
+            <button class="input-properties__form__possible-answers__list__drag-answer btn btn-default" type="button">
+                <i class="fa fa-2x fa-arrows-v"></i>
+            </button>
+        </div>
+        <input type="text" class="form-control" maxlength="150" placeholder="Type answer here..." data-answer-ref="{{answer-ref}}" value="{{answer}}">
+        <span class="input-group-btn">
+            <button class="input-properties__form__possible-answers__list__remove-answer btn btn-default" type="button" {{disabled}}>
+                <i class="fa fa-times"></i>
+            </button>
+        </span>
+    </div>
+    <span class="input-properties__form__error hidden">(error)</span>
+</li>

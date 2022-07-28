@@ -1,0 +1,125 @@
+.page-projects-list, .page-search-projects {
+
+  .project_list_cards {
+   // margin-top:100px;
+  }
+
+  .project-summary {
+    margin-bottom: 15px;
+    div.text-center {
+      line-height: 2;
+      border-bottom: 1px solid $light-grey;
+    }
+    .label-primary {
+      background-color: #673c90;
+      padding: 4px 8px;
+    }
+  }
+
+  .panel-body {
+    position: relative;
+    .project-name {
+      @include card-project-name();
+      display: block; //hack
+    }
+    .project-small-description {
+      // height: 70px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .img-responsive {
+      border: 2px solid $deep-purple;
+    }
+    .page-home-view-btn {
+      position: absolute;
+      bottom: 15px;
+      right: 15px;
+    }
+  }
+
+  .thumbnail {
+    border: none;
+    position: relative;
+    .loader {
+      //override for thumbnail
+      position: absolute;
+      z-index: 21;
+    }
+    img {
+      opacity: 0;
+      z-index: 22;
+      position: relative;
+      min-height: 130px;
+    }
+  }
+
+  .page-projects-list__nav {
+    margin: 15px 0;
+    a {
+      &:hover {
+        text-decoration: none;
+      }
+    }
+    .btn-group {
+      padding: 0;
+      border-bottom: 2px solid #fff;
+      border-radius: 0;
+      &:hover {
+        background-color: #fff;
+        color: $hot-pink !important;
+        border-bottom: 2px solid $hot-pink;
+        a {
+          color: $hot-pink !important;
+        }
+      }
+    }
+    .btn-group.active {
+      background-color: #fff;
+      color: $hot-pink;
+      border-bottom: 2px solid $hot-pink;
+      a {
+        color: $hot-pink !important;
+      }
+    }
+  }
+
+  .page-search-projects__filter-controls {
+    margin-bottom: 16px;
+    .filter {
+      min-width: 220px;
+      .dropdown-toggle {
+        min-width: 220px;
+      }
+    }
+    ul.dropdown-menu {
+      min-width: 220px;
+      text-align: left;
+    }
+    input#project-filter {
+      width: 99%;
+    }
+  }
+
+  .project_search_cards {
+    min-height: calc(100vh - 120px); //to make it better on mobile and tablets
+  }
+}
+
+//show images
+.page-search-projects {
+  .thumbnail {
+    img {
+      opacity: 1;
+    }
+  }
+  .loader {
+    //  position: absolute;
+    z-index: 21;
+  }
+  .project-small-description {
+    height: auto !important;
+  }
+}
+

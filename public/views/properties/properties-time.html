@@ -1,0 +1,72 @@
+<!-- input-ref, index needs to be dynamically replaced by system generated ref-->
+<form class="input-properties__form hidden" data-input-ref="{{input-ref}}">
+
+    <!-- Nav tabs -->
+    <div class="input-properties__tabs tab-pane" role="tabpanel">
+
+        <!-- navtabs are injected here dynamically -->
+        {{nav-tabs}}
+
+        <!-- Tab panes -->
+        <div class="tab-content input-properties__tabs__content">
+            <!-- basic properties section injected dynamically-->
+            {{properties}}
+
+            <div id="{{advanced-input-ref}}" class="input-properties__form__advanced-properties panel panel-default"
+                data-input-ref="input_id">
+                <div class="panel-body">
+                    <div class="input-properties__form__advanced-properties__timeformat form-group">
+                        <p><strong>Time Format</strong></p>
+
+                        <div class="radio">
+                            <label>
+                                <input type="radio" name="timeformatRadio" value="HH:mm:ss"
+                                    {{is-checked-datetime-format-1}}>
+                                Hours:Minutes:Seconds (24 hours)
+                            </label>
+                        </div>
+                        <div class="radio">
+                            <label>
+                                <input type="radio" name="timeformatRadio" value="hh:mm:ss"
+                                    {{is-checked-datetime-format-2}}>
+                                Hours:Minutes:Seconds (12 hours)
+                            </label>
+                        </div>
+                        <div class="radio">
+                            <label>
+                                <input type="radio" name="timeformatRadio" value="HH:mm"
+                                    {{is-checked-datetime-format-3}}>
+                                Hours:Minutes (24 hours)
+                            </label>
+                        </div>
+                        <div class="radio">
+                            <label>
+                                <input type="radio" name="timeformatRadio" value="hh:mm"
+                                    {{is-checked-datetime-format-4}}>
+                                Hours:Minutes (12 hours)
+                            </label>
+                        </div>
+                        <div class="radio">
+                            <label>
+                                <input type="radio" name="timeformatRadio" value="mm:ss"
+                                    {{is-checked-datetime-format-5}}>
+                                Minutes:Seconds
+                            </label>
+                        </div>
+                    </div>
+                    <div class="input-properties__form__advanced-properties__default-to-current checkbox">
+                        <label>
+                            <input id="{{input-ref-default-to-current}}" type="checkbox" {{set-to-current-datetime}}>
+                            Set initial answer to current time
+                        </label>
+                    </div>
+                    <!-- Uniqueness flag-->
+                    {{uniqueness}}
+                </div>
+            </div>
+
+            <!-- Jumps section is injected dynamically-->
+            {{jumps}}
+        </div>
+    </div>
+</form>

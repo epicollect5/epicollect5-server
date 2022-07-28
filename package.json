@@ -1,0 +1,20 @@
+{
+  "private": true,
+  "scripts": {
+    "prod": "gulp --production",
+    "dev": "gulp watch"
+  },
+  "devDependencies": {
+    "gulp-clean-css": "^2.0.3",
+    "gulp-concat": "^2.6.0",
+    "gulp-concat-css": "^2.2.0",
+    "gulp-phpunit": "^0.14.0",
+    "gulp-sass": "^4.1.0",
+    "gulp-uglify": "^1.5.3"
+  },
+  "dependencies": {
+    "gulp": "^4.0.2",
+    "jshint": "^2.12.0",
+    "node-sass": "^5.0.0"
+  }
+}

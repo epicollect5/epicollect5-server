@@ -1,0 +1,170 @@
+<?php
+
+return [
+
+    /*
+    |--------------------------------------------------------------------------
+    | Authentication Defaults
+    |--------------------------------------------------------------------------
+    |
+    | This option controls the default authentication "guard" and password
+    | reset options for your application. You may change these defaults
+    | as required, but they're a perfect start for most applications.
+    |
+    */
+
+    'defaults' => [
+        'guard' => 'web',
+        'passwords' => 'session_users'
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Authentication Guards
+    |--------------------------------------------------------------------------
+    |
+    | Next, you may define every authentication guard for your application.
+    | Of course, a great default configuration has been defined for you
+    | here which uses session storage and the Eloquent user provider.
+    |
+    | All authentication drivers have a user provider. This defines how the
+    | users are actually retrieved out of your database or other storage
+    | mechanisms used by this application to persist your user's data.
+    |
+    | Supported: "web", "api_internal", "api_external"
+    |
+    */
+
+    'guards' => [
+        'web' => [
+            'driver' => 'session',
+            'provider' => 'users',
+        ],
+
+        'api_internal' => [
+            'driver' => 'session',
+            'provider' => 'session_users',
+        ],
+
+        'api_external' => [
+            'driver' => 'jwt',
+            'provider' => 'users',
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | User Providers
+    |--------------------------------------------------------------------------
+    |
+    | All authentication drivers have a user provider. This defines how the
+    | users are actually retrieved out of your database or other storage
+    | mechanisms used by this application to persist your user's data.
+    |
+    | If you have multiple user tables or models you may configure multiple
+    | sources which represent each model / table. These sources may then
+    | be assigned to any extra authentication guards you have defined.
+    |
+    | Supported: "database", "eloquent", "jwt"
+    |
+    */
+
+    'providers' => [
+        'users' => [
+            'driver' => 'eloquent',
+            'model' => ec5\Models\Users\User::class,
+        ]
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Resetting Passwords
+    |--------------------------------------------------------------------------
+    |
+    | Here you may set the options for resetting passwords including the view
+    | that is your password reset e-mail. You may also set the name of the
+    | table that maintains all of the reset tokens for your application.
+    |
+    | You may specify multiple password reset configurations if you have more
+    | than one user table or model in the application and you want to have
+    | separate password reset settings based on the specific user types.
+    |
+    | The expire time is the number of minutes that the reset token should be
+    | considered valid. This security feature keeps tokens short-lived so
+    | they have less time to be guessed. You may change this as needed.
+    |
+    */
+
+    'passwords' => [
+        'session_users' => [
+            'provider' => 'session_users',
+            'email' => 'auth.emails.password',
+            'table' => 'password_resets',
+            'expire' => 60,
+        ],
+        'jwt_users' => [
+            'provider' => 'jwt_users',
+            'email' => 'auth.emails.password',
+            'table' => 'password_resets',
+            'expire' => 60,
+        ]
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | JWT key
+    |--------------------------------------------------------------------------
+    | The JWT key used system wide
+    | The expiry time set for JWT tokens
+    */
+
+    'jwt' => [
+        'secret_key' => env('APP_KEY'),
+        'expire' => env('JWT_EXPIRE', 7776000)
+    ],
+    'jwt-forgot' => [
+        'secret_key' => env('APP_KEY'),
+        'expire' => env('JWT_FORGOT_EXPIRE', 3600)
+    ],
+    'jwt-passwordless' => [
+        'secret_key' => env('APP_KEY'),
+        'expire' => env('JWT_PASSWORDLESS_EXPIRE', 86400)
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Passport
+    |--------------------------------------------------------------------------
+    | The expiry time set for Passport access tokens
+    */
+    'passport' => [
+        'expire' => 7200
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Auth Methods
+    |--------------------------------------------------------------------------
+    | The authentication methods available for users
+    | Supported: "local", "google", "ldap", "apple", "passwordless"
+    */
+
+    'auth_methods' => explode(',', env('AUTH_METHODS')),
+
+
+    /**
+     * Whether the mobile app clients can use the local auth api routes
+     * Useful when building custom apk with only local users
+     */
+    'auth_api_local_enabled' => env('AUTH_API_LOCAL_ENABLED', false),
+
+    /**
+     * Whether authentication is enabled on the web server
+     * Useful when testing apk(s) with a test server
+     * When enabled, users cannot login on the web server
+     * Login page is not shown
+     */
+    'auth_web_enabled' => env('AUTH_WEB_ENABLED', true),
+
+    'ip_whitelist' => explode(',', env('IP_WHITELIST')),
+];

@@ -1,0 +1,11 @@
+.page-verification {
+  .code-btn,
+  .code-input {
+    width: 220px;
+  }
+}
+.email-for-verification {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
