@@ -22,7 +22,7 @@ use ec5\Repositories\QueryBuilder\Project\UpdateRepository as UpdateRep;
 use ec5\Models\Images\CreateProjectLogoAvatar;
 
 use Illuminate\Support\Str;
-use Uuid;
+use Webpatser\Uuid\Uuid;
 use Redirect;
 use File;
 use Session;
@@ -215,8 +215,13 @@ class ProjectCreateController extends ProjectControllerBase
 
         try {
             // Import this project
-            $this->project->import($newProjectRef, $input['name'], $input['created_by'], $projectDefinitionData,
-                $projectDefinitionValidator);
+            $this->project->import(
+                $newProjectRef,
+                $input['name'],
+                $input['created_by'],
+                $projectDefinitionData,
+                $projectDefinitionValidator
+            );
         } catch (ProjectImportException $e) {
             $request->flash();
             return Redirect::to('myprojects/create')
@@ -248,7 +253,6 @@ class ProjectCreateController extends ProjectControllerBase
         return Redirect::to('myprojects/create')
             ->withErrors(['db' => ['ec5_116']])
             ->with(['tab' => $this->type]);
-
     }
 
     private function createProjectAvatar($projectId)

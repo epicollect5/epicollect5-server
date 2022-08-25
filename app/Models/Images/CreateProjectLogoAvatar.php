@@ -5,7 +5,7 @@ namespace ec5\Models\Images;
 use Image;
 use Exception;
 use Storage;
-use Avatar;
+use Laravolt\Avatar\Avatar;
 
 class CreateProjectLogoAvatar
 {
@@ -43,19 +43,20 @@ class CreateProjectLogoAvatar
                 ->setDimension($this->width['thumb'])
                 ->setFontSize($this->fontSize['thumb'])
                 ->save(
-                $thumbPathPrefix. $projectRef . '/' . $this->filename,
-                100);
+                    $thumbPathPrefix . $projectRef . '/' . $this->filename,
+                    100
+                );
 
             //generate mobile avatar
             Avatar::create($projectName)
                 ->setDimension($this->width['mobile'])
                 ->setFontSize($this->fontSize['mobile'])
                 ->save(
-                $mobilePathPrefix. $projectRef . '/' . $this->filename,
-                100);
+                    $mobilePathPrefix . $projectRef . '/' . $this->filename,
+                    100
+                );
 
             return true;
-
         } catch (Exception $e) {
             \Log::error('Error creating project avatar',  ['exception' => $e]);
             return false;
