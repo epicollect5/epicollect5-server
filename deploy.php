@@ -14,7 +14,7 @@ require 'recipe/laravel.php';
 set('ssh_type', 'native');
 set('ssh_multiplexing', true);
 
-set('repository', 'https://gitlab.com/cgps/epicollect5/epicollect5-server.git');
+set('repository', 'https://github.com/epicollect5/epicollect5-server.git');
 
 add('shared_files', ['public/.htaccess']);
 add('shared_dirs', []);
