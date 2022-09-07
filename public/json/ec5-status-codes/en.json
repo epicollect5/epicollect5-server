@@ -25,7 +25,7 @@
   "ec5_34": "User not found.",
   "ec5_35": "New User added.",
   "ec5_36": "User password or email incorrect.",
-  "ec5_37": "Too many failed login attempts made. Please try again in 10 minutes.",
+  "ec5_37": "Too many failed login attempts made. Please try again in 30 minutes.",
   "ec5_38": "No Provider Key available.",
   "ec5_39": "Validation failed.",
   "ec5_40": "Passwords do not match.",
