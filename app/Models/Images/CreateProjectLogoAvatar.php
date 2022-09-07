@@ -2,14 +2,12 @@
 
 namespace ec5\Models\Images;
 
-use Image;
 use Exception;
 use Storage;
-use Laravolt\Avatar\Avatar;
+use Laravolt\Avatar\Facade as Avatar;
 
 class CreateProjectLogoAvatar
 {
-
     protected $width;
     protected $height;
     protected $quality;
