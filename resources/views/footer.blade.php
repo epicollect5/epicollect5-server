@@ -17,7 +17,7 @@
                     </li>
                     <li>
                         <small>
-                            <a href="mailto:{{ env('SYSTEM_EMAIL') }}" target="_blank">Contact Us</a>
+                            <a href="https://community.epicollect.net" target="_blank">Contact Us</a>
                         </small>
                     </li>
                 </ul>

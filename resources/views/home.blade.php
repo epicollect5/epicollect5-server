@@ -67,8 +67,8 @@
                         <div class="panel-body">
                             <a href="{{ url('project/' . $project->slug) }}" class="thumbnail">
                                 <img class="img-responsive img-circle" width="256" height="256" src="
-                                        {{-- If a private project, show lock --}}
-                                           @if ($project->access == Config::get('ec5Strings.project_access.private'))
+                                                {{-- If a private project, show lock --}}
+                                                     @if ($project->access == Config::get('ec5Strings.project_access.private'))
                                 {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
                             @elseif($project->logo_url == '')
                                 {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
@@ -116,8 +116,6 @@
                             }(document, "script", "twitter-wjs");
                         </script>
                     </div>
-
-
                 </div>
             </div>
 
@@ -153,8 +151,8 @@
                             <div class="panel-body">
                                 <a href="{{ url('project/' . $project->slug) }}" class="thumbnail">
                                     <img class="img-responsive img-circle" width="128" height="128" src="
-                                        {{-- If a private project, show lock --}}
-                                             @if ($project->access == Config::get('ec5Strings.project_access.private'))
+                                                {{-- If a private project, show lock --}}
+                                                       @if ($project->access == Config::get('ec5Strings.project_access.private'))
                                     {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
                                 @elseif($project->logo_url == '')
                                     {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
