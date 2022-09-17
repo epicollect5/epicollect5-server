@@ -10,6 +10,8 @@ use ec5\Http\Validation\Entries\Upload\RuleUniqueness as UniquenessValidator;
 
 use ec5\Repositories\QueryBuilder\Entry\Upload\Search\EntryRepository as EntrySearchRepository;
 use ec5\Repositories\QueryBuilder\Entry\Upload\Search\BranchEntryRepository as BranchEntrySearchRepository;
+use App;
+
 
 class UniquenessController extends UploadControllerBase
 {
@@ -97,5 +99,20 @@ class UniquenessController extends UploadControllerBase
         }
 
         return $this->apiResponse->successResponse('ec5_249');
+    }
+
+    public function indexPWA(
+        UniquenessValidator $uniquenessValidator,
+        EntrySearchRepository $entrySearchRepository,
+        BranchEntrySearchRepository $branchEntrySearchRepository
+    ) {
+        if (!App::isLocal()) {
+            return $this->apiResponse->errorResponse(400, ['pwa-upload' => ['ec5_91']]);
+        }
+        return $this->index(
+            $uniquenessValidator,
+            $entrySearchRepository,
+            $branchEntrySearchRepository
+        );
     }
 }
