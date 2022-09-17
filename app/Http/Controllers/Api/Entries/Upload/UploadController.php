@@ -80,13 +80,21 @@ class UploadController extends UploadControllerBase
 
     public function postUploadBulk(UploadValidator $uploadValidator)
     {
-
         //kick out if in production, this route is only for debugging locally
         if (!App::isLocal()) {
             return $this->apiResponse->errorResponse(400, ['bulk-upload' => ['ec5_363']]);
         }
         return $this->postUpload($uploadValidator);
     }
+
+    // public function postUploadPWA(UploadValidator $uploadValidator)
+    // {
+    //     //kick out if in production, this route is only for debugging locally
+    //     if (!App::isLocal()) {
+    //         return $this->apiResponse->errorResponse(400, ['pwa-upload' => ['ec5_91']]);
+    //     }
+    //     return $this->postUpload($uploadValidator);
+    // }
 
     public function import(UploadValidator $uploadValidator)
     {
