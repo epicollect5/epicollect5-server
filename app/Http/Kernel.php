@@ -2,7 +2,6 @@
 
 namespace ec5\Http;
 
-use ec5\Http\Middleware\IpMiddleware;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
 class Kernel extends HttpKernel
