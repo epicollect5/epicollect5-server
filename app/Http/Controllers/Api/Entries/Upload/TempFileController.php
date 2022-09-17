@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 
 namespace ec5\Http\Controllers\Api\Entries\Upload;
 
@@ -19,6 +20,8 @@ use ec5\Models\Entries\EntryStructure;
 use Illuminate\Http\Request;
 
 use Storage;
+use App;
+
 
 class TempFileController extends UploadControllerBase
 {
@@ -50,13 +53,20 @@ class TempFileController extends UploadControllerBase
         EntryStatsRepository $entryStatsRepository
     ) {
         $this->fileValidator = $fileValidator;
-        parent::__construct($request, $apiRequest, $apiResponse, $entryStructure, $entryCreateRepository,
-            $branchEntryCreateRepository, $entryStatsRepository);
+        parent::__construct(
+            $request,
+            $apiRequest,
+            $apiResponse,
+            $entryStructure,
+            $entryCreateRepository,
+            $branchEntryCreateRepository,
+            $entryStatsRepository
+        );
     }
 
     /**
      * Handle a web temp file upload entry request
-    */
+     */
     public function store()
     {
         /* API REQUEST VALIDATION */
@@ -117,5 +127,13 @@ class TempFileController extends UploadControllerBase
         /* PASSED */
         // Send http status code 200, ok!
         return $this->apiResponse->successResponse('ec5_242');
+    }
+
+    public function storePWA()
+    {
+        if (!App::isLocal()) {
+            return $this->apiResponse->errorResponse(400, ['pwa-file-upload' => ['ec5_91']]);
+        }
+        return $this->store();
     }
 }
