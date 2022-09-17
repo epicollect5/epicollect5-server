@@ -28,6 +28,7 @@ use Illuminate\Http\Request;
 use Storage;
 use Config;
 use File;
+use App;
 
 class WebUploadController extends UploadControllerBase
 {
@@ -158,6 +159,15 @@ class WebUploadController extends UploadControllerBase
         /* PASSED */
         // Send http status code 200, ok!
         return $this->apiResponse->successResponse($responseCode);
+    }
+
+    public function storePWA(UploadValidator $uploadValidator)
+    {
+        //kick out if in production, this route is only for debugging locally
+        if (!App::isLocal()) {
+            return $this->apiResponse->errorResponse(400, ['pwa-upload' => ['ec5_91']]);
+        }
+        return $this->store($uploadValidator);
     }
 
     /**

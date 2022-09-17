@@ -9,7 +9,6 @@
 |
 */
 
-
 // Internal api routes
 Route::group(['middleware' => ['project.permissions']], function () {
 
@@ -49,7 +48,7 @@ Route::group(['middleware' => ['project.permissions']], function () {
     // Entries for map
     Route::get('api/internal/entries-locations/{project_slug}', 'Api\Entries\View\EntriesLocationsController@show');
 
-    // Web entry uploads, for data editor and bulk upload from dataviewer
+    // Web entry uploads, for pwa and bulk upload from dataviewer
     Route::post('api/internal/web-upload/{project_slug}', 'Api\Entries\Upload\WebUploadController@store');
 
     //wrapping this endpoint to check for bulk upload permissions

@@ -58,8 +58,14 @@ Route::group(['middleware' => ['throttle:600,1']], function () {
         // Entry uploads
         Route::post('api/upload/{project_slug}', 'Api\Entries\Upload\UploadController@postUpload');
 
-        //route for debugging, works only on localhost
+        //route for debugging bulk uploads, works only on localhost
         Route::post('api/bulk-upload/{project_slug}', 'Api\Entries\Upload\UploadController@postUploadBulk');
+
+        //route for debugging pwa uploads, works only on localhost
+        Route::post('api/pwa-upload/{project_slug}', 'Api\Entries\Upload\WebUploadController@storePWA');
+
+        // Debug pwa answer uniqueness checks, works only on localhost
+        Route::post('api/pwa-unique-answer/{project_slug}', 'Api\Entries\Upload\UniquenessController@indexPWA');
 
         //Media Controller for access to media files (even via the browser, this is why we are not using the internl endpoint)
         Route::get('api/media/{project_slug}/', 'Api\Project\MediaController@getMedia');
@@ -101,6 +107,12 @@ Route::group(['middleware' => ['throttle:600,1']], function () {
         Route::post(
             'api/web-upload-file/{project_slug}',
             'Api\Entries\Upload\TempFileController@store'
+        );
+
+        // PWA file uploads (debugging only)
+        Route::post(
+            'api/pwa-upload-file/{project_slug}',
+            'Api\Entries\Upload\TempFileController@storePWA'
         );
 
         // Web answer uniqueness checks

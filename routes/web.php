@@ -134,7 +134,7 @@ Route::group(['middleware' => 'auth.admin'], function () {
 // Auth middleware
 Route::group(['middleware' => 'auth'], function () {
     // User search
-    Route::get('users/search-by-email', 'Web\Admin\ManageUsersController@searchByEmail');
+    Route::get('users/search-by-email', 'Web\Admin\AdminUsersController@searchByEmail');
 });
 
 // Projects & categories
