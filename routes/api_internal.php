@@ -67,6 +67,8 @@ Route::group(['middleware' => ['project.permissions']], function () {
     // Entry Archive (delete)
     Route::group(['middleware' => ['project.permissions.viewer.role']], function () {
         Route::post('api/internal/archive/{project_slug}', 'Api\Entries\ArchiveController@index');
+
+        Route::post('api/internal/temp-media-delete/{project_slug}', 'Api\Entries\Upload\TempFileController@destroy');
     });
 
     //User management

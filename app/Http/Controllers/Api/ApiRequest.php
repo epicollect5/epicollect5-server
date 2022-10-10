@@ -190,7 +190,6 @@ class ApiRequest
         $this->pageNumber = null;
 
         $this->parseRequestContent();
-
     }
 
     /**
@@ -198,11 +197,11 @@ class ApiRequest
      *
      * @return bool
      */
-    private function isValidData() : bool
+    private function isValidData(): bool
     {
         // If JSON not correctly formatted and it is a POST request
         if (!$this->data && $this->method === 'POST') {
-            $this->errors['json-data-tag'] = ['ec5_14'];
+            $this->errors['data-key'] = ['ec5_14'];
 
             Log::error('Missing JSON "data" key in request: ', [
                 'url' => $this->url,
@@ -234,7 +233,6 @@ class ApiRequest
         }
 
         return true;
-
     }
 
     /**
@@ -331,8 +329,7 @@ class ApiRequest
     {
 
         if (count($this->data) == 0 && $this->method === 'POST') {
-            $this->errors['json-data-tag'] = ['ec5_14'];
-            EC5Logger::error('json-data-tag error hit ApiRequest:' . __LINE__, null, $this->data);
+            $this->errors['data-invalid'] = ['ec5_60'];
             return;
         }
 
@@ -340,8 +337,7 @@ class ApiRequest
         $this->type = (!empty($this->data['type']) ? $this->data['type'] : null);
 
         if (($this->type == null || empty($this->data[$this->type])) && $this->method === 'POST') {
-            $this->errors['json-data-tag'] = ['ec5_14'];
-            EC5Logger::error('json-data-tag error hit ApiRequest:' . __LINE__, null, $this->data);
+            $this->errors['type-invalid'] = ['ec5_60'];
             return;
         }
 

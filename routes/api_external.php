@@ -115,6 +115,13 @@ Route::group(['middleware' => ['throttle:600,1']], function () {
             'Api\Entries\Upload\TempFileController@storePWA'
         );
 
+        //PWA temp file delete (debugging only)
+        Route::post(
+            'api/pwa-temp-media-delete/{project_slug}',
+            'Api\Entries\Upload\TempFileController@destroyPWA'
+        );
+
+
         // Web answer uniqueness checks
         Route::post(
             'api/unique-answer/{project_slug}',

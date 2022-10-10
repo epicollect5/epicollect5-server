@@ -15,13 +15,11 @@ class RuleVideo extends ValidationBase
         'mimetypes' => 'ec5_81',
         'max' => 'ec5_206'
     ];
-    
+
     /**
      *
      */
     public function additionalChecks()
     {
-
     }
-
 }

@@ -94,7 +94,6 @@ class RuleFileEntry extends EntryValidationBase
 
         // Call to parent constructor, default to $entrySearchRepository
         parent::__construct($entrySearchRepository, $answerValidator);
-
     }
 
     /**
@@ -223,8 +222,11 @@ class RuleFileEntry extends EntryValidationBase
         $validator->validate($data);
 
         if ($validator->hasErrors()) {
-            EC5Logger::error('File upload failed - isValidFile function - validator failed', null,
-                $validator->errors());
+            EC5Logger::error(
+                'File upload failed - isValidFile function - validator failed',
+                null,
+                $validator->errors()
+            );
             $this->errors = $validator->errors();
             return false;
         }
@@ -259,15 +261,15 @@ class RuleFileEntry extends EntryValidationBase
         if (!$entry) {
             $this->errors[$entryUuid] = ['ec5_46'];
 
-//            //todo we do this because it is failing for many
-//            Log::error('fileEntryExists() warning: ' . $project->name, [
-//                'entryUuid' => $entryUuid,
-//                'entry' => $entry,
-//                'fileEntry' => $fileEntry,
-//                'formRef' => $formRef,
-//                'inputRef' => $inputRef,
-//                'entryData' => $entryStructure->getData()
-//            ]);
+            //            //todo we do this because it is failing for many
+            //            Log::error('fileEntryExists() warning: ' . $project->name, [
+            //                'entryUuid' => $entryUuid,
+            //                'entry' => $entry,
+            //                'fileEntry' => $fileEntry,
+            //                'formRef' => $formRef,
+            //                'inputRef' => $inputRef,
+            //                'entryData' => $entryStructure->getData()
+            //            ]);
             return false;
         }
         return true;
@@ -339,8 +341,14 @@ class RuleFileEntry extends EntryValidationBase
                 }
 
                 // Attempt to save the original image (resized if necessary) keeping 100% quality
-                $original = UploadImage::saveImage($projectRef, $entryStructure->getFile(), $fileName, 'entry_original',
-                    $dimensions, 100);
+                $original = UploadImage::saveImage(
+                    $projectRef,
+                    $entryStructure->getFile(),
+                    $fileName,
+                    'entry_original',
+                    $dimensions,
+                    100
+                );
 
                 // Check if any errors creating/saving thumb
                 if (!$original) {
@@ -350,8 +358,13 @@ class RuleFileEntry extends EntryValidationBase
                 // Entry sidebar image
 
                 // Create and save entry sidebar image for photos, using 'entry_sidebar' driver
-                $sidebar = UploadImage::saveImage($projectRef, $entryStructure->getFile(), $fileName, 'entry_sidebar',
-                    Config::get('ec5Media.entry_sidebar'));
+                $sidebar = UploadImage::saveImage(
+                    $projectRef,
+                    $entryStructure->getFile(),
+                    $fileName,
+                    'entry_sidebar',
+                    Config::get('ec5Media.entry_sidebar')
+                );
 
                 // Check if any errors creating/saving thumb
                 if (!$sidebar) {
@@ -362,8 +375,13 @@ class RuleFileEntry extends EntryValidationBase
                 // Entry thumb image
 
                 // Create and save entry thumbnail image for photos, using 'entry_thumb' driver
-                $thumb = UploadImage::saveImage($projectRef, $entryStructure->getFile(), $fileName, 'entry_thumb',
-                    Config::get('ec5Media.entry_thumb'));
+                $thumb = UploadImage::saveImage(
+                    $projectRef,
+                    $entryStructure->getFile(),
+                    $fileName,
+                    'entry_thumb',
+                    Config::get('ec5Media.entry_thumb')
+                );
 
                 // Check if any errors creating/saving thumb
                 if (!$thumb) {
@@ -430,8 +448,14 @@ class RuleFileEntry extends EntryValidationBase
                 }
 
                 // Attempt to save the original image (resized if necessary) keeping 100% quality
-                $original = UploadImage::saveImage($projectRef, $entryStructure->getFile(), $fileName,
-                    'orphan_entry_original', $dimensions, 100);
+                $original = UploadImage::saveImage(
+                    $projectRef,
+                    $entryStructure->getFile(),
+                    $fileName,
+                    'orphan_entry_original',
+                    $dimensions,
+                    100
+                );
 
                 // Check if any errors creating/saving thumb
                 if (!$original) {
@@ -441,8 +465,13 @@ class RuleFileEntry extends EntryValidationBase
                 // Entry sidebar image
 
                 // Create and save entry sidebar image for photos, using 'entry_sidebar' driver
-                $sidebar = UploadImage::saveImage($projectRef, $entryStructure->getFile(), $fileName,
-                    'orphan_entry_sidebar', Config::get('ec5Media.entry_sidebar'));
+                $sidebar = UploadImage::saveImage(
+                    $projectRef,
+                    $entryStructure->getFile(),
+                    $fileName,
+                    'orphan_entry_sidebar',
+                    Config::get('ec5Media.entry_sidebar')
+                );
 
                 // Check if any errors creating/saving thumb
                 if (!$sidebar) {
@@ -453,8 +482,13 @@ class RuleFileEntry extends EntryValidationBase
                 // Entry thumb image
 
                 // Create and save entry thumbnail image for photos, using 'entry_thumb' driver
-                $thumb = UploadImage::saveImage($projectRef, $entryStructure->getFile(), $fileName,
-                    'orphan_entry_thumb', Config::get('ec5Media.entry_thumb'));
+                $thumb = UploadImage::saveImage(
+                    $projectRef,
+                    $entryStructure->getFile(),
+                    $fileName,
+                    'orphan_entry_thumb',
+                    Config::get('ec5Media.entry_thumb')
+                );
 
                 // Check if any errors creating/saving thumb
                 if (!$thumb) {
