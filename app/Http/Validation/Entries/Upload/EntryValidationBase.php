@@ -171,6 +171,7 @@ abstract class EntryValidationBase extends ValidationBase
             }
 
             // If the user can't edit this entry, return false
+            \Log::info('$entryStructure->canEdit($dbEntry)');
             if (!$entryStructure->canEdit($dbEntry)) {
                 return false;
             }

@@ -29,6 +29,8 @@ use Storage;
 use Config;
 use File;
 use App;
+use Exception;
+use Log;
 
 class WebUploadController extends UploadControllerBase
 {
@@ -95,13 +97,19 @@ class WebUploadController extends UploadControllerBase
         $data = $this->apiRequest->getData();
         $projectId = $this->requestedProject->getId();
 
+        \Log::info('uploaded data', ['data' => $data]);
+
+
         //was an entry or branch entry upload?
         $uuid = $data['id'];
 
+
         if ($this->entryStructure->isBranch()) {
+            $entryType = 'branch_entry';
             $created_at = $data['branch_entry']['created_at'];
             $entry = BranchEntry::where('project_id', $projectId)->where('uuid', $uuid)->first();
         } else {
+            $entryType = 'entry';
             $created_at = $data['entry']['created_at'];
             //get the entry we just saved
             $entry = Entry::where('project_id', $projectId)->where('uuid', $uuid)->first();
@@ -111,9 +119,22 @@ class WebUploadController extends UploadControllerBase
         // (the created_at in the database is not touched when updating an entry, only the uploaded_at)
         if (!DateFormatConverter::areTimestampsEqual($created_at, $entry->created_at)) {
             $responseCode = 'ec5_357';
+            //existing entries when edited could have some stored files removed
+            try {
+                if (array_key_exists('files_to_delete', $data['entry'])) {
+                    $filesToDelete = $data['entry']['files_to_delete'];
+                    //any files to delete from permanent storage before we move the temp ones?
+                    if (count($filesToDelete) > 0) {
+                        $this->deleteStoredFiles($filesToDelete);
+                    }
+                }
+            } catch (Exception $e) {
+                //todo: handle error
+                Log::error($e->getMessage());
+            }
         }
 
-        /* MOVE FILES */
+        // MOVE FILES from temp/ to app/entries/{media folder}
         $projectExtra = $this->requestedProject->getProjectExtra();
         $formRef = $this->entryStructure->getFormRef();
 
@@ -245,5 +266,90 @@ class WebUploadController extends UploadControllerBase
         File::delete($filePath);
 
         return true;
+    }
+
+    private function deleteStoredFiles($files)
+    {
+        foreach ($files as $file) {
+            switch ($file['type']) {
+                case config('ec5Strings.inputs_type.photo'):
+                    Log::error('here 1');
+                    $fileType = $file['type'];
+                    $filename = $file['filename'];
+                    //delete from photo folders (all sizes)
+                    $disk = Storage::disk('entry_original');
+                    $rootFolder = $disk->getDriver()->getAdapter()->getPathPrefix();
+                    $filePath = $rootFolder  . $this->requestedProject->ref . '/' . $filename;
+                    try {
+                        // Delete file from entry_original folder
+                        if (!File::delete($filePath)) {
+                            Log::error('Could not delete ' .  $fileType . ' stored file ->' . $filename);
+                        }
+                    } catch (Exception $e) {
+                        Log::error('Could not delete ' . $fileType . ' stored file ->' . $filename);
+                    }
+
+                    $disk = Storage::disk('entry_thumb');
+                    $rootFolder = $disk->getDriver()->getAdapter()->getPathPrefix();
+                    $filePath = $rootFolder . $this->requestedProject->ref . '/' . $filename;
+                    Log::error('here 2 -> ' . $filePath);
+                    try {
+                        // Delete file from entry_original folder
+                        if (!File::delete($filePath)) {
+                            Log::error('Could not delete ' .  $fileType . ' stored file ->' . $filename);
+                        }
+                    } catch (Exception $e) {
+                        Log::error('Could not delete ' . $fileType . ' stored file ->' . $filename);
+                    }
+
+                    $disk = Storage::disk('entry_sidebar');
+                    $rootFolder = $disk->getDriver()->getAdapter()->getPathPrefix();
+                    $filePath = $rootFolder . $this->requestedProject->ref . '/' . $filename;
+                    try {
+                        // Delete file from entry_original folder
+                        if (!File::delete($filePath)) {
+                            Log::error('Could not delete ' .  $fileType . ' stored file ->' . $filename);
+                        }
+                    } catch (Exception $e) {
+                        Log::error('Could not delete ' . $fileType . ' stored file ->' . $filename);
+                    }
+
+
+                    break;
+                case config('ec5Strings.inputs_type.audio'):
+                    //delete from audio folder
+                    //delete from video folder
+                    $disk = Storage::disk('audio');
+                    $fileType = $file['type'];
+                    $filename = $file['filename'];
+                    $rootFolder = $disk->getDriver()->getAdapter()->getPathPrefix();
+                    $filePath = $rootFolder  . $this->requestedProject->ref . '/' . $filename;
+                    try {
+                        // Delete file from audio folder
+                        if (!File::delete($filePath)) {
+                            Log::error('Could not delete ' .  $fileType . ' stored file ->' . $filename);
+                        }
+                    } catch (Exception $e) {
+                        Log::error('Could not delete ' . $fileType . ' stored file ->' . $filename);
+                    }
+                    break;
+                case config('ec5Strings.inputs_type.video'):
+                    //delete from video folder
+                    $disk = Storage::disk('video');
+                    $fileType = $file['type'];
+                    $filename = $file['filename'];
+                    $rootFolder = $disk->getDriver()->getAdapter()->getPathPrefix();
+                    $filePath = $rootFolder  . $this->requestedProject->ref . '/' . $filename;
+                    try {
+                        // Delete file from video folder
+                        if (!File::delete($filePath)) {
+                            Log::error('Could not delete ' .  $fileType . ' stored file ->' . $filename);
+                        }
+                    } catch (Exception $e) {
+                        Log::error('Could not delete ' . $fileType . ' stored file ->' . $filename);
+                    }
+                    break;
+            }
+        }
     }
 }

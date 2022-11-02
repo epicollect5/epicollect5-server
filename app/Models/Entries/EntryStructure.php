@@ -6,6 +6,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use ec5\Models\ProjectRoles\ProjectRole;
 use Config;
 use Hash;
+use App;
 
 class EntryStructure
 {
@@ -464,20 +465,29 @@ class EntryStructure
     public function canEdit($dbEntry): bool
     {
         // Does the user have a canEditData role?
+        // 1 - First we check the user role, as CREATOR, MANAGER, CURATOR
+        // can edit all entries regardless of ownhership
         $requestedProjectRole = $this->getProjectRole();
         if ($requestedProjectRole->canEditData()) {
             return true;
         }
 
         // Is the user the same (non zero)?
+        // 2 - For COLLECTOR role, we check if the user ID matches
+        // the ID of 0 (zero) is assigned when the entry 
+        //is uploaded without authentication (from the mobile apps)
         if ($dbEntry->user_id != 0 && $dbEntry->user_id == $this->getUserId()) {
             return true;
         }
 
         // Is the device id (non empty) the same (for non web platforms)?
-        if ($this->getPlatform() != Config::get('ec5Enums.web_platform') &&
+        // 3 - on native apps, we can check the device unique identifier
+        // if it matches, we perform the edit 
+        if (
+            $this->getPlatform() != Config::get('ec5Enums.web_platform') &&
             !empty($this->getDeviceId()) &&
-            Hash::check($this->getDeviceId(), $dbEntry->device_id)) {
+            Hash::check($this->getDeviceId(), $dbEntry->device_id)
+        ) {
 
             // If the user is logged in and the existing user_id is 0, replace the user_id
             if ($this->getUserId() != 0 && $dbEntry->user_id == 0) {
@@ -485,6 +495,15 @@ class EntryStructure
             }
 
             return true;
+        }
+
+        // 4 - For debugging PWA, allow edits without authentication
+        if (App::isLocal()) {
+            if ($this->getPlatform() === Config::get('ec5Enums.web_platform')) {
+                if ($this->getUserId() === 0) {
+                    return true;
+                }
+            }
         }
 
         // Can't edit

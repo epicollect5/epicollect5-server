@@ -17,6 +17,7 @@ use ec5\Repositories\QueryBuilder\Entry\Search\EntryRepository;
 use Illuminate\Http\Request;
 use Config;
 use Log;
+use App;
 use Carbon\Carbon;
 
 
@@ -173,6 +174,14 @@ class EntriesController extends EntrySearchControllerBase
         }
         // Form
         return $this->getEntriesJSON($options);
+    }
+
+    public function showPWA(Request $request)
+    {
+        if (!App::isLocal()) {
+            return $this->apiResponse->errorResponse(400, ['pwa-entries' => ['ec5_91']]);
+        }
+        return $this->show($request);
     }
 
     /**

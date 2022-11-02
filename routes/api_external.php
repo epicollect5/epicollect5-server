@@ -67,7 +67,7 @@ Route::group(['middleware' => ['throttle:600,1']], function () {
         // Debug pwa answer uniqueness checks, works only on localhost
         Route::post('api/pwa-unique-answer/{project_slug}', 'Api\Entries\Upload\UniquenessController@indexPWA');
 
-        //Media Controller for access to media files (even via the browser, this is why we are not using the internl endpoint)
+        //Media Controller for access to media files (even via the browser, this is why we are not using the internal endpoint)
         Route::get('api/media/{project_slug}/', 'Api\Project\MediaController@getMedia');
 
         // Temp Media
@@ -90,6 +90,9 @@ Route::group(['middleware' => ['throttle:600,1']], function () {
 
         // Entries for mobile app download
         Route::get('api/entries/{project_slug}', 'Api\Entries\View\EntriesController@show');
+
+        //Entries for pwa debug (entry edit)
+        Route::get('api/pwa-entries/{project_slug}', 'Api\Entries\View\EntriesController@showPWA');
 
         // Entry viewing for map
         Route::get(
@@ -121,13 +124,15 @@ Route::group(['middleware' => ['throttle:600,1']], function () {
             'Api\Entries\Upload\TempFileController@destroyPWA'
         );
 
-
         // Web answer uniqueness checks
         Route::post(
             'api/unique-answer/{project_slug}',
             'Api\Entries\Upload\UniquenessController@index'
         );
     });
+
+    //PWA geocoding proxy (debugging only)
+    Route::get('api/proxies/pwa-opencage/{search}', 'Api\Proxies\OpenCageController@fetchAPIPWA');
 
     // Project searching
     Route::get('api/projects/{name?}', 'Api\Projects\ProjectController@search');

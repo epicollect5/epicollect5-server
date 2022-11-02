@@ -4,7 +4,7 @@ namespace ec5\Http\Controllers\Api\Proxies;
 
 use ec5\Http\Controllers\Controller;
 use GuzzleHttp\Client;
-
+use App;
 //forward geocoding by Open Cage Data (free trial, 2500 request per day, 1 req/sec)
 //https://api.opencagedata.com/geocode/v1/json?q=PLACENAME&key=xxxxxxxxxx
 //https://geocoder.opencagedata.com/api
@@ -24,5 +24,13 @@ class OpenCageController extends Controller
 
         //return JSON by setting header
         return response($response_data)->header('Content-Type', 'application/vnd.api+json;');
+    }
+
+    public function fetchAPIPWA($search)
+    {
+        if (!App::isLocal()) {
+            return $this->apiResponse->errorResponse(400, ['pwa-opencage' => ['ec5_91']]);
+        }
+        return $this->fetchAPI($search);
     }
 }

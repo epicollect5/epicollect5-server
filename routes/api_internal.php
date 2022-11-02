@@ -42,7 +42,7 @@ Route::group(['middleware' => ['project.permissions']], function () {
     // Entry Media downloads
     Route::get('api/internal/download-media/{project_slug}', 'Api\Entries\DownloadController@media');
 
-    // Entries for table
+    // Entries for table and pwa
     Route::get('api/internal/entries/{project_slug}', 'Api\Entries\View\EntriesController@show');
 
     // Entries for map
@@ -102,7 +102,10 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('api/internal/exists/{project_slug}', 'Api\Projects\ProjectController@exists');
 
     // Proxies. 
+    //logacy, to be removed
     Route::get('api/proxies/opencage/{search}', 'Api\Proxies\OpenCageController@fetchAPI');
+    //currently used by pwa
+    Route::get('api/internal/proxies/opencage/{search}', 'Api\Proxies\OpenCageController@fetchAPI');
 });
 
 Route::group(['middleware' => 'auth.admin'], function () {
