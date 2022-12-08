@@ -11,6 +11,7 @@ Homestead.json
 wiki
 public/.htaccess
 /public/dataviewer/css/dataviewer.css.map
+/public/data-editor/app/**/*.map
 public/robots.txt
 storage/
 resources/assets/data-admin/node_modules/
