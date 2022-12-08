@@ -9,43 +9,38 @@
     <meta name="theme-color" content="#673C90">
     <link href='https://fonts.googleapis.com/css?family=Arimo' rel='stylesheet' type='text/css'>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.2/dist/leaflet.css"
+        integrity="sha256-sA+zWATbFveLLNqWO2gtiw3HL/lh1giY/Inf1BJ0z14=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.2/dist/leaflet.js"
+        integrity="sha256-o9N1jGDZrf5tS+Ft4gbIK7mYMipq9lqpVJ91xHSyKhg=" crossorigin=""></script>
+    <script defer data-domain="five.epicollect.net" src="https://analytics.cgps.dev/js/plausible.js"></script>
 
     <title>Epicollect5 - Data Editor</title>
 
     @include('favicon')
 
-    <link rel="stylesheet" type="text/css" href="{{ asset('css/vendor-site.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('css/site.css').'?'.ENV('RELEASE') }}">
-
-    <link rel="stylesheet" type="text/css" href="{{ asset('data-editor/vendor/css/leaflet.css').'?'.ENV('RELEASE') }}">
-
-
-    <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+    <link href="{{ asset('data-editor/app/assets/css/laravel-server-loader.css') . '?' . ENV('RELEASE') }}"
+        rel="stylesheet">
+    <link href="{{ asset('data-editor/app/assets/css/Control.FullScreen.css') . '?' . ENV('RELEASE') }}"
+        rel="stylesheet">
+    <link href="{{ asset('data-editor/app/css/vendor-ionic.css') . '?' . ENV('RELEASE') }}" rel="stylesheet">
+    <link href="{{ asset('data-editor/app/css/app.css') . '?' . ENV('RELEASE') }}" rel="stylesheet">
 
 </head>
 
+
+
+
 <body>
-
-    <div id="root"></div>
-
-    <script src="{{ asset('data-editor/data-editor.js').'?'.ENV('RELEASE') }}"></script>
-    @if(env('APP_ENV') == 'production')
-    <script>
-        (function (i, s, o, g, r, a, m) {
-            i['GoogleAnalyticsObject'] = r;
-            i[r] = i[r] || function () {
-                (i[r].q = i[r].q || []).push(arguments)
-            }, i[r].l = 1 * new Date();
-            a = s.createElement(o),
-                m = s.getElementsByTagName(o)[0];
-            a.async = 1;
-            a.src = g;
-            m.parentNode.insertBefore(a, m)
-        })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
-        ga('create', 'UA-16999594-7', 'auto');
-        ga('send', 'pageview');
+    <script defer="defer" src="{{ asset('data-editor/app/assets/js/Control.Fullscreen.js') . '?' . ENV('RELEASE') }}">
     </script>
-    @endif
+    <script defer="defer" src="{{ asset('data-editor/app/js/vendor-capacitor.js') . '?' . ENV('RELEASE') }}"></script>
+    <script defer="defer" src="{{ asset('data-editor/app/js/vendor-common.js') . '?' . ENV('RELEASE') }}"></script>
+    <script defer="defer" src="{{ asset('data-editor/app/js/vendor-ionic.js') . '?' . ENV('RELEASE') }}"></script>
+    <script defer="defer" src="{{ asset('data-editor/app/js/vendor-vue.js') . '?' . ENV('RELEASE') }}"></script>
+    <script defer="defer" src="{{ asset('data-editor/app/js/app.js') . '?' . ENV('RELEASE') }}"></script>
+    <div id="loader" class="loader-placeholder"></div>
+    <div id="app"></div>
 </body>
 
 </html>

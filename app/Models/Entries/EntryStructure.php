@@ -476,6 +476,8 @@ class EntryStructure
         // 2 - For COLLECTOR role, we check if the user ID matches
         // the ID of 0 (zero) is assigned when the entry 
         //is uploaded without authentication (from the mobile apps)
+        \Log::error('1 - $dbEntry->user_id ' . $dbEntry->user_id);
+        \Log::error('2 - $this->getUserId() ' . $this->getUserId());
         if ($dbEntry->user_id != 0 && $dbEntry->user_id == $this->getUserId()) {
             return true;
         }
@@ -483,6 +485,9 @@ class EntryStructure
         // Is the device id (non empty) the same (for non web platforms)?
         // 3 - on native apps, we can check the device unique identifier
         // if it matches, we perform the edit 
+        \Log::error('3 entry platform ' . $this->getPlatform());
+        \Log::error('4 entry device id ' . $this->getDeviceId());
+        \Log::error('5 db device is' . $dbEntry->device_id);
         if (
             $this->getPlatform() != Config::get('ec5Enums.web_platform') &&
             !empty($this->getDeviceId()) &&
@@ -499,6 +504,8 @@ class EntryStructure
 
         // 4 - For debugging PWA, allow edits without authentication
         if (App::isLocal()) {
+            \Log::error('6 entry platform ' . $this->getPlatform());
+            \Log::error('7 user id ' . $this->getUserId());
             if ($this->getPlatform() === Config::get('ec5Enums.web_platform')) {
                 if ($this->getUserId() === 0) {
                     return true;
