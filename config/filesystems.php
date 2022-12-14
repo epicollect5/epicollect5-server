@@ -64,6 +64,10 @@ return [
             'driver' => 'local',
             'root' => storage_path('app/temp/audio'),
         ],
+        'temp-subset' => [
+            'driver' => 'local',
+            'root' => storage_path('app/temp/subset'),
+        ],
 
         'local' => [
             'driver' => 'local',

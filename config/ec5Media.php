@@ -54,7 +54,8 @@ return [
         'audio',
         'temp-audio',
         'temp-photo',
-        'temp-video'
+        'temp-video',
+        'temp-subset'
     ],
     'entries_deletable' => [
         'entry_original',
@@ -64,6 +65,7 @@ return [
         'audio',
         'temp-audio',
         'temp-photo',
-        'temp-video'
+        'temp-video',
+        'temp-subset'
     ]
 ];
