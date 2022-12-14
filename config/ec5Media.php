@@ -51,13 +51,19 @@ return [
         'project_thumb',
         'project_mobile_logo',
         'video',
-        'audio'
+        'audio',
+        'temp-audio',
+        'temp-photo',
+        'temp-video'
     ],
     'entries_deletable' => [
         'entry_original',
         'entry_sidebar',
         'entry_thumb',
         'video',
-        'audio'
+        'audio',
+        'temp-audio',
+        'temp-photo',
+        'temp-video'
     ]
 ];

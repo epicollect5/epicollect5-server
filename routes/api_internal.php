@@ -42,10 +42,10 @@ Route::group(['middleware' => ['project.permissions']], function () {
     // Entry Media downloads
     Route::get('api/internal/download-media/{project_slug}', 'Api\Entries\DownloadController@media');
 
-    // Entries for table and pwa
+    // Entries for table and pwa (within Laravel)
     Route::get('api/internal/entries/{project_slug}', 'Api\Entries\View\EntriesController@show');
 
-    // Entries for map
+    // Entries for map (within Laravel)
     Route::get('api/internal/entries-locations/{project_slug}', 'Api\Entries\View\EntriesLocationsController@show');
 
     // Web entry uploads, for pwa and bulk upload from dataviewer

@@ -52,6 +52,18 @@ return [
             'driver' => 'local',
             'root' => storage_path('app/temp'),
         ],
+        'temp-photo' => [
+            'driver' => 'local',
+            'root' => storage_path('app/temp/photo'),
+        ],
+        'temp-audio' => [
+            'driver' => 'local',
+            'root' => storage_path('app/temp/audio'),
+        ],
+        'temp-video' => [
+            'driver' => 'local',
+            'root' => storage_path('app/temp/audio'),
+        ],
 
         'local' => [
             'driver' => 'local',
@@ -82,7 +94,6 @@ return [
             'driver' => 'local',
             'root' => storage_path('app/projects/project_mobile_logo'),
         ],
-
         'video' => [
             'driver' => 'local',
             'root' => storage_path('app/entries/video'),

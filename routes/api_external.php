@@ -87,11 +87,10 @@ Route::group(['middleware' => ['throttle:600,1']], function () {
         Route::get('api/json/media/{project_slug}', 'Api\Project\MediaController@getMedia');
         /* LEGACY END POINTS */
 
-
         // Entries for mobile app download
         Route::get('api/entries/{project_slug}', 'Api\Entries\View\EntriesController@show');
 
-        //Entries for pwa debug (entry edit)
+        //Entries for pwa debug (entry edit outside Laravel)
         Route::get('api/pwa-entries/{project_slug}', 'Api\Entries\View\EntriesController@showPWA');
 
         // Entry viewing for map
