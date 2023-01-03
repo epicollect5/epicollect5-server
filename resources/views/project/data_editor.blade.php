@@ -13,7 +13,6 @@
         integrity="sha256-sA+zWATbFveLLNqWO2gtiw3HL/lh1giY/Inf1BJ0z14=" crossorigin="" />
     <script src="https://unpkg.com/leaflet@1.9.2/dist/leaflet.js"
         integrity="sha256-o9N1jGDZrf5tS+Ft4gbIK7mYMipq9lqpVJ91xHSyKhg=" crossorigin=""></script>
-    <script defer data-domain="five.epicollect.net" src="https://analytics.cgps.dev/js/plausible.js"></script>
 
     <title>Epicollect5 - Data Editor</title>
 
@@ -39,6 +38,9 @@
     <script defer="defer" src="{{ asset('data-editor/app/js/vendor-ionic.js') . '?' . ENV('RELEASE') }}"></script>
     <script defer="defer" src="{{ asset('data-editor/app/js/vendor-vue.js') . '?' . ENV('RELEASE') }}"></script>
     <script defer="defer" src="{{ asset('data-editor/app/js/app.js') . '?' . ENV('RELEASE') }}"></script>
+    @if (env('APP_ENV') == 'production')
+        <script defer data-domain="five.epicollect.net" src="https://analytics.cgps.dev/js/plausible.js"></script>
+    @endif
     <div id="loader" class="loader-placeholder"></div>
     <div id="app"></div>
 </body>

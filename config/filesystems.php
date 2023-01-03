@@ -62,7 +62,7 @@ return [
         ],
         'temp-video' => [
             'driver' => 'local',
-            'root' => storage_path('app/temp/audio'),
+            'root' => storage_path('app/temp/video'),
         ],
         'temp-subset' => [
             'driver' => 'local',
