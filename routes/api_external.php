@@ -10,9 +10,16 @@
 */
 
 //request a code to be sent by email (mobile app)
-Route::group(['middleware' => ['throttle:5,30']], function () {
-    Route::post('api/login/passwordless/code', 'Api\Auth\PasswordlessController@sendCode');
-});
+if (config('env') === 'production') {
+    Route::group(['middleware' => ['throttle:5,30']], function () {
+        Route::post('api/login/passwordless/code', 'Api\Auth\PasswordlessController@sendCode');
+    });
+} else {
+    //no throttling for debugging
+    Route::group([], function () {
+        Route::post('api/login/passwordless/code', 'Api\Auth\PasswordlessController@sendCode');
+    });
+}
 
 //validate a login code (mobile app)
 //Route::group(['middleware' => ['throttle:5,1']], function () {
