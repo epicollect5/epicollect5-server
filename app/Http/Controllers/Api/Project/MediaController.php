@@ -17,15 +17,6 @@ use ec5\Libraries\Utilities\MediaStreaming;
 
 class MediaController extends ProjectControllerBase
 {
-    /*
-    |--------------------------------------------------------------------------
-    | View Entry Controller
-    |--------------------------------------------------------------------------
-    |
-    | This controller handles the export of entry data from the server
-    |
-    */
-
     /**
      * @param Request $request
      * @param ApiResponse $apiResponse
@@ -33,7 +24,7 @@ class MediaController extends ProjectControllerBase
      */
     public function getMedia(Request $request, ApiResponse $apiResponse, MediaValidator $mediaValidator)
     {
-        // todo get the uuid if the media is entry media
+        // todo: get the uuid if the media is entry media
         // so collectors can only view their own media
         // Check permissions
 

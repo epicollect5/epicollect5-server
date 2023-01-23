@@ -74,11 +74,12 @@ Route::group(['middleware' => ['throttle:600,1']], function () {
         // Debug pwa answer uniqueness checks, works only on localhost
         Route::post('api/pwa-unique-answer/{project_slug}', 'Api\Entries\Upload\UniquenessController@indexPWA');
 
-        //Media Controller for access to media files (even via the browser, this is why we are not using the internal endpoint)
+        //imp: here for legacy reasons, external pwa for PHE, not needed anymore.
+        //Media Controller for access to media files (even via the browser pwa, this is why we are not using the internal endpoint)
         Route::get('api/media/{project_slug}/', 'Api\Project\MediaController@getMedia');
-
         // Temp Media
         Route::get('api/temp-media/{project_slug}/', 'Api\Project\MediaController@getTempMedia');
+        //imp:
 
         /* LEGACY END POINTS */
         // Project
