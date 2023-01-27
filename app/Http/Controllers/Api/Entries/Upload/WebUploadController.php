@@ -91,18 +91,13 @@ class WebUploadController extends UploadControllerBase
         if (!$this->upload($uploadValidator)) {
             return $this->apiResponse->errorResponse(400, $this->errors);
         }
-
         //default response code for new entry
         $responseCode = 'ec5_237';
         $data = $this->apiRequest->getData();
         $projectId = $this->requestedProject->getId();
 
-        \Log::info('uploaded data', ['data' => $data]);
-
-
         //was an entry or branch entry upload?
         $uuid = $data['id'];
-
 
         if ($this->entryStructure->isBranch()) {
             $entryType = 'branch_entry';
@@ -273,7 +268,6 @@ class WebUploadController extends UploadControllerBase
         foreach ($files as $file) {
             switch ($file['type']) {
                 case config('ec5Strings.inputs_type.photo'):
-                    Log::error('here 1');
                     $fileType = $file['type'];
                     $filename = $file['filename'];
                     //delete from photo folders (all sizes)
@@ -292,7 +286,6 @@ class WebUploadController extends UploadControllerBase
                     $disk = Storage::disk('entry_thumb');
                     $rootFolder = $disk->getDriver()->getAdapter()->getPathPrefix();
                     $filePath = $rootFolder . $this->requestedProject->ref . '/' . $filename;
-                    Log::error('here 2 -> ' . $filePath);
                     try {
                         // Delete file from entry_original folder
                         if (!File::delete($filePath)) {
