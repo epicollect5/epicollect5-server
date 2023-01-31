@@ -4,16 +4,11 @@ namespace ec5\Http\Controllers\Api\Entries\View;
 
 use ec5\Http\Controllers\Api\ApiRequest;
 use ec5\Http\Controllers\Api\ApiResponse;
-
-use Illuminate\Support\Collection;
-
 use ec5\Http\Validation\Entries\Upload\RuleAnswers;
 use ec5\Http\Validation\Entries\Search\RuleQueryString;
-
 use ec5\Models\ProjectData\DataMappingHelper;
 use ec5\Repositories\QueryBuilder\Entry\Search\BranchEntryRepository;
 use ec5\Repositories\QueryBuilder\Entry\Search\EntryRepository;
-
 use Illuminate\Http\Request;
 use Config;
 use Log;

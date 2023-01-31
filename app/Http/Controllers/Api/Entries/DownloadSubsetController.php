@@ -9,27 +9,17 @@ use ec5\Http\Controllers\Api\Entries\View\EntrySearchControllerBase;
 use ec5\Http\Validation\Entries\Upload\RuleAnswers;
 use ec5\Http\Validation\Entries\Search\RuleQueryString;
 use ec5\Http\Validation\Entries\Download\RuleDownloadSubset as DownloadSubsetValidator;
-use Illuminate\Support\Collection;
-
-
 use ec5\Libraries\Utilities\Common;
 use ec5\Repositories\QueryBuilder\Entry\Search\BranchEntryRepository;
 use ec5\Repositories\QueryBuilder\Entry\Search\EntryRepository;
 use ec5\Repositories\QueryBuilder\Entry\ToFile\CreateRepository as FileCreateRepository;
 use ec5\Models\ProjectData\DataMappingHelper;
-
 use Illuminate\Http\Request;
-
-use ec5\Models\Eloquent\ProjectStructure;
 use ZipArchive;
-
 use Config;
 use Storage;
 use Cookie;
-use Illuminate\Support\Str;
 use League\Csv\Writer;
-use SplTempFileObject;
-use Auth;
 use Ramsey\Uuid\Uuid;
 
 
