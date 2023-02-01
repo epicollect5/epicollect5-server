@@ -11,9 +11,25 @@ use Symfony\Component\HttpFoundation\Request;
 use DB;
 use Storage;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Config;
+use ec5\Libraries\DirectoryGenerator\DirectoryGenerator;
+use ec5\Libraries\Utilities\Common;
+use Exception;
+use ZipArchive;
+use Cookie;
+use Illuminate\Support\Str;
+use League\Csv\Writer;
+use SplTempFileObject;
+use Auth;
+use Ramsey\Uuid\Uuid;
+use Log;
 
 class SearchToolsController extends Controller
 {
+
+    use DirectoryGenerator;
+
     public function findQuestionsWithTooManyJumps()
     {
         $wrongProjects = [];
@@ -302,6 +318,7 @@ class SearchToolsController extends Controller
     public function findprojectsWithTimeUniqueness()
     {
         $projects = DB::select('SELECT project_definition, project_id FROM project_structures');
+
         $projectsWithTimeUniqueness = [];
         $projectIds = [];
 
@@ -363,5 +380,209 @@ class SearchToolsController extends Controller
 
         //sort array
         return ['projects' => $projectsWithTimeUniqueness, 'project_ids' => $projectIds];
+    }
+
+    public function findProjectsStorageUsed()
+    {
+        $threshold = 10;
+        $projectsOverThreshold = DB::select('select temp.project_id, temp.name, temp.ref, temp.latest_entry, project_stats.total_entries from (SELECT entries.project_id, max(entries.created_at) as latest_entry, projects.ref as ref, projects.name as name from entries, projects where entries.project_id IN (SELECT project_stats.project_id as project_id from project_stats where project_stats.total_entries>' . $threshold . ') AND entries.project_id=projects.id group by entries.project_id) as temp INNER JOIN project_stats ON temp.project_id=project_stats.project_id ORDER BY project_stats.total_entries DESC');
+        $projectsUnderThreshold = DB::select('select temp.project_id, temp.name, temp.ref, temp.latest_entry, project_stats.total_entries from (SELECT entries.project_id, max(entries.created_at) as latest_entry, projects.ref as ref, projects.name as name from entries, projects where entries.project_id IN (SELECT project_stats.project_id as project_id from project_stats where project_stats.total_entries<=' . $threshold . ') AND entries.project_id=projects.id group by entries.project_id) as temp INNER JOIN project_stats ON temp.project_id=project_stats.project_id ORDER BY project_stats.total_entries DESC');
+        $projectsOverall = array_merge($projectsOverThreshold, $projectsUnderThreshold);
+
+        $mapProjectsToRefs = [];
+        foreach ($projectsOverall as $project) {
+            $mapProjectsToRefs[$project->ref] = [
+                'id' => $project->project_id,
+                'name' => $project->name,
+                'entries' => $project->total_entries,
+                'latest_entry' => Carbon::parse($project->latest_entry)->diffForHumans(),
+                'storage' => 0,
+                'audio' => 0,
+                'photo' => 0,
+                'video' => 0,
+            ];
+        }
+
+        $drivers = ['entry_original', 'audio', 'video'];
+        $storage = [];
+        // Loop each driver
+        foreach ($drivers as $driver) {
+
+            // Get disk, path prefix and all directories for this driver
+            $disk = Storage::disk($driver);
+            $projectRefs = $this->directoryGenerator($disk);
+
+            // Loop each media directory
+            $data = [];
+            foreach ($projectRefs as $projectRef) {
+                $size = 0;
+                foreach (Storage::disk($driver)->files($projectRef) as $file) {
+                    //size in bytes
+                    $size += Storage::disk($driver)->size($file);
+                }
+
+                try {
+                    $data = array_add($data, $projectRef . ' - ' . $mapProjectsToRefs[$projectRef], $size);
+                } catch (Exception $e) {
+                    Log::info('Project ref skipped',  ['error' => $e->getMessage()]);
+                    $data = array_add($data, $projectRef, $size);
+                }
+            }
+
+            //sort by storage in bytes, desc
+            uasort($data, function ($a, $b) {
+                if ($a == $b) {
+                    return 0;
+                }
+                return ($a > $b) ? -1 : 1;
+            });
+
+            foreach ($data as $ref => $size) {
+                try {
+                    $mapProjectsToRefs[$ref]['storage'] += $size;
+                } catch (Exception $e) {
+                    Log::info('Project ref skipped',  ['error' => $e->getMessage()]);
+                }
+                switch ($driver) {
+                    case 'entry_original':
+                        $mapProjectsToRefs[$ref]['photo'] = $data[$ref];
+                        break;
+                    case 'audio':
+                        $mapProjectsToRefs[$ref]['audio'] = $data[$ref];
+                        break;
+                    case 'video':
+                        $mapProjectsToRefs[$ref]['video'] = $data[$ref];
+                        break;
+                }
+            }
+
+            switch ($driver) {
+                case 'entry_original':
+                    $storage = array_add($storage, 'photo',  $data);
+                    break;
+                case 'audio':
+                    $storage = array_add($storage, $driver,  $data);
+                    break;
+                case 'video':
+                    $storage = array_add($storage, $driver,  $data);
+                    break;
+            }
+        }
+        //sort by total storage, desc
+        uasort($mapProjectsToRefs, function ($a, $b) {
+            if ($a['storage'] == $b['storage']) return 0;
+            return ($a['storage'] > $b['storage']) ? -1 : 1;
+        });
+
+        $storageUnderThreshold = 0;
+        foreach ($projectsUnderThreshold as $project) {
+            if (isset($mapProjectsToRefs[$project->ref])) {
+                $storageUnderThreshold += $mapProjectsToRefs[$project->ref]['storage'];
+            }
+        }
+        $storageOverThreshold = 0;
+        foreach ($projectsOverThreshold as $project) {
+            if (isset($mapProjectsToRefs[$project->ref])) {
+                $storageOverThreshold += $mapProjectsToRefs[$project->ref]['storage'];
+            }
+        }
+
+        $filename = 'storage-info.zip';
+        $filepath = $this->writeFileCsvZipped($mapProjectsToRefs, $storageUnderThreshold, $storageOverThreshold);
+
+        return response()->download($filepath, $filename)->deleteFileAfterSend(true);
+    }
+
+    private function writeFileCsvZipped($projects, $storageUnderThreshold, $storageOverThreshold)
+    {
+        $csvFilename = 'storage-info.csv';
+        $zipFilename =  'storage-info.zip';
+
+        $zip = new ZipArchive();
+
+        //create an empty csv file in the temp/subset/{$project_ref} folder
+        Storage::disk('debug')->put(
+            $csvFilename,
+            ''
+        );
+
+        //get handle of empty file just created
+        $CSVfilepath = Storage::disk('debug')
+            ->getAdapter()
+            ->getPathPrefix()
+            . $csvFilename;
+
+        $zipFilepath = Storage::disk('debug')
+            ->getAdapter()
+            ->getPathPrefix()
+            . $zipFilename;
+
+        //create empty zip file
+        $zip->open($zipFilepath, \ZipArchive::CREATE);
+
+        //write to file one row at a time to keep memory usage low
+        $csv = Writer::createFromPath($CSVfilepath, 'w+');
+
+        try {
+            //write headers
+            $csv->insertOne([
+                '',
+                '',
+                '',
+                '',
+                '',
+                '',
+                '',
+                '',
+                'total for projects over 10 entries',
+                'total for projects under 10 entries'
+            ]);
+            $csv->insertOne([
+                '',
+                '',
+                '',
+                '',
+                '',
+                '',
+                '',
+                '',
+                Common::formatBytes($storageUnderThreshold, 0),
+                Common::formatBytes($storageOverThreshold, 0)
+            ]);
+            $csv->insertOne([
+                'id',
+                'name',
+                'entries',
+                'latest entry uploaded',
+                'storage (total)',
+                'storage (audio)',
+                'storage (photo)',
+                'storage (video)'
+            ]);
+
+            foreach ($projects as $project) {
+                $csv->insertOne([
+                    $project['id'],
+                    $project['name'],
+                    $project['entries'],
+                    $project['latest_entry'],
+                    Common::formatBytes($project['storage']),
+                    Common::formatBytes($project['audio']),
+                    Common::formatBytes($project['photo']),
+                    Common::formatBytes($project['video']),
+                ]);
+            }
+        } catch (\Exception $e) {
+            // Error writing to file
+            Log::error($e->getMessage());
+        }
+
+        $zip->addFile($CSVfilepath,  $csvFilename);
+        $zip->close();
+
+        //delete temp csv file
+        Storage::disk('debug')->delete($csvFilename);
+
+        return $zipFilepath;
     }
 }
