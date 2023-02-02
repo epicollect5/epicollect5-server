@@ -385,9 +385,10 @@ class SearchToolsController extends Controller
     public function findProjectsStorageUsed()
     {
         $threshold = 10;
-        $projectsOverThreshold = DB::select('select temp.project_id, temp.name, temp.ref, temp.latest_entry, project_stats.total_entries from (SELECT entries.project_id, max(entries.created_at) as latest_entry, projects.ref as ref, projects.name as name from entries, projects where entries.project_id IN (SELECT project_stats.project_id as project_id from project_stats where project_stats.total_entries>' . $threshold . ') AND entries.project_id=projects.id group by entries.project_id) as temp INNER JOIN project_stats ON temp.project_id=project_stats.project_id ORDER BY project_stats.total_entries DESC');
-        $projectsUnderThreshold = DB::select('select temp.project_id, temp.name, temp.ref, temp.latest_entry, project_stats.total_entries from (SELECT entries.project_id, max(entries.created_at) as latest_entry, projects.ref as ref, projects.name as name from entries, projects where entries.project_id IN (SELECT project_stats.project_id as project_id from project_stats where project_stats.total_entries<=' . $threshold . ') AND entries.project_id=projects.id group by entries.project_id) as temp INNER JOIN project_stats ON temp.project_id=project_stats.project_id ORDER BY project_stats.total_entries DESC');
+        $projectsOverThreshold = DB::select('select temp.project_id, temp.name, temp.ref, temp.latest_entry, project_stats.total_entries, temp.branch_counts from (SELECT entries.project_id, ANY_VALUE(entries.branch_counts) as branch_counts, max(entries.created_at) as latest_entry, projects.ref as ref, projects.name as name from entries, projects where entries.project_id IN (SELECT project_stats.project_id as project_id from project_stats where project_stats.total_entries>' . $threshold . ') AND entries.project_id=projects.id group by entries.project_id) as temp INNER JOIN project_stats ON temp.project_id=project_stats.project_id ORDER BY project_stats.total_entries DESC');
+        $projectsUnderThreshold = DB::select('select temp.project_id, temp.name, temp.ref, temp.latest_entry, project_stats.total_entries, temp.branch_counts from (SELECT entries.project_id, ANY_VALUE(entries.branch_counts) as branch_counts,max(entries.created_at) as latest_entry, projects.ref as ref, projects.name as name from entries, projects where entries.project_id IN (SELECT project_stats.project_id as project_id from project_stats where project_stats.total_entries<=' . $threshold . ') AND entries.project_id=projects.id group by entries.project_id) as temp INNER JOIN project_stats ON temp.project_id=project_stats.project_id ORDER BY project_stats.total_entries DESC');
         $projectsOverall = array_merge($projectsOverThreshold, $projectsUnderThreshold);
+        $branchEntries =  collect(DB::select('select projects.id, projects.ref, max(branch_entries.uploaded_at) as latest_branch_entry from projects, branch_entries where projects.id=branch_entries.project_id group by projects.ref, projects.id'))->keyBy('ref');
 
         $mapProjectsToRefs = [];
         foreach ($projectsOverall as $project) {
@@ -395,13 +396,23 @@ class SearchToolsController extends Controller
                 'id' => $project->project_id,
                 'name' => $project->name,
                 'entries' => $project->total_entries,
+                'branch_entries' => $branchEntries[$project->ref]->branches_count ?? 0,
                 'latest_entry' => Carbon::parse($project->latest_entry)->diffForHumans(),
+                'latest_branch_entry' => '',
                 'storage' => 0,
                 'audio' => 0,
                 'photo' => 0,
                 'video' => 0,
             ];
+
+            if ($mapProjectsToRefs[$project->ref]['branch_entries'] > 0) {
+                $lastBranchEntryForHumans = Carbon::parse($branchEntries[$project->ref]->latest_branch_entry)->diffForHumans();
+                $mapProjectsToRefs[$project->ref]['latest_branch_entry'] =  $lastBranchEntryForHumans;
+            }
+
+            //'latest_branch_entry' => Carbon::parse($project->latest_entry)->diffForHumans(),
         }
+
 
         $drivers = ['entry_original', 'audio', 'video'];
         $storage = [];
@@ -534,10 +545,14 @@ class SearchToolsController extends Controller
                 '',
                 '',
                 '',
+                '',
+                '',
                 'total for projects over 10 entries',
                 'total for projects under 10 entries'
             ]);
             $csv->insertOne([
+                '',
+                '',
                 '',
                 '',
                 '',
@@ -554,6 +569,8 @@ class SearchToolsController extends Controller
                 'name',
                 'entries',
                 'latest entry uploaded',
+                'branches',
+                'latest branch uploaded',
                 'storage (total)',
                 'storage (audio)',
                 'storage (photo)',
@@ -566,6 +583,8 @@ class SearchToolsController extends Controller
                     $project['name'],
                     $project['entries'],
                     $project['latest_entry'],
+                    $project['branch_entries'],
+                    $project['latest_branch_entry'],
                     Common::formatBytes($project['storage']),
                     Common::formatBytes($project['audio']),
                     Common::formatBytes($project['photo']),
