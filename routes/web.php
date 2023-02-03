@@ -55,7 +55,8 @@ Route::group(['middleware' => ['guest']], function () {
 //});
 
 //Passwordless routes, 5 requests max every 30 minutes
-Route::group(['middleware' => ['guest', 'throttle:5,30']], function () {
+$throttle = config('APP_ENV') === 'local' ? 'throttle:5,30' : '';
+Route::group(['middleware' => ['guest', $throttle]], function () {
     // Route::post('login/passwordless/token', 'Web\Auth\PasswordlessController@sendLink')
     //     ->name('passwordless-token-web');
 
