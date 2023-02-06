@@ -2,29 +2,32 @@
 @section('title', trans('site.verification'))
 
 @section('content')
-
     @include('toast-success')
     @include('toast-error')
 
     <div class="container page-verification">
         <div class="row">
-            <h2 class="page-title">{{ trans('site.verification') }}</h2>
+            <h2 class="page-title">{{ trans('site.login') }}</h2>
             <div class="col-md-8 col-md-offset-2">
                 <div class="panel panel-default">
                     <div class="panel-body">
 
-                        <p class="well text-center">We sent a code to
-                            <strong>{{ $email }}.</strong><br />
+                        <p class="well text-center">
+                            We sent a code to
+                            <strong>{{ $email }}</strong><br />
                             Enter it below to login
                         </p>
 
-                        <form class="form-horizontal" method="POST" action="{{ route('verify-post') }}" autocomplete="off">
+                        <form class="form-horizontal" method="POST" action="{{ route('passwordless-auth-web') }}"
+                            autocomplete="off">
                             {{ csrf_field() }}
                             <div class="form-group">
                                 <label for="code" class="col-sm-4 control-label">Code</label>
                                 <div class="col-sm-4">
                                     <input type="text" class="form-control code-input" id="code" name="code"
                                         maxlength="6" minlength="6" required pattern="[0-9]+">
+                                    <input type="hidden" class="form-control email-input" id="email" name="email"
+                                        value="{{ $email }}">
                                 </div>
                             </div>
 
