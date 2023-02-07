@@ -216,7 +216,7 @@ class PasswordlessController extends AuthController
 
             DB::commit();
         } catch (PDOException $e) {
-            Log::error('Error generating passwordless access code via appi');
+            Log::error('Error generating passwordless access code web');
             DB::rollBack();
 
             return redirect()->back()->withErrors([
@@ -224,7 +224,7 @@ class PasswordlessController extends AuthController
                 'passwordless-request-code' => ['ec5_104']
             ]);
         } catch (Exception $e) {
-            Log::error('Error generating password access code via api');
+            Log::error('Error generating passwordless access code web');
             DB::rollBack();
 
             return redirect()->back()->withErrors([
@@ -243,7 +243,7 @@ class PasswordlessController extends AuthController
             ]);
         }
 
-        //send success response (email sent)
+        //send success response (email sent) and show validation screen
         return view(
             'auth.verification_passwordless',
             [
@@ -396,7 +396,9 @@ class PasswordlessController extends AuthController
         if ($userPasswordless === null) {
             Log::error('Error validating passworless code', ['error' => 'Email does not exist']);
             // Redirect back if errors
-            return redirect()->back()->withErrors(['passwordless-api' => ['ec5_378']]);
+            return view('auth.verification_passwordless', [
+                'email' => $email
+            ])->withErrors(['ec5_378']);
         }
 
         //check if the code is valid
