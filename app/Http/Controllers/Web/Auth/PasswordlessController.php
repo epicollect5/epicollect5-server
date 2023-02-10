@@ -202,15 +202,15 @@ class PasswordlessController extends AuthController
         try {
             DB::beginTransaction();
             //remove any code for this user (if found)
-            $userPasswordless = UserPasswordlessApi::where('email', $email);
+            $userPasswordless = UserPasswordlessWeb::where('email', $email);
             if ($userPasswordless !== null) {
                 $userPasswordless->delete();
             }
 
             //add token to db
-            $userPasswordless = new UserPasswordlessApi();
+            $userPasswordless = new UserPasswordlessWeb();
             $userPasswordless->email = $email;
-            $userPasswordless->code = bcrypt($code, ['rounds' => env('BCRYPT_ROUNDS')]);
+            $userPasswordless->token = bcrypt($code, ['rounds' => env('BCRYPT_ROUNDS')]);
             $userPasswordless->expires_at = Carbon::now()->addSeconds($tokenExpiresAt)->toDateTimeString();
             $userPasswordless->save();
 
@@ -284,7 +284,7 @@ class PasswordlessController extends AuthController
 
         //check if the token has not expired
         if (!$userPasswordless->isValidToken($decoded)) {
-            Log::error('Error validating jwt-forgot token', ['error' => 'Token not valid']);
+            Log::error('Error validating passwordless token', ['error' => 'Token not valid']);
             return redirect()->route('home')->withErrors(['jwt-passwordless' => ['ec5_373']]);
         }
 
@@ -389,8 +389,12 @@ class PasswordlessController extends AuthController
         $code = $inputs['code'];
         $email = $inputs['email'];
 
-        //get token from db for comparison
-        $userPasswordless = UserPasswordlessApi::where('email', $email)->first();
+        //get token from db for comparison (passwordless web table)
+        //imp: we use the web table for legacy reasons and also to avoid
+        //imp: issues when users are logging in to both the web and the mobile app
+        //imp: at the same time. Only one token can exist at any given time
+        //imp: so the last request would remove the token from the first one
+        $userPasswordless = UserPasswordlessWeb::where('email', $email)->first();
 
         //Does the email exists?
         if ($userPasswordless === null) {
@@ -404,6 +408,12 @@ class PasswordlessController extends AuthController
         //check if the code is valid
         if (!$userPasswordless->isValidCode($code)) {
             Log::error('Error validating passworless code', ['error' => 'Code not valid']);
+            //after too many attempts, redirect to login page
+            if ($userPasswordless->attempts <= 0) {
+                $userPasswordless->delete();
+                return redirect()->route('login')->withErrors(['ec5_378']);
+            }
+            //invalid code but still some attempts left, show same view
             return view('auth.verification_passwordless', [
                 'email' => $email
             ])->withErrors(['ec5_378']);
