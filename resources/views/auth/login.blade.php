@@ -27,7 +27,11 @@
 
                         @if (in_array('passwordless', $authMethods))
                             <div class="row">
-                                <div class='hr-or'></div>
+                                {{-- Show OR divider only if a social login is enabled --}}
+                                @if (in_array('apple', $authMethods) || in_array('google', $authMethods))
+                                    <div class='hr-or'></div>
+                                @endif
+
                                 <div class="col-xs-12 col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
                                     <span class="hidden gcaptcha">
                                         {{ env('GOOGLE_RECAPTCHA_SITE_KEY') }}
