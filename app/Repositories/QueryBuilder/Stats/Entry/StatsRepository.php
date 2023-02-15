@@ -98,17 +98,16 @@ class StatsRepository extends Base
      */
     public function updateEntryStats(Project $project)
     {
+        //find total entries per each form
         $stats = DB::table($this->entryTable)
-            ->select(DB::raw("count(*) as total_entries, min(created_at) as first_entry_created, max(created_at) as last_entry_created, min(uploaded_at) as first_entry_uploaded, max(uploaded_at) as last_entry_uploaded, form_ref"))
+            ->select(DB::raw("count(*) as total_entries, min(created_at) as first_entry_created, max(created_at) as last_entry_created, form_ref"))
             ->where('project_id', '=', $project->getId())
             ->groupBy('form_ref')
             ->get();
-
         $statsCount = [];
         $totalCount = 0;
 
-        Log::error('Updating project stats (updateEntryStats)');
-
+        //loop each form and get the overall total
         foreach ($stats as $stat) {
 
             $firstEntryCreated = $stat->first_entry_created;
@@ -122,6 +121,7 @@ class StatsRepository extends Base
             ];
         }
 
+        //update totals on project stats table 
         DB::table($this->projectStatsTable)
             ->where('project_id', '=', $project->getId())
             ->update(['form_counts' => json_encode($statsCount), 'total_entries' => $totalCount]);

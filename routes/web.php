@@ -55,9 +55,21 @@ Route::group(['middleware' => ['guest']], function () {
 //});
 
 //Passwordless routes, 5 requests max every 30 minutes
-Route::group(['middleware' => ['guest', 'throttle:5,30']], function () {
-    Route::post('login/passwordless/token', 'Web\Auth\PasswordlessController@sendLink')
+$passwordlessMiddleware = App::isLocal() ? ['guest'] : ['guest', 'throttle:5,30'];
+Route::group(['middleware' => $passwordlessMiddleware], function () use ($passwordlessMiddleware) {
+    // \Log::info(print_r($passwordlessMiddleware));
+    // Route::post('login/passwordless/token', 'Web\Auth\PasswordlessController@sendLink')
+    //     ->name('passwordless-token-web');
+
+    Route::post('login/passwordless/token', 'Web\Auth\PasswordlessController@sendCode')
         ->name('passwordless-token-web');
+
+    // Route::get('login/passwordless/verification', 'Web\Auth\PasswordlessController@show')
+    //     ->name('passwordless-verification');
+
+    Route::post('login/passwordless/verification', 'Web\Auth\PasswordlessController@authenticateWithCode')
+        ->name('passwordless-auth-web');
+
     Route::get('login/passwordless/auth/{token}', 'Web\Auth\PasswordlessController@authenticate')
         ->name('passwordless-authenticate-web');
 });
