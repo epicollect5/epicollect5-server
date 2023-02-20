@@ -107,7 +107,9 @@ Route::group(['middleware' => 'auth.admin'], function () {
     Route::get('admin/tools/opcache', 'Web\Admin\Tools\PHPToolsController@resetOpcache');
     Route::get('admin/tools/projects-stats', 'Web\Admin\Tools\PHPToolsController@showProjectsStats');
 
-    Route::get('admin/tools/storage', 'Web\Admin\Tools\SearchToolsController@findProjectsStorageUsed');
+    Route::get('admin/tools/storage', 'Web\Admin\Tools\SearchToolsController@findProjectsStorageUsedDefault');
+
+    Route::get('admin/tools/storage/{threshold}', 'Web\Admin\Tools\SearchToolsController@findProjectsStorageUsed');
 
 
     Route::get('admin/tools/project-structures/1', 'Web\Admin\Tools\SearchToolsController@findQuestionsWithTooManyJumps');
