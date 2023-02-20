@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 
 namespace ec5\Http\Controllers\Api\Entries\View;
 
@@ -16,7 +17,7 @@ use ec5\Repositories\QueryBuilder\Entry\Search\BranchEntryRepository;
 use ec5\Repositories\QueryBuilder\Entry\Search\EntryRepository;
 
 use Config;
-
+use Log;
 
 abstract class EntrySearchControllerBase extends ProjectApiControllerBase
 {
@@ -77,7 +78,6 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
         $this->branchEntryRepository = $branchEntryRepository;
         $this->ruleAnswers = $ruleAnswers;
         $this->ruleQueryString = $ruleQueryString;
-
     }
 
     /**
@@ -87,6 +87,7 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
      */
     protected function getRequestOptions(Request $request, $perPage)
     {
+
         $options = [];
         foreach ($this->allowedSearchKeys as $k) {
             $options[$k] = $request->get($k) ?? '';
@@ -106,12 +107,12 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
 
         // Check user project role
         // Collectors can only view their own data in private projects
-        if ($this->requestedProject->isPrivate()
+        if (
+            $this->requestedProject->isPrivate()
             && $this->requestedProjectRole->isCollector()
         ) {
             $options['user_id'] = $this->requestedProjectRole->getUser()->id;
         }
-
 
         // Set default form_ref (first form), if not supplied
         if (empty($options['form_ref'])) {
@@ -129,7 +130,6 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
         $options['headers'] = !empty($options['headers']) ? $options['headers'] : Config::get('ec5Enums.search_data_entries_defaults.headers');
 
         return $options;
-
     }
 
     // Common Validation
@@ -138,7 +138,7 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
      * @param array $options - Request options
      * @return bool
      */
-    protected function validateOptions(array $options) : bool
+    protected function validateOptions(array $options): bool
     {
 
         $this->ruleQueryString->validate($options);
@@ -165,7 +165,6 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
         //$value2 = $options['search_two'];
 
         return $this->validateValue($inputRef, $value);
-
     }
 
     /**
@@ -176,7 +175,7 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
      * @param string $value
      * @return bool
      */
-    protected function validateValue(string $inputRef, string $value) : bool
+    protected function validateValue(string $inputRef, string $value): bool
     {
 
         $input = $this->requestedProject->getProjectExtra()->getInputData($inputRef);
@@ -217,18 +216,18 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
             }
 
             // Search based on input ref
-//        else if (!empty($options['input_ref'])) {
-//
-//            // Search based on search value
-//            if (!empty($options['search'])) {
-//                return $this->entryRepository->searchAnswersForInputWithValue(
-//                    $this->requestedProject->getId(),
-//                    $options,
-//                    $columns
-//                );
-//            }
-//
-//        }
+            //        else if (!empty($options['input_ref'])) {
+            //
+            //            // Search based on search value
+            //            if (!empty($options['search'])) {
+            //                return $this->entryRepository->searchAnswersForInputWithValue(
+            //                    $this->requestedProject->getId(),
+            //                    $options,
+            //                    $columns
+            //                );
+            //            }
+            //
+            //        }
             else {
                 // All Form Entries
                 $query = $this->entryRepository->getEntries(
@@ -270,18 +269,18 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
             }
 
             // Search based on input ref
-//        else if (!empty($options['input_ref'])) {
-//
-//            // Search based on search value
-//            if (!empty($options['search'])) {
-//                return $this->branchEntryRepository->searchAnswersForInputWithValue(
-//                    $this->requestedProject->getId(),
-//                    $options,
-//                    $columns
-//                );
-//            }
-//
-//        }
+            //        else if (!empty($options['input_ref'])) {
+            //
+            //            // Search based on search value
+            //            if (!empty($options['search'])) {
+            //                return $this->branchEntryRepository->searchAnswersForInputWithValue(
+            //                    $this->requestedProject->getId(),
+            //                    $options,
+            //                    $columns
+            //                );
+            //            }
+            //
+            //        }
 
             else {
                 // All Branch Entries for Branch Ref
@@ -296,7 +295,6 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
         // todo: do we ever want all branches for a form, regardless or branch ref or owner_uuid?
 
         return $query;
-
     }
 
     /**
@@ -337,11 +335,14 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
      * @param null $oldest
      * @return array
      */
-    protected function getMeta(LengthAwarePaginator $entryData, $newest = null, $oldest = null) : array
+    protected function getMeta(LengthAwarePaginator $entryData, $newest = null, $oldest = null): array
     {
+
         $meta = [
             'total' => $entryData->total(),
-            'per_page' => $entryData->perPage(),
+            //imp: cast to int for consistency:
+            //imp: sometimes the paginator gives a string back, go figure
+            'per_page' => (int) $entryData->perPage(),
             'current_page' => $entryData->currentPage(),
             'last_page' => $entryData->lastPage(),
             // todo - duplication here, remove when dataviewer is rewritten

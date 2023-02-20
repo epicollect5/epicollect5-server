@@ -647,6 +647,14 @@ class DataMappingHelper
             case 'audio':
                 $parsedAnswer = $this->getMediaUrl($type, 'audio', $answer);
                 break;
+            case 'integer':
+                //force cast to int
+                $parsedAnswer = ($answer === '') ? '' : (int) $answer;
+                break;
+            case 'decimal':
+                //force cast to float (iOS decimals comes as strings)
+                $parsedAnswer = ($answer === '') ? '' : floatval($answer);
+                break;
             default:
                 $parsedAnswer = $answer;
                 break;
