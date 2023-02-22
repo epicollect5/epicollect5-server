@@ -388,6 +388,7 @@ class SearchToolsController extends Controller
         \LOG::info('Usage: ' . Common::formatBytes(memory_get_usage()));
         \LOG::info('Peak Usage: ' . Common::formatBytes(memory_get_peak_usage()));
         $thresholdInt = (int)$threshold;
+        $costXGB = floatval(env('COST_X_GB', 0.10));
 
         $projectIDsOver = DB::table('project_stats')
             ->where('total_entries', '>', $thresholdInt)
@@ -506,7 +507,7 @@ class SearchToolsController extends Controller
 
         //dd($projectIDsOver,  $projectIDsUnder, $entriesOver->get(),  $entriesUnder->get());
 
-        $entriesOver->chunk(500, function ($chunkedEntries) use ($csvOver, &$storageOverall) {
+        $entriesOver->chunk(500, function ($chunkedEntries) use ($costXGB, $csvOver, &$storageOverall) {
             foreach ($chunkedEntries as $chunkedEntry) {
 
                 //imp: json_decode($i, true) to get array not stdClass
@@ -610,13 +611,13 @@ class SearchToolsController extends Controller
                     Common::formatBytes($project['photo']),
                     Common::formatBytes($project['video']),
                     $project['storage'],
-                    '$' . round(((($project['storage']) / 1000000000)) * 0.10, 3)
+                    '$' . round(((($project['storage']) / 1000000000)) * $costXGB, 3)
                 ]);
             }
         });
 
         //storage for projects under the threshold
-        $entriesUnder->chunk(500, function ($chunkedEntries) use ($csvUnder,  &$storageOverall) {
+        $entriesUnder->chunk(500, function ($chunkedEntries) use ($costXGB, $csvUnder,  &$storageOverall) {
             foreach ($chunkedEntries as $chunkedEntry) {
 
                 //imp: json_decode($i, true) to get array not stdClass
@@ -725,13 +726,13 @@ class SearchToolsController extends Controller
                     Common::formatBytes($project['photo']),
                     Common::formatBytes($project['video']),
                     $project['storage'],
-                    '$' . round(((($project['storage']) / 1000000000)) * 0.10, 3)
+                    '$' . round(((($project['storage']) / 1000000000)) * $costXGB, 3)
                 ]);
             }
         });
 
-        $costUnder =  '$' . round(((($storageOverall['under']) / 1000000000)) * 0.10, 3);
-        $costOver =  '$' . round(((($storageOverall['over']) / 1000000000)) * 0.10, 3);
+        $costUnder =  '$' . round(((($storageOverall['under']) / 1000000000)) * $costXGB, 3);
+        $costOver =  '$' . round(((($storageOverall['over']) / 1000000000)) * $costXGB, 3);
         $csvOverall->insertOne([
             Common::formatBytes($storageOverall['under'] + $storageOverall['over']),
             Common::formatBytes($storageOverall['under']),
