@@ -2,8 +2,9 @@
 
 namespace ec5\Http\Controllers\Web\Admin\Tools;
 
+use Carbon\CarbonInterval;
 use ec5\Http\Controllers\Controller;
-
+use ec5\Models\Eloquent\StorageStats;
 use ec5\Models\Eloquent\ProjectStructure;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\Entry;
@@ -24,6 +25,8 @@ use SplTempFileObject;
 use Auth;
 use Ramsey\Uuid\Uuid;
 use Log;
+use RecursiveIteratorIterator;
+use RecursiveDirectoryIterator;
 
 class SearchToolsController extends Controller
 {
@@ -380,11 +383,12 @@ class SearchToolsController extends Controller
 
     public function findProjectsStorageUsedDefault()
     {
-        $this->findProjectsStorageUsed(10);
+        return  $this->findProjectsStorageUsed(10);
     }
 
     public function findProjectsStorageUsed($threshold)
     {
+        $start = Carbon::now()->getTimestamp();
         \LOG::info('Usage: ' . Common::formatBytes(memory_get_usage()));
         \LOG::info('Peak Usage: ' . Common::formatBytes(memory_get_peak_usage()));
         $thresholdInt = (int)$threshold;
@@ -746,10 +750,227 @@ class SearchToolsController extends Controller
         \LOG::info('Usage: ' . Common::formatBytes(memory_get_usage()));
         \LOG::info('Peak Usage: ' . Common::formatBytes(memory_get_peak_usage()));
 
+        $duration = Carbon::now()->getTimestamp() - $start;
+        $duration = $duration > 0 ? $duration : 1;
 
-        $filepath = $this->createZipArchive();
+        return [
+            'executed in' => CarbonInterval::seconds($duration)->cascade()->forHumans(),
+        ];
 
-        return response()->download($filepath)->deleteFileAfterSend(true);
+
+        // $filepath = $this->createZipArchive();
+
+        // return response()->download($filepath)->deleteFileAfterSend(true);
+    }
+
+    public function  findProjectsStorageUsedTableDefault()
+    {
+        return $this->findProjectsStorageUsedTable(null);
+    }
+
+    public function findProjectsStorageUsedTable($year)
+    {
+        $start = Carbon::now()->getTimestamp();
+        //todo: validate year
+        if ($year) {
+            $projectIDs = DB::table('projects')
+                ->whereYear('created_at', $year)
+                ->pluck('id')
+                ->toArray();
+            $entries = DB::table('entries')
+                ->join('project_stats', 'entries.project_id', '=', 'project_stats.project_id')
+                ->whereIn('entries.project_id', $projectIDs)
+                ->select('entries.project_id', 'entries.branch_counts', DB::raw('MAX(entries.uploaded_at) as latest_entry'), 'project_stats.total_entries')
+                ->groupBy('entries.project_id')
+                ->orderBy('project_stats.total_entries', 'DESC');
+        } else {
+            $entries = DB::table('entries')
+                ->join('project_stats', 'entries.project_id', '=', 'project_stats.project_id')
+                ->select('entries.project_id', 'entries.branch_counts', DB::raw('MAX(entries.uploaded_at) as latest_entry'), 'project_stats.total_entries')
+                ->groupBy('entries.project_id')
+                ->orderBy('project_stats.total_entries', 'DESC');
+        }
+
+        $projectsMined = 0;
+        $projectsUpdated = 0;
+        $projectsSkipped = 0;
+        $entries->chunk(5000, function ($chunkedEntries) use (&$projectsMined, &$projectsUpdated, &$projectsSkipped) {
+            foreach ($chunkedEntries as $chunkedEntry) {
+
+                $projectsMined++;
+                //imp: json_decode($i, true) to get array not stdClass
+                $createStorageRow = false;
+                $updateStorageRow = false;
+                $branchCounts = json_decode($chunkedEntry->branch_counts, true);
+                $branchLatest = '';
+                $files = 0;
+                //skip empty arrays (i.e. no branches)
+                if (is_array($branchCounts)) {
+                    if (sizeOf($branchCounts) > 0) {
+                        //skip if no branch entries were collected
+                        if (array_sum($branchCounts) > 0) {
+                            //get latest branch entry
+                            $branchLatest = DB::table('branch_entries')
+                                ->select(DB::raw('MAX(uploaded_at) as latest_branch_entry'))
+                                ->where('project_id', '=', $chunkedEntry->project_id)->value('latest_branch_entry');
+                        }
+                    }
+                }
+                //get project name and ref (single db query to use less RAM)
+                $project = DB::table('projects')->where('id', '=', $chunkedEntry->project_id)->pluck('name', 'ref')->toArray();
+                $projectRef = array_keys($project)[0];
+                $projectName = $project[$projectRef];
+                $drivers = ['entry_original', 'audio', 'video'];
+                $storage = [];
+
+                //check if the storage stats for this project are already up-to-date
+                $projectStorage = StorageStats::where('project_id', $chunkedEntry->project_id)->first();
+                if ($projectStorage === null) {
+                    $projectsUpdated++;
+                    $projectStorage = new StorageStats();
+                    $createStorageRow = true;
+                } else {
+                    //does it need to be updated?
+                    if ($projectStorage->entries !== $chunkedEntry->total_entries) {
+                        if (!$updateStorageRow) {
+                            $updateStorageRow = true;
+                            $projectsUpdated++;
+                        }
+                    }
+
+                    if (is_array($branchCounts)) {
+                        if (sizeOf($branchCounts) > 0) {
+                            //skip if no branch entries were collected
+                            if (array_sum($branchCounts) !== $projectStorage->branches) {
+                                if (!$updateStorageRow) {
+                                    $updateStorageRow = true;
+                                    $projectsUpdated++;
+                                }
+                            }
+                        }
+                    }
+
+                    if ($projectStorage->last_entry_uploaded !== $chunkedEntry->latest_entry) {
+                        if (!$updateStorageRow) {
+                            $updateStorageRow = true;
+                            $projectsUpdated++;
+                        }
+                    }
+
+                    if ($branchLatest) {
+                        if ($projectStorage->last_branch_uploaded !== $branchLatest) {
+                            if (!$updateStorageRow) {
+                                $updateStorageRow = true;
+                                $projectsUpdated++;
+                            }
+                        }
+                    }
+                }
+
+                // Loop each driver
+                if ($createStorageRow || $updateStorageRow) {
+                    foreach ($drivers as $driver) {
+                        // Get disk, path prefix and all directories for this driver
+                        $disk = Storage::disk($driver);
+                        // Loop each media directory
+                        $data = [];
+                        $size = 0;
+
+                        //tested 123 seconds
+                        // try {
+                        //     $lookupDir =  $disk->getAdapter()->getPathPrefix() . $projectRef;
+                        //     $size = $this->GetDirSizeBytes($lookupDir);
+                        // } catch (Exception $e) {
+                        //     Log::error($e->getMessage());
+                        // }
+
+                        //tested 53 seconds
+                        // try {
+                        //     $lookupDir =  $disk->getAdapter()->getPathPrefix() . $projectRef;
+                        //     $size = $this->dirSize($lookupDir);
+                        //     $files++;
+                        // } catch (Exception $e) {
+                        //     //not found, no media, skip
+                        // }
+
+                        //tested 51 seconds
+                        foreach ($disk->files($projectRef) as $file) {
+                            //size in bytes
+                            $size += Storage::disk($driver)->size($file);
+                            $files++;
+                        }
+                        try {
+                            $data = array_add($data, $projectRef, $size);
+                        } catch (Exception $e) {
+                            $data = array_add($data, $projectRef, $size);
+                        }
+
+                        foreach ($data as $ref => $size) {
+                            try {
+                                if (!array_key_exists('storage', $project)) {
+                                    $project['storage'] = 0;
+                                }
+                                $project['storage'] += $size;
+                            } catch (Exception $e) {
+                                // Log::info('No media files for ' . $projectName,  ['error' => $e->getMessage()]);
+                            }
+                            switch ($driver) {
+                                case 'entry_original':
+                                    $project['photo'] = $data[$ref];
+                                    break;
+                                case 'audio':
+                                    $project['audio'] = $data[$ref];
+                                    break;
+                                case 'video':
+                                    $project['video'] = $data[$ref];
+                                    break;
+                            }
+                        }
+
+                        switch ($driver) {
+                            case 'entry_original':
+                                $storage = array_add($storage, 'photo',  $data);
+                                break;
+                            case 'audio':
+                                $storage = array_add($storage, $driver,  $data);
+                                break;
+                            case 'video':
+                                $storage = array_add($storage, $driver,  $data);
+                                break;
+                        }
+                    }
+
+                    $projectStorage->project_id = $chunkedEntry->project_id;
+                    $projectStorage->project_ref = $projectRef;
+                    $projectStorage->project_name = $projectName;
+                    $projectStorage->files = $files;
+                    $projectStorage->entries = $chunkedEntry->total_entries;
+                    $projectStorage->branches = is_array($branchCounts) ? array_sum($branchCounts) : 0;
+                    $projectStorage->last_entry_uploaded = $chunkedEntry->latest_entry ?? null;
+                    $projectStorage->last_branch_uploaded =  $branchLatest ?? null;
+                    $projectStorage->audio_bytes = $project['audio'] ?? 0;
+                    $projectStorage->photo_bytes = $project['photo'] ?? 0;
+                    $projectStorage->video_bytes = $project['video'] ?? 0;
+                    $projectStorage->overall_bytes = $project['storage'] ?? 0;
+                    $projectStorage->save();
+                }
+
+                if (!$createStorageRow && !$updateStorageRow) {
+                    $projectsSkipped++;
+                }
+            }
+        });
+
+        $duration = Carbon::now()->getTimestamp() - $start;
+        $duration = $duration > 0 ? $duration : 1;
+
+        return [
+            'executed in' => CarbonInterval::seconds($duration)->cascade()->forHumans(),
+            'year' => $year ?? 'lifetime',
+            'mined' =>  $projectsMined,
+            'updated' => $projectsUpdated,
+            'skipped' => $projectsSkipped
+        ];
     }
 
     private function createZipArchive()
@@ -782,5 +1003,22 @@ class SearchToolsController extends Controller
         }
 
         return $zipFilepath;
+    }
+    function dirSize($directory)
+    {
+        $size = 0;
+        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory)) as $file) {
+            $size += $file->getSize();
+        }
+        return $size;
+    }
+
+    private function GetDirSizeBytes($absolutePath)
+    {
+        $res = exec("du -b -s $absolutePath");
+        if (preg_match("/\d+/", $res, $bytes)) {
+            return $bytes[0];
+        }
+        return -1;
     }
 }

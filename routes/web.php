@@ -108,6 +108,9 @@ Route::group(['middleware' => 'auth.admin'], function () {
     Route::get('admin/tools/projects-stats', 'Web\Admin\Tools\PHPToolsController@showProjectsStats');
 
     Route::get('admin/tools/storage', 'Web\Admin\Tools\SearchToolsController@findProjectsStorageUsedDefault');
+    Route::get('admin/tools/storage-table', 'Web\Admin\Tools\SearchToolsController@findProjectsStorageUsedTableDefault');
+    Route::get('admin/tools/storage-table/{year}', 'Web\Admin\Tools\SearchToolsController@findProjectsStorageUsedTable');
+
 
     Route::get('admin/tools/storage/{threshold}', 'Web\Admin\Tools\SearchToolsController@findProjectsStorageUsed');
 
