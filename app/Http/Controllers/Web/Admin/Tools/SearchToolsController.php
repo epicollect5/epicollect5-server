@@ -824,12 +824,12 @@ class SearchToolsController extends Controller
                 $storage = [];
 
                 //check if the storage stats for this project are already up-to-date
-                $projectStorage = StorageStats::where('project_id', $chunkedEntry->project_id)->first();
-                if ($projectStorage === null) {
+                if (!StorageStats::where('project_id', $chunkedEntry->project_id)->exists()) {
                     $projectsUpdated++;
                     $projectStorage = new StorageStats();
                     $createStorageRow = true;
                 } else {
+                    $projectStorage = StorageStats::where('project_id', $chunkedEntry->project_id)->first();
                     //does it need to be updated?
                     if ($projectStorage->entries !== $chunkedEntry->total_entries) {
                         if (!$updateStorageRow) {
