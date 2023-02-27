@@ -533,7 +533,15 @@ class SearchToolsController extends Controller
                 $project = DB::table('projects')->where('id', '=', $chunkedEntry->project_id)->pluck('name', 'ref')->toArray();
                 $projectRef = array_keys($project)[0];
                 $projectName = $project[$projectRef];
-                $drivers = ['entry_original', 'audio', 'video'];
+                $drivers = [
+                    'entry_original',
+                    'entry_sidebar',
+                    'entry_thumb',
+                    'project_thumb',
+                    'project_mobile_logo',
+                    'video',
+                    'audio'
+                ];
                 $storage = [];
 
                 // Log::info('Project name' .  $projectName);
@@ -820,8 +828,15 @@ class SearchToolsController extends Controller
                 $project = DB::table('projects')->where('id', '=', $chunkedEntry->project_id)->pluck('name', 'ref')->toArray();
                 $projectRef = array_keys($project)[0];
                 $projectName = $project[$projectRef];
-                $drivers = ['entry_original', 'audio', 'video'];
-                $storage = [];
+                $drivers = [
+                    'entry_original',
+                    'entry_sidebar',
+                    'entry_thumb',
+                    'project_thumb',
+                    'project_mobile_logo',
+                    'video',
+                    'audio'
+                ];
 
                 //check if the storage stats for this project are already up-to-date
                 if (!StorageStats::where('project_id', $chunkedEntry->project_id)->exists()) {
@@ -876,24 +891,7 @@ class SearchToolsController extends Controller
                         $data = [];
                         $size = 0;
 
-                        //tested 123 seconds
-                        // try {
-                        //     $lookupDir =  $disk->getAdapter()->getPathPrefix() . $projectRef;
-                        //     $size = $this->GetDirSizeBytes($lookupDir);
-                        // } catch (Exception $e) {
-                        //     Log::error($e->getMessage());
-                        // }
-
-                        //tested 53 seconds
-                        // try {
-                        //     $lookupDir =  $disk->getAdapter()->getPathPrefix() . $projectRef;
-                        //     $size = $this->dirSize($lookupDir);
-                        //     $files++;
-                        // } catch (Exception $e) {
-                        //     //not found, no media, skip
-                        // }
-
-                        //tested 51 seconds
+                        //still the fastest way
                         foreach ($disk->files($projectRef) as $file) {
                             //size in bytes
                             $size += Storage::disk($driver)->size($file);
@@ -914,9 +912,22 @@ class SearchToolsController extends Controller
                             } catch (Exception $e) {
                                 // Log::info('No media files for ' . $projectName,  ['error' => $e->getMessage()]);
                             }
+
                             switch ($driver) {
                                 case 'entry_original':
                                     $project['photo'] = $data[$ref];
+                                    break;
+                                case 'entry_sidebar':
+                                    $project['photo'] += $data[$ref];
+                                    break;
+                                case 'entry_thumb':
+                                    $project['photo'] += $data[$ref];
+                                    break;
+                                case 'project_thumb':
+                                    $project['photo'] += $data[$ref];
+                                    break;
+                                case 'project_mobile_logo':
+                                    $project['photo'] += $data[$ref];
                                     break;
                                 case 'audio':
                                     $project['audio'] = $data[$ref];
@@ -925,18 +936,6 @@ class SearchToolsController extends Controller
                                     $project['video'] = $data[$ref];
                                     break;
                             }
-                        }
-
-                        switch ($driver) {
-                            case 'entry_original':
-                                $storage = array_add($storage, 'photo',  $data);
-                                break;
-                            case 'audio':
-                                $storage = array_add($storage, $driver,  $data);
-                                break;
-                            case 'video':
-                                $storage = array_add($storage, $driver,  $data);
-                                break;
                         }
                     }
 
