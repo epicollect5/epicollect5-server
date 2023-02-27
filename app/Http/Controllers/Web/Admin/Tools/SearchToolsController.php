@@ -389,24 +389,20 @@ class SearchToolsController extends Controller
     public function findProjectsStorageUsed($threshold)
     {
         $start = Carbon::now()->getTimestamp();
-        \LOG::info('Usage: ' . Common::formatBytes(memory_get_usage()));
-        \LOG::info('Peak Usage: ' . Common::formatBytes(memory_get_peak_usage()));
+        $table = 'storage_stats_remote';
         $thresholdInt = (int)$threshold;
         $costXGB = floatval(env('COST_X_GB', 0.10));
 
-        $projectIDsOver = DB::table('project_stats')
-            ->where('total_entries', '>', $thresholdInt)
-            ->orderBy('total_entries', 'DESC')
-            ->pluck('project_id')
-            ->toArray();
+        $projectsOver = DB::table($table)
+            ->where('entries', '>', $thresholdInt)
+            ->orderBy('overall_bytes', 'DESC')
+            ->get();
 
-        $projectIDsUnder = DB::table('project_stats')
-            ->where('total_entries', '<=', $thresholdInt)
-            ->orderBy('total_entries', 'DESC')
-            ->pluck('project_id')
-            ->toArray();
+        $projectsUnder = DB::table($table)
+            ->where('entries', '<=', $thresholdInt)
+            ->orderBy('overall_bytes', 'DESC')
+            ->get();
 
-        //dd($projectIDsOver,  $projectIDsUnder);
 
         $csvFilenameOver = 'storage-over.csv';
         $csvFilenameUnder = 'storage-under.csv';
@@ -452,6 +448,7 @@ class SearchToolsController extends Controller
             'id',
             'ref',
             'name',
+            'files',
             'entries',
             'latest entry uploaded',
             'branches',
@@ -468,6 +465,7 @@ class SearchToolsController extends Controller
             'id',
             'ref',
             'name',
+            'files',
             'entries',
             'latest entry uploaded',
             'branches',
@@ -480,10 +478,6 @@ class SearchToolsController extends Controller
             'cost ($0.10 x GB )',
         ]);
 
-        $storageOverall = [
-            'over' => 0,
-            'under' => 0
-        ];
 
         $csvOverall->insertOne([
             'Total',
@@ -494,281 +488,84 @@ class SearchToolsController extends Controller
             'Threshold'
         ]);
 
-        $entriesOver = DB::table('entries')
-            ->join('project_stats', 'entries.project_id', '=', 'project_stats.project_id')
-            ->whereIn('entries.project_id', $projectIDsOver)
-            ->select('entries.project_id', 'entries.branch_counts', DB::raw('MAX(entries.uploaded_at) as latest_entry'), 'project_stats.total_entries')
-            ->groupBy('entries.project_id')
-            ->orderBy('project_stats.total_entries', 'DESC');
-
-        $entriesUnder = DB::table('entries')
-            ->join('project_stats', 'entries.project_id', '=', 'project_stats.project_id')
-            ->whereIn('entries.project_id', $projectIDsUnder)
-            ->select('entries.project_id', 'entries.branch_counts', DB::raw('MAX(entries.uploaded_at) as latest_entry'), 'project_stats.total_entries')
-            ->distinct('entries.project_id')
-            ->groupBy('entries.project_id')
-            ->orderBy('project_stats.total_entries', 'DESC');
-
-        //dd($projectIDsOver,  $projectIDsUnder, $entriesOver->get(),  $entriesUnder->get());
-
-        $entriesOver->chunk(500, function ($chunkedEntries) use ($costXGB, $csvOver, &$storageOverall) {
-            foreach ($chunkedEntries as $chunkedEntry) {
-
-                //imp: json_decode($i, true) to get array not stdClass
-                $branchCounts = json_decode($chunkedEntry->branch_counts, true);
-                $branchLatest = '';
-                //skip empty arrays (i.e. no branches)
-                if (is_array($branchCounts)) {
-                    if (sizeOf($branchCounts) > 0) {
-                        //skip if no branch entries were collected
-                        if (array_sum($branchCounts) > 0) {
-                            //get latest branch entry
-                            $branchLatest = DB::table('branch_entries')
-                                ->select(DB::raw('MAX(uploaded_at) as latest_branch_entry'))
-                                ->where('project_id', '=', $chunkedEntry->project_id)->value('latest_branch_entry');
-                        }
-                    }
-                }
-                //get project name and ref (single db query to use less RAM)
-                $project = DB::table('projects')->where('id', '=', $chunkedEntry->project_id)->pluck('name', 'ref')->toArray();
-                $projectRef = array_keys($project)[0];
-                $projectName = $project[$projectRef];
-                $drivers = [
-                    'entry_original',
-                    'entry_sidebar',
-                    'entry_thumb',
-                    'project_thumb',
-                    'project_mobile_logo',
-                    'video',
-                    'audio'
-                ];
-                $storage = [];
-
-                // Log::info('Project name' .  $projectName);
-                // Log::info('Project ref' .  $projectRef);
-
-                // Loop each driver
-                foreach ($drivers as $driver) {
-                    // Get disk, path prefix and all directories for this driver
-                    $disk = Storage::disk($driver);
-                    //  $projectRefs = $this->directoryGenerator($disk);
-                    // Loop each media directory
-                    $data = [];
-                    //  foreach ($projectRefs as $projectRef) {
-
-                    $size = 0;
-
-                    // Log::info('Checking driver ->' . $driver . ' for  ' . $projectRef);
-                    foreach ($disk->files($projectRef) as $file) {
-                        //size in bytes
-                        Log::info('Found file ->', ['file' => $file]);
-                        $size += Storage::disk($driver)->size($file);
-                    }
-                    $storageOverall['over'] += $size;
-                    Log::info('Storage for project so far -> ' . $size);
-                    Log::info('Storage overall so far -> ' .  $storageOverall['over']);
-
-                    try {
-                        $data = array_add($data, $projectRef, $size);
-                    } catch (Exception $e) {
-                        Log::info('array_add() ' . $projectName,  ['error' => $e->getMessage()]);
-                        $data = array_add($data, $projectRef, $size);
-                    }
-
-                    foreach ($data as $ref => $size) {
-                        try {
-                            if (!array_key_exists('storage', $project)) {
-                                $project['storage'] = 0;
-                            }
-                            $project['storage'] += $size;
-                        } catch (Exception $e) {
-                            // Log::info('No media files for ' . $projectName,  ['error' => $e->getMessage()]);
-                        }
-                        switch ($driver) {
-                            case 'entry_original':
-                                $project['photo'] = $data[$ref];
-                                break;
-                            case 'audio':
-                                $project['audio'] = $data[$ref];
-                                break;
-                            case 'video':
-                                $project['video'] = $data[$ref];
-                                break;
-                        }
-                    }
-
-                    switch ($driver) {
-                        case 'entry_original':
-                            $storage = array_add($storage, 'photo',  $data);
-                            break;
-                        case 'audio':
-                            $storage = array_add($storage, $driver,  $data);
-                            break;
-                        case 'video':
-                            $storage = array_add($storage, $driver,  $data);
-                            break;
-                    }
-                }
-
+        $projectsOver->chunk(5000, function ($chunkedProjects) use ($csvOver, $costXGB) {
+            foreach ($chunkedProjects as $chunkedProject) {
                 $csvOver->insertOne([
-                    $chunkedEntry->project_id,
-                    $ref,
-                    $project[$ref], //project name
-                    $chunkedEntry->total_entries,
-                    Carbon::parse($chunkedEntry->latest_entry)->diffForHumans(),
-                    is_array($branchCounts) ? array_sum($branchCounts) : 0,
-                    Carbon::parse($branchLatest)->diffForHumans(),
-                    Common::formatBytes($project['storage']),
-                    Common::formatBytes($project['audio']),
-                    Common::formatBytes($project['photo']),
-                    Common::formatBytes($project['video']),
-                    $project['storage'],
-                    '$' . round(((($project['storage']) / 1000000000)) * $costXGB, 3)
+                    $chunkedProject->project_id,
+                    $chunkedProject->project_ref,
+                    $chunkedProject->project_name,
+                    $chunkedProject->files,
+                    $chunkedProject->entries,
+                    Carbon::parse($chunkedProject->latest_entry_uploaded)->diffForHumans(),
+                    $chunkedProject->branches,
+                    Carbon::parse($chunkedProject->latest_branch_uploaded)->diffForHumans(),
+                    Common::formatBytes($chunkedProject->overall_bytes),
+                    Common::formatBytes($chunkedProject->audio),
+                    Common::formatBytes($chunkedProject->photo),
+                    Common::formatBytes($chunkedProject->video),
+                    $chunkedProject->overall_bytes,
+                    '$' . round(((($chunkedProject->overall_bytes) / 1000000000)) * $costXGB, 3)
                 ]);
             }
         });
 
-        //storage for projects under the threshold
-        $entriesUnder->chunk(500, function ($chunkedEntries) use ($costXGB, $csvUnder,  &$storageOverall) {
-            foreach ($chunkedEntries as $chunkedEntry) {
-
-                //imp: json_decode($i, true) to get array not stdClass
-                $branchCounts = json_decode($chunkedEntry->branch_counts, true);
-                $branchLatest = '';
-                //skip empty arrays (i.e. no branches)
-                if (is_array($branchCounts)) {
-                    if (sizeOf($branchCounts) > 0) {
-                        //skip if no branch entries were collected
-                        if (array_sum($branchCounts) > 0) {
-                            //get latest branch entry
-                            $branchLatest = DB::table('branch_entries')
-                                ->select(DB::raw('MAX(uploaded_at) as latest_branch_entry'))
-                                ->where('project_id', '=', $chunkedEntry->project_id)->value('latest_branch_entry');
-                            // echo $branchLatest;
-                            // echo '<br/>';
-                            // echo '<br/>';
-                            // echo 'Project ID:' . $chunkedEntry->project_id . ' branches:' . array_sum($branchCounts);
-                            // echo '<br/>';
-                        }
-                    }
-                }
-                //get project name and ref (single db query to use less RAM)
-                $project = DB::table('projects')->where('id', '=', $chunkedEntry->project_id)->pluck('name', 'ref')->toArray();
-                $projectRef = array_keys($project)[0];
-                $projectName = $project[$projectRef];
-                $drivers = ['entry_original', 'audio', 'video'];
-                $storage = [];
-
-
-                // Loop each driver
-                foreach ($drivers as $driver) {
-                    // Get disk, path prefix and all directories for this driver
-                    $disk = Storage::disk($driver);
-                    //  $projectRefs = $this->directoryGenerator($disk);
-                    // Loop each media directory
-                    $data = [];
-                    //  foreach ($projectRefs as $projectRef) {
-
-                    $size = 0;
-
-                    //   Log::info('Checking driver ->' . $driver . ' for  ' . $projectRef);
-                    foreach ($disk->files($projectRef) as $file) {
-                        //size in bytes
-                        Log::info('Found file ->', ['file' => $file]);
-                        $size += Storage::disk($driver)->size($file);
-                    }
-
-                    $storageOverall['under'] += $size;
-
-                    Log::info('Storage for project so far -> ' . $size);
-                    Log::info('Storage overall so far -> ' . $storageOverall['under']);
-
-                    try {
-                        $data = array_add($data, $projectRef, $size);
-                    } catch (Exception $e) {
-                        //  Log::info('array_add() ' . $projectName,  ['error' => $e->getMessage()]);
-                        $data = array_add($data, $projectRef, $size);
-                    }
-
-                    foreach ($data as $ref => $size) {
-                        try {
-                            if (!array_key_exists('storage', $project)) {
-                                $project['storage'] = 0;
-                            }
-                            $project['storage'] += $size;
-                        } catch (Exception $e) {
-                            Log::info('No media files for ' . $projectName,  ['error' => $e->getMessage()]);
-                        }
-                        switch ($driver) {
-                            case 'entry_original':
-                                $project['photo'] = $data[$ref];
-                                break;
-                            case 'audio':
-                                $project['audio'] = $data[$ref];
-                                break;
-                            case 'video':
-                                $project['video'] = $data[$ref];
-                                break;
-                        }
-                    }
-
-                    switch ($driver) {
-                        case 'entry_original':
-                            $storage = array_add($storage, 'photo',  $data);
-                            break;
-                        case 'audio':
-                            $storage = array_add($storage, $driver,  $data);
-                            break;
-                        case 'video':
-                            $storage = array_add($storage, $driver,  $data);
-                            break;
-                    }
-                }
-
+        $projectsUnder->chunk(5000, function ($chunkedProjects) use ($csvUnder, $costXGB) {
+            foreach ($chunkedProjects as $chunkedProject) {
                 $csvUnder->insertOne([
-                    $chunkedEntry->project_id,
-                    $ref,
-                    $project[$ref], //project name
-                    $chunkedEntry->total_entries,
-                    Carbon::parse($chunkedEntry->latest_entry)->diffForHumans(),
-                    is_array($branchCounts) ? array_sum($branchCounts) : 0,
-                    Carbon::parse($branchLatest)->diffForHumans(),
-                    Common::formatBytes($project['storage']),
-                    Common::formatBytes($project['audio']),
-                    Common::formatBytes($project['photo']),
-                    Common::formatBytes($project['video']),
-                    $project['storage'],
-                    '$' . round(((($project['storage']) / 1000000000)) * $costXGB, 3)
+                    $chunkedProject->project_id,
+                    $chunkedProject->project_ref,
+                    $chunkedProject->project_name,
+                    $chunkedProject->files,
+                    $chunkedProject->entries,
+                    Carbon::parse($chunkedProject->latest_entry_uploaded)->diffForHumans(),
+                    $chunkedProject->branches,
+                    Carbon::parse($chunkedProject->latest_branch_uploaded)->diffForHumans(),
+                    Common::formatBytes($chunkedProject->overall_bytes),
+                    Common::formatBytes($chunkedProject->audio),
+                    Common::formatBytes($chunkedProject->photo),
+                    Common::formatBytes($chunkedProject->video),
+                    $chunkedProject->overall_bytes,
+                    '$' . round(((($chunkedProject->overall_bytes) / 1000000000)) * $costXGB, 3)
                 ]);
             }
         });
 
-        $costUnder =  '$' . round(((($storageOverall['under']) / 1000000000)) * $costXGB, 3);
-        $costOver =  '$' . round(((($storageOverall['over']) / 1000000000)) * $costXGB, 3);
+        $bytesOver = DB::table($table)
+            ->where('entries', '>', $thresholdInt)
+            ->sum('overall_bytes');
+
+        $bytesUnder = DB::table($table)
+            ->where('entries', '<=', $thresholdInt)
+            ->sum('overall_bytes');
+
+        $bytesOver = (int)  $bytesOver;
+        $bytesUnder = (int)  $bytesUnder;
+
+
+        $costUnder =  '$' . round(((($bytesUnder) / 1000000000)) * $costXGB, 3);
+        $costOver =  '$' . round(((($bytesOver) / 1000000000)) * $costXGB, 3);
         $csvOverall->insertOne([
-            Common::formatBytes($storageOverall['under'] + $storageOverall['over']),
-            Common::formatBytes($storageOverall['under']),
-            Common::formatBytes($storageOverall['over']),
+            Common::formatBytes($bytesOver + $bytesUnder),
+            Common::formatBytes($bytesUnder),
+            Common::formatBytes($bytesOver),
             $costUnder,
             $costOver,
             $threshold
         ]);
 
 
-        \LOG::info('Usage: ' . Common::formatBytes(memory_get_usage()));
-        \LOG::info('Peak Usage: ' . Common::formatBytes(memory_get_peak_usage()));
 
         $duration = Carbon::now()->getTimestamp() - $start;
         $duration = $duration > 0 ? $duration : 1;
 
-        return [
-            'executed in' => CarbonInterval::seconds($duration)->cascade()->forHumans(),
-        ];
+        // return [
+        //     'executed in' => CarbonInterval::seconds($duration)->cascade()->forHumans(),
+        // ];
 
 
-        // $filepath = $this->createZipArchive();
+        $filepath = $this->createZipArchive();
 
-        // return response()->download($filepath)->deleteFileAfterSend(true);
+        return response()->download($filepath)->deleteFileAfterSend(true);
     }
 
     public function  findProjectsStorageUsedTableDefault()
