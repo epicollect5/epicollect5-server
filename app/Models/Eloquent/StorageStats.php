@@ -8,4 +8,5 @@ class StorageStats extends Model
 {
     protected $table = 'storage_stats';
     public $timestamps = false;
+    protected $guarded = [];
 }

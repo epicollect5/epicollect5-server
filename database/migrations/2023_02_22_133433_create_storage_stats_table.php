@@ -15,8 +15,8 @@ class CreateStorageStatsTable extends Migration
     {
         Schema::create('storage_stats', function (Blueprint $table) {
             $table->integer('id', true);
-            $table->integer('project_id');
-            $table->string('project_ref', 100);
+            $table->integer('project_id')->unique();
+            $table->string('project_ref', 100)->unique();
             $table->string('project_name', 50);
             $table->integer('files')->default(0);
             $table->integer('entries')->default(0);

@@ -395,13 +395,13 @@ class SearchToolsController extends Controller
 
         $projectsOver = DB::table($table)
             ->where('entries', '>', $thresholdInt)
-            ->orderBy('overall_bytes', 'DESC')
-            ->get();
+            ->orderBy('overall_bytes', 'DESC');
+        // ->get();
 
         $projectsUnder = DB::table($table)
             ->where('entries', '<=', $thresholdInt)
-            ->orderBy('overall_bytes', 'DESC')
-            ->get();
+            ->orderBy('overall_bytes', 'DESC');
+        //  ->get();
 
 
         $csvFilenameOver = 'storage-over.csv';
@@ -496,13 +496,13 @@ class SearchToolsController extends Controller
                     $chunkedProject->project_name,
                     $chunkedProject->files,
                     $chunkedProject->entries,
-                    Carbon::parse($chunkedProject->latest_entry_uploaded)->diffForHumans(),
+                    Carbon::parse($chunkedProject->last_entry_uploaded)->diffForHumans(),
                     $chunkedProject->branches,
-                    Carbon::parse($chunkedProject->latest_branch_uploaded)->diffForHumans(),
+                    $chunkedProject->branches > 0 ? Carbon::parse($chunkedProject->last_branch_uploaded)->diffForHumans() : '',
                     Common::formatBytes($chunkedProject->overall_bytes),
-                    Common::formatBytes($chunkedProject->audio),
-                    Common::formatBytes($chunkedProject->photo),
-                    Common::formatBytes($chunkedProject->video),
+                    Common::formatBytes($chunkedProject->audio_bytes),
+                    Common::formatBytes($chunkedProject->photo_bytes),
+                    Common::formatBytes($chunkedProject->video_bytes),
                     $chunkedProject->overall_bytes,
                     '$' . round(((($chunkedProject->overall_bytes) / 1000000000)) * $costXGB, 3)
                 ]);
@@ -517,13 +517,13 @@ class SearchToolsController extends Controller
                     $chunkedProject->project_name,
                     $chunkedProject->files,
                     $chunkedProject->entries,
-                    Carbon::parse($chunkedProject->latest_entry_uploaded)->diffForHumans(),
+                    Carbon::parse($chunkedProject->last_entry_uploaded)->diffForHumans(),
                     $chunkedProject->branches,
-                    Carbon::parse($chunkedProject->latest_branch_uploaded)->diffForHumans(),
+                    $chunkedProject->branches > 0 ? Carbon::parse($chunkedProject->last_branch_uploaded)->diffForHumans() : '',
                     Common::formatBytes($chunkedProject->overall_bytes),
-                    Common::formatBytes($chunkedProject->audio),
-                    Common::formatBytes($chunkedProject->photo),
-                    Common::formatBytes($chunkedProject->video),
+                    Common::formatBytes($chunkedProject->audio_bytes),
+                    Common::formatBytes($chunkedProject->photo_bytes),
+                    Common::formatBytes($chunkedProject->video_bytes),
                     $chunkedProject->overall_bytes,
                     '$' . round(((($chunkedProject->overall_bytes) / 1000000000)) * $costXGB, 3)
                 ]);
@@ -540,7 +540,6 @@ class SearchToolsController extends Controller
 
         $bytesOver = (int)  $bytesOver;
         $bytesUnder = (int)  $bytesUnder;
-
 
         $costUnder =  '$' . round(((($bytesUnder) / 1000000000)) * $costXGB, 3);
         $costOver =  '$' . round(((($bytesOver) / 1000000000)) * $costXGB, 3);
@@ -638,7 +637,6 @@ class SearchToolsController extends Controller
                 //check if the storage stats for this project are already up-to-date
                 if (!StorageStats::where('project_id', $chunkedEntry->project_id)->exists()) {
                     $projectsUpdated++;
-                    $projectStorage = new StorageStats();
                     $createStorageRow = true;
                 } else {
                     $projectStorage = StorageStats::where('project_id', $chunkedEntry->project_id)->first();
@@ -736,19 +734,39 @@ class SearchToolsController extends Controller
                         }
                     }
 
-                    $projectStorage->project_id = $chunkedEntry->project_id;
-                    $projectStorage->project_ref = $projectRef;
-                    $projectStorage->project_name = $projectName;
-                    $projectStorage->files = $files;
-                    $projectStorage->entries = $chunkedEntry->total_entries;
-                    $projectStorage->branches = is_array($branchCounts) ? array_sum($branchCounts) : 0;
-                    $projectStorage->last_entry_uploaded = $chunkedEntry->latest_entry ?? null;
-                    $projectStorage->last_branch_uploaded =  $branchLatest ?? null;
-                    $projectStorage->audio_bytes = $project['audio'] ?? 0;
-                    $projectStorage->photo_bytes = $project['photo'] ?? 0;
-                    $projectStorage->video_bytes = $project['video'] ?? 0;
-                    $projectStorage->overall_bytes = $project['storage'] ?? 0;
-                    $projectStorage->save();
+                    $projectStorage = StorageStats::updateOrCreate(
+                        [
+                            'project_id' => $chunkedEntry->project_id,
+                            'project_ref' =>  $projectRef
+                        ],
+                        [
+                            'project_name' => $projectName,
+                            'files' => $files,
+                            'entries' => $chunkedEntry->total_entries,
+                            'branches' => is_array($branchCounts) ? array_sum($branchCounts) : 0,
+                            'last_entry_uploaded' => $chunkedEntry->latest_entry ?? null,
+                            'last_branch_uploaded' =>  $branchLatest ?? null,
+                            'audio_bytes' => $project['audio'] ?? 0,
+                            'photo_bytes' => $project['photo'] ?? 0,
+                            'video_bytes' => $project['video'] ?? 0,
+                            'overall_bytes' => $project['storage'] ?? 0
+
+                        ]
+                    );
+
+                    // $projectStorage->project_id = $chunkedEntry->project_id;
+                    // $projectStorage->project_ref = $projectRef;
+                    // $projectStorage->project_name = $projectName;
+                    // $projectStorage->files = $files;
+                    // $projectStorage->entries = $chunkedEntry->total_entries;
+                    // $projectStorage->branches = is_array($branchCounts) ? array_sum($branchCounts) : 0;
+                    // $projectStorage->last_entry_uploaded = $chunkedEntry->latest_entry ?? null;
+                    // $projectStorage->last_branch_uploaded =  $branchLatest ?? null;
+                    // $projectStorage->audio_bytes = $project['audio'] ?? 0;
+                    // $projectStorage->photo_bytes = $project['photo'] ?? 0;
+                    // $projectStorage->video_bytes = $project['video'] ?? 0;
+                    // $projectStorage->overall_bytes = $project['storage'] ?? 0;
+                    // $projectStorage->save();
                 }
 
                 if (!$createStorageRow && !$updateStorageRow) {
