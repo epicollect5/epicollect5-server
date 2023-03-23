@@ -444,24 +444,8 @@ class RuleFileEntry extends EntryValidationBase
                     100
                 );
 
-                // Check if any errors creating/saving thumb
+                // Check if any errors creating/saving original image
                 if (!$original) {
-                    $this->errors[$inputRef] = ['ec5_82'];
-                    return;
-                }
-                // Entry sidebar image
-
-                // Create and save entry sidebar image for photos, using 'entry_sidebar' driver
-                $sidebar = UploadImage::saveImage(
-                    $projectRef,
-                    $entryStructure->getFile(),
-                    $fileName,
-                    'orphan_entry_sidebar',
-                    Config::get('ec5Media.entry_sidebar')
-                );
-
-                // Check if any errors creating/saving thumb
-                if (!$sidebar) {
                     $this->errors[$inputRef] = ['ec5_82'];
                     return;
                 }
