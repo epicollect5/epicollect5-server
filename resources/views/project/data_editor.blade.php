@@ -27,9 +27,6 @@
 
 </head>
 
-
-
-
 <body>
     <script defer="defer" src="{{ asset('data-editor/app/assets/js/Control.Fullscreen.js') . '?' . ENV('RELEASE') }}">
     </script>

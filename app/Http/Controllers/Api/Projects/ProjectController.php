@@ -65,7 +65,7 @@ class ProjectController extends Controller
             $searchResults = $this->projectSearch->startsWith($name, ['name', 'slug', 'access', 'ref']);
         }
 
-        // todo make this more efficient? ie don't loop twice
+        // todo: make this more efficient? ie don't loop twice
         // Build the json api response
         foreach ($searchResults as $searchResult) {
 

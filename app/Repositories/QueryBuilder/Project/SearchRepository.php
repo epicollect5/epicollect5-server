@@ -289,9 +289,13 @@ class SearchRepository implements RepositoryInterface
      */
     public function startsWith($name, $columns = array('*'))
     {
+
+        $trashedStatus = Config::get('ec5Strings.project_status.trashed');
         $query = DB::table($this->projectsTable)
             ->select($columns)
             ->where('name', 'like', $name . '%')
+            //ignore trashed projects
+            ->where('status', '<>',  $trashedStatus)
             ->orderBy('updated_at', 'desc') //most recent/active first
             ->take(50); //we should stay within this limit as names are unique
         return $query->get();

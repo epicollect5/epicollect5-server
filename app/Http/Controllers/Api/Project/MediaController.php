@@ -31,6 +31,7 @@ class MediaController extends ProjectControllerBase
         $input = $request->all();
         $inputType = $input['type'];
 
+
         // Validate the options
         $mediaValidator->validate($input);
         if ($mediaValidator->hasErrors()) {
@@ -64,9 +65,9 @@ class MediaController extends ProjectControllerBase
             // Attempt to retrieve media
             try {
                 // Use the provided 'format' as the driver
-                $file = Storage::disk($input['format'])->get($this->requestedProject->ref . '/' . $input['name']);
+                $file = Storage::disk($format)->get($this->requestedProject->ref . '/' . $input['name']);
                 //get storage real path
-                $filepath = Storage::disk($input['format'])->getAdapter()->getPathPrefix();
+                $filepath = Storage::disk($format)->getAdapter()->getPathPrefix();
                 //get file real path
                 $filepath = $filepath . $this->requestedProject->ref . '/' . $input['name'];
                 //stream only audio and video
@@ -156,7 +157,7 @@ class MediaController extends ProjectControllerBase
             // Attempt to retrieve media
             try {
                 // Use the provided 'format' as the driver
-                $file = Storage::disk($input['format'])->get($this->requestedProject->ref . '/' . $input['name']);
+                $file = Storage::disk($format)->get($this->requestedProject->ref . '/' . $input['name']);
                 $response = Response::make($file, 200);
                 $response->header("Content-Type", $contentType);
 

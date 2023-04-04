@@ -113,9 +113,12 @@ class RuleFileEntry extends EntryValidationBase
 
         /**
          * If the file does not have a question it belongs to, it means the user is uploading
-         * some media files for a qestion which got deleted. Updating the project on the mobile app
-         * does not consider these files (at least on vrsion 2.0.9 and below)
+         * some media files for a question which got deleted. Updating the project on the mobile app
+         * does not consider these files (at least on version 2.0.9 and below)
          * therefore let's go on with the upload but save the file in the "orphan" folder
+         * 
+         * we can purge the orphan folder every now and then, 
+         * going forward no files will be saved there anyway
          */
         if (!$this->fileInputExists($project, $entryStructure)) {
 
@@ -350,30 +353,13 @@ class RuleFileEntry extends EntryValidationBase
                     100
                 );
 
-                // Check if any errors creating/saving thumb
+                // Check if any errors creating/saving original image
                 if (!$original) {
-                    $this->errors[$inputRef] = ['ec5_82'];
-                    return;
-                }
-                // Entry sidebar image
-
-                // Create and save entry sidebar image for photos, using 'entry_sidebar' driver
-                $sidebar = UploadImage::saveImage(
-                    $projectRef,
-                    $entryStructure->getFile(),
-                    $fileName,
-                    'entry_sidebar',
-                    Config::get('ec5Media.entry_sidebar')
-                );
-
-                // Check if any errors creating/saving thumb
-                if (!$sidebar) {
                     $this->errors[$inputRef] = ['ec5_82'];
                     return;
                 }
 
                 // Entry thumb image
-
                 // Create and save entry thumbnail image for photos, using 'entry_thumb' driver
                 $thumb = UploadImage::saveImage(
                     $projectRef,
@@ -457,24 +443,8 @@ class RuleFileEntry extends EntryValidationBase
                     100
                 );
 
-                // Check if any errors creating/saving thumb
+                // Check if any errors creating/saving original image
                 if (!$original) {
-                    $this->errors[$inputRef] = ['ec5_82'];
-                    return;
-                }
-                // Entry sidebar image
-
-                // Create and save entry sidebar image for photos, using 'entry_sidebar' driver
-                $sidebar = UploadImage::saveImage(
-                    $projectRef,
-                    $entryStructure->getFile(),
-                    $fileName,
-                    'orphan_entry_sidebar',
-                    Config::get('ec5Media.entry_sidebar')
-                );
-
-                // Check if any errors creating/saving thumb
-                if (!$sidebar) {
                     $this->errors[$inputRef] = ['ec5_82'];
                     return;
                 }

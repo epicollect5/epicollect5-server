@@ -16,10 +16,18 @@
                     <a href="https://play.google.com/store/apps/details?id=uk.ac.imperial.epicollect.five&hl=en_GB">
                         <i class="fa fa-android"></i>
                     </a>
-                    <a href="https://itunes.apple.com/us/app/epicollect5/id1183858199?mt=8"><i
-                            class="fa fa-apple"></i></a>
+                    <a href="https://itunes.apple.com/us/app/epicollect5/id1183858199?mt=8"><i class="fa fa-apple"></i></a>
                 </div>
             </h1>
+        </div>
+
+        <div class="row" style="text-align: center;">
+            <p style="background-color:#ffe0b2;padding:5px 0;border-radius:6px">Try the new beta for
+                <strong><a href="https://appdistribution.firebase.dev/i/8abab31013254ea2" target="_blank">Android
+                        (Firebase)</a></strong>
+                &
+                <strong><a href="https://testflight.apple.com/join/XbAmIp12" target="_blank">iOS (TestFlight)</a></strong>
+            </p>
         </div>
 
         <div class="row page-home-intro">
@@ -66,17 +74,15 @@
                         {{-- </div> --}}
                         <div class="panel-body">
                             <a href="{{ url('project/' . $project->slug) }}" class="thumbnail">
-                                <img class="img-responsive img-circle" width="256" height="256" src="
+                                <img class="img-responsive img-circle" width="256" height="256"
+                                    src="
                                                 {{-- If a private project, show lock --}}
-                                                     @if ($project->access == Config::get('ec5Strings.project_access.private'))
-                                {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
+                                                     @if ($project->access == Config::get('ec5Strings.project_access.private')) {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
                             @elseif($project->logo_url == '')
                                 {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
                             @else
-                                {{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb') }}
-                                @endif"
-                                alt="{{ $project->name }}"
-                                >
+                                {{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb') }} @endif"
+                                    alt="{{ $project->name }}">
                                 <div class="loader"></div>
                             </a>
 
@@ -150,17 +156,15 @@
                             {{-- </div> --}}
                             <div class="panel-body">
                                 <a href="{{ url('project/' . $project->slug) }}" class="thumbnail">
-                                    <img class="img-responsive img-circle" width="128" height="128" src="
+                                    <img class="img-responsive img-circle" width="128" height="128"
+                                        src="
                                                 {{-- If a private project, show lock --}}
-                                                       @if ($project->access == Config::get('ec5Strings.project_access.private'))
-                                    {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
+                                                       @if ($project->access == Config::get('ec5Strings.project_access.private')) {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
                                 @elseif($project->logo_url == '')
                                     {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
                                 @else
-                                    {{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb') }}
-                                    @endif"
-                                    alt="{{ $project->name }}"
-                                    >
+                                    {{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb') }} @endif"
+                                        alt="{{ $project->name }}">
 
                                     <div class="loader"></div>
                                 </a>

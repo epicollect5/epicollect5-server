@@ -34,8 +34,7 @@ class UserPasswordlessWeb extends Model
 
         try {
             $decodedStored = (array)FirebaseJwt::decode($this->attributes['token'], $secretKey, array('HS256'));
-        }
-        catch (Exception $e){
+        } catch (Exception $e) {
             Log::error('Error decoding jwt-passwordless', ['exception' => $e->getMessage()]);
             return false;
         }
@@ -45,16 +44,29 @@ class UserPasswordlessWeb extends Model
             //is the token timestamp still valid?
             if (Carbon::parse($this->attributes['expires_at'])->greaterThan(Carbon::now())) {
                 return true;
+            } else {
+                Log::error('jwt passwordless web expired');
             }
-            else {
-                Log::error('jwt passwordless web expired', ['exception' => $e->getMessage()]);
-            }
-
-
         }
 
         return false;
     }
+
+    public function isValidCode($code)
+    {
+        //is the code the same?
+        if (Hash::check($code, $this->attributes['token'])) {
+            //is the code timestamp still valid?
+            if (Carbon::parse($this->attributes['expires_at'])->greaterThan(Carbon::now())) {
+                //are there any attempts left
+                if ($this->attributes['attempts'] > 0) {
+                    return true;
+                }
+            }
+        }
+        //decrement attempts
+        $this->decrement('attempts');
+
+        return false;
+    }
 }
-
-

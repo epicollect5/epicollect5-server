@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link href='https://fonts.googleapis.com/css?family=Arimo' rel='stylesheet' type='text/css'>
+    <script defer data-domain="five.epicollect.net" src="https://analytics.cgps.dev/js/plausible.js"></script>
 
     <title>Epicollect5 - {{ $projectName }} - Formbuilder</title>
 
@@ -148,7 +149,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default btn-action" data-dismiss="modal">Close</button>
                 </div>
-            </div>js
+            </div>
         </div>
     </div>
 
@@ -165,8 +166,11 @@
                         think of regular expressions as wildcards. </p>
                     <p> You are probably familiar with wildcard notations such
                         as <code>*.txt</code> to find all text files in a file manager. The regex equivalent is
-                        <code>.*\.txt</code>
+                        <<<<<<< HEAD <code>.*\.txt</code>
                     </p>
+                    =======
+                    <code>.*\.txt</code></p>
+                    >>>>>>> master
 
                     <p>There are many things you can do applying regex to your question, for example:</p>
                     <table class="table table-hover">
