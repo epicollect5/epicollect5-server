@@ -81,7 +81,8 @@ class RuleAnswers extends ValidationBase
         $ruleGroupInput,
         $rulePhoneInput,
         $ruleSearchsingleInput,
-        $ruleSearchmultipleInput;
+        $ruleSearchmultipleInput,
+        $ruleDropdownInput;
 
     /**
      * RuleAnswers constructor.

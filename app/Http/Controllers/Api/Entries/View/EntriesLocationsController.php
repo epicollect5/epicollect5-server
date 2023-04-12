@@ -39,10 +39,17 @@ class EntriesLocationsController extends EntrySearchControllerBase
         RuleAnswers $ruleAnswers
     ) {
 
-        parent::__construct($request, $apiRequest, $apiResponse, $entryRepository,
-            $branchEntryRepository, $ruleQueryString, $ruleAnswers);
+        parent::__construct(
+            $request,
+            $apiRequest,
+            $apiResponse,
+            $entryRepository,
+            $branchEntryRepository,
+            $ruleQueryString,
+            $ruleAnswers
+        );
 
-        $this->allowedSearchKeys = Config::get('ec5Enums.search_data_entries');
+        $this->allowedSearchParams = Config::get('ec5Enums.search_data_entries');
     }
 
     /**
@@ -150,7 +157,7 @@ class EntriesLocationsController extends EntrySearchControllerBase
     {
         $columns = ['geo_json_data'];
 
-        $options = $this->getRequestOptions($request, Config::get('ec5Limits.entries_map.per_page'));
+        $options = $this->prepareSearchParams($request, Config::get('ec5Limits.entries_map.per_page'));
 
         // Validate the options
         $ruleQueryStringMapData->validate($options);
@@ -199,7 +206,5 @@ class EntriesLocationsController extends EntrySearchControllerBase
         $this->apiResponse->setData($data);
 
         return $this->apiResponse->toJsonResponse(200);
-
     }
-
 }

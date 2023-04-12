@@ -45,6 +45,10 @@ Route::group(['middleware' => ['project.permissions']], function () {
     // Entries for table and pwa (within Laravel)
     Route::get('api/internal/entries/{project_slug}', 'Api\Entries\View\EntriesController@show');
 
+    //get saved answers for PWA
+    Route::get('api/internal/answers/{project_slug}', 'Api\Entries\View\EntriesController@getAnswers');
+
+
     // Entries for map (within Laravel)
     Route::get('api/internal/entries-locations/{project_slug}', 'Api\Entries\View\EntriesLocationsController@show');
 

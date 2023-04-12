@@ -64,7 +64,8 @@ return [
         'filter_to',
         'format',
         'headers',
-        'title'
+        'title',
+        'answer'
     ],
     'download_subset_entries' => [
         'form_ref',
@@ -191,9 +192,9 @@ return [
         'location',
         'searchsingle',
         'searchmultiple',
-        'group'//not directly but its group inputs
+        'group' //not directly but its group inputs
     ],
-    'can_bulk_upload' =>[
+    'can_bulk_upload' => [
         'nobody',
         'members',
         'everybody'

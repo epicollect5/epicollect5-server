@@ -101,6 +101,9 @@ Route::group(['middleware' => ['throttle:600,1']], function () {
         //Entries for pwa debug (entry edit outside Laravel)
         Route::get('api/pwa-entries/{project_slug}', 'Api\Entries\View\EntriesController@showPWA');
 
+        //Answers for pwa debug (get asnwers outside Laravel)
+        Route::get('api/pwa-answers/{project_slug}', 'Api\Entries\View\EntriesController@getAnswersPWA');
+
         // Entry viewing for map
         Route::get(
             'api/entries-locations/{project_slug}',

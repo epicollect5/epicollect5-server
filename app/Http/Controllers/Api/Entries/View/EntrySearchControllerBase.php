@@ -21,35 +21,12 @@ use Log;
 
 abstract class EntrySearchControllerBase extends ProjectApiControllerBase
 {
-
-    /**
-     * @var
-     */
     protected $entryRepository;
-
-    /**
-     * @var
-     */
     protected $branchEntryRepository;
-
-    /**
-     * @var
-     */
     protected $ruleQueryString;
-
-    /**
-     * @var
-     */
     protected $ruleAnswers;
-
-    /**
-     * @var
-     */
-    protected $allowedSearchKeys;
-
-    /**
-     * @var
-     */
+    protected $ruleAnswersSearch;
+    protected $allowedSearchParams;
     protected $validateErrors;
 
     /**
@@ -80,29 +57,26 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
         $this->ruleQueryString = $ruleQueryString;
     }
 
-    /**
-     * @param Request $request
-     * @param $perPage
-     * @return array
-     */
-    protected function getRequestOptions(Request $request, $perPage)
+    //this function filter the search params, removing the ones not allowed
+    //and adding some defaults to make request queries work 
+    //even when some params are missing, by providing a default response
+    protected function prepareSearchParams(Request $request, $perPage)
     {
-
-        $options = [];
-        foreach ($this->allowedSearchKeys as $k) {
-            $options[$k] = $request->get($k) ?? '';
+        $searchParams = [];
+        foreach ($this->allowedSearchParams as $k) {
+            $searchParams[$k] = $request->get($k) ?? '';
         }
 
         // Defaults for sort by and sort order
-        $options['sort_by'] = !empty($options['sort_by']) ? $options['sort_by'] : Config::get('ec5Enums.search_data_entries_defaults.sort_by');
-        $options['sort_order'] = !empty($options['sort_order']) ? $options['sort_order'] : Config::get('ec5Enums.search_data_entries_defaults.sort_order');
+        $searchParams['sort_by'] = !empty($searchParams['sort_by']) ? $searchParams['sort_by'] : Config::get('ec5Enums.search_data_entries_defaults.sort_by');
+        $searchParams['sort_order'] = !empty($searchParams['sort_order']) ? $searchParams['sort_order'] : Config::get('ec5Enums.search_data_entries_defaults.sort_order');
 
         // Set defaults
-        if (empty($options['per_page'])) {
-            $options['per_page'] = $perPage;
+        if (empty($searchParams['per_page'])) {
+            $searchParams['per_page'] = $perPage;
         }
-        if (empty($options['page'])) {
-            $options['page'] = 1;
+        if (empty($searchParams['page'])) {
+            $searchParams['page'] = 1;
         }
 
         // Check user project role
@@ -111,49 +85,48 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
             $this->requestedProject->isPrivate()
             && $this->requestedProjectRole->isCollector()
         ) {
-            $options['user_id'] = $this->requestedProjectRole->getUser()->id;
+            $searchParams['user_id'] = $this->requestedProjectRole->getUser()->id;
         }
 
         // Set default form_ref (first form), if not supplied
-        if (empty($options['form_ref'])) {
-            $options['form_ref'] = $this->requestedProject->getProjectDefinition()->getFirstFormRef();
+        if (empty($searchParams['form_ref'])) {
+            $searchParams['form_ref'] = $this->requestedProject->getProjectDefinition()->getFirstFormRef();
         }
 
         //if no map_index provide, return default map (check of empty string, as 0 is a valid map index)
-        if ($options['map_index'] === '') {
-            $options['map_index'] = $this->requestedProject->getProjectMapping()->getDefaultMapIndex();
+        if ($searchParams['map_index'] === '') {
+            $searchParams['map_index'] = $this->requestedProject->getProjectMapping()->getDefaultMapIndex();
         }
 
         // Format of the data i.e. json, csv
-        $options['format'] = !empty($options['format']) ? $options['format'] : Config::get('ec5Enums.search_data_entries_defaults.format');
+        $searchParams['format'] = !empty($searchParams['format']) ? $searchParams['format'] : Config::get('ec5Enums.search_data_entries_defaults.format');
         // Whether to include headers for csv
-        $options['headers'] = !empty($options['headers']) ? $options['headers'] : Config::get('ec5Enums.search_data_entries_defaults.headers');
+        $searchParams['headers'] = !empty($searchParams['headers']) ? $searchParams['headers'] : Config::get('ec5Enums.search_data_entries_defaults.headers');
 
-        return $options;
+        return $searchParams;
     }
 
     // Common Validation
 
     /**
-     * @param array $options - Request options
+     * @param array $searchParams - Request options
      * @return bool
      */
-    protected function validateOptions(array $options): bool
+    protected function validateSearchParams(array $searchParams): bool
     {
-
-        $this->ruleQueryString->validate($options);
+        $this->ruleQueryString->validate($searchParams);
         if ($this->ruleQueryString->hasErrors()) {
             $this->validateErrors = $this->ruleQueryString->errors();
             return false;
         }
         // Do additional checks
-        $this->ruleQueryString->additionalChecks($this->requestedProject, $options);
+        $this->ruleQueryString->additionalChecks($this->requestedProject, $searchParams);
         if ($this->ruleQueryString->hasErrors()) {
             $this->validateErrors = $this->ruleQueryString->errors();
             return false;
         }
 
-        $inputRef = (empty($options['input_ref'])) ? '' : $options['input_ref'];
+        $inputRef = (empty($searchParams['input_ref'])) ? '' : $searchParams['input_ref'];
 
         if (empty($inputRef)) {
             return true;
@@ -161,8 +134,8 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
 
         // Otherwise check if valid value ie date is date min max etc
         //$inputType = $this->requestedProject->getProjectExtra()->getInputDetail($inputRef, 'type');
-        $value = $options['search'];
-        //$value2 = $options['search_two'];
+        $value = $searchParams['search'];
+        //$value2 = $searchParams['search_two'];
 
         return $this->validateValue($inputRef, $value);
     }
@@ -190,39 +163,39 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
     //END Common Validation
 
     /**
-     * @param array $options
+     * @param array $searchParams
      * @param array $columns
      * @return \Illuminate\Database\Query\Builder
      */
-    protected function runQuery(array $options, array $columns)
+    protected function runQuery(array $searchParams, array $columns)
     {
         // NOTE: form_ref is never empty here
 
         // Single Entry
-        if (!empty($options['uuid'])) {
+        if (!empty($searchParams['uuid'])) {
             $query = $this->entryRepository->getEntry(
                 $this->requestedProject->getId(),
-                $options,
+                $searchParams,
                 $columns
             );
         } else {
-            if (!empty($options['parent_uuid'])) {
+            if (!empty($searchParams['parent_uuid'])) {
                 // Child Entries
                 $query = $this->entryRepository->getChildEntriesForParent(
                     $this->requestedProject->getId(),
-                    $options,
+                    $searchParams,
                     $columns
                 );
             }
 
             // Search based on input ref
-            //        else if (!empty($options['input_ref'])) {
+            //        else if (!empty($searchParams['input_ref'])) {
             //
             //            // Search based on search value
-            //            if (!empty($options['search'])) {
-            //                return $this->entryRepository->searchAnswersForInputWithValue(
+            //            if (!empty($searchParams['search'])) {
+            //                return $this->entryRepository->searchAnswers(
             //                    $this->requestedProject->getId(),
-            //                    $options,
+            //                    $searchParams,
             //                    $columns
             //                );
             //            }
@@ -232,7 +205,7 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
                 // All Form Entries
                 $query = $this->entryRepository->getEntries(
                     $this->requestedProject->getId(),
-                    $options,
+                    $searchParams,
                     $columns
                 );
             }
@@ -242,40 +215,40 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
     }
 
     /**
-     * @param array $options
+     * @param array $searchParams
      * @param array $columns
      * @return \Illuminate\Database\Query\Builder
      */
-    protected function runQueryBranch(array $options, array $columns)
+    protected function runQueryBranch(array $searchParams, array $columns)
     {
 
         // NOTE: branch_ref is never empty here
 
         // Single Branch Entry
-        if (!empty($options['uuid'])) {
+        if (!empty($searchParams['uuid'])) {
             $query = $this->branchEntryRepository->getEntry(
                 $this->requestedProject->getId(),
-                $options,
+                $searchParams,
                 $columns
             );
         } else {
-            if (!empty($options['branch_owner_uuid'])) {
+            if (!empty($searchParams['branch_owner_uuid'])) {
                 // Branch Entries for Branch Ref and Branch Owner
                 $query = $this->branchEntryRepository->getBranchEntriesForBranchRefAndOwner(
                     $this->requestedProject->getId(),
-                    $options,
+                    $searchParams,
                     $columns
                 );
             }
 
             // Search based on input ref
-            //        else if (!empty($options['input_ref'])) {
+            //        else if (!empty($searchParams['input_ref'])) {
             //
             //            // Search based on search value
-            //            if (!empty($options['search'])) {
-            //                return $this->branchEntryRepository->searchAnswersForInputWithValue(
+            //            if (!empty($searchParams['search'])) {
+            //                return $this->branchEntryRepository->searchAnswers(
             //                    $this->requestedProject->getId(),
-            //                    $options,
+            //                    $searchParams,
             //                    $columns
             //                );
             //            }
@@ -286,7 +259,7 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
                 // All Branch Entries for Branch Ref
                 $query = $this->branchEntryRepository->getBranchEntriesForBranchRef(
                     $this->requestedProject->getId(),
-                    $options,
+                    $searchParams,
                     $columns
                 );
             }
@@ -299,16 +272,16 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
 
     /**
      * @param LengthAwarePaginator $entryData
-     * @param $options
+     * @param $searchParams
      */
-    protected function appendOptions(LengthAwarePaginator $entryData, $options)
+    protected function appendOptions(LengthAwarePaginator $entryData, $searchParams)
     {
         // Unset the user's user_id so it's not exposed
         // Note: if this was exposed, it would only be the current user's user_id
         // If the user changed this it would have no effect
-        unset($options['user_id']);
+        unset($searchParams['user_id']);
         // Append options to the LengthAwarePaginator
-        $entryData->appends($options);
+        $entryData->appends($searchParams);
     }
 
     /**
@@ -337,7 +310,6 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
      */
     protected function getMeta(LengthAwarePaginator $entryData, $newest = null, $oldest = null): array
     {
-
         $meta = [
             'total' => $entryData->total(),
             //imp: cast to int for consistency:

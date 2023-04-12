@@ -27,7 +27,7 @@ class DownloadSubsetController extends EntrySearchControllerBase
 {
 
     protected $fileCreateRepository;
-    protected $allowedSearchKeys;
+    protected $allowedSearchParams;
     protected $dataMappingHelper;
 
     /**
@@ -63,7 +63,7 @@ class DownloadSubsetController extends EntrySearchControllerBase
             $ruleAnswers
         );
 
-        $this->allowedSearchKeys = Config::get('ec5Enums.download_subset_entries');
+        $this->allowedSearchParams = Config::get('ec5Enums.download_subset_entries');
         $this->fileCreateRepository = $fileCreateRepository;
         $this->dataMappingHelper = $dataMappingHelper;
     }
@@ -72,15 +72,15 @@ class DownloadSubsetController extends EntrySearchControllerBase
     {
         // Check the mapping is valid
         $projectMapping = $this->requestedProject->getProjectMapping();
-        $params = $this->getRequestOptions($request, Config::get('ec5Limits.entries_table.per_page'));
+        $params = $this->prepareSearchParams($request, Config::get('ec5Limits.entries_table.per_page'));
 
-        //Get raw query params,  $this->getRequestOptions is doing some filtering
+        //Get raw query params,  $this->prepareSearchParams is doing some filtering
         $rawParams = $request->all();
 
         $cookieName = Config::get('ec5Strings.cookies.download-entries');
 
         // Validate the options and query string
-        if (!$this->validateOptions($params)) {
+        if (!$this->validateSearchParams($params)) {
             return $this->apiResponse->errorResponse(400, $this->validateErrors);
         }
 

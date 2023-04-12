@@ -47,7 +47,7 @@ class DownloadController extends EntrySearchControllerBase
     /**
      * @var
      */
-    protected $allowedSearchKeys;
+    protected $allowedSearchParams;
 
     /**
      * DownloadController constructor.
@@ -81,7 +81,7 @@ class DownloadController extends EntrySearchControllerBase
             $ruleAnswers
         );
 
-        $this->allowedSearchKeys = Config::get('ec5Enums.download_data_entries');
+        $this->allowedSearchParams = Config::get('ec5Enums.download_data_entries');
         $this->fileCreateRepository = $fileCreateRepository;
     }
 
@@ -93,7 +93,7 @@ class DownloadController extends EntrySearchControllerBase
     public function index(Request $request, DownloadValidator $downloadValidator)
     {
         $user = Auth::user();
-        $options = $this->getRequestOptions($request, Config::get('ec5Limits.entries_table.per_page_download'));
+        $searchParams = $this->prepareSearchParams($request, Config::get('ec5Limits.entries_table.per_page_download'));
 
         $cookieName = Config::get('ec5Strings.cookies.download-entries');
 
@@ -102,7 +102,7 @@ class DownloadController extends EntrySearchControllerBase
         }
 
         // Validate the options
-        $downloadValidator->validate($options);
+        $downloadValidator->validate($searchParams);
         if ($this->ruleQueryString->hasErrors()) {
             return $this->apiResponse->errorResponse(400, $this->ruleQueryString->errors());
         }
@@ -121,8 +121,8 @@ class DownloadController extends EntrySearchControllerBase
         }
 
         // Default format if not supplied
-        if (!isset($options['format']) || empty($options['format'])) {
-            $options['format'] = Config::get('ec5Enums.download_data_entries_format_default');
+        if (!isset($searchParams['format']) || empty($searchParams['format'])) {
+            $searchParams['format'] = Config::get('ec5Enums.download_data_entries_format_default');
         }
 
         // Setup storage
@@ -142,12 +142,12 @@ class DownloadController extends EntrySearchControllerBase
         $projectDir = $projectDir . '/' . $user->id;
 
         // Try and create the files
-        $this->fileCreateRepository->create($this->requestedProject, $projectDir, $options);
+        $this->fileCreateRepository->create($this->requestedProject, $projectDir, $searchParams);
         if ($this->fileCreateRepository->hasErrors()) {
             return $this->apiResponse->errorResponse(400, $this->fileCreateRepository->errors());
         }
 
-        $zipName = $this->requestedProject->slug . '-' . $options['format'] . '.zip';
+        $zipName = $this->requestedProject->slug . '-' . $searchParams['format'] . '.zip';
         return $this->returnZip($projectDir . '/' . $zipName, $zipName, $timestamp);
     }
 
@@ -377,12 +377,12 @@ class DownloadController extends EntrySearchControllerBase
     public function subset(Request $request, DownloadValidator $downloadValidator)
     {
 
-        $options = $this->getRequestOptions($request, Config::get('ec5Limits.entries_table.per_page_download'));
+        $searchParams = $this->prepareSearchParams($request, Config::get('ec5Limits.entries_table.per_page_download'));
 
         $cookieName = Config::get('ec5Strings.cookies.download-entries');
 
         // Validate the options
-        $downloadValidator->validate($options);
+        $downloadValidator->validate($searchParams);
         if ($this->ruleQueryString->hasErrors()) {
             return $this->apiResponse->errorResponse(400, $this->ruleQueryString->errors());
         }
@@ -401,8 +401,8 @@ class DownloadController extends EntrySearchControllerBase
         }
 
         // Default format if not supplied
-        if (!isset($options['format']) || empty($options['format'])) {
-            $options['format'] = Config::get('ec5Enums.download_data_entries_format_default');
+        if (!isset($searchParams['format']) || empty($searchParams['format'])) {
+            $searchParams['format'] = Config::get('ec5Enums.download_data_entries_format_default');
         }
 
         // Setup storage
@@ -421,12 +421,12 @@ class DownloadController extends EntrySearchControllerBase
 
 
         // Try and create the files
-        $this->fileCreateRepository->create($this->requestedProject, $projectDir, $options);
+        $this->fileCreateRepository->create($this->requestedProject, $projectDir, $searchParams);
         if ($this->fileCreateRepository->hasErrors()) {
             return $this->apiResponse->errorResponse(400, $this->fileCreateRepository->errors());
         }
 
-        $zipName = $this->requestedProject->slug . '-' . $options['format'] . '.zip';
+        $zipName = $this->requestedProject->slug . '-' . $searchParams['format'] . '.zip';
 
         return $this->returnZip($projectDir . '/' . $zipName, $zipName, $timestamp);
     }
