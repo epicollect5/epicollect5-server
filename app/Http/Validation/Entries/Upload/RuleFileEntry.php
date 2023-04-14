@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Storage;
 use Config;
 use Log;
 use Exception;
+use File;
 
 class RuleFileEntry extends EntryValidationBase
 {
@@ -105,7 +106,6 @@ class RuleFileEntry extends EntryValidationBase
      */
     public function additionalChecks(Project $project, EntryStructure $entryStructure)
     {
-
         if (!$this->isValidFile($entryStructure)) {
             EC5Logger::error('File upload failed - isValidFile function', $project, $this->errors());
             return;
@@ -115,24 +115,18 @@ class RuleFileEntry extends EntryValidationBase
          * If the file does not have a question it belongs to, it means the user is uploading
          * some media files for a question which got deleted. Updating the project on the mobile app
          * does not consider these files (at least on version 2.0.9 and below)
-         * therefore let's go on with the upload but save the file in the "orphan" folder
+         * therefore let's go on with the upload but ignore the file and clear the error
          * 
          * we can purge the orphan folder every now and then, 
          * going forward no files will be saved there anyway
          */
         if (!$this->fileInputExists($project, $entryStructure)) {
-
             // Get input_ref and entry
             $fileEntry = $entryStructure->getEntry();
             $inputRef = $fileEntry['input_ref'];
 
             //the error is $this->errors[$inputRef] = ['ec5_84'];
             unset($this->errors[$inputRef]);
-
-            $this->moveOrphanFile($project, $entryStructure);
-            if ($this->hasErrors()) {
-                EC5Logger::error('File upload failed - moveOrphanFile function', $project, $this->errors());
-            }
             return;
         }
 
@@ -148,11 +142,6 @@ class RuleFileEntry extends EntryValidationBase
 
             //the error is $this->errors[$entryUuid] = ['ec5_46'];
             unset($this->errors[$entryUuid]);
-
-            $this->moveOrphanFile($project, $entryStructure);
-            if ($this->hasErrors()) {
-                EC5Logger::error('File upload failed - moveOrphanFile function', $project, $this->errors());
-            }
             return;
         }
 
@@ -170,7 +159,6 @@ class RuleFileEntry extends EntryValidationBase
      */
     public function isValidFile(EntryStructure $entryStructure, $isWebFile = false)
     {
-
         // Get the entry data
         $fileEntry = $entryStructure->getEntry();
         $fileType = $fileEntry['type'];
@@ -396,14 +384,21 @@ class RuleFileEntry extends EntryValidationBase
         }
     }
 
+    //not used, here for reference
+    public function removeOrphanFile(EntryStructure $entryStructure)
+    {
+        $fileRealPath =  $entryStructure->getFile()->getRealPath();
+        File::delete($fileRealPath);
+        return true;
+    }
 
+    //legacy, not used anymore
     public function moveOrphanFile(Project $project, EntryStructure $entryStructure)
     {
         $projectRef = $project->ref;
 
         // Get the entry data
         $fileEntry = $entryStructure->getEntry();
-
         $fileType = $fileEntry['type'];
         $fileName = $fileEntry['name'];
         $inputRef = $fileEntry['input_ref'];
