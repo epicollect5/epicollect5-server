@@ -32,9 +32,15 @@ window.EC5.project_users = window.EC5.project_users || {};
             dataType: 'json',
             data: data
         }).done(function (data) {
-            deferred.resolve(data);
+            //update role counters
+            $.when(window.EC5.project_users.updateRoleCounters()).always(function () {
+                deferred.resolve(data);
+            });
         }).fail(function (error) {
-            deferred.reject(error);
+            //update role counters anyway
+            $.when(window.EC5.project_users.updateRoleCounters()).always(function () {
+                deferred.reject(error);
+            });
         });
 
         return deferred.promise();

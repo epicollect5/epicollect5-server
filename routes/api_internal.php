@@ -95,10 +95,13 @@ Route::group(['middleware' => ['project.permissions.required.role']], function (
 });
 
 
-//Following routes reauired authentication (to be logged in)
+//Following routes required authentication (to be logged in)
 Route::group(['middleware' => 'auth'], function () {
     // Check a project name exists
     Route::get('api/internal/exists/{project_slug}', 'Api\Projects\ProjectController@exists');
+
+    //request user account deletion
+    Route::post('/api/internal/profile/account-deletion-request', 'Api\Auth\AccountController@handleDeletionRequest');
 
     // Proxies. 
     Route::get('api/proxies/opencage/{search}', 'Api\Proxies\OpenCageController@fetchAPI');

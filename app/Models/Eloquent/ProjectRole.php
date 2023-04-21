@@ -35,7 +35,6 @@ class ProjectRole extends Model
                 ->delete();
 
             return $affectedRows;
-
         } catch (\Exception $e) {
             \Log::error('Exception removing users by role in bulk',  [
                 'projectId' => $projectId,
@@ -56,7 +55,6 @@ class ProjectRole extends Model
                 ->update(['role' => $newRole]);
 
             return $affectedRows;
-
         } catch (\Exception $e) {
             \Log::error('Exception switching user role',  [
                 'projectId' => $projectId,
@@ -65,6 +63,24 @@ class ProjectRole extends Model
 
             return -1;
         }
+    }
 
+    public function getCountByRole($projectId)
+    {
+        return DB::table($this->table)
+            ->selectRaw('role, count(*) as total')
+            ->where('project_id', '=', $projectId)
+            ->groupBy('role')
+            ->get()
+            ->keyBy('role')
+            ->toArray();
+    }
+    public function getCountOverlall($projectId)
+    {
+        return DB::table($this->table)
+            ->selectRaw('count(*) as total')
+            ->where('project_id', '=', $projectId)
+            ->get()
+            ->first();
     }
 }

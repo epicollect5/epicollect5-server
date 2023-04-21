@@ -104,4 +104,39 @@ window.EC5.project_users = window.EC5.project_users || {};
         return deferred.promise();
     }
 
+    module.getTotalsByRole = function (projectSlug) {
+
+        var deferred = new $.Deferred();
+        var url = window.EC5.SITE_URL + '/api/internal/project-users/' + projectSlug;
+
+        // Make ajax request to load users
+        $.ajax({
+            url: url,
+            type: 'GET',
+            dataType: 'json'
+        }).done(function (response) {
+
+            var users = {
+                creator: 0,
+                manager: 0,
+                curator: 0,
+                collector: 0,
+                viewer: 0
+            };
+            //do a bit of parsing
+            $(response.data).each(function (i, user) {
+                users[user.role]++;
+            });
+
+
+
+            deferred.resolve(users);
+
+        }).fail(function (error) {
+            deferred.reject(error);
+        });
+
+        return deferred.promise();
+    }
+
 }(window.EC5.project_users));

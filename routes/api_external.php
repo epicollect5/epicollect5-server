@@ -164,3 +164,9 @@ Route::group(['middleware' => ['throttle:240,1']], function () {
         Route::post('api/import/entries/{project_slug}', 'Api\Entries\Upload\UploadController@import')->name('private-import');
     });
 });
+
+//Following routes required authentication (to be logged in)
+Route::group(['middleware' => 'auth'], function () {
+    //request user account deletion
+    Route::get('/api/profile/account-deletion-request', 'Api\Auth\AccountController@handleDeletionRequest');
+});

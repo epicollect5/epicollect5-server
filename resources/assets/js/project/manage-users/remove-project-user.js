@@ -53,7 +53,6 @@ window.EC5.project_users = window.EC5.project_users || {};
                     window.EC5.toast.showSuccess(data.data.message);
                     window.EC5.overlay.fadeOut();
                 }, config.consts.ANIMATION_NORMAL);
-
             }, function (error) {
 
                 window.setTimeout(function () {

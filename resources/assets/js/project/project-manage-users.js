@@ -46,80 +46,93 @@ $(document).ready(function () {
     }));
 
     //switch role of a user
-    // event is attched to parent and filtered so it will work on newly added elements
+    // event is attached to parent and filtered so it will work on newly added elements
     $('.page-manage-users .tab-content .panel-body')
         .off().on('click', '.manage-project-users__switch-role', function () {
 
-        var projectSlug = $(this).data('project-slug');
-        var userRole = $(this).data('user-role');
-        var userEmail = $(this).data('user-email');
-        var modal = $('#ec5SwitchUserRole');
+            var projectSlug = $(this).data('project-slug');
+            var userRole = $(this).data('user-role');
+            var userEmail = $(this).data('user-email');
+            var modal = $('#ec5SwitchUserRole');
 
-        //pre fill user email
-        modal.find('.user-email strong').text(userEmail);
+            //pre fill user email
+            modal.find('.user-email strong').text(userEmail);
 
-        //show all roles
-        var availableRoles = $.map(config.consts.ROLES, function (value) {
-            return value;
-        });
-
-        $(availableRoles).each(function (key, value) {
-            modal.find('.role-' + value).show();
-        });
-
-        //hide current role from the radio options (useless to show it)
-        modal.find('.role-' + userRole).hide();
-
-        //disable confirm button
-        modal.find('.switch-role-confirm').attr('disabled', true);
-
-        //deselect all radio
-        modal.find('input:radio').prop('checked', false);
-
-        modal.modal('show');
-
-        modal.on('shown.bs.modal', function (e) {
-            // do something...
-            var newRole = null;
-
-            modal.find('.users__pick-role .radio label').off().on('click', function () {
-
-                //get the new role
-                newRole = modal.find('.users__pick-role').find('.radio input:checked').val();
-
-                //enable confirm button only when user pick a role
-                modal.find('.switch-role-confirm').attr('disabled', false);
+            //show all roles
+            var availableRoles = $.map(config.consts.ROLES, function (value) {
+                return value;
             });
 
-            //on click confirm, switch role
-            modal.find('.switch-role-confirm').off().on('click', function () {
+            $(availableRoles).each(function (key, value) {
+                modal.find('.role-' + value).show();
+            });
 
-                if (newRole === null) {
-                    return false;
-                }
+            //hide current role from the radio options (useless to show it)
+            modal.find('.role-' + userRole).hide();
 
-                if (!projectSlug || !userEmail) {
-                    return false;
-                }
+            //disable confirm button
+            modal.find('.switch-role-confirm').attr('disabled', true);
 
-                window.EC5.overlay.fadeIn();
+            //deselect all radio
+            modal.find('input:radio').prop('checked', false);
 
-                //on response, hide modal and show notification
-                $.when(window.EC5.project_users
-                    .switchUserRole(projectSlug, userEmail, userRole, newRole))
-                    .done(function (response) {
+            modal.modal('show');
 
-                        var pageName = 'page-' + userRole;
+            modal.on('shown.bs.modal', function (e) {
+                // do something...
+                var newRole = null;
 
-                        //update user list for active tab
-                        //refresh list of users
-                        $.when(window.EC5.project_users.getProjectUsers(pageName, 1).then(function (data) {
-                            // Update the relevant page section
-                            $('.manage-project-users__' + pageName).html(data);
-                            modal.modal('hide');
-                            window.EC5.toast.showSuccess(response.data.message);
-                            window.EC5.overlay.fadeOut();
-                        }, function (error) {
+                modal.find('.users__pick-role .radio label').off().on('click', function () {
+
+                    //get the new role
+                    newRole = modal.find('.users__pick-role').find('.radio input:checked').val();
+
+                    //enable confirm button only when user pick a role
+                    modal.find('.switch-role-confirm').attr('disabled', false);
+                });
+
+                //on click confirm, switch role
+                modal.find('.switch-role-confirm').off().on('click', function () {
+
+                    if (newRole === null) {
+                        return false;
+                    }
+
+                    if (!projectSlug || !userEmail) {
+                        return false;
+                    }
+
+                    window.EC5.overlay.fadeIn();
+
+                    //on response, hide modal and show notification
+                    $.when(window.EC5.project_users
+                        .switchUserRole(projectSlug, userEmail, userRole, newRole))
+                        .done(function (response) {
+
+                            var pageName = 'page-' + userRole;
+
+                            //update user list for active tab
+                            //refresh list of users
+                            $.when(window.EC5.project_users.getProjectUsers(pageName, 1).then(function (data) {
+                                // Update the relevant page section
+                                $('.manage-project-users__' + pageName).html(data);
+                                modal.modal('hide');
+                                window.EC5.toast.showSuccess(response.data.message);
+                                window.EC5.overlay.fadeOut();
+
+                            }, function (error) {
+                                window.EC5.overlay.fadeOut();
+                                if (error.responseJSON) {
+                                    window.EC5.toast.showError(error.responseJSON.errors[0].title);
+                                }
+                                else {
+                                    window.EC5.toast.showError(error);
+                                }
+                                modal.modal('hide');
+
+                            }));
+                        }).fail(function (error) {
+                            console.log(error);
                             window.EC5.overlay.fadeOut();
                             if (error.responseJSON) {
                                 window.EC5.toast.showError(error.responseJSON.errors[0].title);
@@ -128,22 +141,10 @@ $(document).ready(function () {
                                 window.EC5.toast.showError(error);
                             }
                             modal.modal('hide');
-
-                        }));
-                    }).fail(function (error) {
-                    console.log(error);
-                    window.EC5.overlay.fadeOut();
-                    if (error.responseJSON) {
-                        window.EC5.toast.showError(error.responseJSON.errors[0].title);
-                    }
-                    else {
-                        window.EC5.toast.showError(error);
-                    }
-                    modal.modal('hide');
+                        });
                 });
-            });
-        })
-    });
+            })
+        });
 
 
     // Bind on click to pagination links
@@ -267,7 +268,6 @@ $(document).ready(function () {
         var search = container.find('.manage-project-users__user-search').val();
 
         window.EC5.project_users.removeUserProjectRole(url, formData, pageName, page, search);
-
     });
 
     // Bind on click to add existing user from modal

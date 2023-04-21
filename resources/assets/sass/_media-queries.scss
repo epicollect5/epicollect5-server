@@ -23,7 +23,8 @@
 //less than 768, so mobile phones
 @media all and (max-width: 767px) {
   .page-profile {
-    .btn {
+    .btn-action,
+    .btn-default {
       width: 150px !important;
     }
   }

@@ -11,6 +11,38 @@ $(document).ready(function () {
     }
 
     var appleConnectBtn = pageLogin.find('.btn-connect-apple');
+    var deleteAccountBtn = pageLogin.find('.btn-confirm-account-deletion');
+    var deleteAccountModal = pageLogin.find('#modal__account-deletion');
+
+    deleteAccountBtn.on('click', function (e) {
+        window.EC5.overlay.fadeIn();
+        var url = window.EC5.SITE_URL + '/api/internal/profile/account-deletion-request';
+        //send request to endpoint for email account deletion
+        $.ajax({
+            url: url,
+            type: 'POST'
+        }).done(function (response) {
+            console.log(response);
+            if (response.data.accepted === true) {
+                window.EC5.toast.showSuccess('Account deletion request sent.');
+            }
+            else {
+                window.EC5.toast.showError('Somethng went wrong');
+            }
+        }).fail(function (error) {
+            if (error.responseJSON.errors) {
+                // Show the errors
+                if (error.responseJSON.errors.length > 0) {
+                    for (var i = 0; i < error.responseJSON.errors.length; i++) {
+                        window.EC5.toast.showError(error.responseJSON.errors[i].title);
+                    }
+                }
+            }
+        }).always(function () {
+            window.EC5.overlay.fadeOut();
+            deleteAccountModal.modal('hide');
+        });
+    });
 
     appleConnectBtn.on('click', function (e) {
 

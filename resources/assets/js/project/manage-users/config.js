@@ -24,6 +24,7 @@ window.EC5.project_users = window.EC5.project_users || {};
             ANIMATION_FAST: 200,
             ANIMATION_NORMAL: 500,
             ROLES: {
+                CREATOR: 'creator',
                 MANAGER: 'manager',
                 CURATOR: 'curator',
                 COLLECTOR: 'collector',

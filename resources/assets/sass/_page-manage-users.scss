@@ -1,4 +1,11 @@
 .page-manage-users {
+  .count-overall {
+    font-size: 11px !important;
+    color: #333 !important;
+    font-weight: bold !important;
+    background-color: #fff !important;
+    border: 1px solid #ccc !important;
+  }
   min-height: 620px;
   .tab-content {
     .panel-heading {
@@ -20,11 +27,19 @@
     td {
       vertical-align: middle;
       .form-group {
-        margin:0;
+        margin: 0;
       }
     }
   }
-
+  .nav-tabs-roles {
+    .badge {
+      font-size: 11px;
+      color: #333;
+      font-weight: bold;
+      background-color: #fff !important;
+      border: 1px solid #ccc !important;
+    }
+  }
 }
 #ec5ModalImportUsers {
   hr {
@@ -32,5 +47,5 @@
   }
 }
 .manage-project-users_by-role {
-  margin-top:4px;
+  margin-top: 4px;
 }
