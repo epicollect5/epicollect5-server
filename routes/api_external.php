@@ -166,7 +166,7 @@ Route::group(['middleware' => ['throttle:240,1']], function () {
 });
 
 //Following routes required authentication (to be logged in)
-Route::group(['middleware' => 'auth'], function () {
+Route::group(['middleware' => ['auth', 'throttle:1,60']], function () {
     //request user account deletion
     Route::get('/api/profile/account-deletion-request', 'Api\Auth\AccountController@handleDeletionRequest');
 });

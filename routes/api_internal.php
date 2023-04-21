@@ -100,11 +100,14 @@ Route::group(['middleware' => 'auth'], function () {
     // Check a project name exists
     Route::get('api/internal/exists/{project_slug}', 'Api\Projects\ProjectController@exists');
 
-    //request user account deletion
-    Route::post('/api/internal/profile/account-deletion-request', 'Api\Auth\AccountController@handleDeletionRequest');
-
     // Proxies. 
     Route::get('api/proxies/opencage/{search}', 'Api\Proxies\OpenCageController@fetchAPI');
+});
+
+//throttle this route so we do not get a lot of deletion requests by the same user
+Route::group(['middleware' => ['auth', 'throttle:1,60']], function () {
+    //request user account deletion
+    Route::post('/api/internal/profile/account-deletion-request', 'Api\Auth\AccountController@handleDeletionRequest');
 });
 
 Route::group(['middleware' => 'auth.admin'], function () {
