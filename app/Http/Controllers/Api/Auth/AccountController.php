@@ -3,9 +3,7 @@
 namespace ec5\Http\Controllers\Api\Auth;
 
 use ec5\Http\Controllers\Api\ApiResponse;
-use ec5\Libraries\Jwt\JwtUserProvider;
 use ec5\Http\Controllers\Controller;
-use Config;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 
