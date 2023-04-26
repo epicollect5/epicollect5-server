@@ -12,7 +12,6 @@ class UserRoutesTest extends TestCase
      */
     public function testActiveAuthUserRoutes()
     {
-
         $user = factory(User::class)->create();
         $this->actingAs($user);
         $user->state = 'active';
@@ -21,6 +20,9 @@ class UserRoutesTest extends TestCase
         $response->assertStatus(200);
 
         $response = $this->get('/myprojects');
+        $response->assertStatus(200);
+
+        $response = $this->get('/profile');
         $response->assertStatus(200);
 
         $response = $this->get('/myprojects/create');
@@ -54,6 +56,9 @@ class UserRoutesTest extends TestCase
         $response->assertRedirect('/login');
 
         $response = $this->get('/logout');
+        $response->assertRedirect('/login');
+
+        $response = $this->get('/profile');
         $response->assertRedirect('/login');
 
         $response = $this->get('/admin');
