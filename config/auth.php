@@ -43,7 +43,7 @@ return [
 
         'api_internal' => [
             'driver' => 'session',
-            'provider' => 'session_users',
+            'provider' => 'users',
         ],
 
         'api_external' => [

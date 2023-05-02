@@ -53,7 +53,8 @@
 
 <div class="row flexbox">
     <div class="col-sm-12 col-md-12 col-lg-7 equal-height details-view__wrapper">
-        <div id="details-view" class="panel panel-default project-details-panel @if ($showPanel != 'details-view')ec5-hide-block @endif ">
+        <div id="details-view"
+            class="panel panel-default project-details-panel @if ($showPanel != 'details-view') ec5-hide-block @endif ">
             <div class="panel-heading">
                 <h4>{{ trans('site.project_details') }}</h4>
                 @if ($requestedProjectRole->canEditProject())
@@ -65,11 +66,10 @@
             <div class="panel-body">
                 <div class="details-view__logo-wrapper">
                     <img class="img-responsive img-thumbnail img-circle pull-left" width="128" height="128"
-                        alt="Project logo" src=" @if ($project->logo_url == '')
-                    {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
+                        alt="Project logo"
+                        src=" @if ($project->logo_url == '') {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
                 @else
-                    {{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb') }}
-                    @endif">
+                    {{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb') }} @endif">
                 </div>
 
                 <div class="details-view__project-details">
@@ -90,7 +90,8 @@
             </div>
         </div>
 
-        <div id="details-edit" class="panel panel-default project-details-panel @if ($showPanel != 'details-edit') ec5-hide-block @endif ">
+        <div id="details-edit"
+            class="panel panel-default project-details-panel @if ($showPanel != 'details-edit') ec5-hide-block @endif ">
             <div class="panel-heading">
                 <h4>{{ trans('site.project_details') }}</h4>
                 <button class="btn btn-default btn-action pull-right btn-sm project-details__edit">
@@ -106,7 +107,7 @@
                         <label class="control-label">{{ trans('site.small_desc') }}</label>
                         <input required type="text" class="form-control" name="small_description"
                             placeholder="{{ trans('site.small_desc_placeholder') }}" maxlength="100"
-                            value="@if (old('small_description')){{ old('small_description') }}@else{{ $project->small_description }}@endif">
+                            value="@if (old('small_description')) {{ old('small_description') }}@else{{ $project->small_description }} @endif">
                         {{-- @if ($errors->has('small_description'))
                             <small>{{ $errors->first('small_description') }}</small> @endif --}}
                     </div>
@@ -125,8 +126,11 @@
 
                     <div class="form-group">
                         <label class="control-label">{{ trans('site.desc') }}</label>
-                        <textarea class="form-control project-long-description" name="description"
-                            rows="5">@if (old('description')){{ old('description') }}@else{{ $project->description }}@endif</textarea>
+                        <textarea class="form-control project-long-description" name="description" rows="5">
+@if (old('description'))
+{{ old('description') }}@else{{ $project->description }}
+@endif
+</textarea>
                     </div>
 
                     <div class="form-group">
@@ -158,12 +162,10 @@
 
                                         <div class="btn-group">
                                             @foreach (Config::get('ec5Enums.projects_access') as $p)
-
                                                 <div data-setting-type="access" data-value="{{ $p }}"
                                                     class="btn btn-default btn-sm settings-access
                                              btn-settings-submit">
                                                     {{ $p }}</div>
-
                                             @endforeach
                                         </div>
                                     </td>
@@ -189,7 +191,10 @@
                                              btn-settings-submit">
                                                 {{ trans('site.restore') }}</div>
 
-                                            @if ($requestedProjectRole->getUser()->isSuperAdmin() || $requestedProjectRole->getUser()->isAdmin() || $requestedProjectRole->canDeleteProject())
+                                            @if (
+                                                $requestedProjectRole->getUser()->isSuperAdmin() ||
+                                                    $requestedProjectRole->getUser()->isAdmin() ||
+                                                    $requestedProjectRole->canDeleteProject())
                                                 <a data-setting-type="status" data-value="delete"
                                                     class="btn btn-danger btn-sm settings-status"
                                                     href="{{ url('myprojects') . '/' . $project->slug . '/delete' }}">
@@ -218,12 +223,10 @@
 
                                         <div class="btn-group">
                                             @foreach (Config::get('ec5Enums.projects_visibility') as $p)
-
                                                 <div data-setting-type="visibility" data-value="{{ $p }}"
                                                     class="btn btn-default btn-sm settings-visibility
                                              btn-settings-submit">
                                                     {{ $p }}</div>
-
                                             @endforeach
                                         </div>
 
@@ -236,12 +239,9 @@
                                             <select id="project-category" class="form-control"
                                                 aria-labelledby="listProjectCategories">
                                                 @foreach (Config::get('ec5Enums.project_categories') as $cat)
-
-
-                                                    <option value="{{ $cat }}" @if ($project->category == $cat) selected @endif>
+                                                    <option value="{{ $cat }}"
+                                                        @if ($project->category == $cat) selected @endif>
                                                         {{ trans('site.project_categories.' . $cat) }}</option>
-
-
                                                 @endforeach
                                             </select>
                                         </div>
@@ -264,23 +264,11 @@
             <div class="panel-body project-details-panel--feedback text-center">
                 <span>
 
-                    <strong>Found a bug? Have a question?
+                    <strong>Found a bug? Have a question? Ask the Community at
                         <a href="https://community.epicollect.net" target="_blank">
-                            Ask our Community!
+                            community.epicollect.net
                         </a>
                     </strong>
-                </span>
-                <hr />
-                <span>
-                    Do you like Epicollect5? Please consider rating us on the
-                    <a href="https://play.google.com/store/apps/details?id=uk.ac.imperial.epicollect.five&hl=en_GB"
-                        target="_blank">Play Store</a>
-                    or
-                    <a href="https://itunes.apple.com/us/app/epicollect5/id1183858199?mt=8" target="_blank">App
-                        Store</a>
-                    , thanks!
-                    <i class="fa fa-thumbs-up" aria-hidden="true"></i>
-
                 </span>
             </div>
         </div>
@@ -341,9 +329,10 @@
 @endif
 
 {{-- js variables --}}
-<div class="js-project-details hidden" data-js-status="{{ $project->status }}" data-js-access="{{ $project->access }}"
-    data-js-visibility="{{ $project->visibility }}" data-js-logo_url="{{ $project->logo_url }}"
-    data-js-category="{{ $project->category }}" data-js-slug="{{ $project->slug }}">
+<div class="js-project-details hidden" data-js-status="{{ $project->status }}"
+    data-js-access="{{ $project->access }}" data-js-visibility="{{ $project->visibility }}"
+    data-js-logo_url="{{ $project->logo_url }}" data-js-category="{{ $project->category }}"
+    data-js-slug="{{ $project->slug }}">
 </div>
 
 @section('scripts')

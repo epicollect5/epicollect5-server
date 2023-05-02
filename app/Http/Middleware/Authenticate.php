@@ -35,6 +35,11 @@ class Authenticate extends MiddlewareBase
             }
         }
 
+        //imp:
+        //here it will use the default guard set in RouteServiceProvider
+        //for that route group. $guard is always null here, who knows...
+        //but Auth::getDefaultDriver() will give one of 'web' or `api_external` guards
+        //api_external uses JwTGuard.php user() method to validate the bearer token from the request
         $user = Auth::guard($guard)->user();
 
         // Check if user is local and unverified

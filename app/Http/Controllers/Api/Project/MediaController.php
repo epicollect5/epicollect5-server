@@ -36,10 +36,7 @@ class MediaController extends ProjectControllerBase
         // todo get the uuid if the media is entry media
         // so collectors can only view their own media
         // Check permissions
-
         $input = $request->all();
-        $inputType = $input['type'];
-
 
         // Validate the options
         $mediaValidator->validate($input);
@@ -47,6 +44,7 @@ class MediaController extends ProjectControllerBase
             return $apiResponse->errorResponse(400, $mediaValidator->errors());
         }
 
+        $inputType = $input['type'];
         $format = $request->query('format');
         if ($format === 'project_mobile_logo') {
             //randomly slow down api responses to avoid out of memory errors
@@ -198,13 +196,15 @@ class MediaController extends ProjectControllerBase
     {
 
         $input = $request->all();
-        $inputType = $input['type'];
+
 
         // Validate the options
         $mediaValidator->validate($input);
         if ($mediaValidator->hasErrors()) {
             return $apiResponse->errorResponse(400, $mediaValidator->errors());
         }
+
+        $inputType = $input['type'];
 
         // Set up type and content type
         switch ($inputType) {
