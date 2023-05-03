@@ -31,7 +31,7 @@ class ExternalRoutesTest extends TestCase
 
     public function testPrivateExternalRoutesWithJWT()
     {
-        $manager = User::where('email', 'manager@unit.tests')->first();
+        $manager = User::where('email', env('MANAGER_EMAIL'))->first();
         $manager->state = 'active';
 
         //hack: do not use this api_external
@@ -48,7 +48,7 @@ class ExternalRoutesTest extends TestCase
         ]);
         //dd($response);
 
-      
+
 
 
 
@@ -69,9 +69,6 @@ class ExternalRoutesTest extends TestCase
                     "source" => "middleware"
                 ]
             ]]);
-
-
-       
     }
 
     /**

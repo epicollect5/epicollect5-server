@@ -32,3 +32,11 @@ $factory->define(ec5\Models\Eloquent\UserProvider::class, function (Faker\Genera
         'provider' => 'local'
     ];
 });
+
+$factory->define(ec5\Models\Eloquent\UserPasswordlessApi::class, function (Faker\Generator $faker, $params) {
+    return [
+        'email' => $params['email'],
+        'code' => $params['code'],
+        'expires_at' => $params['expires_at']
+    ];
+});
