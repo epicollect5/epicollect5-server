@@ -231,13 +231,13 @@ class AppleController extends AuthController
         //Does the email exists?
         if ($userPasswordless === null) {
             Log::error('Error validating passworless code', ['error' => 'Email does not exist']);
-            return $apiResponse->errorResponse(400, ['passwordless-api' => ['ec5_378']]);
+            return $apiResponse->errorResponse(400, ['api-login-apple' => ['ec5_378']]);
         }
 
         //check if the code is valid
         if (!$userPasswordless->isValidCode($code)) {
             Log::error('Error validating passworless code', ['error' => 'Code not valid']);
-            return $apiResponse->errorResponse(400, ['passwordless-api' => ['ec5_378']]);
+            return $apiResponse->errorResponse(400, ['api-login-apple' => ['ec5_378']]);
         }
 
         //code is valid, remove it
@@ -247,7 +247,7 @@ class AppleController extends AuthController
         $user = User::where('email', $email)->first();
         if ($user === null) {
             //this should never happen, but no harm in checking
-            return $apiResponse->errorResponse(400, ['passwordless-api' => ['ec5_34']]);
+            return $apiResponse->errorResponse(400, ['api-login-apple' => ['ec5_34']]);
         }
 
         //add the apple provider so next time no verification is needed
