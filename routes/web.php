@@ -188,7 +188,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('myprojects', 'Web\Projects\MyProjectsController@show')->name('my-projects');
     Route::get('myprojects/create', 'Web\Project\ProjectCreateController@show');
     Route::post('myprojects/create', 'Web\Project\ProjectCreateController@create');
-    Route::post('myprojects/import', 'Web\Project\ProjectCreateController@import');
+    Route::post('myprojects/import', 'Web\Project\ProjectImportController@import');
 
     // Set middleware to project.permissions.required.role
     Route::group(['middleware' => 'project.permissions.required.role'], function () {
