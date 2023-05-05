@@ -12,8 +12,6 @@ use Config;
 
 class RuleMappingStructure extends ValidationBase
 {
-
-
     protected $rules = [
         'name' => 'required|string|min:3|max:20|regex:/^[A-Za-z0-9 \-\_]+$/',
         'forms' => 'required|array',
@@ -47,7 +45,7 @@ class RuleMappingStructure extends ValidationBase
      * @param $mapping
      * @return bool
      */
-    public function additionalChecks(Project $project, $mapping) : bool
+    public function additionalChecks(Project $project, $mapping): bool
     {
         $projectExtra = $project->getProjectExtra();
 
@@ -66,7 +64,6 @@ class RuleMappingStructure extends ValidationBase
             if (!$this->checkInputs($projectExtra, $formRef, $inputs)) {
                 return false;
             }
-
         }
 
         return true;
@@ -79,7 +76,7 @@ class RuleMappingStructure extends ValidationBase
      * @param $formRef
      * @return bool
      */
-    private function checkForm(ProjectExtra $projectExtra, $formRef) : bool
+    private function checkForm(ProjectExtra $projectExtra, $formRef): bool
     {
         // Check the form ref exists
         if (count($projectExtra->getFormDetails($formRef)) == 0) {
@@ -98,7 +95,7 @@ class RuleMappingStructure extends ValidationBase
      * @param $mappedInputs
      * @return bool
      */
-    public function checkInputs(ProjectExtra $projectExtra, $formRef, $mappedInputs) : bool
+    public function checkInputs(ProjectExtra $projectExtra, $formRef, $mappedInputs): bool
     {
         $excludedTypes = Config::get('ec5Enums.exclude_from_mapping');
 
@@ -122,7 +119,6 @@ class RuleMappingStructure extends ValidationBase
             if (!$this->checkInput($projectExtra, $formRef, $mappedInput, $inputData)) {
                 return false;
             }
-
         }
 
         return true;
@@ -137,7 +133,7 @@ class RuleMappingStructure extends ValidationBase
      * @param $inputData
      * @return bool
      */
-    private function checkInput(ProjectExtra $projectExtra, $formRef, $mappedInput, $inputData) : bool
+    private function checkInput(ProjectExtra $projectExtra, $formRef, $mappedInput, $inputData): bool
     {
 
         // Check each input mapping against the mapping input validator
@@ -184,7 +180,7 @@ class RuleMappingStructure extends ValidationBase
      * @param $mappedPossibleAnswers
      * @return bool
      */
-    public function checkPossibleAnswers(ProjectExtra $projectExtra, $inputRef, $mappedPossibleAnswers) : bool
+    public function checkPossibleAnswers(ProjectExtra $projectExtra, $inputRef, $mappedPossibleAnswers): bool
     {
 
         foreach ($mappedPossibleAnswers as $answerRef => $possibleAnswerMapping) {
@@ -201,10 +197,8 @@ class RuleMappingStructure extends ValidationBase
                 $this->addAdditionalError($answerRef, 'ec5_233');
                 return false;
             }
-
         }
 
         return true;
     }
-
 }

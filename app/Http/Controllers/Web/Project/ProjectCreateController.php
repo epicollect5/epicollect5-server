@@ -14,6 +14,8 @@ use ec5\Http\Validation\Project\RuleImportRequest as ImportRequestValidator;
 
 use ec5\Http\Validation\Project\RuleImportJson as ImportJsonValidator;
 use ec5\Http\Validation\Project\RuleProjectDefinition as ProjectDefinitionValidator;
+use ec5\Http\Validation\Project\Mapping\RuleMappingUpdate;
+use ec5\Http\Validation\Project\Mapping\RuleMappingStructure;
 
 use ec5\Repositories\QueryBuilder\Project\CreateRepository as CreateProject;
 use ec5\Repositories\QueryBuilder\Project\DeleteRepository as DeleteProject;
@@ -159,7 +161,9 @@ class ProjectCreateController extends ProjectControllerBase
         CreateProject $createProject,
         ProjectDefinitionValidator $projectDefinitionValidator,
         ImportJsonValidator $importJsonValidator,
-        ImportRequestValidator $importRequestValidator
+        ImportRequestValidator $importRequestValidator,
+        RuleMappingUpdate $mappingUpdateValidator,
+        RuleMappingStructure $mappingStructureValidator
     ) {
 
         $this->type = ProjectCreateController::IMPORT;
@@ -212,6 +216,7 @@ class ProjectCreateController extends ProjectControllerBase
         }
 
         $projectDefinitionData = $data['data'];
+        $projectMapping =  $data['meta']['project_mapping'] ?? [];
 
         try {
             // Import this project
@@ -220,12 +225,17 @@ class ProjectCreateController extends ProjectControllerBase
                 $input['name'],
                 $input['created_by'],
                 $projectDefinitionData,
-                $projectDefinitionValidator
+                $projectDefinitionValidator,
+                $projectMapping,
+                $mappingUpdateValidator,
+                $mappingStructureValidator
             );
         } catch (ProjectImportException $e) {
+            \Log::error($e);
             $request->flash();
             return Redirect::to('myprojects/create')
                 ->withErrors($projectDefinitionValidator->errors())
+                ->withErrors($mappingUpdateValidator->errors())
                 ->with(['tab' => $this->type]);
         }
 

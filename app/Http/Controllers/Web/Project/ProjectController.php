@@ -82,7 +82,12 @@ class ProjectController extends ProjectControllerBase
     public function downloadStructure()
     {
         return new JsonResponse(
-            ['data' => $this->requestedProject->getProjectDefinition()->getData()],
+            [
+                'meta' => [
+                    'project_mapping' => $this->requestedProject->getProjectMapping()->getData()
+                ],
+                'data' => $this->requestedProject->getProjectDefinition()->getData()
+            ],
             200,
             [
                 'Content-disposition' => 'attachment; filename=' . $this->requestedProject->slug . '.json',

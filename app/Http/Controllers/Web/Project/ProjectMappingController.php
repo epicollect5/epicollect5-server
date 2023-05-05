@@ -44,21 +44,21 @@ class ProjectMappingController extends ProjectControllerBase
         }
 
         $projectMapping = $this->requestedProject->getProjectMapping();
-        $input = $this->request->all();
+        $inputs = $this->request->all();
 
         // Validate
-        $mappingCreateValidator->validate($input);
+        $mappingCreateValidator->validate($inputs);
         if ($mappingCreateValidator->hasErrors()) {
             return $apiResponse->errorResponse(422, $mappingCreateValidator->errors());
         }
         // Check for additional
-        $mappingCreateValidator->additionalChecks($projectMapping, $input);
+        $mappingCreateValidator->additionalChecks($projectMapping, $inputs);
         if ($mappingCreateValidator->hasErrors()) {
             return $apiResponse->errorResponse(422, $mappingCreateValidator->errors());
         }
 
         // Create the new custom map
-        $projectMapping->createCustomMap($input);
+        $projectMapping->createCustomMap($inputs);
         // Attempt to insert into the database
         $tryUpdate = $projectUpdate->updateProjectStructure($this->requestedProject);
         if ($tryUpdate) {
@@ -73,7 +73,6 @@ class ProjectMappingController extends ProjectControllerBase
 
         // DB insert error
         return $apiResponse->errorResponse(400, ['errors' => ['ec5_116']]);
-
     }
 
     /**
@@ -89,21 +88,21 @@ class ProjectMappingController extends ProjectControllerBase
         }
 
         $projectMapping = $this->requestedProject->getProjectMapping();
-        $input = $this->request->all();
+        $inputs = $this->request->all();
 
         // Validate
-        $mappingDeleteValidator->validate($input);
+        $mappingDeleteValidator->validate($inputs);
         if ($mappingDeleteValidator->hasErrors()) {
             return $apiResponse->errorResponse(422, $mappingDeleteValidator->errors());
         }
         // Check for additional
-        $mappingDeleteValidator->additionalChecks($projectMapping, $input);
+        $mappingDeleteValidator->additionalChecks($projectMapping, $inputs);
         if ($mappingDeleteValidator->hasErrors()) {
             return $apiResponse->errorResponse(422, $mappingDeleteValidator->errors());
         }
 
         // Delete the map
-        $projectMapping->deleteMap($input['map_index']);
+        $projectMapping->deleteMap($inputs['map_index']);
         // Attempt to insert into the database
         $tryUpdate = $projectUpdate->updateProjectStructure($this->requestedProject);
         if ($tryUpdate) {
@@ -116,7 +115,6 @@ class ProjectMappingController extends ProjectControllerBase
 
         // DB insert error
         return $apiResponse->errorResponse(400, ['errors' => ['ec5_116']]);
-
     }
 
     /**
@@ -131,52 +129,51 @@ class ProjectMappingController extends ProjectControllerBase
         ProjectUpdate $projectUpdate,
         MappingStructureValidator $mappingStructureValidator,
         MappingUpdateValidator $mappingUpdateValidator
-    )
-    {
+    ) {
         if (!$this->requestedProjectRole->canEditProject()) {
             return view('errors.gen_error')->withErrors(['errors' => 'ec5_91']);
         }
 
         $projectMapping = $this->requestedProject->getProjectMapping();
-        $input = $this->request->all();
+        $inputs = $this->request->all();
 
         // Validate
-        $mappingUpdateValidator->validate($input);
+        $mappingUpdateValidator->validate($inputs);
 
         if ($mappingUpdateValidator->hasErrors()) {
             return $apiResponse->errorResponse(422, $mappingUpdateValidator->errors());
         }
         // Check for additional
-        $mappingUpdateValidator->additionalChecks($projectMapping, $input);
+        $mappingUpdateValidator->additionalChecks($projectMapping, $inputs);
         if ($mappingUpdateValidator->hasErrors()) {
             return $apiResponse->errorResponse(422, $mappingUpdateValidator->errors());
         }
 
         // Determine the edit action
-        switch ($input['action']) {
+        switch ($inputs['action']) {
             case 'make-default':
                 // Make this map default
-                $projectMapping->setDefault($input['map_index']);
+                $projectMapping->setDefault($inputs['map_index']);
                 break;
             case 'rename':
                 // Rename this map
-                $projectMapping->renameMap($input['map_index'], $input['name']);
+                $projectMapping->renameMap($inputs['map_index'], $inputs['name']);
                 break;
             case 'update':
 
                 // Validate
-                $mappingStructureValidator->validate($input['mapping']);
+                $mappingStructureValidator->validate($inputs['mapping']);
                 if ($mappingStructureValidator->hasErrors()) {
                     return $apiResponse->errorResponse(422, $mappingStructureValidator->errors());
                 }
                 // Check additional (validate the mapping structure)
-                $mappingStructureValidator->additionalChecks($this->requestedProject, $input['mapping']);
+                $mappingStructureValidator->additionalChecks($this->requestedProject, $inputs['mapping']);
                 if ($mappingStructureValidator->hasErrors()) {
                     return $apiResponse->errorResponse(422, $mappingStructureValidator->errors());
                 }
 
                 // Update the entire map
-                $projectMapping->updateMap($input['map_index'], $input['mapping']);
+                $projectMapping->updateMap($inputs['map_index'], $inputs['mapping']);
                 break;
         }
 
@@ -194,5 +191,4 @@ class ProjectMappingController extends ProjectControllerBase
         // DB insert error
         return $apiResponse->errorResponse(400, ['errors' => ['ec5_116']]);
     }
-
 }

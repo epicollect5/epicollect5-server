@@ -20,7 +20,6 @@ class RuleMappingCreate extends ValidationBase
      */
     public function additionalChecks(ProjectMapping $projectMapping, $newMapDetails)
     {
-
         // Check we haven't reached the allowed number of maps
         if ($projectMapping->getMapCount() == Config::get('ec5Limits.project_mappings.allowed_maps')) {
             $this->addAdditionalError('mapping', 'ec5_229');
@@ -34,6 +33,5 @@ class RuleMappingCreate extends ValidationBase
                 return;
             }
         }
-
     }
 }
