@@ -1,12 +1,13 @@
-<?php 
+<?php
 
 namespace ec5\Repositories\Contracts;
 
 /**
- * Interface RepositoryInterface
+ * Interface RepositoryInterface, re-inventing the wheel 101
  * 
  */
-interface SearchInterface {
+interface SearchInterface
+{
 
     /**
      * @param array $columns
@@ -56,6 +57,4 @@ interface SearchInterface {
      * @return mixed
      */
     public function where($column, $operator = null, $value = null, $boolean = 'and');
-
-    
 }

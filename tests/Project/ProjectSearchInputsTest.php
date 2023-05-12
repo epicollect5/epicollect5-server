@@ -19,17 +19,8 @@ use Uuid;
 use Config;
 use Illuminate\Support\Str;
 
-class ProjectSearchInputsTest extends ProjectTest
+class ProjectSearchInputsTest extends TestCase
 {
-
-    /*
-    |--------------------------------------------------------------------------
-    | ProjectTest
-    |--------------------------------------------------------------------------
-    |
-    |
-    |
-    */
     protected $validator;
     protected $project;
     protected $projectExtraDetailsValidator;
@@ -83,7 +74,6 @@ class ProjectSearchInputsTest extends ProjectTest
             'slug' => Str::slug($formName, '-'),
             'inputs' => []
         ];
-
     }
 
     private function getSearchInputMock($formRef)
@@ -886,7 +876,6 @@ class ProjectSearchInputsTest extends ProjectTest
 
         $this->validator->validate($project);
         $this->assertFalse($this->validator->hasErrors());
-
     }
 
     public function testOneNestedGroupWithTooManySearchInputs()
@@ -942,7 +931,6 @@ class ProjectSearchInputsTest extends ProjectTest
 
         $this->validator->validate($project);
         $this->assertTrue($this->validator->hasErrors());
-
     }
 
     public function testFiveFormsEachWithAGroupHavingOneSearchInput()
@@ -973,27 +961,27 @@ class ProjectSearchInputsTest extends ProjectTest
         //add 1 branch input per each form
         $projectMock['forms'][0]['inputs'][0] = $this->getSearchInputMock($projectMock['forms'][0]['ref']);
         $projectMock['forms'][0]['inputs'][0]['type'] = 'group';
-        $inputRef= $projectMock['forms'][0]['inputs'][0]['ref'];
+        $inputRef = $projectMock['forms'][0]['inputs'][0]['ref'];
         $projectMock['forms'][0]['inputs'][0]['group'][0] = $this->getSearchInputMock($inputRef);
 
         $projectMock['forms'][1]['inputs'][0] = $this->getSearchInputMock($projectMock['forms'][1]['ref']);
         $projectMock['forms'][1]['inputs'][0]['type'] = 'group';
-        $inputRef= $projectMock['forms'][1]['inputs'][0]['ref'];
+        $inputRef = $projectMock['forms'][1]['inputs'][0]['ref'];
         $projectMock['forms'][1]['inputs'][0]['group'][0] = $this->getSearchInputMock($inputRef);
 
         $projectMock['forms'][2]['inputs'][0] = $this->getSearchInputMock($projectMock['forms'][2]['ref']);
         $projectMock['forms'][2]['inputs'][0]['type'] = 'group';
-        $inputRef= $projectMock['forms'][2]['inputs'][0]['ref'];
+        $inputRef = $projectMock['forms'][2]['inputs'][0]['ref'];
         $projectMock['forms'][2]['inputs'][0]['group'][0] = $this->getSearchInputMock($inputRef);
 
         $projectMock['forms'][3]['inputs'][0] = $this->getSearchInputMock($projectMock['forms'][3]['ref']);
         $projectMock['forms'][3]['inputs'][0]['type'] = 'group';
-        $inputRef= $projectMock['forms'][3]['inputs'][0]['ref'];
+        $inputRef = $projectMock['forms'][3]['inputs'][0]['ref'];
         $projectMock['forms'][3]['inputs'][0]['group'][0] = $this->getSearchInputMock($inputRef);
 
         $projectMock['forms'][4]['inputs'][0] = $this->getSearchInputMock($projectMock['forms'][4]['ref']);
         $projectMock['forms'][4]['inputs'][0]['type'] = 'group';
-        $inputRef= $projectMock['forms'][4]['inputs'][0]['ref'];
+        $inputRef = $projectMock['forms'][4]['inputs'][0]['ref'];
         $projectMock['forms'][4]['inputs'][0]['group'][0] = $this->getSearchInputMock($inputRef);
 
         //add inputs to project definition
@@ -1034,32 +1022,32 @@ class ProjectSearchInputsTest extends ProjectTest
         //add 1 branch input per each form
         $projectMock['forms'][0]['inputs'][0] = $this->getSearchInputMock($projectMock['forms'][0]['ref']);
         $projectMock['forms'][0]['inputs'][0]['type'] = 'group';
-        $inputRef= $projectMock['forms'][0]['inputs'][0]['ref'];
+        $inputRef = $projectMock['forms'][0]['inputs'][0]['ref'];
         $projectMock['forms'][0]['inputs'][0]['group'][0] = $this->getSearchInputMock($inputRef);
 
         $projectMock['forms'][1]['inputs'][0] = $this->getSearchInputMock($projectMock['forms'][1]['ref']);
         $projectMock['forms'][1]['inputs'][0]['type'] = 'group';
-        $inputRef= $projectMock['forms'][1]['inputs'][0]['ref'];
+        $inputRef = $projectMock['forms'][1]['inputs'][0]['ref'];
         $projectMock['forms'][1]['inputs'][0]['group'][0] = $this->getSearchInputMock($inputRef);
 
         $projectMock['forms'][2]['inputs'][0] = $this->getSearchInputMock($projectMock['forms'][2]['ref']);
         $projectMock['forms'][2]['inputs'][0]['type'] = 'group';
-        $inputRef= $projectMock['forms'][2]['inputs'][0]['ref'];
+        $inputRef = $projectMock['forms'][2]['inputs'][0]['ref'];
         $projectMock['forms'][2]['inputs'][0]['group'][0] = $this->getSearchInputMock($inputRef);
 
         $projectMock['forms'][3]['inputs'][0] = $this->getSearchInputMock($projectMock['forms'][3]['ref']);
         $projectMock['forms'][3]['inputs'][0]['type'] = 'group';
-        $inputRef= $projectMock['forms'][3]['inputs'][0]['ref'];
+        $inputRef = $projectMock['forms'][3]['inputs'][0]['ref'];
         $projectMock['forms'][3]['inputs'][0]['group'][0] = $this->getSearchInputMock($inputRef);
 
         $projectMock['forms'][4]['inputs'][0] = $this->getSearchInputMock($projectMock['forms'][4]['ref']);
         $projectMock['forms'][4]['inputs'][0]['type'] = 'group';
-        $inputRef= $projectMock['forms'][4]['inputs'][0]['ref'];
+        $inputRef = $projectMock['forms'][4]['inputs'][0]['ref'];
         $projectMock['forms'][4]['inputs'][0]['group'][0] = $this->getSearchInputMock($inputRef);
 
         $projectMock['forms'][4]['inputs'][1] = $this->getSearchInputMock($projectMock['forms'][4]['ref']);
         $projectMock['forms'][4]['inputs'][1]['type'] = 'group';
-        $inputRef= $projectMock['forms'][4]['inputs'][1]['ref'];
+        $inputRef = $projectMock['forms'][4]['inputs'][1]['ref'];
         $projectMock['forms'][4]['inputs'][1]['group'][0] = $this->getSearchInputMock($inputRef);
 
         //add inputs to project definition
@@ -1100,27 +1088,27 @@ class ProjectSearchInputsTest extends ProjectTest
         //add 1 branch input per each form
         $projectMock['forms'][0]['inputs'][0] = $this->getSearchInputMock($projectMock['forms'][0]['ref']);
         $projectMock['forms'][0]['inputs'][0]['type'] = 'branch';
-        $inputRef= $projectMock['forms'][0]['inputs'][0]['ref'];
+        $inputRef = $projectMock['forms'][0]['inputs'][0]['ref'];
         $projectMock['forms'][0]['inputs'][0]['branch'][0] = $this->getSearchInputMock($inputRef);
 
         $projectMock['forms'][1]['inputs'][0] = $this->getSearchInputMock($projectMock['forms'][1]['ref']);
         $projectMock['forms'][1]['inputs'][0]['type'] = 'branch';
-        $inputRef= $projectMock['forms'][1]['inputs'][0]['ref'];
+        $inputRef = $projectMock['forms'][1]['inputs'][0]['ref'];
         $projectMock['forms'][1]['inputs'][0]['branch'][0] = $this->getSearchInputMock($inputRef);
 
         $projectMock['forms'][2]['inputs'][0] = $this->getSearchInputMock($projectMock['forms'][2]['ref']);
         $projectMock['forms'][2]['inputs'][0]['type'] = 'branch';
-        $inputRef= $projectMock['forms'][2]['inputs'][0]['ref'];
+        $inputRef = $projectMock['forms'][2]['inputs'][0]['ref'];
         $projectMock['forms'][2]['inputs'][0]['branch'][0] = $this->getSearchInputMock($inputRef);
 
         $projectMock['forms'][3]['inputs'][0] = $this->getSearchInputMock($projectMock['forms'][3]['ref']);
         $projectMock['forms'][3]['inputs'][0]['type'] = 'branch';
-        $inputRef= $projectMock['forms'][3]['inputs'][0]['ref'];
+        $inputRef = $projectMock['forms'][3]['inputs'][0]['ref'];
         $projectMock['forms'][3]['inputs'][0]['branch'][0] = $this->getSearchInputMock($inputRef);
 
         $projectMock['forms'][4]['inputs'][0] = $this->getSearchInputMock($projectMock['forms'][4]['ref']);
         $projectMock['forms'][4]['inputs'][0]['type'] = 'branch';
-        $inputRef= $projectMock['forms'][4]['inputs'][0]['ref'];
+        $inputRef = $projectMock['forms'][4]['inputs'][0]['ref'];
         $projectMock['forms'][4]['inputs'][0]['branch'][0] = $this->getSearchInputMock($inputRef);
 
         //add inputs to project definition
@@ -1161,27 +1149,27 @@ class ProjectSearchInputsTest extends ProjectTest
         //add 1 branch input per each form
         $projectMock['forms'][0]['inputs'][0] = $this->getSearchInputMock($projectMock['forms'][0]['ref']);
         $projectMock['forms'][0]['inputs'][0]['type'] = 'branch';
-        $inputRef= $projectMock['forms'][0]['inputs'][0]['ref'];
+        $inputRef = $projectMock['forms'][0]['inputs'][0]['ref'];
         $projectMock['forms'][0]['inputs'][0]['branch'][0] = $this->getSearchInputMock($inputRef);
 
         $projectMock['forms'][1]['inputs'][0] = $this->getSearchInputMock($projectMock['forms'][1]['ref']);
         $projectMock['forms'][1]['inputs'][0]['type'] = 'branch';
-        $inputRef= $projectMock['forms'][1]['inputs'][0]['ref'];
+        $inputRef = $projectMock['forms'][1]['inputs'][0]['ref'];
         $projectMock['forms'][1]['inputs'][0]['branch'][0] = $this->getSearchInputMock($inputRef);
 
         $projectMock['forms'][2]['inputs'][0] = $this->getSearchInputMock($projectMock['forms'][2]['ref']);
         $projectMock['forms'][2]['inputs'][0]['type'] = 'branch';
-        $inputRef= $projectMock['forms'][2]['inputs'][0]['ref'];
+        $inputRef = $projectMock['forms'][2]['inputs'][0]['ref'];
         $projectMock['forms'][2]['inputs'][0]['branch'][0] = $this->getSearchInputMock($inputRef);
 
         $projectMock['forms'][3]['inputs'][0] = $this->getSearchInputMock($projectMock['forms'][3]['ref']);
         $projectMock['forms'][3]['inputs'][0]['type'] = 'branch';
-        $inputRef= $projectMock['forms'][3]['inputs'][0]['ref'];
+        $inputRef = $projectMock['forms'][3]['inputs'][0]['ref'];
         $projectMock['forms'][3]['inputs'][0]['branch'][0] = $this->getSearchInputMock($inputRef);
 
         $projectMock['forms'][4]['inputs'][0] = $this->getSearchInputMock($projectMock['forms'][4]['ref']);
         $projectMock['forms'][4]['inputs'][0]['type'] = 'branch';
-        $inputRef= $projectMock['forms'][4]['inputs'][0]['ref'];
+        $inputRef = $projectMock['forms'][4]['inputs'][0]['ref'];
         $projectMock['forms'][4]['inputs'][0]['branch'][0] = $this->getSearchInputMock($inputRef);
         $projectMock['forms'][4]['inputs'][0]['branch'][1] = $this->getSearchInputMock($inputRef);
 
@@ -1223,7 +1211,7 @@ class ProjectSearchInputsTest extends ProjectTest
         //add 1 branch input per each form and a group within each branch
         $projectMock['forms'][0]['inputs'][0] = $this->getSearchInputMock($projectMock['forms'][0]['ref']);
         $projectMock['forms'][0]['inputs'][0]['type'] = 'branch';
-        $inputRef= $projectMock['forms'][0]['inputs'][0]['ref'];
+        $inputRef = $projectMock['forms'][0]['inputs'][0]['ref'];
         $projectMock['forms'][0]['inputs'][0]['branch'][0] = $this->getSearchInputMock($inputRef);
         $branchInputRef =  $projectMock['forms'][0]['inputs'][0]['branch'][0]['ref'];
         $projectMock['forms'][0]['inputs'][0]['branch'][0]['type'] = 'group';
@@ -1232,7 +1220,7 @@ class ProjectSearchInputsTest extends ProjectTest
 
         $projectMock['forms'][1]['inputs'][0] = $this->getSearchInputMock($projectMock['forms'][1]['ref']);
         $projectMock['forms'][1]['inputs'][0]['type'] = 'branch';
-        $inputRef= $projectMock['forms'][1]['inputs'][0]['ref'];
+        $inputRef = $projectMock['forms'][1]['inputs'][0]['ref'];
         $projectMock['forms'][1]['inputs'][0]['branch'][0] = $this->getSearchInputMock($inputRef);
         $branchInputRef =  $projectMock['forms'][1]['inputs'][0]['branch'][0]['ref'];
         $projectMock['forms'][1]['inputs'][0]['branch'][0]['type'] = 'group';
@@ -1241,7 +1229,7 @@ class ProjectSearchInputsTest extends ProjectTest
 
         $projectMock['forms'][2]['inputs'][0] = $this->getSearchInputMock($projectMock['forms'][2]['ref']);
         $projectMock['forms'][2]['inputs'][0]['type'] = 'branch';
-        $inputRef= $projectMock['forms'][2]['inputs'][0]['ref'];
+        $inputRef = $projectMock['forms'][2]['inputs'][0]['ref'];
         $projectMock['forms'][2]['inputs'][0]['branch'][0] = $this->getSearchInputMock($inputRef);
         $branchInputRef =  $projectMock['forms'][2]['inputs'][0]['branch'][0]['ref'];
         $projectMock['forms'][2]['inputs'][0]['branch'][0]['type'] = 'group';
@@ -1250,7 +1238,7 @@ class ProjectSearchInputsTest extends ProjectTest
 
         $projectMock['forms'][3]['inputs'][0] = $this->getSearchInputMock($projectMock['forms'][3]['ref']);
         $projectMock['forms'][3]['inputs'][0]['type'] = 'branch';
-        $inputRef= $projectMock['forms'][3]['inputs'][0]['ref'];
+        $inputRef = $projectMock['forms'][3]['inputs'][0]['ref'];
         $projectMock['forms'][3]['inputs'][0]['branch'][0] = $this->getSearchInputMock($inputRef);
         $branchInputRef =  $projectMock['forms'][3]['inputs'][0]['branch'][0]['ref'];
         $projectMock['forms'][3]['inputs'][0]['branch'][0]['type'] = 'group';
@@ -1259,7 +1247,7 @@ class ProjectSearchInputsTest extends ProjectTest
 
         $projectMock['forms'][4]['inputs'][0] = $this->getSearchInputMock($projectMock['forms'][4]['ref']);
         $projectMock['forms'][4]['inputs'][0]['type'] = 'branch';
-        $inputRef= $projectMock['forms'][4]['inputs'][0]['ref'];
+        $inputRef = $projectMock['forms'][4]['inputs'][0]['ref'];
         $projectMock['forms'][4]['inputs'][0]['branch'][0] = $this->getSearchInputMock($inputRef);
         $branchInputRef =  $projectMock['forms'][4]['inputs'][0]['branch'][0]['ref'];
         $projectMock['forms'][4]['inputs'][0]['branch'][0]['type'] = 'group';
@@ -1303,7 +1291,7 @@ class ProjectSearchInputsTest extends ProjectTest
         //add 1 branch input per each form and a group within each branch
         $projectMock['forms'][0]['inputs'][0] = $this->getSearchInputMock($projectMock['forms'][0]['ref']);
         $projectMock['forms'][0]['inputs'][0]['type'] = 'branch';
-        $inputRef= $projectMock['forms'][0]['inputs'][0]['ref'];
+        $inputRef = $projectMock['forms'][0]['inputs'][0]['ref'];
         $projectMock['forms'][0]['inputs'][0]['branch'][0] = $this->getSearchInputMock($inputRef);
         $branchInputRef =  $projectMock['forms'][0]['inputs'][0]['branch'][0]['ref'];
         $projectMock['forms'][0]['inputs'][0]['branch'][0]['type'] = 'group';
@@ -1312,7 +1300,7 @@ class ProjectSearchInputsTest extends ProjectTest
 
         $projectMock['forms'][1]['inputs'][0] = $this->getSearchInputMock($projectMock['forms'][1]['ref']);
         $projectMock['forms'][1]['inputs'][0]['type'] = 'branch';
-        $inputRef= $projectMock['forms'][1]['inputs'][0]['ref'];
+        $inputRef = $projectMock['forms'][1]['inputs'][0]['ref'];
         $projectMock['forms'][1]['inputs'][0]['branch'][0] = $this->getSearchInputMock($inputRef);
         $branchInputRef =  $projectMock['forms'][1]['inputs'][0]['branch'][0]['ref'];
         $projectMock['forms'][1]['inputs'][0]['branch'][0]['type'] = 'group';
@@ -1321,7 +1309,7 @@ class ProjectSearchInputsTest extends ProjectTest
 
         $projectMock['forms'][2]['inputs'][0] = $this->getSearchInputMock($projectMock['forms'][2]['ref']);
         $projectMock['forms'][2]['inputs'][0]['type'] = 'branch';
-        $inputRef= $projectMock['forms'][2]['inputs'][0]['ref'];
+        $inputRef = $projectMock['forms'][2]['inputs'][0]['ref'];
         $projectMock['forms'][2]['inputs'][0]['branch'][0] = $this->getSearchInputMock($inputRef);
         $branchInputRef =  $projectMock['forms'][2]['inputs'][0]['branch'][0]['ref'];
         $projectMock['forms'][2]['inputs'][0]['branch'][0]['type'] = 'group';
@@ -1330,7 +1318,7 @@ class ProjectSearchInputsTest extends ProjectTest
 
         $projectMock['forms'][3]['inputs'][0] = $this->getSearchInputMock($projectMock['forms'][3]['ref']);
         $projectMock['forms'][3]['inputs'][0]['type'] = 'branch';
-        $inputRef= $projectMock['forms'][3]['inputs'][0]['ref'];
+        $inputRef = $projectMock['forms'][3]['inputs'][0]['ref'];
         $projectMock['forms'][3]['inputs'][0]['branch'][0] = $this->getSearchInputMock($inputRef);
         $branchInputRef =  $projectMock['forms'][3]['inputs'][0]['branch'][0]['ref'];
         $projectMock['forms'][3]['inputs'][0]['branch'][0]['type'] = 'group';
@@ -1339,7 +1327,7 @@ class ProjectSearchInputsTest extends ProjectTest
 
         $projectMock['forms'][4]['inputs'][0] = $this->getSearchInputMock($projectMock['forms'][4]['ref']);
         $projectMock['forms'][4]['inputs'][0]['type'] = 'branch';
-        $inputRef= $projectMock['forms'][4]['inputs'][0]['ref'];
+        $inputRef = $projectMock['forms'][4]['inputs'][0]['ref'];
         $projectMock['forms'][4]['inputs'][0]['branch'][0] = $this->getSearchInputMock($inputRef);
         $branchInputRef =  $projectMock['forms'][4]['inputs'][0]['branch'][0]['ref'];
         $projectMock['forms'][4]['inputs'][0]['branch'][0]['type'] = 'group';

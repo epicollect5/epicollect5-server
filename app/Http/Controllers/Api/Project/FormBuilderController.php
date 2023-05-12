@@ -11,11 +11,8 @@ use ec5\Http\Controllers\Api\ApiResponse as ApiResponse;
 use ec5\Libraries\Utilities\Arrays;
 use ec5\Libraries\Utilities\Strings;
 
-use Log;
-
 class FormBuilderController extends ProjectControllerBase
 {
-
     protected $projectUpdate;
     protected $request;
     protected $apiResponse;
@@ -60,8 +57,6 @@ class FormBuilderController extends ProjectControllerBase
             return $this->apiResponse->errorResponse('422', ['Request' => ['ec5_14']]);
         }
 
-        Log::error('here 1');
-
         $projectDefinition = $requestContent['data'];
 
         //do we have permissions to edit the project?
@@ -103,7 +98,8 @@ class FormBuilderController extends ProjectControllerBase
 
         // Check for any errors so far
         if ($this->projectDefinitionValidator->hasErrors()) {
-            EC5Logger::error('Formbuilder structure failed - validation',
+            EC5Logger::error(
+                'Formbuilder structure failed - validation',
                 $this->requestedProject,
                 $this->projectDefinitionValidator->errors()
             );
@@ -115,6 +111,7 @@ class FormBuilderController extends ProjectControllerBase
         $this->requestedProject->updateProjectMappings();
 
         // Set updated_at field to true
+
         $tryAction = $this->projectUpdate->updateProjectStructure($this->requestedProject, true);
 
         if ($tryAction) {

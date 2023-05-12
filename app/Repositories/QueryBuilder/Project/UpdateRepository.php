@@ -8,7 +8,6 @@ use Config;
 
 class UpdateRepository extends Base
 {
-
     /**
      * @param Project $project
      * @param array $projectDetails
@@ -17,7 +16,6 @@ class UpdateRepository extends Base
      */
     public function updateProject(Project $project, array $projectDetails, $setUpdatedAt = false)
     {
-
         $done = false;
 
         if (empty($projectDetails)) {
@@ -29,7 +27,6 @@ class UpdateRepository extends Base
         // Insert project details get back insert_id
         // Check, rollback if error
         $doUpdate = $this->updateById(Config::get('ec5Tables.projects'), $project->getId(), $projectDetails);
-        $this->LG[] = "update project struct" .  $project->getId()  . "returned  $doUpdate";
 
         if ($this->hasErrors()) {
             $this->doRollBack();
@@ -38,7 +35,6 @@ class UpdateRepository extends Base
 
         $doUpdate = $this->dbUpdateStructure($project, $setUpdatedAt);
 
-        $this->LG[] = "insert project struct" . $project->getId() . "returned  $doUpdate";
         if (!$doUpdate) {
             $this->doRollBack();
             return $done;
@@ -57,7 +53,6 @@ class UpdateRepository extends Base
      */
     public function updateProjectStructure(Project $project, $setUpdatedAt = false)
     {
-
         $done = false;
 
         $this->startTransaction();
@@ -65,7 +60,7 @@ class UpdateRepository extends Base
         // Insert project details get back insert_id
         // Check, rollback if error
         $doUpdate = $this->dbUpdateStructure($project, $setUpdatedAt);
-        $this->LG[] = 'insert project structure' . $project->getProjectStructureId() . 'returned $doUpdate';
+
         if (!$doUpdate) {
             $this->doRollBack();
             return $done;
@@ -77,32 +72,6 @@ class UpdateRepository extends Base
         return $done;
     }
 
-//    /**
-//     * @param Project $project
-//     * @param $setUpdatedAt
-//     * @return bool
-//     */
-//    public function updateCustomMapping(Project $project, $setUpdatedAt = false)
-//    {
-//
-//        $done = false;
-//
-//        $this->startTransaction();
-//
-//        // Insert project details get back insert_id
-//        // Check, rollback if error
-//        $doUpdate = $this->dbUpdateStructure($project, $setUpdatedAt);
-//        $this->LG[] = 'insert project structure' . $project->getProjectStructureId() . 'returned $doUpdate';
-//        if (!$doUpdate) {
-//            $this->doRollBack();
-//            return $done;
-//        }
-//
-//        // All good
-//        $this->doCommit();
-//        $done = true;
-//        return $done;
-//    }
 
     /**
      * @param Project $project
@@ -111,7 +80,6 @@ class UpdateRepository extends Base
      */
     private function dbUpdateStructure(Project $project, $setUpdatedAt)
     {
-
         $data = [
             'project_definition' => $project->getProjectDefinition()->getJsonData(),
             'project_extra' => $project->getProjectExtra()->getJsonData(),
@@ -126,8 +94,6 @@ class UpdateRepository extends Base
         if ($this->hasErrors()) {
             return false;
         }
-
         return true;
     }
-
 }

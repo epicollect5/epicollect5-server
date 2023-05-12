@@ -1,17 +1,23 @@
 <?php
 
-namespace Tests\Project;
+namespace Tests;
 
 use ec5\Http\Validation\Project\RuleCreateRequest;
 use Tests\TestCase;
 use ec5\Models\Users\User;
+use Illuminate\Support\Str;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 
-class ProjectCreateRequestTest extends TestCase
+class ProjectCreateWebTest extends TestCase
 {
+    //to reset database after tests
+    use DatabaseTransactions;
+
     protected $request;
     protected $validator;
     protected $access;
     protected $projectNameMaxLength;
+    protected $user;
 
     public function setUp()
     {
@@ -24,25 +30,45 @@ class ProjectCreateRequestTest extends TestCase
         $this->access = config('ec5Enums.projects_access');
 
         //to have a user logged in as superadmin
-        $user = User::find(1);
-        $this->be($user);
+        $this->user = User::find(1);
+        $this->be($this->user);
 
         $this->reset();
     }
 
-    public function reset(){
+    // public function tearDown()
+    // {
+    //     parent::tearDown();
+    //     $this->app->make('db')->rollBack();
+    // }
 
+
+
+    public function reset()
+    {
         $this->request = [
             'name' => 'Test Project 000001',
-            'slug' => 'test-project-000001',
             'form_name' => 'Form One',
             'small_description' => 'Just a test project to test the validation of the project request',
             'access' => $this->access[array_rand($this->access)]
         ];
     }
 
-    public function testName(){
 
+    public function testRequest()
+    {
+        $slug = Str::slug($this->request['name'], '-');
+        $response = $this->actingAs($this->user)->post('myprojects/create',  $this->request);
+        //valid, redirect to project page
+        $response->assertStatus(302)
+            ->assertRedirect('myprojects/' . $slug)
+            ->assertSessionHas(['projectCreated' => true]);
+    }
+
+
+    public function testName()
+    {
+        $this->request['slug'] = Str::slug($this->request['name'], '-');
         $this->validator->validate($this->request);
         $this->assertFalse($this->validator->hasErrors());
         $this->validator->resetErrors();
@@ -126,7 +152,8 @@ class ProjectCreateRequestTest extends TestCase
         $this->reset();
     }
 
-    public function testSmallDescription(){
+    public function testSmallDescription()
+    {
 
         //empty
         $this->request['small_description'] = '';
@@ -153,7 +180,8 @@ class ProjectCreateRequestTest extends TestCase
         $this->reset();
     }
 
-    public function testAccess(){
+    public function testAccess()
+    {
         //empty
         $this->request['access'] = '';
 
@@ -179,7 +207,8 @@ class ProjectCreateRequestTest extends TestCase
         $this->reset();
     }
 
-    public function testFormName(){
+    public function testFormName()
+    {
         //empty
         $this->request['form_name'] = '';
 

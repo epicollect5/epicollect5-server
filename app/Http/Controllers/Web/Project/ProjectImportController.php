@@ -60,7 +60,6 @@ class ProjectImportController extends ProjectCreateController
         // Generate new project ref
         $newProjectRef = str_replace('-', '', Uuid::generate(4));
 
-
         // Decode json file contents into array
         $file = $request->file('file');
         $data = json_decode(File::get($file->getRealPath()), true);
@@ -105,6 +104,7 @@ class ProjectImportController extends ProjectCreateController
             return Redirect::to('myprojects/create')
                 ->withErrors($projectDefinitionValidator->errors())
                 ->withErrors($mappingUpdateValidator->errors())
+                ->withErrors($mappingStructureValidator->errors())
                 ->with(['tab' => $this->type]);
         }
 

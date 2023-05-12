@@ -19,17 +19,8 @@ use Uuid;
 use Config;
 use Illuminate\Support\Str;
 
-class ProjectMaxInputsTest extends ProjectTest
+class ProjectMaxInputsTest extends TestCase
 {
-
-    /*
-    |--------------------------------------------------------------------------
-    | ProjectTest
-    |--------------------------------------------------------------------------
-    |
-    |
-    |
-    */
     protected $validator;
     protected $project;
     protected $projectExtraDetailsValidator;
@@ -85,7 +76,6 @@ class ProjectMaxInputsTest extends ProjectTest
             'slug' => Str::slug($formName, '-'),
             'inputs' => []
         ];
-
     }
 
     private function getInputMock($formRef)

@@ -14,8 +14,6 @@ use ec5\Models\Projects\Exceptions\ProjectNameMissingException;
 use ec5\Http\Validation\Project\Mapping\RuleMappingUpdate;
 use ec5\Http\Validation\Project\Mapping\RuleMappingStructure;
 
-
-
 /*
 |--------------------------------------------------------------------------
 | Project Model

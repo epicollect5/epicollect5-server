@@ -62,6 +62,7 @@ class ProjectCreateController extends ProjectControllerBase
         CreateRequestValidator $createRequestValidator,
         CreateProject $createProject
     ) {
+
         $this->type = ProjectCreateController::CREATE;
         // todo: send active 'tab' with the response if there are errors (to go back to correct tab)
 

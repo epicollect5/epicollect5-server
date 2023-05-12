@@ -15,7 +15,6 @@ class ProjectImportRequestTest extends TestCase
 
     public function setUp()
     {
-        // This method will automatically be called prior to any of your test cases
         parent::setUp();
 
         $this->validator = new RuleImportRequest();
@@ -30,7 +29,8 @@ class ProjectImportRequestTest extends TestCase
         $this->reset();
     }
 
-    public function reset(){
+    public function reset()
+    {
 
         $this->request = [
             'name' => 'Test Project 000001',
@@ -39,7 +39,8 @@ class ProjectImportRequestTest extends TestCase
         ];
     }
 
-    public function testName(){
+    public function testName()
+    {
 
         $this->validator->validate($this->request);
         $this->assertFalse($this->validator->hasErrors());
@@ -124,7 +125,8 @@ class ProjectImportRequestTest extends TestCase
         $this->reset();
     }
 
-    public function testFile(){
+    public function testFile()
+    {
 
         //empty
         $this->request['file'] = '';

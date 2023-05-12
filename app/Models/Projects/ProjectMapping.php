@@ -3,7 +3,6 @@
 namespace ec5\Models\Projects;
 
 use Config;
-use phpDocumentor\Reflection\Types\String_;
 
 /*
 |--------------------------------------------------------------------------

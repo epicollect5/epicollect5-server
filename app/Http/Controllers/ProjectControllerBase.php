@@ -13,33 +13,15 @@ use ec5\Repositories\QueryBuilder\Project\SearchRepository as SearchProjectRepos
 class ProjectControllerBase extends Controller
 {
 
-    /**
-     * @var Request
-     */
     protected $request;
-
-    /**
-     * @var Project
-     */
     protected $requestedProject;
-
-    /**
-     * @var User
-     */
     protected $requestedUser;
-
-    /**
-     * @var ProjectRole
-     */
     protected $requestedProjectRole;
 
-    /**
-     * Ec5ProjectBaseController constructor.
-     * @param Request $request
-     */
     public function __construct(Request $request)
     {
-
+        //imp: $request->attributes() are set in the ProjectPermissionsBase middleware
+        //imp: this runs even when they are empty as some routes do not have that middleware
         $this->middleware(function ($request, $next) {
             $this->request = $request;
             $this->requestedProject = $request->attributes->get('requestedProject');

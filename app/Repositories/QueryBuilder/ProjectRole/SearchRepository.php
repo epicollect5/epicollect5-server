@@ -1,4 +1,6 @@
-<?php namespace ec5\Repositories\QueryBuilder\ProjectRole;
+<?php
+
+namespace ec5\Repositories\QueryBuilder\ProjectRole;
 
 use ec5\Repositories\QueryBuilder\Project\SearchRepository as ProjectSearch;
 use ec5\Repositories\Eloquent\User\UserRepository;
@@ -11,7 +13,6 @@ use DB;
 
 class SearchRepository implements SearchInterface
 {
-
     /**
      * @var UserRepository Object $userRepository
      */
@@ -28,7 +29,7 @@ class SearchRepository implements SearchInterface
     protected $projectRole;
 
     /**
-     * @var $errors
+     * @var Array
      */
     protected $errors = [];
 
@@ -42,7 +43,6 @@ class SearchRepository implements SearchInterface
         $this->userRepository = $userRepository;
         $this->projectSearch = $projectSearch;
         $this->projectRole = $projectRole;
-
     }
 
     /**
@@ -129,8 +129,8 @@ class SearchRepository implements SearchInterface
                 ->where(function ($query) use ($search) {
                     // if we have search criteria, add to where clause
                     if (!empty($search)) {
-                        $query->where('users.name', 'LIKE',  '%'.$search . '%')
-                            ->orWhere('users.email', 'LIKE', '%'.$search . '%');
+                        $query->where('users.name', 'LIKE',  '%' . $search . '%')
+                            ->orWhere('users.email', 'LIKE', '%' . $search . '%');
                     }
                 })
                 ->orderBy('users.name', 'asc');
@@ -156,7 +156,7 @@ class SearchRepository implements SearchInterface
 
         $users = array();
 
-        foreach ($projectRoles as $index =>$projectRole) {
+        foreach ($projectRoles as $index => $projectRole) {
             $users[$index] = $this->userRepository->find($projectRole->user_id);
             $users[$index]['role'] = $projectRole->role;
         }
@@ -182,7 +182,6 @@ class SearchRepository implements SearchInterface
         }
 
         return $projects;
-
     }
 
     /**
@@ -207,14 +206,12 @@ class SearchRepository implements SearchInterface
             if ($projectRole) {
                 $role = $projectRole->role;
             }
-
         }
 
         // Set the project role and return
         $this->projectRole->setRole($user, $projectId, $role);
 
         return $this->projectRole;
-
     }
 
     /**
@@ -229,7 +226,6 @@ class SearchRepository implements SearchInterface
         $projectRole = $this->getRole($userId, $projectId);
 
         return !empty($projectRole->getRole());
-
     }
 
     /**
@@ -265,7 +261,6 @@ class SearchRepository implements SearchInterface
 
         $this->errors[$project->slug] = ['ec5_13'];
         return false;
-
     }
 
     /**
@@ -285,7 +280,5 @@ class SearchRepository implements SearchInterface
         if ($projectRole) {
             return $projectRole->id;
         }
-
     }
-
 }

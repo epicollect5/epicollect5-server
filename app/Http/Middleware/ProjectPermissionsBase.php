@@ -17,47 +17,17 @@ use Auth;
 
 abstract class ProjectPermissionsBase extends MiddlewareBase
 {
-
-    /**
-     * @var Request
-     */
     protected $request;
-
-    /**
-     * @var SearchRepository
-     */
     protected $search;
-
-    /**
-     * @var ProjectRoleSearch
-     */
     protected $projectRoleSearch;
-
-    /**
-     * @var ApiResponse
-     */
     protected $apiResponse;
-
-    /**
-     * @var
-     */
     protected $error;
-
     /**
      * @var Project
      */
     protected $requestedProject;
-
-    /**
-     * @var
-     */
     protected $requestedUser;
-
-    /**
-     * @var
-     */
     protected $requestedProjectApiApplication;
-
     /**
      * @var ProjectRole
      */
@@ -72,14 +42,6 @@ abstract class ProjectPermissionsBase extends MiddlewareBase
     |
     */
 
-    /**
-     * ProjectPermissionsBase constructor.
-     * @param Request $request
-     * @param SearchRepository $search
-     * @param ProjectRoleSearch $projectRoleSearch
-     * @param ApiResponse $apiResponse
-     * @param Project $requestedProject
-     */
     public function __construct(Request $request, SearchRepository $search, ProjectRoleSearch $projectRoleSearch, ApiResponse $apiResponse, Project $requestedProject)
     {
         $this->search = $search;
@@ -92,29 +54,20 @@ abstract class ProjectPermissionsBase extends MiddlewareBase
 
     /**
      * Handle an incoming request.
-     *
-     * @param  \Illuminate\Http\Request $request
-     * @param  \Closure $next
-     * @return mixed
      */
     public function handle(Request $request, Closure $next)
     {
-
         // Update the request
         $this->request = $request;
-
         // Set the project
         $this->setRequestedProject($this->request);
-
         // Check the project
         if ($this->requestedProject == null) {
             $this->error = 'ec5_11';
             return $this->errorResponse($this->request, $this->error, 404);
         }
-
         // Set the user
         $this->setRequestedUser($this->request);
-
         // Set the project role
         $this->setRequestedProjectRole();
 
