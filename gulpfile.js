@@ -1,6 +1,6 @@
 'use strict';
 var gulp = require('gulp');
-var sass = require('gulp-sass');
+const sass = require('gulp-sass')(require('sass'));
 var phpunit = require('gulp-phpunit');
 var concatCss = require('gulp-concat-css');
 var concat = require('gulp-concat');
@@ -156,7 +156,7 @@ gulp.task('default', gulp.series(
     'users-js-prod'
 ));
 
-gulp.task('watch', function(){
+gulp.task('watch', function () {
     //watch sass file and compile
     gulp.watch('./resources/assets/sass/**/*.scss', gulp.series('sass'));
 
