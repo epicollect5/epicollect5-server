@@ -1,4 +1,9 @@
 <IfModule mod_rewrite.c>
+
+    #Disable directory listing and redirect to site home
+    Options -Indexes
+    ErrorDocument 403 http://localhost/path/to/app/
+
     <IfModule mod_negotiation.c>
         Options -MultiViews
     </IfModule>
@@ -33,13 +38,12 @@
       BrowserMatch \bMSIE !no-gzip !gzip-only-text/html
     </IfModule>
 
-    RewriteEngine On
+     RewriteEngine On
 
      Header add Access-Control-Allow-Origin "*"
      Header add Access-Control-Allow-Methods: "GET,POST,OPTIONS"
-     Header add Access-Control-Allow-Headers: "Content-Type, Authorization, X-XSRF-TOKEN"
-     Header add Access-Control-Expose-Headers: "Authorization"
-
+     Header add Access-Control-Allow-Headers: "Content-Type, content-type, Authorization, authorization, X-XSRF-TOKEN"
+     Header add Access-Control-Expose-Headers: "Authorization, authorization"
 
     # All requests to https (optional, comment/uncomment the below statements if no SSL is installed)
     #RewriteCond %{HTTPS} !=on
@@ -53,7 +57,8 @@
 
     # IMPORTANT: for Google Login to work, set the redirect URI accordingly
 
-
+    #Uncomment and set the below if the installation is not in the root folder (clear cache)
+    #RewriteBase /path/to/app/
     # Redirect Trailing Slashes If Not A Folder...
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule ^(.*)/$ /$1 [L,R=301]
@@ -80,7 +85,10 @@
         php_value post_max_size 600M
     </IfModule>
 
-    #Uncomment and set the below if the installation is not in the root folder
-    #RewriteBase /folder/
+#    <FilesMatch ".(pl|cgi|spl|scgi|fcgi|json)$">
+#        Header unset Cache-Control
+#    </FilesMatch>
+
+
 
 </IfModule>
