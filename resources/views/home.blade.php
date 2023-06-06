@@ -107,20 +107,9 @@
                     {{-- <span>Twitter Feeds</span> --}}
                     {{-- </div> --}}
                     <div class="panel-body page-home-twitter-feeds">
-                        <a class="twitter-timeline" href="https://twitter.com/EpiCollect"
-                            data-widget-id="709738973472661505" data-chrome="nofooter">Tweets by @EpiCollect</a>
-                        <script async defer>
-                            ! function(d, s, id) {
-                                var js, fjs = d.getElementsByTagName(s)[0],
-                                    p = /^http:/.test(d.location) ? 'http' : 'https';
-                                if (!d.getElementById(id)) {
-                                    js = d.createElement(s);
-                                    js.id = id;
-                                    js.src = p + "://platform.twitter.com/widgets.js";
-                                    fjs.parentNode.insertBefore(js, fjs);
-                                }
-                            }(document, "script", "twitter-wjs");
-                        </script>
+                        <a class="twitter-timeline" href="https://twitter.com/EpiCollect?ref_src=twsrc%5Etfw">Tweets by
+                            Epicollect5</a>
+                        <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
                     </div>
                 </div>
             </div>
