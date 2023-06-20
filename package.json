@@ -5,6 +5,7 @@
     "dev": "gulp watch"
   },
   "devDependencies": {
+    "gulp": "^4.0.2",
     "gulp-clean-css": "^2.0.3",
     "gulp-concat": "^2.6.0",
     "gulp-concat-css": "^2.2.0",
@@ -14,7 +15,6 @@
     "sass": "^1.62.1"
   },
   "dependencies": {
-    "gulp": "^4.0.2",
     "jshint": "^2.12.0"
   }
 }
