@@ -13,6 +13,7 @@ use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\Entry;
 use Webpatser\Uuid\Uuid;
 use DB;
+use Carbon\Carbon;
 
 use Illuminate\Http\Request;
 
@@ -142,5 +143,15 @@ class DBToolsController
 
         return $size[0]->gb_size;
         //dd((float)number_format($size[0]->gb_size, 2));
+    }
+    public function getUsersToday()
+    {
+
+        dd(Carbon::yesterday());
+        //count in sql is faster than eloquent, use raw!
+        return DB::table('users')
+            ->select([DB::raw('count(id) as users_total')])
+            ->where('users' . '.created_at', '>=', Carbon::yesterday())
+            ->get();
     }
 }

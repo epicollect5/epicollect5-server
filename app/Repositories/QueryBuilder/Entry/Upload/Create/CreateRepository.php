@@ -79,7 +79,6 @@ abstract class CreateRepository extends Base
             $existingEntry = $entryStructure->getExisting();
 
             // Build entry
-            EC5Logger::info('Building entries table array', $project);
             // EDITABLE FIELDS - fields that we want to update if we have an edit and add if we have a new entry
             // These will override the original values of an existing entry
             $entry['entry_data'] = json_encode($entryData);

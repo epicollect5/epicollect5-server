@@ -28,8 +28,9 @@ class Kernel extends ConsoleKernel
     {
         //grab system stats for the current day
         $schedule->command('system-stats')
-            //->everyMinute()
-            ->dailyAt('23:45')
+            ->everyMinute()
+            //->dailyAt('01:00')
+            //->timezone('Europe/London')
             ->withoutOverlapping();
 
         // $schedule->command('check-database')->everyMinute();

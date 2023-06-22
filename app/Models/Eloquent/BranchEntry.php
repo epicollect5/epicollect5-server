@@ -23,9 +23,9 @@ class BranchEntry extends Model
         return $this->getEntriesTotal($this->table)->toArray();
     }
 
-    private function getToday()
+    private function getYesterday()
     {
-        return $this->getEntriesToday($this->table)->toArray();
+        return $this->getEntriesYesterday($this->table)->toArray();
     }
 
     private function getLastWeek()
@@ -62,7 +62,7 @@ class BranchEntry extends Model
     public function getStats()
     {
         $total = $this->getTotal();
-        $today = $this->getToday();
+        $today = $this->getYesterday();
         $week = $this->getLastWeek();
         $month = $this->getLastMonth();
         $year = $this->getLastYear();

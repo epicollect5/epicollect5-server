@@ -81,12 +81,12 @@ class Project extends Model
         return $this->getProjectTotalByThreshold($lowerThreshold, $upperThreshold);
     }
 
-    public function getToday()
+    public function getYesterday()
     {
         //count in sql is faster than eloquent, use raw!
         return DB::table($this->table)
             ->select(['access', 'visibility', DB::raw('count(id) as projects_total')])
-            ->where($this->table . '.created_at', '>=', Carbon::today())
+            ->where($this->table . '.created_at', '>=', Carbon::yesterday())
             ->groupBy('access', 'visibility')
             ->get();
     }
@@ -136,7 +136,7 @@ class Project extends Model
     public function getStats()
     {
         $total = $this->getTotal();
-        $today = $this->getToday();
+        $today = $this->getYesterday();
         $week = $this->getWeek();
         $month = $this->getMonth();
         $year = $this->getYear();
@@ -145,7 +145,8 @@ class Project extends Model
         //convert $yearByMonth to associative array of "month=>total" pairs
         $distributionByMonth = [];
         foreach ($yearByMonth as $currentMonth) {
-            array_push($distributionByMonth,
+            array_push(
+                $distributionByMonth,
                 array(
                     $this->getMonthName($currentMonth->month) => $currentMonth->projects_total
                 )
@@ -225,8 +226,7 @@ class Project extends Model
     //get projects total based on access and visibility
     private function getProjectsTotal($items, $access, $visibility)
     {
-        foreach ($items as $item) {
-            {
+        foreach ($items as $item) { {
                 if ($item->access === $access) {
                     if ($item->visibility === $visibility) {
                         return $item->projects_total;

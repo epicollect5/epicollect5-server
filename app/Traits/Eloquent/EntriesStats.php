@@ -16,11 +16,11 @@ trait EntriesStats
             ->get();
     }
 
-    public function getEntriesToday($table)
+    public function getEntriesYesterday($table)
     {
         return DB::table($table)->leftJoin('projects', 'projects.id', '=', $table . '.project_id')
             ->selectRaw('count(' . $table . '.id) as entries_total, projects.access')
-            ->where($table . '.created_at', '>=', Carbon::today())
+            ->where($table . '.created_at', '>=', Carbon::yesterday())
             ->groupBy('projects.access')
             ->get();
     }

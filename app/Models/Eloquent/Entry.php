@@ -36,9 +36,9 @@ class Entry extends Model
      * Return the total number of entries for current day (split by private and public)
      * @return mixed
      */
-    private function getToday()
+    private function getYesterday()
     {
-        return $this->getEntriesToday($this->table)->toArray();
+        return $this->getEntriesYesterday($this->table)->toArray();
     }
 
     /**
@@ -92,7 +92,7 @@ class Entry extends Model
     public function getStats()
     {
         $total = $this->getTotal();
-        $today = $this->getToday();
+        $today = $this->getYesterday();
         $week = $this->getLastWeek();
         $month = $this->getLastMonth();
         $year = $this->getLastYear();

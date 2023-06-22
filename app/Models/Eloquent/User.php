@@ -24,12 +24,12 @@ class User extends Model
             ->get();
     }
 
-    public function getToday()
+    public function getYesterday()
     {
         //count in sql is faster than eloquent, use raw!
         return DB::table($this->table)
             ->select([DB::raw('count(id) as users_total')])
-            ->where($this->table . '.created_at', '>=', Carbon::today())
+            ->where($this->table . '.created_at', '>=', Carbon::yesterday())
             ->get();
     }
 
@@ -75,7 +75,7 @@ class User extends Model
     public function getStats()
     {
         $total = $this->getTotal();
-        $today = $this->getToday();
+        $today = $this->getYesterday();
         $week = $this->getWeek();
         $month = $this->getMonth();
         $year = $this->getYear();
@@ -84,7 +84,8 @@ class User extends Model
         $distributionByMonth = [];
 
         foreach ($yearByMonth as $currentMonth) {
-            array_push($distributionByMonth,
+            array_push(
+                $distributionByMonth,
                 array(
                     $this->getMonthName($currentMonth->month) => $currentMonth->users_total
                 )

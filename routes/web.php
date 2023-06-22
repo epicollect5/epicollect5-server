@@ -133,6 +133,8 @@ Route::group(['middleware' => 'auth.admin'], function () {
 
     Route::get('admin/tools/db/db-size', 'Web\Admin\Tools\DBToolsController@getDBSize');
 
+    Route::get('admin/tools/db/users-today', 'Web\Admin\Tools\DBToolsController@getUsersToday');
+
     Route::get('admin/tools/csv', 'Web\Admin\Tools\PHPToolsController@testCSV');
 
     Route::get('admin/tools/hash-password', 'Web\Admin\Tools\AuthToolsController@show');
