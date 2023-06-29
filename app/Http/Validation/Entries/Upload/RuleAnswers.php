@@ -74,6 +74,7 @@ class RuleAnswers extends ValidationBase
         $ruleTimeInput,
         $ruleLocationInput,
         $ruleCheckboxInput,
+        $ruleDropdownInput,
         $rulePhotoInput,
         $ruleVideoInput,
         $ruleAudioInput,
@@ -230,7 +231,6 @@ class RuleAnswers extends ValidationBase
      */
     public function validateAnswer($input, $answer, Project $project, EntryStructure $entryStructure = null)
     {
-
         // todo use reflection here instead? or switch?
         // Construct dynamic variable name, base on input type
         $variableName = 'rule' . ucfirst($input['type']) . 'Input';

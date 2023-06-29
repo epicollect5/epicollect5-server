@@ -5,14 +5,16 @@ namespace ec5\Http\Validation;
 use Validator;
 use Auth;
 use Config;
+use Exception;
 use Log;
+use Illuminate\Support\Str;
 
 abstract class ValidationBase
 {
 
     protected $rules = []; //overwrite in child
 
-    public $errors = [];//todo reset as protected
+    public $errors = []; //todo reset as protected
 
     protected $messages = [
         'required' => 'ec5_21',
@@ -111,7 +113,6 @@ abstract class ValidationBase
                 if (count($extraKeys) > 0) {
                     $this->data = array_intersect_key($this->data, $this->rules);
                 }
-
             }
 
             // Add our ec5 custom validation rules
@@ -128,10 +129,17 @@ abstract class ValidationBase
 
             // Validation pass
             return true;
-
         } catch (\Exception $e) {
+            //catch regex invalid or malformed (preg_match() throwing error)
+            if (Str::contains($e->getMessage(), 'preg_match()')) {
+                $this->errors['validation'] = ['ec5_392'];
+                Log::error('Validation exception', ['message' => $e->getMessage()]);
+                Log::error('Validation exception', ['trace' => $e->getTrace()]);
+                return false;
+            }
+
+            //default error 
             $this->errors['validation'] = ['ec5_116'];
-            Log::error('Validation exception', ['exception' => $e]);
             return false;
         }
     }
@@ -176,8 +184,10 @@ abstract class ValidationBase
         Validator::extendImplicit('ec5_unreserved_name', function ($attribute, $value, $parameters) {
 
             // Admins/Superadmins can use reserved words
-            if (in_array(Auth::user()->server_role,
-                [Config::get('ec5Strings.superadmin'), Config::get('ec5Strings.admin')])) {
+            if (in_array(
+                Auth::user()->server_role,
+                [Config::get('ec5Strings.superadmin'), Config::get('ec5Strings.admin')]
+            )) {
                 return true;
             }
 
@@ -189,7 +199,6 @@ abstract class ValidationBase
             }
 
             return true;
-
         });
 
         // No html symbols "<", ">" allowed
