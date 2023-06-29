@@ -132,9 +132,15 @@ abstract class ValidationBase
         } catch (\Exception $e) {
             //catch regex invalid or malformed (preg_match() throwing error)
             if (Str::contains($e->getMessage(), 'preg_match()')) {
-                $this->errors['validation'] = ['ec5_392'];
+                //get input ref of question throwing exception
+                reset($this->data);
+                $inputRef = key($this->data);
+                //logs for debugging
+                Log::error('source', ['input_ref' => $inputRef]);
                 Log::error('Validation exception', ['message' => $e->getMessage()]);
                 Log::error('Validation exception', ['trace' => $e->getTrace()]);
+                //set input ref as source so the mobile app will flag that question
+                $this->errors[$inputRef] = ['ec5_392'];
                 return false;
             }
 

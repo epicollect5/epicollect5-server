@@ -250,7 +250,6 @@ class RuleAnswers extends ValidationBase
             }
 
             if ($entryStructure != null) {
-
                 // Additional checks on the answer
                 $answer = $this->$variableName->additionalChecks($input, $answer, $project, $entryStructure);
                 if ($this->$variableName->hasErrors()) {
