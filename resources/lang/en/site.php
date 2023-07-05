@@ -126,7 +126,7 @@ return [
     'settings' => 'Settings',
     'visibility' => 'Visibility',
     'details' => 'Details',
-    'mapping_data' => 'Mapping Data',
+    'mapping_data' => 'Map Data',
     'import_project' => 'Import Project',
     'project_json' => 'Project JSON',
     'role' => 'Role',
