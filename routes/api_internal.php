@@ -108,7 +108,7 @@ Route::group(['middleware' => 'auth'], function () {
 $accountDeletionMiddleware = App::isLocal() ? ['auth'] : ['auth', 'throttle:1,60'];
 Route::group(['middleware' => $accountDeletionMiddleware], function () {
     //request user account deletion
-    Route::post('/api/internal/profile/account-deletion-request', 'Api\Auth\AccountController@handleDeletionRequest');
+    Route::post('/api/internal/profile/account-deletion-request', 'Api\Auth\AccountController@handleDeletionRequest')->name('internalAccountDelete');
 });
 
 Route::group(['middleware' => 'auth.admin'], function () {

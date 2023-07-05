@@ -25,10 +25,16 @@ $(document).ready(function () {
             console.log(response);
             if (response.data.accepted === true) {
                 window.EC5.toast.showSuccess('Account deletion request sent.');
+                return;
             }
-            else {
-                window.EC5.toast.showError('Somethng went wrong');
+            if (response.data.deleted === true) {
+                window.EC5.toast.showSuccess('Account deleted.');
+                window.setTimeout(function () {
+                    window.location.reload();
+                }, 100);
+                return;
             }
+            window.EC5.toast.showError('Something went wrong');
         }).fail(function (error) {
             if (error.responseJSON.errors) {
                 // Show the errors
