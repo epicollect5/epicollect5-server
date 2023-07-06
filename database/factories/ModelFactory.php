@@ -11,6 +11,9 @@
 |
 */
 
+use ec5\Models\Eloquent\User;
+use ec5\Models\Eloquent\Project;
+
 $factory->define(ec5\Models\Users\User::class, function (Faker\Generator $faker) {
 
     static $password;
@@ -38,5 +41,13 @@ $factory->define(ec5\Models\Eloquent\UserPasswordlessApi::class, function (Faker
         'email' => $params['email'],
         'code' => $params['code'],
         'expires_at' => $params['expires_at']
+    ];
+});
+
+$factory->define(ec5\Models\Eloquent\ProjectRole::class, function (Faker\Generator $faker) {
+    return [
+        'user_id' => $this->faker->randomElement(User::pluck('id')->all()),
+        'project_id' => $this->faker->randomElement(Project::pluck('id')->all()),
+        'role' => 'collector'
     ];
 });
