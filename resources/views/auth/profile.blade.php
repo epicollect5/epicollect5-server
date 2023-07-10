@@ -31,9 +31,10 @@
                         {{-- IMP: do not show it to Local users --}}
                         @if (!in_array('local', $providers))
                             @if (in_array('passwordless', $auth_methods))
-                                <hr />
+
                                 @if (in_array('google', $auth_methods))
                                     @if (in_array('google', $providers))
+                                        <hr />
                                         {{-- Google Account already connected --}}
                                         <div class="row">
                                             <form method="POST" action="{{ route('profile-disconnect-google') }}"
@@ -69,9 +70,10 @@
                                     @endif
                                 @endif
 
-                                <hr />
+
 
                                 @if (in_array('apple', $auth_methods))
+                                    <hr />
                                     @if (in_array('apple', $providers))
                                         {{-- Apple Account already connected --}}
                                         <form method="POST" action="{{ route('profile-disconnect-apple') }}"

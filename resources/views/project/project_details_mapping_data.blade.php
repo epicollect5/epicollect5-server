@@ -41,12 +41,14 @@
                     against "R", "B", "G".</p>
                 <p>Each short identifier (the 'Mapping To" field) for <strong>questions</strong> must be from 1 to 20
                     chars in lenght and can contain only alphanumeric and underscores <code>"_"</code></p>
-                <p>For <strong>possible answers</strong>, up to 150 chars and any char is accepted aside from <code>'<'<
-                            /code> and <code>'>'</code></p>
-                <p>You can create up to 3 custom mappings and set one as the default, the one that will be used when
-                    downloading or accessing data via the API for any user who has got access to your data.</p>
-                <p>The default mapping, called "EC5_AUTO", is generated automatically by the system and cannot be
-                    modified.</p>
+                <p>For <strong>possible answers</strong>, up to 150 chars and any char is accepted aside from "<" or ">"
+                        </p>
+                        <p>You can create up to 3 custom mappings and set one as the default, the one that will be used
+                            when
+                            downloading or accessing data via the API for any user who has got access to your data.</p>
+                        <p>The default mapping, called "EC5_AUTO", is generated automatically by the system and cannot
+                            be
+                            modified.</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
