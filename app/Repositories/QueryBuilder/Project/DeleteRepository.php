@@ -46,7 +46,6 @@ class DeleteRepository extends Base
         // All good
         $this->doCommit();
         return true;
-
     }
 
     public function deleteEntries($projectId)
@@ -59,7 +58,6 @@ class DeleteRepository extends Base
             DB::table($entriesTableName)
                 ->where('project_id', '=', $projectId)
                 ->delete();
-
         } catch (\Exception $e) {
             Log::error('Entries deletion unsuccessful', [
                 'project_id' => $projectId,
@@ -74,7 +72,6 @@ class DeleteRepository extends Base
             DB::table($branchEntriesTableName)
                 ->where('project_id', '=', $projectId)
                 ->delete();
-
         } catch (\Exception $e) {
             Log::error('Entries deletion unsuccessful', [
                 'project_id' => $projectId,
@@ -112,28 +109,17 @@ class DeleteRepository extends Base
     {
         // Loop each driver
         foreach ($drivers as $driver) {
-
             // Get disk, path prefix and all directories for this driver
             $disk = Storage::disk($driver);
             $pathPrefix = $disk->getDriver()->getAdapter()->getPathPrefix();
 
-            $directories = $this->directoryGenerator($disk);
+            // Note: need to use File facade here, as Storage doesn't delete
+            $deleted = File::deleteDirectory($pathPrefix . $projectRef);
 
-            // Loop each directory
-            foreach ($directories as $directory) {
-
-                // If the directory name matches the project ref, delete
-                if ($directory == $projectRef) {
-
-                    // Note: need to use File facade here, as Storage doesn't delete
-                    $deleted = File::deleteDirectory($pathPrefix . $directory);
-
-                    // If the delete failed, add error and return (inform user to contact the administrator)
-                    if (!$deleted) {
-                        $this->errors = ['project_delete_media' => ['ec5_223']];
-                        return;
-                    }
-                }
+            //If the delete failed, add error and return (inform user to contact the administrator)
+            if (!$deleted) {
+                $this->errors = ['project_delete_media' => ['ec5_223']];
+                return;
             }
         }
     }
