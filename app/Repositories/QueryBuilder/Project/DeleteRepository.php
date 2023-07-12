@@ -107,20 +107,22 @@ class DeleteRepository extends Base
      */
     private function deleteMedia($projectRef, $drivers)
     {
-        // Loop each driver
-        foreach ($drivers as $driver) {
-            // Get disk, path prefix and all directories for this driver
-            $disk = Storage::disk($driver);
-            $pathPrefix = $disk->getDriver()->getAdapter()->getPathPrefix();
-
-            // Note: need to use File facade here, as Storage doesn't delete
-            $deleted = File::deleteDirectory($pathPrefix . $projectRef);
-
-            //If the delete failed, add error and return (inform user to contact the administrator)
-            if (!$deleted) {
-                $this->errors = ['project_delete_media' => ['ec5_223']];
-                return;
+        // Loop each driver (folder) and delete it
+        try {
+            foreach ($drivers as $driver) {
+                // Get disk, path prefix and all directories for this driver
+                $disk = Storage::disk($driver);
+                $pathPrefix = $disk->getDriver()->getAdapter()->getPathPrefix();
+                // \Log::info('delete path ->' . $pathPrefix . $projectRef);
+                // Note: need to use File facade here, as Storage doesn't delete
+                File::deleteDirectory($pathPrefix . $projectRef);
             }
+        } catch (Exception $e) {
+            \Log::error('Error deleting media folder ->' . $pathPrefix . $projectRef, [
+                'exception' => $e->getMessage()
+            ]);
+            $this->errors = ['project_delete_media' => ['ec5_223']];
+            return;
         }
     }
 }
