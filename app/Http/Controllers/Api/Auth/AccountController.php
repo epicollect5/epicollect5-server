@@ -36,7 +36,7 @@ class AccountController extends Controller
 
             if (sizeof($userProjects) === 0) {
                 //user is not a member of any projects so just remove 
-                $user = User::where('email', $email);
+                $user = User::where('email', $email)->where('id', $userId);
                 $user->delete();
 
                 //log user out
