@@ -6,9 +6,7 @@ use ec5\Http\Controllers\ProjectControllerBase;
 use Illuminate\Http\Request;
 use ec5\Repositories\QueryBuilder\Project\DeleteRepository as DeleteProject;
 use ec5\Repositories\QueryBuilder\Project\SearchRepository as SearchProject;
-use ec5\Models\Eloquent\Project;
-use ec5\Models\Eloquent\ProjectArchive;
-use Exception;
+use Illuminate\Support\Facades\DB;
 
 class ProjectDeleteController extends ProjectControllerBase
 {

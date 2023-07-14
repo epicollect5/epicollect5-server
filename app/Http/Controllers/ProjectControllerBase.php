@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 
 use ec5\Models\ProjectRoles\ProjectRole;
 use ec5\Models\Projects\Project;
+use ec5\Models\Eloquent\Project as EloquentProject;
 use ec5\Models\Eloquent\ProjectArchive;
 use ec5\Models\Eloquent\Entry;
 use ec5\Models\Eloquent\EntryArchive;
@@ -160,11 +161,11 @@ class ProjectControllerBase extends Controller
         }
     }
 
-    private function archiveProject()
+    protected function archiveProject()
     {
         try {
             //cloning project row (for potential restore, safety net)
-            $project = Project::where('id', $this->requestedProject->getId())
+            $project = EloquentProject::where('id', $this->requestedProject->getId())
                 ->where('slug', $this->requestedProject->slug)
                 ->first();
             // replicate (duplicate) the data
@@ -190,7 +191,7 @@ class ProjectControllerBase extends Controller
         }
     }
 
-    private function archiveEntries()
+    protected function archiveEntries()
     {
         $statsRepository = new StatsRepository();
 
