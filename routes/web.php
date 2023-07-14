@@ -243,7 +243,7 @@ Route::group(['middleware' => 'auth'], function () {
 
         // Project entries deletion
         Route::get('myprojects/{project_slug}/delete-entries', 'Web\Project\ProjectDeleteEntriesController@show');
-        Route::post('myprojects/{project_slug}/delete-entries', 'Web\Project\ProjectDeleteEntriesController@delete');
+        Route::post('myprojects/{project_slug}/delete-entries', 'Web\Project\ProjectDeleteEntriesController@softDelete');
 
         //Project Transfer Ownership
         Route::get('myprojects/{project_slug}/transfer-ownership', 'Web\Project\ProjectTransferOwnershipController@show')->name('transfer-ownership');

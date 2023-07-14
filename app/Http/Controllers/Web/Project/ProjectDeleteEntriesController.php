@@ -10,23 +10,13 @@ use ec5\Repositories\QueryBuilder\Stats\Entry\StatsRepository;
 class ProjectDeleteEntriesController extends ProjectControllerBase
 {
 
-    /**
-     * @var array
-     */
     protected $errors = [];
 
-    /**
-     * ProjectController constructor.
-     * @param Request $request
-     */
     public function __construct(Request $request)
     {
         parent::__construct($request);
     }
 
-    /**
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View|\Illuminate\Contracts\View\Factory|\Illuminate\View\View
-     */
     public function show()
     {
 
@@ -97,6 +87,38 @@ class ProjectDeleteEntriesController extends ProjectControllerBase
         }
 
         // Succeeded
+        return redirect('myprojects/' . $this->requestedProject->slug . '/manage-entries')->with('message', 'ec5_122');
+    }
+
+    public function softDelete(
+        Request $request
+    ) {
+
+        $projectName = $request->input('project-name');
+
+        //no project name passed?
+        if (!isset($projectName)) {
+            return view('errors.gen_error')->withErrors(['errors' => ['ec5_91']]);
+        }
+
+        //if we are sending the wrong project name bail out
+        if (trim($this->requestedProject->name) !== $projectName) {
+            return redirect('myprojects/' . $this->requestedProject->slug . '/manage-entries')
+                ->withErrors(['errors' => ['ec5_91']]);
+        }
+
+        //do we have the right permissions?
+        if (!$this->requestedProjectRole->canDeleteEntries()) {
+            return redirect('myprojects/' . $this->requestedProject->slug . '/manage-entries')
+                ->withErrors(['errors' => ['ec5_91']]);
+        }
+        DB::beginTransaction();
+        if (!$this->archiveEntries()) {
+            DB::rollBack();
+            return redirect('myprojects/' . $this->requestedProject->slug . '/manage-entries')->withErrors(['ec5_104']);
+        }
+        // Success!
+        DB::commit();
         return redirect('myprojects/' . $this->requestedProject->slug . '/manage-entries')->with('message', 'ec5_122');
     }
 }

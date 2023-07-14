@@ -1,10 +1,21 @@
 .page-entries-deletion {
-  .h1, .h2, .h3, h1, h2, h3 {
+  .h1,
+  .h2,
+  .h3,
+  h1,
+  h2,
+  h3 {
     margin: 0;
   }
-
+  .modal {
+    .modal-dialog {
+      .modal-body {
+        min-height: 150px;
+      }
+    }
+  }
   .project-name {
-    color:$deep-purple!important;
+    color: $deep-purple !important;
     margin-bottom: 15px;
   }
 
@@ -60,9 +71,9 @@
     }
   }
   .project-home__action-btns {
-    margin-top:15px;
+    margin-top: 15px;
     .btn {
-      width:150px;
+      width: 150px;
     }
   }
 }

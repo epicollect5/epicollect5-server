@@ -9,11 +9,6 @@ class BranchEntry extends Model
 {
     use EntriesStats;
 
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
     protected $table = 'branch_entries';
 
     public $timestamps = false;

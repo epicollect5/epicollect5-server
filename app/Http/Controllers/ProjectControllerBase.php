@@ -7,7 +7,12 @@ use Illuminate\Http\Request;
 
 use ec5\Models\ProjectRoles\ProjectRole;
 use ec5\Models\Projects\Project;
-use ec5\Repositories\QueryBuilder\Stats\Entry\StatsRepository as EntryStatsRepository;
+use ec5\Models\Eloquent\ProjectArchive;
+use ec5\Models\Eloquent\Entry;
+use ec5\Models\Eloquent\EntryArchive;
+use ec5\Models\Eloquent\BranchEntry;
+use ec5\Models\Eloquent\BranchEntryArchive;
+use ec5\Repositories\QueryBuilder\Stats\Entry\StatsRepository;
 use ec5\Repositories\QueryBuilder\Project\SearchRepository as SearchProjectRepository;
 
 class ProjectControllerBase extends Controller
@@ -144,7 +149,7 @@ class ProjectControllerBase extends Controller
     private function refreshProjectStats()
     {
         $searchProjectLegacy = new SearchProjectRepository();
-        $entryStatsRepository = new EntryStatsRepository();
+        $entryStatsRepository = new StatsRepository();
         $entryStatsRepository->updateProjectEntryStats($this->requestedProject);
 
         // Retrieve project with updated stats (legacy way, R&A fiasco)
@@ -152,6 +157,81 @@ class ProjectControllerBase extends Controller
         if ($project) {
             // Refresh the main Project model
             $this->requestedProject->init($project);
+        }
+    }
+
+    private function archiveProject()
+    {
+        try {
+            //cloning project row (for potential restore, safety net)
+            $project = Project::where('id', $this->requestedProject->getId())
+                ->where('slug', $this->requestedProject->slug)
+                ->first();
+            // replicate (duplicate) the data
+            $projectArchive = $project->replicate();
+            $projectArchive->id = $this->requestedProject->getId();
+            $projectArchive->created_at = $project->created_at;
+            $projectArchive->updated_at = $project->updated_at;
+            // make into array for mass assign. 
+            $projectArchive = $projectArchive->toArray();
+            //create copy to projects_archive table
+            ProjectArchive::create($projectArchive);
+
+            //delete original row 
+            //(entries and media files are not touched)
+            //todo: soft delete entries?
+            // they could be removed at a later stage by a background script
+            $project->delete();
+
+            return true;
+        } catch (Exception $e) {
+            \Log::error('Error project deletion', ['exception' => $e->getMessage()]);
+            return false;
+        }
+    }
+
+    private function archiveEntries()
+    {
+        $statsRepository = new StatsRepository();
+
+        try {
+            //move entries
+            Entry::where('project_id', $this->requestedProject->getId())->chunk(100, function ($rowsToMove) {
+                foreach ($rowsToMove as $row) {
+                    //todo: checlk the id AUTO_INCREMENT...
+                    $rowToArchive = $row->replicate();
+                    // make into array for mass assign. 
+                    $rowToArchive =  $rowToArchive->toArray();
+                    //create copy to projects_archive table
+                    EntryArchive::create($rowToArchive);
+                }
+            });
+
+            //move branch entries as well
+            BranchEntry::where('project_id', $this->requestedProject->getId())->chunk(100, function ($rowsToMove) {
+                foreach ($rowsToMove as $row) {
+                    //todo: check the id AUTO_INCREMENT...
+                    $rowToArchive = $row->replicate();
+                    // make into array for mass assign. 
+                    $rowToArchive =  $rowToArchive->toArray();
+                    //create copy to projects_archive table
+                    BranchEntryArchive::create($rowToArchive);
+                }
+            });
+
+            // All rows have been successfully moved, so you can proceed with deleting the original rows
+            Entry::where('project_id', $this->requestedProject->getId())->delete();
+            BranchEntry::where('project_id', $this->requestedProject->getId())->delete();
+
+            //update entry stats
+            $statsRepository->updateEntryStats($this->requestedProject);
+            //update branch entry stats
+            $statsRepository->updateBranchEntryStats($this->requestedProject);
+
+            return true;
+        } catch (\Exception $e) {
+            \Log::error('Error soft deleting project entries', ['exception' => $e->getMessage()]);
+            return false;
         }
     }
 }

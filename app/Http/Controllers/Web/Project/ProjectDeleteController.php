@@ -66,6 +66,9 @@ class ProjectDeleteController extends ProjectControllerBase
     }
 
     //soft delete a project by moving row to archive table
+    //entries and branch entries are moved to archive tables
+    //media files for the project are not touched, they can be removed at a later stage
+    //since deleting lots of file is an expensive operation
     public function softDelete(SearchProject $searchProject)
     {
         if (!$this->requestedProjectRole->canDeleteProject()) {
@@ -77,34 +80,15 @@ class ProjectDeleteController extends ProjectControllerBase
             return redirect('myprojects/' . $this->requestedProject->slug)->withErrors(['ec5_221']);
         }
 
-        try {
-            DB::beginTransaction();
-            //cloning project row (for potential restore, safety net)
-            $project = Project::where('id', $this->requestedProject->getId())
-                ->where('slug', $this->requestedProject->slug)
-                ->first();
-            // replicate (duplicate) the data
-            $projectArchive = $project->replicate();
-            $projectArchive->id = $this->requestedProject->getId();
-            $projectArchive->created_at = $project->created_at;
-            $projectArchive->updated_at = $project->updated_at;
-            // make into array for mass assign. 
-            $projectArchive = $projectArchive->toArray();
-            //create copy to projects_archive table
-            ProjectArchive::create($projectArchive);
-
-            //delete original row 
-            //(entries and media files are not touched)
-            // they could be removed at a later stage by a background script
-            $project->delete();
-
+        DB::beginTransaction();
+        if ($this->archiveProject() && $this->archiveEntries()) {
+            //all good
             DB::commit();
             //redirect to user projects
             return redirect('myprojects')->with('message', 'ec5_114');
-        } catch (Exception $e) {
+        } else {
             DB::rollBack();
-            \Log::error('Cannot delete project', ['exception' => $e->getMessage()]);
-            return redirect('myprojects/' . $this->requestedProject->slug)->withErrors(['ec5_222']);
+            return redirect('myprojects/' . $this->requestedProject->slug . '/manage-entries')->withErrors(['ec5_104']);
         }
     }
 }

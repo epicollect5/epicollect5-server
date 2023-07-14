@@ -64,7 +64,7 @@ class DeleteRepository extends Base
                 'Exception' => json_encode($e)
             ]);
             $this->doRollBack();
-            $this->errors = ['entries_deletion' => ['ec5_336']];
+            $this->errors = ['entries_deletion' => ['ec5_104']];
             return false;
         }
 
@@ -78,7 +78,7 @@ class DeleteRepository extends Base
                 'Exception' => json_encode($e)
             ]);
             $this->doRollBack();
-            $this->errors = ['entries_deletion' => ['ec5_336']];
+            $this->errors = ['entries_deletion' => ['ec5_104']];
             return false;
         }
 

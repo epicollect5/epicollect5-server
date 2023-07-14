@@ -6,13 +6,15 @@
         {{-- Nav tabs --}}
         <ul class="nav nav-tabs">
             <li role="presentation" class="active">
-                <a href="#limits" aria-controls="creator" role="tab" data-toggle="tab">{{trans('site.limits')}}</a>
+                <a href="#limits" aria-controls="creator" role="tab" data-toggle="tab">{{ trans('site.limits') }}</a>
             </li>
             <li role="presentation">
-                <a href="#deletion" aria-controls="creator" role="tab" data-toggle="tab">{{trans('site.deletion')}}</a>
+                <a href="#deletion" aria-controls="creator" role="tab"
+                    data-toggle="tab">{{ trans('site.deletion') }}</a>
             </li>
             <li role="presentation">
-                <a href="#bulk-upload" aria-controls="creator" role="tab" data-toggle="tab">{{trans('site.bulk_upload')}}</a>
+                <a href="#bulk-upload" aria-controls="creator" role="tab"
+                    data-toggle="tab">{{ trans('site.bulk_upload') }}</a>
             </li>
         </ul>
 
@@ -28,6 +30,5 @@
 </div>
 
 @section('scripts')
-    <script type="text/javascript" src="{{ asset('js/project/project.js').'?'.ENV('RELEASE') }}"></script>
+    <script type="text/javascript" src="{{ asset('js/project/project.js') . '?' . ENV('RELEASE') }}"></script>
 @stop
-
