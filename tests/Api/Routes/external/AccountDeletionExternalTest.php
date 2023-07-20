@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Auth;
 use ec5\Mail\UserAccountDeletionConfirmation;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use ec5\Models\Eloquent\ProjectRole;
 
 
 class AccountDeletionExternalTest extends TestCase
@@ -132,7 +133,7 @@ class AccountDeletionExternalTest extends TestCase
             ->assertStatus(200)
             ->assertExactJson([
                 "data" =>  [
-                    "id" => "account-deletion-requested",
+                    "id" => "account-deletion-request",
                     "accepted" => true
                 ]
             ]);
