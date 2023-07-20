@@ -6,6 +6,7 @@ use ec5\Http\Controllers\ProjectControllerBase;
 use Illuminate\Http\Request;
 use ec5\Repositories\QueryBuilder\Project\DeleteRepository;
 use ec5\Repositories\QueryBuilder\Stats\Entry\StatsRepository;
+use Illuminate\Support\Facades\DB;
 
 class ProjectDeleteEntriesController extends ProjectControllerBase
 {
@@ -113,12 +114,25 @@ class ProjectDeleteEntriesController extends ProjectControllerBase
                 ->withErrors(['errors' => ['ec5_91']]);
         }
         DB::beginTransaction();
-        if (!$this->archiveEntries()) {
+        try {
+            if (!$this->archiveEntries($this->requestedProject->getId())) {
+                DB::rollBack();
+                return redirect('myprojects/' . $this->requestedProject->slug . '/manage-entries')->withErrors(['ec5_104']);
+            } else {
+                //update stats
+                $statsRepository = new StatsRepository();
+                //update entry stats
+                $statsRepository->updateEntryStats($this->requestedProject);
+                //update branch entry stats
+                $statsRepository->updateBranchEntryStats($this->requestedProject);
+            }
+            // Success!
+            DB::commit();
+            return redirect('myprojects/' . $this->requestedProject->slug . '/manage-entries')->with('message', 'ec5_122');
+        } catch (\Exception $e) {
+            \Log::error('Error softDelete() entries', ['exception' => $e->getMessage()]);
             DB::rollBack();
             return redirect('myprojects/' . $this->requestedProject->slug . '/manage-entries')->withErrors(['ec5_104']);
         }
-        // Success!
-        DB::commit();
-        return redirect('myprojects/' . $this->requestedProject->slug . '/manage-entries')->with('message', 'ec5_122');
     }
 }

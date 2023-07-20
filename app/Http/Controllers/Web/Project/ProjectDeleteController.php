@@ -79,7 +79,7 @@ class ProjectDeleteController extends ProjectControllerBase
         }
 
         DB::beginTransaction();
-        if ($this->archiveProject() && $this->archiveEntries()) {
+        if ($this->archiveProject($this->requestedProject->getId(), $this->requestedProject->slug) && $this->archiveEntries($this->requestedProject->getId())) {
             //all good
             DB::commit();
             //redirect to user projects

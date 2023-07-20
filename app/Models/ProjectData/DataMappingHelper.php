@@ -189,8 +189,7 @@ class DataMappingHelper
                 }
             }
         }
-        //add title (finger crossed)
-
+        //add title (fingers crossed)
         $entryOut[] = $title; //title
 
         if ($entry == null) {

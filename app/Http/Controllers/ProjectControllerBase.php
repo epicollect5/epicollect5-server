@@ -45,7 +45,6 @@ class ProjectControllerBase extends Controller
      */
     public function __construct(Request $request)
     {
-
         $this->middleware(function ($request, $next) {
             $this->request = $request;
             $this->requestedProject = $request->attributes->get('requestedProject');
@@ -161,16 +160,16 @@ class ProjectControllerBase extends Controller
         }
     }
 
-    protected function archiveProject()
+    public function archiveProject($projectId, $projectSlug)
     {
         try {
             //cloning project row (for potential restore, safety net)
-            $project = EloquentProject::where('id', $this->requestedProject->getId())
-                ->where('slug', $this->requestedProject->slug)
+            $project = EloquentProject::where('id', $projectId)
+                ->where('slug', $projectSlug)
                 ->first();
             // replicate (duplicate) the data
             $projectArchive = $project->replicate();
-            $projectArchive->id = $this->requestedProject->getId();
+            $projectArchive->id = $projectId;
             $projectArchive->created_at = $project->created_at;
             $projectArchive->updated_at = $project->updated_at;
             // make into array for mass assign. 
@@ -191,13 +190,11 @@ class ProjectControllerBase extends Controller
         }
     }
 
-    protected function archiveEntries()
+    public function archiveEntries($projectId)
     {
-        $statsRepository = new StatsRepository();
-
         try {
             //move entries
-            Entry::where('project_id', $this->requestedProject->getId())->chunk(100, function ($rowsToMove) {
+            Entry::where('project_id', $projectId)->chunk(100, function ($rowsToMove) {
                 foreach ($rowsToMove as $row) {
                     //todo: checlk the id AUTO_INCREMENT...
                     $rowToArchive = $row->replicate();
@@ -209,7 +206,7 @@ class ProjectControllerBase extends Controller
             });
 
             //move branch entries as well
-            BranchEntry::where('project_id', $this->requestedProject->getId())->chunk(100, function ($rowsToMove) {
+            BranchEntry::where('project_id', $projectId)->chunk(100, function ($rowsToMove) {
                 foreach ($rowsToMove as $row) {
                     //todo: check the id AUTO_INCREMENT...
                     $rowToArchive = $row->replicate();
@@ -221,13 +218,8 @@ class ProjectControllerBase extends Controller
             });
 
             // All rows have been successfully moved, so you can proceed with deleting the original rows
-            Entry::where('project_id', $this->requestedProject->getId())->delete();
-            BranchEntry::where('project_id', $this->requestedProject->getId())->delete();
-
-            //update entry stats
-            $statsRepository->updateEntryStats($this->requestedProject);
-            //update branch entry stats
-            $statsRepository->updateBranchEntryStats($this->requestedProject);
+            Entry::where('project_id', $projectId)->delete();
+            BranchEntry::where('project_id', $projectId)->delete();
 
             return true;
         } catch (\Exception $e) {
