@@ -7,7 +7,6 @@ use ec5\Repositories\QueryBuilder\Project\SearchRepository as ProjectSearch;
 use ec5\Repositories\QueryBuilder\ProjectRole\SearchRepository as ProjectRoleSearch;
 use ec5\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-
 use ec5\Models\Users\User;
 use Config;
 
@@ -115,11 +114,10 @@ class AdminController extends Controller
         $currentPage = !empty($data['page']) ? $data['page'] : 1;
 
         $users = $this->userRepository->paginate($perPage, $currentPage, $search, $options);
-        $total = count($this->userRepository->all());
         $users->appends($options);
         $users->appends(['search' => $search]);
 
-        return ['users' => $users, 'adminUser' => $adminUser, 'usersTotal' => $total];
+        return ['users' => $users, 'adminUser' => $adminUser];
     }
 
     /**
@@ -139,9 +137,6 @@ class AdminController extends Controller
         //get projects paginated
         $projects = $this->projectSearch->adminProjects($perPage, $options);
 
-        //get projects total as it is not available with simplePaginate();
-        $total = count($this->projectSearch->all());
-
         // Append the creator user's User object and current user's ProjectRole object
         foreach ($projects as $project) {
             $project->user = User::where('id', '=', $project->created_by)->first();
@@ -150,7 +145,7 @@ class AdminController extends Controller
 
         $projects->appends($options);
 
-        return ['projects' => $projects, 'projectsTotal' => $total];
+        return ['projects' => $projects];
     }
 
     public function showProjects(Request $request)
@@ -166,9 +161,6 @@ class AdminController extends Controller
         //get projects paginated
         $projects = $this->projectSearch->adminProjects($perPage, $options);
 
-        //get projects total as it is not available with simplePaginate();
-        $total = count($this->projectSearch->all());
-
         // Append the creator user's User object and current user's ProjectRole object
         foreach ($projects as $project) {
             $project->user = User::where('id', '=', $project->created_by)->first();
@@ -179,7 +171,6 @@ class AdminController extends Controller
 
         $params = [
             'projects' => $projects,
-            'projectsTotal' => $total,
             'action' => $action
         ];
 
