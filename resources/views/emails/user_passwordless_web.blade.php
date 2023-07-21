@@ -57,13 +57,11 @@
         td {
             color: #000000;
         }
-
     </style>
 
 </head>
 
-<body style="margin: 20px 0; padding: 0; background-color:#eee" leftmargin="0" topmargin="0" marginwidth="0"
-    marginheight="0">
+<body style="margin: 20px 0; padding: 0;" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
     <table width="100%" border="0" cellspacing="0" cellpadding="0">
         <tr>
             <td align="center"
@@ -103,7 +101,7 @@
         <tr>
             <td align="center"
                 style="padding: 10px 0px 0px 0px; font-size: 18px; font-family: Arimo, Arial, sans-serif; color: #333;">
-                 <p>If the login button did not work for you,</p>
+                <p>If the login button did not work for you,</p>
                 <p>next time copy and paste the URL below into your browser</p>
             </td>
         </tr>
@@ -112,7 +110,7 @@
                 style="word-break:break-all;padding: 16px; font-size: 16px; font-family: Arimo, Arial, sans-serif; color: #333;!important">
                 {{ $url }}
             </td>
-        </tr> 
+        </tr>
         <tr>
             <td align="center"
                 style="word-break:break-all;padding: 10px 0px 0px 0px; font-size: 18px; font-family: Arimo, Arial, sans-serif; color: #333;">

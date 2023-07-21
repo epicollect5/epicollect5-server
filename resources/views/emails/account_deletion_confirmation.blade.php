@@ -61,8 +61,7 @@
 
 </head>
 
-<body style="margin:20px 0; padding: 0; background-color:#eee" leftmargin="0" topmargin="0" marginwidth="0"
-    marginheight="0">
+<body style="margin:20px 0; padding: 0;" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
     <table width="100%" border="0" cellspacing="0" cellpadding="0">
         <tr>
             <td align="center"

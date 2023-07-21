@@ -7,17 +7,14 @@ use Illuminate\Http\Request;
 
 use ec5\Models\ProjectRoles\ProjectRole;
 use ec5\Models\Projects\Project;
-use ec5\Models\Eloquent\Project as EloquentProject;
-use ec5\Models\Eloquent\ProjectArchive;
-use ec5\Models\Eloquent\Entry;
-use ec5\Models\Eloquent\EntryArchive;
-use ec5\Models\Eloquent\BranchEntry;
-use ec5\Models\Eloquent\BranchEntryArchive;
 use ec5\Repositories\QueryBuilder\Stats\Entry\StatsRepository;
 use ec5\Repositories\QueryBuilder\Project\SearchRepository as SearchProjectRepository;
+use ec5\Traits\Eloquent\Archive;
 
 class ProjectControllerBase extends Controller
 {
+
+    use Archive;
 
     /**
      * @var Request
@@ -157,74 +154,6 @@ class ProjectControllerBase extends Controller
         if ($project) {
             // Refresh the main Project model
             $this->requestedProject->init($project);
-        }
-    }
-
-    public function archiveProject($projectId, $projectSlug)
-    {
-        try {
-            //cloning project row (for potential restore, safety net)
-            $project = EloquentProject::where('id', $projectId)
-                ->where('slug', $projectSlug)
-                ->first();
-            // replicate (duplicate) the data
-            $projectArchive = $project->replicate();
-            $projectArchive->id = $projectId;
-            $projectArchive->created_at = $project->created_at;
-            $projectArchive->updated_at = $project->updated_at;
-            // make into array for mass assign. 
-            $projectArchive = $projectArchive->toArray();
-            //create copy to projects_archive table
-            ProjectArchive::create($projectArchive);
-
-            //delete original row 
-            //(entries and media files are not touched)
-            //todo: soft delete entries?
-            // they could be removed at a later stage by a background script
-            $project->delete();
-
-            return true;
-        } catch (Exception $e) {
-            \Log::error('Error project deletion', ['exception' => $e->getMessage()]);
-            return false;
-        }
-    }
-
-    public function archiveEntries($projectId)
-    {
-        try {
-            //move entries
-            Entry::where('project_id', $projectId)->chunk(100, function ($rowsToMove) {
-                foreach ($rowsToMove as $row) {
-                    //todo: checlk the id AUTO_INCREMENT...
-                    $rowToArchive = $row->replicate();
-                    // make into array for mass assign. 
-                    $rowToArchive =  $rowToArchive->toArray();
-                    //create copy to projects_archive table
-                    EntryArchive::create($rowToArchive);
-                }
-            });
-
-            //move branch entries as well
-            BranchEntry::where('project_id', $projectId)->chunk(100, function ($rowsToMove) {
-                foreach ($rowsToMove as $row) {
-                    //todo: check the id AUTO_INCREMENT...
-                    $rowToArchive = $row->replicate();
-                    // make into array for mass assign. 
-                    $rowToArchive =  $rowToArchive->toArray();
-                    //create copy to projects_archive table
-                    BranchEntryArchive::create($rowToArchive);
-                }
-            });
-
-            // All rows have been successfully moved, so you can proceed with deleting the original rows
-            Entry::where('project_id', $projectId)->delete();
-            BranchEntry::where('project_id', $projectId)->delete();
-
-            return true;
-        } catch (\Exception $e) {
-            \Log::error('Error soft deleting project entries', ['exception' => $e->getMessage()]);
-            return false;
         }
     }
 }
