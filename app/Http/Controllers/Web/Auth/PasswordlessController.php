@@ -25,6 +25,7 @@ use PDOException;
 use Webpatser\Uuid\Uuid;
 use Auth;
 use ec5\Libraries\Utilities\Generators;
+use Illuminate\Support\Facades\App;
 
 
 class PasswordlessController extends AuthController
@@ -170,30 +171,33 @@ class PasswordlessController extends AuthController
             return redirect()->back()->withErrors($validator->errors());
         }
 
-        //get recaptcha response
-        $client = new Client(); //GuzzleHttp\Client
-        $response = $client->post(env('GOOGLE_RECAPTCHA_API_VERIFY_ENDPOINT'), [
-            'form_params' => [
-                'secret' => env('GOOGLE_RECAPTCHA_SECRET_KEY'),
-                'response' => $inputs['g-recaptcha-response']
-            ]
-        ]);
+        //imp: skip captcha only when testing
+        if (!App::environment('testing')) {
+            //get recaptcha response
+            $client = new Client(); //GuzzleHttp\Client
+            $response = $client->post(env('GOOGLE_RECAPTCHA_API_VERIFY_ENDPOINT'), [
+                'form_params' => [
+                    'secret' => env('GOOGLE_RECAPTCHA_SECRET_KEY'),
+                    'response' => $inputs['g-recaptcha-response']
+                ]
+            ]);
 
-        /**
-         * Validate the captcha response first
-         */
-        $arrayResponse = json_decode($response->getBody()->getContents(), true);
+            /**
+             * Validate the captcha response first
+             */
+            $arrayResponse = json_decode($response->getBody()->getContents(), true);
 
-        $captchaValidator->validate($arrayResponse);
-        if ($captchaValidator->hasErrors()) {
-            // Redirect back if errors
-            return redirect()->back()->withErrors($captchaValidator->errors());
-        }
+            $captchaValidator->validate($arrayResponse);
+            if ($captchaValidator->hasErrors()) {
+                // Redirect back if errors
+                return redirect()->back()->withErrors($captchaValidator->errors());
+            }
 
-        $captchaValidator->additionalChecks($arrayResponse);
-        if ($captchaValidator->hasErrors()) {
-            // Redirect back if errors
-            return redirect()->back()->withErrors($captchaValidator->errors());
+            $captchaValidator->additionalChecks($arrayResponse);
+            if ($captchaValidator->hasErrors()) {
+                // Redirect back if errors
+                return redirect()->back()->withErrors($captchaValidator->errors());
+            }
         }
 
         $email = $inputs['email'];
@@ -372,17 +376,20 @@ class PasswordlessController extends AuthController
     {
         $providerPasswordless = config('ec5Strings.providers.passwordless');
         $isPasswordlessEnabled = in_array($providerPasswordless, $this->authMethods, true);
-        //is passwordless auth enabled?
-        if (!$isPasswordlessEnabled) {
-            // Auth method not allowed
-            return redirect()->route('login')->withErrors(['ec5_55']);
+        //is passwordless auth enabled in production?
+        if (!App::environment('testing')) {
+            if (!$isPasswordlessEnabled) {
+                // Auth method not allowed
+                \Log::error('Passwordless auth not enabled');
+                return redirect()->route('login')->withErrors($validator->errors());
+            }
         }
 
         //validate request
         $inputs = $request->all();
         $validator->validate($inputs);
         if ($validator->hasErrors()) {
-            // Redirect back if errors
+            \Log::error('Passwordless auth request error', ['errors' => $validator->errors()]);
             return redirect()->route('login')->withErrors($validator->errors());
         }
 
@@ -398,7 +405,10 @@ class PasswordlessController extends AuthController
 
         //Does the email exists?
         if ($userPasswordless === null) {
-            Log::error('Error validating passworless code', ['error' => 'Email does not exist']);
+            Log::error('Error validating passworless code', [
+                'error' => 'Email does not exist',
+                'email' => $email
+            ]);
             // Redirect back if errors
             return view('auth.verification_passwordless', [
                 'email' => $email
@@ -407,7 +417,11 @@ class PasswordlessController extends AuthController
 
         //check if the code is valid
         if (!$userPasswordless->isValidCode($code)) {
-            Log::error('Error validating passworless code', ['error' => 'Code not valid']);
+            Log::error('Invalid passworless code', [
+                'error' => 'Code not valid',
+                'email' => $email,
+                'code' => $code
+            ]);
             //after too many attempts, redirect to login page
             if ($userPasswordless->attempts <= 0) {
                 $userPasswordless->delete();
