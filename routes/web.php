@@ -85,10 +85,8 @@ Route::group(['middleware' => $passwordlessMiddleware], function () use ($passwo
 // Admin area and functions
 Route::group(['middleware' => 'auth.admin'], function () {
     // Administration
-    Route::get('admin/projects', 'Web\Admin\AdminController@showProjects');
-
-    Route::get('admin/stats', 'Web\Admin\AdminController@showStats');
-
+    Route::get('admin/projects', 'Web\Admin\AdminController@showProjects')->name('admin-projects');
+    Route::get('admin/stats', 'Web\Admin\AdminController@showStats')->name('admin-stats');
     Route::get('admin/{action?}', 'Web\Admin\AdminController@index')->name('admin-home');
 
     Route::post('admin/update-user-server-role', 'Web\Admin\AdminUsersController@updateUserServerRole');

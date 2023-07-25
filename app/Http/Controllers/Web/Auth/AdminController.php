@@ -65,16 +65,16 @@ class AdminController extends AuthController
 
         // Attempt to login superadmin user
         $credentials['server_role'] = 'superadmin';
-        if($this->attemptAdminLogin($credentials)) {
+        if ($this->attemptAdminLogin($credentials)) {
             // Redirect to admin page
-            return redirect()->route('admin-home');
+            return redirect()->route('admin-stats');
         }
 
         //attempt to login admin users
         $credentials['server_role'] = 'admin';
-        if($this->attemptAdminLogin($credentials)) {
+        if ($this->attemptAdminLogin($credentials)) {
             // Redirect to admin page
-            return redirect()->route('admin-home');
+            return redirect()->route('admin-stats');
         }
 
         // If the login attempt was unsuccessful we will increment the number of attempts
@@ -89,7 +89,8 @@ class AdminController extends AuthController
             ->withErrors(['ec5_36']);
     }
 
-    private function attemptAdminLogin($credentials){
+    private function attemptAdminLogin($credentials)
+    {
 
         if (Auth::attempt($credentials, false)) {
             $user = Auth::getLastAttempted();
