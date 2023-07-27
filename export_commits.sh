@@ -1,4 +1,4 @@
 #!/bin/bash
 
 
-git log --pretty=format:"%ar , \"%s\"," --no-merges >  git-commits.csv
+git log --pretty=format:"%ar , \"%s %d\"," --no-merges --decorate=short > git-commits.csv
