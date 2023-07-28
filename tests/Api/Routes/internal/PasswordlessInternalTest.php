@@ -157,4 +157,169 @@ class PasswordlessInternalTest extends TestCase
         $response->assertRedirect(route('login'));
         $this->assertEquals('ec5_378', session('errors')->getBag('default')->first());
     }
+
+    public function testRedirectAfterLogin()
+    {
+        $email = env('MANAGER_EMAIL');
+        $tokenExpiresAt = env('PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
+        $code = Generators::randomNumber(6, 1);
+
+        factory(UserPasswordlessWeb::class)
+            ->create([
+                'email' => $email,
+                'token' => bcrypt($code, ['rounds' => env('BCRYPT_ROUNDS')]),
+                'expires_at' => Carbon::now()->addSeconds($tokenExpiresAt)->toDateTimeString()
+            ]);
+
+        session()->put('url.intended', route('profile'));
+        $response = $this->post('/login/passwordless/verification', [
+            'email' => $email,
+            'code' => $code
+        ], []);
+
+        //should redirect to intended url
+        $response->assertStatus(302);
+        $response->assertRedirect(route('profile'));
+
+        //user should be logged in
+        $this->assertTrue(Auth::check());
+        $this->assertEquals(Auth::user()->email, $email);
+
+        Auth::logout();
+        session()->flush();
+        session()->regenerate();
+        $code = Generators::randomNumber(6, 1);
+        factory(UserPasswordlessWeb::class)
+            ->create([
+                'email' => $email,
+                'token' => bcrypt($code, ['rounds' => env('BCRYPT_ROUNDS')]),
+                'expires_at' => Carbon::now()->addSeconds($tokenExpiresAt)->toDateTimeString()
+            ]);
+
+        session()->put('url.intended', route('my-projects'));
+        $response = $this->post('/login/passwordless/verification', [
+            'email' => $email,
+            'code' => $code
+        ], []);
+
+        //should redirect to intended url
+        $response->assertStatus(302);
+        $response->assertRedirect(route('my-projects'));
+
+        //user should be logged in
+        $this->assertTrue(Auth::check());
+        $this->assertEquals(Auth::user()->email, $email);
+    }
+
+    public function testRedirectAfterLoginErrors()
+    {
+        $email = env('MANAGER_EMAIL');
+        $tokenExpiresAt = env('PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
+        $code = Generators::randomNumber(6, 1);
+
+        //add token to db
+        factory(UserPasswordlessWeb::class)
+            ->create([
+                'email' => $email,
+                'token' => bcrypt($code, ['rounds' => env('BCRYPT_ROUNDS')]),
+                'expires_at' => Carbon::now()->addSeconds($tokenExpiresAt)->toDateTimeString()
+            ]);
+
+        // First invalid attempt
+        $response = $this->post('/login/passwordless/verification', [
+            'email' => $email,
+            'code' => strval(Generators::randomNumber(6, 1))
+        ], [])->assertStatus(200);
+        $this->assertEquals('auth.verification_passwordless', $response->original->getName());
+        $this->assertEquals(['ec5_378'], $response->original->getData()['errors']->all());
+
+        //Second invalid attempt
+        $response = $this->post('/login/passwordless/verification', [
+            'email' => $email,
+            'code' => strval(Generators::randomNumber(6, 1))
+        ], [])->assertStatus(200);
+        $this->assertEquals('auth.verification_passwordless', $response->original->getName());
+        $this->assertEquals(['ec5_378'], $response->original->getData()['errors']->all());
+
+        //Third invalid attempt, redirect back to login
+        $response = $this->post('/login/passwordless/verification', [
+            'email' => $email,
+            'code' => strval(Generators::randomNumber(6, 1))
+        ], [])->assertStatus(302);
+
+        $response->assertRedirect(route('login'));
+        $this->assertEquals('ec5_378', session('errors')->getBag('default')->first());
+
+        //Now do login succesfully
+        $code = Generators::randomNumber(6, 1);
+        factory(UserPasswordlessWeb::class)
+            ->create([
+                'email' => $email,
+                'token' => bcrypt($code, ['rounds' => env('BCRYPT_ROUNDS')]),
+                'expires_at' => Carbon::now()->addSeconds($tokenExpiresAt)->toDateTimeString()
+            ]);
+
+        $response = $this->post('/login/passwordless/verification', [
+            'email' => $email,
+            'code' => $code
+        ], []);
+
+        //should redirect to home page, not login/passwordless/verification
+        $response->assertStatus(302);
+        $response->assertRedirect(route('home'));
+
+        //user should be logged in
+        $this->assertTrue(Auth::check());
+        $this->assertEquals(Auth::user()->email, $email);
+    }
+
+    public function testRedirectAfterRequestingAnotherCode()
+    {
+        $email = env('MANAGER_EMAIL');
+        $tokenExpiresAt = env('PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
+        $code = Generators::randomNumber(6, 1);
+
+        //add token to db
+        factory(UserPasswordlessWeb::class)
+            ->create([
+                'email' => $email,
+                'token' => bcrypt($code, ['rounds' => env('BCRYPT_ROUNDS')]),
+                'expires_at' => Carbon::now()->addSeconds($tokenExpiresAt)->toDateTimeString()
+            ]);
+
+        // First invalid attempt
+        $response = $this->post('/login/passwordless/verification', [
+            'email' => $email,
+            'code' => strval(Generators::randomNumber(6, 1))
+        ], [])->assertStatus(200);
+        $this->assertEquals('auth.verification_passwordless', $response->original->getName());
+        $this->assertEquals(['ec5_378'], $response->original->getData()['errors']->all());
+
+        //go back to login page
+        $this->get('/login');
+        $code = Generators::randomNumber(6, 1);
+        UserPasswordlessWeb::where('email', $email)->delete();
+
+        //add token to db
+        factory(UserPasswordlessWeb::class)
+            ->create([
+                'email' => $email,
+                'token' => bcrypt($code, ['rounds' => env('BCRYPT_ROUNDS')]),
+                'expires_at' => Carbon::now()->addSeconds($tokenExpiresAt)->toDateTimeString()
+            ]);
+
+        //Now do login succesfully
+        $response = $this->post('/login/passwordless/verification', [
+            'email' => $email,
+            'code' => $code
+        ], []);
+
+        //should redirect to home page, not login/passwordless/token
+        $response->assertStatus(302);
+        $response->assertRedirect(route('home'));
+
+        //user should be logged in
+        $this->assertTrue(Auth::check());
+        $this->assertEquals(Auth::user()->email, $email);
+    }
 }
