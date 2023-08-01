@@ -5,8 +5,10 @@ namespace ec5\Http\Middleware;
 use Closure;
 use Carbon\Carbon;
 use ec5\Http\Controllers\Api\ApiResponse;
+use ec5\Mail\ExceptionNotificationMail;
 use Illuminate\Cache\RateLimiter;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Mail;
 
 class ApiThrottleRequests extends MiddlewareBase
 {
@@ -27,7 +29,6 @@ class ApiThrottleRequests extends MiddlewareBase
         $this->limiter = $limiter;
 
         parent::__construct($apiResponse);
-
     }
 
     /**
@@ -47,12 +48,18 @@ class ApiThrottleRequests extends MiddlewareBase
             return $this->buildResponse($request, $key, $maxAttempts);
         }
 
-        $this->limiter->hit($key, $decayMinutes);
+        try {
+            $this->limiter->hit($key, $decayMinutes);
+        } catch (\Exception $e) {
+            \Log::error('Rate limiter hit() exception', ['message' => $e->getMessage()]);
+            Mail::to(env('SYSTEM_EMAIL'))->send(new ExceptionNotificationMail($e->getMessage()));
+        }
 
         $response = $next($request);
 
         return $this->addHeaders(
-            $response, $maxAttempts,
+            $response,
+            $maxAttempts,
             $this->calculateRemainingAttempts($key, $maxAttempts)
         );
     }
@@ -84,7 +91,8 @@ class ApiThrottleRequests extends MiddlewareBase
         $retryAfter = $this->limiter->availableIn($key);
 
         return $this->addHeaders(
-            $response, $maxAttempts,
+            $response,
+            $maxAttempts,
             $this->calculateRemainingAttempts($key, $maxAttempts, $retryAfter),
             $retryAfter
         );
@@ -106,7 +114,7 @@ class ApiThrottleRequests extends MiddlewareBase
             'X-RateLimit-Remaining' => $remainingAttempts,
         ];
 
-        if (! is_null($retryAfter)) {
+        if (!is_null($retryAfter)) {
             $headers['Retry-After'] = $retryAfter;
             $headers['X-RateLimit-Reset'] = Carbon::now()->getTimestamp() + $retryAfter;
         }
@@ -126,7 +134,7 @@ class ApiThrottleRequests extends MiddlewareBase
      */
     protected function calculateRemainingAttempts($key, $maxAttempts, $retryAfter = null)
     {
-        if (! is_null($retryAfter)) {
+        if (!is_null($retryAfter)) {
             return 0;
         }
 
