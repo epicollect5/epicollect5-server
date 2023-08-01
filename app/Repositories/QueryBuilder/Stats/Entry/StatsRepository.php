@@ -163,7 +163,6 @@ class StatsRepository extends Base
     public function getEntryChildCounts($projectId, $formRef, $parentEntryUuid)
     {
 
-        \Log::error('getEntryChildCounts called');
         $stats = DB::table($this->entryTable)
             ->select(DB::raw("COUNT(*) as child_count"))
             ->where('project_id', '=', $projectId)
@@ -185,7 +184,6 @@ class StatsRepository extends Base
      */
     public function getEntryBranchCounts(Project $project, $projectId, $formRef, $ownerEntryUuid)
     {
-        \Log::error('getEntryBranchCounts called');
         $projectExtra = $project->getProjectExtra();
 
         // Set count defaults

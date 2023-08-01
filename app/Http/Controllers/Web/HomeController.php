@@ -51,8 +51,8 @@ class HomeController extends Controller
             //get all featured projects (ordered by updated timestamp)
             $allFeaturedProjects = $this->projects->featuredProjects($columns);
 
-            //first row with 2 projects, as we have the 2 social media columns
-            $projectsFirstRow = $allFeaturedProjects->splice(0, 2);
+            //first row with 3 projects, as we have the community column
+            $projectsFirstRow = $allFeaturedProjects->splice(0, 3);
 
             //second row with 4 projects
             $projectsSecondRow = $allFeaturedProjects->splice(0, 4);

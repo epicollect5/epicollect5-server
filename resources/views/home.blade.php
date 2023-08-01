@@ -102,19 +102,6 @@
             @endforeach
 
             <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
-                <div class="panel panel-default">
-                    {{-- <div class="panel-heading"> --}}
-                    {{-- <span>Twitter Feeds</span> --}}
-                    {{-- </div> --}}
-                    <div class="panel-body page-home-twitter-feeds">
-                        <a class="twitter-timeline" href="https://twitter.com/EpiCollect?ref_src=twsrc%5Etfw">Tweets by
-                            Epicollect5</a>
-                        <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
                 <div class="panel panel-default panel-community">
                     <div class="panel-body">
                         <a href="https://community.epicollect.net" class="thumbnail">

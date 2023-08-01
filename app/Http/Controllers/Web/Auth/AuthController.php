@@ -64,13 +64,17 @@ class AuthController extends Controller
     {
         if ($this->isAuthWebEnabled) {
             //get intended url for redirection 
-            //(skip passwordless token route as it is post only)
-            if (url()->previous() === route('passwordless-token-web')) {
-                session(['url.intended' => route('home')]);
-            } else {
-                session(['url.intended' => url()->previous()]);
+            //(skip passwordless token/web routes as they are post only)
+            switch (url()->previous()) {
+                case route('passwordless-auth-web'):
+                case route('passwordless-token-web'):
+                    //send user to home page
+                    session()->put('url.intended', route('home'));
+                    break;
+                default:
+                    session()->put('url.intended', url()->previous());
             }
-            // \Log::info('loggin in', ['previous_url' => url()->previous()]);
+
             session(['nonce' => csrf_token()]);
             return view('auth.login');
         }

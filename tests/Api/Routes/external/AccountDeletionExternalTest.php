@@ -6,6 +6,7 @@ namespace Tests;
 use ec5\Mail\UserAccountDeletionUser;
 use ec5\Mail\UserAccountDeletionAdmin;
 use ec5\Models\Users\User;
+use ec5\Models\Eloquent\ProjectRole;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Auth;
 use ec5\Mail\UserAccountDeletionConfirmation;
