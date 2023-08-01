@@ -25,14 +25,10 @@ class RuleTimeInput extends RuleInputBase
 
         // Set remaining rules in the parent class
         parent::setRules($inputDetails, $answer, $project);
-
     }
 
     public function additionalChecks($inputDetails, $answer, Project $project, EntryStructure $entryStructure)
     {
-
-        Log::error('Time answer', ['value' => $answer]);
-
         //if this question is not required, skip extra checks
         if ($inputDetails['is_required'] === false && $answer === '') {
             return $answer;
@@ -62,8 +58,7 @@ class RuleTimeInput extends RuleInputBase
         try {
             $timePart = explode('T', $answer)[1];
             $timePart = explode('.', $timePart)[0];
-        }
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
             Log::error('Time wrong format uploaded - validateTime failed', [
                 'project slug' => $project->slug,
                 'time' => $timePart
