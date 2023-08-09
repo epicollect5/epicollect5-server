@@ -9,6 +9,7 @@ use ec5\Models\Eloquent\Entry;
 use ec5\Models\Eloquent\BranchEntry;
 use ec5\Models\Eloquent\EntryArchive;
 use ec5\Models\Eloquent\BranchEntryArchive;
+use ec5\Models\Eloquent\User;
 
 class ArchiveEntriesTest extends TestCase
 {
@@ -29,8 +30,10 @@ class ArchiveEntriesTest extends TestCase
             $numOfAdditionalBranchEntries = mt_rand(10, 100);
 
             echo "Archived " . $numOfEntries . ' entries, ' . $numOfBranchEntries . ' branches, ' . ($i + 1) . ' run ' . "\n"; // Log iteration number to console
-            // Create a test project
-            $project = factory(Project::class)->create();
+            // Create a test project (created with system admin ID)
+            $project = factory(Project::class)->create([
+                'created_by' => User::where('email', env('SUPER_ADMIN_EMAIL'))->first()['id']
+            ]);
             // Create some test entries...
             $entriesToArchive = factory(Entry::class, $numOfEntries)->create([
                 'project_id' =>  $project->id,
@@ -38,7 +41,9 @@ class ArchiveEntriesTest extends TestCase
                 'user_id' => $project->created_by,
             ]);
             // Create additional entries that should not be archived
-            $additionalProject = factory(Project::class)->create();
+            $additionalProject = factory(Project::class)->create([
+                'created_by' => User::where('email', env('SUPER_ADMIN_EMAIL'))->first()['id']
+            ]);
             $additionalEntries = factory(Entry::class, $numOfAdditionalEntries)->create([
                 'project_id' =>  $additionalProject->id,
                 'form_ref' => $additionalProject->ref . '_' . uniqid(),

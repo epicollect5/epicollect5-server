@@ -13,6 +13,7 @@
 
 use ec5\Models\Eloquent\User;
 use ec5\Models\Eloquent\Project;
+use ec5\Models\Projects\Project as LegacyProject;
 use ec5\Models\Eloquent\Entry;
 use ec5\Models\Eloquent\BranchEntry;
 use Illuminate\Support\Str;
@@ -52,8 +53,32 @@ $factory->define(ec5\Models\Eloquent\Project::class, function (Faker\Generator $
         'access' => 'public',
         'visibility' => 'listed',
         'category' => 'general',
-        'created_by' => User::where('email', env('CREATOR_EMAIL'))->first()['id'],
-        'status' => 'trashed'
+        'created_by' => User::where('email', env('SUPER_ADMIN_EMAIL'))->first()['id'],
+        'status' => 'active'
+    ];
+});
+
+$factory->define(LegacyProject::class, function (Faker\Generator $faker) {
+
+    $ec5Limits = Config::get('ec5Limits');
+    $nameMin = $ec5Limits['project']['name']['min'];
+    $nameMax = $ec5Limits['project']['name']['max'];
+    $smallDescMin = (int)$ec5Limits['project']['small_desc']['min'];
+    $smallDescMax = (int)$ec5Limits['project']['small_desc']['max'];
+    $name = $faker->regexify('[A-Za-z_]{' . $nameMin . ',' . $nameMax . '}');
+
+    return [
+        'name' =>  $name,
+        'slug' => Str::slug($name),
+        'ref' => str_replace('-', '', Uuid::generate(4)),
+        'description' => $faker->sentence,
+        'small_description' => $faker->text($smallDescMin) .  $faker->text($smallDescMax -  $smallDescMin),
+        'logo_url' => '',
+        'access' => 'public',
+        'visibility' => 'listed',
+        'category' => 'general',
+        'created_by' => User::where('email', env('SUPER_ADMIN_EMAIL'))->first()['id'],
+        'status' => 'active'
     ];
 });
 

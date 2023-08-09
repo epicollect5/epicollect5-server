@@ -11,8 +11,6 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Auth;
 use ec5\Mail\UserAccountDeletionConfirmation;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
-use ec5\Models\Eloquent\ProjectRole;
-
 
 class AccountDeletionExternalTest extends TestCase
 {
@@ -53,18 +51,14 @@ class AccountDeletionExternalTest extends TestCase
             ->assertStatus(200)
             ->assertExactJson([
                 "data" =>  [
-                    "id" => "account-deletion-request",
-                    "accepted" => true
+                    "id" => "account-deletion-performed",
+                    "deleted" => true
                 ]
             ]);
 
         // Assert a message was sent to the given users...
-        Mail::assertSent(UserAccountDeletionUser::class, function ($mail) use ($manager) {
+        Mail::assertSent(UserAccountDeletionConfirmation::class, function ($mail) use ($manager) {
             return $mail->hasTo($manager->email);
-        });
-        //assert a message was sent to admin
-        Mail::assertSent(UserAccountDeletionAdmin::class, function ($mail) {
-            return $mail->hasTo(env('SYSTEM_EMAIL'));
         });
     }
 
@@ -134,18 +128,14 @@ class AccountDeletionExternalTest extends TestCase
             ->assertStatus(200)
             ->assertExactJson([
                 "data" =>  [
-                    "id" => "account-deletion-request",
-                    "accepted" => true
+                    "id" => "account-deletion-performed",
+                    "deleted" => true
                 ]
             ]);
 
         // Assert a message was sent to the given users...
-        Mail::assertSent(UserAccountDeletionUser::class, function ($mail) use ($user) {
+        Mail::assertSent(UserAccountDeletionConfirmation::class, function ($mail) use ($user) {
             return $mail->hasTo($user->email);
-        });
-        //assert a message was sent to admin
-        Mail::assertSent(UserAccountDeletionAdmin::class, function ($mail) {
-            return $mail->hasTo(env('SYSTEM_EMAIL'));
         });
     }
 }

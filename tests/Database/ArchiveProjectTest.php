@@ -6,6 +6,7 @@ use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectArchive;
+use ec5\Models\Eloquent\User;
 
 class ArchiveProjectTest extends TestCase
 {
@@ -20,7 +21,9 @@ class ArchiveProjectTest extends TestCase
 
         for ($i = 0; $i < $repeatCount; $i++) {
             // Create a test project
-            $project = factory(Project::class)->create();
+            $project = factory(Project::class)->create([
+                'created_by' => User::where('email', env('SUPER_ADMIN_EMAIL'))->first()['id']
+            ]);
             //assert project is present before archiving
             $this->assertEquals(1, Project::where('id', $project->id)->count());
             // Run the archiveProject function
