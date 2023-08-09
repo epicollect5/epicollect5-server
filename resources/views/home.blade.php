@@ -21,14 +21,11 @@
             </h1>
         </div>
 
-        {{-- <div class="row" style="text-align: center;">
+        <div class="row" style="text-align: center;">
             <p style="background-color:#ffe0b2;padding:5px 0;border-radius:6px">Try the new beta for
-                <strong><a href="https://appdistribution.firebase.dev/i/8abab31013254ea2" target="_blank">Android
-                        (Firebase)</a></strong>
-                &
-                <strong><a href="https://testflight.apple.com/join/XbAmIp12" target="_blank">iOS (TestFlight)</a></strong>
+                <strong><a href="https://testflight.apple.com/join/6gW71eIy" target="_blank">iOS</a></strong>
             </p>
-        </div> --}}
+        </div>
 
         <div class="row page-home-intro">
             <div class="col-xs-12 col-sm-12 col-md-4 col-lg-4 col-sm-12 text-center intro-thumbnail">
