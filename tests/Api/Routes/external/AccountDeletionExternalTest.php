@@ -51,7 +51,7 @@ class AccountDeletionExternalTest extends TestCase
         ])
             ->assertStatus(200)
             ->assertExactJson([
-                "data" =>  [
+                "data" => [
                     "id" => "account-deletion-request",
                     "accepted" => true
                 ]
@@ -102,7 +102,7 @@ class AccountDeletionExternalTest extends TestCase
         ])
             ->assertStatus(200)
             ->assertExactJson([
-                "data" =>  [
+                "data" => [
                     "id" => "account-deletion-performed",
                     "deleted" => true
                 ]
@@ -119,7 +119,7 @@ class AccountDeletionExternalTest extends TestCase
         //create a project role (random project, random user)
         $projectRole = factory(ProjectRole::class)->create();
         //get that user
-        $user = User::where('id',  $projectRole->user_id)->first();
+        $user = User::where('id', $projectRole->user_id)->first();
 
         //Login manager user as passwordless to get a JWT 
         Auth::guard('api_external')->login($user, false);
@@ -132,8 +132,8 @@ class AccountDeletionExternalTest extends TestCase
         ])
             ->assertStatus(200)
             ->assertExactJson([
-                "data" =>  [
-                    "id" => "account-deletion-requested",
+                "data" => [
+                    "id" => "account-deletion-request",
                     "accepted" => true
                 ]
             ]);
