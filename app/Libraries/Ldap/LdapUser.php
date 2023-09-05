@@ -22,7 +22,7 @@ class LdapUser implements Authenticatable
     /**
      * @var string $email
      */
-    protected $email;
+    public $email;
 
     /**
      * @var string $open_id
@@ -115,7 +115,7 @@ class LdapUser implements Authenticatable
     /**
      * Set the token value for the "remember me" session.
      *
-     * @param  string $value
+     * @param string $value
      * @return void
      */
     public function setRememberToken($value)
@@ -150,8 +150,8 @@ class LdapUser implements Authenticatable
         $this->username = $details['entry'][$this->userNameAttribute][0];
 
         // Set other fields
-        $this->name = (!empty($details['entry']['givenname'][0])?$details['entry']['givenname'][0]:'');
-        $this->lastName = (!empty($details['entry']['sn'][0])?$details['entry']['sn'][0]:'');
+        $this->name = (!empty($details['entry']['givenname'][0]) ? $details['entry']['givenname'][0] : '');
+        $this->lastName = (!empty($details['entry']['sn'][0]) ? $details['entry']['sn'][0] : '');
         $this->dn = $details['entry']['dn'];
 
     }
@@ -180,8 +180,8 @@ class LdapUser implements Authenticatable
      */
     public function isMemberOf($group)
     {
-        foreach($this->member_of as $groups) {
-            if( preg_match('/^CN=' . $group . '/', $groups) ) {
+        foreach ($this->member_of as $groups) {
+            if (preg_match('/^CN=' . $group . '/', $groups)) {
                 return true;
             }
         }

@@ -32,6 +32,14 @@ class AccountController extends Controller
     {
         //get user email
         $email = Auth::user()->email;
+
+        if ($email === env('SUPER_ADMIN_EMAIL')) {
+            //cannot remove super admin account this way ;)
+            return $this->apiResponse->errorResponse(400, [
+                'account-deletion' => ['ec5_91']
+            ]);
+        }
+
         //get route name
         $routeName = request()->route()->getName();
         //find any projects the user has a role
@@ -106,7 +114,7 @@ class AccountController extends Controller
                 switch ($projectRole->role) {
                     case $roles['creator']:
                         $slug = Project::where('id', $projectId)
-                            ->where('created_by',  $userId)->value('slug');
+                            ->where('created_by', $userId)->value('slug');
 
                         //1 - archive project and entries
                         if (!($this->archiveProject($projectId, $slug)
