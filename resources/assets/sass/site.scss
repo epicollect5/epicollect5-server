@@ -21,6 +21,7 @@
 @import "page-login";
 @import "page-profile";
 @import "page-project-home";
+@import "page-project-delete";
 @import "page-projects-list";
 @import "page-contact";
 @import "page-more";
@@ -134,6 +135,7 @@ body {
   width: 50% !important;
   opacity: 0.9 !important;
 }
+
 .toast-message {
   text-align: center;
 }
@@ -231,6 +233,7 @@ label {
 .btn-file {
   position: relative;
   overflow: hidden;
+
   &:hover {
     cursor: pointer;
   }
@@ -257,8 +260,10 @@ label {
   background: #efefef;
   max-height: 180px !important;
   overflow: scroll;
+
   .autocomplete-suggestion {
     padding: 7px;
+
     &:hover {
       background-color: $light-green;
       cursor: pointer;
@@ -302,9 +307,11 @@ label {
   margin: 0 !important;
   clip: rect(1px, 1px, 1px, 1px);
 }
+
 .text-warning {
   color: $state-warning-text;
 }
+
 .thumbnail {
   margin-bottom: 20px;
   //margin-top:10px;
@@ -329,6 +336,7 @@ div.hr-or:before {
   content: "OR";
   background-color: #fff;
 }
+
 .ec5-img-responsive {
   max-width: 100%;
   height: auto;
