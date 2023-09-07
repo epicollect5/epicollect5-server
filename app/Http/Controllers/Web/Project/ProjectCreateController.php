@@ -83,10 +83,11 @@ class ProjectCreateController extends ProjectControllerBase
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View|\Illuminate\Http\RedirectResponse
      */
     public function create(
-        Request $request,
+        Request                $request,
         CreateRequestValidator $createRequestValidator,
-        CreateProject $createProject
-    ) {
+        CreateProject          $createProject
+    )
+    {
         $this->type = ProjectCreateController::CREATE;
         // todo: send active 'tab' with the response if there are errors (to go back to correct tab)
 
@@ -97,10 +98,15 @@ class ProjectCreateController extends ProjectControllerBase
         // Run validation (before trimming)
         $createRequestValidator->validate($input, true);
 
-        //trim project name
+        //trim metadata strings
         $input['name'] = trim($input['name']);
         $input['form_name'] = trim($input['form_name']);
         $input['small_description'] = trim($input['small_description']);
+
+        //remove extra spaces between words (if any)
+        $input['name'] = preg_replace('/\s+/', ' ', $input['name']);
+        $input['form_name'] = preg_replace('/\s+/', ' ', $input['form_name']);
+        $input['small_description'] = preg_replace('/\s+/', ' ', $input['small_description']);
 
         // Run validation (after trimming)
         $createRequestValidator->validate($input, true);
@@ -155,12 +161,13 @@ class ProjectCreateController extends ProjectControllerBase
     }
 
     public function import(
-        Request $request,
-        CreateProject $createProject,
+        Request                    $request,
+        CreateProject              $createProject,
         ProjectDefinitionValidator $projectDefinitionValidator,
-        ImportJsonValidator $importJsonValidator,
-        ImportRequestValidator $importRequestValidator
-    ) {
+        ImportJsonValidator        $importJsonValidator,
+        ImportRequestValidator     $importRequestValidator
+    )
+    {
 
         $this->type = ProjectCreateController::IMPORT;
 

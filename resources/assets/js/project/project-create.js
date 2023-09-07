@@ -8,19 +8,19 @@ window.EC5.projectCreate = window.EC5.projectCreate || {};
         var form_group = $('.page-create-project').find('#project-name-form-group-create');
 
         $.when($.get(url)).done(function (response) {
-                console.log(response.data);
+            console.log(response.data);
 
-                $('#project-loader').addClass('hidden');
+            $('#project-loader').addClass('hidden');
 
-                //is there already a project with that name?
-                if (response.data.attributes.exists) {
-                    //we have a duplicate, show errors
-                    window.EC5.projectCreate.toggleGroupValidation(form_group, false, 'Project already exists');
-                } else {
-                    //hide errors
-                    window.EC5.projectCreate.toggleGroupValidation(form_group, true);
-                }
-            })
+            //is there already a project with that name?
+            if (response.data.attributes.exists) {
+                //we have a duplicate, show errors
+                window.EC5.projectCreate.toggleGroupValidation(form_group, false, 'Project already exists');
+            } else {
+                //hide errors
+                window.EC5.projectCreate.toggleGroupValidation(form_group, true);
+            }
+        })
             .fail(function () {
                 form_group.addClass('has-error');
             }).always(function () {
@@ -36,8 +36,7 @@ window.EC5.projectCreate = window.EC5.projectCreate || {};
             group.find('.form-control-feedback').not('#project-loader').addClass('hidden');
             group.find('.text-danger').addClass('hidden');
             group.find('.text-hint').removeClass('hidden');
-        }
-        else {
+        } else {
             //show errors
             group.addClass('has-error');
             group.find('.form-control-feedback').not('#project-loader').removeClass('hidden');
@@ -64,14 +63,14 @@ $(document).ready(function () {
         var form_group = $('.page-create-project #project-name-form-group-create');
         var input = $(this);
         var value = input.val();
-        var regex = /^[\w\_\s\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+$/; //allow only alphanumeric chars, space and underscore but not accented letters
+        //allow only alphanumeric chars, space and underscore but not accented letters
+        var regex = /^[a-zA-Z0-9_ ]*$/;
 
         //is project name valid?
         //is form name valid?
         if (regex.test(value) || value === '') {
             //project name valid, hide errors
             window.EC5.projectCreate.toggleGroupValidation(form_group, true);
-
 
             if (value.length >= 3) {
                 var url = window.EC5.SITE_URL + '/api/internal/exists/' + value;
@@ -81,12 +80,10 @@ $(document).ready(function () {
                     window.EC5.projectCreate.doesProjectExist(url);
                 }, 500);
             }
-        }
-        else {
+        } else {
             //form name invalid, show errors, hide spinner
             spinner.addClass('hidden');
             window.EC5.projectCreate.toggleGroupValidation(form_group, false, 'Please remove invalid chars');
-
         }
     });
 
@@ -103,8 +100,7 @@ $(document).ready(function () {
             //form name valid, hide errors
             window.EC5.projectCreate.toggleGroupValidation(form_group, true);
 
-        }
-        else {
+        } else {
             //form name invalid, show errors
             window.EC5.projectCreate.toggleGroupValidation(form_group, false, 'Please remove invalid chars');
         }
@@ -120,8 +116,7 @@ $(document).ready(function () {
         if (value.length >= 15) {
             //small description valid, hide errors
             window.EC5.projectCreate.toggleGroupValidation(form_group, true);
-        }
-        else {
+        } else {
             //length too short
             window.EC5.projectCreate.toggleGroupValidation(form_group, false, 'Must be at least 15 chars long');
         }
