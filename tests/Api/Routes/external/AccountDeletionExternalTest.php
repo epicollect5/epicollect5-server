@@ -36,11 +36,13 @@ class AccountDeletionExternalTest extends TestCase
 
     public function testValidRequest()
     {
-        $manager = User::where('email', 'manager@unit.tests')->first();
-        $manager->state = 'active';
+        //create mock user
+        $mock = factory(User::class)->create();
+        //get that user
+        $user = User::where('email', $mock->email)->first();
 
         //Login manager user as passwordless to get a JWT 
-        Auth::guard('api_external')->login($manager, false);
+        Auth::guard('api_external')->login($user, false);
         $jwt = Auth::guard('api_external')->authorizationResponse()['jwt'];
 
         //account deletion request with valid JWT
@@ -50,15 +52,15 @@ class AccountDeletionExternalTest extends TestCase
         ])
             ->assertStatus(200)
             ->assertExactJson([
-                "data" =>  [
+                "data" => [
                     "id" => "account-deletion-performed",
                     "deleted" => true
                 ]
             ]);
 
         // Assert a message was sent to the given users...
-        Mail::assertSent(UserAccountDeletionConfirmation::class, function ($mail) use ($manager) {
-            return $mail->hasTo($manager->email);
+        Mail::assertSent(UserAccountDeletionConfirmation::class, function ($mail) use ($user) {
+            return $mail->hasTo($user->email);
         });
     }
 
@@ -80,9 +82,8 @@ class AccountDeletionExternalTest extends TestCase
 
     public function testAccountDeletion()
     {
-        //create a fake user ans save it to DB
+        //create a fake user and save it to DB
         $user = factory(User::class)->create();
-        $user->state = 'active';
         $user->email = 'user-to-be-deleted@example.com';
         $user->save();
 
@@ -97,7 +98,7 @@ class AccountDeletionExternalTest extends TestCase
         ])
             ->assertStatus(200)
             ->assertExactJson([
-                "data" =>  [
+                "data" => [
                     "id" => "account-deletion-performed",
                     "deleted" => true
                 ]
@@ -114,20 +115,20 @@ class AccountDeletionExternalTest extends TestCase
         //create a project role (random project, random user)
         $projectRole = factory(ProjectRole::class)->create();
         //get that user
-        $user = User::where('id',  $projectRole->user_id)->first();
+        $user = User::where('id', $projectRole->user_id)->first();
 
         //Login manager user as passwordless to get a JWT 
         Auth::guard('api_external')->login($user, false);
         $jwt = Auth::guard('api_external')->authorizationResponse()['jwt'];
 
-        //account deletion request with valid JWT, not performed automatically since user has role
+        //account deletion request with valid JWT, performed
         Mail::fake();
         $this->json('POST', '/api/profile/account-deletion-request', [], [
             'Authorization' => 'Bearer ' . $jwt
         ])
             ->assertStatus(200)
             ->assertExactJson([
-                "data" =>  [
+                "data" => [
                     "id" => "account-deletion-performed",
                     "deleted" => true
                 ]

@@ -6,11 +6,15 @@ namespace Tests;
 use ec5\Mail\UserAccountDeletionUser;
 use ec5\Mail\UserAccountDeletionAdmin;
 use ec5\Models\Users\User;
+use ec5\Models\Eloquent\Project;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 class ExternalRoutesTest extends TestCase
 {
+    use DatabaseTransactions;
+
     /**
      * Test an authenticated user's routes
      * imp: avoid $this->actingAs($user, 'api_external');
@@ -31,14 +35,14 @@ class ExternalRoutesTest extends TestCase
 
     public function testPrivateExternalRoutesWithJWT()
     {
-        $manager = User::where('email', env('MANAGER_EMAIL'))->first();
-        $manager->state = 'active';
+        $mock = factory(User::class)->create();
+        $user = User::where('email', $mock->email)->first();
 
         //hack: do not use this api_external
         //$this->actingAs($user, 'api_external');
 
         //Login manager user as passwordless to get a JWT 
-        Auth::guard('api_external')->login($manager, false);
+        Auth::guard('api_external')->login($user, false);
         $jwt = Auth::guard('api_external')->authorizationResponse()['jwt'];
         // dd($jwt);
 
@@ -49,9 +53,6 @@ class ExternalRoutesTest extends TestCase
         //dd($response);
 
 
-
-
-
         // //token valid but not a member? get out
         // $this->json('GET', 'ec5-api-external-routes-tests', [], [
         //     'Authorization' => 'Bearer ' . $jwt
@@ -60,6 +61,13 @@ class ExternalRoutesTest extends TestCase
 
     public function testPrivateExternalRoutesWithoutJWT()
     {
+        //create fake private project
+        $project = factory(Project::class)->create([
+            'slug' => 'ec5-private',
+            'access' => 'private'
+        ]);
+
+        //try to access without authenticating
         $response = $this->json('GET', 'api/project/ec5-private', [])
             ->assertStatus(404)
             ->assertExactJson(['errors' => [

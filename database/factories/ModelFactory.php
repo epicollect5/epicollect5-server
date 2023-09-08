@@ -11,6 +11,8 @@
 |
 */
 
+/** @var \Illuminate\Database\Eloquent\Factory $factory */
+
 use ec5\Models\Eloquent\User;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Projects\Project as LegacyProject;
@@ -44,11 +46,11 @@ $factory->define(ec5\Models\Eloquent\Project::class, function (Faker\Generator $
     $name = $faker->regexify('[A-Za-z_]{' . $nameMin . ',' . $nameMax . '}');
 
     return [
-        'name' =>  $name,
+        'name' => $name,
         'slug' => Str::slug($name),
         'ref' => str_replace('-', '', Uuid::generate(4)),
         'description' => $faker->sentence,
-        'small_description' => $faker->text($smallDescMin) .  $faker->text($smallDescMax -  $smallDescMin),
+        'small_description' => $faker->text($smallDescMin) . $faker->text($smallDescMax - $smallDescMin),
         'logo_url' => '',
         'access' => 'public',
         'visibility' => 'listed',
@@ -68,11 +70,11 @@ $factory->define(LegacyProject::class, function (Faker\Generator $faker) {
     $name = $faker->regexify('[A-Za-z_]{' . $nameMin . ',' . $nameMax . '}');
 
     return [
-        'name' =>  $name,
+        'name' => $name,
         'slug' => Str::slug($name),
         'ref' => str_replace('-', '', Uuid::generate(4)),
         'description' => $faker->sentence,
-        'small_description' => $faker->text($smallDescMin) .  $faker->text($smallDescMax -  $smallDescMin),
+        'small_description' => $faker->text($smallDescMin) . $faker->text($smallDescMax - $smallDescMin),
         'logo_url' => '',
         'access' => 'public',
         'visibility' => 'listed',
