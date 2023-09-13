@@ -3,95 +3,79 @@
 namespace Tests\TransferOwnershipTest;
 
 use Tests\TestCase;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
-use Illuminate\Foundation\Testing\WithoutMiddleware;
-
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectRole;
 use ec5\Models\Users\User;
-
-use Webpatser\Uuid\Uuid;
-use Exception;
-use Mockery as m;
-use Auth;
 use Config;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 class TransferOwnershipTest extends TestCase
 {
-    //use DatabaseMigrations;
+    use DatabaseTransactions;
 
     public function testTransferOwnership()
     {
-        $slug = 'ec5-test-transfer-ownership';
-
         $creatorRole = Config::get('ec5Permissions.projects.creator_role');
         $managerRole = Config::get('ec5Permissions.projects.manager_role');
 
-        $project = Project::firstOrNew(['slug' => $slug]);
-        $project->name = 'EC5 Test Transfer Ownership';
-        $project->slug = $slug;
-        $project->ref = str_replace('-', '', Uuid::generate(4));
-        $project->description = 'This is a long description';
-        $project->small_description = 'This is a small description';
-        $project->logo_url = '';
-        $project->access = 'private';
-        $project->visibility = 'hidden';
-        $project->category = 'general';
-        $project->status = 'active';
+        //create a fake user with creator email
+        $creator = factory(User::class)->create([
+            'email' => env('CREATOR_EMAIL')
+        ]);
+
+        //create a fake user with manager email
+        $manager = factory(User::class)->create([
+            'email' => env('MANAGER_EMAIL')
+        ]);
+
+        //create fake project with creator user
+        $project = factory(Project::class)->create(
+            ['created_by' => $creator->id]
+        );
+
+        //add creator role to that project
+        $projectRole = factory(ProjectRole::class)->create([
+            'user_id' => $creator->id,
+            'project_id' => $project->id,
+            'role' => $creatorRole
+        ]);
+
+        //add manager role to that project
+        $projectRole = factory(ProjectRole::class)->create([
+            'user_id' => $manager->id,
+            'project_id' => $project->id,
+            'role' => $managerRole
+        ]);
 
         $this->assertDatabaseHas('users', ['email' => env('CREATOR_EMAIL')]);
         $this->assertDatabaseHas('users', ['email' => env('MANAGER_EMAIL')]);
 
-        //get creator user
-        $creator = User::where('email', env('CREATOR_EMAIL'))->first();
-        //get manager
-        $manager = User::where('email', env('MANAGER_EMAIL'))->first();
+        $this->assertDatabaseHas('project_roles', [
+            'user_id' => $manager->id,
+            'project_id' => $project->id,
+            'role' => $managerRole
+        ]);
 
-        //assign the project to the creator
-        $project->created_by = $creator->id;
+        $this->assertDatabaseHas('project_roles', [
+            'user_id' => $creator->id,
+            'project_id' => $project->id,
+            'role' => $creatorRole
+        ]);
 
-        try {
-            $project->save();
-        } catch (Exception $e) {
-            echo $e->getMessage();
-        }
 
-        $projectCreatorRole = new ProjectRole();
-        $projectCreatorRole->project_id = $project->id;
-        $projectCreatorRole->role = $creatorRole;
-        $projectCreatorRole->user_id = $creator->id;
-
-        $projectManagerRole = new ProjectRole();
-        $projectManagerRole->project_id = $project->id;
-        $projectManagerRole->role = $managerRole;
-        $projectManagerRole->user_id = $manager->id;
-
-        $projectCreatorRole->save();
-        $projectManagerRole->save();
-
-        if ($project->transferOwnership($project->id, $projectCreatorRole->user_id, $projectManagerRole->user_id)) {
-
+        if ($project->transferOwnership($project->id, $creator->id, $manager->id)) {
             //assert creator is now a manager
-            $this->assertDatabaseHas($projectCreatorRole->getTable(), [
+            $this->assertDatabaseHas('project_roles', [
                 'project_id' => $project->id,
-                'user_id' => $projectCreatorRole->user_id,
+                'user_id' => $creator->id,
                 'role' => $managerRole
             ]);
-
             //assert manager is now a creator
-            $this->assertDatabaseHas($projectCreatorRole->getTable(), [
+            $this->assertDatabaseHas('project_roles', [
                 'project_id' => $project->id,
-                'user_id' => $projectManagerRole->user_id,
+                'user_id' => $manager->id,
                 'role' => $creatorRole
             ]);
-        } else {
-            //transaction failed
-            //todo
         }
-
-        //delete test rows
-        $project->delete();
-        $projectCreatorRole->delete();
-        $projectManagerRole->delete();
     }
 }

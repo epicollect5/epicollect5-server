@@ -47,7 +47,7 @@ class AccountDeletionInternalTest extends TestCase
             ->json('POST', '/api/internal/profile/account-deletion-request', [])
             ->assertStatus(200)
             ->assertExactJson([
-                "data" =>  [
+                "data" => [
                     "id" => "account-deletion-performed",
                     "deleted" => true
                 ]
@@ -68,7 +68,7 @@ class AccountDeletionInternalTest extends TestCase
         $this->json('POST', '/api/internal/profile/account-deletion-request', [])
             ->assertStatus(404)
             ->assertExactJson([
-                "errors" =>  [
+                "errors" => [
                     [
                         "code" => "ec5_219",
                         "title" => "Page not found.",
@@ -80,9 +80,8 @@ class AccountDeletionInternalTest extends TestCase
 
     public function testAccountDeletionPerformedWithoutRole()
     {
-        //create a fake user ans save it to DB
+        //create a fake user and save it to DB
         $user = factory(User::class)->create();
-        $user->save();
 
         //account deletion    
         Mail::fake();
@@ -90,7 +89,7 @@ class AccountDeletionInternalTest extends TestCase
             ->json('POST', '/api/internal/profile/account-deletion-request', [])
             ->assertStatus(200)
             ->assertExactJson([
-                "data" =>  [
+                "data" => [
                     "id" => "account-deletion-performed",
                     "deleted" => true
                 ]
@@ -114,8 +113,6 @@ class AccountDeletionInternalTest extends TestCase
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
-        $user->state = 'active';
-        $user->save();
 
         // 2- create mock project with that user
         $project = factory(Project::class)->create(['created_by' => $user->id]);
@@ -135,13 +132,13 @@ class AccountDeletionInternalTest extends TestCase
         $this->assertEquals($role, ProjectRole::where('project_id', $project->id)->where('user_id', $user->id)->value('role'));
         // 3 - add mock entries & branch entries to mock project
         $entriesToArchive = factory(Entry::class, $numOfEntries)->create([
-            'project_id' =>  $project->id,
+            'project_id' => $project->id,
             'form_ref' => $project->ref . '_' . uniqid(),
             'user_id' => $project->created_by,
         ]);
         foreach ($entriesToArchive as $entry) {
             factory(BranchEntry::class, $numOfBranchEntries)->create([
-                'project_id' =>  $project->id,
+                'project_id' => $project->id,
                 'form_ref' => $project->ref . '_' . uniqid(),
                 'user_id' => $project->created_by,
                 'owner_entry_id' => $entry->id //FK!
@@ -155,7 +152,7 @@ class AccountDeletionInternalTest extends TestCase
             ->json('POST', '/api/internal/profile/account-deletion-request', [])
             ->assertStatus(200)
             ->assertExactJson([
-                "data" =>  [
+                "data" => [
                     "id" => "account-deletion-performed",
                     "deleted" => true
                 ]
@@ -166,11 +163,9 @@ class AccountDeletionInternalTest extends TestCase
         //assert project was archived
         $this->assertEquals(0, Project::where('id', $project->id)->count());
         $this->assertEquals(1, ProjectArchive::where('id', $project->id)->count());
-        //assert entries & branch entries were archived
-        $this->assertEquals(0, Entry::where('project_id', $project->id)->count());
-        $this->assertEquals($numOfEntries, EntryArchive::where('project_id', $project->id)->count());
-        $this->assertEquals(0, BranchEntry::where('project_id', $project->id)->count());
-        $this->assertEquals($numOfEntries * $numOfBranchEntries, BranchEntryArchive::where('project_id', $project->id)->count());
+        //assert entries & branch entriesare not touched
+        $this->assertEquals($numOfEntries, Entry::where('project_id', $project->id)->count());
+        $this->assertEquals($numOfBranchEntries * $numOfEntries, BranchEntry::where('project_id', $project->id)->count());
         //assert roles are dropped
         $this->assertEquals(0, ProjectRole::where('project_id', $project->id)->count());
         $this->assertEquals(0, ProjectRole::where('user_id', $user->id)->count());
@@ -212,19 +207,18 @@ class AccountDeletionInternalTest extends TestCase
         $this->assertEquals($role, ProjectRole::where('project_id', $project->id)->where('user_id', $user->id)->value('role'));
         // 3 - add mock entries & branch entries to mock project
         $entriesToArchive = factory(Entry::class, $numOfEntries)->create([
-            'project_id' =>  $project->id,
+            'project_id' => $project->id,
             'form_ref' => $project->ref . '_' . uniqid(),
             'user_id' => $project->created_by,
         ]);
         foreach ($entriesToArchive as $entry) {
             factory(BranchEntry::class, $numOfBranchEntries)->create([
-                'project_id' =>  $project->id,
+                'project_id' => $project->id,
                 'form_ref' => $project->ref . '_' . uniqid(),
                 'user_id' => $project->created_by,
                 'owner_entry_id' => $entry->id //FK!
             ]);
         }
-
 
         //4 delete user account
         Mail::fake();
@@ -232,7 +226,7 @@ class AccountDeletionInternalTest extends TestCase
             ->json('POST', '/api/internal/profile/account-deletion-request', [])
             ->assertStatus(200)
             ->assertExactJson([
-                "data" =>  [
+                "data" => [
                     "id" => "account-deletion-performed",
                     "deleted" => true
                 ]
@@ -258,6 +252,7 @@ class AccountDeletionInternalTest extends TestCase
             return $mail->hasTo($user->email);
         });
     }
+
     public function testAccountDeletionPerformedWithRoleCurator()
     {
         //CURATOR 
@@ -289,13 +284,13 @@ class AccountDeletionInternalTest extends TestCase
         $this->assertEquals($role, ProjectRole::where('project_id', $project->id)->where('user_id', $user->id)->value('role'));
         // 3 - add mock entries & branch entries to mock project
         $entriesToArchive = factory(Entry::class, $numOfEntries)->create([
-            'project_id' =>  $project->id,
+            'project_id' => $project->id,
             'form_ref' => $project->ref . '_' . uniqid(),
             'user_id' => $project->created_by,
         ]);
         foreach ($entriesToArchive as $entry) {
             factory(BranchEntry::class, $numOfBranchEntries)->create([
-                'project_id' =>  $project->id,
+                'project_id' => $project->id,
                 'form_ref' => $project->ref . '_' . uniqid(),
                 'user_id' => $project->created_by,
                 'owner_entry_id' => $entry->id //FK!
@@ -309,7 +304,7 @@ class AccountDeletionInternalTest extends TestCase
             ->json('POST', '/api/internal/profile/account-deletion-request', [])
             ->assertStatus(200)
             ->assertExactJson([
-                "data" =>  [
+                "data" => [
                     "id" => "account-deletion-performed",
                     "deleted" => true
                 ]
@@ -335,6 +330,7 @@ class AccountDeletionInternalTest extends TestCase
             return $mail->hasTo($user->email);
         });
     }
+
     public function testAccountDeletionPerformedWithRoleCollector()
     {
         //COLLECTOR 
@@ -366,13 +362,13 @@ class AccountDeletionInternalTest extends TestCase
         $this->assertEquals($role, ProjectRole::where('project_id', $project->id)->where('user_id', $user->id)->value('role'));
         // 3 - add mock entries & branch entries to mock project
         $entriesToArchive = factory(Entry::class, $numOfEntries)->create([
-            'project_id' =>  $project->id,
+            'project_id' => $project->id,
             'form_ref' => $project->ref . '_' . uniqid(),
             'user_id' => $project->created_by,
         ]);
         foreach ($entriesToArchive as $entry) {
             factory(BranchEntry::class, $numOfBranchEntries)->create([
-                'project_id' =>  $project->id,
+                'project_id' => $project->id,
                 'form_ref' => $project->ref . '_' . uniqid(),
                 'user_id' => $project->created_by,
                 'owner_entry_id' => $entry->id //FK!
@@ -386,7 +382,7 @@ class AccountDeletionInternalTest extends TestCase
             ->json('POST', '/api/internal/profile/account-deletion-request', [])
             ->assertStatus(200)
             ->assertExactJson([
-                "data" =>  [
+                "data" => [
                     "id" => "account-deletion-performed",
                     "deleted" => true
                 ]
@@ -412,9 +408,10 @@ class AccountDeletionInternalTest extends TestCase
             return $mail->hasTo($user->email);
         });
     }
+
     public function testAccountDeletionPerformedWithRoleViewer()
     {
-        //VIEWER 
+        //VIEWER
         $role = Config::get('ec5Strings.project_roles.viewer');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
@@ -428,7 +425,7 @@ class AccountDeletionInternalTest extends TestCase
         $anotherUser = factory(User::class)->create(['state' => 'active']);
         $project = factory(Project::class)->create(['created_by' => $anotherUser->id]);
 
-        //assign user to that project with the VIEWER role
+        //assign user to that project with the COLLECTOR role
         $projectRole = factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
@@ -441,14 +438,29 @@ class AccountDeletionInternalTest extends TestCase
         $this->assertEquals(1, ProjectRole::where('project_id', $project->id)->count());
         $this->assertEquals(1, ProjectRole::where('user_id', $user->id)->count());
         $this->assertEquals($role, ProjectRole::where('project_id', $project->id)->where('user_id', $user->id)->value('role'));
+        // 3 - add mock entries & branch entries to mock project
+        $entriesToArchive = factory(Entry::class, $numOfEntries)->create([
+            'project_id' => $project->id,
+            'form_ref' => $project->ref . '_' . uniqid(),
+            'user_id' => $project->created_by,
+        ]);
+        foreach ($entriesToArchive as $entry) {
+            factory(BranchEntry::class, $numOfBranchEntries)->create([
+                'project_id' => $project->id,
+                'form_ref' => $project->ref . '_' . uniqid(),
+                'user_id' => $project->created_by,
+                'owner_entry_id' => $entry->id //FK!
+            ]);
+        }
 
-        //delete user account
+
+        //4 delete user account
         Mail::fake();
         $this->actingAs($user, SELF::DRIVER)
             ->json('POST', '/api/internal/profile/account-deletion-request', [])
             ->assertStatus(200)
             ->assertExactJson([
-                "data" =>  [
+                "data" => [
                     "id" => "account-deletion-performed",
                     "deleted" => true
                 ]
@@ -459,6 +471,11 @@ class AccountDeletionInternalTest extends TestCase
         //assert project was NOT archived
         $this->assertEquals(1, Project::where('id', $project->id)->count());
         $this->assertEquals(0, ProjectArchive::where('id', $project->id)->count());
+        //assert entries & branch entries were NOT archived
+        $this->assertEquals($numOfEntries, Entry::where('project_id', $project->id)->count());
+        $this->assertEquals(0, EntryArchive::where('project_id', $project->id)->count());
+        $this->assertEquals($numOfEntries * $numOfBranchEntries, BranchEntry::where('project_id', $project->id)->count());
+        $this->assertEquals(0, BranchEntryArchive::where('project_id', $project->id)->count());
 
         //assert roles are dropped
         $this->assertEquals(0, ProjectRole::where('project_id', $project->id)->count());

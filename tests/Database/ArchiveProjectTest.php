@@ -7,6 +7,7 @@ use Tests\TestCase;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectArchive;
 use ec5\Models\Eloquent\User;
+use Faker\Factory as Faker;
 
 class ArchiveProjectTest extends TestCase
 {
@@ -18,10 +19,15 @@ class ArchiveProjectTest extends TestCase
     public function it_archives_project()
     {
         $repeatCount = 100; // Number of times to repeat the test case
+        // Create a Faker instance
+        $faker = Faker::create();
+
 
         for ($i = 0; $i < $repeatCount; $i++) {
             // Create a test project
             $project = factory(Project::class)->create([
+                'name' => '',
+                slug => '',
                 'created_by' => User::where('email', env('SUPER_ADMIN_EMAIL'))->first()['id']
             ]);
             //assert project is present before archiving

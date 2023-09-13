@@ -2,18 +2,19 @@
 
 namespace Tests\Projects\Manage_users;
 
+use spec\Prophecy\Comparator\FactorySpec;
 use Tests\TestCase;
 use ec5\Http\Validation\Project\RuleSwitchUserRole;
-
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectRole;
 use ec5\Models\Users\User;
-
 use Config;
-use Webpatser\Uuid\Uuid;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 class RuleSwitchUserRoleTest extends TestCase
 {
+    use DatabaseTransactions;
+
     protected $validator;
     protected $inputs;
 
@@ -85,60 +86,55 @@ class RuleSwitchUserRoleTest extends TestCase
 
     public function testSwitchRoles()
     {
-
-        //just in case we have a new db check these users exist
-        $this->assertDatabaseHas('users', ['email' => env('CREATOR_EMAIL')]);
-        $this->assertDatabaseHas('users', ['email' => env('MANAGER_EMAIL')]);
-
         $creatorRole = Config::get('ec5Permissions.projects.creator_role');
         $managerRole = Config::get('ec5Permissions.projects.manager_role');
 
-        $slug = 'ec5-test-switch-role';
-        $fakeEmail = 'jd@jd.com';
+        //create a fake user with creator email
+        $creator = factory(User::class)->create([
+            'email' => env('CREATOR_EMAIL')
+        ]);
 
-        $project = Project::firstOrNew(['slug' => $slug]);
-        $project->name = 'EC5 Test Switch Role';
-        $project->slug = $slug;
-        $project->ref = str_replace('-', '', Uuid::generate(4));
-        $project->description = 'This is a long description';
-        $project->small_description = 'This is a small description';
-        $project->logo_url = '';
-        $project->access = 'private';
-        $project->visibility = 'hidden';
-        $project->category = 'general';
-        $project->status = 'active';
+        //create a fake user with manager email
+        $manager = factory(User::class)->create([
+            'email' => env('MANAGER_EMAIL')
+        ]);
 
-        //get creator user
-        $creator = User::where('email', env('CREATOR_EMAIL'))->first();
+        //create fake project with creator user
+        $project = factory(Project::class)->create(
+            ['created_by' => $creator->id]
+        );
 
-        //get manager
-        $manager = User::where('email', env('MANAGER_EMAIL'))->first();
+        //add creator role to that project
+        $projectCreatorRole = factory(ProjectRole::class)->create([
+            'user_id' => $creator->id,
+            'project_id' => $project->id,
+            'role' => $creatorRole
+        ]);
 
-        //assign the project to the creator
-        $project->created_by = $creator->id;
+        //add manager role to that project
+        $projectManagerRole = factory(ProjectRole::class)->create([
+            'user_id' => $manager->id,
+            'project_id' => $project->id,
+            'role' => $managerRole
+        ]);
 
-        try {
-            $project->save();
-        } catch (\Exception $e) {
-            echo $e->getMessage();
-        }
+        $this->assertDatabaseHas('users', ['email' => env('CREATOR_EMAIL')]);
+        $this->assertDatabaseHas('users', ['email' => env('MANAGER_EMAIL')]);
 
-        $projectCreatorRole = new ProjectRole();
-        $projectCreatorRole->project_id = $project->id;
-        $projectCreatorRole->role = $creatorRole;
-        $projectCreatorRole->user_id = $creator->id;
+        $this->assertDatabaseHas('project_roles', [
+            'user_id' => $manager->id,
+            'project_id' => $project->id,
+            'role' => $managerRole
+        ]);
 
-        $projectManagerRole = new ProjectRole();
-        $projectManagerRole->project_id = $project->id;
-        $projectManagerRole->role = $managerRole;
-        $projectManagerRole->user_id = $manager->id;
-
-        $projectCreatorRole->save();
-        $projectManagerRole->save();
+        $this->assertDatabaseHas('project_roles', [
+            'user_id' => $creator->id,
+            'project_id' => $project->id,
+            'role' => $creatorRole
+        ]);
 
         //creator switch manager to curator
         if ($projectCreatorRole->switchUserRole($project->id, $manager, 'manager', 'curator')) {
-
             //assert manager is now a curator
             $this->assertDatabaseHas($projectCreatorRole->getTable(), [
                 'project_id' => $project->id,
@@ -149,7 +145,6 @@ class RuleSwitchUserRoleTest extends TestCase
 
         //creator switch curator to collector
         if ($projectCreatorRole->switchUserRole($project->id, $manager, 'curator', 'collector')) {
-
             //assert manager is now a curator
             $this->assertDatabaseHas($projectCreatorRole->getTable(), [
                 'project_id' => $project->id,
@@ -160,7 +155,6 @@ class RuleSwitchUserRoleTest extends TestCase
 
         //creator switch collector to manager
         if ($projectCreatorRole->switchUserRole($project->id, $manager, 'collector', 'manager')) {
-
             //assert manager is now a curator
             $this->assertDatabaseHas($projectCreatorRole->getTable(), [
                 'project_id' => $project->id,
@@ -176,19 +170,15 @@ class RuleSwitchUserRoleTest extends TestCase
         $this->assertContains('ec5_217', $this->validator->errors['user']);
         $this->validator->resetErrors();
 
-        //create a new user
-        $otherManager = new User();
-        $otherManager->name = 'John';
-        $otherManager->last_name = 'Doe';
-        $otherManager->email = $fakeEmail;
-        $otherManager->save();
 
-        //assign the user to the project as manager
-        $otherManagerRole = new ProjectRole();
-        $otherManagerRole->project_id = $project->id;
-        $otherManagerRole->role = $managerRole;
-        $otherManagerRole->user_id = $otherManager->id;
-        $otherManagerRole->save();
+        $otherManager = factory(User::class)->create();
+        $otherManagerRole = factory(ProjectRole::class)->create(
+            [
+                'user_id' => $otherManager->id,
+                'project_id' => $project->id,
+                'role' => $managerRole
+            ]);
+
 
         //manager cannot change manager
         $this->validator->additionalChecks($manager, $otherManager, 'manager', 'curator', 'manager');
@@ -205,11 +195,13 @@ class RuleSwitchUserRoleTest extends TestCase
         $this->validator->resetErrors();
 
         //create a new user
-        $otherCurator = new User();
-        $otherCurator->name = 'P';
-        $otherCurator->last_name = 'M';
-        $otherCurator->email = $fakeEmail . '1';
-        $otherCurator->save();
+        $otherCurator = factory(User::class)->create();
+        $otherCuratorRole = factory(ProjectRole::class)->create(
+            [
+                'user_id' => $otherCurator->id,
+                'project_id' => $project->id,
+                'role' => 'curator'
+            ]);
 
         //manager can change curator/collector
         $this->validator->additionalChecks($manager, $otherCurator, 'manager', 'curator', 'collector');
@@ -219,14 +211,5 @@ class RuleSwitchUserRoleTest extends TestCase
         $this->validator->additionalChecks($manager, $otherCurator, 'manager', 'collector', 'curator');
         $this->assertFalse($this->validator->hasErrors());
         $this->validator->resetErrors();
-
-
-        //delete test rows
-        $project->delete();
-        $projectCreatorRole->delete();
-        $projectManagerRole->delete();
-        $otherManagerRole->delete();
-        $otherManager->delete();
-        $otherCurator->delete();
     }
 }

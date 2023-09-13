@@ -15,6 +15,7 @@
 
 use ec5\Models\Eloquent\User;
 use ec5\Models\Eloquent\Project;
+use ec5\Models\Eloquent\ProjectStructure;
 use ec5\Models\Projects\Project as LegacyProject;
 use ec5\Models\Eloquent\Entry;
 use ec5\Models\Eloquent\BranchEntry;
@@ -150,3 +151,203 @@ $factory->define(ec5\Models\Eloquent\BranchEntry::class, function (Faker\Generat
         'geo_json_data' => json_encode([])
     ];
 });
+
+
+$factory->define(ec5\Models\Eloquent\ProjectStructure::class, function (Faker\Generator $faker, $params) {
+    //Get project
+    $project = Project::where('id', $params['project_id'])->first();
+    $projectRef = $project->ref;
+    $formRef = $projectRef . '_' . uniqid();
+    $inputRef = $formRef . '_' . uniqid();
+    $formName = 'Test Form';
+    $formSlug = 'test-form';
+
+    //build minimal project definition
+    return [
+        'project_id' => $project->id,
+        'project_definition' => json_encode([
+            'id' => $projectRef,
+            'type' => 'project',
+            'project' => [
+                'logo_url' => '',
+                'category' => 'general',
+                'forms' => [
+                    [
+                        'ref' => $formRef,
+                        'name' => $formName,
+                        'slug' => $formSlug,
+                        'type' => 'hierarchy',
+                        'inputs' => [
+                            [
+                                'regex' => null,
+                                'verify' => false,
+                                'default' => null,
+                                'max' => null,
+                                'uniqueness' => 'none',
+                                'type' => 'text',
+                                'set_to_current_datetime' => false,
+                                'branch' => [
+                                ],
+                                'group' => [
+                                ],
+                                'is_required' => false,
+                                'jumps' => [
+                                ],
+                                'is_title' => true,
+                                'question' => 'Name',
+                                'datetime_format' => null,
+                                'ref' => $inputRef,
+                                'possible_answers' => [
+                                ],
+                                'min' => null
+                            ],
+                            'name' => $formName,
+                            'type' => 'hierarchy',
+                            'ref' => $formRef
+                        ]
+                    ]
+                ],
+                'description' => $project->description,
+                'small_description' => $project->small_description,
+                'access' => $project->access,
+                'entries_limits' => [],
+                'slug' => $project->slug,
+                'visibility' => $project->listed,
+                'ref' => $projectRef,
+                'name' => $project->name,
+                'status' => $project->active
+            ]
+        ]),
+        'project_extra' => json_encode([
+            'forms' => [
+                $formRef => [
+                    'group' => [
+                    ],
+                    'lists' => [
+                        'location_inputs' => [
+                        ],
+                        'multiple_choice_inputs' => [
+                            'form' => [
+                                'order' => [
+                                ]
+                            ],
+                            'branch' => [
+                            ]
+                        ]
+                    ],
+                    'branch' => [
+                    ],
+                    'inputs' => [
+                        $inputRef
+                    ],
+                    'details' => [
+                        'ref' => $formRef,
+                        'name' => $formName,
+                        'slug' => $formSlug,
+                        'type' => 'hierarchy',
+                        'inputs' => [
+                            [
+                                'max' => null,
+                                'min' => null,
+                                'ref' => $inputRef,
+                                'type' => 'text',
+                                'group' => [
+                                ],
+                                'jumps' => [
+                                ],
+                                'regex' => null,
+                                'branch' => [
+                                ],
+                                'verify' => false,
+                                'default' => null,
+                                'is_title' => false,
+                                'question' => 'Name',
+                                'uniqueness' => 'none',
+                                'is_required' => false,
+                                'datetime_format' => null,
+                                'possible_answers' => [
+                                ],
+                                'set_to_current_datetime' => false
+                            ]
+                        ],
+                        'has_location' => false
+                    ]
+                ]
+            ],
+            'inputs' => [
+                $inputRef => [
+                    'data' => [
+                        'max' => null,
+                        'min' => null,
+                        'ref' => $inputRef,
+                        'type' => 'text',
+                        'group' => [
+                        ],
+                        'jumps' => [
+                        ],
+                        'regex' => null,
+                        'branch' => [
+                        ],
+                        'verify' => false,
+                        'default' => null,
+                        'is_title' => false,
+                        'question' => 'Name',
+                        'uniqueness' => 'none',
+                        'is_required' => false,
+                        'datetime_format' => null,
+                        'possible_answers' => [
+                        ],
+                        'set_to_current_datetime' => false
+                    ]
+                ]
+            ],
+            'project' => [
+                'forms' => [
+                    $formRef
+                ],
+                'details' => [
+                    'ref' => $projectRef,
+                    'name' => $project->name,
+                    'slug' => $project->slug,
+                    'access' => $project->access,
+                    'status' => $project->status,
+                    'category' => $project->category,
+                    'logo_url' => '',
+                    'visibility' => $project->category,
+                    'description' => $project->description,
+                    'small_description' => $project->small_description
+                ],
+                'entries_limits' => []
+            ]
+        ]),
+        'project_mapping' => json_encode([[
+            'name' => 'EC5_AUTO',
+            'forms' => [
+                $formRef => [
+                    $inputRef => [
+                        'hide' => false,
+                        'group' => [
+                        ],
+                        'branch' => [
+                        ],
+                        'map_to' => '1_Name',
+                        'possible_answers' => [
+                        ]
+                    ]
+                ]
+            ],
+            'map_index' => 0,
+            'is_default' => true
+        ]])
+    ];
+});
+
+
+
+
+
+
+
+
+
+

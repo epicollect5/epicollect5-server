@@ -5,6 +5,7 @@ namespace Tests;
 use ec5\Models\Eloquent\UserPasswordlessApi;
 use ec5\Libraries\Utilities\Generators;
 use Carbon\Carbon;
+use ec5\Models\Users\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 class VerifyGoogleUserExternalTest extends TestCase
@@ -34,7 +35,8 @@ class VerifyGoogleUserExternalTest extends TestCase
 
     public function testValidVerification()
     {
-        $email = env('MANAGER_EMAIL');
+        $user = factory(User::class)->create();
+        $email = $user->email;
         $tokenExpiresAt = env('PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
         $code = Generators::randomNumber(6, 1);
 
@@ -66,7 +68,8 @@ class VerifyGoogleUserExternalTest extends TestCase
 
     public function testInvalidVerification()
     {
-        $email = env('MANAGER_EMAIL');
+        $user = factory(User::class)->create();
+        $email = $user->email;
         $tokenExpiresAt = env('PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
         $code = Generators::randomNumber(6, 1);
 

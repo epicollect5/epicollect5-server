@@ -29,7 +29,7 @@ trait Archive
             ProjectArchive::create($projectArchive);
 
             //delete original row 
-            //(entries and media files are not touched)
+            //(media files are not touched)
             // they could be removed at a later stage by a background script
             $project->delete();
 
@@ -49,7 +49,7 @@ trait Archive
                     //todo: checlk the id AUTO_INCREMENT...
                     $rowToArchive = $row->replicate();
                     // make into array for mass assign. 
-                    $rowToArchive =  $rowToArchive->toArray();
+                    $rowToArchive = $rowToArchive->toArray();
                     //create copy to projects_archive table
                     EntryArchive::create($rowToArchive);
                 }
@@ -61,7 +61,7 @@ trait Archive
                     //todo: check the id AUTO_INCREMENT...
                     $rowToArchive = $row->replicate();
                     // make into array for mass assign. 
-                    $rowToArchive =  $rowToArchive->toArray();
+                    $rowToArchive = $rowToArchive->toArray();
                     //create copy to projects_archive table
                     BranchEntryArchive::create($rowToArchive);
                 }

@@ -2,14 +2,18 @@
 
 namespace Tests;
 
+use ec5\Models\Eloquent\ProjectStructure;
 use ec5\Models\Users\User;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Projects\Project as LegacyProject;
 use ec5\Models\ProjectRole;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 class InternalRoutesTest extends TestCase
 {
+    use DatabaseTransactions;
+
     //internal routes use the default 'web; guard
     const DRIVER = 'web';
 
@@ -55,7 +59,6 @@ class InternalRoutesTest extends TestCase
         // dd($user, $project,  $projectRole, $response);
 
 
-
         // //access private project
         // //  dd($project->name, $project->slug);
         // $response = $this->actingAs($user, SELF::DRIVER)
@@ -76,7 +79,19 @@ class InternalRoutesTest extends TestCase
 
     public function testPublicInternalRoutes()
     {
-        $slug = $this->publicProjectSlug;
+        //create fake public project
+        $project = factory(Project::class)->create([
+            'name' => 'Unit Test Project',
+            'slug' => 'unit-test-project',
+            'small_description' => 'This is just a project created to performs the unit tests',
+            'access' => 'public'
+        ]);
+        $slug = $project->slug;
+
+        //add project structure
+        $projectStructure = factory(ProjectStructure::class)->create(
+            ['project_id' => $project->id]
+        );
 
         $this->json('GET', 'api/project/' . $slug, [])
             ->assertStatus(200);
@@ -195,7 +210,7 @@ class InternalRoutesTest extends TestCase
         $this->json('GET', 'api/internal/temp-media/' . $slug . '?type=photo&format=entry_thumb&name=ciao', [])
             ->assertStatus(200);
 
-        $this->json('GET', 'api/internal/download-entries/' . $slug . '', [])
+        $response = $this->json('GET', 'api/internal/download-entries/' . $slug . '', [])
             ->assertStatus(400)
             ->assertExactJson([
                 "errors" => [

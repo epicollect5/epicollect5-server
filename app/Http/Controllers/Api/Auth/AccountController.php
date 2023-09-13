@@ -92,7 +92,7 @@ class AccountController extends Controller
             $this->sendAccountDeletionConfirmationEmail($email);
             return true;
         } catch (\Exception $e) {
-            \Log::error('Error deleting account ', [
+            \Log::error('Error deleting account without roles ', [
                 'exception' => $e->getMessage()
             ]);
             DB::rollBack();
@@ -117,10 +117,8 @@ class AccountController extends Controller
                             ->where('created_by', $userId)->value('slug');
 
                         //1 - archive project and entries
-                        if (!($this->archiveProject($projectId, $slug)
-                            &&
-                            $this->archiveEntries($projectId))) {
-                            throw new \Exception('Archive project & entries error');
+                        if (!$this->archiveProject($projectId, $slug)) {
+                            throw new \Exception('Archive project with role error');
                         }
                         //todo: check project roles when a project is archived
                         //2 - remove user role
@@ -142,7 +140,7 @@ class AccountController extends Controller
             $this->sendAccountDeletionConfirmationEmail($email);
             return true;
         } catch (Exception $e) {
-            \Log::error('Error deleting account ', [
+            \Log::error('Error deleting account with roles ', [
                 'exception' => $e->getMessage()
             ]);
             DB::rollBack();
