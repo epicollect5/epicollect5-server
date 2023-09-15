@@ -167,8 +167,7 @@ abstract class ValidationBase
 
         $inputRef = (isset($this->data['ref'])) ? $this->data['ref'] : '';
 
-        if (preg_match("/^{$ref}+_[a-zA-Z0-9]{13}$/", $inputRef)) {
-        } else {
+        if (!preg_match("/^{$ref}+_[a-zA-Z0-9]{13}$/", $inputRef)) {
             $this->errors[$inputRef] = ['ec5_243'];
         }
     }

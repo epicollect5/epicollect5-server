@@ -9,7 +9,6 @@ use Log;
 class RuleForm extends ValidationBase
 {
     protected $rules = [
-
         'ref' => 'required',
         'type' => 'required|in:hierarchy',
         'slug' => 'required',

@@ -13,7 +13,6 @@ use Illuminate\Support\Str;
 
 class Common
 {
-
     public static function getPossibleAnswers($input)
     {
         $possibleAnswers = $input['possible_answers'];
