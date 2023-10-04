@@ -2,20 +2,19 @@
 
 namespace ec5\Http\Controllers\Api\Auth;
 
-use Config;
 use ec5\Http\Controllers\Api\ApiResponse;
 use ec5\Http\Controllers\Controller;
 use ec5\Mail\UserAccountDeletionAdmin;
 use ec5\Mail\UserAccountDeletionConfirmation;
+use ec5\Models\Eloquent\ProjectFeatured;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use ec5\Mail\UserAccountDeletionUser;
 use ec5\Models\Eloquent\ProjectRole;
-use ec5\Models\Eloquent\User;
-use Exception;
-use Illuminate\Support\Facades\DB;
-use ec5\Traits\Eloquent\Archive;
 use ec5\Models\Eloquent\Project;
+use ec5\Models\Eloquent\User;
+use ec5\Traits\Eloquent\Archive;
 
 class AccountController extends Controller
 {
@@ -32,128 +31,120 @@ class AccountController extends Controller
     {
         //get user email
         $email = Auth::user()->email;
-
-        if ($email === env('SUPER_ADMIN_EMAIL')) {
-            //cannot remove super admin account this way ;)
-            return $this->apiResponse->errorResponse(400, [
-                'account-deletion' => ['ec5_91']
-            ]);
-        }
-
+        $creatorRole = Config('ec5Strings.project_roles.creator');
         //get route name
         $routeName = request()->route()->getName();
         //find any projects the user has a role
         $userId = Auth::user()->id;
-        $projectRoles = ProjectRole::where('user_id', $userId)->get();
+        $userProjectRoles = ProjectRole::where('user_id', $userId)->get();
 
-        //if a user is NOT a member of any projects
-        if (sizeof($projectRoles) === 0) {
-            if (!$this->handleDeleteWithoutProjectRoles($email)) {
-                return $this->apiResponse->errorResponse(400, [
-                    'account-deletion' => ['ec5_103']
-                ]);
-            }
-        }
-
-        //if the user IS a member of some projects
-        if (sizeof($projectRoles) > 0) {
-            if (!$this->handleDeleteWithProjectRoles($projectRoles, $email)) {
-                return $this->apiResponse->errorResponse(400, [
-                    'account-deletion' => ['ec5_103']
-                ]);
-            }
-        }
-        //**Account deleted successfully**
-
-        //request from the web? (internal api)
+        //request from the web?
         if ($routeName === 'internalAccountDelete') {
-            //on the web, log user out from  session
-            Auth::logout();
-            request()->session()->flush();
-            request()->session()->regenerate();
-        }
-
-        //return a JSON response 
-        // about account deleted, will trigger a page refresh on the web
-        // or logout users from the mobile app
-        $data = ['id' => 'account-deletion-performed', 'deleted' => true];
-        $this->apiResponse->setData($data);
-        return $this->apiResponse->toJsonResponse(200, 0);
-    }
-
-    private function handleDeleteWithoutProjectRoles($email)
-    {
-        //user is not a member of any projects so just remove 
-        DB::beginTransaction();
-        try {
-            $user = User::where('email', $email);
-            $user->delete();
-            DB::commit();
-            $this->sendAccountDeletionConfirmationEmail($email);
-            return true;
-        } catch (\Exception $e) {
-            \Log::error('Error deleting account without roles ', [
-                'exception' => $e->getMessage()
-            ]);
-            DB::rollBack();
-            return false;
-        }
-    }
-
-    private function handleDeleteWithProjectRoles($projectRoles, $email)
-    {
-        $roles = Config::get('ec5Strings.project_roles');
-        //per each project, act based on user role on that project
-        DB::beginTransaction();
-        try {
-            foreach ($projectRoles as $projectRole) {
-
-                $projectId = $projectRole->project_id;
-                $userId = $projectRole->user_id;
-
-                switch ($projectRole->role) {
-                    case $roles['creator']:
-                        $slug = Project::where('id', $projectId)
-                            ->where('created_by', $userId)->value('slug');
-
-                        //1 - archive project and entries
-                        if (!$this->archiveProject($projectId, $slug)) {
-                            throw new \Exception('Archive project with role error');
-                        }
-                        //todo: check project roles when a project is archived
-                        //2 - remove user role
-                        $projectRole->delete();
-                        break;
-                    case $roles['manager']:
-                    case $roles['curator']:
-                    case $roles['collector']:
-                    case $roles['viewer']:
-                        //we do not touch the entries currently, but remove the user from the project
-                        //entries will become anonymous anyway
-                        $projectRole->delete();
-                        break;
+            if (sizeof($userProjectRoles) === 0) {
+                //user is not a member of any projects so just remove 
+                return $this->removeUserWeb($email, $userId);
+            } else {
+                //user has roles in projects, but if no CREATOR role found, remove it
+                $projectsWithCreatorRoles = [];
+                foreach ($userProjectRoles as $userProjectRole) {
+                    if ($userProjectRole['role'] === $creatorRole) {
+                        $projectsWithCreatorRoles[] = $userProjectRole;
+                    }
+                }
+                if (sizeOf($projectsWithCreatorRoles) > 0) {
+                    //archive projects created by this user before removing
+                    try {
+                        DB::beginTransaction();
+                        $this->archiveProjectsCreatedByUser($projectsWithCreatorRoles, $userId);
+                        DB::commit();
+                        return $this->removeUserWeb($email, $userId);
+                    } catch (\Exception $e) {
+                        \Log::error('Archive projects created by user failure', ['exception' => $e->getMessage()]);
+                        DB::rollBack();
+                        return $this->apiResponse->errorResponse(400, [
+                            'account-deletion' => ['ec5_104']
+                        ]);
+                    }
+                } else {
+                    //delete user directly (entries will be anonymized)
+                    return $this->removeUserWeb($email, $userId);
                 }
             }
-            $user = User::where('email', $email)->where('id', $userId);
-            $user->delete();
-            DB::commit();
-            $this->sendAccountDeletionConfirmationEmail($email);
-            return true;
-        } catch (Exception $e) {
-            \Log::error('Error deleting account with roles ', [
-                'exception' => $e->getMessage()
-            ]);
-            DB::rollBack();
-            return false;
+        }
+        //request from the mobile app?
+        if ($routeName === 'externalAccountDelete') {
+            //imp:this is a request from the mobile app, needs api response
+            if (sizeof($userProjectRoles) === 0) {
+                //user is not a member of any projects so just remove
+                return $this->removeUserApi($email);
+            } else {
+                //user has roles in projects, but if no CREATOR role found, remove it
+                $projectsWithCreatorRoles = [];
+                foreach ($userProjectRoles as $userProjectRole) {
+                    if ($userProjectRole['role'] === $creatorRole) {
+                        $projectsWithCreatorRoles[] = $userProjectRole;
+                    }
+                }
+
+                if (sizeOf($projectsWithCreatorRoles) > 0) {
+                    //archive projects created by this user before removing
+                    try {
+                        DB::beginTransaction();
+                        $this->archiveProjectsCreatedByUser($projectsWithCreatorRoles, $userId);
+                        DB::commit();
+                        return $this->removeUserApi($email, $userId);
+                    } catch (\Exception $e) {
+                        \Log::error('Archive projects created by user failure', ['exception' => $e->getMessage()]);
+                        DB::rollBack();
+                        return $this->apiResponse->errorResponse(400, [
+                            'account-deletion' => ['ec5_104']
+                        ]);
+                    }
+                } else {
+                    //delete user directly (entries will be anonymized)
+                    //user is not a member of any projects so just remove
+                    return $this->removeUserApi($email);
+                }
+            }
         }
     }
 
-    private function sendAccountDeletionEmails($email)
+    /**
+     * @throws \Exception
+     */
+    protected function archiveProjectsCreatedByUser($projects, $userId)
+    {
+        foreach ($projects as $project) {
+            $projectId = $project['project_id'];
+            $projectSlug = Project::where('id', $projectId)
+                ->where('created_by', $userId)
+                ->value('slug');
+
+            $testProject = Project::where('id', $projectId)
+                ->where('created_by', $userId)->get();
+
+
+            //if any of the projects is a featured one, throw error
+            //as we need to deal with them manually
+            $isFeatured = ProjectFeatured::where('project_id', $projectId)->exists();
+            if ($isFeatured) {
+                throw new \Exception('Project archive failed because is featured project');
+            }
+
+
+            if (!$this->archiveProject($projectId, $projectSlug)) {
+                throw new \Exception('Project created by user archive failed');
+            }
+        }
+    }
+
+    private
+    function sendAccountDeletionEmails($email): \Illuminate\Http\JsonResponse
     {
         //send confirmation email to user
         try {
             Mail::to($email)->send(new UserAccountDeletionUser());
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return $this->apiResponse->errorResponse(400, [
                 'account-deletion' => ['ec5_103']
             ]);
@@ -162,7 +153,7 @@ class AccountController extends Controller
         //send request to admin
         try {
             Mail::to(env('SYSTEM_EMAIL'))->send(new UserAccountDeletionAdmin($email));
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return $this->apiResponse->errorResponse(400, [
                 'account-deletion' => ['ec5_103']
             ]);
@@ -179,16 +170,52 @@ class AccountController extends Controller
         return $this->apiResponse->toJsonResponse(200, 0);
     }
 
-    private function sendAccountDeletionConfirmationEmail($email)
+    private
+    function removeUserWeb($email, $userId): \Illuminate\Http\JsonResponse
     {
+        $user = User::where('email', $email)->where('id', $userId);
+        $user->delete();
+
+        //log user out
+        Auth::logout();
+        request()->session()->flush();
+        request()->session()->regenerate();
+
         //send confirmation email to user
         try {
             Mail::to($email)->send(new UserAccountDeletionConfirmation());
-        } catch (Exception $e) {
-            //mail not sent, not show stopping, just log why
-            \Log::error('Account Deletion Confirmation email error', [
-                'exception' => $e->getMessage()
+        } catch (\Exception $e) {
+            return $this->apiResponse->errorResponse(400, [
+                'account-deletion' => ['ec5_103']
             ]);
         }
+
+        //return a JSON response (account deleted, will trigger a page refresh)
+        $data = ['id' => 'account-deletion-performed', 'deleted' => true];
+        $this->apiResponse->setData($data);
+
+        return $this->apiResponse->toJsonResponse(200, 0);
+    }
+
+    private
+    function removeUserApi($email): \Illuminate\Http\JsonResponse
+    {
+        $user = User::where('email', $email);
+        $user->delete();
+
+        //send confirmation email to user
+        try {
+            Mail::to($email)->send(new UserAccountDeletionConfirmation());
+        } catch (\Exception $e) {
+            return $this->apiResponse->errorResponse(400, [
+                'account-deletion' => ['ec5_103']
+            ]);
+        }
+
+        //return a JSON response (account deleted, will trigger a logout on the mobile app)
+        $data = ['id' => 'account-deletion-performed', 'deleted' => true];
+        $this->apiResponse->setData($data);
+
+        return $this->apiResponse->toJsonResponse(200, 0);
     }
 }

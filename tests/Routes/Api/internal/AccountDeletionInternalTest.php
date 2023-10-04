@@ -24,20 +24,15 @@ class AccountDeletionInternalTest extends TestCase
     //internal routes use the default 'web; guard
     const DRIVER = 'web';
 
-    protected $privateProjectSlug;
-    protected $publicProjectSlug;
-
     public function setup()
     {
         parent::setUp();
-        $this->privateProjectSlug = 'ec5-private';
-        $this->publicProjectSlug = 'ec5-public';
     }
 
     /**
      * Test an authenticated user's routes
      */
-    public function testValidRequest()
+    public function test_valid_request()
     {
         //create mock user
         $user = factory(User::class)->create();
@@ -64,7 +59,7 @@ class AccountDeletionInternalTest extends TestCase
     }
 
     //no user, fail
-    public function testInvalidRequest()
+    public function test_invalid_request()
     {
         $this->json('POST', '/api/internal/profile/account-deletion-request', [])
             ->assertStatus(404)
@@ -79,7 +74,7 @@ class AccountDeletionInternalTest extends TestCase
             ]);
     }
 
-    public function testAccountDeletionPerformedWithoutRole()
+    public function test_account_deletion_performed_without_role()
     {
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
@@ -105,7 +100,7 @@ class AccountDeletionInternalTest extends TestCase
         $this->assertEquals(0, User::where('email', $user->email)->count());
     }
 
-    public function testAccountDeletionPerformedWithRoleCreator()
+    public function test_account_deletion_performed_with_role_creator()
     {
         //creator 
         $role = Config::get('ec5Strings.project_roles.creator');
@@ -177,7 +172,7 @@ class AccountDeletionInternalTest extends TestCase
         });
     }
 
-    public function testAccountDeletionPerformedWithRoleManager()
+    public function test_account_deletion_performed_with_role_manager()
     {
         //MANAGER 
         $role = Config::get('ec5Strings.project_roles.manager');
@@ -254,7 +249,7 @@ class AccountDeletionInternalTest extends TestCase
         });
     }
 
-    public function testAccountDeletionPerformedWithRoleCurator()
+    public function test_account_deletion_performed_with_role_curator()
     {
         //CURATOR 
         $role = Config::get('ec5Strings.project_roles.curator');
@@ -332,7 +327,7 @@ class AccountDeletionInternalTest extends TestCase
         });
     }
 
-    public function testAccountDeletionPerformedWithRoleCollector()
+    public function test_account_deletion_performed_with_role_collector()
     {
         //COLLECTOR 
         $role = Config::get('ec5Strings.project_roles.collector');
@@ -410,7 +405,7 @@ class AccountDeletionInternalTest extends TestCase
         });
     }
 
-    public function testAccountDeletionPerformedWithRoleViewer()
+    public function test_account_deletion_performed_with_role_viewer()
     {
         //VIEWER
         $role = Config::get('ec5Strings.project_roles.viewer');
@@ -487,4 +482,5 @@ class AccountDeletionInternalTest extends TestCase
             return $mail->hasTo($user->email);
         });
     }
+
 }
