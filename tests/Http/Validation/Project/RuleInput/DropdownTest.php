@@ -1,6 +1,6 @@
 <?php
 
-namespace Http\Validation\Project\RuleInput;
+namespace Tests\Http\Validation\Project\RuleInput;
 
 use ec5\Http\Validation\Project\RuleInput;
 use Tests\Http\Validation\Project\RuleInput\InputTest;

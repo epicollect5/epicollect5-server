@@ -1,6 +1,6 @@
 <?php
 
-namespace Routes\Api\Admin;
+namespace Tests\Routes\Api\Admin;
 
 use Illuminate\Foundation\Testing\WithoutMiddleware;
 use Tests\TestCase;

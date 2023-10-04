@@ -1,6 +1,6 @@
 <?php
 
-namespace Http\Controllers\Web\Project\ProjectCreateController;
+namespace Tests\Http\Controllers\Web\Project\ProjectCreateController;
 
 use ec5\Http\Validation\Project\RuleCreateRequest;
 use ec5\Models\Users\User;

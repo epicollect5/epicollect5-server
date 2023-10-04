@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Downloads\FilenameTest;
+namespace Tests\Libraries\Utilities;
 
 use Tests\TestCase;
 

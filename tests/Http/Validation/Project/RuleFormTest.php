@@ -1,6 +1,6 @@
 <?php
 
-namespace Http\Validation\Project;
+namespace Tests\Http\Validation\Project;
 
 use ec5\Http\Validation\Project\RuleForm;
 use Tests\TestCase;

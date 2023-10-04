@@ -1,6 +1,6 @@
 <?php
 
-namespace Http\Validation\Entries\Upload\InputRules;
+namespace Tests\Http\Validation\Entries\Upload\InputRules;
 
 use Config;
 use ec5\Http\Validation\Entries\Upload\InputRules\RuleDropdownInput;

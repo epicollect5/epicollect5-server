@@ -1,6 +1,6 @@
 <?php
 
-namespace Routes\Api\external;
+namespace Tests\Routes\Api\external;
 
 
 use ec5\Models\Eloquent\Project;

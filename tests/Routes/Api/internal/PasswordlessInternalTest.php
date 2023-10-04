@@ -1,6 +1,6 @@
 <?php
 
-namespace Routes\Api\internal;
+namespace Tests\Routes\Api\internal;
 
 
 use Carbon\Carbon;

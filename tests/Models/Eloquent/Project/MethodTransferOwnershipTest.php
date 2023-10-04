@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\TransferOwnershipTest;
+namespace Tests\Models\Eloquent\Project;
 
 use Tests\TestCase;
 use ec5\Models\Eloquent\Project;

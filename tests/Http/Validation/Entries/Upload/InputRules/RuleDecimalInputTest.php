@@ -1,6 +1,6 @@
 <?php
 
-namespace Http\Validation\Entries\Upload\InputRules;
+namespace Tests\Http\Validation\Entries\Upload\InputRules;
 
 use ec5\Http\Validation\Entries\Upload\InputRules\RuleDecimalInput;
 use Tests\TestCase;

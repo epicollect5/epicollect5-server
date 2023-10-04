@@ -1,15 +1,14 @@
 <?php
 
-namespace Tests\Projects\Manage_users;
+namespace Tests\Http\Validation\Project;
 
-use spec\Prophecy\Comparator\FactorySpec;
-use Tests\TestCase;
+use Config;
 use ec5\Http\Validation\Project\RuleSwitchUserRole;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectRole;
 use ec5\Models\Users\User;
-use Config;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Tests\TestCase;
 
 class RuleSwitchUserRoleTest extends TestCase
 {

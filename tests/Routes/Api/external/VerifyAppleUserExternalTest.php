@@ -1,6 +1,6 @@
 <?php
 
-namespace Routes\Api\external;
+namespace Tests\Routes\Api\external;
 
 use Carbon\Carbon;
 use ec5\Libraries\Utilities\Generators;

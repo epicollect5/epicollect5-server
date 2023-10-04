@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Projects\Search;
+namespace Tests\Http\Controllers\Web\Projects;
 
 use ec5\Http\Validation\Project\RuleSearch as ProjectsSearchValidator;
 use Tests\TestCase;

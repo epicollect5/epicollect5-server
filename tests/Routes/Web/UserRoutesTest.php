@@ -1,6 +1,6 @@
 <?php
 
-namespace Routes\Web;
+namespace Tests\Routes\Web;
 
 use ec5\Models\Users\User;
 use Tests\TestCase;

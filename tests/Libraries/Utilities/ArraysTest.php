@@ -1,6 +1,6 @@
 <?php
 
-namespace Libraries\Utilities;
+namespace Tests\Libraries\Utilities;
 
 use ec5\Libraries\Utilities\Arrays;
 use PHPUnit\Framework\TestCase;

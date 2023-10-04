@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\ArchiveEntriesTest;
+namespace Tests\Traits\Eloquent;
 
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
@@ -36,7 +36,7 @@ class ArchiveEntriesTest extends TestCase
             ]);
             // Create some test entries...
             $entriesToArchive = factory(Entry::class, $numOfEntries)->create([
-                'project_id' =>  $project->id,
+                'project_id' => $project->id,
                 'form_ref' => $project->ref . '_' . uniqid(),
                 'user_id' => $project->created_by,
             ]);
@@ -45,7 +45,7 @@ class ArchiveEntriesTest extends TestCase
                 'created_by' => User::where('email', env('SUPER_ADMIN_EMAIL'))->first()['id']
             ]);
             $additionalEntries = factory(Entry::class, $numOfAdditionalEntries)->create([
-                'project_id' =>  $additionalProject->id,
+                'project_id' => $additionalProject->id,
                 'form_ref' => $additionalProject->ref . '_' . uniqid(),
                 'user_id' => $additionalProject->created_by,
             ]);
@@ -53,7 +53,7 @@ class ArchiveEntriesTest extends TestCase
             //...and branch entries for the project
             foreach ($entriesToArchive as $entry) {
                 factory(BranchEntry::class, $numOfBranchEntries)->create([
-                    'project_id' =>  $project->id,
+                    'project_id' => $project->id,
                     'form_ref' => $project->ref . '_' . uniqid(),
                     'user_id' => $project->created_by,
                     'owner_entry_id' => $entry->id //FK!
@@ -63,7 +63,7 @@ class ArchiveEntriesTest extends TestCase
             // Create additional branch entries that should not be archived
             foreach ($additionalEntries as $additionalEntry) {
                 $additionalBranchEntries = factory(BranchEntry::class, $numOfAdditionalBranchEntries)->create([
-                    'project_id' =>  $additionalProject->id,
+                    'project_id' => $additionalProject->id,
                     'form_ref' => $additionalProject->ref . '_' . uniqid(),
                     'user_id' => $additionalProject->created_by,
                     'owner_entry_id' => $additionalEntry->id //FK!
@@ -91,8 +91,8 @@ class ArchiveEntriesTest extends TestCase
             // Assert that the additional entries and branch are still present
             $this->assertEquals($numOfAdditionalEntries, Entry::where('project_id', $additionalProject->id)->count());
             $this->assertEquals($numOfAdditionalEntries * $numOfAdditionalBranchEntries, BranchEntry::where('project_id', $additionalProject->id)->count());
-            $this->assertEquals(0, EntryArchive::where('project_id',  $additionalProject->id)->count());
-            $this->assertEquals(0, BranchEntryArchive::where('project_id',  $additionalProject->id)->count());
+            $this->assertEquals(0, EntryArchive::where('project_id', $additionalProject->id)->count());
+            $this->assertEquals(0, BranchEntryArchive::where('project_id', $additionalProject->id)->count());
         }
     }
 }

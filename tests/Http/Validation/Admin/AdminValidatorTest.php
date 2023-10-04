@@ -1,6 +1,6 @@
 <?php
 
-namespace Http\Validation\Admin;
+namespace Tests\Http\Validation\Admin;
 
 use Config;
 use ec5\Http\Validation\Admin\RuleUpdateState;
