@@ -7,7 +7,6 @@ use ec5\Repositories\QueryBuilder\Project\SearchRepository;
 
 use ec5\Models\Projects\Project;
 use ec5\Models\ProjectRoles\ProjectRole;
-
 use ec5\Http\Controllers\Api\ApiResponse as ApiResponse;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
@@ -17,50 +16,13 @@ use Auth;
 
 abstract class ProjectPermissionsBase extends MiddlewareBase
 {
-
-    /**
-     * @var Request
-     */
     protected $request;
-
-    /**
-     * @var SearchRepository
-     */
     protected $search;
-
-    /**
-     * @var ProjectRoleSearch
-     */
     protected $projectRoleSearch;
-
-    /**
-     * @var ApiResponse
-     */
     protected $apiResponse;
-
-    /**
-     * @var
-     */
     protected $error;
-
-    /**
-     * @var Project
-     */
     protected $requestedProject;
-
-    /**
-     * @var
-     */
     protected $requestedUser;
-
-    /**
-     * @var
-     */
-    protected $requestedProjectApiApplication;
-
-    /**
-     * @var ProjectRole
-     */
     protected $requestedProjectRole;
 
     /*
@@ -93,13 +55,12 @@ abstract class ProjectPermissionsBase extends MiddlewareBase
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request $request
-     * @param  \Closure $next
+     * @param \Illuminate\Http\Request $request
+     * @param \Closure $next
      * @return mixed
      */
     public function handle(Request $request, Closure $next)
     {
-
         // Update the request
         $this->request = $request;
 
@@ -118,7 +79,7 @@ abstract class ProjectPermissionsBase extends MiddlewareBase
         // Set the project role
         $this->setRequestedProjectRole();
 
-        // Check if has permission to access
+        // Check if user has permission to access
         if (!$this->hasPermission()) {
             return $this->errorResponse($this->request, $this->error, 404);
         }
@@ -187,6 +148,7 @@ abstract class ProjectPermissionsBase extends MiddlewareBase
         // Retrieve user role
         $this->requestedProjectRole = $this->projectRoleSearch->getRole($this->requestedUser, $this->requestedProject->getId());
 
+        $role = $this->requestedProjectRole->getRole();
         // If no role is found, but the user is an admin/super admin, add creator role
         if (
             !$this->requestedProjectRole->getRole() && $this->requestedUser &&

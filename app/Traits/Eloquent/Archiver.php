@@ -9,7 +9,7 @@ use ec5\Models\Eloquent\EntryArchive;
 use ec5\Models\Eloquent\BranchEntry;
 use ec5\Models\Eloquent\BranchEntryArchive;
 
-trait Archive
+trait Archiver
 {
     public function archiveProject($projectId, $projectSlug)
     {

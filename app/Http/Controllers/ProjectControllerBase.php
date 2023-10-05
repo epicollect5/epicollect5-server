@@ -9,12 +9,12 @@ use ec5\Models\ProjectRoles\ProjectRole;
 use ec5\Models\Projects\Project;
 use ec5\Repositories\QueryBuilder\Stats\Entry\StatsRepository;
 use ec5\Repositories\QueryBuilder\Project\SearchRepository as SearchProjectRepository;
-use ec5\Traits\Eloquent\Archive;
+use ec5\Traits\Eloquent\Archiver;
 
 class ProjectControllerBase extends Controller
 {
 
-    use Archive;
+    use Archiver;
 
     /**
      * @var Request

@@ -20,6 +20,8 @@ use ec5\Models\Projects\Project as LegacyProject;
 use ec5\Models\Eloquent\UserPasswordlessApi;
 use ec5\Models\Eloquent\UserPasswordlessWeb;
 use ec5\Models\Eloquent\ProjectRole;
+use ec5\Models\Eloquent\ProjectFeatured;
+use ec5\Models\Eloquent\ProjectStat;
 use Illuminate\Support\Str;
 use Webpatser\Uuid\Uuid;
 
@@ -340,5 +342,21 @@ $factory->define(BranchEntry::class, function (Faker\Generator $faker, $params) 
         'title' => $faker->word,
         'entry_data' => json_encode([]),
         'geo_json_data' => json_encode([])
+    ];
+});
+
+$factory->define(ProjectStat::class, function (Faker\Generator $faker) {
+    return [
+        'project_id' => null,
+        'total_entries' => 0,
+        'total_users' => 0,
+        'form_counts' => json_encode([]),
+        'branch_counts' => json_encode([])
+    ];
+});
+
+$factory->define(ProjectFeatured::class, function (Faker\Generator $faker) {
+    return [
+        'project_id' => null,
     ];
 });

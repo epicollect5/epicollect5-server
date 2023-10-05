@@ -4,6 +4,7 @@ namespace ec5\Http\Controllers\Api\Project;
 
 use ec5\Http\Controllers\Api\ApiResponse as ApiResponse;
 use ec5\Http\Controllers\ProjectControllerBase;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use ec5\Http\Validation\Entries\Upload\RuleCanBulkUpload;
 use ec5\Models\Eloquent\Project;
@@ -13,10 +14,10 @@ use Auth;
 
 class ProjectController extends ProjectControllerBase
 {
-
     /**
      * @param ApiResponse $apiResponse
-     * @return \Illuminate\Http\JsonResponse
+     * @param EntryStatsRepository $entryStatsRepository
+     * @return JsonResponse
      */
     public function show(ApiResponse $apiResponse, EntryStatsRepository $entryStatsRepository)
     {

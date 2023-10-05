@@ -97,7 +97,7 @@ class ProjectDeleteController extends ProjectControllerBase
         } catch (\Exception $e) {
             \Log::error('softDelete() project failure', ['exception' => $e->getMessage()]);
             DB::rollBack();
-            return redirect('myprojects/' . $this->requestedProject->slug . '/manage-entries')->withErrors(['ec5_104']);
+            return redirect('myprojects/' . $this->requestedProject->slug)->withErrors(['ec5_104']);
         }
     }
 

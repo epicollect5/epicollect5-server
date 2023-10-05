@@ -14,11 +14,11 @@ use ec5\Mail\UserAccountDeletionUser;
 use ec5\Models\Eloquent\ProjectRole;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\User;
-use ec5\Traits\Eloquent\Archive;
+use ec5\Traits\Eloquent\Archiver;
 
 class AccountController extends Controller
 {
-    use Archive;
+    use Archiver;
 
     protected $apiResponse;
 
@@ -59,7 +59,7 @@ class AccountController extends Controller
                         DB::commit();
                         return $this->removeUserWeb($email, $userId);
                     } catch (\Exception $e) {
-                        \Log::error('Archive projects created by user failure', ['exception' => $e->getMessage()]);
+                        \Log::error('Archiver projects created by user failure', ['exception' => $e->getMessage()]);
                         DB::rollBack();
                         return $this->apiResponse->errorResponse(400, [
                             'account-deletion' => ['ec5_104']
@@ -94,7 +94,7 @@ class AccountController extends Controller
                         DB::commit();
                         return $this->removeUserApi($email, $userId);
                     } catch (\Exception $e) {
-                        \Log::error('Archive projects created by user failure', ['exception' => $e->getMessage()]);
+                        \Log::error('Archiver projects created by user failure', ['exception' => $e->getMessage()]);
                         DB::rollBack();
                         return $this->apiResponse->errorResponse(400, [
                             'account-deletion' => ['ec5_104']

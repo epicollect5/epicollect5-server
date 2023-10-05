@@ -180,15 +180,10 @@ class ProjectRole
     /**
      * @return bool
      */
-    public function canDeleteProject()
+    public function canDeleteProject(): bool
     {
-        if ($this->isCreator()) {
-            return true;
-        }
-
-        return false;
+        return $this->isCreator();
     }
-
 
     /**
      * @return bool
