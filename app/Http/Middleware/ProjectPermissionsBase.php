@@ -148,7 +148,6 @@ abstract class ProjectPermissionsBase extends MiddlewareBase
         // Retrieve user role
         $this->requestedProjectRole = $this->projectRoleSearch->getRole($this->requestedUser, $this->requestedProject->getId());
 
-        $role = $this->requestedProjectRole->getRole();
         // If no role is found, but the user is an admin/super admin, add creator role
         if (
             !$this->requestedProjectRole->getRole() && $this->requestedUser &&

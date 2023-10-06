@@ -11,7 +11,7 @@ use ec5\Models\Eloquent\BranchEntryArchive;
 
 trait Archiver
 {
-    public function archiveProject($projectId, $projectSlug)
+    public function archiveProject($projectId, $projectSlug): bool
     {
         try {
             //cloning project row (for potential restore, safety net)
@@ -40,7 +40,7 @@ trait Archiver
         }
     }
 
-    public function archiveEntries($projectId)
+    public function archiveEntries($projectId): bool
     {
         try {
             //move entries
