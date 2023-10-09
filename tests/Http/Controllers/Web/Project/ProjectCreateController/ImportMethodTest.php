@@ -3,11 +3,21 @@
 namespace Tests\Http\Controllers\Web\Project\ProjectCreateController;
 
 use ec5\Http\Validation\Project\RuleImportRequest;
+use ec5\Models\Eloquent\Project;
+use ec5\Models\Eloquent\ProjectStructure;
 use ec5\Models\Users\User;
+use Tests\Generators\FakeProjectDefinitionGenerator;
 use Tests\TestCase;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 class ImportMethodTest extends TestCase
 {
+    use DatabaseTransactions;
+
+    const DRIVER = 'web';
+
     protected $request;
     protected $validator;
     protected $access;
@@ -126,12 +136,46 @@ class ImportMethodTest extends TestCase
         $this->reset();
     }
 
+    public function test_project_name_should_not_have_extra_spaces()
+    {
+        //create a fake user and save it to DB
+        $user = factory(User::class)->create();
+        $projectName = 'Multiple    Spaces      between   words   ';
+        $projectSlug = 'multiple-spaces-between-words';
+        $projectDefinition = (FakeProjectDefinitionGenerator::createSampleProject());
+        $projectDefinition['data']['project']['name'] = $projectName;
+        $projectDefinition['data']['project']['slug'] = $projectSlug;
+        // Create a temporary file with content
+        $fileContent = json_encode($projectDefinition);
+        $tempFile = tempnam(sys_get_temp_dir(), 'fakefile');
+        file_put_contents($tempFile, $fileContent);
+        // Create a fake UploadedFile instance from the temporary file
+        $fakeFile = UploadedFile::fake()->create('fakefile.json', 512, 'application/json');
+        copy($tempFile, $fakeFile->getRealPath());
+
+        $response = $this->actingAs($user, self::DRIVER)
+            ->post('myprojects/import', [
+                'name' => 'Multiple    Spaces      between   words   ',
+                'file' => $fakeFile
+            ]);
+        unlink($tempFile);
+
+        //Check if the redirect is successful
+        $response->assertRedirect('myprojects/' . $projectSlug)
+            ->assertSessionHas('projectCreated', true)
+            ->assertSessionHas('tab', 'import');
+        //Check if the project is created
+        $this->assertDatabaseHas('projects', ['slug' => $projectSlug]);
+        //check name is sanitised with extra spaces removed
+        $this->assertDatabaseHas('projects', ['name' => 'Multiple Spaces between words']);
+        //check original name with extra spaces was not saved
+        $this->assertDatabaseMissing('projects', ['name' => $projectName]);
+    }
+
     public function test_file()
     {
-
         //empty
         $this->request['file'] = '';
-
         $this->validator->validate($this->request);
         $this->assertTrue($this->validator->hasErrors());
         $this->validator->resetErrors();

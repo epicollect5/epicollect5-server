@@ -3,11 +3,19 @@
 namespace Tests\Http\Controllers\Web\Project\ProjectCreateController;
 
 use ec5\Http\Validation\Project\RuleCreateRequest;
+use ec5\Models\Eloquent\Project;
+use ec5\Models\Eloquent\ProjectStructure;
 use ec5\Models\Users\User;
 use Tests\TestCase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\DB;
 
 class CreateMethodTest extends TestCase
 {
+    use DatabaseTransactions;
+
+    const DRIVER = 'web';
+
     protected $request;
     protected $validator;
     protected $access;
@@ -30,6 +38,14 @@ class CreateMethodTest extends TestCase
         $this->reset();
     }
 
+    public function tearDown()
+    {
+        // Clear fake storage after each test
+        Storage::fake();
+
+        parent::tearDown();
+    }
+
     public function reset()
     {
 
@@ -44,7 +60,6 @@ class CreateMethodTest extends TestCase
 
     public function test_name()
     {
-
         $this->validator->validate($this->request);
         $this->assertFalse($this->validator->hasErrors());
         $this->validator->resetErrors();
@@ -126,11 +141,112 @@ class CreateMethodTest extends TestCase
         $this->assertTrue($this->validator->hasErrors());
         $this->validator->resetErrors();
         $this->reset();
+
+
+    }
+
+    public function test_project_name_should_not_have_extra_spaces()
+    {
+        //create a fake user and save it to DB
+        $user = factory(User::class)->create();
+        $projectName = 'Multiple    Spaces      between   words   ';
+        $projectSlug = 'multiple-spaces-between-words';
+
+        $response = $this->actingAs($user, SELF::DRIVER)
+            ->post('myprojects/create', [
+                '_token' => csrf_token(),
+                'name' => 'Multiple    Spaces      between   words   ',
+                'form_name' => 'Form One',
+                'small_description' => 'Just a test project to test the removal of multiple spaces',
+                'access' => 'private'
+            ]);
+
+        //Check if the redirect is successful
+        $response->assertRedirect('myprojects/' . $projectSlug)
+            ->assertSessionHas('projectCreated', true)
+            ->assertSessionHas('tab', 'create');
+        //Check if the project is created
+        $this->assertDatabaseHas('projects', ['slug' => $projectSlug]);
+        //check name is sanitised with extra spaces removed
+        $this->assertDatabaseHas('projects', ['name' => 'Multiple Spaces between words']);
+        //check original name with extra spaces was not saved
+        $this->assertDatabaseMissing('projects', ['name' => $projectName]);
+    }
+
+    public function test_form_name_should_not_have_extra_spaces()
+    {
+        //create a fake user and save it to DB
+        $user = factory(User::class)->create();
+        $projectName = 'Multiple    Spaces      between   words   ';
+        $projectSlug = 'multiple-spaces-between-words';
+
+        $response = $this->actingAs($user, SELF::DRIVER)
+            ->post('myprojects/create', [
+                '_token' => csrf_token(),
+                'name' => 'Multiple    Spaces      between   words   ',
+                'form_name' => 'Form      One      ',
+                'small_description' => 'Just a test project to test the removal of multiple spaces',
+                'access' => 'private'
+            ]);
+
+        //Check if the redirect is successful
+        $response->assertRedirect('myprojects/' . $projectSlug)
+            ->assertSessionHas('projectCreated', true)
+            ->assertSessionHas('tab', 'create');
+
+        $this->assertDatabaseHas('projects', ['slug' => $projectSlug]);
+        //check name is sanitised with extra spaces removed
+        $this->assertDatabaseHas('projects', ['name' => 'Multiple Spaces between words']);
+        //check original name with extra spaces was not saved
+        $this->assertDatabaseMissing('projects', ['name' => $projectName]);
+
+        $project = Project::where('slug', $projectSlug)->first();
+        $projectDefinition = json_decode(ProjectStructure::where('project_id', $project->id)
+            ->value('project_definition'));
+
+        $formName = $projectDefinition->project->forms[0]->name;
+        $this->assertEquals('Form One', $formName);
+
+    }
+
+    public function test_small_description_should_not_have_extra_spaces()
+    {
+        //create a fake user and save it to DB
+        $user = factory(User::class)->create();
+        $projectName = 'Multiple    Spaces      between   words   ';
+        $projectSlug = 'multiple-spaces-between-words';
+
+        $response = $this->actingAs($user, SELF::DRIVER)
+            ->post('myprojects/create', [
+                '_token' => csrf_token(),
+                'name' => 'Multiple    Spaces      between   words   ',
+                'form_name' => 'Form      One      ',
+                'small_description' => 'Just   a    test   project to test the    removal   of multiple    spaces  ',
+                'access' => 'private'
+            ]);
+
+        //Check if the redirect is successful
+        $response->assertRedirect('myprojects/' . $projectSlug)
+            ->assertSessionHas('projectCreated', true)
+            ->assertSessionHas('tab', 'create');
+
+        $this->assertDatabaseHas('projects', ['slug' => $projectSlug]);
+        //check name is sanitised with extra spaces removed
+        $this->assertDatabaseHas('projects', ['name' => 'Multiple Spaces between words']);
+        //check original name with extra spaces was not saved
+        $this->assertDatabaseMissing('projects', ['name' => $projectName]);
+
+        $project = Project::where('slug', $projectSlug)->first();
+        $projectDefinition = json_decode(ProjectStructure::where('project_id', $project->id)
+            ->value('project_definition'));
+
+        $smallDesc = $projectDefinition->project->small_description;
+        $this->assertEquals('Just a test project to test the removal of multiple spaces', $smallDesc);
+
     }
 
     public function test_small_description()
     {
-
         //empty
         $this->request['small_description'] = '';
 

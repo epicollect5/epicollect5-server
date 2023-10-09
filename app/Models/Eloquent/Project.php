@@ -14,6 +14,7 @@ class Project extends Model
 {
 
     use ProjectsStats;
+
     /**
      * The table associated with the model.
      *
@@ -226,7 +227,8 @@ class Project extends Model
     //get projects total based on access and visibility
     private function getProjectsTotal($items, $access, $visibility)
     {
-        foreach ($items as $item) { {
+        foreach ($items as $item) {
+            {
                 if ($item->access === $access) {
                     if ($item->visibility === $visibility) {
                         return $item->projects_total;
@@ -238,7 +240,7 @@ class Project extends Model
         return 0;
     }
 
-    public function transferOwnership($projectId, $creatorId, $managerId)
+    public function transferOwnership($projectId, $creatorId, $managerId): bool
     {
         try {
             //update projects table, set manager to be new creator

@@ -1,0 +1,101 @@
+<?php
+
+namespace Tests\Generators;
+
+use Carbon\Carbon;
+use ec5\Libraries\Utilities\Generators;
+
+class FakeProjectDefinitionGenerator
+{
+    /**
+     * Generate a sample project array for testing.
+     *
+     * @return array
+     */
+    public static function createSampleProject(): array
+    {
+        $projectRef = Generators::projectRef();
+        $formRef = Generators::formRef($projectRef);
+        $inputRef = Generators::inputRef($formRef);
+        return [
+            "data" => [
+                "id" => $projectRef,
+                "type" => "project",
+                "project" => [
+                    "ref" => $projectRef,
+                    "name" => "Just a test project",
+                    "slug" => "just-a-test-project",
+                    "forms" => [
+                        [
+                            "ref" => $formRef,
+                            "name" => "Form One",
+                            "slug" => "form-one",
+                            "type" => "hierarchy",
+                            "inputs" => [
+                                [
+                                    "max" => null,
+                                    "min" => null,
+                                    "ref" => $inputRef,
+                                    "type" => "radio",
+                                    "group" => [
+                                    ],
+                                    "jumps" => [
+                                    ],
+                                    "regex" => null,
+                                    "branch" => [
+                                    ],
+                                    "verify" => false,
+                                    "default" => "",
+                                    "is_title" => false,
+                                    "question" => "Sex",
+                                    "uniqueness" => "none",
+                                    "is_required" => false,
+                                    "datetime_format" => null,
+                                    "possible_answers" => [
+                                        [
+                                            "answer" => "Male",
+                                            "answer_ref" => uniqid()
+                                        ],
+                                        [
+                                            "answer" => "Female",
+                                            "answer_ref" => uniqid()
+                                        ]
+                                    ],
+                                    "set_to_current_datetime" => false
+                                ]
+                            ]
+                        ]
+                    ],
+                    "access" => "public",
+                    "status" => "active",
+                    "category" => "general",
+                    "homepage" => "",
+                    "logo_url" => "",
+                    "created_at" => Carbon::now()->format('Y-m-d H:i:s'),
+                    "visibility" => "hidden",
+                    "description" => "",
+                    "entries_limits" => [
+                    ],
+                    "can_bulk_upload" => "nobody",
+                    "small_description" => "This a sample project definition just for unit tests"
+                ]
+            ]
+        ];
+    }
+
+    /**
+     * Generate a sample project array with a specific name.
+     *
+     * @param string $name
+     * @return array
+     */
+    public static function createSampleProjectWithName(string $name): array
+    {
+        $project = self::createSampleProject();
+        $project['data']['project']['name'] = $name;
+
+        return $project;
+    }
+
+    // You can add more methods for generating various types of data as needed.
+}

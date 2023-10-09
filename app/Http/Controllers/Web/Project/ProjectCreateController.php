@@ -4,6 +4,7 @@ namespace ec5\Http\Controllers\Web\Project;
 
 use ec5\Http\Controllers\ProjectControllerBase;
 
+use ec5\Libraries\Utilities\Generators;
 use ec5\Models\Projects\Exceptions\ProjectImportException;
 use ec5\Models\Projects\Exceptions\ProjectNameMissingException;
 use ec5\Models\Projects\Project;
@@ -121,7 +122,7 @@ class ProjectCreateController extends ProjectControllerBase
         $input['created_by'] = $request->user()->id;
 
         // Generate new project ref
-        $newProjectRef = str_replace('-', '', Uuid::generate(4));
+        $newProjectRef = Generators::projectRef();
 
         try {
             // Create everything for this project
@@ -168,19 +169,15 @@ class ProjectCreateController extends ProjectControllerBase
         ImportRequestValidator     $importRequestValidator
     )
     {
-
         $this->type = ProjectCreateController::IMPORT;
-
         // Get all the form post data
         $input = $request->all();
         $input['slug'] = Str::slug($input['name'], '-');
-
-        //trim project name
-        $input['name'] = trim($input['name']);
-
         // Run validation
         $importRequestValidator->validate($input, true);
-
+        //trim project name and remove extra spaces if any
+        $input['name'] = trim($input['name']);
+        $input['name'] = preg_replace('/\s+/', ' ', $input['name']);
         // If errors, return
         if ($importRequestValidator->hasErrors()) {
             $request->flash();
@@ -192,11 +189,10 @@ class ProjectCreateController extends ProjectControllerBase
         //assign user
         $input['created_by'] = $request->user()->id;
         // Generate new project ref
-        $newProjectRef = str_replace('-', '', Uuid::generate(4));
-
-
-        // Decode json file contents into array
+        $newProjectRef = Generators::projectRef();
+        // Check the content before decoding
         $file = $request->file('file');
+        // Decode json file contents into array
         $data = json_decode(File::get($file->getRealPath()), true);
 
         // Check properly formatted JSON
