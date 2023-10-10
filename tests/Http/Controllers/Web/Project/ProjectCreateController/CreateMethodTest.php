@@ -6,6 +6,7 @@ use ec5\Http\Validation\Project\RuleCreateRequest;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectStructure;
 use ec5\Models\Users\User;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
@@ -41,7 +42,7 @@ class CreateMethodTest extends TestCase
     public function tearDown()
     {
         // Clear fake storage after each test
-        Storage::fake();
+        Storage::fake('local');
 
         parent::tearDown();
     }

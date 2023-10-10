@@ -32,6 +32,7 @@ class ProjectDeleteController extends ProjectControllerBase
         return view('project.project_delete', $vars);
     }
 
+    //imp: this is real project deletion, not used anymore
     public function delete(DeleteProject $deleteProject, SearchProject $searchProject)
     {
         if (!$this->requestedProjectRole->canDeleteProject()) {

@@ -1,8 +1,9 @@
 <?php
 
-namespace Tests\Routes\Api\internal;
+namespace Tests\Http\Controllers\Api\AccountController;
 
 use Config;
+use ec5\Libraries\Utilities\Generators;
 use ec5\Mail\UserAccountDeletionConfirmation;
 use ec5\Models\Eloquent\BranchEntry;
 use ec5\Models\Eloquent\BranchEntryArchive;
@@ -483,4 +484,241 @@ class AccountDeletionInternalTest extends TestCase
         });
     }
 
+    public function test_account_deletion_performed_with_mixed_roles()
+    {
+        //creator
+        $role = Config::get('ec5Strings.project_roles.creator');
+        $otherRoles = [
+            Config::get('ec5Strings.project_roles.manager'),
+            Config::get('ec5Strings.project_roles.curator'),
+            Config::get('ec5Strings.project_roles.collector'),
+            Config::get('ec5Strings.project_roles.viewer')
+        ];
+        $projectsWithOtherRoles = [];
+        $numOfEntries = mt_rand(1, 10);
+        $numOfBranchEntries = mt_rand(1, 10);
+
+        //create a fake user and save it to DB
+        $user = factory(User::class)->create();
+        //create another user
+        $anotherUser = factory(User::class)->create();
+
+        // 2- create a couple of projects with that user
+        $projectRoleCreatorOne = factory(Project::class)->create(['created_by' => $user->id]);
+        $projectRoleCreatorTwo = factory(Project::class)->create(['created_by' => $user->id]);
+        //assign the user to those projects with the CREATOR role
+        factory(ProjectRole::class)->create([
+            'user_id' => $user->id,
+            'project_id' => $projectRoleCreatorOne->id,
+            'role' => $role
+        ]);
+
+        factory(ProjectRole::class)->create([
+            'user_id' => $user->id,
+            'project_id' => $projectRoleCreatorTwo->id,
+            'role' => $role
+        ]);
+
+        //create a fake project per each role and assign it to the user
+        foreach ($otherRoles as $otherRole) {
+            $project = factory(Project::class)->create(['created_by' => $anotherUser->id]);
+            $projectsWithOtherRoles[] = [
+                'id' => $project->id,
+                'role' => $otherRole
+            ];
+
+            factory(ProjectRole::class)->create([
+                'user_id' => $anotherUser->id,
+                'project_id' => $project->id,
+                'role' => $role
+            ]);
+            factory(ProjectRole::class)->create([
+                'user_id' => $user->id,
+                'project_id' => $project->id,
+                'role' => $otherRole
+            ]);
+
+            //assert project is present
+            $this->assertEquals(1, Project::where('id', $project->id)->count());
+            //assert user roles for that project
+            $this->assertEquals(2, ProjectRole::where('project_id', $project->id)->count());
+            $this->assertEquals($role, ProjectRole::where('project_id', $project->id)->where('user_id', $anotherUser->id)->value('role'));
+            $this->assertEquals($otherRole, ProjectRole::where('project_id', $project->id)->where('user_id', $user->id)->value('role'));
+
+
+            //for each project, add some fake entries and branch entries
+            //firstly, entries by creator
+            $entriesByCreator = factory(Entry::class, $numOfEntries)->create([
+                'project_id' => $project->id,
+                'form_ref' => $project->ref . '_' . uniqid(),
+                'user_id' => $anotherUser->id,
+            ]);
+
+            //branch entries by creator
+            foreach ($entriesByCreator as $entry) {
+                factory(BranchEntry::class, $numOfBranchEntries)->create([
+                    'project_id' => $project->id,
+                    'form_ref' => Generators::formRef($project->ref),
+                    'user_id' => $anotherUser->id,
+                    'owner_entry_id' => $entry->id //FK!
+                ]);
+            }
+            //secondly, entries by other role (aside from viewer)
+            if ($otherRole !== 'viewer') {
+                $entriesByOtherRole = factory(Entry::class, $numOfEntries)->create([
+                    'project_id' => $project->id,
+                    'form_ref' => Generators::formRef($project->ref),
+                    'user_id' => $user->id
+                ]);
+
+                foreach ($entriesByOtherRole as $entry) {
+                    factory(BranchEntry::class, $numOfBranchEntries)->create([
+                        'project_id' => $project->id,
+                        'form_ref' => Generators::formRef($project->ref),
+                        'user_id' => $user->id,
+                        'owner_entry_id' => $entry->id //FK!
+                    ]);
+                }
+                //assert entries exist
+                $this->assertEquals(2 * $numOfEntries, Entry::where('project_id', $project->id)
+                    ->count());
+
+                //assert branch entries exist
+                $this->assertEquals(2 * ($numOfEntries * $numOfBranchEntries), BranchEntry::where('project_id', $project->id)
+                    ->count());
+
+                // Assert entries by other role
+                $this->assertEquals($numOfEntries, Entry::where('project_id', $project->id)
+                    ->where('user_id', $user->id)
+                    ->count());
+                //assert entries by creator
+                $this->assertEquals($numOfEntries, Entry::where('project_id', $project->id)
+                    ->where('user_id', $anotherUser->id)
+                    ->count());
+
+            } else {
+                //assert entries exist
+                $this->assertEquals($numOfEntries, Entry::where('project_id', $project->id)
+                    ->count());
+                //assert entries by creator
+                $this->assertEquals($numOfEntries, Entry::where('project_id', $project->id)
+                    ->where('user_id', $anotherUser->id)
+                    ->count());
+            }
+        }
+
+        //assert projects are present
+        $this->assertEquals(1, Project::where('id', $project->id)->count());
+        $this->assertEquals(1, ProjectRole::where('project_id', $projectRoleCreatorOne->id)->count());
+        $this->assertEquals(1, ProjectRole::where('project_id', $projectRoleCreatorTwo->id)->count());
+        //user should be a member of 6 project, 2 with role creator and 4 with the other roles
+        $this->assertEquals(6, ProjectRole::where('user_id', $user->id)->count());
+        $this->assertEquals($role, ProjectRole::where('project_id', $projectRoleCreatorOne->id)->where('user_id', $user->id)->value('role'));
+        $this->assertEquals($role, ProjectRole::where('project_id', $projectRoleCreatorTwo->id)->where('user_id', $user->id)->value('role'));
+        // 3 - add mock entries & branch entries to mock projects
+        $entriesToArchiveOne = factory(Entry::class, $numOfEntries)->create([
+            'project_id' => $projectRoleCreatorOne->id,
+            'form_ref' => $projectRoleCreatorOne->ref . '_' . uniqid(),
+            'user_id' => $projectRoleCreatorOne->created_by,
+        ]);
+        foreach ($entriesToArchiveOne as $entry) {
+            factory(BranchEntry::class, $numOfBranchEntries)->create([
+                'project_id' => $projectRoleCreatorOne->id,
+                'form_ref' => $projectRoleCreatorOne->ref . '_' . uniqid(),
+                'user_id' => $projectRoleCreatorOne->created_by,
+                'owner_entry_id' => $entry->id //FK!
+            ]);
+        }
+
+        $entriesToArchiveTwo = factory(Entry::class, $numOfEntries)->create([
+            'project_id' => $projectRoleCreatorTwo->id,
+            'form_ref' => $projectRoleCreatorTwo->ref . '_' . uniqid(),
+            'user_id' => $projectRoleCreatorTwo->created_by,
+        ]);
+        foreach ($entriesToArchiveTwo as $entry) {
+            factory(BranchEntry::class, $numOfBranchEntries)->create([
+                'project_id' => $projectRoleCreatorTwo->id,
+                'form_ref' => $projectRoleCreatorTwo->ref . '_' . uniqid(),
+                'user_id' => $projectRoleCreatorTwo->created_by,
+                'owner_entry_id' => $entry->id //FK!
+            ]);
+        }
+
+        //assert entries are present
+        $this->assertEquals($numOfEntries, Entry::where('project_id', $projectRoleCreatorOne->id)
+            ->where('user_id', $user->id)
+            ->count());
+        $this->assertEquals($numOfBranchEntries * $numOfEntries, BranchEntry::where('project_id', $projectRoleCreatorOne->id)
+            ->where('user_id', $user->id)
+            ->count());
+        $this->assertEquals($numOfEntries, Entry::where('project_id', $projectRoleCreatorTwo->id)
+            ->where('user_id', $user->id)
+            ->count());
+        $this->assertEquals($numOfBranchEntries * $numOfEntries, BranchEntry::where('project_id', $projectRoleCreatorTwo->id)
+            ->where('user_id', $user->id)
+            ->count());
+
+
+        //4 delete user account
+        Mail::fake();
+        $this->actingAs($user, self::DRIVER)
+            ->json('POST', '/api/internal/profile/account-deletion-request', [])
+            ->assertStatus(200)
+            ->assertExactJson([
+                "data" => [
+                    "id" => "account-deletion-performed",
+                    "deleted" => true
+                ]
+            ]);
+
+        //assert user was removed
+        $this->assertEquals(0, User::where('email', $user->email)->count());
+        $this->assertEquals(0, User::where('id', $user->id)->count());
+
+        //assert projects with CREATOR role were archived
+        $this->assertEquals(0, Project::where('id', $projectRoleCreatorOne->id)->count());
+        $this->assertEquals(1, ProjectArchive::where('id', $projectRoleCreatorOne->id)->count());
+        $this->assertEquals(0, Project::where('id', $projectRoleCreatorTwo->id)->count());
+        $this->assertEquals(1, ProjectArchive::where('id', $projectRoleCreatorTwo->id)->count());
+
+        //assert entries by CREATOR are not touched, we just archive the projects created by the user when its account is deleted
+        $this->assertEquals($numOfEntries, Entry::where('project_id', $projectRoleCreatorOne->id)->count());
+        $this->assertEquals($numOfBranchEntries * $numOfEntries, BranchEntry::where('project_id', $projectRoleCreatorOne->id)->count());
+        $this->assertEquals($numOfEntries, Entry::where('project_id', $projectRoleCreatorTwo->id)->count());
+        $this->assertEquals($numOfBranchEntries * $numOfEntries, BranchEntry::where('project_id', $projectRoleCreatorTwo->id)->count());
+
+        //assert all CREATOR roles are dropped
+        $this->assertEquals(0, ProjectRole::where('project_id', $projectRoleCreatorOne->id)->count());
+        $this->assertEquals(0, ProjectRole::where('project_id', $projectRoleCreatorTwo->id)->count());
+
+        foreach ($projectsWithOtherRoles as $projectWithOtherRole) {
+            //assert projects with other roles are NOT archived
+            $projectId = $projectWithOtherRole['id'];
+            $otherRole = $projectWithOtherRole['role'];
+            $this->assertEquals(1, Project::where('id', $projectId)->count());
+            $this->assertEquals(0, ProjectArchive::where('id', $projectId)->count());
+
+            //assert entries by other roles are not touched, we just anonymize entries
+            if ($otherRole !== 'viewer') {
+                $this->assertEquals(2 * $numOfEntries, Entry::where('project_id', $projectId)->count());
+                $this->assertEquals(2 * ($numOfBranchEntries * $numOfEntries), BranchEntry::where('project_id', $projectId)->count());
+            } else {
+                $this->assertEquals(1 * $numOfEntries, Entry::where('project_id', $projectId)->count());
+                $this->assertEquals(1 * ($numOfBranchEntries * $numOfEntries), BranchEntry::where('project_id', $projectId)->count());
+            }
+
+            //assert all other roles are dropped, but not creator
+            $this->assertEquals(0, ProjectRole::where('project_id', $projectId)
+                ->where('role', '!=', $role)
+                ->count());
+            $this->assertEquals(1, ProjectRole::where('project_id', $projectId)
+                ->where('role', $role)
+                ->count());
+        }
+
+        // Assert a message was sent to the given users...
+        Mail::assertSent(UserAccountDeletionConfirmation::class, function ($mail) use ($user) {
+            return $mail->hasTo($user->email);
+        });
+    }
 }

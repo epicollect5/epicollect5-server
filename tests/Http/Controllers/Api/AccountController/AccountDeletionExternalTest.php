@@ -1,23 +1,21 @@
 <?php
 
-namespace Tests\Routes\Api\external;
+namespace Tests\Http\Controllers\Api\AccountController;
 
 
-use ec5\Mail\UserAccountDeletionUser;
-use ec5\Mail\UserAccountDeletionAdmin;
+use Config;
+use ec5\Mail\UserAccountDeletionConfirmation;
 use ec5\Models\Eloquent\BranchEntry;
 use ec5\Models\Eloquent\BranchEntryArchive;
 use ec5\Models\Eloquent\Entry;
 use ec5\Models\Eloquent\EntryArchive;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectArchive;
-use ec5\Models\Users\User;
 use ec5\Models\Eloquent\ProjectRole;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Auth;
-use ec5\Mail\UserAccountDeletionConfirmation;
+use ec5\Models\Users\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Config;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class AccountDeletionExternalTest extends TestCase

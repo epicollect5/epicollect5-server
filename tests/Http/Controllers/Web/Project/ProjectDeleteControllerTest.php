@@ -484,6 +484,7 @@ class ProjectDeleteControllerTest extends TestCase
         $this->assertEquals('ec5_221', session('errors')->getBag('default')->first());
     }
 
+    //todo: need refactoring
     public function test_softDelete_with_exception()
     {
         //creator
