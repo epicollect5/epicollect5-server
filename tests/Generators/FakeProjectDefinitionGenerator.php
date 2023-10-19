@@ -12,11 +12,55 @@ class FakeProjectDefinitionGenerator
      *
      * @return array
      */
-    public static function createSampleProject(): array
+    public static function createSampleProject($howManyForms = 1): array
     {
         $projectRef = Generators::projectRef();
-        $formRef = Generators::formRef($projectRef);
-        $inputRef = Generators::inputRef($formRef);
+        $forms = [];
+
+        for ($i = 0; $i < $howManyForms; $i++) {
+            $formRef = Generators::formRef($projectRef);
+            $inputRef = Generators::inputRef($formRef);
+            $forms[] = [
+                "ref" => $formRef,
+                "name" => "Form " . $i,
+                "slug" => "form-" . $i,
+                "type" => "hierarchy",
+                "inputs" => [
+                    [
+                        "max" => null,
+                        "min" => null,
+                        "ref" => $inputRef,
+                        "type" => "radio",
+                        "group" => [
+                        ],
+                        "jumps" => [
+                        ],
+                        "regex" => null,
+                        "branch" => [
+                        ],
+                        "verify" => false,
+                        "default" => "",
+                        "is_title" => false,
+                        "question" => "Sex",
+                        "uniqueness" => "none",
+                        "is_required" => false,
+                        "datetime_format" => null,
+                        "possible_answers" => [
+                            [
+                                "answer" => "Male",
+                                "answer_ref" => uniqid()
+                            ],
+                            [
+                                "answer" => "Female",
+                                "answer_ref" => uniqid()
+                            ]
+                        ],
+                        "set_to_current_datetime" => false
+                    ]
+                ]
+            ];
+        }
+
         return [
             "data" => [
                 "id" => $projectRef,
@@ -25,47 +69,7 @@ class FakeProjectDefinitionGenerator
                     "ref" => $projectRef,
                     "name" => "Just a test project",
                     "slug" => "just-a-test-project",
-                    "forms" => [
-                        [
-                            "ref" => $formRef,
-                            "name" => "Form One",
-                            "slug" => "form-one",
-                            "type" => "hierarchy",
-                            "inputs" => [
-                                [
-                                    "max" => null,
-                                    "min" => null,
-                                    "ref" => $inputRef,
-                                    "type" => "radio",
-                                    "group" => [
-                                    ],
-                                    "jumps" => [
-                                    ],
-                                    "regex" => null,
-                                    "branch" => [
-                                    ],
-                                    "verify" => false,
-                                    "default" => "",
-                                    "is_title" => false,
-                                    "question" => "Sex",
-                                    "uniqueness" => "none",
-                                    "is_required" => false,
-                                    "datetime_format" => null,
-                                    "possible_answers" => [
-                                        [
-                                            "answer" => "Male",
-                                            "answer_ref" => uniqid()
-                                        ],
-                                        [
-                                            "answer" => "Female",
-                                            "answer_ref" => uniqid()
-                                        ]
-                                    ],
-                                    "set_to_current_datetime" => false
-                                ]
-                            ]
-                        ]
-                    ],
+                    "forms" => $forms,
                     "access" => "public",
                     "status" => "active",
                     "category" => "general",

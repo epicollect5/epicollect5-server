@@ -20,12 +20,10 @@ class ProjectDeleteEntriesController extends ProjectControllerBase
 
     public function show()
     {
-
         if (!$this->requestedProjectRole->canDeleteEntries()) {
             $errors = ['ec5_91'];
             return view('errors.gen_error')->withErrors(['errors' => $errors]);
         }
-
         $vars = $this->defaultProjectDetailsParams('', '', true);
 
         return view('project.project_delete_entries', $vars);
@@ -35,13 +33,13 @@ class ProjectDeleteEntriesController extends ProjectControllerBase
      * @param Request $request
      * @param DeleteRepository $deleteRepository
      * @param StatsRepository $statsRepository
-     * @return $this|\Illuminate\Http\RedirectResponse
      */
     public function delete(
-        Request $request,
+        Request          $request,
         DeleteRepository $deleteRepository,
-        StatsRepository $statsRepository
-    ) {
+        StatsRepository  $statsRepository
+    )
+    {
 
         $projectName = $request->input('project-name');
 
@@ -93,8 +91,8 @@ class ProjectDeleteEntriesController extends ProjectControllerBase
 
     public function softDelete(
         Request $request
-    ) {
-
+    )
+    {
         $projectName = $request->input('project-name');
 
         //no project name passed?
