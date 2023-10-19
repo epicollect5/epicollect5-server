@@ -12,6 +12,10 @@ return [
         'small_desc' => [
             'min' => 15,
             'max' => 100
+        ],
+        'description' => [
+            'min' => 3,
+            'max' => 3000
         ]
     ],
     'formlimits' => ['forms' => 5, 'inputs' => 300, 'titles' => 3],

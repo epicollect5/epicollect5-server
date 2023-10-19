@@ -3,12 +3,13 @@
 namespace ec5\Http\Validation\Project;
 
 use ec5\Http\Validation\ValidationBase;
+use Config;
 
 class RuleProjectDefinitionDetails extends ValidationBase
 {
     protected $rules = [
         'description' => 'ec5_no_html|between:3,3000',
-        'small_description' => 'required|ec5_no_html|between:3,100',
+        'small_description' => 'required|ec5_no_html|between:15,100',
         'logo_url' => 'mimes:jpeg,jpg,gif,png|max:5000',
         'logo_width' => 'integer|max:4096',
         'logo_height' => 'integer|max:4096'
@@ -19,9 +20,29 @@ class RuleProjectDefinitionDetails extends ValidationBase
         'required' => 'ec5_21',
         'max' => 'ec5_206',
         'mimes' => 'ec5_81',
-        'between' => 'ec5_28',
+        'description.between' => 'ec5_393',
+        'small_description.between' => 'ec5_394',
         'ec5_no_html' => 'ec5_220'
     ];
+
+    public function __construct()
+    {
+        //set up error messages
+        $projectSmallDescMinLength = Config::get('ec5Limits.project.small_desc.min');
+        $projectSmallDescMaxLength = Config::get('ec5Limits.project.small_desc.max');
+        $projectDescriptionMinLength = Config::get('ec5Limits.project.description.min');
+        $projectDescriptionMaxLength = Config::get('ec5Limits.project.description.max');
+
+        $this->messages['description.between'] = trans('status_codes.ec5_393', [
+            'min' => $projectDescriptionMinLength,
+            'max' => $projectDescriptionMaxLength
+        ]);
+
+        $this->messages['small_description.between'] = trans('status_codes.ec5_394', [
+            'min' => $projectSmallDescMinLength,
+            'max' => $projectSmallDescMaxLength
+        ]);
+    }
 
     /**
      *
