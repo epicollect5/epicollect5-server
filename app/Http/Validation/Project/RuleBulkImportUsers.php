@@ -22,7 +22,7 @@ class RuleBulkImportUsers extends ValidationBase
         $this->messages['emails.min'] = 'ec5_347';
         $this->messages['emails.max'] = trans('status_codes.ec5_346', ['limit' => $emailsLimitMax]);
         $this->messages['in'] = 'ec5_98';
-        //role must be know by the system
+        //role must be known by the system
         $this->rules['role'] = 'required|in:' . implode($roles, ',');
     }
 
