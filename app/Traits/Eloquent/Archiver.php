@@ -46,7 +46,7 @@ trait Archiver
             //move entries
             Entry::where('project_id', $projectId)->chunk(100, function ($rowsToMove) {
                 foreach ($rowsToMove as $row) {
-                    //todo: checlk the id AUTO_INCREMENT...
+                    //todo: check the id AUTO_INCREMENT...
                     $rowToArchive = $row->replicate();
                     // make into array for mass assign. 
                     $rowToArchive = $rowToArchive->toArray();
