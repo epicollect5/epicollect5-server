@@ -73,15 +73,15 @@ class ArchiveController extends ProjectApiControllerBase
      * @param EntryStats $entryStats
      * @param BranchEntryStats $branchEntryStats
      */
-    public function __construct(Request $request,
-                                ApiRequest $apiRequest,
-                                ApiResponse $apiResponse,
-                                EntryArchive $entryArchive,
+    public function __construct(Request            $request,
+                                ApiRequest         $apiRequest,
+                                ApiResponse        $apiResponse,
+                                EntryArchive       $entryArchive,
                                 BranchEntryArchive $branchEntryArchive,
-                                EntrySearch $entrySearch,
-                                BranchEntrySearch $branchEntrySearch,
-                                EntryStats $entryStats,
-                                BranchEntryStats $branchEntryStats
+                                EntrySearch        $entrySearch,
+                                BranchEntrySearch  $branchEntrySearch,
+                                EntryStats         $entryStats,
+                                BranchEntryStats   $branchEntryStats
     )
     {
 
@@ -159,7 +159,6 @@ class ArchiveController extends ProjectApiControllerBase
 
         $entry = $searchRepository->getEntry($this->requestedProject->getId(), $options)->first();
         if (count($entry) == 0) {
-            //EC5Logger::error('Returning error response', $this->requestedProject, $this->errors);
             return $this->apiResponse->errorResponse(400, ['entry_archive' => ['ec5_239']]);
         }
 

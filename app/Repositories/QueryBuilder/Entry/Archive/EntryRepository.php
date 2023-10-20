@@ -32,10 +32,10 @@ class EntryRepository extends ArchiveBase
      * @param BranchEntryRepository $branchEntryArchive
      * @param BranchEntrySearch $branchEntrySearch
      */
-    public function __construct(EntrySearch $entrySearch,
-                                EntryDelete $entryDelete,
+    public function __construct(EntrySearch        $entrySearch,
+                                EntryDelete        $entryDelete,
                                 BranchEntryArchive $branchEntryArchive,
-                                BranchEntrySearch $branchEntrySearch)
+                                BranchEntrySearch  $branchEntrySearch)
     {
         $this->table = 'entries';
         $this->entrySearch = $entrySearch;
@@ -56,14 +56,13 @@ class EntryRepository extends ArchiveBase
     {
         $this->startTransaction();
 
-        // 1. Gather all entries related to this entry (including the original entry_uuid)
-        // Related entries (descendants)
+        // 1. Gather all child entries related to this entry (including the original entry_uuid)
         $entryUuids = $this->entrySearch->getRelatedEntries($projectId, [$entryUuid], $entryUuid);
 
         // 2. Copy the entries to the archive table
         $this->copy($projectId, $entryUuids);
 
-        // 3. Get the Branch entriy uuids
+        // 3. Get the Branch entry uuids
         $branchEntryUuids = $this->branchEntrySearch->getBranchEntries($projectId, $entryUuids);
 
         // 4. Archive the branch entries
@@ -75,7 +74,9 @@ class EntryRepository extends ArchiveBase
             }
         }
 
-        // 5. Finally delete the main entries
+        //imp:branch entries are remove by FK - ON DELETE CASCADE
+
+        // 5. Finally, delete the main entries
         $this->delete($projectId, $entryUuids);
 
         // Rollback if errors
