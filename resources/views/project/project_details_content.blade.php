@@ -290,11 +290,11 @@
                         </div>
 
                         <div role="tabpanel" class="tab-pane" id="json-view">
-                            <pre style="background:#fff;">{{ $jsonPretty }}</pre>
+                            <pre style="background:#fff;">{{ $projectDefinitionPrettyPrint }}</pre>
                         </div>
 
                         <div role="tabpanel" class="tab-pane" id="jsonextra-view">
-                            <pre style="background:#fff;">{{ $jsonPrettyExtra }}</pre>
+                            <pre style="background:#fff;">{{ $projectExtraPrettyPrint }}</pre>
                         </div>
 
                     </div><!-- end tabcontent -->

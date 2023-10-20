@@ -2,20 +2,14 @@
     <div class="row">
         <div class="col-xs-12 col-sm-12 col-md-6 project-home__stats">
             <i class="fa fa-database fa-2x fa-fw" aria-hidden="true"></i>
-            <br />
+            <br/>
             {{ Common::roundNumber($projectStats->getTotalEntries(), 1) }} Entries
         </div>
         <div class="col-xs-12 col-sm-12 col-md-6 project-home__stats">
             <i class="fa fa-calendar fa-2x fa-fw"></i>
-            <br />
+            <br/>
             Last on:
-
-            @if (!$lastEntryDate)
-                <span> - </span>
-            @else
-                {{ date('j M y', intval($lastEntryDate)) }}
-            @endif
-
+            {{ $mostRecentEntryTimestamp ? date('j M Y', intval($mostRecentEntryTimestamp)) : '-' }}
         </div>
     </div>
 

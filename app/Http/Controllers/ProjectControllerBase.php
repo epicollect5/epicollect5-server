@@ -2,6 +2,7 @@
 
 namespace ec5\Http\Controllers;
 
+use ec5\Models\Eloquent\ProjectStat;
 use ec5\Models\Users\User;
 use Illuminate\Http\Request;
 
@@ -13,7 +14,6 @@ use ec5\Traits\Eloquent\Archiver;
 
 class ProjectControllerBase extends Controller
 {
-
     use Archiver;
 
     /**
@@ -68,84 +68,23 @@ class ProjectControllerBase extends Controller
 
         $smallDescriptionSpecs = config('ec5Limits.project.small_desc.min') . ' to ' . config('ec5Limits.project.small_desc.max') . ' chars';
         $descriptionSpecs = config('ec5Limits.project.description.min') . ' to ' . config('ec5Limits.project.description.max') . ' chars';
+        $projectDefinitionPrettyPrint = json_encode($this->requestedProject->getProjectDefinition()->getData(), JSON_PRETTY_PRINT);
+        $projectExtraPrettyPrint = json_encode($this->requestedProject->getProjectExtra()->getData(), JSON_PRETTY_PRINT);
+        $projectStats = ProjectStat::where('project_id', $this->requestedProject->getId())->first();
 
         return [
             'includeTemplate' => $includeTemplate,
             'requestedProjectRole' => $this->requestedProjectRole,
             'project' => $this->requestedProject,
             'projectStats' => $this->requestedProject->getProjectStats(),
-            'jsonPretty' => $this->getJsonPretty(),
-            'jsonPrettyExtra' => $this->getJsonPrettyExtra(),
+            'projectDefinitionPrettyPrint' => $projectDefinitionPrettyPrint,
+            'projectExtraPrettyPrint' => $projectExtraPrettyPrint,
             'showPanel' => $showPanel,
-            'allForms' => $this->getExtraJsonHelpers(),
-            'lastEntryDate' => $this->getLastEntryDate(),
-            'hasInputs' => count($this->requestedProject->getProjectExtra()->getInputs()) != 0,
+            'mostRecentEntryTimestamp' => $projectStats->getMostRecentEntryTimestamp(),
+            'hasInputs' => count($this->requestedProject->getProjectExtra()->getInputs()) > 0,
             'smallDescriptionSpecs' => $smallDescriptionSpecs,
             'descriptionSpecs' => $descriptionSpecs
         ];
-    }
-
-    /**
-     * return pretty json for blade templates
-     * @return string
-     */
-    protected function getJsonPretty(): string
-    {
-        return json_encode($this->requestedProject->getProjectDefinition()->getData(), JSON_PRETTY_PRINT);
-    }
-
-    /**
-     * return pretty json for blade templates
-     * @return string
-     */
-    protected function getJsonPrettyExtra(): string
-    {
-        return json_encode($this->requestedProject->getProjectExtra()->getData(), JSON_PRETTY_PRINT);
-    }
-
-    /**
-     * Return array of all forms for var in blade template
-     * @return array
-     */
-    protected function getExtraJsonHelpers(): array
-    {
-        return $this->requestedProject->getProjectExtra()->getForms();
-    }
-
-    /**
-     * Return string of last entry date from looping form-counts
-     *
-     * @return string
-     */
-    protected function getLastEntryDate(): string
-    {
-
-        // Set current entry date as 0
-        $currentDate = 0;
-
-        $projectDefinition = $this->requestedProject->getProjectStats()->getData();
-        $formCounts = $projectDefinition['form_counts'];
-
-        if (count($formCounts) == 0) {
-            return '';
-        }
-
-        foreach ($formCounts as $formRef => $values) {
-
-            if (empty($values['last_entry_created'])) {
-                continue;
-            }
-
-            // Parse into unix timestamp
-            $currentFormDate = strtotime($values['last_entry_created']);
-
-            // Check if we have a current form date greater than the current date
-            if ($currentFormDate > $currentDate) {
-                $currentDate = $currentFormDate;
-            }
-        }
-
-        return $currentDate > 0 ? $currentDate : '';
     }
 
     private function refreshProjectStats()
