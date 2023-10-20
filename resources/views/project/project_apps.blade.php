@@ -11,28 +11,8 @@
     </div>
     <div class="panel-body project-apps">
 
-        {{-- Error handling --}}
-        @if(!$errors->isEmpty())
-            @foreach($errors->all() as $error)
-                <div class="var-holder-error" data-message="{{trans('status_codes.'.$error)}}"></div>
-            @endforeach
-            <script>
-                //get all errors
-                var errors = '';
-                $('.var-holder-error').each(function () {
-                    errors += $(this).attr('data-message') + '</br>';
-                });
-                EC5.toast.showError(errors);
-            </script>
-        @endif
-
-        {{-- Success Message --}}
-        @if (session('message'))
-            <div class="var-holder-success" data-message="{{trans('status_codes.'.session('message'))}}"></div>
-            <script>
-                EC5.toast.showSuccess($('.var-holder-success').attr('data-message'));
-            </script>
-        @endif
+        @include('toasts/success')
+        @include('toasts/error')
 
         <div class="project-apps-list">
             @include('project.developers.apps_table')

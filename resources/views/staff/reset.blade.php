@@ -4,22 +4,24 @@
 @section('content')
     <div class="container page-staff-reset">
         <h2 class="page-title">{{trans('site.reset_password')}}</h2>
-        @include('toast-success')
-        @include('toast-error')
+        @include('toasts/success')
+        @include('toasts/error')
 
         <div class="row">
             <div class="col-md-8 col-md-offset-2">
                 <div class="panel panel-default">
 
                     <div class="panel-body">
-                        <form class="form-horizontal" role="form" method="POST" action="{{ route('password-reset-post') }}">
+                        <form class="form-horizontal" role="form" method="POST"
+                              action="{{ route('password-reset-post') }}">
                             {{ csrf_field() }}
 
                             <div class="form-group{{ $errors->has('password') ? ' has-error' : '' }}">
                                 <label for="password" class="col-md-4 control-label">Password</label>
 
                                 <div class="col-md-6">
-                                    <input id="password" type="password" class="form-control password-input" name="password" required minlength="10">
+                                    <input id="password" type="password" class="form-control password-input"
+                                           name="password" required minlength="10">
 
                                     @if (strpos($errors->first('password'), 'ec5_') === false)
                                         <small class="text-danger">{{ $errors->first('password') }}</small>
@@ -38,7 +40,8 @@
                             <div class="form-group">
                                 <label for="password-confirm" class="col-md-4 control-label">Confirm Password</label>
                                 <div class="col-md-6">
-                                    <input id="password-confirm" type="password" class="form-control password-input" name="password_confirmation"
+                                    <input id="password-confirm" type="password" class="form-control password-input"
+                                           name="password_confirmation"
                                            required minlength="10">
 
                                     @if (strpos($errors->first('password-confirm'), 'ec5_') === false)
@@ -47,7 +50,8 @@
                                         <small class="text-danger">{{ trans('status_codes.' . $errors->first('password-confirm'))  }}</small>
                                     @endif
                                     <div class="form-check">
-                                        <input type="checkbox" class="form-check-input show-password-control" id="show-password">
+                                        <input type="checkbox" class="form-check-input show-password-control"
+                                               id="show-password">
                                         <label class="form-check-label" for="show-password">
                                             <small>Show passwords</small>
                                         </label>

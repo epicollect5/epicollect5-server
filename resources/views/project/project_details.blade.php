@@ -23,40 +23,10 @@
             </div>
             <div class="col-xs-12 col-sm-10 col-md-10 col-lg-10 main">
 
-                {{-- Error handling --}}
-                @if (!$errors->isEmpty())
-                    @foreach ($errors->all() as $error)
-                        @if (strpos($error, 'ec5_') === false)
-                            {{--error was already translated--}}
-                            <div class="var-holder-error" data-message="{{$error}}"></div>
-                        @else
-                            {{--translate error--}}
-                            <div class="var-holder-error" data-message="{{trans('status_codes.' . $error)}}"></div>
-                        @endif
-                    @endforeach
-                    <script>
-                        //get all errors
-                        var errors = '';
-                        $('.var-holder-error').each(function () {
-                            errors += $(this).attr('data-message') + '</br>';
-                        });
-                        EC5.toast.showError(errors);
-                    </script>
-                @endif
-
-                {{-- Success Message --}}
-                @if (session('message'))
-                    <div class="var-holder-success" data-message="{{ trans('status_codes.' . session('message')) }}">
-                    </div>
-                    <script>
-                        EC5.toast.showSuccess($('.var-holder-success').attr('data-message'));
-                    </script>
-                @endif
+                @include('toasts/success')
+                @include('toasts/error')
 
                 @if (isset($includeTemplate))
-                    @if ($includeTemplate == 'edit')
-                        @include('project.form_edit')
-                    @endif
                     @if ($includeTemplate == 'view')
                         @include('project.project_details_content')
                     @endif

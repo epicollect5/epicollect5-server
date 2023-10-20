@@ -7,19 +7,8 @@
 
     <div class='container-fluid page-transfer-ownership'>
 
-        {{--Error handling via toast--}}
-        @if(!$errors->isEmpty())
-            @foreach($errors->all() as $error)
-                <div class="var-holder-error" data-message="{{trans('status_codes.'.$error)}}"></div>
-            @endforeach
-            <script>
-                    var errors = '';
-                    $('.var-holder-error').each(function () {
-                        errors += $(this).attr('data-message') + '</br>';
-                    });
-                    EC5.toast.showError(errors);
-            </script>
-        @endif
+        @include('toasts/success')
+        @include('toasts/error')
 
         <div class="row">
             <div href="#" class="col-sm-12 col-md-6 col-lg-6 col-md-offset-3 col-lg-offset-3">
@@ -41,36 +30,36 @@
                                 @if(count($projectManagers) > 0)
                                     @foreach($projectManagers as $manager )
                                         <div class="radio">
-                                        <label>
-                                            <input type="radio" name="manager" value="{{$manager->id}}">
-                                            <span class="transfer-ownership__manager-fullname">
+                                            <label>
+                                                <input type="radio" name="manager" value="{{$manager->id}}">
+                                                <span class="transfer-ownership__manager-fullname">
                                                <strong>
-                                                   @if(!empty($manager->name)){{ $manager->name . ' ' . $manager->last_name }}
+                                                   @if(!empty($manager->name))
+                                                       {{ $manager->name . ' ' . $manager->last_name }}
                                                    @else
                                                        <i>(n/a)</i>
                                                    @endif
                                                </strong>
                                             </span>
-                                            -
-                                            <span class="transfer-ownership__manager-email">
+                                                -
+                                                <span class="transfer-ownership__manager-email">
                                                 <i>
                                                     {{ $manager->email }}
                                                 </i>
                                             </span>
 
-                                        </label>
-                                    </div>
-                                        <hr />
+                                            </label>
+                                        </div>
+                                        <hr/>
                                     @endforeach
                                 @else
                                     <p class="well">No Manager(s) found.
-                                        <br />
+                                        <br/>
                                         Please add a Manager to assign this project.
                                     </p>
 
                                 @endif
                             </div>
-
 
 
                             <p>You,
@@ -103,7 +92,6 @@
             </div>
         </div><!-- end col -->
     </div><!-- end row -->
-
 
 @stop
 

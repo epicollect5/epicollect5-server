@@ -4,11 +4,7 @@
 @section('content')
     <div class='container-fluid page-project-delete'>
         @if (session('message'))
-            {{--trigger toast confirming a project was created successfully--}}
-            <div class="var-holder-success" data-message="{{trans('status_codes.'.session('message'))}}"></div>
-            <script>
-                EC5.toast.showSuccess($('.var-holder-success').attr('data-message'));
-            </script>
+            @include('toasts/success')
         @endif
 
         @include('modals/modal_deletion')

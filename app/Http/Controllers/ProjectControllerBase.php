@@ -66,6 +66,9 @@ class ProjectControllerBase extends Controller
             $this->refreshProjectStats();
         }
 
+        $smallDescriptionSpecs = config('ec5Limits.project.small_desc.min') . ' to ' . config('ec5Limits.project.small_desc.max') . ' chars';
+        $descriptionSpecs = config('ec5Limits.project.description.min') . ' to ' . config('ec5Limits.project.description.max') . ' chars';
+
         return [
             'includeTemplate' => $includeTemplate,
             'requestedProjectRole' => $this->requestedProjectRole,
@@ -76,7 +79,9 @@ class ProjectControllerBase extends Controller
             'showPanel' => $showPanel,
             'allForms' => $this->getExtraJsonHelpers(),
             'lastEntryDate' => $this->getLastEntryDate(),
-            'hasInputs' => count($this->requestedProject->getProjectExtra()->getInputs()) != 0
+            'hasInputs' => count($this->requestedProject->getProjectExtra()->getInputs()) != 0,
+            'smallDescriptionSpecs' => $smallDescriptionSpecs,
+            'descriptionSpecs' => $descriptionSpecs
         ];
     }
 

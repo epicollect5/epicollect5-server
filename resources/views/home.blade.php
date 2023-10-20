@@ -6,8 +6,8 @@
 
     <div class='container-fluid page-home'>
 
-        @include('toast-success')
-        @include('toast-error')
+        @include('toasts/success')
+        @include('toasts/error')
 
         <div class="row">
             <h1 class="page-title">{{ trans('site.home_title') }}
@@ -30,7 +30,7 @@
         <div class="row page-home-intro">
             <div class="col-xs-12 col-sm-12 col-md-4 col-lg-4 col-sm-12 text-center intro-thumbnail">
                 <img src="{{ asset('/images/ec5-intro-create-project.jpg') }}" class="img-responsive"
-                    alt="Create your project and forms on the website">
+                     alt="Create your project and forms on the website">
 
                 <div class="loader"></div>
                 <h4>Create your project and forms</h4>
@@ -38,7 +38,7 @@
             </div>
             <div class="col-xs-12 col-sm-12 col-md-4 col-lg-4 col-sm-12 text-center intro-thumbnail">
                 <img src="{{ asset('/images/ec5-intro-collect-data.jpg') }}" class="img-responsive"
-                    alt="Download project on device and collect data online or offline">
+                     alt="Download project on device and collect data online or offline">
 
                 <div class="loader"></div>
                 <h4>Collect data online or offline</h4>
@@ -46,7 +46,7 @@
             </div>
             <div class="col-xs-12 col-sm-12 col-md-4 col-lg-4 col-sm-12 text-center intro-thumbnail">
                 <img src="{{ asset('/images/ec5-intro-view-data.jpg') }}" class="img-responsive"
-                    alt="View, analyse and export your data (json, csv)">
+                     alt="View, analyse and export your data (json, csv)">
 
                 <div class="loader"></div>
                 <h4>View, analyse and export your data</h4>
@@ -72,14 +72,14 @@
                         <div class="panel-body">
                             <a href="{{ url('project/' . $project->slug) }}" class="thumbnail">
                                 <img class="img-responsive img-circle" width="256" height="256"
-                                    src="
+                                     src="
                                                 {{-- If a private project, show lock --}}
                                                      @if ($project->access == Config::get('ec5Strings.project_access.private')) {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
                             @elseif($project->logo_url == '')
                                 {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
                             @else
                                 {{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb') }} @endif"
-                                    alt="{{ $project->name }}">
+                                     alt="{{ $project->name }}">
                                 <div class="loader"></div>
                             </a>
 
@@ -91,7 +91,7 @@
                             <div class="clearfix"></div>
                             <div class="page-home-view-btn">
                                 <a class="btn btn-action pull-right"
-                                    href="{{ url('project/' . $project->slug) }}">{{ trans('site.view') }}</a>
+                                   href="{{ url('project/' . $project->slug) }}">{{ trans('site.view') }}</a>
                             </div>
                         </div>
                     </div>
@@ -130,14 +130,14 @@
                             <div class="panel-body">
                                 <a href="{{ url('project/' . $project->slug) }}" class="thumbnail">
                                     <img class="img-responsive img-circle" width="128" height="128"
-                                        src="
+                                         src="
                                                 {{-- If a private project, show lock --}}
                                                        @if ($project->access == Config::get('ec5Strings.project_access.private')) {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
                                 @elseif($project->logo_url == '')
                                     {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
                                 @else
                                     {{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb') }} @endif"
-                                        alt="{{ $project->name }}">
+                                         alt="{{ $project->name }}">
 
                                     <div class="loader"></div>
                                 </a>
@@ -150,7 +150,7 @@
                                 <div class="clearfix"></div>
                                 <div class="page-home-view-btn">
                                     <a class="btn btn-action pull-right"
-                                        href="{{ url('project/' . $project->slug) }}">{{ trans('site.view') }}</a>
+                                       href="{{ url('project/' . $project->slug) }}">{{ trans('site.view') }}</a>
                                 </div>
                             </div>
                         </div>
@@ -163,7 +163,7 @@
 
         <div class="page-home__server-stats row">
             <h3 class="text-center server-stats__stats-teaser">Thousand of people use <strong
-                    style="color:#673c90">Epicollect5</strong> every day
+                        style="color:#673c90">Epicollect5</strong> every day
                 to collect data
                 all over the
                 world.</h3>
@@ -199,6 +199,5 @@
         <hr>
 
     </div>
-
 
 @stop

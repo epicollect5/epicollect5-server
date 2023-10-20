@@ -5,7 +5,8 @@
 
     <div class='container-fluid page-my-projects'>
 
-        @include('toast-success')
+        @include('toasts/success')
+        @include('toasts/error')
 
         <div class="row">
 
