@@ -1,4 +1,5 @@
-@if (count($apps) == 0) <p class="well">{{ trans('site.no_apps_found')}}</p>
+@if (count($apps) == 0)
+    <p class="well">{{ trans('site.no_apps_found')}}</p>
 @else
     <table class="table table-bordered table-hover apps__table">
         <tr>
@@ -27,7 +28,7 @@
                     <button class="btn btn-danger btn-sm"
                             data-toggle="modal"
                             id="revoke-app"
-                            data-target="#modal__confirm"
+                            data-target="#modal-app-delete"
                             data-client-id="{{$app->id}}"
                             href="#">{{trans('site.revoke_token')}}
                     </button>
@@ -36,7 +37,7 @@
                     <button class="btn btn-danger btn-sm"
                             data-toggle="modal"
                             id="delete-app"
-                            data-target="#modal__confirm"
+                            data-target="#modal-app-delete"
                             data-client-id="{{$app->id}}"
                             href="#">{{trans('site.delete')}}
                     </button>

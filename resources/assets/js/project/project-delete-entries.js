@@ -1,10 +1,10 @@
 $(document).ready(function () {
     //enable only on page-entries-deletion
     if ($('.page-entries-deletion').length > 0) {
-
+        
         var projectName = $('.page-entries-deletion').find('.project-name').text();
         var wrapper = $('.delete-entries');
-        var modal = $('#entriesDeletion');
+        var modal = $('#modal-deletion');
 
         wrapper.submit(function (e) {
             // Don't allow user to submit if the project
@@ -12,7 +12,7 @@ $(document).ready(function () {
             if (projectName.trim() !== $('#project-name').val().trim()) {
                 e.preventDefault();
             }
-            modal.modal({ backdrop: 'static', keyboard: false }, 'show');
+            modal.modal({backdrop: 'static', keyboard: false}, 'show');
         });
 
         wrapper.on('keyup', '#project-name', function (e) {

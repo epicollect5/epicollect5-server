@@ -88,7 +88,7 @@ $(document).ready(function () {
             // Disable create app button
             $('#create-app').prop('disabled', true);
             // Close modal
-            $('#modal__create-app').modal('hide');
+            $('#modal-create-app').modal('hide');
             window.EC5.toast.showSuccess('New App added.');
         });
 
@@ -97,7 +97,7 @@ $(document).ready(function () {
 
     var projectAppList = $('.project-apps-list');
 
-    projectAppList.on('click', '#delete-app', function(e) {
+    projectAppList.on('click', '#delete-app', function (e) {
 
         e.preventDefault();
         // Hide revoke form
@@ -109,7 +109,7 @@ $(document).ready(function () {
 
     });
 
-    projectAppList.on('click', '#revoke-app', function(e) {
+    projectAppList.on('click', '#revoke-app', function (e) {
 
         e.preventDefault();
         // Hide delete form
@@ -140,7 +140,7 @@ $(document).ready(function () {
             // Enable create app button
             $('#create-app').prop('disabled', false);
             // Close modal
-            $('#modal__confirm').modal('hide');
+            $('#modal-app-delete').modal('hide');
             window.EC5.toast.showSuccess('App deleted.');
         });
 
@@ -163,7 +163,7 @@ $(document).ready(function () {
 
         window.EC5.projectApps.post(url, formData, function () {
             // Close modal
-            $('#modal__confirm').modal('hide');
+            $('#modal-app-delete').modal('hide');
             window.EC5.toast.showSuccess('Access Token revoked.');
         });
 

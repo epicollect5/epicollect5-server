@@ -275,6 +275,12 @@ label {
   color: $deep-purple;
 }
 
+#modal-deletion {
+  .modal-body {
+    min-height: 150px;
+  }
+}
+
 .cell {
   position: absolute;
   top: 0;
