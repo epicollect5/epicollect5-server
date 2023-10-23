@@ -12,9 +12,27 @@ $(document).ready(function () {
 
     var appleConnectBtn = pageLogin.find('.btn-connect-apple');
     var deleteAccountBtn = pageLogin.find('.btn-confirm-account-deletion');
+    var deleteAccountCheckboxConfirm = pageLogin.find('.checkbox-confirm-account-deletion');
     var deleteAccountModal = pageLogin.find('#modal__account-deletion');
 
+    deleteAccountModal.on('show.bs.modal', function () {
+        deleteAccountBtn.attr('disabled', true);
+        deleteAccountCheckboxConfirm.prop('checked', false);
+    });
+
+    deleteAccountCheckboxConfirm.on('change', function () {
+        if ($(this).is(':checked')) {
+            deleteAccountBtn.attr('disabled', false);
+        } else {
+            deleteAccountBtn.attr('disabled', true);
+        }
+    });
+
     deleteAccountBtn.on('click', function (e) {
+        if (!deleteAccountCheckboxConfirm.prop('checked')) {
+            return false;
+        }
+
         window.EC5.overlay.fadeIn();
         var url = window.EC5.SITE_URL + '/api/internal/profile/account-deletion-request';
         //send request to endpoint for email account deletion
@@ -68,52 +86,51 @@ $(document).ready(function () {
 
         AppleID.auth.signIn();
 
-        // try {
-        //     window.EC5.overlay.fadeIn();
-        //
-        //     AppleID.auth.signIn().then(function (appleResponse) {
-        //         //check if response is legit (csrf token)
-        //         if(appleResponse.authorization.state === state) {
-        //
-        //             //post data to apple endpoint (x-csrf is included in header)
-        //             $.ajax({
-        //                 url: redirectURI,
-        //                 type: 'POST',
-        //                // contentType: 'application/json',
-        //                 dataType: 'json',
-        //                 data: appleResponse,
-        //                 success: function(ec5Response){
-        //                     //hide any overlay or redirect?
-        //                     if(ec5Response.data.authorized) {
-        //                         window.location.href =   window.EC5.SITE_URL + '/myprojects';
-        //                     } else {
-        //                         window.EC5.toast.showError('User not authorized');
-        //                         window.EC5.overlay.fadeOut();
-        //                     }
-        //                 },
-        //                 error: function(error){
-        //                     window.EC5.overlay.fadeOut();
-        //                     window.EC5.toast.showError(error.errors[0].title);
-        //                 }
-        //             });
-        //         }
-        //         else {
-        //             //state does not match, bail out!
-        //             window.EC5.overlay.fadeOut();
-        //             window.EC5.toast.showError('Invalid state');
-        //         }
-        //     }, function (error) {
-        //         //it gets here when the Apple modal is dismissed, do not show error if not sent
-        //         window.EC5.overlay.fadeOut();
-        //         if(error.error) {
-        //             window.EC5.toast.showError(error.error);
-        //         }
-        //     })
-        // } catch (error) {
-        //     window.EC5.overlay.fadeOut();
-        //     if(error.error) {
-        //         window.EC5.toast.showError(error.error);
-        //     }
-        // }
+        try {
+            window.EC5.overlay.fadeIn();
+
+            AppleID.auth.signIn().then(function (appleResponse) {
+                //check if response is legit (csrf token)
+                if (appleResponse.authorization.state === state) {
+
+                    //post data to apple endpoint (x-csrf is included in header)
+                    $.ajax({
+                        url: redirectURI,
+                        type: 'POST',
+                        // contentType: 'application/json',
+                        dataType: 'json',
+                        data: appleResponse,
+                        success: function (ec5Response) {
+                            //hide any overlay or redirect?
+                            if (ec5Response.data.authorized) {
+                                window.location.href = window.EC5.SITE_URL + '/myprojects';
+                            } else {
+                                window.EC5.toast.showError('User not authorized');
+                                window.EC5.overlay.fadeOut();
+                            }
+                        },
+                        error: function (error) {
+                            window.EC5.overlay.fadeOut();
+                            window.EC5.toast.showError(error.errors[0].title);
+                        }
+                    });
+                } else {
+                    //state does not match, bail out!
+                    window.EC5.overlay.fadeOut();
+                    window.EC5.toast.showError('Invalid state');
+                }
+            }, function (error) {
+                //it gets here when the Apple modal is dismissed, do not show error if not sent
+                window.EC5.overlay.fadeOut();
+                if (error.error) {
+                    window.EC5.toast.showError(error.error);
+                }
+            })
+        } catch (error) {
+            window.EC5.overlay.fadeOut();
+            if (error.error) {
+                window.EC5.toast.showError(error.error);
+            }
+        }
     });
 });
