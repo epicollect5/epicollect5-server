@@ -14,7 +14,9 @@ use ec5\Models\Eloquent\ProjectArchive;
 use ec5\Models\Eloquent\ProjectRole;
 use ec5\Models\Users\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class AccountDeletionInternalTest extends TestCase
@@ -40,7 +42,7 @@ class AccountDeletionInternalTest extends TestCase
 
         //account deletion request    
         Mail::fake();
-        $this->actingAs($user, SELF::DRIVER)
+        $this->actingAs($user, self::DRIVER)
             ->json('POST', '/api/internal/profile/account-deletion-request', [])
             ->assertStatus(200)
             ->assertExactJson([
@@ -82,7 +84,7 @@ class AccountDeletionInternalTest extends TestCase
 
         //account deletion    
         Mail::fake();
-        $this->actingAs($user, SELF::DRIVER)
+        $this->actingAs($user, self::DRIVER)
             ->json('POST', '/api/internal/profile/account-deletion-request', [])
             ->assertStatus(200)
             ->assertExactJson([
@@ -140,12 +142,31 @@ class AccountDeletionInternalTest extends TestCase
                 'user_id' => $project->created_by,
                 'owner_entry_id' => $entry->id //FK!
             ]);
+            //add a fake file per each entry (per each media type)
+            //photo
+            Storage::disk('entry_original')->put($project->ref . '/' . $entry->uuid . '.jpg', '');
+            //audio
+            Storage::disk('audio')->put($project->ref . '/' . $entry->uuid . '.mp4', '');
+            //video
+            Storage::disk('video')->put($project->ref . '/' . $entry->uuid . '.mp4', '');
         }
 
+        //assert files exist
+        $photos = Storage::disk('entry_original')->files($project->ref);
+        $this->assertGreaterThan(0, count($photos));
+        $this->assertCount($numOfEntries, $photos);
+
+        $audios = Storage::disk('audio')->files($project->ref);
+        $this->assertGreaterThan(0, count($audios));
+        $this->assertCount($numOfEntries, $audios);
+
+        $videos = Storage::disk('video')->files($project->ref);
+        $this->assertGreaterThan(0, count($videos));
+        $this->assertCount($numOfEntries, $videos);
 
         //4 delete user account
         Mail::fake();
-        $this->actingAs($user, SELF::DRIVER)
+        $this->actingAs($user, self::DRIVER)
             ->json('POST', '/api/internal/profile/account-deletion-request', [])
             ->assertStatus(200)
             ->assertExactJson([
@@ -160,9 +181,23 @@ class AccountDeletionInternalTest extends TestCase
         //assert project was archived
         $this->assertEquals(0, Project::where('id', $project->id)->count());
         $this->assertEquals(1, ProjectArchive::where('id', $project->id)->count());
-        //assert entries & branch entriesare not touched
+        //assert entries & branch entries are NOT touched
         $this->assertEquals($numOfEntries, Entry::where('project_id', $project->id)->count());
         $this->assertEquals($numOfBranchEntries * $numOfEntries, BranchEntry::where('project_id', $project->id)->count());
+
+        //assert media are NOT touched
+        $photos = Storage::disk('entry_original')->files($project->ref);
+        $this->assertGreaterThan(0, count($photos));
+        $this->assertCount($numOfEntries, $photos);
+
+        $audios = Storage::disk('audio')->files($project->ref);
+        $this->assertGreaterThan(0, count($audios));
+        $this->assertCount($numOfEntries, $audios);
+
+        $videos = Storage::disk('video')->files($project->ref);
+        $this->assertGreaterThan(0, count($videos));
+        $this->assertCount($numOfEntries, $videos);
+
         //assert roles are dropped
         $this->assertEquals(0, ProjectRole::where('project_id', $project->id)->count());
         $this->assertEquals(0, ProjectRole::where('user_id', $user->id)->count());
@@ -171,6 +206,11 @@ class AccountDeletionInternalTest extends TestCase
         Mail::assertSent(UserAccountDeletionConfirmation::class, function ($mail) use ($user) {
             return $mail->hasTo($user->email);
         });
+
+        //delete fake files
+        Storage::disk('entry_original')->deleteDirectory($project->ref);
+        Storage::disk('audio')->deleteDirectory($project->ref);
+        Storage::disk('video')->deleteDirectory($project->ref);
     }
 
     public function test_account_deletion_performed_with_role_manager()
@@ -215,11 +255,32 @@ class AccountDeletionInternalTest extends TestCase
                 'user_id' => $project->created_by,
                 'owner_entry_id' => $entry->id //FK!
             ]);
+
+            //add a fake file per each entry (per each media type)
+            //photo
+            Storage::disk('entry_original')->put($project->ref . '/' . $entry->uuid . '.jpg', '');
+            //audio
+            Storage::disk('audio')->put($project->ref . '/' . $entry->uuid . '.mp4', '');
+            //video
+            Storage::disk('video')->put($project->ref . '/' . $entry->uuid . '.mp4', '');
         }
+
+        //assert files exist
+        $photos = Storage::disk('entry_original')->files($project->ref);
+        $this->assertGreaterThan(0, count($photos));
+        $this->assertCount($numOfEntries, $photos);
+
+        $audios = Storage::disk('audio')->files($project->ref);
+        $this->assertGreaterThan(0, count($audios));
+        $this->assertCount($numOfEntries, $audios);
+
+        $videos = Storage::disk('video')->files($project->ref);
+        $this->assertGreaterThan(0, count($videos));
+        $this->assertCount($numOfEntries, $videos);
 
         //4 delete user account
         Mail::fake();
-        $this->actingAs($user, SELF::DRIVER)
+        $this->actingAs($user, self::DRIVER)
             ->json('POST', '/api/internal/profile/account-deletion-request', [])
             ->assertStatus(200)
             ->assertExactJson([
@@ -240,6 +301,19 @@ class AccountDeletionInternalTest extends TestCase
         $this->assertEquals($numOfEntries * $numOfBranchEntries, BranchEntry::where('project_id', $project->id)->count());
         $this->assertEquals(0, BranchEntryArchive::where('project_id', $project->id)->count());
 
+        //assert media are NOT touched
+        $photos = Storage::disk('entry_original')->files($project->ref);
+        $this->assertGreaterThan(0, count($photos));
+        $this->assertCount($numOfEntries, $photos);
+
+        $audios = Storage::disk('audio')->files($project->ref);
+        $this->assertGreaterThan(0, count($audios));
+        $this->assertCount($numOfEntries, $audios);
+
+        $videos = Storage::disk('video')->files($project->ref);
+        $this->assertGreaterThan(0, count($videos));
+        $this->assertCount($numOfEntries, $videos);
+
         //assert roles are dropped
         $this->assertEquals(0, ProjectRole::where('project_id', $project->id)->count());
         $this->assertEquals(0, ProjectRole::where('user_id', $user->id)->count());
@@ -248,6 +322,11 @@ class AccountDeletionInternalTest extends TestCase
         Mail::assertSent(UserAccountDeletionConfirmation::class, function ($mail) use ($user) {
             return $mail->hasTo($user->email);
         });
+
+        //delete fake files
+        Storage::disk('entry_original')->deleteDirectory($project->ref);
+        Storage::disk('audio')->deleteDirectory($project->ref);
+        Storage::disk('video')->deleteDirectory($project->ref);
     }
 
     public function test_account_deletion_performed_with_role_curator()
@@ -292,12 +371,33 @@ class AccountDeletionInternalTest extends TestCase
                 'user_id' => $project->created_by,
                 'owner_entry_id' => $entry->id //FK!
             ]);
+
+            //add a fake file per each entry (per each media type)
+            //photo
+            Storage::disk('entry_original')->put($project->ref . '/' . $entry->uuid . '.jpg', '');
+            //audio
+            Storage::disk('audio')->put($project->ref . '/' . $entry->uuid . '.mp4', '');
+            //video
+            Storage::disk('video')->put($project->ref . '/' . $entry->uuid . '.mp4', '');
         }
+
+        //assert files exist
+        $photos = Storage::disk('entry_original')->files($project->ref);
+        $this->assertGreaterThan(0, count($photos));
+        $this->assertCount($numOfEntries, $photos);
+
+        $audios = Storage::disk('audio')->files($project->ref);
+        $this->assertGreaterThan(0, count($audios));
+        $this->assertCount($numOfEntries, $audios);
+
+        $videos = Storage::disk('video')->files($project->ref);
+        $this->assertGreaterThan(0, count($videos));
+        $this->assertCount($numOfEntries, $videos);
 
 
         //4 delete user account
         Mail::fake();
-        $this->actingAs($user, SELF::DRIVER)
+        $this->actingAs($user, self::DRIVER)
             ->json('POST', '/api/internal/profile/account-deletion-request', [])
             ->assertStatus(200)
             ->assertExactJson([
@@ -318,6 +418,19 @@ class AccountDeletionInternalTest extends TestCase
         $this->assertEquals($numOfEntries * $numOfBranchEntries, BranchEntry::where('project_id', $project->id)->count());
         $this->assertEquals(0, BranchEntryArchive::where('project_id', $project->id)->count());
 
+        //assert media files are not touched
+        $photos = Storage::disk('entry_original')->files($project->ref);
+        $this->assertGreaterThan(0, count($photos));
+        $this->assertCount($numOfEntries, $photos);
+
+        $audios = Storage::disk('audio')->files($project->ref);
+        $this->assertGreaterThan(0, count($audios));
+        $this->assertCount($numOfEntries, $audios);
+
+        $videos = Storage::disk('video')->files($project->ref);
+        $this->assertGreaterThan(0, count($videos));
+        $this->assertCount($numOfEntries, $videos);
+
         //assert roles are dropped
         $this->assertEquals(0, ProjectRole::where('project_id', $project->id)->count());
         $this->assertEquals(0, ProjectRole::where('user_id', $user->id)->count());
@@ -326,6 +439,11 @@ class AccountDeletionInternalTest extends TestCase
         Mail::assertSent(UserAccountDeletionConfirmation::class, function ($mail) use ($user) {
             return $mail->hasTo($user->email);
         });
+
+        //delete fake files
+        Storage::disk('entry_original')->deleteDirectory($project->ref);
+        Storage::disk('audio')->deleteDirectory($project->ref);
+        Storage::disk('video')->deleteDirectory($project->ref);
     }
 
     public function test_account_deletion_performed_with_role_collector()
@@ -370,12 +488,32 @@ class AccountDeletionInternalTest extends TestCase
                 'user_id' => $project->created_by,
                 'owner_entry_id' => $entry->id //FK!
             ]);
+
+            //add a fake file per each entry (per each media type)
+            //photo
+            Storage::disk('entry_original')->put($project->ref . '/' . $entry->uuid . '.jpg', '');
+            //audio
+            Storage::disk('audio')->put($project->ref . '/' . $entry->uuid . '.mp4', '');
+            //video
+            Storage::disk('video')->put($project->ref . '/' . $entry->uuid . '.mp4', '');
         }
 
+        //assert files exist
+        $photos = Storage::disk('entry_original')->files($project->ref);
+        $this->assertGreaterThan(0, count($photos));
+        $this->assertCount($numOfEntries, $photos);
+
+        $audios = Storage::disk('audio')->files($project->ref);
+        $this->assertGreaterThan(0, count($audios));
+        $this->assertCount($numOfEntries, $audios);
+
+        $videos = Storage::disk('video')->files($project->ref);
+        $this->assertGreaterThan(0, count($videos));
+        $this->assertCount($numOfEntries, $videos);
 
         //4 delete user account
         Mail::fake();
-        $this->actingAs($user, SELF::DRIVER)
+        $this->actingAs($user, self::DRIVER)
             ->json('POST', '/api/internal/profile/account-deletion-request', [])
             ->assertStatus(200)
             ->assertExactJson([
@@ -396,6 +534,19 @@ class AccountDeletionInternalTest extends TestCase
         $this->assertEquals($numOfEntries * $numOfBranchEntries, BranchEntry::where('project_id', $project->id)->count());
         $this->assertEquals(0, BranchEntryArchive::where('project_id', $project->id)->count());
 
+        //assert media files are not touched
+        $photos = Storage::disk('entry_original')->files($project->ref);
+        $this->assertGreaterThan(0, count($photos));
+        $this->assertCount($numOfEntries, $photos);
+
+        $audios = Storage::disk('audio')->files($project->ref);
+        $this->assertGreaterThan(0, count($audios));
+        $this->assertCount($numOfEntries, $audios);
+
+        $videos = Storage::disk('video')->files($project->ref);
+        $this->assertGreaterThan(0, count($videos));
+        $this->assertCount($numOfEntries, $videos);
+
         //assert roles are dropped
         $this->assertEquals(0, ProjectRole::where('project_id', $project->id)->count());
         $this->assertEquals(0, ProjectRole::where('user_id', $user->id)->count());
@@ -404,6 +555,11 @@ class AccountDeletionInternalTest extends TestCase
         Mail::assertSent(UserAccountDeletionConfirmation::class, function ($mail) use ($user) {
             return $mail->hasTo($user->email);
         });
+
+        //delete fake files
+        Storage::disk('entry_original')->deleteDirectory($project->ref);
+        Storage::disk('audio')->deleteDirectory($project->ref);
+        Storage::disk('video')->deleteDirectory($project->ref);
     }
 
     public function test_account_deletion_performed_with_role_viewer()
@@ -448,12 +604,33 @@ class AccountDeletionInternalTest extends TestCase
                 'user_id' => $project->created_by,
                 'owner_entry_id' => $entry->id //FK!
             ]);
+
+            //add a fake file per each entry (per each media type)
+            //photo
+            Storage::disk('entry_original')->put($project->ref . '/' . $entry->uuid . '.jpg', '');
+            //audio
+            Storage::disk('audio')->put($project->ref . '/' . $entry->uuid . '.mp4', '');
+            //video
+            Storage::disk('video')->put($project->ref . '/' . $entry->uuid . '.mp4', '');
         }
+
+        //assert files exist
+        $photos = Storage::disk('entry_original')->files($project->ref);
+        $this->assertGreaterThan(0, count($photos));
+        $this->assertCount($numOfEntries, $photos);
+
+        $audios = Storage::disk('audio')->files($project->ref);
+        $this->assertGreaterThan(0, count($audios));
+        $this->assertCount($numOfEntries, $audios);
+
+        $videos = Storage::disk('video')->files($project->ref);
+        $this->assertGreaterThan(0, count($videos));
+        $this->assertCount($numOfEntries, $videos);
 
 
         //4 delete user account
         Mail::fake();
-        $this->actingAs($user, SELF::DRIVER)
+        $this->actingAs($user, self::DRIVER)
             ->json('POST', '/api/internal/profile/account-deletion-request', [])
             ->assertStatus(200)
             ->assertExactJson([
@@ -474,6 +651,20 @@ class AccountDeletionInternalTest extends TestCase
         $this->assertEquals($numOfEntries * $numOfBranchEntries, BranchEntry::where('project_id', $project->id)->count());
         $this->assertEquals(0, BranchEntryArchive::where('project_id', $project->id)->count());
 
+
+        //assert media files are not touched
+        $photos = Storage::disk('entry_original')->files($project->ref);
+        $this->assertGreaterThan(0, count($photos));
+        $this->assertCount($numOfEntries, $photos);
+
+        $audios = Storage::disk('audio')->files($project->ref);
+        $this->assertGreaterThan(0, count($audios));
+        $this->assertCount($numOfEntries, $audios);
+
+        $videos = Storage::disk('video')->files($project->ref);
+        $this->assertGreaterThan(0, count($videos));
+        $this->assertCount($numOfEntries, $videos);
+
         //assert roles are dropped
         $this->assertEquals(0, ProjectRole::where('project_id', $project->id)->count());
         $this->assertEquals(0, ProjectRole::where('user_id', $user->id)->count());
@@ -482,6 +673,11 @@ class AccountDeletionInternalTest extends TestCase
         Mail::assertSent(UserAccountDeletionConfirmation::class, function ($mail) use ($user) {
             return $mail->hasTo($user->email);
         });
+
+        //delete fake files
+        Storage::disk('entry_original')->deleteDirectory($project->ref);
+        Storage::disk('audio')->deleteDirectory($project->ref);
+        Storage::disk('video')->deleteDirectory($project->ref);
     }
 
     public function test_account_deletion_performed_with_mixed_roles()
@@ -495,6 +691,7 @@ class AccountDeletionInternalTest extends TestCase
             Config::get('ec5Strings.project_roles.viewer')
         ];
         $projectsWithOtherRoles = [];
+        $projectRefs = [];
         $numOfEntries = mt_rand(1, 10);
         $numOfBranchEntries = mt_rand(1, 10);
 
@@ -505,7 +702,9 @@ class AccountDeletionInternalTest extends TestCase
 
         // 2- create a couple of projects with that user
         $projectRoleCreatorOne = factory(Project::class)->create(['created_by' => $user->id]);
+        $projectRefs[] = $projectRoleCreatorOne->ref;
         $projectRoleCreatorTwo = factory(Project::class)->create(['created_by' => $user->id]);
+        $projectRefs[] = $projectRoleCreatorTwo->ref;
         //assign the user to those projects with the CREATOR role
         factory(ProjectRole::class)->create([
             'user_id' => $user->id,
@@ -522,6 +721,7 @@ class AccountDeletionInternalTest extends TestCase
         //create a fake project per each role and assign it to the user
         foreach ($otherRoles as $otherRole) {
             $project = factory(Project::class)->create(['created_by' => $anotherUser->id]);
+            $projectRefs[] = $project->ref;
             $projectsWithOtherRoles[] = [
                 'id' => $project->id,
                 'role' => $otherRole
@@ -562,6 +762,14 @@ class AccountDeletionInternalTest extends TestCase
                     'user_id' => $anotherUser->id,
                     'owner_entry_id' => $entry->id //FK!
                 ]);
+
+                //add a fake files per each entry (per each media type)
+                //photo
+                Storage::disk('entry_original')->put($project->ref . '/' . $entry->uuid . '.jpg', '');
+                //audio
+                Storage::disk('audio')->put($project->ref . '/' . $entry->uuid . '.mp4', '');
+                //video
+                Storage::disk('video')->put($project->ref . '/' . $entry->uuid . '.mp4', '');
             }
             //secondly, entries by other role (aside from viewer)
             if ($otherRole !== 'viewer') {
@@ -578,6 +786,14 @@ class AccountDeletionInternalTest extends TestCase
                         'user_id' => $user->id,
                         'owner_entry_id' => $entry->id //FK!
                     ]);
+
+                    //add a fake file per each entry (per each media type)
+                    //photo
+                    Storage::disk('entry_original')->put($project->ref . '/' . $entry->uuid . '.jpg', '');
+                    //audio
+                    Storage::disk('audio')->put($project->ref . '/' . $entry->uuid . '.mp4', '');
+                    //video
+                    Storage::disk('video')->put($project->ref . '/' . $entry->uuid . '.mp4', '');
                 }
                 //assert entries exist
                 $this->assertEquals(2 * $numOfEntries, Entry::where('project_id', $project->id)
@@ -587,6 +803,19 @@ class AccountDeletionInternalTest extends TestCase
                 $this->assertEquals(2 * ($numOfEntries * $numOfBranchEntries), BranchEntry::where('project_id', $project->id)
                     ->count());
 
+                //assert files exist (2x, as by creator and by other role)
+                $photos = Storage::disk('entry_original')->files($project->ref);
+                $this->assertGreaterThan(0, count($photos));
+                $this->assertCount(2 * $numOfEntries, $photos);
+
+                $audios = Storage::disk('audio')->files($project->ref);
+                $this->assertGreaterThan(0, count($audios));
+                $this->assertCount(2 * $numOfEntries, $audios);
+
+                $videos = Storage::disk('video')->files($project->ref);
+                $this->assertGreaterThan(0, count($videos));
+                $this->assertCount(2 * $numOfEntries, $videos);
+
                 // Assert entries by other role
                 $this->assertEquals($numOfEntries, Entry::where('project_id', $project->id)
                     ->where('user_id', $user->id)
@@ -595,7 +824,6 @@ class AccountDeletionInternalTest extends TestCase
                 $this->assertEquals($numOfEntries, Entry::where('project_id', $project->id)
                     ->where('user_id', $anotherUser->id)
                     ->count());
-
             } else {
                 //assert entries exist
                 $this->assertEquals($numOfEntries, Entry::where('project_id', $project->id)
@@ -604,6 +832,19 @@ class AccountDeletionInternalTest extends TestCase
                 $this->assertEquals($numOfEntries, Entry::where('project_id', $project->id)
                     ->where('user_id', $anotherUser->id)
                     ->count());
+
+                //assert files exist (1x,  by creator since viewer cannot add entries)
+                $photos = Storage::disk('entry_original')->files($project->ref);
+                $this->assertGreaterThan(0, count($photos));
+                $this->assertCount($numOfEntries, $photos);
+
+                $audios = Storage::disk('audio')->files($project->ref);
+                $this->assertGreaterThan(0, count($audios));
+                $this->assertCount($numOfEntries, $audios);
+
+                $videos = Storage::disk('video')->files($project->ref);
+                $this->assertGreaterThan(0, count($videos));
+                $this->assertCount($numOfEntries, $videos);
             }
         }
 
@@ -628,6 +869,13 @@ class AccountDeletionInternalTest extends TestCase
                 'user_id' => $projectRoleCreatorOne->created_by,
                 'owner_entry_id' => $entry->id //FK!
             ]);
+            //add s fake file per each entry (per each media type)
+            //photo
+            Storage::disk('entry_original')->put($projectRoleCreatorOne->ref . '/' . $entry->uuid . '.jpg', '');
+            //audio
+            Storage::disk('audio')->put($projectRoleCreatorOne->ref . '/' . $entry->uuid . '.mp4', '');
+            //video
+            Storage::disk('video')->put($projectRoleCreatorOne->ref . '/' . $entry->uuid . '.mp4', '');
         }
 
         $entriesToArchiveTwo = factory(Entry::class, $numOfEntries)->create([
@@ -642,6 +890,13 @@ class AccountDeletionInternalTest extends TestCase
                 'user_id' => $projectRoleCreatorTwo->created_by,
                 'owner_entry_id' => $entry->id //FK!
             ]);
+            //add a fake file per each entry (per each media type)
+            //photo
+            Storage::disk('entry_original')->put($projectRoleCreatorTwo->ref . '/' . $entry->uuid . '.jpg', '');
+            //audio
+            Storage::disk('audio')->put($projectRoleCreatorTwo->ref . '/' . $entry->uuid . '.mp4', '');
+            //video
+            Storage::disk('video')->put($projectRoleCreatorTwo->ref . '/' . $entry->uuid . '.mp4', '');
         }
 
         //assert entries are present
@@ -720,5 +975,32 @@ class AccountDeletionInternalTest extends TestCase
         Mail::assertSent(UserAccountDeletionConfirmation::class, function ($mail) use ($user) {
             return $mail->hasTo($user->email);
         });
+
+        //assert files are not touched
+        //imp: first 2 projects and last one have half the entries as they only have entries for the creator role
+        foreach ($projectRefs as $index => $projectRef) {
+
+            $multiplier = ($index > 1 && $index < count($projectRefs) - 1) ? 2 : 1;
+
+            $photos = Storage::disk('entry_original')->files($projectRef);
+            $this->assertGreaterThan(0, count($photos));
+            $this->assertCount($multiplier * $numOfEntries, $photos, 'ref ->' . $projectRef . '  index ' . $index);
+
+            $audios = Storage::disk('audio')->files($projectRef);
+            $this->assertGreaterThan(0, count($audios));
+            $this->assertCount($multiplier * $numOfEntries, $audios);
+
+            $videos = Storage::disk('video')->files($projectRef);
+            $this->assertGreaterThan(0, count($videos));
+            $this->assertCount($multiplier * $numOfEntries, $videos);
+
+        }
+
+        //delete fake files for all the projects
+        foreach ($projectRefs as $projectRef) {
+            Storage::disk('entry_original')->deleteDirectory($projectRef);
+            Storage::disk('audio')->deleteDirectory($projectRef);
+            Storage::disk('video')->deleteDirectory($projectRef);
+        }
     }
 }

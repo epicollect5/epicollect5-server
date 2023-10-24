@@ -100,7 +100,7 @@ class ProjectDeleteControllerTest extends TestCase
 
         // Act: Simulate the execution of the softDelete method
         //$this->withoutMiddleware();
-        $response = $this->actingAs($user, SELF::DRIVER)
+        $response = $this->actingAs($user, self::DRIVER)
             ->post('/myprojects/' . $project->slug . '/delete', [
                 '_token' => csrf_token()
             ]);
@@ -176,7 +176,7 @@ class ProjectDeleteControllerTest extends TestCase
         );
         // Act: Simulate the execution of the softDelete method
         //$this->withoutMiddleware();
-        $response = $this->actingAs($user, SELF::DRIVER)
+        $response = $this->actingAs($user, self::DRIVER)
             ->post('/myprojects/' . $project->slug . '/delete', [
                 '_token' => csrf_token()
             ]);
@@ -250,7 +250,7 @@ class ProjectDeleteControllerTest extends TestCase
         );
         // Act: Simulate the execution of the softDelete method
         //$this->withoutMiddleware();
-        $response = $this->actingAs($user, SELF::DRIVER)
+        $response = $this->actingAs($user, self::DRIVER)
             ->post('/myprojects/' . $project->slug . '/delete', [
                 '_token' => csrf_token()
             ]);
@@ -323,7 +323,7 @@ class ProjectDeleteControllerTest extends TestCase
         );
         // Act: Simulate the execution of the softDelete method
         //$this->withoutMiddleware();
-        $response = $this->actingAs($user, SELF::DRIVER)
+        $response = $this->actingAs($user, self::DRIVER)
             ->post('/myprojects/' . $project->slug . '/delete', [
                 '_token' => csrf_token()
             ]);
@@ -396,7 +396,7 @@ class ProjectDeleteControllerTest extends TestCase
         );
         // Act: Simulate the execution of the softDelete method
         //$this->withoutMiddleware();
-        $response = $this->actingAs($user, SELF::DRIVER)
+        $response = $this->actingAs($user, self::DRIVER)
             ->post('/myprojects/' . $project->slug . '/delete', [
                 '_token' => csrf_token()
             ]);
@@ -465,7 +465,7 @@ class ProjectDeleteControllerTest extends TestCase
         );
         // Act: Simulate the execution of the softDelete method
         //$this->withoutMiddleware();
-        $response = $this->actingAs($user, SELF::DRIVER)
+        $response = $this->actingAs($user, self::DRIVER)
             ->post('/myprojects/' . $project->slug . '/delete', [
                 '_token' => csrf_token()
             ]);

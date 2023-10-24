@@ -51,7 +51,7 @@ class InternalRoutesTest extends TestCase
         // ]);
 
         // //user can access the project
-        // $response = $this->actingAs($user, SELF::DRIVER)
+        // $response = $this->actingAs($user, self::DRIVER)
         //     ->json('GET', 'api/internal/project/' . $project->slug, []);
 
         // dd($user, $project,  $projectRole, $response);
@@ -59,7 +59,7 @@ class InternalRoutesTest extends TestCase
 
         // //access private project
         // //  dd($project->name, $project->slug);
-        // $response = $this->actingAs($user, SELF::DRIVER)
+        // $response = $this->actingAs($user, self::DRIVER)
         //     ->json('GET', 'api/internal/project/' . $project->slug, []);
         // // ->assertStatus(200);
 
@@ -70,7 +70,7 @@ class InternalRoutesTest extends TestCase
         // $anotherUser->state = 'active';
 
         // // //access to private project (not a member) denied
-        // // $this->actingAs($anotherUser, SELF::DRIVER)
+        // // $this->actingAs($anotherUser, self::DRIVER)
         // //     ->json('GET', 'api/internal/project/' . $project->slug, [])
         // //     ->assertStatus(404);
     }

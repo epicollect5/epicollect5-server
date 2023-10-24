@@ -153,7 +153,7 @@ class CreateMethodTest extends TestCase
         $projectName = 'Multiple    Spaces      between   words   ';
         $projectSlug = 'multiple-spaces-between-words';
 
-        $response = $this->actingAs($user, SELF::DRIVER)
+        $response = $this->actingAs($user, self::DRIVER)
             ->post('myprojects/create', [
                 '_token' => csrf_token(),
                 'name' => 'Multiple    Spaces      between   words   ',
@@ -181,7 +181,7 @@ class CreateMethodTest extends TestCase
         $projectName = 'Multiple    Spaces      between   words   ';
         $projectSlug = 'multiple-spaces-between-words';
 
-        $response = $this->actingAs($user, SELF::DRIVER)
+        $response = $this->actingAs($user, self::DRIVER)
             ->post('myprojects/create', [
                 '_token' => csrf_token(),
                 'name' => 'Multiple    Spaces      between   words   ',
@@ -217,7 +217,7 @@ class CreateMethodTest extends TestCase
         $projectName = 'Multiple    Spaces      between   words   ';
         $projectSlug = 'multiple-spaces-between-words';
 
-        $response = $this->actingAs($user, SELF::DRIVER)
+        $response = $this->actingAs($user, self::DRIVER)
             ->post('myprojects/create', [
                 '_token' => csrf_token(),
                 'name' => 'Multiple    Spaces      between   words   ',

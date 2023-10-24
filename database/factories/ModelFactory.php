@@ -109,7 +109,7 @@ $factory->define(LegacyProject::class, function (Faker\Generator $faker) {
     return [
         'name' => $name,
         'slug' => Str::slug($name),
-        'ref' => str_replace('-', '', Uuid::generate(4)),
+        'ref' => \ec5\Libraries\Utilities\Generators::projectRef(),
         'description' => $faker->sentence,
         'small_description' => $faker->text($smallDescMin) . $faker->text($smallDescMax - $smallDescMin),
         'logo_url' => '',
