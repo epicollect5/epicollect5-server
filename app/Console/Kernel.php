@@ -4,6 +4,7 @@ namespace ec5\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use Illuminate\Support\Facades\App;
 
 class Kernel extends ConsoleKernel
 {
@@ -21,18 +22,23 @@ class Kernel extends ConsoleKernel
     /**
      * Define the application's command schedule.
      *
-     * @param  \Illuminate\Console\Scheduling\Schedule $schedule
+     * @param \Illuminate\Console\Scheduling\Schedule $schedule
      * @return void
      */
     protected function schedule(Schedule $schedule)
     {
-        //grab system stats for the current day
-        $schedule->command('system-stats')
-            ->everyMinute()
-            //->dailyAt('01:00')
-            //->timezone('Europe/London')
-            ->withoutOverlapping();
-
+        if (App::environment() === 'production') {
+            //grab system stats for the current day
+            $schedule->command('system-stats')
+                ->dailyAt('01:00')
+                ->timezone('Europe/London')
+                ->withoutOverlapping();
+        } else {
+            //grab system stats every minute locally (for debugging)
+            $schedule->command('system-stats')
+                ->everyMinute()
+                ->withoutOverlapping();
+        }
         // $schedule->command('check-database')->everyMinute();
     }
 }
