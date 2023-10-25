@@ -6,7 +6,6 @@ use ec5\Http\Controllers\ProjectControllerBase;
 use ec5\Repositories\QueryBuilder\Stats\Entry\StatsRepository;
 use Illuminate\Http\Request;
 use ec5\Repositories\QueryBuilder\Project\DeleteRepository as DeleteProject;
-use ec5\Repositories\QueryBuilder\Project\SearchRepository as SearchProject;
 use Illuminate\Support\Facades\DB;
 use ec5\Models\Eloquent\Entry;
 use ec5\Models\Eloquent\ProjectFeatured;
@@ -33,14 +32,14 @@ class ProjectDeleteController extends ProjectControllerBase
     }
 
     //imp: this is real project deletion, not used anymore
-    public function delete(DeleteProject $deleteProject, SearchProject $searchProject)
+    public function delete(DeleteProject $deleteProject)
     {
         if (!$this->requestedProjectRole->canDeleteProject()) {
             return view('errors.gen_error')->withErrors(['errors' => ['ec5_91']]);
         }
 
         // Check if this project is featured, cannot be deleted
-        if ($searchProject->isFeatured($this->requestedProject->getId())) {
+        if (ProjectFeatured::where('project_id', $this->requestedProject->getId())->exists()) {
             return redirect('myprojects/' . $this->requestedProject->slug)->withErrors(['ec5_221']);
         }
         // Attempt to delete the project and all data

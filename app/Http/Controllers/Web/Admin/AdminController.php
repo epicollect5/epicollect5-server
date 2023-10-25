@@ -3,11 +3,11 @@
 namespace ec5\Http\Controllers\Web\Admin;
 
 use ec5\Repositories\Eloquent\User\UserRepository;
-use ec5\Repositories\QueryBuilder\Project\SearchRepository as ProjectSearch;
 use ec5\Repositories\QueryBuilder\ProjectRole\SearchRepository as ProjectRoleSearch;
 use ec5\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use ec5\Models\Users\User;
+use ec5\Models\Eloquent\Project;
 use Config;
 
 class AdminController extends Controller
@@ -21,19 +21,10 @@ class AdminController extends Controller
     |
     */
 
-    /**
-     * @var UserRepository
-     */
     protected $userRepository;
 
-    /**
-     * @var ProjectSearch
-     */
-    protected $projectSearch;
+    protected $projectModel;
 
-    /**
-     * @var ProjectRoleSearch
-     */
     protected $projectRoleSearch;
 
     /**
@@ -41,15 +32,15 @@ class AdminController extends Controller
      * Restricted to admin and superadmin users
      *
      * @param UserRepository $userRepository
-     * @param ProjectSearch $projectSearch
      */
     public function __construct(
-        UserRepository $userRepository,
-        ProjectSearch $projectSearch,
+        UserRepository    $userRepository,
+        Project           $projectModel,
         ProjectRoleSearch $projectRoleSearch
-    ) {
+    )
+    {
         $this->userRepository = $userRepository;
-        $this->projectSearch = $projectSearch;
+        $this->projectModel = $projectModel;
         $this->projectRoleSearch = $projectRoleSearch;
     }
 
@@ -135,7 +126,7 @@ class AdminController extends Controller
         $perPage = Config::get('ec5Limits.admin_projects_per_page');
 
         //get projects paginated
-        $projects = $this->projectSearch->adminProjects($perPage, $options);
+        $projects = $this->projectModel->admin($perPage, $options);
 
         // Append the creator user's User object and current user's ProjectRole object
         foreach ($projects as $project) {
@@ -159,7 +150,7 @@ class AdminController extends Controller
         $perPage = Config::get('ec5Limits.admin_projects_per_page');
 
         //get projects paginated
-        $projects = $this->projectSearch->adminProjects($perPage, $options);
+        $projects = $this->projectModel->admin($perPage, $options);
 
         // Append the creator user's User object and current user's ProjectRole object
         foreach ($projects as $project) {
