@@ -2,10 +2,10 @@
 
 namespace ec5\Console\Commands;
 
+use ec5\Models\Eloquent\ProjectsTotals;
 use Illuminate\Console\Command;
 
 use ec5\Models\Eloquent\User;
-use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\Entry;
 use ec5\Models\Eloquent\BranchEntry;
 use ec5\Models\Eloquent\SystemStats as SystemStatsModel;
@@ -35,7 +35,7 @@ class SystemStatsCommand extends Command
     {
         $systemStatsModel = new SystemStatsModel();
         $user = new User();
-        $project = new Project();
+        $project = new ProjectsTotals();
         $entry = new Entry();
         $branchEntry = new BranchEntry();
 
