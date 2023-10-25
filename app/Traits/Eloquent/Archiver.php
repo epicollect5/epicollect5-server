@@ -8,34 +8,23 @@ use ec5\Models\Eloquent\Entry;
 use ec5\Models\Eloquent\EntryArchive;
 use ec5\Models\Eloquent\BranchEntry;
 use ec5\Models\Eloquent\BranchEntryArchive;
+use Illuminate\Support\Facades\Config;
 
 trait Archiver
 {
     public function archiveProject($projectId, $projectSlug): bool
     {
         try {
-            //cloning project row (for potential restore, safety net)
             $project = Project::where('id', $projectId)
                 ->where('slug', $projectSlug)
                 ->first();
-            // replicate (duplicate) the data
-            $projectArchive = $project->replicate();
-            $projectArchive->id = $projectId;
-            $projectArchive->created_at = $project->created_at;
-            $projectArchive->updated_at = $project->updated_at;
-            // make into array for mass assign. 
-            $projectArchive = $projectArchive->toArray();
-            //create copy to projects_archive table
-            ProjectArchive::create($projectArchive);
 
-            //delete original row 
-            //(media files are not touched)
-            // they could be removed at a later stage by a background script
-            $project->delete();
-
+            $project->status = Config::get('ec5Strings.project_status.archived');
+            // Save the model to persist the changes
+            $project->save();
             return true;
         } catch (\Exception $e) {
-            \Log::error('Error project deletion', ['exception' => $e->getMessage()]);
+            \Log::error('Error project archive', ['exception' => $e->getMessage()]);
             return false;
         }
     }

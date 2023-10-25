@@ -25,7 +25,8 @@ return [
     'project_status' => [
         'active' => 'active',
         'trashed' => 'trashed',
-        'locked' => 'locked'
+        'locked' => 'locked',
+        'archived' => 'archived'
     ],
     'project_access' => [
         'private' => 'private',

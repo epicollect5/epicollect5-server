@@ -5,7 +5,7 @@ return [
     'projects_access' => ['private', 'public'],
     'projects_visibility' => ['listed', 'hidden'],
     'projects_status' => ['trashed', 'locked'],
-    'projects_status_all' => ['active', 'trashed', 'trash', 'restore', 'delete', 'locked', 'lock', 'unlock'],
+    'projects_status_all' => ['active', 'trashed', 'trash', 'restore', 'delete', 'locked', 'lock', 'unlock', 'archived'],
     'project_roles' => [
         'creator',
         'manager',
@@ -193,7 +193,7 @@ return [
         'searchmultiple',
         'group'//not directly but its group inputs
     ],
-    'can_bulk_upload' =>[
+    'can_bulk_upload' => [
         'nobody',
         'members',
         'everybody'
