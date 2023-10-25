@@ -96,8 +96,6 @@ class ProjectDeleteControllerTest extends TestCase
             ['project_id' => $project->id]
         );
 
-        //:log user in
-
         // Act: Simulate the execution of the softDelete method
         //$this->withoutMiddleware();
         $response = $this->actingAs($user, self::DRIVER)
@@ -105,21 +103,32 @@ class ProjectDeleteControllerTest extends TestCase
                 '_token' => csrf_token()
             ]);
 
-
         //Check if the redirect is successful
         $response->assertRedirect('/myprojects');
-        //Check if the project is deleted
-        $this->assertDatabaseMissing('projects', ['id' => $project->id]);
         //Check if the project is archived
-        $this->assertDatabaseHas('projects_archive', ['id' => $project->id]);
+        $this->assertEquals(1, Project::where('id', $project->id)
+            ->where('status', 'archived')
+            ->count());
+
+        $this->assertEquals(0, Project::where('id', $project->id)
+            ->where('status', '<>', 'archived')
+            ->count());
 
         //assert entries & branch entries are NOT touched
         $this->assertEquals($numOfEntries, Entry::where('project_id', $project->id)->count());
         $this->assertEquals($numOfBranchEntries * $numOfEntries, BranchEntry::where('project_id', $project->id)->count());
-        //assert roles are dropped
-        $this->assertEquals(0, ProjectRole::where('project_id', $project->id)->count());
+
+        //assert roles are NOT dropped
+        $this->assertEquals(1, ProjectRole::where('project_id', $project->id)->count());
         // You can also check for messages in the session
         $response->assertSessionHas('message', 'ec5_114');
+
+        //create a new project, should get a different ID
+        $newProject = factory(Project::class)->create(['created_by' => $user->id]);
+        self::assertNotEquals($newProject->id, $project->id);
+        //check new project has zero entries
+        self::assertEquals(0, Entry::where('project_id', $newProject->id)->count());
+
     }
 
     public function test_soft_delete_missing_permission_as_manager()

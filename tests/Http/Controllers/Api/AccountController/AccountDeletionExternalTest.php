@@ -11,7 +11,6 @@ use ec5\Models\Eloquent\BranchEntryArchive;
 use ec5\Models\Eloquent\Entry;
 use ec5\Models\Eloquent\EntryArchive;
 use ec5\Models\Eloquent\Project;
-use ec5\Models\Eloquent\ProjectArchive;
 use ec5\Models\Eloquent\ProjectRole;
 use ec5\Models\Users\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -151,8 +150,9 @@ class AccountDeletionExternalTest extends TestCase
         //assert user was removed
         $this->assertEquals(0, User::where('email', $user->email)->count());
         //assert project WAS archived
-        $this->assertEquals(0, Project::where('id', $project->id)->count());
-        $this->assertEquals(1, ProjectArchive::where('id', $project->id)->count());
+        $this->assertEquals(1, Project::where('id', $project->id)
+            ->where('status', 'archived')
+            ->count());
         //assert entries & branch entries are NOT touched
         $this->assertEquals($numOfEntries, Entry::where('project_id', $project->id)->count());
         $this->assertEquals($numOfBranchEntries * $numOfEntries, BranchEntry::where('project_id', $project->id)->count());
@@ -270,8 +270,13 @@ class AccountDeletionExternalTest extends TestCase
         //assert user was removed
         $this->assertEquals(0, User::where('email', $user->email)->count());
         //assert project was NOT archived
-        $this->assertEquals(1, Project::where('id', $project->id)->count());
-        $this->assertEquals(0, ProjectArchive::where('id', $project->id)->count());
+        $this->assertEquals(0, Project::where('id', $project->id)
+            ->where(('status'), 'archived')
+            ->count());
+        $this->assertEquals(1, Project::where('id', $project->id)
+            ->where(('status'), '<>', 'archived')
+            ->count());
+
         //assert entries & branch entries were NOT archived
         $this->assertEquals($numOfEntries, Entry::where('project_id', $project->id)->count());
         $this->assertEquals(0, EntryArchive::where('project_id', $project->id)->count());
@@ -391,8 +396,12 @@ class AccountDeletionExternalTest extends TestCase
         //assert user was removed
         $this->assertEquals(0, User::where('email', $user->email)->count());
         //assert project was NOT archived
-        $this->assertEquals(1, Project::where('id', $project->id)->count());
-        $this->assertEquals(0, ProjectArchive::where('id', $project->id)->count());
+        $this->assertEquals(1, Project::where('id', $project->id)
+            ->where('status', '<>', 'archived')
+            ->count());
+        $this->assertEquals(0, Project::where('id', $project->id)
+            ->where('status', 'archived')
+            ->count());
         //assert entries & branch entries were NOT archived
         $this->assertEquals($numOfEntries, Entry::where('project_id', $project->id)->count());
         $this->assertEquals(0, EntryArchive::where('project_id', $project->id)->count());
@@ -512,8 +521,12 @@ class AccountDeletionExternalTest extends TestCase
         //assert user was removed
         $this->assertEquals(0, User::where('email', $user->email)->count());
         //assert project was NOT archived
-        $this->assertEquals(1, Project::where('id', $project->id)->count());
-        $this->assertEquals(0, ProjectArchive::where('id', $project->id)->count());
+        $this->assertEquals(1, Project::where('id', $project->id)
+            ->where('status', '<>', 'archived')
+            ->count());
+        $this->assertEquals(0, Project::where('id', $project->id)
+            ->where('status', 'archived')
+            ->count());
         //assert entries & branch entries were NOT archived
         $this->assertEquals($numOfEntries, Entry::where('project_id', $project->id)->count());
         $this->assertEquals(0, EntryArchive::where('project_id', $project->id)->count());
@@ -633,8 +646,12 @@ class AccountDeletionExternalTest extends TestCase
         //assert user was removed
         $this->assertEquals(0, User::where('email', $user->email)->count());
         //assert project was NOT archived
-        $this->assertEquals(1, Project::where('id', $project->id)->count());
-        $this->assertEquals(0, ProjectArchive::where('id', $project->id)->count());
+        $this->assertEquals(1, Project::where('id', $project->id)
+            ->where('status', '<>', 'archived')
+            ->count());
+        $this->assertEquals(0, Project::where('id', $project->id)
+            ->where('status', 'archived')
+            ->count());
         //assert entries & branch entries were NOT archived
         $this->assertEquals($numOfEntries, Entry::where('project_id', $project->id)->count());
         $this->assertEquals(0, EntryArchive::where('project_id', $project->id)->count());
@@ -974,10 +991,18 @@ class AccountDeletionExternalTest extends TestCase
         $this->assertEquals(0, User::where('id', $user->id)->count());
 
         //assert projects with CREATOR role were archived
-        $this->assertEquals(0, Project::where('id', $projectRoleCreatorOne->id)->count());
-        $this->assertEquals(1, ProjectArchive::where('id', $projectRoleCreatorOne->id)->count());
-        $this->assertEquals(0, Project::where('id', $projectRoleCreatorTwo->id)->count());
-        $this->assertEquals(1, ProjectArchive::where('id', $projectRoleCreatorTwo->id)->count());
+        $this->assertEquals(0, Project::where('id', $projectRoleCreatorOne->id)
+            ->where('status', '<>', 'archived')
+            ->count());
+        $this->assertEquals(1, Project::where('id', $projectRoleCreatorOne->id)
+            ->where('status', 'archived')
+            ->count());
+        $this->assertEquals(0, Project::where('id', $projectRoleCreatorTwo->id)
+            ->where('status', '<>', 'archived')
+            ->count());
+        $this->assertEquals(1, Project::where('id', $projectRoleCreatorTwo->id)
+            ->where('status', 'archived')
+            ->count());
 
         //assert entries by CREATOR are not touched, we just archive the projects created by the user when its account is deleted
         $this->assertEquals($numOfEntries, Entry::where('project_id', $projectRoleCreatorOne->id)->count());
@@ -993,8 +1018,12 @@ class AccountDeletionExternalTest extends TestCase
             //assert projects with other roles are NOT archived
             $projectId = $projectWithOtherRole['id'];
             $otherRole = $projectWithOtherRole['role'];
-            $this->assertEquals(1, Project::where('id', $projectId)->count());
-            $this->assertEquals(0, ProjectArchive::where('id', $projectId)->count());
+            $this->assertEquals(1, Project::where('id', $projectId)
+                ->where('status', '<>', 'archived')
+                ->count());
+            $this->assertEquals(0, Project::where('id', $projectId)
+                ->where('status', 'archived')
+                ->count());
 
             //assert entries by other roles are not touched, we just anonymize entries
             if ($otherRole !== 'viewer') {

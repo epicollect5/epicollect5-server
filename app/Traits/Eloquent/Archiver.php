@@ -3,7 +3,6 @@
 namespace ec5\Traits\Eloquent;
 
 use ec5\Models\Eloquent\Project;
-use ec5\Models\Eloquent\ProjectArchive;
 use ec5\Models\Eloquent\Entry;
 use ec5\Models\Eloquent\EntryArchive;
 use ec5\Models\Eloquent\BranchEntry;

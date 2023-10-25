@@ -60,7 +60,7 @@ class ProjectDeleteController extends ProjectControllerBase
     }
 
     /*
-    Soft delete a project by moving its row to an archive table.
+    Soft delete a project by setting its status to archived
     Entries and branch entries are not touched.
     Media files for the project are not touched, they can be removed at a later stage
     since deleting lots of rows and files is an expensive operation

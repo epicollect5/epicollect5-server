@@ -5,7 +5,6 @@ namespace Tests\Traits\Eloquent;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 use ec5\Models\Eloquent\Project;
-use ec5\Models\Eloquent\ProjectArchive;
 use ec5\Models\Eloquent\User;
 use Faker\Factory as Faker;
 
@@ -38,9 +37,10 @@ class ArchiveProjectTest extends TestCase
             ]);
             // Assert that the function returned true
             $this->assertTrue($result);
-            //assert project has been moved
-            $this->assertEquals(0, Project::where('id', $project->id)->count());
-            $this->assertEquals(1, ProjectArchive::where('id', $project->id)->count());
+            //assert project is archived
+            $this->assertEquals(1, Project::where('id', $project->id)
+                ->where('status', 'archived')
+                ->count());
         }
     }
 }
