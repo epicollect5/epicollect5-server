@@ -181,7 +181,7 @@ class RuleFormTest extends TestCase
     /**
      *
      */
-    public function testJumps()
+    public function test_jumps()
     {
 
         // Valid jumps
@@ -216,7 +216,7 @@ class RuleFormTest extends TestCase
     /**
      *
      */
-    public function testGroupJumps()
+    public function test_group_jumps()
     {
 
         // Valid - no group jumps jumps

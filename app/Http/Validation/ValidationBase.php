@@ -8,6 +8,7 @@ use Config;
 use Exception;
 use Log;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 abstract class ValidationBase
 {
@@ -236,6 +237,20 @@ abstract class ValidationBase
         Validator::extend('ec5_integer', function ($attribute, $value, $parameters) {
             // ec5_integer allows any positive or negative integer and integers with leading zeros
             return preg_match('/^[\-]?[0-9]+$/', $value);
+        });
+
+        //check slug is unique in projects table but skipping archived projects
+        //todo: actually there is a constraint in the db! unique(slug)!!!
+        Validator::extend('unique_except_archived', function ($attribute, $value, $parameters) {
+            $table = $parameters[0];
+            $column = $attribute;
+
+            $isUnique = DB::table($table)
+                    ->where($column, $value)
+                    ->where('status', '<>', 'archived')
+                    ->count() === 0;
+
+            return $isUnique;
         });
     }
 }
