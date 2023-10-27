@@ -1,6 +1,6 @@
 <?php
 
-namespace Http\Validation\Project;
+namespace Tests\Http\Validation\Project;
 
 use ec5\Http\Validation\Project\RuleName;
 use ec5\Models\Eloquent\Project;
@@ -133,7 +133,7 @@ class RuleNameTest extends TestCase
         $this->assertTrue($this->ruleName->hasErrors());
         $this->assertArraySubset([
             'slug' => [
-                'validation.unique_except_archived',
+                'ec5_85'
             ],
         ], $this->ruleName->errors());
     }

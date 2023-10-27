@@ -5,7 +5,7 @@ namespace ec5\Http\Controllers\Api\Projects;
 
 use ec5\Http\Controllers\Controller;
 use ec5\Repositories\QueryBuilder\Project\SearchRepository as ProjectSearch;
-use ec5\Http\Validation\Project\RuleName as Validator;
+use ec5\Http\Validation\Project\RuleName;
 use ec5\Http\Controllers\Api\ApiResponse as ApiResponse;
 use Illuminate\Support\Str;
 
@@ -88,26 +88,18 @@ class ProjectController extends Controller
 
     /**
      * Check for duplicate names for projects
-     *
-     * @param ApiResponse $apiResponse
-     * @param Validator $validator
-     * @param $name
-     * @return \Illuminate\Http\JsonResponse
      */
-    public function exists(ApiResponse $apiResponse, Validator $validator, $name)
+    public function exists(ApiResponse $apiResponse, RuleName $ruleName, $name)
     {
-
-        $input['name'] = $name;
-        $input['slug'] = Str::slug($name, '-');
+        $data['name'] = $name;
+        $data['slug'] = Str::slug($name, '-');
         // Run validation
-        $validator->validate($input);
+        $ruleName->validate($data);
         // todo should type, id, attributes be setter methods in ApiResponse ?
         $apiResponse->setData([
             'type' => 'exists',
-            'id' => $input['name'],
-            'attributes' => [
-                'exists' => $validator->hasErrors()
-            ]
+            'id' => $data['slug'],
+            'exists' => $ruleName->hasErrors()
         ]);
         return $apiResponse->toJsonResponse('200', $options = 0);
     }
