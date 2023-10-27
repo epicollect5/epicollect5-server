@@ -7,7 +7,9 @@ use ec5\Http\Controllers\Controller;
 use ec5\Mail\UserAccountDeletionAdmin;
 use ec5\Mail\UserAccountDeletionConfirmation;
 use ec5\Models\Eloquent\ProjectFeatured;
+use ec5\Models\Eloquent\ProjectStat;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use ec5\Mail\UserAccountDeletionUser;
@@ -15,10 +17,11 @@ use ec5\Models\Eloquent\ProjectRole;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\User;
 use ec5\Traits\Eloquent\Archiver;
+use ec5\Traits\Eloquent\Remover;
 
 class AccountController extends Controller
 {
-    use Archiver;
+    use Archiver, Remover;
 
     protected $apiResponse;
 
@@ -116,13 +119,12 @@ class AccountController extends Controller
     {
         foreach ($projects as $project) {
             $projectId = $project['project_id'];
+
+            //get slug (skip already archived projects)
             $projectSlug = Project::where('id', $projectId)
                 ->where('created_by', $userId)
+                ->where('status', '<>', Config::get('ec5Strings.project_status.archived'))
                 ->value('slug');
-
-            $testProject = Project::where('id', $projectId)
-                ->where('created_by', $userId)->get();
-
 
             //if any of the projects is a featured one, throw error
             //as we need to deal with them manually
@@ -132,8 +134,17 @@ class AccountController extends Controller
             }
 
 
-            if (!$this->archiveProject($projectId, $projectSlug)) {
-                throw new \Exception('Project created by user archive failed');
+            $projectStat = ProjectStat::where('project_id', $projectId)->first();
+            if ($projectStat->total_entries === 0) {
+                //if the project has no entries, it can be removed
+                if (!$this->removeProject($projectId, $projectSlug)) {
+                    throw new \Exception('Project created by user removal failed');
+                }
+            } else {
+                //otherwise, just archive without deletion
+                if (!$this->archiveProject($projectId, $projectSlug)) {
+                    throw new \Exception('Project created by user archive failed');
+                }
             }
         }
     }

@@ -27,7 +27,7 @@ class ProjectStats extends ProjectModelBase
      * Behaves differently to other models
      * Properties are class properties rather
      * than contained within a 'data' property
-     * 
+     *
      * @param $data
      */
     public function init($data)
@@ -52,7 +52,7 @@ class ProjectStats extends ProjectModelBase
      *
      * @return array
      */
-    public function getData() : array
+    public function getData(): array
     {
         $out = [];
         // Get this class properties
@@ -71,7 +71,7 @@ class ProjectStats extends ProjectModelBase
      *
      * @return array
      */
-    public function getJsonData() : array
+    public function getJsonData(): array
     {
         $out = [];
         // Get this class properties
@@ -132,7 +132,6 @@ class ProjectStats extends ProjectModelBase
      */
     public function resetStats()
     {
-
         $this->total_entries = 0;
         $this->total_users = 0;
         foreach ($this->form_counts as $formRef => $form) {
@@ -151,5 +150,4 @@ class ProjectStats extends ProjectModelBase
         }
 
     }
-
 }

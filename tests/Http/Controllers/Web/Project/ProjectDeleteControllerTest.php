@@ -6,6 +6,7 @@ use ec5\Http\Controllers\ProjectControllerBase;
 use ec5\Http\Controllers\Web\Project\ProjectDeleteController;
 use ec5\Models\Eloquent\BranchEntry;
 use ec5\Models\Eloquent\Entry;
+use ec5\Models\Eloquent\OAuthClientProjects;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectFeatured;
 use ec5\Models\Eloquent\ProjectRole;
@@ -90,9 +91,15 @@ class ProjectDeleteControllerTest extends TestCase
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
         factory(ProjectStat::class)->create(
-            ['project_id' => $project->id]
+            [
+                'project_id' => $project->id,
+                'total_entries' => $numOfEntries
+            ]
         );
         factory(ProjectStructure::class)->create(
+            ['project_id' => $project->id]
+        );
+        factory(OAuthClientProjects::class)->create(
             ['project_id' => $project->id]
         );
 
@@ -118,6 +125,18 @@ class ProjectDeleteControllerTest extends TestCase
         $this->assertEquals($numOfEntries, Entry::where('project_id', $project->id)->count());
         $this->assertEquals($numOfBranchEntries * $numOfEntries, BranchEntry::where('project_id', $project->id)->count());
 
+        //assert stats are NOT dropped
+        $this->assertEquals(1, ProjectStat::where('project_id', $project->id)
+            ->count());
+        //assert structure is NOT dropped
+        $this->assertEquals(1, ProjectStructure::where('project_id', $project->id)
+            ->count());
+
+        //assert app clients are NOT dropped
+        $this->assertGreaterThan(0, OAuthClientProjects::where('project_id', $project->id)
+            ->count());
+
+
         //assert roles are NOT dropped
         $this->assertEquals(1, ProjectRole::where('project_id', $project->id)->count());
         // You can also check for messages in the session
@@ -131,7 +150,89 @@ class ProjectDeleteControllerTest extends TestCase
 
     }
 
-    public function test_soft_delete_missing_permission_as_manager()
+    public function test_hard_delete()
+    {
+        //creator
+        $role = Config::get('ec5Strings.project_roles.creator');
+        $trashedStatus = Config::get('ec5Strings.project_status.trashed');
+
+        //create a fake user and save it to DB
+        $user = factory(User::class)->create();
+
+        //create mock project with that user
+        $project = factory(Project::class)->create(
+            [
+                'created_by' => $user->id,
+                'status' => $trashedStatus
+            ]
+        );
+
+        //assign the user to that project with the CREATOR role
+        $projectRole = factory(ProjectRole::class)->create([
+            'user_id' => $user->id,
+            'project_id' => $project->id,
+            'role' => $role
+        ]);
+
+        //assert project is present before archiving
+        $this->assertEquals(1, Project::where('id', $project->id)->count());
+        //assert user role  is CREATOR
+        $this->assertEquals(1, ProjectRole::where('project_id', $project->id)->count());
+        $this->assertEquals(1, ProjectRole::where('user_id', $user->id)->count());
+        $this->assertEquals($role, ProjectRole::where('project_id', $project->id)->where('user_id', $user->id)->value('role'));
+
+
+        //set up project stats and project structures (to make R&A middleware work, to be removed)
+        //because they are using a repository with joins
+        factory(ProjectStat::class)->create(
+            [
+                'project_id' => $project->id,
+                'total_entries' => 0
+            ]
+        );
+        factory(ProjectStructure::class)->create(
+            ['project_id' => $project->id]
+        );
+
+        factory(OAuthClientProjects::class)->create(
+            ['project_id' => $project->id]
+        );
+
+        // Act: Simulate the execution of the hardDelete method
+        $response = $this->actingAs($user, self::DRIVER)
+            ->post('/myprojects/' . $project->slug . '/delete', [
+                '_token' => csrf_token()
+            ]);
+
+        //Check if the redirect is successful
+        $response->assertRedirect('/myprojects');
+        //Check if the project is deleted
+        $this->assertEquals(0, Project::where('id', $project->id)
+            ->count());
+        //assert stats are dropped
+        $this->assertEquals(0, ProjectStat::where('project_id', $project->id)
+            ->count());
+        //assert structure is dropped
+        $this->assertEquals(0, ProjectStructure::where('project_id', $project->id)
+            ->count());
+
+        //assert app clients are dropped
+        $this->assertEquals(0, OAuthClientProjects::where('project_id', $project->id)
+            ->count());
+
+        //assert roles are dropped
+        $this->assertEquals(0, ProjectRole::where('project_id', $project->id)->count());
+        // You can also check for messages in the session
+        $response->assertSessionHas('message', 'ec5_114');
+
+        //create a new project, should get a different ID
+        $newProject = factory(Project::class)->create(['created_by' => $user->id]);
+        self::assertNotEquals($newProject->id, $project->id);
+        //check new project has zero entries
+        self::assertEquals(0, Entry::where('project_id', $newProject->id)->count());
+    }
+
+    public function test_delete_missing_permission_as_manager()
     {
         //manager
         $role = Config::get('ec5Strings.project_roles.manager');
@@ -205,7 +306,7 @@ class ProjectDeleteControllerTest extends TestCase
 
     }
 
-    public function test_soft_delete_missing_permission_as_curator()
+    public function test_delete_missing_permission_as_curator()
     {
         //curator
         $role = Config::get('ec5Strings.project_roles.curator');
@@ -278,7 +379,7 @@ class ProjectDeleteControllerTest extends TestCase
         $this->assertEquals('ec5_91', session('errors')->getBag('default')->first());
     }
 
-    public function test_soft_delete_missing_permission_as_collector()
+    public function test_delete_missing_permission_as_collector()
     {
         //collector
         $role = Config::get('ec5Strings.project_roles.collector');
@@ -351,7 +452,7 @@ class ProjectDeleteControllerTest extends TestCase
         $this->assertEquals('ec5_91', session('errors')->getBag('default')->first());
     }
 
-    public function test_soft_delete_missing_permission_as_viewer()
+    public function test_delete_missing_permission_as_viewer()
     {
         //viewer
         $role = Config::get('ec5Strings.project_roles.viewer');
@@ -424,7 +525,7 @@ class ProjectDeleteControllerTest extends TestCase
         $this->assertEquals('ec5_91', session('errors')->getBag('default')->first());
     }
 
-    public function test_soft_delete_but_project_is_featured()
+    public function test_delete_but_project_is_featured()
     {
         //CREATOR
         $role = Config::get('ec5Strings.project_roles.creator');
@@ -494,7 +595,7 @@ class ProjectDeleteControllerTest extends TestCase
     }
 
     //todo: need refactoring
-    public function test_softDelete_with_exception()
+    public function test_delete_with_exception()
     {
         //creator
         $role = Config::get('ec5Strings.project_roles.creator');

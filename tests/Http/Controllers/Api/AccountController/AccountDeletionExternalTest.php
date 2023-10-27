@@ -10,8 +10,11 @@ use ec5\Models\Eloquent\BranchEntry;
 use ec5\Models\Eloquent\BranchEntryArchive;
 use ec5\Models\Eloquent\Entry;
 use ec5\Models\Eloquent\EntryArchive;
+use ec5\Models\Eloquent\OAuthClientProjects;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectRole;
+use ec5\Models\Eloquent\ProjectStat;
+use ec5\Models\Eloquent\ProjectStructure;
 use ec5\Models\Users\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Auth;
@@ -37,7 +40,7 @@ class AccountDeletionExternalTest extends TestCase
         parent::setUp();
     }
 
-    public function test_account_deletion_performed_without_role()
+    public function test_account_deletion_performed_without_any_roles()
     {
         //create fake user
         factory(User::class)->create(
@@ -74,7 +77,7 @@ class AccountDeletionExternalTest extends TestCase
         });
     }
 
-    public function test_account_deletion_performed_with_role_creator()
+    public function test_account_deletion_performed_with_role_creator_and_entries()
     {
         $role = Config::get('ec5Strings.project_roles.creator');
         $numOfEntries = mt_rand(10, 100);
@@ -87,6 +90,12 @@ class AccountDeletionExternalTest extends TestCase
 
         //create fake project
         $project = factory(Project::class)->create(['created_by' => $user->id]);
+
+        //add fake stats
+        factory(ProjectStat::class)->create([
+            'project_id' => $project->id,
+            'total_entries' => $numOfEntries
+        ]);
 
         //assign project to user as creator
         factory(ProjectRole::class)->create(
@@ -170,6 +179,101 @@ class AccountDeletionExternalTest extends TestCase
         $this->assertGreaterThan(0, count($videos));
         $this->assertCount($numOfEntries, $videos);
 
+        //assert roles are dropped
+        $this->assertEquals(0, ProjectRole::where('project_id', $project->id)->count());
+        $this->assertEquals(0, ProjectRole::where('user_id', $user->id)->count());
+
+        // Assert a message was sent to the given users...
+        Mail::assertSent(UserAccountDeletionConfirmation::class, function ($mail) use ($user) {
+            return $mail->hasTo($user->email);
+        });
+
+        //delete fake files
+        Storage::disk('entry_original')->deleteDirectory($project->ref);
+        Storage::disk('audio')->deleteDirectory($project->ref);
+        Storage::disk('video')->deleteDirectory($project->ref);
+    }
+
+    public function test_account_deletion_performed_with_role_creator_but_no_entries()
+    {
+        $role = Config::get('ec5Strings.project_roles.creator');
+
+        //create fake user
+        $user = factory(User::class)->create(
+            ['email' => env('UNIT_TEST_RANDOM_EMAIL')]
+        );
+
+        //create fake project
+        $project = factory(Project::class)->create(['created_by' => $user->id]);
+
+        //add fake stats
+        factory(ProjectStat::class)->create([
+            'project_id' => $project->id,
+            'total_entries' => 0
+        ]);
+
+        //fake structure
+        factory(ProjectStructure::class)->create(
+            ['project_id' => $project->id]
+        );
+
+        //fake app
+        factory(OAuthClientProjects::class)->create(
+            ['project_id' => $project->id]
+        );
+
+        //assign project to user as creator
+        factory(ProjectRole::class)->create(
+            [
+                'user_id' => $user->id,
+                'project_id' => $project->id,
+                'role' => $role
+            ]
+        );
+        //user must have creator role in at least one project
+        $projectRoles = ProjectRole::where('user_id', $user->id)->first();
+        $this->assertEquals(1, sizeOf($projectRoles));
+        $this->assertEquals($role, $projectRoles['role']);
+
+        //assert project is present before archiving
+        $this->assertEquals(1, Project::where('id', $project->id)->where('created_by', $user->id)->count());
+        //assert user role  is CREATOR
+        $this->assertEquals(1, ProjectRole::where('project_id', $project->id)->count());
+        $this->assertEquals(1, ProjectRole::where('user_id', $user->id)->count());
+        $this->assertEquals($role, ProjectRole::where('project_id', $project->id)->where('user_id', $user->id)->value('role'));
+
+
+        //Login user as passwordless to get a JWT
+        Auth::guard('api_external')->login($user, false);
+        $jwt = Auth::guard('api_external')->authorizationResponse()['jwt'];
+
+        //account deletion request with valid JWT
+        Mail::fake();
+        $this->json('POST', '/api/profile/account-deletion-request', [], [
+            'Authorization' => 'Bearer ' . $jwt
+        ])
+            ->assertStatus(200)
+            ->assertExactJson([
+                "data" => [
+                    "id" => "account-deletion-performed",
+                    "deleted" => true
+                ]
+            ]);
+
+        //assert user was removed
+        $this->assertEquals(0, User::where('email', $user->email)->count());
+        //assert project WAS removed
+        $this->assertEquals(0, Project::where('id', $project->id)
+            ->count());
+        //assert stats are dropped
+        $this->assertEquals(0, ProjectStat::where('project_id', $project->id)
+            ->count());
+        //assert structure is dropped
+        $this->assertEquals(0, ProjectStructure::where('project_id', $project->id)
+            ->count());
+        //assert app clients are dropped
+        $this->assertEquals(0, OAuthClientProjects::where('project_id', $project->id)
+            ->count());
         //assert roles are dropped
         $this->assertEquals(0, ProjectRole::where('project_id', $project->id)->count());
         $this->assertEquals(0, ProjectRole::where('user_id', $user->id)->count());
@@ -704,7 +808,7 @@ class AccountDeletionExternalTest extends TestCase
 
     public function test_account_deletion()
     {
-        //create a fake user ans save it to DB
+        //create a fake user and save it to DB
         $user = factory(User::class)->create();
         $user->state = 'active';
         $user->email = 'user-to-be-deleted@example.com';
@@ -733,7 +837,7 @@ class AccountDeletionExternalTest extends TestCase
         });
     }
 
-    public function test_account_deletion_performed_with_mixed_roles()
+    public function test_account_deletion_performed_with_mixed_roles_and_entries()
     {
         //creator
         $role = Config::get('ec5Strings.project_roles.creator');
@@ -771,6 +875,16 @@ class AccountDeletionExternalTest extends TestCase
             'role' => $role
         ]);
 
+        //add fake stats
+        factory(ProjectStat::class)->create([
+            'project_id' => $projectRoleCreatorOne->id,
+            'total_entries' => $numOfEntries
+        ]);
+        factory(ProjectStat::class)->create([
+            'project_id' => $projectRoleCreatorTwo->id,
+            'total_entries' => $numOfEntries
+        ]);
+
         //create a fake project per each role and assign it to the user
         foreach ($otherRoles as $otherRole) {
             $project = factory(Project::class)->create(['created_by' => $anotherUser->id]);
@@ -791,13 +905,17 @@ class AccountDeletionExternalTest extends TestCase
                 'role' => $otherRole
             ]);
 
+            factory(ProjectStat::class)->create([
+                'project_id' => $project->id,
+                'total_entries' => $numOfEntries
+            ]);
+
             //assert project is present
             $this->assertEquals(1, Project::where('id', $project->id)->count());
             //assert user roles for that project
             $this->assertEquals(2, ProjectRole::where('project_id', $project->id)->count());
             $this->assertEquals($role, ProjectRole::where('project_id', $project->id)->where('user_id', $anotherUser->id)->value('role'));
             $this->assertEquals($otherRole, ProjectRole::where('project_id', $project->id)->where('user_id', $user->id)->value('role'));
-
 
             //for each project, add some fake entries and branch entries
             //firstly, entries by creator
@@ -1074,5 +1192,148 @@ class AccountDeletionExternalTest extends TestCase
             Storage::disk('audio')->deleteDirectory($projectRef);
             Storage::disk('video')->deleteDirectory($projectRef);
         }
+    }
+
+    public function test_account_deletion_performed_with_mixed_roles_but_no_entries()
+    {
+        //creator
+        $role = Config::get('ec5Strings.project_roles.creator');
+        $otherRoles = [
+            Config::get('ec5Strings.project_roles.manager'),
+            Config::get('ec5Strings.project_roles.curator'),
+            Config::get('ec5Strings.project_roles.collector'),
+            Config::get('ec5Strings.project_roles.viewer')
+        ];
+        $projectsWithOtherRoles = [];
+        $projectRefs = [];
+
+        //create a fake user and save it to DB
+        $user = factory(User::class)->create();
+        //create another user
+        $anotherUser = factory(User::class)->create();
+
+        // 2- create a couple of projects with that user
+        $projectRoleCreatorOne = factory(Project::class)->create(['created_by' => $user->id]);
+        $projectRefs[] = $projectRoleCreatorOne->ref;
+        $projectRoleCreatorTwo = factory(Project::class)->create(['created_by' => $user->id]);
+        $projectRefs[] = $projectRoleCreatorTwo->ref;
+        //assign the user to those projects with the CREATOR role
+        factory(ProjectRole::class)->create([
+            'user_id' => $user->id,
+            'project_id' => $projectRoleCreatorOne->id,
+            'role' => $role
+        ]);
+
+        factory(ProjectRole::class)->create([
+            'user_id' => $user->id,
+            'project_id' => $projectRoleCreatorTwo->id,
+            'role' => $role
+        ]);
+
+        //add fake stats
+        factory(ProjectStat::class)->create([
+            'project_id' => $projectRoleCreatorOne->id,
+            'total_entries' => 0
+        ]);
+        factory(ProjectStat::class)->create([
+            'project_id' => $projectRoleCreatorTwo->id,
+            'total_entries' => 0
+        ]);
+
+        //create a fake project per each role and assign it to the user
+        foreach ($otherRoles as $otherRole) {
+            $project = factory(Project::class)->create(['created_by' => $anotherUser->id]);
+            $projectRefs[] = $project->ref;
+            $projectsWithOtherRoles[] = [
+                'id' => $project->id,
+                'role' => $otherRole
+            ];
+
+            factory(ProjectRole::class)->create([
+                'user_id' => $anotherUser->id,
+                'project_id' => $project->id,
+                'role' => $role
+            ]);
+            factory(ProjectRole::class)->create([
+                'user_id' => $user->id,
+                'project_id' => $project->id,
+                'role' => $otherRole
+            ]);
+
+            factory(ProjectStat::class)->create([
+                'project_id' => $project->id,
+                'total_entries' => 0
+            ]);
+
+            //assert project is present
+            $this->assertEquals(1, Project::where('id', $project->id)->count());
+            //assert user roles for that project
+            $this->assertEquals(2, ProjectRole::where('project_id', $project->id)->count());
+            $this->assertEquals($role, ProjectRole::where('project_id', $project->id)->where('user_id', $anotherUser->id)->value('role'));
+            $this->assertEquals($otherRole, ProjectRole::where('project_id', $project->id)->where('user_id', $user->id)->value('role'));
+        }
+
+        //assert projects are present
+        $this->assertEquals(1, Project::where('id', $project->id)->count());
+        $this->assertEquals(1, ProjectRole::where('project_id', $projectRoleCreatorOne->id)->count());
+        $this->assertEquals(1, ProjectRole::where('project_id', $projectRoleCreatorTwo->id)->count());
+        //user should be a member of 6 project, 2 with role creator and 4 with the other roles
+        $this->assertEquals(6, ProjectRole::where('user_id', $user->id)->count());
+        $this->assertEquals($role, ProjectRole::where('project_id', $projectRoleCreatorOne->id)->where('user_id', $user->id)->value('role'));
+        $this->assertEquals($role, ProjectRole::where('project_id', $projectRoleCreatorTwo->id)->where('user_id', $user->id)->value('role'));
+
+        //4 delete user account
+        Mail::fake();
+        //Login user as passwordless to get a JWT
+        Auth::guard('api_external')->login($user, false);
+        $jwt = Auth::guard('api_external')->authorizationResponse()['jwt'];
+
+        //account deletion request with valid JWT
+        Mail::fake();
+        $this->json('POST', '/api/profile/account-deletion-request', [], [
+            'Authorization' => 'Bearer ' . $jwt
+        ])
+            ->assertStatus(200)
+            ->assertExactJson([
+                "data" => [
+                    "id" => "account-deletion-performed",
+                    "deleted" => true
+                ]
+            ]);
+
+        //assert user was removed
+        $this->assertEquals(0, User::where('email', $user->email)->count());
+        $this->assertEquals(0, User::where('id', $user->id)->count());
+
+        //assert projects with CREATOR role were removed
+        $this->assertEquals(0, Project::where('id', $projectRoleCreatorOne->id)
+            ->count());
+
+        $this->assertEquals(0, Project::where('id', $projectRoleCreatorTwo->id)
+            ->count());
+
+        //assert all CREATOR roles are dropped
+        $this->assertEquals(0, ProjectRole::where('project_id', $projectRoleCreatorOne->id)->count());
+        $this->assertEquals(0, ProjectRole::where('project_id', $projectRoleCreatorTwo->id)->count());
+
+        foreach ($projectsWithOtherRoles as $projectWithOtherRole) {
+            //assert projects with other roles are NOT archived
+            $projectId = $projectWithOtherRole['id'];
+            $otherRole = $projectWithOtherRole['role'];
+            $this->assertEquals(1, Project::where('id', $projectId)
+                ->count());
+
+            //assert all other roles are dropped, but not creator
+            $this->assertEquals(0, ProjectRole::where('project_id', $projectId)
+                ->where('role', '!=', $role)
+                ->count());
+            $this->assertEquals(1, ProjectRole::where('project_id', $projectId)
+                ->where('role', $role)
+                ->count());
+        }
+        // Assert a message was sent to the given users...
+        Mail::assertSent(UserAccountDeletionConfirmation::class, function ($mail) use ($user) {
+            return $mail->hasTo($user->email);
+        });
     }
 }
