@@ -30,11 +30,12 @@ class FormBuilderController extends ProjectControllerBase
      * @param ApiResponse $apiResponse
      */
     public function __construct(
-        Request $request,
-        ProjectUpdate $projectUpdate,
+        Request                    $request,
+        ProjectUpdate              $projectUpdate,
         ProjectDefinitionValidator $projectDefinitionValidator,
-        ApiResponse $apiResponse
-    ) {
+        ApiResponse                $apiResponse
+    )
+    {
         $this->request = $request;
         $this->apiResponse = $apiResponse;
         $this->projectUpdate = $projectUpdate;
@@ -59,8 +60,6 @@ class FormBuilderController extends ProjectControllerBase
         if (!isset($requestContent['data'])) {
             return $this->apiResponse->errorResponse('422', ['Request' => ['ec5_14']]);
         }
-
-        Log::error('here 1');
 
         $projectDefinition = $requestContent['data'];
 
