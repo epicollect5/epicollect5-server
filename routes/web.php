@@ -237,7 +237,7 @@ Route::group(['middleware' => 'auth'], function () {
 
         // Project deletion
         Route::get('myprojects/{project_slug}/delete', 'Web\Project\ProjectDeleteController@show');
-        Route::post('myprojects/{project_slug}/delete', 'Web\Project\ProjectDeleteController@softDelete');
+        Route::post('myprojects/{project_slug}/delete', 'Web\Project\ProjectDeleteController@delete');
 
         // Project entries deletion
         Route::get('myprojects/{project_slug}/delete-entries', 'Web\Project\ProjectDeleteEntriesController@show');
