@@ -1,7 +1,7 @@
 <form id="ec5-form" class="create-project-form" method="POST"
       action="{{ url('/myprojects/import') }}" accept-charset="UTF-8"
       enctype="multipart/form-data" class="form-horizontal">
-     {{ csrf_field() }}
+    {{ csrf_field() }}
 
     <div id="project-name-form-group-import"
          class="form-group has-feedback @if (($errors->has('name') || $errors->has('slug')) && $tab === 'import') has-error @endif">
@@ -10,10 +10,11 @@
                class="form-control"
                placeholder="{{trans('site.project_placeholder')}}"
                @if ($tab === 'import')
-               value="{{ old('name') }}"
+                   value="{{ old('name') }}"
                @else
-               value=""
+                   value=""
                @endif
+               minlength="3"
                maxlength="50">
 
         <span id="project-loader" class="form-control-feedback hidden">
@@ -21,7 +22,14 @@
                             </span>
 
         @if ($errors->has('name') && $tab === 'import')
-            <small class="text-danger">{{ trans('status_codes.' . $errors->first('name')) }}</small>
+            @if (strpos($error, 'ec5_') === false)
+                {{--error was already translated--}}
+                <small class="text-danger">{{ $errors->first('name') }}</small>
+            @else
+                {{--translate error--}}
+                <small class="text-danger">{{ trans('status_codes.' . $errors->first('name')) }}</small>
+            @endif
+
         @else
             <small>{{trans('site.max_50_chars')}}</small>
         @endif

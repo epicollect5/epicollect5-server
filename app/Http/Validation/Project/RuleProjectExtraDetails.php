@@ -8,7 +8,7 @@ class RuleProjectExtraDetails extends ValidationBase
 {
     protected $rules = [
         'name' => 'required|alpha_num_under_spaces|min:3|max:100',
-        'slug' => 'not_in:create',//'unique:projects,slug',
+        'slug' => 'not_in:create',
         'ref' => 'required',
         'small_description' => 'required|min:3|max:100',
         'access' => 'required|in:public,private',

@@ -13,7 +13,7 @@ window.EC5.projectCreate = window.EC5.projectCreate || {};
             $('#project-loader').addClass('hidden');
 
             //is there already a project with that name?
-            if (response.data.attributes.exists) {
+            if (response.data.exists) {
                 //we have a duplicate, show errors
                 window.EC5.projectCreate.toggleGroupValidation(form_group, false, 'Project already exists');
             } else {

@@ -7,14 +7,12 @@ use Config;
 
 class RuleCreateRequest extends ValidationBase
 {
-
     protected $rules = [
-        'name' => 'required|alpha_num_under_spaces|min:3|max:50|ec5_unreserved_name',
-        'slug' => 'required|not_in:create|unique:projects',
+        'name' => 'required|alpha_num_under_spaces|min:3|max:50|ec5_unreserved_name|unique_except_archived:projects,name',
+        'slug' => 'required|not_in:create|unique_except_archived:projects,slug',
         'small_description' => 'required|min:15|max:100',
         'access' => 'required|in:private,public'
     ];
-
 
     public function __construct()
     {
@@ -25,7 +23,7 @@ class RuleCreateRequest extends ValidationBase
         $projectNameMaxLength = Config::get('ec5Limits.project.name.max');
         $formNameMaxLenght = Config::get('ec5Limits.form_name_limit');
 
-        $this->rules['form_name'] ='required|alpha_num_under_spaces|min:1|max:' . $formNameMaxLenght;
+        $this->rules['form_name'] = 'required|alpha_num_under_spaces|min:1|max:' . $formNameMaxLenght;
 
         $this->messages['name.min'] = trans('status_codes.ec5_349', ['min' => $projectNameMinLength]);
         $this->messages['name.max'] = trans('status_codes.ec5_350', ['max' => $projectNameMaxLength]);
@@ -33,5 +31,6 @@ class RuleCreateRequest extends ValidationBase
         $this->messages['small_description.max'] = trans('status_codes.ec5_352', ['max' => $projectSmallDescMaxLength]);
 
         $this->messages['unique'] = 'ec5_85';
+        $this->messages['unique_except_archived'] = 'ec5_85';
     }
 }
