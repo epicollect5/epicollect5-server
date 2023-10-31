@@ -2,7 +2,6 @@
 
 namespace ec5\Http\Validation\Entries\Upload;
 
-use ec5\Libraries\EC5Logger\EC5Logger;
 use ec5\Models\Projects\Project;
 use ec5\Repositories\QueryBuilder\Entry\Upload\Search\BranchEntryRepository as BranchEntrySearchRepository;
 use ec5\Repositories\QueryBuilder\Entry\Upload\Search\EntryRepository as EntrySearchRepository;
@@ -77,14 +76,15 @@ class RuleFileEntry extends EntryValidationBase
      * @param RuleAnswers $answerValidator
      */
     function __construct(
-        EntrySearchRepository $entrySearchRepository,
+        EntrySearchRepository       $entrySearchRepository,
         BranchEntrySearchRepository $branchEntrySearchRepository,
-        PhotoAppValidator $photoAppValidator,
-        PhotoWebValidator $photoWebValidator,
-        VideoValidator $videoValidator,
-        AudioValidator $audioValidator,
-        AnswerValidator $answerValidator
-    ) {
+        PhotoAppValidator           $photoAppValidator,
+        PhotoWebValidator           $photoWebValidator,
+        VideoValidator              $videoValidator,
+        AudioValidator              $audioValidator,
+        AnswerValidator             $answerValidator
+    )
+    {
         $this->entrySearchRepository = $entrySearchRepository;
         $this->branchEntrySearchRepository = $branchEntrySearchRepository;
 
@@ -107,7 +107,6 @@ class RuleFileEntry extends EntryValidationBase
     public function additionalChecks(Project $project, EntryStructure $entryStructure)
     {
         if (!$this->isValidFile($entryStructure)) {
-            EC5Logger::error('File upload failed - isValidFile function', $project, $this->errors());
             return;
         }
 
@@ -116,8 +115,8 @@ class RuleFileEntry extends EntryValidationBase
          * some media files for a question which got deleted. Updating the project on the mobile app
          * does not consider these files (at least on version 2.0.9 and below)
          * therefore let's go on with the upload but ignore the file and clear the error
-         * 
-         * we can purge the orphan folder every now and then, 
+         *
+         * we can purge the orphan folder every now and then,
          * going forward no files will be saved there anyway
          */
         if (!$this->fileInputExists($project, $entryStructure)) {
@@ -148,7 +147,6 @@ class RuleFileEntry extends EntryValidationBase
         $this->moveFile($project, $entryStructure);
 
         if ($this->hasErrors()) {
-            EC5Logger::error('File upload failed - moveFile function', $project, $this->errors());
         }
     }
 
@@ -188,7 +186,6 @@ class RuleFileEntry extends EntryValidationBase
         // Check exists i.e. not null
         if (empty($data['file'])) {
             //this happens if there is a timeout error
-            EC5Logger::error('File upload failed - isValidFile() - file is null', null, []);
             $this->errors[$entryUuid] = ['ec5_69'];
             return false;
         }
@@ -202,9 +199,6 @@ class RuleFileEntry extends EntryValidationBase
                 $data['width'] = $width;
                 $data['height'] = $height;
             } catch (Exception $e) {
-                EC5Logger::error('File upload failed - getimagesize()', null, [
-                    'exception' => $e
-                ]);
                 $this->errors[$entryUuid] = ['ec5_83'];
                 return false;
             }
@@ -213,11 +207,6 @@ class RuleFileEntry extends EntryValidationBase
         $validator->validate($data);
 
         if ($validator->hasErrors()) {
-            EC5Logger::error(
-                'File upload failed - isValidFile function - validator failed',
-                null,
-                $validator->errors()
-            );
             $this->errors = $validator->errors();
             return false;
         }
@@ -282,7 +271,6 @@ class RuleFileEntry extends EntryValidationBase
         $input = $projectExtra->getInputData($inputRef);
 
         if (count($input) == 0) {
-            EC5Logger::error('File failed - input doesnt exist ' . $inputRef, $project, $fileEntry);
             $this->errors[$inputRef] = ['ec5_84'];
             return false;
         }
@@ -387,7 +375,7 @@ class RuleFileEntry extends EntryValidationBase
     //not used, here for reference
     public function removeOrphanFile(EntryStructure $entryStructure)
     {
-        $fileRealPath =  $entryStructure->getFile()->getRealPath();
+        $fileRealPath = $entryStructure->getFile()->getRealPath();
         File::delete($fileRealPath);
         return true;
     }

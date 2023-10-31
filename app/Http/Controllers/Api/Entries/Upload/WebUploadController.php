@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace ec5\Http\Controllers\Api\Entries\Upload;
 
-use ec5\Libraries\EC5Logger\EC5Logger;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 use ec5\Http\Validation\Entries\Upload\RuleUpload as UploadValidator;
@@ -57,15 +56,16 @@ class WebUploadController extends UploadControllerBase
      * @param EntryStatsRepository $entryStatsRepository
      */
     public function __construct(
-        Request $request,
-        ApiRequest $apiRequest,
-        ApiResponse $apiResponse,
-        EntryStructure $entryStructure,
-        EntryCreateRepository $entryCreateRepository,
+        Request                     $request,
+        ApiRequest                  $apiRequest,
+        ApiResponse                 $apiResponse,
+        EntryStructure              $entryStructure,
+        EntryCreateRepository       $entryCreateRepository,
         BranchEntryCreateRepository $branchEntryCreateRepository,
-        FileValidator $fileValidator,
-        EntryStatsRepository $entryStatsRepository
-    ) {
+        FileValidator               $fileValidator,
+        EntryStatsRepository        $entryStatsRepository
+    )
+    {
         $this->fileValidator = $fileValidator;
         parent::__construct(
             $request,
@@ -138,14 +138,12 @@ class WebUploadController extends UploadControllerBase
                     $groupInput = $projectExtra->getInputData($groupInputRef);
                     $this->moveFile($rootFolder, $groupInput);
                     if (count($this->errors) > 0) {
-                        EC5Logger::error('Could not move group file', $this->requestedProject, $this->errors);
                         return $this->apiResponse->errorResponse(400, $this->errors);
                     }
                 }
             } else {
                 $this->moveFile($rootFolder, $input);
                 if (count($this->errors) > 0) {
-                    EC5Logger::error('Could not move file', $this->requestedProject, $this->errors);
                     return $this->apiResponse->errorResponse(400, $this->errors);
                 }
             }

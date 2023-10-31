@@ -147,7 +147,6 @@ class Project extends Model
             return true;
         } catch (\Exception $e) {
             // If any exceptions, log
-            EC5Logger::error('Transfer ownership failed', $this->requestedProject, [$e]);
             \Log::error('Transfer ownership failed: ', [
                 'exception' => $e->getMessage(),
                 'project' => $this->requestedProject->name

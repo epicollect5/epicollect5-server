@@ -3,7 +3,6 @@
 namespace ec5\Http\Controllers\Api\Project;
 
 use ec5\Http\Controllers\ProjectControllerBase;
-use ec5\Libraries\EC5Logger\EC5Logger;
 use Illuminate\Http\Request;
 use ec5\Http\Validation\Project\RuleProjectDefinition as ProjectDefinitionValidator;
 use ec5\Repositories\QueryBuilder\Project\UpdateRepository as ProjectUpdate;
@@ -65,7 +64,6 @@ class FormBuilderController extends ProjectControllerBase
 
         //do we have permissions to edit the project?
         if (!$this->requestedProjectRole->canEditProject()) {
-            EC5Logger::error('Formbuilder structure failed - user cant edit project', $this->requestedProject);
             return $this->apiResponse->errorResponse('422', ['Validation' => ['ec5_91']]);
         }
 
@@ -102,10 +100,7 @@ class FormBuilderController extends ProjectControllerBase
 
         // Check for any errors so far
         if ($this->projectDefinitionValidator->hasErrors()) {
-            EC5Logger::error('Formbuilder structure failed - validation',
-                $this->requestedProject,
-                $this->projectDefinitionValidator->errors()
-            );
+
 
             return $this->apiResponse->errorResponse('422', $this->projectDefinitionValidator->errors());
         }
@@ -117,13 +112,11 @@ class FormBuilderController extends ProjectControllerBase
         $tryAction = $this->projectUpdate->updateProjectStructure($this->requestedProject, true);
 
         if ($tryAction) {
-            EC5Logger::info('Storing Formbuilder structure successful', $this->requestedProject);
             // Return the Project Definition data in the response
             $this->apiResponse->setData($this->requestedProject->getProjectDefinition()->getData());
             return $this->apiResponse->toJsonResponse('200', $options = 0);
         }
 
-        EC5Logger::error('Formbuilder structure failed - could not save into db', $this->requestedProject, $this->projectUpdate->errors());
         return $this->apiResponse->errorResponse('422', ['DB' => ['ec5_116']]);
     }
 }

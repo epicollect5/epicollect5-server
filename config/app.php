@@ -127,9 +127,6 @@ return [
 
     'log_max_files' => env('APP_LOG_MAX_FILES', 365),
 
-    'slack_log_channel' => '#' . env('SLACK_LOG_CHANNEL'),
-    'slack_access_token' => env('SLACK_ACCESS_TOKEN'),
-
     /*
     |--------------------------------------------------------------------------
     | Autoloaded Service Providers
@@ -184,9 +181,7 @@ return [
         ec5\Providers\AuthServiceProvider::class,
         ec5\Providers\EventServiceProvider::class,
         ec5\Providers\RouteServiceProvider::class,
-        ec5\Providers\LogServiceProvider::class,
         ec5\Providers\ResponseApiServiceProvider::class,
-
 
         /**
          * Custom Service Providers
@@ -253,7 +248,7 @@ return [
         'Uuid' => Webpatser\Uuid\Uuid::class,
         'Image' => Intervention\Image\Facades\Image::class,
         'Debugbar' => Barryvdh\Debugbar\Facade::class,
-        'Avatar'    => Laravolt\Avatar\Facade::class,
+        'Avatar' => Laravolt\Avatar\Facade::class,
         'Notification' => Illuminate\Support\Facades\Notification::class,
         'Common' => ec5\Libraries\Utilities\Common::class
     ],
@@ -263,7 +258,7 @@ return [
     | Reserved Words
     |--------------------------------------------------------------------------
     |
-    | A list of reserved words users cannot use in their projects (case sensitive)
+    | A list of reserved words users cannot use in their projects (case-sensitive)
     |
     */
     'reserved_words' => [

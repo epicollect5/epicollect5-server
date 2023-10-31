@@ -2,7 +2,6 @@
 
 namespace ec5\Repositories\QueryBuilder\Entry\Upload\Create;
 
-use ec5\Libraries\EC5Logger\EC5Logger;
 use ec5\Models\Projects\Project;
 use ec5\Models\Entries\EntryStructure;
 
@@ -50,7 +49,6 @@ abstract class CreateRepository extends Base
         $done = $this->tryEntryCreate($project, $entryStructure, $isBulkUpload);
         // Add entry content and answers to database
         if (!$done) {
-            EC5Logger::error('Insert unsuccessful', $project, $this->errors());
             // Rollback if any errors
             $this->doRollBack();
         }
@@ -164,7 +162,6 @@ abstract class CreateRepository extends Base
             $this->doCommit();
             $done = true;
         } catch (Exception $e) {
-            EC5Logger::error('Exception thrown', $project, [json_encode($e)]);
             $this->errors[$e->getMessage()] = ['ec5_45'];
         }
 
@@ -223,7 +220,6 @@ abstract class CreateRepository extends Base
         //imp: this was expensive to be done per each entry!
         // if (!$this->statsRepository->updateProjectEntryStats($project)) {
         //     $this->errors['entry_create'] = ['ec5_94'];
-        //     EC5Logger::error('Failed to update stats', $project, $this->errors);
         //     return false;
         // }
 
@@ -232,7 +228,6 @@ abstract class CreateRepository extends Base
         //imp: also branches are stored in a separate table, counts will be faster
         if (!$this->statsRepository->updateAdditionalStats($project, $entryStructure)) {
             $this->errors['entry_create'] = ['ec5_94'];
-            EC5Logger::error('Failed to update stats additional', $project, $this->errors);
             return false;
         }
         return true;

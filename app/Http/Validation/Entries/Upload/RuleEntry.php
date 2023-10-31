@@ -2,7 +2,6 @@
 
 namespace ec5\Http\Validation\Entries\Upload;
 
-use ec5\Libraries\EC5Logger\EC5Logger;
 use ec5\Models\Projects\Project;
 use ec5\Repositories\QueryBuilder\Entry\Upload\Search\EntryRepository as EntrySearchRepository;
 
@@ -44,7 +43,6 @@ class RuleEntry extends EntryValidationBase
 
         //check entry uuid is in correct format -> todo
         if (!Strings::isValidUuid($entryStructure->getEntryUuid())) {
-            EC5Logger::error('UUID invalid ', $project, ['uuid' => $entryStructure->getEntryUuid()]);
             Log::error('uuid is invalid: ', ['project' => $project, 'uuid' => $entryStructure->getEntryUuid()]);
             $this->errors[$formRef] = ['ec5_334'];
             return;
@@ -56,7 +54,6 @@ class RuleEntry extends EntryValidationBase
 
             // Check parent form is a direct ancestor
             if ($hasParent != $parentFormRef) {
-                EC5Logger::error('Incorrect parent form supplied: ' . $parentFormRef, $project);
                 $this->errors[$parentFormRef] = ['ec5_18'];
                 return;
             }
@@ -65,7 +62,6 @@ class RuleEntry extends EntryValidationBase
 
             // Check parent form exists
             if (count($parentForm) == 0) {
-                EC5Logger::error('Parent form supplied does not exist: ' . $parentFormRef, $project);
                 $this->errors[$formRef] = ['ec5_15'];
                 return;
             }
@@ -74,7 +70,6 @@ class RuleEntry extends EntryValidationBase
 
             // If we don't have a parent entry
             if (empty($parentEntryUuid)) {
-                EC5Logger::error('No parent uuid supplied for this child form entry', $project);
                 $this->errors[$formRef] = ['ec5_19'];
                 return;
             }
@@ -83,7 +78,6 @@ class RuleEntry extends EntryValidationBase
             $parent = $this->searchRepository->getParentEntry($parentEntryUuid, $parentFormRef);
 
             if (!$parent) {
-                EC5Logger::error('No parent form entry for this child form entry', $project);
                 $this->errors[$formRef] = ['ec5_19'];
                 return;
             }

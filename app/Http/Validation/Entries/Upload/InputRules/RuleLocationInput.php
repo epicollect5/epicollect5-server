@@ -5,7 +5,6 @@ namespace ec5\Http\Validation\Entries\Upload\InputRules;
 use ec5\Models\Projects\Project;
 use ec5\Models\Entries\EntryStructure;
 use Config;
-use ec5\Libraries\EC5Logger\EC5Logger;
 use Log;
 
 class RuleLocationInput extends RuleInputBase

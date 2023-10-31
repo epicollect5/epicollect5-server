@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace ec5\Http\Controllers\Api\Entries\Upload;
 
-use ec5\Libraries\EC5Logger\EC5Logger;
 
 use ec5\Http\Validation\Entries\Upload\RuleUniqueness as UniquenessValidator;
 
@@ -21,14 +20,14 @@ class UniquenessController extends UploadControllerBase
      * @return \Illuminate\Http\JsonResponse
      */
     public function index(
-        UniquenessValidator $uniquenessValidator,
-        EntrySearchRepository $entrySearchRepository,
+        UniquenessValidator         $uniquenessValidator,
+        EntrySearchRepository       $entrySearchRepository,
         BranchEntrySearchRepository $branchEntrySearchRepository
-    ) {
+    )
+    {
 
         /* API REQUEST VALIDATION */
         if (!$this->isValidApiRequest()) {
-            EC5Logger::error('Api request error', $this->requestedProject, $this->errors);
             return $this->apiResponse->errorResponse(400, $this->errors);
         }
 
@@ -36,14 +35,12 @@ class UniquenessController extends UploadControllerBase
         /* VALIDATION */
         $uniquenessValidator->validate($uploadValidator);
         if ($uniquenessValidator->hasErrors()) {
-            EC5Logger::error('Uniqueness not valid', $this->requestedProject, $this->errors);
             return $this->apiResponse->errorResponse(400, $this->errors);
         }
 
 
         // Check project status
         if (!$this->hasValidProjectStatus()) {
-            //EC5Logger::error('Project status not active', $this->requestedProject, $this->errors);
             return $this->apiResponse->errorResponse(400, $this->errors);
         }
 
@@ -67,7 +64,6 @@ class UniquenessController extends UploadControllerBase
         // Get input
         $input = $projectExtra->getInputData($inputRef);
         if (!$input) {
-            EC5Logger::error('No Input: ' . $inputRef, $this->requestedProject, $input);
             return $this->apiResponse->errorResponse(400, ['upload-controller' => ['ec5_84']]);
         }
 
@@ -79,7 +75,7 @@ class UniquenessController extends UploadControllerBase
         }
 
         $inputType = $input['type'];
-        $inputDatetimeFormat =  $input['datetime_format'];
+        $inputDatetimeFormat = $input['datetime_format'];
 
 
         // Set search repository

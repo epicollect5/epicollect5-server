@@ -7,7 +7,6 @@ namespace ec5\Http\Controllers\Api\Entries\Upload;
 use ec5\Http\Controllers\Api\ProjectApiControllerBase;
 use ec5\Http\Validation\Entries\Upload\RuleUpload as UploadValidator;
 
-use ec5\Libraries\EC5Logger\EC5Logger;
 use ec5\Repositories\QueryBuilder\Entry\Upload\Create\BranchEntryRepository as BranchEntryCreateRepository;
 use ec5\Repositories\QueryBuilder\Entry\Upload\Create\EntryRepository as EntryCreateRepository;
 use ec5\Repositories\QueryBuilder\Stats\Entry\StatsRepository as EntryStatsRepository;
@@ -65,14 +64,15 @@ class UploadControllerBase extends ProjectApiControllerBase
      * @param EntryStatsRepository $entryStatsRepository
      */
     public function __construct(
-        Request $request,
-        ApiRequest $apiRequest,
-        ApiResponse $apiResponse,
-        EntryStructure $entryStructure,
-        EntryCreateRepository $entryCreateRepository,
+        Request                     $request,
+        ApiRequest                  $apiRequest,
+        ApiResponse                 $apiResponse,
+        EntryStructure              $entryStructure,
+        EntryCreateRepository       $entryCreateRepository,
         BranchEntryCreateRepository $branchEntryCreateRepository,
-        EntryStatsRepository $entryStatsRepository
-    ) {
+        EntryStatsRepository        $entryStatsRepository
+    )
+    {
         $this->entryCreateRepository = $entryCreateRepository;
         $this->branchEntryCreateRepository = $branchEntryCreateRepository;
         $this->entryStructure = $entryStructure;
@@ -96,7 +96,6 @@ class UploadControllerBase extends ProjectApiControllerBase
 
         /* API REQUEST VALIDATION */
         if (!$this->isValidApiRequest()) {
-            EC5Logger::error('Upload Api request error', $this->requestedProject, $this->apiRequest->errors());
 
             Log::error('Upload API Request Error: ', [
                 'error' => $this->apiRequest->errors(),
@@ -109,7 +108,6 @@ class UploadControllerBase extends ProjectApiControllerBase
 
         /* UPLOAD VALIDATION */
         if (!$this->isValidUpload($uploadValidator)) {
-            EC5Logger::error('Upload could not be validated', $this->requestedProject, $uploadValidator->errors());
             return false;
         }
 
@@ -120,7 +118,6 @@ class UploadControllerBase extends ProjectApiControllerBase
 
         /* USER AUTHENTICATION AND PERMISSIONS CHECK FOR PRIVATE PROJECTS */
         if (!$this->userHasPermissions()) {
-            EC5Logger::error('User permissions failed', $this->requestedProject);
             return false;
         }
 
@@ -140,13 +137,11 @@ class UploadControllerBase extends ProjectApiControllerBase
         /* CHECK LIMITS NOT REACHED */
         //imp: this is calculated live, it does not use the project stats table
         if ($this->isEntriesLimitReached()) {
-            EC5Logger::error('Entries limit reached', $this->requestedProject);
             return false;
         }
 
         /* INSERT ENTRY */
         if (!$this->insertedIntoDb()) {
-            EC5Logger::error('Error inserting entry', $this->requestedProject, $this->errors);
 
             Log::error('Error inserting entry: ', [
                 'error' => $this->errors,

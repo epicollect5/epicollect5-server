@@ -7,7 +7,6 @@ use ec5\Http\Validation\Entries\Upload\RuleAnswers as AnswerValidator;
 use ec5\Http\Validation\Entries\Upload\RuleFileEntry as FileValidator;
 use ec5\Http\Validation\Entries\Upload\RuleEntry as EntryValidator;
 
-use ec5\Libraries\EC5Logger\EC5Logger;
 use ec5\Models\Projects\Project;
 use ec5\Models\Entries\EntryStructure;
 use Illuminate\Support\Facades\Log;
@@ -109,11 +108,12 @@ class RuleUpload extends ValidationBase
      * @param FileValidator $fileValidator
      */
     public function __construct(
-        EntryValidator $entryValidator,
+        EntryValidator       $entryValidator,
         BranchEntryValidator $branchEntryValidator,
-        AnswerValidator $answerValidator,
-        FileValidator $fileValidator
-    ) {
+        AnswerValidator      $answerValidator,
+        FileValidator        $fileValidator
+    )
+    {
         $this->entryValidator = $entryValidator;
         $this->branchEntryValidator = $branchEntryValidator;
         $this->answerValidator = $answerValidator;
@@ -156,14 +156,12 @@ class RuleUpload extends ValidationBase
 
         // Check form exists
         if (count($form) == 0) {
-            EC5Logger::error('Form does not exist ' . $formRef, $project);
             $this->errors[$formRef] = ['ec5_15'];
             return;
         }
 
         // If upload entry type is invalid
         if (!$validator) {
-            EC5Logger::error('Entry Type invalid', $project, $data);
             $this->errors['upload'] = ['ec5_52'];
             return;
         }
@@ -172,7 +170,6 @@ class RuleUpload extends ValidationBase
         $entry = $entryStructure->getEntry();
         $validator->validate($entry);
         if ($validator->hasErrors()) {
-            EC5Logger::error('Upload validation failed', $project, $validator->errors());
             $this->errors = $validator->errors();
             return;
         }

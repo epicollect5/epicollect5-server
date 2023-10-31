@@ -23,7 +23,6 @@ use ec5\Http\Validation\Entries\Upload\InputRules\RuleDropdownInput;
 use ec5\Http\Validation\Entries\Upload\InputRules\RulePhoneInput;
 
 
-use ec5\Libraries\EC5Logger\EC5Logger;
 use ec5\Models\Projects\Project;
 use ec5\Repositories\QueryBuilder\Entry\Upload\Search\SearchRepository;
 
@@ -106,26 +105,27 @@ class RuleAnswers extends ValidationBase
      * @param RulePhoneInput $rulePhoneInput
      */
     public function __construct(
-        EntryStructure $entryStructure,
-        RuleIntegerInput $ruleIntegerInput,
-        RuleDecimalInput $ruleDecimalInput,
-        RuleRadioInput $ruleRadioInput,
-        RuleTextInput $ruleTextInput,
-        RuleTextareaInput $ruleTextareaInput,
-        RuleDateInput $ruleDateInput,
-        RuleTimeInput $ruleTimeInput,
-        RuleLocationInput $ruleLocationInput,
-        RuleCheckboxInput $ruleCheckboxInput,
-        RulePhotoInput $rulePhotoInput,
-        RuleVideoInput $ruleVideoInput,
-        RuleAudioInput $ruleAudioInput,
-        RuleBranchInput $ruleBranchInput,
-        RuleGroupInput $ruleGroupInput,
-        RuleDropdownInput $ruleDropdownInput,
-        RulePhoneInput $rulePhoneInput,
-        RuleSearchSingleInput $ruleSearchSingleInput,
+        EntryStructure          $entryStructure,
+        RuleIntegerInput        $ruleIntegerInput,
+        RuleDecimalInput        $ruleDecimalInput,
+        RuleRadioInput          $ruleRadioInput,
+        RuleTextInput           $ruleTextInput,
+        RuleTextareaInput       $ruleTextareaInput,
+        RuleDateInput           $ruleDateInput,
+        RuleTimeInput           $ruleTimeInput,
+        RuleLocationInput       $ruleLocationInput,
+        RuleCheckboxInput       $ruleCheckboxInput,
+        RulePhotoInput          $rulePhotoInput,
+        RuleVideoInput          $ruleVideoInput,
+        RuleAudioInput          $ruleAudioInput,
+        RuleBranchInput         $ruleBranchInput,
+        RuleGroupInput          $ruleGroupInput,
+        RuleDropdownInput       $ruleDropdownInput,
+        RulePhoneInput          $rulePhoneInput,
+        RuleSearchSingleInput   $ruleSearchSingleInput,
         RuleSearchMultipleInput $ruleSearchMultipleInput
-    ) {
+    )
+    {
         $this->ruleIntegerInput = $ruleIntegerInput;
         $this->ruleDecimalInput = $ruleDecimalInput;
         $this->ruleRadioInput = $ruleRadioInput;
@@ -181,7 +181,6 @@ class RuleAnswers extends ValidationBase
 
             // Required check
             if (!$this->checkRequired($input['is_required'], $answerData['answer'])) {
-                //EC5Logger::error('Rule answers - required check failed' . $inputRef, $project, $input);
                 return;
             }
 
@@ -245,7 +244,6 @@ class RuleAnswers extends ValidationBase
             $data = [$input['ref'] => $answer];
             $this->$variableName->validate($data);
             if ($this->$variableName->hasErrors()) {
-                EC5Logger::error('Input failed validation', $project, [$data, $input]);
                 $this->errors = $this->$variableName->errors();
             }
 
@@ -253,7 +251,6 @@ class RuleAnswers extends ValidationBase
                 // Additional checks on the answer
                 $answer = $this->$variableName->additionalChecks($input, $answer, $project, $entryStructure);
                 if ($this->$variableName->hasErrors()) {
-                    EC5Logger::error('Input failed parse answer', $project, [$data, $input, $this->$variableName->errors()]);
                     $this->errors = $this->$variableName->errors();
                 }
             }

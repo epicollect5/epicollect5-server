@@ -2,7 +2,6 @@
 
 namespace ec5\Http\Validation\Entries\Upload;
 
-use ec5\Libraries\EC5Logger\EC5Logger;
 use ec5\Models\Projects\Project;
 use ec5\Repositories\QueryBuilder\Entry\Upload\Search\BranchEntryRepository as BranchEntrySearchRepository;
 use ec5\Repositories\QueryBuilder\Entry\Upload\Search\EntryRepository as EntrySearchRepository;
@@ -88,7 +87,6 @@ class RuleBranchEntry extends EntryValidationBase
 
         if (count($inputs) == 0) {
             // Form inputs don't exist
-            EC5Logger::error('Branch upload failed - inputs dont exist', $project, $inputs);
             $this->errors['upload'] = ['ec5_15'];
             return;
         }
@@ -118,7 +116,7 @@ class RuleBranchEntry extends EntryValidationBase
         //searchRepository -> this must be the branch entry search?
         $owner = $this->searchRepository->where('uuid', '=', $branchUuid);
 
-        if($owner === null) {
+        if ($owner === null) {
             //no branch found, this is a new branch to add
             return true;
         }

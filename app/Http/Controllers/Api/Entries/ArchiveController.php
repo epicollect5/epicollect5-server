@@ -8,7 +8,6 @@ use ec5\Http\Controllers\Api\ProjectApiControllerBase;
 
 use ec5\Http\Validation\Entries\Archive\RuleArchive as ArchiveValidator;
 
-use ec5\Libraries\EC5Logger\EC5Logger;
 use ec5\Models\Entries\EntryStructure;
 use ec5\Repositories\QueryBuilder\Entry\Archive\EntryRepository as EntryArchive;
 use ec5\Repositories\QueryBuilder\Entry\Archive\BranchEntryRepository as BranchEntryArchive;
@@ -109,7 +108,6 @@ class ArchiveController extends ProjectApiControllerBase
         // Check if the api request has any errors
         if ($this->apiRequest->hasErrors()) {
             $this->errors = $this->apiRequest->errors();
-            EC5Logger::error('Archive Api request error', $this->requestedProject, $this->errors);
             return $this->apiResponse->errorResponse(400, $this->errors);
         }
 
@@ -117,7 +115,6 @@ class ArchiveController extends ProjectApiControllerBase
         // Validate the $data
         $archiveValidator->validate($data);
         if ($archiveValidator->hasErrors()) {
-            EC5Logger::error('Archive Validation error', $this->requestedProject, $archiveValidator->errors());
             return $this->apiResponse->errorResponse(400, $archiveValidator->errors());
         }
 
@@ -129,7 +126,6 @@ class ArchiveController extends ProjectApiControllerBase
         // Perform additional checks on the $entryStructure
         $archiveValidator->additionalChecks($this->requestedProject, $entryStructure);
         if ($archiveValidator->hasErrors()) {
-            EC5Logger::error('Archive Validation additional error', $this->requestedProject, $archiveValidator->errors());
             return $this->apiResponse->errorResponse(400, $archiveValidator->errors());
         }
 
@@ -169,7 +165,6 @@ class ArchiveController extends ProjectApiControllerBase
 
         // Attempt to Archive
         if (!$archiveRepository->archive($this->requestedProject->getId(), $entryStructure->getFormRef(), $entryStructure->getEntryUuid())) {
-            EC5Logger::error('Archive entry db error', $this->requestedProject, $archiveRepository->errors());
             return $this->apiResponse->errorResponse(400, $archiveRepository->errors());
         }
 

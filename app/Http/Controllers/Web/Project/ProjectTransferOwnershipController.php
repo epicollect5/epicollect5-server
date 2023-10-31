@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\Config;
 use Exception;
 use DB;
 use Log;
-use ec5\Libraries\EC5Logger\EC5Logger;
 
 class ProjectTransferOwnershipController extends ProjectControllerBase
 {

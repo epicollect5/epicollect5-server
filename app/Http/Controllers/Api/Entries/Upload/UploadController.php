@@ -39,14 +39,15 @@ class UploadController extends UploadControllerBase
      * @param EntryStatsRepository $entryStatsRepository
      */
     public function __construct(
-        Request $request,
-        ApiRequest $apiRequest,
-        ApiResponse $apiResponse,
-        EntryStructure $entryStructure,
-        EntryCreateRepository $entryCreateRepository,
+        Request                     $request,
+        ApiRequest                  $apiRequest,
+        ApiResponse                 $apiResponse,
+        EntryStructure              $entryStructure,
+        EntryCreateRepository       $entryCreateRepository,
         BranchEntryCreateRepository $branchEntryCreateRepository,
-        EntryStatsRepository $entryStatsRepository
-    ) {
+        EntryStatsRepository        $entryStatsRepository
+    )
+    {
         parent::__construct(
             $request,
             $apiRequest,
@@ -67,7 +68,6 @@ class UploadController extends UploadControllerBase
     {
         /* UPLOAD AND CHECK IT WAS SUCCESSFUL */
         if (!$this->upload($uploadValidator)) {
-            //EC5Logger::error('Returning error response', $this->requestedProject, $this->errors);
             return $this->apiResponse->errorResponse(400, $this->errors);
         }
 

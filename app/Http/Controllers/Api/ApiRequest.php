@@ -7,7 +7,6 @@ use ec5\Libraries\Utilities\Strings;
 use Request;
 use Log;
 use Exception;
-use ec5\Libraries\EC5Logger\EC5Logger;
 
 /**
  * Class ApiRequest
@@ -16,7 +15,6 @@ use ec5\Libraries\EC5Logger\EC5Logger;
  * This class was written by a junior developer with no clue, sorry for the mess
  * I am just patching stuff as I do not have the time to do a complete rewrite
  */
-
 class ApiRequest
 {
 
@@ -167,7 +165,7 @@ class ApiRequest
 
             Log::error('multipart request try/catch failed: ', [
                 'url' => $this->url,
-                'method' =>  $this->method,
+                'method' => $this->method,
                 'meta' => $this->meta ?? '',
                 'data' => $this->data ?? '',
                 'content' => $request->all()
@@ -198,7 +196,7 @@ class ApiRequest
      *
      * @return bool
      */
-    private function isValidData() : bool
+    private function isValidData(): bool
     {
         // If JSON not correctly formatted and it is a POST request
         if (!$this->data && $this->method === 'POST') {
@@ -206,7 +204,7 @@ class ApiRequest
 
             Log::error('Missing JSON "data" key in request: ', [
                 'url' => $this->url,
-                'method' =>  $this->method,
+                'method' => $this->method,
                 'meta' => $this->meta ?? '',
                 'data' => $this->data ?? '',
                 'content' => Request::getContent()
@@ -222,14 +220,12 @@ class ApiRequest
         // Check for HTML
         if (Strings::containsHtml($stringData)) {
             $this->errors['json-contains-html'] = ['ec5_220'];
-            EC5Logger::error('json-contains-html error hit ApiRequest:' . __LINE__, null, $this->data);
             return false;
         }
 
         // Check for emoji
         if (Strings::containsEmoji($stringData)) {
             $this->errors['json-contains-emoji'] = ['ec5_323'];
-            EC5Logger::error('json-contains-emoji error hit ApiRequest:' . __LINE__, null, $this->data);
             return false;
         }
 
@@ -332,7 +328,6 @@ class ApiRequest
 
         if (count($this->data) == 0 && $this->method === 'POST') {
             $this->errors['json-data-tag'] = ['ec5_14'];
-            EC5Logger::error('json-data-tag error hit ApiRequest:' . __LINE__, null, $this->data);
             return;
         }
 
@@ -341,7 +336,6 @@ class ApiRequest
 
         if (($this->type == null || empty($this->data[$this->type])) && $this->method === 'POST') {
             $this->errors['json-data-tag'] = ['ec5_14'];
-            EC5Logger::error('json-data-tag error hit ApiRequest:' . __LINE__, null, $this->data);
             return;
         }
 

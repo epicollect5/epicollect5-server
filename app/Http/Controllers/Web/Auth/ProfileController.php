@@ -6,7 +6,6 @@ use ec5\Http\Controllers\Controller;
 use ec5\Models\Users\User;
 use ec5\Models\Eloquent\UserProvider;
 use Illuminate\Http\Request;
-use ec5\Libraries\EC5Logger\EC5Logger;
 use Laravel\Socialite\Two\InvalidStateException;
 use Exception;
 use ec5\Libraries\JwtApple\JWT as JWTApple;
@@ -54,7 +53,7 @@ class ProfileController extends Controller
             'name' => $this->user->name,
             'email' => $this->user->email,
             'providers' => $this->providers,
-            'auth_methods' =>  config('auth.auth_methods')
+            'auth_methods' => config('auth.auth_methods')
         ]);
     }
 
@@ -155,7 +154,6 @@ class ProfileController extends Controller
             Log::error('Google Login Web Exception: ', ['exception' => [$e]]);
             return redirect()->route('profile')->withErrors(['ec5_369']);
         } catch (Exception $e) {
-            EC5Logger::error('Google Connect Web unsuccessful', null, [$e]);
             Log::error('Google Connect Web Exception: ', [
                 'exception' => $e->getMessage()
             ]);
@@ -174,7 +172,7 @@ class ProfileController extends Controller
                 'name' => $this->user->name,
                 'email' => $this->user->email,
                 'providers' => $this->providers,
-                'auth_methods' =>  config('auth.auth_methods')
+                'auth_methods' => config('auth.auth_methods')
             ]);
         }
 
@@ -264,7 +262,6 @@ class ProfileController extends Controller
                 }
             }
         } catch (Exception $e) {
-            EC5Logger::error('Apple Connect Web unsuccessful', null, [$e]);
             Log::error('Apple Connect Web Exception: ', [
                 'exception' => $e->getMessage()
             ]);

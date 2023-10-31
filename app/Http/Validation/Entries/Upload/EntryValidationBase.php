@@ -5,7 +5,6 @@ namespace ec5\Http\Validation\Entries\Upload;
 use ec5\Http\Validation\ValidationBase;
 use ec5\Http\Validation\Entries\Upload\RuleAnswers as AnswerValidator;
 
-use ec5\Libraries\EC5Logger\EC5Logger;
 use ec5\Models\Projects\Project;
 use ec5\Repositories\QueryBuilder\Entry\Upload\Search\SearchRepository;
 
@@ -128,7 +127,6 @@ abstract class EntryValidationBase extends ValidationBase
 
         // Check this input exists
         if (count($input) == 0) {
-            EC5Logger::error('Input doesnt exist ' . $inputRef, $project);
             // Input doesn't exist
             $this->errors['upload'] = ['ec5_84'];
             return;
