@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use ec5\Http\Controllers\Api\ApiResponse;
 use ec5\Mail\ExceptionNotificationMail;
 use Illuminate\Cache\RateLimiter;
+use Illuminate\Support\Facades\Config;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Mail;
 
@@ -34,10 +35,10 @@ class ApiThrottleRequests extends MiddlewareBase
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
-     * @param  int  $maxAttempts
-     * @param  float|int  $decayMinutes
+     * @param \Illuminate\Http\Request $request
+     * @param \Closure $next
+     * @param int $maxAttempts
+     * @param float|int $decayMinutes
      * @return mixed
      */
     public function handle($request, Closure $next, $maxAttempts = 60, $decayMinutes = 1)
@@ -52,7 +53,7 @@ class ApiThrottleRequests extends MiddlewareBase
             $this->limiter->hit($key, $decayMinutes);
         } catch (\Exception $e) {
             \Log::error('Rate limiter hit() exception', ['message' => $e->getMessage()]);
-            Mail::to(env('SYSTEM_EMAIL'))->send(new ExceptionNotificationMail($e->getMessage()));
+            Mail::to(Config::get('ec5Setup.system.email'))->send(new ExceptionNotificationMail($e->getMessage()));
         }
 
         $response = $next($request);
@@ -67,7 +68,7 @@ class ApiThrottleRequests extends MiddlewareBase
     /**
      * Resolve request signature.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return string
      */
     protected function resolveRequestSignature($request)
@@ -101,10 +102,10 @@ class ApiThrottleRequests extends MiddlewareBase
     /**
      * Add the limit header information to the given response.
      *
-     * @param  \Symfony\Component\HttpFoundation\Response  $response
-     * @param  int  $maxAttempts
-     * @param  int  $remainingAttempts
-     * @param  int|null  $retryAfter
+     * @param \Symfony\Component\HttpFoundation\Response $response
+     * @param int $maxAttempts
+     * @param int $remainingAttempts
+     * @param int|null $retryAfter
      * @return \Symfony\Component\HttpFoundation\Response
      */
     protected function addHeaders(Response $response, $maxAttempts, $remainingAttempts, $retryAfter = null)
@@ -127,9 +128,9 @@ class ApiThrottleRequests extends MiddlewareBase
     /**
      * Calculate the number of remaining attempts.
      *
-     * @param  string  $key
-     * @param  int  $maxAttempts
-     * @param  int|null  $retryAfter
+     * @param string $key
+     * @param int $maxAttempts
+     * @param int|null $retryAfter
      * @return int
      */
     protected function calculateRemainingAttempts($key, $maxAttempts, $retryAfter = null)

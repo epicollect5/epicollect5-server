@@ -7,7 +7,7 @@ class LdapUser implements Authenticatable
     /**
      * @var string $name
      */
-    protected $name;
+    public $name;
 
     /**
      * @var string $lastName

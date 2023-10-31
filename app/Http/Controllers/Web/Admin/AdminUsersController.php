@@ -60,7 +60,7 @@ class AdminUsersController extends Controller
     /**
      * Handle a request to update a user state
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @param ApiResponse $apiResponse
      * @param UpdateStateValidator $validator
      * @return $this|\Illuminate\Contracts\View\Factory|\Illuminate\Http\JsonResponse|\Illuminate\View\View
@@ -192,28 +192,28 @@ class AdminUsersController extends Controller
         /**
          * if user exists, just add the local provider
          * otherwise add both user and user provider as "local"
-         * 
+         *
          */
 
         $email = $inputs['email'];
         $user = User::where('email', $email)->first();
 
         if (!$user) {
-            $user  =  new User();
+            $user = new User();
             $user->name = $inputs['first_name'];
             $user->last_name = $inputs['last_name'];
             $user->email = $email;
-            $user->password = bcrypt($inputs['password'], ['rounds' => env('BCRYPT_ROUNDS')]);
+            $user->password = bcrypt($inputs['password'], ['rounds' => Config::get('auth.bcrypt_rounds')]);
             $user->state = Config::get('ec5Strings.user_state.active');
             $user->server_role = Config::get('ec5Strings.server_roles.basic');
             $user->save();
         }
 
         //if user exists but unverified, update existing user
-        if ($user->state  === config('ec5Strings.user_state.unverified')) {
+        if ($user->state === config('ec5Strings.user_state.unverified')) {
             $user->name = $inputs['first_name'];
             $user->last_name = $inputs['last_name'];
-            $user->password = bcrypt($inputs['password'], ['rounds' => env('BCRYPT_ROUNDS')]);
+            $user->password = bcrypt($inputs['password'], ['rounds' => Config::get('auth.bcrypt_rounds')]);
             $user->save();
         }
 

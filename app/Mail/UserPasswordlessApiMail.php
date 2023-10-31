@@ -9,6 +9,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Carbon\CarbonInterval;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Config;
 
 class UserPasswordlessApiMail extends Mailable
 {
@@ -28,7 +29,7 @@ class UserPasswordlessApiMail extends Mailable
 
         //to show how long the link will last
         $this->expireAt = Carbon::now()
-            ->subSeconds(env('PASSWORDLESS_TOKEN_EXPIRES_IN', 300))
+            ->subSeconds(Config::get('auth.passwordless_token_expire', 300))
             ->diffForHumans(Carbon::now(), true);
     }
 
@@ -39,7 +40,7 @@ class UserPasswordlessApiMail extends Mailable
      */
     public function build()
     {
-        return $this->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'))
+        return $this->from(Config::get('mail.from.address'), Config::get('mail.from.name'))
             ->subject(trans('site.login_passwordless'))
             ->view('emails.user_passwordless_api');
     }

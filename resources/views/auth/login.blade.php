@@ -34,7 +34,7 @@
 
                                 <div class="col-xs-12 col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
                                     <span class="hidden gcaptcha">
-                                        {{ env('GOOGLE_RECAPTCHA_SITE_KEY') }}
+                                        {{ Config::get('ec5Setup.google_recaptcha.site_key')}}
                                     </span>
 
                                     <form id="page-login__passwordless" method="POST"

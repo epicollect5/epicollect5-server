@@ -45,20 +45,18 @@ class RemoveUnverifiedUsersCommand extends Command
             //remove unverified users
             User::where('state', Config::get('ec5Strings.user_state.unverified'))
                 ->where('provider', Config::get('ec5Strings.providers.local'))
-                ->whereDate('created_at', '<', Carbon::now()->subDays(env('ACCOUNT_UNVERIFIED_EXPIRES_IN')))
+                ->whereDate('created_at', '<', Carbon::now()->subDays(Config::get('auth.account_unverified.expire')))
                 ->delete();
 
             //remove expired verification tokens (belonging to the removed users)
-            UserVerify::whereDate('created_at', '<', Carbon::now()->subDays(env('ACCOUNT_UNVERIFIED_EXPIRES_IN')))
+            UserVerify::whereDate('created_at', '<', Carbon::now()->subDays(Config::get('auth.account_unverified.expire')))
                 ->delete();
 
             DB::commit();
-        }
-        catch (PDOException $e) {
+        } catch (PDOException $e) {
             Log::error('failed to remove unverified users', ['exception' => $e]);
             DB::rollBack();
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             Log::error('failed to remove unverified users', ['exception' => $e]);
             DB::rollBack();
         }

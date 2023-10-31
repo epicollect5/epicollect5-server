@@ -43,7 +43,7 @@ class PasswordlessController extends AuthController
 
     public function sendLink(Request $request, RulePasswordlessWeb $validator, RuleRecaptcha $captchaValidator)
     {
-        $tokenExpiresAt = env('PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
+        $tokenExpiresAt = Config::get('auth.passwordless_token_expire', 300);
         $inputs = $request->all();
         //validate request
         $validator->validate($inputs);
@@ -54,9 +54,9 @@ class PasswordlessController extends AuthController
 
         //get recaptcha response
         $client = new Client(); //GuzzleHttp\Client
-        $response = $client->post(env('GOOGLE_RECAPTCHA_API_VERIFY_ENDPOINT'), [
+        $response = $client->post(Config::get('ec5Setup.google_recaptcha.verify_endpoint'), [
             'form_params' => [
-                'secret' => env('GOOGLE_RECAPTCHA_SECRET_KEY'),
+                'secret' => Config::get('ec5Setup.google_recaptcha.secret_key'),
                 'response' => $inputs['g-recaptcha-response']
             ]
         ]);
@@ -85,7 +85,7 @@ class PasswordlessController extends AuthController
         try {
             // Extract the key, from the config file.
             $secretKey = $jwtConfig['secret_key'];
-            $expiryTime = time() + env('PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
+            $expiryTime = time() + Config::get('auth.passwordless_token_expire', 300);
 
             $data = array(
                 'iss' => Config::get('app.url'), // issuer
@@ -161,7 +161,7 @@ class PasswordlessController extends AuthController
 
     public function sendCode(Request $request, RulePasswordlessApiCode $validator, RuleRecaptcha $captchaValidator)
     {
-        $tokenExpiresAt = env('PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
+        $tokenExpiresAt = Config::get('auth.passwordless_token_expire', 300);
         $inputs = $request->all();
 
         //validate request
@@ -175,9 +175,9 @@ class PasswordlessController extends AuthController
         if (!App::environment('testing')) {
             //get recaptcha response
             $client = new Client(); //GuzzleHttp\Client
-            $response = $client->post(env('GOOGLE_RECAPTCHA_API_VERIFY_ENDPOINT'), [
+            $response = $client->post(Config::get('ec5Setup.google_recaptcha.verify_endpoint'), [
                 'form_params' => [
-                    'secret' => env('GOOGLE_RECAPTCHA_SECRET_KEY'),
+                    'secret' => Config::get('ec5Setup.google_recaptcha.secret_key'),
                     'response' => $inputs['g-recaptcha-response']
                 ]
             ]);
@@ -214,7 +214,7 @@ class PasswordlessController extends AuthController
             //add token to db
             $userPasswordless = new UserPasswordlessWeb();
             $userPasswordless->email = $email;
-            $userPasswordless->token = bcrypt($code, ['rounds' => env('BCRYPT_ROUNDS')]);
+            $userPasswordless->token = bcrypt($code, ['rounds' => Config::get('auth.bcrypt_rounds')]);
             $userPasswordless->expires_at = Carbon::now()->addSeconds($tokenExpiresAt)->toDateTimeString();
             $userPasswordless->save();
 

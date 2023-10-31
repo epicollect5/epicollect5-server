@@ -150,7 +150,7 @@ class WebUploadController extends UploadControllerBase
         }
 
         //Throttle for half a second so the server does not get smashed by uploads
-        time_nanosleep(0, (int)(env('RESPONSE_DELAY_UPLOAD_REQUEST', 500000000)));
+        time_nanosleep(0, (int)(Config::get('ec5Api.response_delay.upload')));
 
 
         /* PASSED */

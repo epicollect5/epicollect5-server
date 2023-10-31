@@ -123,7 +123,7 @@ class PHPToolsController extends ProjectControllerBase
     {
         //send test email to verify it is all working
         try {
-            Mail::to(env('SUPER_ADMIN_EMAIL'))->send(new DebugEmailSending());
+            Mail::to(Config::get('ec5Setup.super_admin_user.email'))->send(new DebugEmailSending());
             return 'Mail sent.';
         } catch (Exception $e) {
             return 'Failed -> ' . $e->getMessage();
@@ -138,7 +138,7 @@ class PHPToolsController extends ProjectControllerBase
         $url = route('login-reset', $token);
 
         $expireAt = Carbon::now()
-            ->subSeconds(env('JWT_FORGOT_EXPIRE', 3600))
+            ->subSeconds(Config::get('auth.jwt-forgot.expire'))
             ->diffForHumans(Carbon::now(), true);
 
         //        return view('emails.user_registration', [

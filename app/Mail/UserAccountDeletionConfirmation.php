@@ -5,6 +5,7 @@ namespace ec5\Mail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Config;
 
 class UserAccountDeletionConfirmation extends Mailable
 {
@@ -26,7 +27,7 @@ class UserAccountDeletionConfirmation extends Mailable
      */
     public function build()
     {
-        return $this->from(env('MAIL_FROM_ADDRESS'), 'Epicollect5')
+        return $this->from(Config::get('mail.from.address'), 'Epicollect5')
             ->subject('Account Deletion Confirmation')
             ->view('emails.account_deletion_confirmation');
     }

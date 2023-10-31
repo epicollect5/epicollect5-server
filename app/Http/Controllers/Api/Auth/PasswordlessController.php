@@ -30,7 +30,7 @@ class PasswordlessController extends AuthController
 
     public function sendCode(Request $request, RulePasswordlessApiCode $validator, ApiResponse $apiResponse)
     {
-        $tokenExpiresAt = env('PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
+        $tokenExpiresAt = Config::get('auth.passwordless_token_expire', 300);
 
         $inputs = $request->all();
 
@@ -55,7 +55,7 @@ class PasswordlessController extends AuthController
             //add token to db
             $userPasswordless = new UserPasswordlessApi();
             $userPasswordless->email = $email;
-            $userPasswordless->code = bcrypt($code, ['rounds' => env('BCRYPT_ROUNDS')]);
+            $userPasswordless->code = bcrypt($code, ['rounds' => Config::get('auth.bcrypt_rounds')]);
             $userPasswordless->expires_at = Carbon::now()->addSeconds($tokenExpiresAt)->toDateTimeString();
             $userPasswordless->save();
 
@@ -90,7 +90,7 @@ class PasswordlessController extends AuthController
     }
 
     //try to authenticate user
-    public function login(Request $request, ApiResponse $apiResponse,  RulePasswordlessApiLogin $validator)
+    public function login(Request $request, ApiResponse $apiResponse, RulePasswordlessApiLogin $validator)
     {
         //validate request
         $inputs = $request->all();

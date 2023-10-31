@@ -83,7 +83,7 @@ class ProfileController extends Controller
 
         return Socialite::with('google')
             ->with(['prompt' => 'select_account']) //todo not sure we might remove this
-            ->redirectUrl(env('GOOGLE_CONNECT_REDIRECT_URI'))
+            ->redirectUrl(Config::get('auth.google.connect_redirect_uri'))
             ->redirect();
     }
 
@@ -114,12 +114,12 @@ class ProfileController extends Controller
     public function handleGoogleConnectCallback(Request $request)
     {
         try {
-            // Find the google user
+            // Find the Google user
             $googleUser = Socialite::with('google')
-                ->redirectUrl(env('GOOGLE_CONNECT_REDIRECT_URI'))
+                ->redirectUrl(Config::get('auth.google.connect_redirect_uri'))
                 ->user();
 
-            // If we found a google user
+            // If we found a Google user
             if ($googleUser) {
                 //check email is the same to the logged in user
                 if ($googleUser->email === $this->user->email) {
@@ -184,7 +184,7 @@ class ProfileController extends Controller
             // Log::error('Apple request', ['$params' => $params]);
 
             //get public keys from Apple endpoint
-            $apple_jwk_keys = json_decode(file_get_contents(env('APPLE_PUBLIC_KEYS_ENDPOINT')), null, 512, JSON_OBJECT_AS_ARRAY);
+            $apple_jwk_keys = json_decode(file_get_contents(Config::get('auth.apple.public_keys_endpoint')), null, 512, JSON_OBJECT_AS_ARRAY);
             $keys = array();
             foreach ($apple_jwk_keys->keys as $key) {
                 $keys[] = (array)$key;

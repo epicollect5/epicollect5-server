@@ -4,6 +4,7 @@ namespace ec5\Traits\Auth;
 
 use ec5\Libraries\JwtApple\JWT as JWTApple;
 use ec5\Libraries\JwtApple\JWK as JWKApple;
+use Illuminate\Support\Facades\Config;
 use Log;
 use Exception;
 
@@ -11,7 +12,7 @@ trait AppleJWTHandler
 {
     public function parseIdentityToken($identityToken)
     {
-        $apple_jwk_keys = json_decode(file_get_contents(env('APPLE_PUBLIC_KEYS_ENDPOINT')), null, 512, JSON_OBJECT_AS_ARRAY);
+        $apple_jwk_keys = json_decode(file_get_contents(Config::get('auth.apple.public_keys_endpoint')), null, 512, JSON_OBJECT_AS_ARRAY);
         $keys = array();
         foreach ($apple_jwk_keys->keys as $key) {
             $keys[] = (array)$key;

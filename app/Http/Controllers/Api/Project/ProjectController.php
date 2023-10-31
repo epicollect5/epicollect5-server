@@ -11,6 +11,7 @@ use ec5\Models\Eloquent\Project;
 use ec5\Repositories\QueryBuilder\Stats\Entry\StatsRepository as EntryStatsRepository;
 use Exception;
 use Auth;
+use Illuminate\Support\Facades\Config;
 
 class ProjectController extends ProjectControllerBase
 {
@@ -48,12 +49,12 @@ class ProjectController extends ProjectControllerBase
             $userAvatar = Auth::user()->avatar;
             //passwordless and apple auth do not get avatar, set placeholder
             if (empty($userAvatar)) {
-                $userAvatar = env('APP_URL') . '/images/avatar-placeholder.png';
+                $userAvatar = Config::get('app.url') . '/images/avatar-placeholder.png';
             }
         } catch (Exception $e) {
             //
             $userName = 'User';
-            $userAvatar = env('APP_URL') . '/images/avatar-placeholder.png';
+            $userAvatar = Config::get('app.url') . '/images/avatar-placeholder.png';
         }
 
         $apiResponse->setMeta([

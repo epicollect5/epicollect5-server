@@ -9,6 +9,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Carbon\CarbonInterval;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Config;
 
 class UserAccountDeletionAdmin extends Mailable
 {
@@ -33,7 +34,7 @@ class UserAccountDeletionAdmin extends Mailable
      */
     public function build()
     {
-        return $this->from(env('MAIL_FROM_ADDRESS'), 'Epicollect5')
+        return $this->from(Config::get('mail.from.address'), 'Epicollect5')
             ->subject('Account Deletion Request')
             ->view('emails.account_deletion_admin', ['email' => $this->email]);
     }

@@ -9,6 +9,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Carbon\CarbonInterval;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Config;
 
 class UserPasswordResetMail extends Mailable
 {
@@ -33,7 +34,7 @@ class UserPasswordResetMail extends Mailable
 
         //to show how long the link will last
         $this->expireAt = Carbon::now()
-            ->subSeconds(env('JWT_FORGOT_EXPIRE', 3600))
+            ->subSeconds(Config::get('auth.jwt-forgot.expire'))
             ->diffForHumans(Carbon::now(), true);
     }
 
@@ -44,7 +45,7 @@ class UserPasswordResetMail extends Mailable
      */
     public function build()
     {
-        return $this->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'))
+        return $this->from(Config::get('mail.from.address'), Config::get('mail.from.name'))
             ->subject(trans('site.reset_password') . ' ' . $this->name)
             ->view('emails.user_reset_password');
     }

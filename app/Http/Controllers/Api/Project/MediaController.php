@@ -9,6 +9,7 @@ use ec5\Http\Controllers\ProjectControllerBase;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Http\Request;
 use Exception;
+use Illuminate\Support\Facades\Config;
 use Response;
 use Storage;
 use Image;
@@ -119,7 +120,6 @@ class MediaController extends ProjectControllerBase
      * @param Request $request
      * @param ApiResponse $apiResponse
      * @param MediaValidator $mediaValidator
-     * @return \Illuminate\Http\JsonResponse
      */
     //imp: method is not used yet
     public function getApiMedia(Request $request, ApiResponse $apiResponse, MediaValidator $mediaValidator)
@@ -169,7 +169,7 @@ class MediaController extends ProjectControllerBase
                 $response->header("Content-Type", $contentType);
 
                 //Throttle for 1/4 of a second so the server does not get smashed by media requests
-                time_nanosleep(0, (int)(env('RESPONSE_DELAY_MEDIA_REQUEST', 250000000)));
+                time_nanosleep(0, (int)(Config::get('ec5Api.response_delay.media')));
 
                 return $response;
             } catch (Exception $e) {

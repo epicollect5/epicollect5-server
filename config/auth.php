@@ -131,6 +131,7 @@ return [
         'expire' => env('JWT_PASSWORDLESS_EXPIRE', 86400)
     ],
 
+    'passwordless_token_expire' => env('PASSWORDLESS_TOKEN_EXPIRES_IN'),
     /*
     |--------------------------------------------------------------------------
     | Passport
@@ -139,6 +140,12 @@ return [
     */
     'passport' => [
         'expire' => 7200
+    ],
+    'account_code' => [
+        'expire' => env('ACCOUNT_CODE_EXPIRES_IN', 7200)
+    ],
+    'account_unverified' => [
+        'expire' => env(' ACCOUNT_UNVERIFIED_EXPIRES_IN')
     ],
 
     /*
@@ -167,4 +174,14 @@ return [
     'auth_web_enabled' => env('AUTH_WEB_ENABLED', true),
 
     'ip_whitelist' => explode(',', env('IP_WHITELIST')),
+
+    'bcrypt_rounds' => env('BCRYPT_ROUNDS', 12),
+
+    'google' => [
+        'connect_redirect_uri' => env('GOOGLE_CONNECT_REDIRECT_URI')
+
+    ],
+    'apple' => [
+        'public_keys_endpoint' => env('APPLE_PUBLIC_KEYS_ENDPOINT')
+    ]
 ];

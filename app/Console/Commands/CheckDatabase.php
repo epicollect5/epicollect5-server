@@ -4,6 +4,7 @@ namespace ec5\Console\Commands;
 
 use Illuminate\Console\Command;
 use DB;
+use Illuminate\Support\Facades\Config;
 use Mail;
 use Exception;
 
@@ -37,8 +38,8 @@ class CheckDatabase extends Command
         } catch (Exception $e) {
             $this->error('MYSQL is currently down!');
             Mail::raw('MYSQL is currently down!', function ($message) {
-                $message->from(env('MAIL_FROM_ADDRESS'), 'Epicollect5');
-                $message->to(env('SYSTEM_EMAIL'));
+                $message->from(Config::get('mail.from.address'), Config::get('mail.from.name'));
+                $message->to(Config::get('ec5Setup.system.email'));
                 $message->subject('MYSQL is down...');
             });
         }

@@ -10,8 +10,8 @@ class IpMiddleware extends MiddlewareBase
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
+     * @param \Illuminate\Http\Request $request
+     * @param \Closure $next
      * @return mixed
      */
     public function handle($request, Closure $next)
@@ -20,7 +20,7 @@ class IpMiddleware extends MiddlewareBase
 
         //localhost $request->ip() gives ::1, we filter only in production
         //for localhost testing, disable middleware as needed
-        if (env('IP_FILTERING_ENABLED')) {
+        if (Config::get('ec5Setup.ip_filtering_enabled')) {
             if (!in_array($request->ip(), $ips)) {
                 $errors = ['auth' => ['ec5_256']];
                 return $this->apiResponse->errorResponse(404, $errors);

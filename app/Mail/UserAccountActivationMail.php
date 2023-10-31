@@ -7,6 +7,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Facades\Config;
 
 class UserAccountActivationMail extends Mailable
 {
@@ -25,7 +26,7 @@ class UserAccountActivationMail extends Mailable
     {
         $this->name = $name;
         $this->code = $code;
-        $this->url =  route('verify');
+        $this->url = route('verify');
     }
 
     /**
@@ -35,8 +36,8 @@ class UserAccountActivationMail extends Mailable
      */
     public function build()
     {
-        return $this->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'))
-            ->subject(trans('site.activate_your_account'). ' '.$this->name)
+        return $this->from(Config::get('mail.from.address'), Config::get('mail.from.name'))
+            ->subject(trans('site.activate_your_account') . ' ' . $this->name)
             ->view('emails.user_registration');
     }
 }

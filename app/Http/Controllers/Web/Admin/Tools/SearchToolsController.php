@@ -117,6 +117,7 @@ class SearchToolsController extends Controller
 
         return $wrongProjects;
     }
+
     public function countMedia($days = 1)
     {
         $projectsWithMedia = [];
@@ -179,6 +180,7 @@ class SearchToolsController extends Controller
 
         return $projectsWithMedia;
     }
+
     //find project with jumps (only first form is checked)
     public function findProjectsWithJumps()
     {
@@ -383,7 +385,7 @@ class SearchToolsController extends Controller
 
     public function findProjectsStorageUsedDefault()
     {
-        return  $this->findProjectsStorageUsed(10);
+        return $this->findProjectsStorageUsed(10);
     }
 
     public function findProjectsStorageUsed($threshold)
@@ -391,7 +393,7 @@ class SearchToolsController extends Controller
         $start = Carbon::now()->getTimestamp();
         $table = 'storage_stats_remote';
         $thresholdInt = (int)$threshold;
-        $costXGB = floatval(env('COST_X_GB', 0.10));
+        $costXGB = floatval(Config::get('ec5Setup.cost_x_gb'));
 
         $projectsOver = DB::table($table)
             ->where('entries', '>', $thresholdInt)
@@ -425,18 +427,18 @@ class SearchToolsController extends Controller
 
         //get handle of empty file just created
         $CSVfilepathOver = Storage::disk('debug')
-            ->getAdapter()
-            ->getPathPrefix()
+                ->getAdapter()
+                ->getPathPrefix()
             . $csvFilenameOver;
 
         $CSVfilepathUnder = Storage::disk('debug')
-            ->getAdapter()
-            ->getPathPrefix()
+                ->getAdapter()
+                ->getPathPrefix()
             . $csvFilenameUnder;
 
         $CSVfilepathOverall = Storage::disk('debug')
-            ->getAdapter()
-            ->getPathPrefix()
+                ->getAdapter()
+                ->getPathPrefix()
             . $csvFilenameOverall;
 
         //write to file one row at a time to keep memory usage low
@@ -538,11 +540,11 @@ class SearchToolsController extends Controller
             ->where('entries', '<=', $thresholdInt)
             ->sum('overall_bytes');
 
-        $bytesOver = (int)  $bytesOver;
-        $bytesUnder = (int)  $bytesUnder;
+        $bytesOver = (int)$bytesOver;
+        $bytesUnder = (int)$bytesUnder;
 
-        $costUnder =  '$' . round(((($bytesUnder) / 1000000000)) * $costXGB, 3);
-        $costOver =  '$' . round(((($bytesOver) / 1000000000)) * $costXGB, 3);
+        $costUnder = '$' . round(((($bytesUnder) / 1000000000)) * $costXGB, 3);
+        $costOver = '$' . round(((($bytesOver) / 1000000000)) * $costXGB, 3);
         $csvOverall->insertOne([
             Common::formatBytes($bytesOver + $bytesUnder),
             Common::formatBytes($bytesUnder),
@@ -551,7 +553,6 @@ class SearchToolsController extends Controller
             $costOver,
             $threshold
         ]);
-
 
 
         $duration = Carbon::now()->getTimestamp() - $start;
@@ -567,7 +568,7 @@ class SearchToolsController extends Controller
         return response()->download($filepath)->deleteFileAfterSend(true);
     }
 
-    public function  findProjectsStorageUsedTableDefault()
+    public function findProjectsStorageUsedTableDefault()
     {
         return $this->findProjectsStorageUsedTable(null);
     }
@@ -737,7 +738,7 @@ class SearchToolsController extends Controller
                     $projectStorage = StorageStats::updateOrCreate(
                         [
                             'project_id' => $chunkedEntry->project_id,
-                            'project_ref' =>  $projectRef
+                            'project_ref' => $projectRef
                         ],
                         [
                             'project_name' => $projectName,
@@ -745,7 +746,7 @@ class SearchToolsController extends Controller
                             'entries' => $chunkedEntry->total_entries,
                             'branches' => is_array($branchCounts) ? array_sum($branchCounts) : 0,
                             'last_entry_uploaded' => $chunkedEntry->latest_entry ?? null,
-                            'last_branch_uploaded' =>  $branchLatest ?? null,
+                            'last_branch_uploaded' => $branchLatest ?? null,
                             'audio_bytes' => $project['audio'] ?? 0,
                             'photo_bytes' => $project['photo'] ?? 0,
                             'video_bytes' => $project['video'] ?? 0,
@@ -781,7 +782,7 @@ class SearchToolsController extends Controller
         return [
             'executed in' => CarbonInterval::seconds($duration)->cascade()->forHumans(),
             'year' => $year ?? 'lifetime',
-            'mined' =>  $projectsMined,
+            'mined' => $projectsMined,
             'updated' => $projectsUpdated,
             'skipped' => $projectsSkipped
         ];
@@ -789,12 +790,12 @@ class SearchToolsController extends Controller
 
     private function createZipArchive()
     {
-        $zipFilename =  'storage-info.zip';
+        $zipFilename = 'storage-info.zip';
         $zip = new ZipArchive();
         $pathDebugDir = Storage::disk('debug')
             ->getAdapter()
             ->getPathPrefix();
-        $zipFilepath =  $pathDebugDir . $zipFilename;
+        $zipFilepath = $pathDebugDir . $zipFilename;
 
         //create empty zip file
         $zip->open($zipFilepath, \ZipArchive::CREATE);
@@ -818,6 +819,7 @@ class SearchToolsController extends Controller
 
         return $zipFilepath;
     }
+
     function dirSize($directory)
     {
         $size = 0;

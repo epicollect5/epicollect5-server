@@ -37,7 +37,7 @@ class SignUpController extends Controller
 
     public function store(Request $request, RuleSignup $validator, RuleRecaptcha $captchaValidator)
     {
-        $codeExpiresAt = env('ACCOUNT_CODE_EXPIRES_IN', 7200);
+        $codeExpiresAt = Config::get('auth.account_code.expire');
 
         //validate request parameters
         $inputs = $request->all();
@@ -57,9 +57,9 @@ class SignUpController extends Controller
         }
 
         $client = new Client(); //GuzzleHttp\Client
-        $response = $client->post(env('GOOGLE_RECAPTCHA_API_VERIFY_ENDPOINT'), [
+        $response = $client->post(Config::get('ec5Setup.google_recaptcha.verify_endpoint'), [
             'form_params' => [
-                'secret' => env('GOOGLE_RECAPTCHA_SECRET_KEY'),
+                'secret' => Config::get('ec5Setup.google_recaptcha.secret_key'),
                 'response' => $inputs['g-recaptcha-response']
             ]
         ]);
@@ -85,7 +85,7 @@ class SignUpController extends Controller
 
         $user->name = trim($inputs['name']);
         $user->email = trim($inputs['email']);
-        $user->password = bcrypt($inputs['password'], ['rounds' => env('BCRYPT_ROUNDS', 10)]);
+        $user->password = bcrypt($inputs['password'], ['rounds' => Config::get('auth.bcrypt_rounds')]);
         $user->provider = Config::get('ec5Strings.providers.local');
         $user->server_role = Config::get('ec5Strings.server_roles.basic');
         $user->state = Config::get('ec5Strings.user_state.unverified');

@@ -107,7 +107,7 @@ class ResetPasswordController extends Controller
             return redirect()->route('home')->withErrors(['staff-reset' => ['ec5_366']]);
         }
 
-        $user->password = bcrypt($inputs['password'], ['rounds' => env('BCRYPT_ROUNDS', 12)]);
+        $user->password = bcrypt($inputs['password'], ['rounds' => Config::get('auth.bcrypt_rounds')]);
         try {
             DB::beginTransaction();
             $user->save();

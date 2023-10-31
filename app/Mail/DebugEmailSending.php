@@ -5,6 +5,7 @@ namespace ec5\Mail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Config;
 
 class DebugEmailSending extends Mailable
 {
@@ -26,7 +27,9 @@ class DebugEmailSending extends Mailable
      */
     public function build()
     {
-        return $this->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'))
+        return $this
+            ->from(Config::get('mail.from.address'),
+                Config::get('mail.from.name'))
             ->subject('This is a test email using Mailgun')
             ->view('emails.debug_email_sending');
     }

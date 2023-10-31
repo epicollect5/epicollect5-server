@@ -163,7 +163,7 @@ class AccountController extends Controller
 
         //send request to admin
         try {
-            Mail::to(env('SYSTEM_EMAIL'))->send(new UserAccountDeletionAdmin($email));
+            Mail::to(Config::get('ec5Setup.system.email'))->send(new UserAccountDeletionAdmin($email));
         } catch (\Exception $e) {
             return $this->apiResponse->errorResponse(400, [
                 'account-deletion' => ['ec5_103']

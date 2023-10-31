@@ -91,13 +91,12 @@ class VerificationController extends Controller
 
     public function resend()
     {
-        $codeExpiresAt = env('ACCOUNT_CODE_EXPIRES_IN', 7200);
+        $codeExpiresAt = Config::get('auth.account_code.expire');
 
         $user = Auth::user();
-        $userVerify = $userVerify = UserVerify::where([
-            'user_id' => $user->id,
-            'email' => $user->email
-        ])->first();
+        $userVerify = UserVerify::where('user_id', $user->id)
+            ->where('email', $user->email)
+            ->first();
 
         //remove current code for this user if found
         if ($userVerify !== null) {

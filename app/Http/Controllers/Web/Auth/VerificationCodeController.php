@@ -2,6 +2,7 @@
 
 namespace ec5\Http\Controllers\Web\Auth;
 
+use Illuminate\Support\Facades\Config;
 use Log;
 use DB;
 use PDOException;
@@ -43,7 +44,7 @@ class VerificationCodeController extends AuthController
             }
 
             //send verification code
-            $tokenExpiresAt = env('PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
+            $tokenExpiresAt = Config::get('auth.passwordless_token_expire', 300);
             $code = Generators::randomNumber(6, 1);
 
             try {
@@ -57,7 +58,7 @@ class VerificationCodeController extends AuthController
                 //add token to db
                 $userPasswordless = new UserPasswordlessApi();
                 $userPasswordless->email = $email;
-                $userPasswordless->code = bcrypt($code, ['rounds' => env('BCRYPT_ROUNDS')]);
+                $userPasswordless->code = bcrypt($code, ['rounds' => Config::get('auth.bcrypt_rounds')]);
                 $userPasswordless->expires_at = Carbon::now()->addSeconds($tokenExpiresAt)->toDateTimeString();
                 $userPasswordless->save();
 

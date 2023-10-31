@@ -48,7 +48,7 @@ class ForgotPasswordController extends Controller
 
     public function sendResetEmail(Request $request, RuleForgot $validator, RuleRecaptcha $captchaValidator)
     {
-        $tokenExpiresAt = env('JWT_FORGOT_EXPIRE', 3600);
+        $tokenExpiresAt = Config::get('auth.jwt-forgot.expire');
 
         //validate request
         $inputs = $request->all();
@@ -62,9 +62,9 @@ class ForgotPasswordController extends Controller
 
         //get recaptcha response
         $client = new Client(); //GuzzleHttp\Client
-        $response = $client->post(env('GOOGLE_RECAPTCHA_API_VERIFY_ENDPOINT'), [
+        $response = $client->post(Config::get('ec5Setup.google_recaptcha.verify_endpoint'), [
             'form_params' => [
-                'secret' => env('GOOGLE_RECAPTCHA_SECRET_KEY'),
+                'secret' => Config::get('ec5Setup.google_recaptcha.secret_key'),
                 'response' => $inputs['g-recaptcha-response']
             ]
         ]);
