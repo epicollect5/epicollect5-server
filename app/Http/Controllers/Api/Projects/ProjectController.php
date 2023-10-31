@@ -35,26 +35,6 @@ class ProjectController extends Controller
      * @param ApiResponse $apiResponse
      * @param $name
      * @return \Illuminate\Http\JsonResponse
-     *
-     * @SWG\Get(
-     *   path="/api/projects/{name}",
-     *   summary="Search for projects",
-     *   tags={"projects"},
-     *   operationId="search",
-     *   produces={"application/json"},
-     *   @SWG\Parameter(
-     *     name="name",
-     *     in="path",
-     *     description="Project name.",
-     *     required=true,
-     *     type="string",
-     *     default="ec5"
-     *   ),
-     *   @SWG\Response(response=200, description="successful operation"),
-     *   @SWG\Response(response=400, description="not acceptable"),
-     *   @SWG\Response(response=500, description="internal server error")
-     * )
-     *
      */
     public function search(ApiResponse $apiResponse, $name = '')
     {
@@ -68,18 +48,11 @@ class ProjectController extends Controller
         // todo: make this more efficient? ie don't loop twice
         // Build the json api response
         foreach ($searchResults as $searchResult) {
-
-            //HACK for COG-UK *********************************
-            if ($searchResult->ref !== env('COGUK_REF', '')) {
-
-                $data['type'] = 'project';
-                $data['id'] = $searchResult->ref;
-                $data['project'] = $searchResult;
-
-                $projects[] = $data;
-            }
+            $data['type'] = 'project';
+            $data['id'] = $searchResult->ref;
+            $data['project'] = $searchResult;
+            $projects[] = $data;
         }
-
         // Set the data
         $apiResponse->setData($projects);
 

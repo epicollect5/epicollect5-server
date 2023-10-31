@@ -52,13 +52,13 @@ class ProjectPermissionsApi extends ProjectPermissionsBase
      * @param Project $requestedProject
      * @param OAuthProjectClientSearch $oAuthProjectClientSearch
      */
-    public function __construct(ResourceServer $server,
-        Request $request,
-        SearchRepository $search,
-        ProjectRoleSearch $projectRoleSearch,
-        ApiResponse $apiResponse,
-        Project $requestedProject,
-        OAuthProjectClientSearch $oAuthProjectClientSearch)
+    public function __construct(ResourceServer           $server,
+                                Request                  $request,
+                                SearchRepository         $search,
+                                ProjectRoleSearch        $projectRoleSearch,
+                                ApiResponse              $apiResponse,
+                                Project                  $requestedProject,
+                                OAuthProjectClientSearch $oAuthProjectClientSearch)
     {
         $this->server = $server;
         $this->oAuthProjectClientSearch = $oAuthProjectClientSearch;
@@ -79,7 +79,7 @@ class ProjectPermissionsApi extends ProjectPermissionsBase
     {
 
         // Only need to check for a permission if the project is private
-        if ($this->requestedProject->access == Config::get('ec5Strings.project_access.private') || $this->requestedProject->ref === env('COGUK_REF', '')) {
+        if ($this->requestedProject->access == Config::get('ec5Strings.project_access.private')) {
 
             // Taken from TokenGuard:
             // First, we will convert the Symfony request to a PSR-7 implementation which will
@@ -87,7 +87,7 @@ class ProjectPermissionsApi extends ProjectPermissionsBase
             // conversion for us to a Zend Diactoros implementation of the PSR-7 request.
             $psr = (new DiactorosFactory)->createRequest($this->request);
 
-            try{
+            try {
                 // Attempt to validate the client request
                 $psr = $this->server->validateAuthenticatedRequest($psr);
             } catch (OAuthServerException $e) {
