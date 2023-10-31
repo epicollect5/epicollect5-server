@@ -7,6 +7,7 @@ use Tests\TestCase;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\User;
 use Faker\Factory as Faker;
+use Illuminate\Support\Facades\Config;
 
 class ArchiveProjectTest extends TestCase
 {
@@ -26,7 +27,7 @@ class ArchiveProjectTest extends TestCase
             $project = factory(Project::class)->create([
                 'name' => 'EC5 Unit Test ' . $i,
                 'slug' => 'ec5-unit-test-' . $i,
-                'created_by' => User::where('email', env('SUPER_ADMIN_EMAIL'))->first()['id']
+                'created_by' => User::where('email', Config::get('testing.SUPER_ADMIN_EMAIL'))->first()['id']
             ]);
             //assert project is present before archiving
             $this->assertEquals(1, Project::where('id', $project->id)->count());

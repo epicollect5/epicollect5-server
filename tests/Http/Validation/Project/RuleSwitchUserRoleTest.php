@@ -26,7 +26,7 @@ class RuleSwitchUserRoleTest extends TestCase
 
     public function testParameters()
     {
-        $email = env('SUPER_ADMIN_EMAIL');
+        $email = Config::get('testing.SUPER_ADMIN_EMAIL');
         $inputs = [
             'currentRole' => 'curator',
             'newRole' => 'collector',
@@ -63,7 +63,7 @@ class RuleSwitchUserRoleTest extends TestCase
         $inputs = [
             'currentRole' => 'curator',
             'newRole' => 'wow',
-            'email' => env('SUPER_ADMIN_EMAIL')
+            'email' => Config::get('testing.SUPER_ADMIN_EMAIL')
         ];
 
         // Invalid newRole
@@ -90,12 +90,12 @@ class RuleSwitchUserRoleTest extends TestCase
 
         //create a fake user with creator email
         $creator = factory(User::class)->create([
-            'email' => env('CREATOR_EMAIL')
+            'email' => Config::get('testing.CREATOR_EMAIL')
         ]);
 
         //create a fake user with manager email
         $manager = factory(User::class)->create([
-            'email' => env('MANAGER_EMAIL')
+            'email' => Config::get('testing.MANAGER_EMAIL')
         ]);
 
         //create fake project with creator user
@@ -117,8 +117,8 @@ class RuleSwitchUserRoleTest extends TestCase
             'role' => $managerRole
         ]);
 
-        $this->assertDatabaseHas('users', ['email' => env('CREATOR_EMAIL')]);
-        $this->assertDatabaseHas('users', ['email' => env('MANAGER_EMAIL')]);
+        $this->assertDatabaseHas('users', ['email' => Config::get('testing.CREATOR_EMAIL')]);
+        $this->assertDatabaseHas('users', ['email' => Config::get('testing.MANAGER_EMAIL')]);
 
         $this->assertDatabaseHas('project_roles', [
             'user_id' => $manager->id,

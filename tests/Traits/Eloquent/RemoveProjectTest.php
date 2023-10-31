@@ -6,6 +6,7 @@ use ec5\Models\Eloquent\OAuthClientProjects;
 use ec5\Models\Eloquent\ProjectStat;
 use ec5\Models\Eloquent\ProjectStructure;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\Config;
 use Tests\TestCase;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\User;
@@ -27,7 +28,7 @@ class RemoveProjectTest extends TestCase
             $project = factory(Project::class)->create([
                 'name' => 'EC5 Unit Test ' . $i,
                 'slug' => 'ec5-unit-test-' . $i,
-                'created_by' => User::where('email', env('SUPER_ADMIN_EMAIL'))->first()['id']
+                'created_by' => User::where('email', Config::get('testing.SUPER_ADMIN_EMAIL'))->first()['id']
             ]);
 
             //add fake stats

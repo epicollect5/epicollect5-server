@@ -20,12 +20,12 @@ class MethodTransferOwnershipTest extends TestCase
 
         //create a fake user with creator email
         $creator = factory(User::class)->create([
-            'email' => env('CREATOR_EMAIL')
+            'email' => Config::get('testing.CREATOR_EMAIL')
         ]);
 
         //create a fake user with manager email
         $manager = factory(User::class)->create([
-            'email' => env('MANAGER_EMAIL')
+            'email' => Config::get('testing.MANAGER_EMAIL')
         ]);
 
         //create fake project with creator user
@@ -47,8 +47,8 @@ class MethodTransferOwnershipTest extends TestCase
             'role' => $managerRole
         ]);
 
-        $this->assertDatabaseHas('users', ['email' => env('CREATOR_EMAIL')]);
-        $this->assertDatabaseHas('users', ['email' => env('MANAGER_EMAIL')]);
+        $this->assertDatabaseHas('users', ['email' => Config::get('testing.CREATOR_EMAIL')]);
+        $this->assertDatabaseHas('users', ['email' => Config::get('testing.MANAGER_EMAIL')]);
 
         $this->assertDatabaseHas('project_roles', [
             'user_id' => $manager->id,

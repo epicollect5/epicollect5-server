@@ -44,10 +44,10 @@ class AccountDeletionExternalTest extends TestCase
     {
         //create fake user
         factory(User::class)->create(
-            ['email' => env('UNIT_TEST_RANDOM_EMAIL')]
+            ['email' => Config::get('testing.UNIT_TEST_RANDOM_EMAIL')]
         );
 
-        $user = User::where('email', env('UNIT_TEST_RANDOM_EMAIL'))->first();
+        $user = User::where('email', Config::get('testing.UNIT_TEST_RANDOM_EMAIL'))->first();
         $user->state = 'active';
 
         //user must have no roles in any project
@@ -85,7 +85,7 @@ class AccountDeletionExternalTest extends TestCase
 
         //create fake user
         $user = factory(User::class)->create(
-            ['email' => env('UNIT_TEST_RANDOM_EMAIL')]
+            ['email' => Config::get('testing.UNIT_TEST_RANDOM_EMAIL')]
         );
 
         //create fake project
@@ -200,7 +200,7 @@ class AccountDeletionExternalTest extends TestCase
 
         //create fake user
         $user = factory(User::class)->create(
-            ['email' => env('UNIT_TEST_RANDOM_EMAIL')]
+            ['email' => Config::get('testing.UNIT_TEST_RANDOM_EMAIL')]
         );
 
         //create fake project

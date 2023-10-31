@@ -7,6 +7,7 @@ use ec5\Libraries\Utilities\Generators;
 use ec5\Models\Eloquent\UserPasswordlessApi;
 use ec5\Models\Users\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\Config;
 use Tests\TestCase;
 
 class VerifyGoogleUserExternalTest extends TestCase
@@ -38,13 +39,13 @@ class VerifyGoogleUserExternalTest extends TestCase
     {
         $user = factory(User::class)->create();
         $email = $user->email;
-        $tokenExpiresAt = env('PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
+        $tokenExpiresAt = Config::get('testing.PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
         $code = Generators::randomNumber(6, 1);
 
         factory(UserPasswordlessApi::class)
             ->create([
                 'email' => $email,
-                'code' => bcrypt($code, ['rounds' => env('BCRYPT_ROUNDS')]),
+                'code' => bcrypt($code, ['rounds' => Config::get('testing.BCRYPT_ROUNDS')]),
                 'expires_at' => Carbon::now()->addSeconds($tokenExpiresAt)->toDateTimeString()
             ]);
 
@@ -71,14 +72,14 @@ class VerifyGoogleUserExternalTest extends TestCase
     {
         $user = factory(User::class)->create();
         $email = $user->email;
-        $tokenExpiresAt = env('PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
+        $tokenExpiresAt = Config::get('testing.PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
         $code = Generators::randomNumber(6, 1);
 
         //add token to db
         factory(UserPasswordlessApi::class)
             ->create([
                 'email' => $email,
-                'code' => bcrypt($code, ['rounds' => env('BCRYPT_ROUNDS')]),
+                'code' => bcrypt($code, ['rounds' => Config::get('testing.BCRYPT_ROUNDS')]),
                 'expires_at' => Carbon::now()->addSeconds($tokenExpiresAt)->toDateTimeString()
             ]);
 

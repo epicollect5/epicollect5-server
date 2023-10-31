@@ -3,6 +3,7 @@
 namespace Tests\Traits\Eloquent;
 
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\Config;
 use Tests\TestCase;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\Entry;
@@ -32,7 +33,7 @@ class ArchiveEntriesTest extends TestCase
             echo "Archived " . $numOfEntries . ' entries, ' . $numOfBranchEntries . ' branches, ' . ($i + 1) . ' run ' . "\n"; // Log iteration number to console
             // Create a test project (created with system admin ID)
             $project = factory(Project::class)->create([
-                'created_by' => User::where('email', env('SUPER_ADMIN_EMAIL'))->first()['id']
+                'created_by' => User::where('email', Config::get('testing.SUPER_ADMIN_EMAIL'))->first()['id']
             ]);
             // Create some test entries...
             $entriesToArchive = factory(Entry::class, $numOfEntries)->create([
@@ -42,7 +43,7 @@ class ArchiveEntriesTest extends TestCase
             ]);
             // Create additional entries that should not be archived
             $additionalProject = factory(Project::class)->create([
-                'created_by' => User::where('email', env('SUPER_ADMIN_EMAIL'))->first()['id']
+                'created_by' => User::where('email', Config::get('testing.SUPER_ADMIN_EMAIL'))->first()['id']
             ]);
             $additionalEntries = factory(Entry::class, $numOfAdditionalEntries)->create([
                 'project_id' => $additionalProject->id,

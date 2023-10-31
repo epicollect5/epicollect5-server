@@ -8,6 +8,7 @@ use ec5\Libraries\Utilities\Generators;
 use ec5\Mail\UserPasswordlessApiMail;
 use ec5\Models\Eloquent\UserPasswordlessApi;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
@@ -36,7 +37,7 @@ class PasswordlessExternalTest extends TestCase
 
     public function testSendCode()
     {
-        $email = env('MANAGER_EMAIL');
+        $email = Config::get('testing.MANAGER_EMAIL');
 
         //send a code to user for authentication
         Mail::fake();
@@ -59,14 +60,14 @@ class PasswordlessExternalTest extends TestCase
 
     public function testLogin()
     {
-        $email = env('MANAGER_EMAIL');
-        $tokenExpiresAt = env('PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
+        $email = Config::get('testing.MANAGER_EMAIL');
+        $tokenExpiresAt = Config::get('testing.PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
         $code = Generators::randomNumber(6, 1);
 
         factory(UserPasswordlessApi::class)
             ->create([
                 'email' => $email,
-                'code' => bcrypt($code, ['rounds' => env('BCRYPT_ROUNDS')]),
+                'code' => bcrypt($code, ['rounds' => Config::get('testing.BCRYPT_ROUNDS')]),
                 'expires_at' => Carbon::now()->addSeconds($tokenExpiresAt)->toDateTimeString()
             ]);
 
@@ -93,15 +94,15 @@ class PasswordlessExternalTest extends TestCase
 
     public function testFailedLogin()
     {
-        $email = env('MANAGER_EMAIL');
-        $tokenExpiresAt = env('PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
+        $email = Config::get('testing.MANAGER_EMAIL');
+        $tokenExpiresAt = Config::get('testing.PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
         $code = Generators::randomNumber(6, 1);
 
         //add token to db
         factory(UserPasswordlessApi::class)
             ->create([
                 'email' => $email,
-                'code' => bcrypt($code, ['rounds' => env('BCRYPT_ROUNDS')]),
+                'code' => bcrypt($code, ['rounds' => Config::get('testing.BCRYPT_ROUNDS')]),
                 'expires_at' => Carbon::now()->addSeconds($tokenExpiresAt)->toDateTimeString()
             ]);
 
