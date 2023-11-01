@@ -2,6 +2,7 @@
 
 namespace ec5\Console;
 
+use ec5\Console\Commands\CheckStorageAvailableDiskSpace;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use Illuminate\Support\Facades\App;
@@ -16,7 +17,8 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         Commands\SystemStatsCommand::class,
         Commands\RemoveUnverifiedUsersCommand::class,
-        Commands\CheckDatabase::class
+        Commands\CheckDatabase::class,
+        CheckStorageAvailableDiskSpace::class
     ];
 
     /**
@@ -33,10 +35,19 @@ class Kernel extends ConsoleKernel
                 ->dailyAt('01:00')
                 ->timezone('Europe/London')
                 ->withoutOverlapping();
+
+            $schedule->command('check-storage-available')
+                ->dailyAt('07:00')
+                ->timezone('Europe/London')
+                ->withoutOverlapping();
         } else {
-            //grab system stats every minute locally (for debugging)
+            //run commands every hour locally (for debugging)
             $schedule->command('system-stats')
-                ->everyMinute()
+                ->hourly()
+                ->withoutOverlapping();
+
+            $schedule->command('check-storage-available')
+                ->hourly()
                 ->withoutOverlapping();
         }
         // $schedule->command('check-database')->everyMinute();

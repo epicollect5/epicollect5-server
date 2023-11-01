@@ -31,5 +31,6 @@ return [
         'secret_key' => env('GOOGLE_RECAPTCHA_SECRET_KEY')
     ],
     'ip_filtering_enabled' => env('IP_FILTERING_ENABLED'),
-    'cost_x_gb' => env('COST_X_GB')
+    'cost_x_gb' => env('COST_X_GB'),
+    'storage_available_min_threshold' => env('STORAGE_AVAILABLE_MIN_THRESHOLD', 50)
 ];
