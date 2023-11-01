@@ -4,35 +4,27 @@
         <div class="panel panel-default">
             <div class="panel-heading">
                 <div class="row">
-                    <div class="col-xs-3">
+                    <div class="col-xs-6">
                         <input type="text"
                                name="search"
                                class="form-control user-administration__user-search"
                                placeholder="{{trans('site.search_for_user')}}">
                     </div>
-                    <div class="col-xs-5">
-                        <div class="row">
-                            <div class="col-xs-6">
-                                <select name="filter"
-                                        class="form-control user-administration__user-filter">
-                                    <option value="">-- {{trans('site.filter_by')}} --</option>
-                                    <option value="state">{{trans('site.state')}}</option>
-                                    <option value="server_role">{{trans('site.access')}}</option>
-                                </select>
-                            </div>
-                            <div class="col-xs-6">
-                                <select name="filteroption"
-                                        class="form-control user-administration__user-filter-option"
-                                        disabled>
-                                    <option value="">-- {{trans('site.option')}} --</option>
-                                </select>
-                            </div>
+                    @if($adminUser->server_role === 'superadmin')
+                        <div class="col-xs-2 pull-right">
+                            <a class="btn btn-action user-administration__user-add pull-right hidden-xs"
+                               data-toggle="modal" data-target="#ec5ModalAddUser"
+                               href="#">{{trans('site.add_user')}}</a>
+                            <a class="btn btn-action user-administration__user-add pull-right visible-xs-block"
+                               data-toggle="modal" data-target="#ec5ModalAddUser" href="#">
+                                <i class="material-icons">&#43;</i>
+                            </a>
                         </div>
-                    </div>
+                    @endif
                     <div @if($adminUser->server_role === 'superadmin')
-                         class="col-xs-2"
+                             class="col-xs-2 pull-right"
                          @else
-                         class="col-xs-4"
+                             class="col-xs-4"
                             @endif
                     >
                         <a class="btn btn-default user-administration__user-reset pull-right hidden-xs hidden-sm"
@@ -44,16 +36,7 @@
                             <i class="material-icons">&#xE5D5;</i>
                         </a>
                     </div>
-                    @if($adminUser->server_role === 'superadmin')
-                        <div class="col-xs-2">
-                            <a class="btn btn-action user-administration__user-add pull-right hidden-xs"
-                               data-toggle="modal" data-target="#ec5ModalAddUser" href="#">{{trans('site.add_user')}}</a>
-                            <a class="btn btn-action user-administration__user-add pull-right visible-xs-block"
-                               data-toggle="modal" data-target="#ec5ModalAddUser" href="#">
-                                <i class="material-icons">&#43;</i>
-                            </a>
-                        </div>
-                    @endif
+
                 </div>
             </div>
             <div class="panel-body">
