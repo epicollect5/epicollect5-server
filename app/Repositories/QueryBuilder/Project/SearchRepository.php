@@ -88,64 +88,6 @@ class SearchRepository implements RepositoryInterface
 
 
     /**
-     * Return all the projects which starts the string passed in the name
-     * it is used by the mobile app project search
-     * limit to 50 to keep it responsive on the mobile app
-     * Order by updated_at to list the latest and most active projects first
-     * Remember: project names are unique!
-     *
-     * @param $name
-     * @param array $columns
-     * @return mixed
-     */
-    /**
-     * @param $name
-     * @param array $columns
-     * @return mixed
-     */
-    public function startsWith($name, $columns = array('*'))
-    {
-
-        $trashedStatus = Config::get('ec5Strings.project_status.trashed');
-        $query = DB::table($this->projectsTable)
-            ->select($columns)
-            ->where('name', 'like', $name . '%')
-            //ignore trashed projects
-            ->where('status', '<>', $trashedStatus)
-            ->where('status', '<>', 'archived') // Skip rows where status is 'archived'
-            ->orderBy('updated_at', 'desc') //most recent/active first
-            ->take(50); //we should stay within this limit as names are unique
-        return $query->get();
-    }
-
-    /**
-     * Return all the projects which contain the string passed in the name
-     * it is used by the mobile app project search
-     * limit to 50 to keep it responsive on the mobile app
-     *
-     * @param $name
-     * @param array $columns
-     * @return mixed
-     */
-    public function like($name, $columns = array('*'))
-    {
-        $query = DB::table($this->projectsTable)
-            ->select($columns)
-            ->where('name', 'like', '%' . $name . '%')
-            ->where('status', '<>', 'archived') // Skip rows where status is 'archived'
-            ->take(50);
-        return $query->get();
-    }
-
-    /**
-     * @param $field
-     * @param $value
-     * @param array $columns
-     * @return mixed
-     */
-
-
-    /**
      * @param $column
      * @param null $operator
      * @param null $value
@@ -155,20 +97,6 @@ class SearchRepository implements RepositoryInterface
     public function findAllBy($column, $operator = null, $value = null, $boolean = 'and')
     {
         return null;
-    }
-
-    /**
-     * @param $projectId
-     * @return mixed
-     */
-    public function version($projectId)
-    {
-        $query = DB::table(Config::get('ec5Tables.project_structures'))
-            ->where('project_id', '=', $projectId)
-            ->where('status', '<>', 'archived') // Skip rows where status is 'archived'
-            ->select('updated_at');
-
-        return $query->first();
     }
 
     public function findBy($field, $value, $columns = array('*'))

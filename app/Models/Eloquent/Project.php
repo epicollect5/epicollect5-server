@@ -80,6 +80,14 @@ class Project extends Model
             ->get();
     }
 
+    public static function version($slug)
+    {
+        return Project::join(Config::get('ec5Tables.project_structures'), 'projects.id', '=', Config::get('ec5Tables.project_structures') . '.project_id')
+            ->where('projects.slug', $slug)
+            ->pluck('project_structures.updated_at')
+            ->first();
+    }
+
     public function admin($perPage, $params = [])
     {
         return $this->distinct()
@@ -104,36 +112,19 @@ class Project extends Model
             ->simplePaginate($perPage);
     }
 
-    public function findBySlug($slug): Project
-    {
-        return $this->where('slug', $slug)
-            ->where('status', '<>', 'archived')
-            ->join($this->projectStatsTable, 'projects.id', '=', 'project_stats.project_id')
-            ->join(Config::get('ec5Tables.project_structures'), 'projects.id', '=', 'project_structures.project_id')
-            ->select(
-                'projects.*',
-                'project_stats.id AS stats_id',
-                'project_stats.*',
-                'project_structures.*',
-                'project_structures.updated_at as structure_last_updated',
-                'project_structures.id as structure_id'
-            )
-            ->first();
-    }
-
     public function transferOwnership($projectId, $creatorId, $managerId): bool
     {
         try {
             //update projects table, set manager to be new creator
             $project = $this->findOrFail($projectId);
-            //set new manager as creator
+            //set the new manager as creator
             $project->created_by = $managerId;
 
             //set old Creator as Manager
             $oldCreator = ProjectRole::where('project_id', $projectId)->where('user_id', $creatorId)->firstOrFail();
             $oldCreator->role = Config::get('ec5Permissions.projects.manager_role');
 
-            //set new Manager as Creator
+            //set the new Manager as Creator
             $newCreator = ProjectRole::where('project_id', $projectId)->where('user_id', $managerId)->firstOrFail();
             $newCreator->role = Config::get('ec5Permissions.projects.creator_role');
 
@@ -154,5 +145,28 @@ class Project extends Model
 
             return false;
         }
+    }
+
+    /**
+     * Return all the projects which starts the string passed in the name
+     * it is used by the mobile app project search
+     * limit to 50 to keep it responsive on the mobile app
+     * Order by updated_at to list the latest and most active projects first
+     * Remember: project names are unique!
+     *
+     * Trashed or archived projects are skipped
+     */
+    public static function startsWith($name, $columns = ['*'])
+    {
+        $trashedStatus = Config::get('ec5Strings.project_status.trashed');
+        $archivedStatus = Config::get('ec5Strings.project_status.archived');
+
+        return static::select($columns)
+            ->where('name', 'like', $name . '%')
+            ->where('status', '<>', $trashedStatus)
+            ->where('status', '<>', $archivedStatus)
+            ->orderBy('updated_at', 'desc')
+            ->take(50)
+            ->get();
     }
 }

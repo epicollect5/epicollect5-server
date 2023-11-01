@@ -110,23 +110,20 @@ Route::group(['middleware' => ['throttle:600,1']], function () {
         );
     });
 
-    // Project searching
-    Route::get('api/projects/{name?}', 'Api\Projects\ProjectController@search');
+    // Projects searching (by name)
+    Route::get('api/projects/{name?}', 'Api\Project\ProjectController@search');
 
     // Project version
-    Route::get('api/project-version/{project_slug}', 'Api\Projects\ProjectController@version');
-
+    Route::get('api/project-version/{project_slug}', 'Api\Project\ProjectController@version');
 
     /* LEGACY END POINTS */
     // Project searching
-    Route::get('api/json/projects/{name?}', 'Api\Projects\ProjectController@search');
+    Route::get('api/json/projects/{name?}', 'Api\Project\ProjectController@search');
 
     // Project version
-    Route::get('api/json/project-version/{project_slug}', 'Api\Projects\ProjectController@version');
+    Route::get('api/json/project-version/{project_slug}', 'Api\Project\ProjectController@version');
     /* LEGACY END POINTS */
 });
-
-/* Documented API */
 
 // Throttle documented READ endpoints - 60 requests per minute
 Route::group(['middleware' => ['throttle:60,1']], function () {

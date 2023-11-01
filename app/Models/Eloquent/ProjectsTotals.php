@@ -230,39 +230,4 @@ class ProjectsTotals extends Model
 
         return 0;
     }
-
-    public function transferOwnership($projectId, $creatorId, $managerId): bool
-    {
-        try {
-            //update projects table, set manager to be new creator
-            $project = $this->findOrFail($projectId);
-            //set new manager as creator
-            $project->created_by = $managerId;
-
-            //set old Creator as Manager
-            $oldCreator = ProjectRole::where('project_id', $projectId)->where('user_id', $creatorId)->firstOrFail();
-            $oldCreator->role = Config::get('ec5Permissions.projects.manager_role');
-
-            //set new Manager as Creator
-            $newCreator = ProjectRole::where('project_id', $projectId)->where('user_id', $managerId)->firstOrFail();
-            $newCreator->role = Config::get('ec5Permissions.projects.creator_role');
-
-            //try to commit all changes
-            DB::transaction(function () use ($project, $oldCreator, $newCreator) {
-                $project->save();
-                $oldCreator->save();
-                $newCreator->save();
-            });
-
-            return true;
-        } catch (\Exception $e) {
-            // If any exceptions, log
-            \Log::error('Transfer ownership failed: ', [
-                'exception' => $e->getMessage(),
-                'project' => $this->requestedProject->name
-            ]);
-
-            return false;
-        }
-    }
 }

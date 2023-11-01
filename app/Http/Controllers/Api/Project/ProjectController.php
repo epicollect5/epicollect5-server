@@ -4,14 +4,18 @@ namespace ec5\Http\Controllers\Api\Project;
 
 use ec5\Http\Controllers\Api\ApiResponse as ApiResponse;
 use ec5\Http\Controllers\ProjectControllerBase;
+use ec5\Http\Validation\Project\RuleName;
+use ec5\Models\Eloquent\ProjectStructure;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use ec5\Http\Validation\Entries\Upload\RuleCanBulkUpload;
 use ec5\Models\Eloquent\Project;
+use ec5\Repositories\QueryBuilder\Project\SearchRepository as ProjectSearch;
 use ec5\Repositories\QueryBuilder\Stats\Entry\StatsRepository as EntryStatsRepository;
 use Exception;
 use Auth;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Str;
 
 class ProjectController extends ProjectControllerBase
 {
@@ -105,9 +109,67 @@ class ProjectController extends ProjectControllerBase
         return $apiResponse->toJsonResponse('200', $options = 0);
     }
 
+    public function search(ApiResponse $apiResponse, $name = '')
+    {
+        $hits = [];
+        $projects = [];
+
+        if (!empty($name)) {
+            //get all projects where the name starts with the needle provided
+            $hits = Project::startsWith($name, ['name', 'slug', 'access', 'ref']);
+        }
+        // Build the json api response
+        foreach ($hits as $hit) {
+            $data['type'] = 'project';
+            $data['id'] = $hit->ref;
+            $data['project'] = $hit;
+            $projects[] = $data;
+        }
+        // Set the data
+        $apiResponse->setData($projects);
+
+        return $apiResponse->toJsonResponse('200', $options = 0);
+    }
+
+    public function exists(ApiResponse $apiResponse, RuleName $ruleName, $name)
+    {
+        $data['name'] = $name;
+        $data['slug'] = Str::slug($name, '-');
+        // Run validation
+        $ruleName->validate($data);
+        // todo should type, id, attributes be setter methods in ApiResponse ?
+        $apiResponse->setData([
+            'type' => 'exists',
+            'id' => $data['slug'],
+            'exists' => $ruleName->hasErrors()
+        ]);
+        return $apiResponse->toJsonResponse('200', $options = 0);
+    }
+
+    public function version(ApiResponse $apiResponse, $slug)
+    {
+        // If no project found, bail out
+        $version = Project::version($slug);
+        if (!$version) {
+            $errors = ['version' => ['ec5_11']];
+            return $apiResponse->errorResponse('500', $errors);
+        }
+
+        //return updated_at as the version
+        $apiResponse->setData([
+            'type' => 'project-version',
+            'id' => $slug,
+            'attributes' => [
+                'structure_last_updated' => $version,//legacy
+                'version' => (string)strtotime($version)
+            ]
+
+        ]);
+        return $apiResponse->toJsonResponse('200', $options = 0);
+    }
+
     public function updateCanBulkUpload(Request $request, ApiResponse $apiResponse, RuleCanBulkUpload $validator)
     {
-
         if (!$this->requestedProjectRole->canEditProject()) {
             $errors = ['ec5_91'];
             return $apiResponse->errorResponse(400, ['errors' => $errors]);
