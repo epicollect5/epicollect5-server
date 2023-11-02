@@ -145,9 +145,8 @@ return [
         'expire' => env('ACCOUNT_CODE_EXPIRES_IN', 7200)
     ],
     'account_unverified' => [
-        'expire' => env(' ACCOUNT_UNVERIFIED_EXPIRES_IN')
+        'expire' => env(' ACCOUNT_UNVERIFIED_EXPIRES_IN', 3)
     ],
-
     /*
     |--------------------------------------------------------------------------
     | Auth Methods

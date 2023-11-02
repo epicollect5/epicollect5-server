@@ -43,7 +43,6 @@ class ProfileController extends Controller
     /**
      * Show the application login form.
      *
-     * @return View
      */
     public function show(Request $request)
     {

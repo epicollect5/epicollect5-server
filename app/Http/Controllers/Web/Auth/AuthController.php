@@ -20,6 +20,7 @@ class AuthController extends Controller
     */
 
     use AuthenticatesUsers;
+
     protected $redirectTo = '/';
     protected $adminRedirectPath = '/admin';
     protected $authMethods = [];
@@ -57,8 +58,6 @@ class AuthController extends Controller
 
     /**
      * Show the application login form.
-     *
-     * @return View
      */
     public function show()
     {
@@ -76,7 +75,10 @@ class AuthController extends Controller
             }
 
             session(['nonce' => csrf_token()]);
-            return view('auth.login');
+
+            return view('auth.login', [
+                'gcaptcha' => Config::get('ec5Setup.google_recaptcha.site_key')
+            ]);
         }
         return redirect()->route('home');
     }
@@ -98,7 +100,7 @@ class AuthController extends Controller
         // 1 - private project -> login + dataviewer
         // 2 - public project -> dataviewer (without add entry button)
         $parts = explode('/', $backlink);
-        \Log::info('url parts ->',  ['parts' => $parts]);
+        \Log::info('url parts ->', ['parts' => $parts]);
         //check for dataviewer url segments
         if (end($parts) === 'data' || end($parts) === 'data?restore=1') {
             array_pop($parts);
