@@ -3,6 +3,8 @@
 namespace Tests\Http\Controllers\Web\Project\ProjectCreateController;
 
 use ec5\Http\Validation\Project\RuleImportRequest;
+use ec5\Libraries\Utilities\Generators;
+use ec5\Libraries\Utilities\Strings;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectStructure;
 use ec5\Models\Users\User;
@@ -11,13 +13,14 @@ use Tests\TestCase;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Faker\Factory as Faker;
 
 class ImportMethodTest extends TestCase
 {
     use DatabaseTransactions;
 
     const DRIVER = 'web';
-
+    protected $faker;
     protected $request;
     protected $validator;
     protected $access;
@@ -27,6 +30,7 @@ class ImportMethodTest extends TestCase
     {
         // This method will automatically be called prior to any of your test cases
         parent::setUp();
+        $this->faker = Faker::create();
 
         $this->validator = new RuleImportRequest();
 
@@ -197,5 +201,102 @@ class ImportMethodTest extends TestCase
         $this->assertTrue($this->validator->hasErrors());
         $this->validator->resetErrors();
         $this->reset();
+    }
+
+    public function test_project_name_already_exists()
+    {
+        //create a fake user and save it to DB
+        $user = factory(User::class)->create();
+        //create a mock project with that user and use ref as name to avoid conflicts
+        $ref = Generators::projectRef();
+        $project = factory(Project::class)->create([
+            'created_by' => $user->id,
+            'name' => $ref,
+            'slug' => $ref
+        ]);
+        //try to import a project with the same name (ref)
+        $response = $this
+            ->actingAs($user, self::DRIVER)
+            ->post('/myprojects/import', [
+                'name' => $ref,
+                'file' => 'Test File'
+            ])
+            ->assertStatus(200);
+
+        $this->assertEquals('project.project_create', $response->original->getName());
+        // Assert that there is an error message with key 'ec5_85'
+        $this->assertArrayHasKey('errors', $response->original->getData());
+        // Assert that the view has an 'errors' variable
+        $this->assertTrue($response->original->offsetExists('errors'));
+        // Access the MessageBag and assert specific errors
+        $errors = $response->original->offsetGet('errors');
+        $this->assertTrue($errors->has('name'));
+        $this->assertTrue($errors->has('slug'));
+        $this->assertEquals('ec5_85', $errors->first('name'));
+        $this->assertEquals('ec5_85', $errors->first('slug'));
+        // Assert that the validation errors are passed to the view
+        $response->assertViewHas('errors');
+        // Assert that the 'tab' variable is passed to the view
+        $response->assertViewHas('tab', 'import');
+    }
+
+    public function test_project_name_too_short()
+    {
+        //create a fake user and save it to DB
+        $user = factory(User::class)->create();
+
+        //try to import a project with the same name (ref)
+        $response = $this
+            ->actingAs($user, self::DRIVER)
+            ->post('/myprojects/import', [
+                'name' => 'a',
+                'file' => 'Test File'
+            ])
+            ->assertStatus(200);
+
+        $this->assertEquals('project.project_create', $response->original->getName());
+        // Assert that there is an error message with key 'ec5_85'
+        $this->assertArrayHasKey('errors', $response->original->getData());
+        // Assert that the view has an 'errors' variable
+        $this->assertTrue($response->original->offsetExists('errors'));
+        // Access the MessageBag and assert specific errors
+        $errors = $response->original->offsetGet('errors');
+        $this->assertTrue($errors->has('name'));
+        //error is already translated
+        $this->assertEquals('Project name must be at least 3 chars long!', $errors->first('name'));
+        // Assert that the validation errors are passed to the view
+        $response->assertViewHas('errors');
+        // Assert that the 'tab' variable is passed to the view
+        $response->assertViewHas('tab', 'import');
+    }
+
+    public function test_project_name_too_long()
+    {
+        //create a fake user and save it to DB
+        $user = factory(User::class)->create();
+
+        //try to import a project with the same name (ref)
+        $response = $this
+            ->actingAs($user, self::DRIVER)
+            ->post('/myprojects/import', [
+                'name' => Strings::generateRandomAlphanumericString(51),
+                'file' => 'Test File'
+            ])
+            ->assertStatus(200);
+
+        $this->assertEquals('project.project_create', $response->original->getName());
+        // Assert that there is an error message with key 'ec5_85'
+        $this->assertArrayHasKey('errors', $response->original->getData());
+        // Assert that the view has an 'errors' variable
+        $this->assertTrue($response->original->offsetExists('errors'));
+        // Access the MessageBag and assert specific errors
+        $errors = $response->original->offsetGet('errors');
+        $this->assertTrue($errors->has('name'));
+        //error is already translated
+        $this->assertEquals('Project name must be maximum 50 chars long!', $errors->first('name'));
+        // Assert that the validation errors are passed to the view
+        $response->assertViewHas('errors');
+        // Assert that the 'tab' variable is passed to the view
+        $response->assertViewHas('tab', 'import');
     }
 }

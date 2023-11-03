@@ -48,6 +48,41 @@ class ProjectDeleteEntriesControllerTest extends TestCase
         parent::tearDown();
     }
 
+    public function test_delete_entries_page_renders_correctly()
+    {
+        //create mock user
+        $user = factory(User::class)->create();
+
+        //create a fake project with that user
+        $project = factory(Project::class)->create(['created_by' => $user->id]);
+
+        //assign the user to that project with the CREATOR role
+        $role = \Illuminate\Support\Facades\Config::get('ec5Strings.project_roles.creator');
+        $projectRole = factory(ProjectRole::class)->create([
+            'user_id' => $user->id,
+            'project_id' => $project->id,
+            'role' => $role
+        ]);
+
+        //set up project stats and project structures (to make R&A middleware work, to be removed)
+        //because they are using a repository with joins
+        factory(ProjectStat::class)->create(
+            [
+                'project_id' => $project->id,
+                'total_entries' => 0
+            ]
+        );
+        factory(ProjectStructure::class)->create(
+            ['project_id' => $project->id]
+        );
+
+        $response = $this
+            ->actingAs($user, self::DRIVER)
+            ->get('myprojects/' . $project->slug . '/delete-entries')
+            ->assertStatus(200);
+    }
+
+
     public function test_soft_delete()
     {
         //creator
@@ -472,7 +507,7 @@ class ProjectDeleteEntriesControllerTest extends TestCase
                 'project-name' => strrev($project->name)//just scramble project name
             ]);
 
-        //fails as curator role cannot delete entries in bulk
+        //fails as viewer role cannot delete entries in bulk
         $response->assertRedirect('myprojects/' . $project->slug . '/manage-entries');
         $this->assertEquals('ec5_91', session('errors')->getBag('default')->first());
     }

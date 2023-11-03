@@ -7,12 +7,7 @@ use Tests\TestCase;
 
 class SearchProjectsControllerTest extends TestCase
 {
-
-    /**
-     * @var RuleInput
-     */
     protected $validator;
-
 
     public function setUp()
     {
@@ -21,7 +16,7 @@ class SearchProjectsControllerTest extends TestCase
         $this->validator = new ProjectsSearchValidator();
     }
 
-    public function test_project_search_controller()
+    public function test_page_renders_correctly()
     {
         $response = $this->call('GET', 'projects/search');
         $response->assertStatus(200);

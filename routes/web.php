@@ -32,7 +32,7 @@ Route::group(['middleware' => ['guest']], function () {
     //Apple auth
     Route::post('handle/apple', 'Web\Auth\AppleController@handleAppleCallback');
 
-    //routes to enter 6 digit code when account email clashes
+    //routes to enter 6-digit code when account email clashes
     Route::get('login/verification/code', 'Web\Auth\VerificationCodeController@show')->name('verification-code');
     Route::post('login/verification/google', 'Web\Auth\GoogleController@verify')->name('verification-google');
     Route::post('login/verification/apple', 'Web\Auth\AppleController@verify')->name('verification-apple');
@@ -186,7 +186,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('login/staff/reset', 'Web\Auth\ResetPasswordController@reset')->name('password-reset-post');
 
     Route::get('myprojects', 'Web\Projects\MyProjectsController@show')->name('my-projects');
-    Route::get('myprojects/create', 'Web\Project\ProjectCreateController@show');
+    Route::get('myprojects/create', 'Web\Project\ProjectCreateController@show')->name('my-projects-create');
     Route::post('myprojects/create', 'Web\Project\ProjectCreateController@create');
     Route::post('myprojects/import', 'Web\Project\ProjectCreateController@import');
 

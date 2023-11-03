@@ -25,7 +25,6 @@ class VerificationCodeController extends AuthController
     {
         //getting here with email in session, send verification code via email
         if (session()->has('email')) {
-
             $email = session('email');
             $provider = session('provider');
             $name = session('name');

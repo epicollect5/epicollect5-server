@@ -35,7 +35,6 @@ class ProjectCloneController extends ProjectControllerBase
      */
     public function show()
     {
-
         if (!$this->requestedProjectRole->canEditProject()) {
             $errors = ['ec5_91'];
             return view('errors.gen_error')->withErrors(['errors' => $errors]);

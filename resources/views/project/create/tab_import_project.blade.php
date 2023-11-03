@@ -24,7 +24,7 @@
         @if ($errors->has('name') && $tab === 'import')
             @if (strpos($errors->first('name'), 'ec5_') === false)
                 {{--error was already translated--}}
-                <small class="text-danger">{{$error.$index}}</small>
+                <small class="text-danger">{{ $errors->first('name') }}</small>
             @else
                 {{--translate error--}}
                 <small class="text-danger">{{ trans('status_codes.' . $errors->first('name')) }}</small>
