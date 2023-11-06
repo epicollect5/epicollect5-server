@@ -133,6 +133,7 @@ return [
     'rename' => 'Rename',
     'confirm_project_name' => 'Please type in the name of the project to confirm:',
     'confirm_delete_project' => 'Are you sure you want to delete ":projectName" and all its data?',
+    'confirm_leave_project' => 'Are you sure you want to leave ":projectName"?',
     'month_names' => [
         'Jan',
         'Feb',
@@ -205,6 +206,7 @@ return [
         'manager' => 'Manager',
         'curator' => 'Curator',
         'collector' => 'Collector',
+        'viewer' => 'Viewer',
     ],
     'no_role' => 'No Role',
     'manage_entries' => 'Manage Entries',
@@ -267,5 +269,6 @@ return [
     'sign_in_with_email' => 'Sign in with email',
     'get_link' => 'Get link',
     'send' => 'Send',
-    'server_staff_login' => 'Staff Login'
+    'server_staff_login' => 'Staff Login',
+    'leave' => 'Leave'
 ];

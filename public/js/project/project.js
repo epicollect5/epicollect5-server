@@ -1,2 +1,2673 @@
-"use strict";window.EC5=window.EC5||{},window.EC5.projectApps=window.EC5.projectApps||{},function(e){e.currentClientId="",e.getApps=function(){$.ajax({url:"",type:"GET",dataType:"json",data:{}}).done(function(e){$(".project-apps-list").html(e)}).fail(window.EC5.showError)},e.post=function(a,t,n){$.ajax({url:a,type:"POST",dataType:"json",data:t}).done(function(){n&&n(),e.getApps()}).fail(window.EC5.showError)}}(window.EC5.projectApps),$(document).ready(function(){var e=$(".project-apps");e.on("click",".pagination a",function(e){e.preventDefault(),window.EC5.projectApps.getApps()});var a=$("#ec5-form-project-apps");a.on("submit",function(e){e.preventDefault();var a=$(this).serialize(),t=$(this).attr("action");window.EC5.projectApps.post(t,a,function(){$("#create-app").prop("disabled",!0),$("#modal-create-app").modal("hide"),window.EC5.toast.showSuccess("New App added.")})});var t=$(".project-apps-list");t.on("click","#delete-app",function(e){e.preventDefault(),$("#ec5-form-project-app-revoke").addClass("hidden"),$("#ec5-form-project-app-delete").removeClass("hidden"),window.EC5.projectApps.currentClientId=$(this).data("clientId")}),t.on("click","#revoke-app",function(e){e.preventDefault(),$("#ec5-form-project-app-delete").addClass("hidden"),$("#ec5-form-project-app-revoke").removeClass("hidden"),window.EC5.projectApps.currentClientId=$(this).data("clientId")});var n=$("#ec5-form-project-app-delete");n.on("submit",function(e){e.preventDefault();var a={clientId:window.EC5.projectApps.currentClientId},t=$(this).attr("action");window.EC5.projectApps.post(t,a,function(){$("#create-app").prop("disabled",!1),$("#modal-app-delete").modal("hide"),window.EC5.toast.showSuccess("App deleted.")})});var o=$("#ec5-form-project-app-revoke");o.on("submit",function(e){e.preventDefault();var a={clientId:window.EC5.projectApps.currentClientId},t=$(this).attr("action");window.EC5.projectApps.post(t,a,function(){$("#modal-app-delete").modal("hide"),window.EC5.toast.showSuccess("Access Token revoked.")})})}),window.EC5=window.EC5||{},window.EC5.projectCreate=window.EC5.projectCreate||{},function(e){e.doesProjectExist=function(e){var a=$(".page-create-project").find("#project-name-form-group-create");$.when($.get(e)).done(function(e){console.log(e.data),$("#project-loader").addClass("hidden"),e.data.exists?window.EC5.projectCreate.toggleGroupValidation(a,!1,"Project already exists"):window.EC5.projectCreate.toggleGroupValidation(a,!0)}).fail(function(){a.addClass("has-error")}).always(function(){$("#project-loader").addClass("hidden")})},e.toggleGroupValidation=function(e,a,t){a?(e.removeClass("has-error"),e.find(".form-control-feedback").not("#project-loader").addClass("hidden"),e.find(".text-danger").addClass("hidden"),e.find(".text-hint").removeClass("hidden")):(e.addClass("has-error"),e.find(".form-control-feedback").not("#project-loader").removeClass("hidden"),e.find(".text-danger").removeClass("hidden").text(t),e.find(".text-hint").addClass("hidden"))}}(window.EC5.projectCreate),$(document).ready(function(){if(0!==$(".page-create-project").length){var e=$("#project-loader");$(".page-create-project #project-name-create").keyup(function(a){var t,n=$(".page-create-project #project-name-form-group-create"),o=$(this),r=o.val(),i=/^[a-zA-Z0-9_ ]*$/;if(i.test(r)||""===r){if(window.EC5.projectCreate.toggleGroupValidation(n,!0),r.length>=3){var s=window.EC5.SITE_URL+"/api/internal/exists/"+r;e.removeClass("hidden"),clearTimeout(t),t=setTimeout(function(){window.EC5.projectCreate.doesProjectExist(s)},500)}}else e.addClass("hidden"),window.EC5.projectCreate.toggleGroupValidation(n,!1,"Please remove invalid chars")}),$(".page-create-project #form-name").keyup(function(e){var a=/^[\w\-\s]+$/,t=$(this),n=t.val(),o=$("#form-name-form-group");a.test(n)||""===n?window.EC5.projectCreate.toggleGroupValidation(o,!0):window.EC5.projectCreate.toggleGroupValidation(o,!1,"Please remove invalid chars")}),$(".page-create-project #small-description-form-group > input").keyup(function(e){var a=$("#small-description-form-group"),t=$(this),n=t.val();n.length>=15?window.EC5.projectCreate.toggleGroupValidation(a,!0):window.EC5.projectCreate.toggleGroupValidation(a,!1,"Must be at least 15 chars long")})}}),$(document).ready(function(){if($(".page-entries-deletion").length>0){var e=$(".page-entries-deletion").find(".project-name").text(),a=$(".delete-entries"),t=$("#modal-deletion");a.submit(function(a){e.trim()!==$("#project-name").val().trim()&&a.preventDefault(),t.modal({backdrop:"static",keyboard:!1},"show")}),a.on("keyup","#project-name",function(a){a.preventDefault(),$(".submit-delete-entries").attr("disabled",!(e.trim()===$(this).val().trim()))})}}),$(document).ready(function(){if($(".page-project-delete").length>0){var e=$("h3[data-project-name]").attr("data-project-name"),a=$(".delete-project"),t=$("#modal-deletion");a.submit(function(a){e.replace(/\s+/g," ")!==$("#project-name").val()&&a.preventDefault(),t.modal({backdrop:"static",keyboard:!1},"show")}),a.on("keyup","#project-name",function(a){a.preventDefault(),e.replace(/\s+/g," ")===$(this).val()?$(".submit-delete").prop("disabled",!1):$(".submit-delete").prop("disabled",!0)})}}),window.EC5=window.EC5||{},window.EC5.projectDetails=window.EC5.projectDetails||{},function(e){e.statusPairs={trashed:["restore","delete"],locked:["unlock"],active:["trashed","locked"]},e.currentSettingsValue=function(e){return window.EC5.projectDetails.parameters[e]||""},e.updateSettings=function(a){var t=e.currentSettingsValue(a),n=$(".settings-"+a);if("status"===a){var o=e.statusPairs[t]?e.statusPairs[t]:[];n.each(function(e,a){$(a).data("value")===t?$(this).addClass("btn-action"):$(this).removeClass("btn-action"),o.indexOf($(a).data("value"))!==-1||$(a).data("value")===t?$(this).removeClass("ec5-hide-block"):$(this).addClass("ec5-hide-block")})}n.each(function(e,a){$(a).data("value")===t?$(this).addClass("btn-action"):$(this).removeClass("btn-action")})},e.update=function(a,t){var n=window.EC5.SITE_URL+"/myprojects/"+window.EC5.projectDetails.parameters.slug+"/settings/"+a,o={};o[a]=t,$.when(window.EC5.projectUtils.postRequest(n,o)).done(function(t){try{$.each(t,function(e,a){window.EC5.projectDetails.parameters[e]=a}),e.updateSettings(a),window.EC5.toast.showSuccess("Setting updated.")}catch(n){window.EC5.projectUtils.showErrors(n)}}).fail(function(e){window.EC5.overlay.fadeOut(),window.EC5.projectUtils.showErrors(e)}).always(function(){window.EC5.overlay.fadeOut()})}}(window.EC5.projectDetails),$(document).ready(function(){$('[data-toggle="tooltip"]').tooltip();var e=$(".js-project-details");$(document).on("change",":file",function(){var e=$(this),a=e.get(0).files?e.get(0).files.length:1,t=e.val().replace(/\\/g,"/").replace(/.*\//,"");e.trigger("fileselect",[a,t])}),$(":file").on("fileselect",function(e,a,t){var n=$(this).parents(".input-group").find(":text"),o=a>1?a+" files selected":t;n.length&&n.val("    "+o)}),window.EC5.projectDetails.parameters={status:e.attr("data-js-status"),access:e.attr("data-js-access"),visibility:e.attr("data-js-visibility"),logo_url:e.attr("data-js-logo_url"),category:e.attr("data-js-category"),slug:e.attr("data-js-slug")},$(".btn-settings-submit").on("click",function(){var e=$(this),a=e.attr("data-setting-type"),t=e.attr("data-value");t!==window.EC5.projectDetails.currentSettingsValue(a)&&(window.EC5.overlay.fadeIn(),window.EC5.projectDetails.update(a,t))}),$(["access","status","visibility"]).each(function(e,a){window.EC5.projectDetails.updateSettings(a)}),$("#project-category").on("change",function(e){var a="category",t=$(this).val();t!==window.EC5.projectDetails.currentSettingsValue(a)&&(window.EC5.overlay.fadeIn(),window.EC5.projectDetails.update(a,t))}),$(".project-details__edit").on("click",function(){var e=$(this).parents(".panel");switch(window.EC5.overlay.fadeIn(),e.hide(),e.attr("id")){case"details-view":$("#details-edit").fadeIn(function(){window.EC5.overlay.fadeOut()});break;case"details-edit":$("#details-view").fadeIn(function(){window.EC5.overlay.fadeOut()})}}),$(".project-homepage-url .copy-btn").on("click",function(){var e=$(this);console.log(e.parent().find("a").text()),navigator.clipboard.writeText(e.parent().find("a").text()).then(function(){e.tooltip("show"),window.setTimeout(function(){e.tooltip("hide")},1500)},function(){})})}),$(document).ready(function(){var e=$(".manage-entries-limits__table"),a=$(".page-manage-entries #limits-form"),t=$(".page-manage-entries .limits-form__update-btn"),n=$(".page-manage-entries .bulk-upload-btns"),o=n.data("project-slug"),r=window.EC5.SITE_URL+"/api/internal/can-bulk-upload/"+o;e.on("change","td input:checkbox",function(){var e=$(this).parents("td").next().find("input.input__limit-to");this.checked?e.prop("disabled",!1):(e.val(""),e.prop("disabled",!0))}),t.on("click",function(){window.EC5.toast.clear(),a.find(".input__set-limit").each(function(){var e=$(this),a=e.parents("td").next().find("input.input__limit-to"),t=a.parent(),n=t.find(".form-control-feedback");n.addClass("hidden"),t.removeClass("has-error has-feedback")});var e=!0;a.find(".input__set-limit:checked").each(function(){var a=$(this),t=a.parents("td").next().find("input.input__limit-to"),n=t.parent(),o=n.find(".form-control-feedback");""===t.val()&&(n.addClass("has-error has-feedback"),o.removeClass("hidden"),e=!1)}),e?a.submit():window.EC5.toast.showError("Required fields missing!")}),a.on("submit",function(e){e.preventDefault(),$.ajax({url:"",type:"POST",dataType:"json",data:$(this).serializeArray()}).done(function(){window.EC5.toast.showSuccess("Updated.")}).fail(function(e){if(e.responseJSON&&e.responseJSON.errors&&e.responseJSON.errors.length>0){var a;for(a=0;a<e.responseJSON.errors.length;a++)window.EC5.toast.showError(e.responseJSON.errors[a].title)}})}),n.on("click",".btn",function(e){var a=$(this);window.EC5.overlay.fadeIn(),window.EC5.projectUtils.postRequest(r,{can_bulk_upload:$(this).data("bulk-upload")}).done(function(){n.find(".btn-action").removeClass("btn-action"),a.addClass("btn-action"),window.EC5.overlay.fadeOut(),window.EC5.toast.showSuccess("Settings updated.")}).fail(function(e){if(e.responseJSON.errors&&e.responseJSON.errors.length>0)for(var a=0;a<e.responseJSON.errors.length;a++)window.EC5.toast.showError(e.responseJSON.errors[a].title);window.EC5.overlay.fadeOut()})})}),$(document).ready(function(){if(0!==$(".page-manage-users").length){var e,a=$(".manage-project-users"),t="#creator",n=window.EC5.project_users.config;window.EC5.overlay.fadeIn(),$('a[data-toggle="tab"]').on("shown.bs.tab",function(e){var a=$(e.target).attr("href");t="page-"+a.substring(1),$(".manage-project-users__"+t).html(""),$.when(window.EC5.project_users.getProjectUsers(t,1)).then(function(e){$(".manage-project-users__"+t).hide().html(e).fadeIn(n.consts.ANIMATION_FAST)},function(e){e.responseJSON?window.EC5.toast.showError(e.responseJSON.errors[0].title):window.EC5.toast.showError(e),window.EC5.overlay.fadeOut()})}),$.when(window.EC5.project_users.getProjectUsers("page-creator").then(function(e){$(".manage-project-users__"+t).remove().html(e),window.EC5.overlay.fadeOut()},function(e){window.EC5.overlay.fadeOut()})),$(".page-manage-users .tab-content .panel-body").off().on("click",".manage-project-users__switch-role",function(){var e=$(this).data("project-slug"),a=$(this).data("user-role"),t=$(this).data("user-email"),o=$("#ec5SwitchUserRole");o.find(".user-email strong").text(t);var r=$.map(n.consts.ROLES,function(e){return e});$(r).each(function(e,a){o.find(".role-"+a).show()}),o.find(".role-"+a).hide(),o.find(".switch-role-confirm").attr("disabled",!0),o.find("input:radio").prop("checked",!1),o.modal("show"),o.on("shown.bs.modal",function(n){var r=null;o.find(".users__pick-role .radio label").off().on("click",function(){r=o.find(".users__pick-role").find(".radio input:checked").val(),o.find(".switch-role-confirm").attr("disabled",!1)}),o.find(".switch-role-confirm").off().on("click",function(){return null!==r&&(!(!e||!t)&&(window.EC5.overlay.fadeIn(),void $.when(window.EC5.project_users.switchUserRole(e,t,a,r)).done(function(e){var t="page-"+a;$.when(window.EC5.project_users.getProjectUsers(t,1).then(function(a){$(".manage-project-users__"+t).html(a),o.modal("hide"),window.EC5.toast.showSuccess(e.data.message),window.EC5.overlay.fadeOut()},function(e){window.EC5.overlay.fadeOut(),e.responseJSON?window.EC5.toast.showError(e.responseJSON.errors[0].title):window.EC5.toast.showError(e),o.modal("hide")}))}).fail(function(e){console.log(e),window.EC5.overlay.fadeOut(),e.responseJSON?window.EC5.toast.showError(e.responseJSON.errors[0].title):window.EC5.toast.showError(e),o.modal("hide")})))})})}),a.on("click",".pagination a",function(e){e.preventDefault(),window.EC5.overlay.fadeIn();var a=$(this).closest(".manage-project-users"),t=a.data("page-name"),n=a.find(".manage-project-users__user-search").val();$.when(window.EC5.project_users.getProjectUsers(t,$(this).attr("href").split("=")[1],n).then(function(e){$(".manage-project-users__"+t).html(e),window.EC5.overlay.fadeOut()},function(){window.EC5.overlay.fadeOut()}))}),a.on("keyup",".manage-project-users__user-search",function(a){var t=this.value;if(t.length>=0||13===a.keyCode){window.EC5.overlay.fadeIn();var n=$(this).closest(".manage-project-users"),o=n.data("page-name"),r=200;clearTimeout(e),e=setTimeout(function(){$.when(window.EC5.project_users.getProjectUsers(o,1,t).then(function(e){$(".manage-project-users__"+o).html(e),window.EC5.overlay.fadeOut()},function(){window.EC5.overlay.fadeOut()}))},r)}}),a.on("click",".manage-project-users__reset",function(e){window.EC5.overlay.fadeIn(),e.preventDefault();var a=$(this).closest(".manage-project-users"),t=a.data("page-name");$(".manage-project-users__user-search").val(""),$.when(window.EC5.project_users.getProjectUsers(t,1).then(function(e){$(".manage-project-users__"+t).html(e),window.EC5.overlay.fadeOut()},function(){window.EC5.overlay.fadeOut()}))}),a.on("submit",".manage-project-users__table__remove-form",function(e){e.preventDefault();var a=$(this).serializeArray(),t=$(this).attr("action"),n=$(this).closest(".manage-project-users"),o=n.data("page-name"),r=n.find(".pagination .active span").html(),i=n.find(".manage-project-users__user-search").val();window.EC5.project_users.removeUserProjectRole(t,a,o,r,i)}),$(".manage-project-users__existing-user-add-form").on("submit",function(e){e.preventDefault();var a=$(this).serializeArray(),t=$(this).attr("action"),n=a[1].value?"page-"+a[1].value:"page-creator";window.EC5.project_users.addUserProjectRole(t,a,n,function(){$("#ec5ModalExistingUser").find("input[type=email]").val(""),$("#ec5ModalExistingUser").modal("hide")})}),$(".manage-project-users__new-user-add-form").on("submit",function(e){e.preventDefault();var a=$(this).serializeArray(),t=$(".manage-project-users__existing-user-add-form").serializeArray(),n=a.concat(t),o=$(this).attr("action"),r=n[2]&&n[2].value?"page-"+n[2].value:"page-creator";window.EC5.project_users.addUserProjectRole(o,n,r,function(){$("#ec5ModalExistingUser").find("input[type=email]").val(""),$("#ec5ModalExistingUser").modal("hide"),$("#ec5ModalNewUser").modal("hide")})}),$(".manage-user-more__import-users").off().on("click",function(){var e=$(this);if(!window.EC5.project_users.isOpeningFileBrowser){var a=e.find(".manage-user-more__import-users__input-file");window.EC5.project_users.isOpeningFileBrowser=!0,a.off("change").on("change",function(){window.EC5.project_users.pickCSVFile(this.files),$(this).val(null)}),e.find(".manage-user-more__import-users__input-file").trigger("click")}window.setTimeout(function(){window.EC5.project_users.isOpeningFileBrowser=!1},3e3)}),$(".manage-user-more__export-users").off().on("click",function(){var e=$(this).find("a").data("project-slug");window.EC5.overlay.fadeIn(),$.when(window.EC5.project_users.exportUsersToCSV(e)).then(function(){window.EC5.overlay.fadeOut()},function(e){e.responseJSON?window.EC5.toast.showError(e.responseJSON.errors[0].title):window.EC5.toast.showError(e),window.EC5.overlay.fadeOut()})}),$(".manage-project-users__delete-by-role").off().on("click",function(){var e=$(this).data("project-slug"),a=$(this).data("role");window.EC5.overlay.fadeIn(),$.when(window.EC5.project_users.removeUsersByRole(e,a)).then(function(e){window.EC5.toast.showSuccess(e.data.message),$.when(window.EC5.project_users.getProjectUsers(t,1).then(function(e){$(".manage-project-users__"+t).html(e),window.EC5.overlay.fadeOut()},function(){window.EC5.overlay.fadeOut()}))},function(e){window.EC5.overlay.fadeOut(),e.responseJSON?window.EC5.toast.showError(e.responseJSON.errors[0].title):window.EC5.toast.showError(e)})})}}),window.EC5=window.EC5||{},$(document).ready(function(){var e=4,a=$(".page-mapping-data"),t=a.data("url");0!==a.length&&($(".form-list-selection").on("click","li",function(){var e=$(this),a=$(e).data("form-ref"),t=$(".map-data__tabs li.active").data("map-index"),n=$("#map-data-tabcontent-"+t+" .panel-body");e.parents(".form-list-selection").find(".dropdown-toggle .form-list-selection__form-name").text(e.text()),n.find(".table-responsive").fadeOut().addClass("hidden"),n.find('[data-form-ref="'+a+'"]').hide().removeClass("hidden").fadeIn()}),$(".map-data--actions__btns").on("click",'[data-toggle="push"]',function(){var e=$(this),a=e.data("action"),n=$(".map-data__tabs li.active"),o=$(".map-data__tabs li").not(".active").not(".map-data__tabs__add-form"),r=n.data("map-index"),i=n.data("map-name");switch(console.log(a),a){case"make-default":window.EC5.mapping.makeDefault(t,a,r,i,n,o);break;case"update":window.EC5.mapping.update(t,a,r,i)}}),$("#modal__mapping-data").on("show.bs.modal",function(a){var n=$(a.relatedTarget),o=n.data("action"),r=$(this),i=n.data("trans"),s=r.find(".map-data__modal__save-btn"),d=$(".map-data__tabs li.active"),c=!d.find(".map-data__default-pin").hasClass("invisible"),p=d.data("map-index"),l=d.data("map-name"),u=$(".page-mapping-data .tab-content");switch(r.find(".modal-title").text(i),o){case"delete":window.EC5.mapping["delete"](t,o,p,l,d,r,s,c,u);break;case"rename":window.EC5.mapping.rename(t,o,p,l,d,r,s);break;case"add-mapping":window.EC5.mapping.addMapping(t,r,s,e,u,u)}}))}),window.EC5=window.EC5||{},window.EC5.projectUtils=window.EC5.projectUtils||{},function(e){e.postRequest=function(e,a){return $.ajax({url:e,contentType:"application/vnd.api+json",data:JSON.stringify(a),dataType:"json",method:"POST",crossDomain:!0})},e.showErrors=function(e){var a="";$(e.responseJSON.errors).each(function(e,t){a+=t.title+"<br/>"}),window.EC5.toast.showError(a)}}(window.EC5.projectUtils),window.EC5=window.EC5||{},window.EC5.project_users=window.EC5.project_users||{},function(e){e.addUserProjectRole=function(a,t,n,o){var r;$.ajax({url:a,type:"POST",dataType:"json",data:t}).done(function(a){window.EC5.toast.showSuccess(a.data.message),$.when(e.getProjectUsers(n,1)).then(function(e){var a=n.replace("page-","");$(".manage-project-users__"+n).html(e),$(".page-manage-users .nav-tabs li").find("a."+a+"-tab-btn").trigger("click"),o&&o()})}).fail(function(e){var a="ec5_90";if(e.responseJSON.errors&&e.responseJSON.errors.length>0)for(r=0;r<e.responseJSON.errors.length;r++)e.responseJSON.errors[r].code===a?$("#ec5ModalNewUser").modal():window.EC5.toast.showError(e.responseJSON.errors[r].title)})}}(window.EC5.project_users),window.EC5=window.EC5||{},window.EC5.project_users=window.EC5.project_users||{},function(e){e.config={messages:{error:{CSV_FILE_INVALID:"CSV file is invalid",INVALID_EMAILS:"Invalid emails",BROWSER_NOT_SUPPORTED:"Browser not supported"},success:{USERS_IMPORTED:"Users added to the project"},warning:{SOME_USERS_NOT_IMPORTED:"Some users could not be imported"}},consts:{CSV_FILE_EXTENSION:"csv",ANIMATION_FAST:200,ANIMATION_NORMAL:500,ROLES:{CREATOR:"creator",MANAGER:"manager",CURATOR:"curator",COLLECTOR:"collector",VIEWER:"viewer"}},errorCodes:{userDoesntExist:"ec5_90",importerDoesNotHavePermission:"ec5_91",invalidValue:"ec5_29",invalidEmailAddress:"ec5_42",creatorEmailAddress:"ec5_217",managerEmailAddress:"ec5_344"},invalidEmailAddresses:[]}}(window.EC5.project_users),window.EC5=window.EC5||{},window.EC5.project_users=window.EC5.project_users||{},function(e){e.exportUsersToCSV=function(e){var a=this,t=a.config,n=new $.Deferred,o=window.EC5.SITE_URL+"/api/internal/project-users/"+e;return $.ajax({url:o,type:"GET",dataType:"json"}).done(function(a){var o={all:[],creators:[],managers:[],curators:[],collectors:[],viewers:[]},r={all:"",creators:"",managers:"",curators:"",collectors:"",viewers:""};$(a.data).each(function(e,a){switch(o.all.push(a),a.role){case"creator":o.creators.push(a);break;case"manager":o.managers.push(a);break;case"curator":o.curators.push(a);break;case"collector":o.collectors.push(a);break;case"viewer":o.viewers.push(a)}}),$.each(o,function(e){r[e]=Papa.unparse({data:o[e]},{quotes:!1,quoteChar:"",delimiter:",",header:!0,newline:"\r\n"})});var i=new JSZip;$.each(r,function(e,a){i.file(e+".csv",a)}),i.generateAsync({type:"blob"}).then(function(a){try{saveAs(a,e+"_users.zip"),n.resolve()}catch(o){console.log(o),n.reject(t.messages.error.BROWSER_NOT_SUPPORTED)}})}).fail(function(e){n.reject(e)}),n.promise()},e.getTotalsByRole=function(e){var a=new $.Deferred,t=window.EC5.SITE_URL+"/api/internal/project-users/"+e;return $.ajax({url:t,type:"GET",dataType:"json"}).done(function(e){var t={creator:0,manager:0,curator:0,collector:0,viewer:0};$(e.data).each(function(e,a){t[a.role]++}),a.resolve(t)}).fail(function(e){a.reject(e)}),a.promise()}}(window.EC5.project_users),window.EC5=window.EC5||{},window.EC5.project_users=window.EC5.project_users||{},function(e){e.getProjectUsers=function(e,a,t){var n=new $.Deferred,o={};return a="undefined"!=typeof a?a:1,t="undefined"!=typeof t?t:"",o[e]=a,o.search=t,$.ajax({url:"",type:"GET",dataType:"json",data:o}).done(function(e){$.when(window.EC5.project_users.updateRoleCounters()).always(function(){n.resolve(e)})}).fail(function(e){$.when(window.EC5.project_users.updateRoleCounters()).always(function(){n.reject(e)})}),n.promise()}}(window.EC5.project_users),window.EC5=window.EC5||{},window.EC5.project_users=window.EC5.project_users||{},function(e){function a(e){var a=/^([a-z\d!#$%&'*+\-\/=?^_`{|}~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+(\.[a-z\d!#$%&'*+\-\/=?^_`{|}~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+)*|"((([ \t]*\r\n)?[ \t]+)?([\x01-\x08\x0b\x0c\x0e-\x1f\x7f\x21\x23-\x5b\x5d-\x7e\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]|\\[\x01-\x09\x0b\x0c\x0d-\x7f\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]))*(([ \t]*\r\n)?[ \t]+)?")@(([a-z\d\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]|[a-z\d\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF][a-z\d\-._~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]*[a-z\d\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])\.)+([a-z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]|[a-z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF][a-z\d\-._~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]*[a-z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])\.?$/i;return a.test(e)}e.importUsersByEmail=function(e){var t=[],n=e.selectedHeaderIndex,o=e.importedJson,r=o.meta.fields,i=e.doesFirstRowContainsHeaders,s=e.selectedUserRole,d=e.postURL,c=new $.Deferred,p=window.EC5.project_users.config;if(p.invalidEmailAddresses=[],null===n)return!1;if(!i){var l={};l[o.meta.fields[n]]=o.meta.fields[n],o.data.unshift(l)}$(o.data).each(function(e,o){var i=o[r[n]];""!==i.trim()&&(a(i)?t.push(i):p.invalidEmailAddresses.push(i))});var u={role:s,emails:$.unique(t).slice(0,100)};return $.ajax({url:d,type:"POST",dataType:"json",data:u}).done(function(e){c.resolve(e)}).fail(function(e){c.reject(e)}),c.promise()}}(window.EC5.project_users),window.EC5=window.EC5||{},window.EC5.project_users=window.EC5.project_users||{},function(e){e.pickCSVFile=function(e){function a(e){var a="";return e.responseJSON?$.each(e.responseJSON.errors,function(e,t){a+=t.title+"<br/>"}):a=e,a}var t,n,o=this,r=e[0],i=o.config;if(window.EC5.overlay.fadeIn(),o.isOpeningFileBrowser=!1,!r)return window.EC5.overlay.fadeOut(i.consts.ANIMATION_FAST),void window.EC5.toast.showError(i.messages.error.CSV_FILE_INVALID);if(t=r.name.split("."),n=t[t.length-1],n!==i.consts.CSV_FILE_EXTENSION)return window.EC5.overlay.fadeOut(i.consts.ANIMATION_FAST),void window.EC5.toast.showError(i.messages.error.CSV_FILE_INVALID);var s=new FileReader;s.onload=function(e){var t=e.target.result,n=Papa.parse(t,{header:!0,delimiter:","}),r=n.meta.fields,s=$("#ec5ModalImportUsers");return 0===n.data.length?(window.EC5.overlay.fadeOut(i.consts.ANIMATION_FAST),void window.EC5.toast.showError(i.messages.error.CSV_FILE_INVALID)):(s.modal(),s.off().on("shown.bs.modal",function(){var e,t,d,c=s.find(".users-column-picker"),p="",l=null,u=s.data("post-url");c.find(".btn").html('Pick column <span class="caret"></span>'),c.find(".btn").val(""),s.find(".users__first-row-headers input").prop("checked",!0),s.find(".users__pick-role input#collector").prop("checked",!0),s.find(".users-perform-import").attr("disabled",!0),window.EC5.overlay.fadeOut(i.consts.ANIMATION_FAST),$(r).each(function(e,a){p+="<li>",p+='<a href="#">'+a.trunc(25)+"</a>",p+="</li>"}),c.find(".dropdown-menu").empty().append(p),c.find(".dropdown-menu li").off().on("click",function(){$(this).parents(".users-column-picker").find(".btn").html($(this).text()+' <span class="caret"></span>'),$(this).parents(".users-column-picker").find(".btn").val($(this).data("value")),l=$(this).index(),s.find(".users-perform-import").attr("disabled",!1)}),$(".users-perform-import").off().on("click",function(){return null!==l&&(window.EC5.overlay.fadeIn(),t=s.find(".users__first-row-headers").find(".checkbox input").is(":checked"),d=s.find(".users__pick-role").find(".radio input:checked").val(),e={doesFirstRowContainsHeaders:t,selectedUserRole:d,importedJson:n,selectedHeaderIndex:l,postURL:u},void window.setTimeout(function(){console.log("imported"),$.when(o.importUsersByEmail(e)).then(function(e){var a="page-"+d;$.when(window.EC5.project_users.getProjectUsers(a,1,"").then(function(e){$(".manage-project-users__"+a).html(e),$(".page-manage-users .nav-tabs li").find("a."+d+"-tab-btn").trigger("click"),window.EC5.overlay.fadeOut(),$("#ec5ModalImportUsers").modal("hide"),i.invalidEmailAddresses.length>0?(window.EC5.toast.showWarning(i.messages.warning.SOME_USERS_NOT_IMPORTED),window.EC5.toast.showError(i.messages.error.INVALID_EMAILS+": <br/>"+i.invalidEmailAddresses.join("<br/>"))):window.EC5.toast.showSuccess(i.messages.success.USERS_IMPORTED)},function(){window.EC5.overlay.fadeOut()}))},function(e){var t="page-"+d;$.when(window.EC5.project_users.getProjectUsers(t,1,"").then(function(n){$(".manage-project-users__"+t).html(n),$(".page-manage-users .nav-tabs li").find("a."+d+"-tab-btn").trigger("click"),window.EC5.overlay.fadeOut(),$("#ec5ModalImportUsers").modal("hide"),window.EC5.toast.showError(a(e)),i.invalidEmailAddresses.length>0&&(window.EC5.toast.showWarning(i.messages.warning.SOME_USERS_NOT_IMPORTED),window.EC5.toast.showError(i.messages.error.INVALID_EMAILS+": <br/>"+i.invalidEmailAddresses.join("<br/>")))},function(){window.EC5.overlay.fadeOut()}))})},1e3))})}),void s.find('button[data-dismiss="modal"]').one("click",function(){s.modal("hide")}))},s.readAsText(r)}}(window.EC5.project_users),window.EC5=window.EC5||{},window.EC5.project_users=window.EC5.project_users||{},function(e){e.removeUserProjectRole=function(a,t,n,o,r){var i,s=window.EC5.project_users.config,d=t.length,c={};for(window.EC5.overlay.fadeIn(),i=0;i<d;i++)c[t[i].name]=t[i].value;var p=c["total-users"]-1;0===p&&(o-=1),$.ajax({url:a,type:"POST",dataType:"json",data:t,page:o}).done(function(a){$.when(e.getProjectUsers(n,o,r)).then(function(e){$(".manage-project-users__"+n).html(e),window.setTimeout(function(){window.EC5.toast.showSuccess(a.data.message),window.EC5.overlay.fadeOut()},s.consts.ANIMATION_NORMAL)},function(e){window.setTimeout(function(){if(e.responseJSON.errors&&e.responseJSON.errors.length>0)for(i=0;i<e.responseJSON.errors.length;i++)window.EC5.toast.showError(e.responseJSON.errors[i].title);window.EC5.overlay.fadeOut()},s.consts.ANIMATION_NORMAL)})}).fail(function(e){window.setTimeout(function(){if(e.responseJSON.errors&&e.responseJSON.errors.length>0)for(i=0;i<e.responseJSON.errors.length;i++)window.EC5.toast.showError(e.responseJSON.errors[i].title);window.EC5.overlay.fadeOut()},s.consts.ANIMATION_NORMAL)})}}(window.EC5.project_users),window.EC5=window.EC5||{},window.EC5.project_users=window.EC5.project_users||{},function(e){e.removeUsersByRole=function(e,a){var t=new $.Deferred,n=window.EC5.SITE_URL+"/api/internal/project-users/"+e+"/remove-by-role";return $.ajax({url:n,type:"POST",dataType:"json",data:{role:a}}).done(function(e){var n="page-"+a;$(".manage-project-users__"+n).html(""),t.resolve(e)}).fail(function(e){t.reject(e)}),t.promise()}}(window.EC5.project_users),window.EC5=window.EC5||{},window.EC5.project_users=window.EC5.project_users||{},function(e){e.switchUserRole=function(e,a,t,n){var o=window.EC5.SITE_URL+"/api/internal/project-users/"+e+"/switch-role",r=window.EC5.project_users.config,i=$.map(r.consts.ROLES,function(e){return e}),s=new $.Deferred;$.inArray(t,i)!==-1&&$.inArray(n,i)!==-1||s.reject("Invalid role!"),t===n&&s.reject("Old role and new role are the same!");var d={email:a,currentRole:t,newRole:n};return $.ajax({url:o,type:"POST",dataType:"json",data:d}).done(function(e){console.log(e),s.resolve(e)}).fail(function(e){console.log(e),s.reject(e)}),s.promise()}}(window.EC5.project_users),window.EC5=window.EC5||{},window.EC5.project_users=window.EC5.project_users||{},function(e){e.updateRoleCounters=function(){var e=$(".page-manage-users"),a=new $.Deferred,t=e.data("project-slug"),n={all:e.find(".count-overall"),creator:e.find(".nav-tabs-roles").find(".count-creator"),manager:e.find(".nav-tabs-roles").find(".count-manager"),curator:e.find(".nav-tabs-roles").find(".count-curator"),collector:e.find(".nav-tabs-roles").find(".count-collector"),viewer:e.find(".nav-tabs-roles").find(".count-viewer")},o=0;return $.when(window.EC5.project_users.getTotalsByRole(t)).then(function(e){Object.keys(n).forEach(function(a){n[a].text(e[a]),console.log(e[a]),o+=e[a]||0}),n.all.text(o)}).fail(function(e){a.reject(e)}).always(function(){a.resolve()}),a.promise()}}(window.EC5.project_users),window.EC5=window.EC5||{},window.EC5.mapping=window.EC5.mapping||{},function(e){e.addMapping=function(e,a,t,n,o){a.find(".map-data__modal__mapping-name").show(),a.find(".map-data__modal-delete-warning").addClass("hidden"),a.find("map-data__modal__name-rules").removeClass("hidden"),a.find(".map-data__modal__mapping-name").val(""),t.off().on("click",function(){window.EC5.toast.clear();var t=a.find(".map-data__modal__mapping-name").val();window.EC5.projectUtils.postRequest(e,{name:t,is_default:!1}).done(function(e){console.log(e),window.EC5.toast.showSuccess(t+" mapping added");var r=e.data.map_index,i='<li role="presentation" data-map-index="'+r+'" data-map-name="'+t+'">';i+=' <a href="#map-data-tabcontent-'+r+'" role="tab" data-toggle="tab">',i+='<span class="map-data__map-name">'+t+"&nbsp;</span>",i+='<i class="fa fa-thumb-tack invisible" aria-hidden="true"></i>',i+="</a>",i+="</li>",$(".map-data__tabs li").not(".map-data__tabs__add-form").last().after(i),$.isArray(e.data.mapping)?e.data.mapping.length===n&&$(".map-data__tabs li.map-data__tabs__add-form").addClass("hidden"):Object.keys(e.data.mapping).length===n&&$(".map-data__tabs li.map-data__tabs__add-form").addClass("hidden");var s=o.find("#map-data-tabcontent-0").clone(!0,!0);s.attr("id","map-data-tabcontent-"+r),s.attr("data-map-index",r),s.attr("data-map-name",t),s.find("[data-map-index]").each(function(e,a){$(a).attr("data-map-index",r)}),s.find(".map-data--actions__btns .btn").each(function(e,a){$(a).prop("disabled",!1)}),s.find(".table-responsive").each(function(e,a){var t=$(a).find("tr td input");t.prop("disabled",!1).prop("readonly",!1)}),o.append(s),$(".map-data__tabs li.active").removeClass("active"),$('.page-mapping-data .tab-content .tab-pane[data-map-index="0"]').removeClass("active in"),
-$('.map-data__tabs li[data-map-index="'+r+'"]').addClass("active"),$('.map-data__tabs li[data-map-index="'+r+'"] a').tab("show"),window.setTimeout(function(){a.modal("hide")},250)}).fail(function(e){console.log(e),window.EC5.projectUtils.showErrors(e)})})}}(window.EC5.mapping),window.EC5=window.EC5||{},window.EC5.mapping=window.EC5.mapping||{},function(e){e["delete"]=function(e,a,t,n,o,r,i,s,d){r.find(".map-data__modal__mapping-name").hide(),r.find(".map-data__modal-delete-warning").removeClass("hidden"),r.find("map-data__modal__name-rules").addClass("hidden"),i.off().on("click",function(){window.EC5.toast.clear(),window.EC5.projectUtils.postRequest(e+"/delete",{map_index:t}).done(function(e){var a=$(".map-data__tabs");window.EC5.toast.showSuccess(n+" deleted"),o.remove(),d.find("#map-data-tabcontent-"+t).remove(),a.find('a[href="#map-data-tabcontent-0"]').tab("show"),s&&a.find(".map-data__default-pin").first().removeClass("invisible"),$(".map-data__tabs li.map-data__tabs__add-form").removeClass("hidden"),r.modal("hide")}).fail(function(e){console.log(e),window.EC5.projectUtils.showErrors(e)})})}}(window.EC5.mapping),window.EC5=window.EC5||{},window.EC5.mapping=window.EC5.mapping||{},function(e){e.getDefaultMapIndex=function(){var e=0,a=$(".map-data__tabs li");return a.each(function(a,t){var n=$(t).attr("data-map-index");if(!$(t).find(".map-data__default-pin").hasClass("invisible"))return e=n,!1}),parseInt(e,10)}}(window.EC5.mapping),window.EC5=window.EC5||{},window.EC5.mapping=window.EC5.mapping||{},function(e){e.makeDefault=function(e,a,t,n,o,r){window.EC5.toast.clear(),window.EC5.projectUtils.postRequest(e+"/update",{action:a,map_index:t}).done(function(e){console.log(JSON.stringify(e)),window.EC5.toast.showSuccess(n+" set as default"),o.find(".map-data__default-pin").removeClass("invisible"),r.each(function(e,a){$(a).find(".map-data__default-pin").addClass("invisible")})}).fail(function(e){window.EC5.projectUtils.showErrors(e)})}}(window.EC5.mapping),window.EC5=window.EC5||{},window.EC5.mapping=window.EC5.mapping||{},function(e){e.rename=function(e,a,t,n,o,r,i){r.find(".map-data__modal__mapping-name").show(),r.find(".map-data__modal-delete-warning").addClass("hidden"),r.find("map-data__modal__name-rules").removeClass("hidden"),r.find(".map-data__modal__mapping-name").val(n),i.off().on("click",function(){window.EC5.toast.clear();var n=r.find(".map-data__modal__mapping-name").val();window.EC5.projectUtils.postRequest(e+"/update",{action:a,map_index:t,name:n}).done(function(e){o.attr("data-map-name",n),o.find(".map-data__map-name").text(n),r.modal("hide"),window.EC5.toast.showSuccess(n+" renamed")}).fail(function(e){console.log(e),window.EC5.projectUtils.showErrors(e)})})}}(window.EC5.mapping),window.EC5=window.EC5||{},window.EC5.mapping=window.EC5.mapping||{},function(e){e.update=function(e,a,t,n){window.EC5.toast.clear(),window.EC5.overlay.fadeIn();var o={},r=$('.page-mapping-data .tab-content .tab-pane[data-map-index="'+t+'"]'),i=!0,s=null,d={},c=/^[a-zA-Z0-9_]{1,20}$/,p=/^((?![<>]).){1,150}$/,l=r.find(".panel-body .table-responsive");r.find("input").parent().removeClass("has-error"),o[t]={},o[t].name=n,o[t].forms={},o[t].map_index=t,o[t].is_default=window.EC5.mapping.getDefaultMapIndex()===t,l.each(function(e,a){var n=o[t],r=$(a).attr("data-form-ref"),l=$(a).find("tbody tr"),u=0;for(d[r]=[],n.forms[r]={};u<l.length;){var w=n.forms[r],f=$(l[u]).attr("data-input-ref"),m=$(l[u]).find(".mapping-data__map-to input"),h=m.val(),_=$(l[u]).find(".mapping-data__hide-checkbox input").is(":checked");if(h=void 0===h?void 0:h.trim(),f){switch(w[f]={},w[f].possible_answers={},w[f].branch={},w[f].group={},w[f].map_to=h,w[f].hide=_,void 0!==h&&d[r].push(h),h.match(c)||(i=!1,$(l[u]).find(".mapping-data__map-to input").parent().addClass("has-error")),$(l[u]).attr("data-input-type")){case"branch":var E=$(l[u]).nextUntil("[data-top-level-input]","[data-is-branch-input]");w[f].branch={},$(E).each(function(e,a){var t,n=$(a).attr("data-input-ref"),o=$(a).find(".mapping-data__map-to input"),s=o.val(),l=$(a).find(".mapping-data__hide-checkbox input").is(":checked");if(s=void 0===s?void 0:s.trim(),n){if(w[f].branch[n]={},t=w[f].branch[n],t.possible_answers={},t.branch={},t.group={},t.map_to=s,t.hide=l,void 0!==s&&d[r].push(s),s.match(c)||(i=!1,$(a).find(".mapping-data__map-to input").parent().addClass("has-error")),"group"===$(a).attr("data-input-type")){var m=$(a).nextUntil("[data-is-branch-input], [data-top-level-input]","[data-is-group-input]");t.group={},$(m).each(function(e,a){var o=$(a).attr("data-input-ref"),s=$(a).find(".mapping-data__map-to input"),l=s.val(),u=$(a).find(".mapping-data__hide-checkbox input").is(":checked");l=void 0===l?void 0:l.trim(),o?(t.group[o]={},t.group[o].possible_answers={},t.group[o].branch={},t.group[o].group={},t.group[o].map_to=l,t.group[o].hide=u,void 0!==l&&d[r].push(l),l.match(c)||(i=!1,$(a).find(".mapping-data__map-to input").parent().addClass("has-error"))):$(a).find(".mapping-data__possible_answer__map-to input").each(function(e,t){var o=$(a).prev().attr("data-input-ref"),r=w[f].branch[n].group[o],s=$(t).attr("data-answer-ref"),d=$(t).val();d=void 0===d?void 0:d.trim(),d.match(p)||(i=!1,$(t).parent().addClass("has-error")),r.possible_answers[s]={},r.possible_answers[s].map_to=d})}),u+=m.length}}else $(a).find(".mapping-data__possible_answer__map-to input").each(function(e,t){var n=$(a).prev().attr("data-input-ref"),o=w[f].branch[n],r=$(t).attr("data-answer-ref"),s=$(t).val();s=void 0===s?void 0:s.trim(),s.match(p)||(i=!1,$(t).parent().addClass("has-error")),o.possible_answers[r]={},o.possible_answers[r].map_to=s})}),u+=E.length;break;case"group":var C=$(l[u]).nextUntil("[data-top-level-input]","[data-is-group-input]");$(C).each(function(e,a){var t,n=$(a).attr("data-input-ref"),o=$(a).find(".mapping-data__map-to input"),s=o.val();s=void 0===s?void 0:s.trim();var l=$(a).find(".mapping-data__hide-checkbox input").is(":checked");n?(w[f].group[n]={},t=w[f].group[n],t.possible_answers={},t.branch={},t.group={},t.map_to=s,t.hide=l,void 0!==s&&d[r].push(s),s.match(c)||(i=!1,$(a).find(".mapping-data__map-to input").parent().addClass("has-error"))):$(a).find(".mapping-data__possible_answer__map-to input").each(function(e,t){var n=$(a).prev().attr("data-input-ref"),o=w[f].group[n],r=$(t).attr("data-answer-ref"),s=$(t).val();s=void 0===s?void 0:s.trim(),s.match(p)||(i=!1,$(t).parent().addClass("has-error")),o.possible_answers[r]={},o.possible_answers[r].map_to=s})}),u+=C.length}u++}else $(l[u]).find(".mapping-data__possible_answer__map-to input").each(function(e,a){var t=$(l[u-1]).attr("data-input-ref"),n=$(a).attr("data-answer-ref"),o=$(a).val();o=void 0===o?void 0:o.trim(),o.match(p)||(i=!1,$(a).parent().addClass("has-error")),w[t].possible_answers[n]={},w[t].possible_answers[n].map_to=o}),u++}console.log(JSON.stringify(d)),$.each(d,function(e,a){var t=[];$.each(a,function(a,n){return $.inArray(n.trim(),t)!==-1?(s={key:n,formRef:e},i=!1,console.log(n),!1):void t.push(n.trim())})})}),console.log(JSON.stringify(o[t])),i?window.EC5.projectUtils.postRequest(e+"/update",{action:a,map_index:t,mapping:o[t]}).done(function(e){window.EC5.overlay.fadeOut(),window.EC5.toast.showSuccess(n+" updated")}).fail(function(e){window.EC5.overlay.fadeOut(),window.EC5.projectUtils.showErrors(e)}):(s?(l.each(function(e,a){if($(a).data("form-ref")===s.formRef){var t=$(a).find("tbody tr");t.each(function(e,a){$(a).find(".mapping-data__map-to input").val()===s.key&&$(a).find(".mapping-data__map-to").addClass("has-error")})}}),window.EC5.toast.showError(n+" has got duplicate identifier: "+s.key)):window.EC5.toast.showError(n+" has got invalid identifier(s)"),window.EC5.overlay.fadeOut())}}(window.EC5.mapping);
+'use strict';
+window.EC5 = window.EC5 || {};
+window.EC5.projectApps = window.EC5.projectApps || {};
+
+/**
+ * Manage the server users
+ */
+(function projectApps(module) {
+
+    // current client ID
+    module.currentClientId = '';
+
+    /**
+     * Function for asynchronously retrieving the
+     * list of users, based on any search/filter
+     * criteria, with pagination
+     *
+     */
+    module.getApps = function () {
+
+        // Make ajax request to load users
+        $.ajax({
+            url: '',
+            type: 'GET',
+            dataType: 'json',
+            data: {}
+        }).done(function (data) {
+            $('.project-apps-list').html(data);
+        }).fail(window.EC5.showError);
+    };
+
+    /**
+     * Make a post request then get apps on success
+     *
+     * @param url
+     * @param formData
+     * @param callBack
+     */
+    module.post = function (url, formData, callBack) {
+
+        // Make ajax request to load project apps
+        $.ajax({
+            url: url,
+            type: 'POST',
+            dataType: 'json',
+            data: formData
+        }).done(function () {
+
+            // If passed a callback, call
+            if (callBack) {
+                callBack();
+            }
+
+            module.getApps();
+        }).fail(window.EC5.showError);
+
+    };
+
+})(window.EC5.projectApps);
+
+$(document).ready(function () {
+
+    var projectApps = $('.project-apps');
+
+    // Bind on click to pagination links
+    projectApps.on('click', '.pagination a', function (e) {
+
+        e.preventDefault();
+        window.EC5.projectApps.getApps();
+
+    });
+
+
+    var projectAppsForm = $('#ec5-form-project-apps');
+
+    // Bind on submit to form
+    projectAppsForm.on('submit', function (e) {
+
+        e.preventDefault();
+
+        // Retrieve form data
+        var formData = $(this).serialize();
+
+        // Get action url
+        var url = $(this).attr('action');
+
+        window.EC5.projectApps.post(url, formData, function () {
+            // Disable create app button
+            $('#create-app').prop('disabled', true);
+            // Close modal
+            $('#modal-create-app').modal('hide');
+            window.EC5.toast.showSuccess('New App added.');
+        });
+
+    });
+
+
+    var projectAppList = $('.project-apps-list');
+
+    projectAppList.on('click', '#delete-app', function (e) {
+
+        e.preventDefault();
+        // Hide revoke form
+        $('#ec5-form-project-app-revoke').addClass('hidden');
+        // Show delete form
+        $('#ec5-form-project-app-delete').removeClass('hidden');
+        // Get the current project client app id
+        window.EC5.projectApps.currentClientId = $(this).data('clientId');
+
+    });
+
+    projectAppList.on('click', '#revoke-app', function (e) {
+
+        e.preventDefault();
+        // Hide delete form
+        $('#ec5-form-project-app-delete').addClass('hidden');
+        // Show revoke form
+        $('#ec5-form-project-app-revoke').removeClass('hidden');
+        // Get the current project client app id
+        window.EC5.projectApps.currentClientId = $(this).data('clientId');
+
+    });
+
+    var projectAppDeleteForm = $('#ec5-form-project-app-delete');
+
+    // Bind on submit to form
+    projectAppDeleteForm.on('submit', function (e) {
+
+        e.preventDefault();
+
+        // Retrieve form data
+        var formData = {
+            clientId: window.EC5.projectApps.currentClientId
+        };
+
+        // Get action url
+        var url = $(this).attr('action');
+
+        window.EC5.projectApps.post(url, formData, function () {
+            // Enable create app button
+            $('#create-app').prop('disabled', false);
+            // Close modal
+            $('#modal-app-delete').modal('hide');
+            window.EC5.toast.showSuccess('App deleted.');
+        });
+
+    });
+
+    var projectAppRevokeForm = $('#ec5-form-project-app-revoke');
+
+    // Bind on submit to form
+    projectAppRevokeForm.on('submit', function (e) {
+
+        e.preventDefault();
+
+        // Retrieve form data
+        var formData = {
+            clientId: window.EC5.projectApps.currentClientId
+        };
+
+        // Get action url
+        var url = $(this).attr('action');
+
+        window.EC5.projectApps.post(url, formData, function () {
+            // Close modal
+            $('#modal-app-delete').modal('hide');
+            window.EC5.toast.showSuccess('Access Token revoked.');
+        });
+
+    });
+});
+
+'use strict';
+window.EC5 = window.EC5 || {};
+window.EC5.projectCreate = window.EC5.projectCreate || {};
+(function (module) {
+
+    module.doesProjectExist = function (url) {
+
+        var form_group = $('.page-create-project').find('#project-name-form-group-create');
+
+        $.when($.get(url)).done(function (response) {
+            console.log(response.data);
+
+            $('#project-loader').addClass('hidden');
+
+            //is there already a project with that name?
+            if (response.data.exists) {
+                //we have a duplicate, show errors
+                window.EC5.projectCreate.toggleGroupValidation(form_group, false, 'Project already exists');
+            } else {
+                //hide errors
+                window.EC5.projectCreate.toggleGroupValidation(form_group, true);
+            }
+        })
+            .fail(function () {
+                form_group.addClass('has-error');
+            }).always(function () {
+            $('#project-loader').addClass('hidden');
+        });
+
+    };
+
+    module.toggleGroupValidation = function (group, is_valid, message) {
+        if (is_valid) {
+            //hide errors
+            group.removeClass('has-error');
+            group.find('.form-control-feedback').not('#project-loader').addClass('hidden');
+            group.find('.text-danger').addClass('hidden');
+            group.find('.text-hint').removeClass('hidden');
+        } else {
+            //show errors
+            group.addClass('has-error');
+            group.find('.form-control-feedback').not('#project-loader').removeClass('hidden');
+            group.find('.text-danger').removeClass('hidden').text(message);
+            group.find('.text-hint').addClass('hidden');
+        }
+    };
+
+})(window.EC5.projectCreate);
+
+$(document).ready(function () {
+
+    //do nothing if NOT on project create page
+    if ($('.page-create-project').length === 0) {
+        return;
+    }
+
+    var spinner = $('#project-loader');
+
+    //check if a project name exists, on keyup with throttling
+    $('.page-create-project #project-name-create').keyup(function (e) {
+
+        var task;
+        var form_group = $('.page-create-project #project-name-form-group-create');
+        var input = $(this);
+        var value = input.val();
+        //allow only alphanumeric chars, space and underscore but not accented letters
+        var regex = /^[a-zA-Z0-9_ ]*$/;
+
+        //is project name valid?
+        //is form name valid?
+        if (regex.test(value) || value === '') {
+            //project name valid, hide errors
+            window.EC5.projectCreate.toggleGroupValidation(form_group, true);
+
+            if (value.length >= 3) {
+                var url = window.EC5.SITE_URL + '/api/internal/exists/' + value;
+                spinner.removeClass('hidden');
+                clearTimeout(task);
+                task = setTimeout(function () {
+                    window.EC5.projectCreate.doesProjectExist(url);
+                }, 500);
+            }
+        } else {
+            //form name invalid, show errors, hide spinner
+            spinner.addClass('hidden');
+            window.EC5.projectCreate.toggleGroupValidation(form_group, false, 'Please remove invalid chars');
+        }
+    });
+
+//keyup validation on form name => allow only alphanumeric chars and '-', '_'
+    $('.page-create-project #form-name').keyup(function (e) {
+
+        var regex = /^[\w\-\s]+$/;
+        var input = $(this);
+        var value = input.val();
+        var form_group = $('#form-name-form-group');
+
+        //is form name valid?
+        if (regex.test(value) || value === '') {
+            //form name valid, hide errors
+            window.EC5.projectCreate.toggleGroupValidation(form_group, true);
+
+        } else {
+            //form name invalid, show errors
+            window.EC5.projectCreate.toggleGroupValidation(form_group, false, 'Please remove invalid chars');
+        }
+    });
+
+//keyup validation on small description => minlength 15 and strip html tags
+    $('.page-create-project #small-description-form-group > input').keyup(function (e) {
+
+        var form_group = $('#small-description-form-group');
+        var input = $(this);
+        var value = input.val();
+
+        if (value.length >= 15) {
+            //small description valid, hide errors
+            window.EC5.projectCreate.toggleGroupValidation(form_group, true);
+        } else {
+            //length too short
+            window.EC5.projectCreate.toggleGroupValidation(form_group, false, 'Must be at least 15 chars long');
+        }
+    });
+});
+
+
+
+
+$(document).ready(function () {
+    //enable only on page-entries-deletion
+    if ($('.page-entries-deletion').length > 0) {
+        
+        var projectName = $('.page-entries-deletion').find('.project-name').text();
+        var wrapper = $('.delete-entries');
+        var modal = $('#modal-deletion');
+
+        wrapper.submit(function (e) {
+            // Don't allow user to submit if the project
+            // name they've typed is incorrect
+            if (projectName.trim() !== $('#project-name').val().trim()) {
+                e.preventDefault();
+            }
+            modal.modal({backdrop: 'static', keyboard: false}, 'show');
+        });
+
+        wrapper.on('keyup', '#project-name', function (e) {
+            e.preventDefault();
+            // If the project name is correct, enable submit button
+            $('.submit-delete-entries')
+                .attr('disabled', !(projectName.trim() === $(this).val().trim()));
+        });
+    }
+});
+
+$(document).ready(function () {
+    //enable only on page-entries-deletion
+    if ($('.page-project-delete').length > 0) {
+
+        var projectName = $('h3[data-project-name]').attr('data-project-name');
+        var wrapper = $('.delete-project');
+        var modal = $('#modal-deletion');
+
+
+        wrapper.submit(function (e) {
+            // Don't allow user to submit if the project
+            // name they've typed is incorrect
+            if (projectName.replace(/\s+/g, ' ') !== $('#project-name').val()) {
+                e.preventDefault();
+            }
+            modal.modal({backdrop: 'static', keyboard: false}, 'show');
+        });
+
+        wrapper.on('keyup', '#project-name', function (e) {
+            e.preventDefault();
+            // If the project name is correct, enable submit button
+            if (projectName.replace(/\s+/g, ' ') === $(this).val()) {
+                $('.submit-delete').prop('disabled', false);
+            } else {
+                $('.submit-delete').prop('disabled', true);
+            }
+        });
+    }
+});
+
+'use strict';
+window.EC5 = window.EC5 || {};
+window.EC5.projectDetails = window.EC5.projectDetails || {};
+
+(function projectDetails(module) {
+
+    module.statusPairs = {
+        trashed: ['restore', 'delete'],
+        locked: ['unlock'],
+        active: ['trashed', 'locked']
+    };
+
+    module.currentSettingsValue = function (which) {
+        return window.EC5.projectDetails.parameters[which] || '';
+    };
+
+    module.updateSettings = function (which) {
+
+        var onValue = module.currentSettingsValue(which);
+        var settings_elements = $('.settings-' + which);
+
+        if (which === 'status') {
+
+            var showExtra = (module.statusPairs[onValue]) ? module.statusPairs[onValue] : [];
+
+            settings_elements.each(function (idx, item) {
+
+                if ($(item).data('value') === onValue) {
+                    $(this).addClass('btn-action');
+                }
+                else {
+                    $(this).removeClass('btn-action');
+                }
+
+                if (showExtra.indexOf($(item).data('value')) !== -1 || $(item).data('value') === onValue) {
+                    $(this).removeClass('ec5-hide-block');
+                } else {
+                    $(this).addClass('ec5-hide-block');
+                }
+            });
+        }
+
+        settings_elements.each(function (idx, item) {
+            if ($(item).data('value') === onValue) {
+                $(this).addClass('btn-action');
+            }
+            else {
+                $(this).removeClass('btn-action');
+            }
+        });
+    };
+
+    module.update = function (action, setTo) {
+
+        var url = window.EC5.SITE_URL + '/myprojects/' + window.EC5.projectDetails.parameters.slug + '/settings/' + action;
+        var data = {};
+
+        data[action] = setTo;
+
+        $.when(window.EC5.projectUtils.postRequest(url, data))
+            .done(function (data) {
+                try {
+                    $.each(data, function (key, value) {
+                        window.EC5.projectDetails.parameters[key] = value;
+                    });
+                    module.updateSettings(action);
+                    window.EC5.toast.showSuccess('Setting updated.');
+                } catch (e) {
+                    window.EC5.projectUtils.showErrors(e);
+                }
+            })
+            .fail(function (e) {
+                window.EC5.overlay.fadeOut();
+                //show errors to user
+                window.EC5.projectUtils.showErrors(e);
+            }).always(function () {
+                window.EC5.overlay.fadeOut();
+            });
+    };
+
+})(window.EC5.projectDetails);
+
+$(document).ready(function () {
+
+    $('[data-toggle="tooltip"]').tooltip();
+
+    var project_details = $('.js-project-details');
+    /***************************************************************************/
+    //custom file upload button behaviour
+    // We can attach the `fileselect` event to all file inputs on the page
+    $(document).on('change', ':file', function () {
+        var input = $(this);
+        var numFiles = input.get(0).files ? input.get(0).files.length : 1;
+        var label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+        input.trigger('fileselect', [numFiles, label]);
+    });
+
+    $(':file').on('fileselect', function (event, numFiles, label) {
+        var input = $(this).parents('.input-group').find(':text'),
+            log = numFiles > 1 ? numFiles + ' files selected' : label;
+        if (input.length) {
+            input.val('    ' + log);
+        }
+    });
+    /***************************************************************************/
+
+    window.EC5.projectDetails.parameters = {
+        status: project_details.attr('data-js-status'),
+        access: project_details.attr('data-js-access'),
+        visibility: project_details.attr('data-js-visibility'),
+        logo_url: project_details.attr('data-js-logo_url'),
+        category: project_details.attr('data-js-category'),
+        slug: project_details.attr('data-js-slug')
+    };
+
+    $('.btn-settings-submit').on('click', function () {
+
+        var ele = $(this);
+        var action = ele.attr('data-setting-type');
+        var setTo = ele.attr('data-value');
+
+        if (setTo !== window.EC5.projectDetails.currentSettingsValue(action)) {
+            window.EC5.overlay.fadeIn();
+            window.EC5.projectDetails.update(action, setTo);
+        }
+
+    }); //end my button
+
+    $(['access', 'status', 'visibility']).each(function (i, action) {
+        window.EC5.projectDetails.updateSettings(action);
+    });
+
+    $('#project-category').on('change', function (e) {
+        var action = 'category';
+        var setTo = $(this).val();
+
+        if (setTo !== window.EC5.projectDetails.currentSettingsValue(action)) {
+            window.EC5.overlay.fadeIn();
+            window.EC5.projectDetails.update(action, setTo);
+        }
+
+    });
+
+    $('.project-details__edit').on('click', function () {
+
+        var panel = $(this).parents('.panel');
+
+        window.EC5.overlay.fadeIn();
+
+        //hide current panel
+        panel.hide();
+        //show the other panel
+        switch (panel.attr('id')) {
+            case 'details-view':
+                //show edit view
+                $('#details-edit').fadeIn(function () {
+                    window.EC5.overlay.fadeOut();
+                });
+                break;
+            case 'details-edit':
+                //show details view
+                $('#details-view').fadeIn(function () {
+                    window.EC5.overlay.fadeOut();
+                });
+                break;
+        }
+    });
+
+    $('.project-homepage-url .copy-btn').on('click', function () {
+        var self = $(this);
+        console.log(self.parent().find('a').text());
+        navigator.clipboard.writeText(self.parent().find('a').text()).then(function () {
+            self.tooltip('show');
+            window.setTimeout(function () {
+                self.tooltip('hide');
+            }, 1500);
+        }, function () {
+            //do nothing
+        });
+    });
+});
+
+
+
+$(document).ready(function () {
+    //enable only on page-entries-deletion
+    if ($('.page-project-leave').length > 0) {
+
+        var projectName = $('h3[data-project-name]').attr('data-project-name');
+        var wrapper = $('.leave-project');
+        var modal = $('#modal-leave');
+
+        wrapper.submit(function (e) {
+            // Don't allow user to submit if the project
+            // name they've typed is incorrect
+            if (projectName.replace(/\s+/g, ' ') !== $('#project-name').val()) {
+                e.preventDefault();
+            }
+            modal.modal({backdrop: 'static', keyboard: false}, 'show');
+        });
+
+        wrapper.on('keyup', '#project-name', function (e) {
+            e.preventDefault();
+            // If the project name is correct, enable submit button
+            if (projectName.replace(/\s+/g, ' ') === $(this).val()) {
+                $('.submit-leave').prop('disabled', false);
+            } else {
+                $('.submit-leave').prop('disabled', true);
+            }
+        });
+    }
+});
+
+'use strict';
+
+$(document).ready(function () {
+
+    // Entries Limits
+
+    var entriesTable = $('.manage-entries-limits__table');
+    var limitsForm = $('.page-manage-entries #limits-form');
+    var limtsFormUpdateBtn = $('.page-manage-entries .limits-form__update-btn');
+    var bulkUploadBtns = $('.page-manage-entries .bulk-upload-btns');
+    var projectSlug = bulkUploadBtns.data('project-slug');
+    var canBulkUploadURL = window.EC5.SITE_URL + '/api/internal/can-bulk-upload/' + projectSlug;
+
+    entriesTable.on('change', 'td input:checkbox', function () {
+        // limit input in the the next td
+        var limitInput = $(this).parents('td').next().find('input.input__limit-to');
+
+        if (this.checked) {
+            // Enable input
+            limitInput.prop('disabled', false);
+        } else {
+            // Disable input
+            limitInput.val('');
+            limitInput.prop('disabled', true);
+        }
+    });
+
+    limtsFormUpdateBtn.on('click', function () {
+
+        //clear any toasts
+        window.EC5.toast.clear();
+
+        //clear any error
+        limitsForm.find('.input__set-limit').each(function () {
+            var currentCheckbox = $(this);
+            var currentInput = currentCheckbox.parents('td').next().find('input.input__limit-to');
+            var currentInputFormGroup = currentInput.parent();
+            var errorFeedback = currentInputFormGroup.find('.form-control-feedback');
+
+            errorFeedback.addClass('hidden');
+            currentInputFormGroup.removeClass('has-error has-feedback');
+        });
+
+
+        var isFormValid = true;
+        //check for checked "Set Limit" checkboxes
+        limitsForm.find('.input__set-limit:checked').each(function () {
+
+            var currentCheckbox = $(this);
+            var currentInput = currentCheckbox.parents('td').next().find('input.input__limit-to');
+            var currentInputFormGroup = currentInput.parent();
+            var errorFeedback = currentInputFormGroup.find('.form-control-feedback');
+
+
+            if (currentInput.val() === '') {
+                currentInputFormGroup.addClass('has-error has-feedback');
+                errorFeedback.removeClass('hidden');
+                isFormValid = false;
+            }
+        });
+
+        //if form is valid submit
+        if (isFormValid) {
+            limitsForm.submit();
+        }
+        else {
+            window.EC5.toast.showError('Required fields missing!');
+        }
+    });
+
+    // Entries limits form submit
+    limitsForm.on('submit', function (e) {
+
+        e.preventDefault();
+
+        // Post data
+        $.ajax({
+            url: '',
+            type: 'POST',
+            dataType: 'json',
+            data: $(this).serializeArray()
+        }).done(function () {
+            window.EC5.toast.showSuccess('Updated.');
+        }).fail(function (error) {
+            if (error.responseJSON && error.responseJSON.errors) {
+                // Show the errors
+                if (error.responseJSON.errors.length > 0) {
+                    var i;
+                    for (i = 0; i < error.responseJSON.errors.length; i++) {
+                        window.EC5.toast.showError(error.responseJSON.errors[i].title);
+                    }
+                }
+            }
+        });
+    });
+
+    //Bulk Upload
+    bulkUploadBtns.on('click', '.btn', function (e) {
+
+        var selectedOption =  $(this);
+        //show overlay
+        window.EC5.overlay.fadeIn();
+
+        //post request to change bulk upload settings
+        window.EC5.projectUtils.postRequest(canBulkUploadURL, {
+            can_bulk_upload: $(this).data('bulk-upload')
+        })
+            .done(function () {
+                //reset all buttons
+                bulkUploadBtns.find('.btn-action').removeClass('btn-action');
+                //set current button as active
+                selectedOption.addClass('btn-action');
+
+                window.EC5.overlay.fadeOut();
+                window.EC5.toast.showSuccess('Settings updated.');
+            }).fail(function (error) {
+            if (error.responseJSON.errors) {
+                // Show the errors
+                if (error.responseJSON.errors.length > 0) {
+                    for (var i = 0; i < error.responseJSON.errors.length; i++) {
+                        window.EC5.toast.showError(error.responseJSON.errors[i].title);
+                    }
+                }
+            }
+            window.EC5.overlay.fadeOut();
+        });
+    })
+});
+
+$(document).ready(function () {
+
+    //skip all if not on the manage-users page
+    if ($('.page-manage-users').length === 0) {
+        return;
+    }
+
+    // Variable for storing ajax requests
+    var requestTimeout;
+    var manageProjectUsersForm = $('.manage-project-users');
+    var pageName = '#creator';
+    var config = window.EC5.project_users.config;
+
+    window.EC5.overlay.fadeIn();
+
+    // Dynamically load tab content via ajax request
+    $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+
+        var target = $(e.target).attr('href');
+
+        pageName = 'page-' + target.substring(1);
+
+        $('.manage-project-users__' + pageName).html('');
+
+        // Load users for this role
+        $.when(window.EC5.project_users.getProjectUsers(pageName, 1)).then(function (data) {
+            $('.manage-project-users__' + pageName).hide().html(data).fadeIn(config.consts.ANIMATION_FAST);
+        }, function (error) {
+            if (error.responseJSON) {
+                window.EC5.toast.showError(error.responseJSON.errors[0].title);
+            }
+            else {
+                window.EC5.toast.showError(error);
+            }
+            window.EC5.overlay.fadeOut();
+        });
+    });
+
+    //creator tab by default so grab creator
+    // Load users for this role
+    $.when(window.EC5.project_users.getProjectUsers('page-creator').then(function (data) {
+        $('.manage-project-users__' + pageName).remove().html(data);
+        window.EC5.overlay.fadeOut();
+    }, function (error) {
+        window.EC5.overlay.fadeOut();
+    }));
+
+    //switch role of a user
+    // event is attached to parent and filtered so it will work on newly added elements
+    $('.page-manage-users .tab-content .panel-body')
+        .off().on('click', '.manage-project-users__switch-role', function () {
+
+            var projectSlug = $(this).data('project-slug');
+            var userRole = $(this).data('user-role');
+            var userEmail = $(this).data('user-email');
+            var modal = $('#ec5SwitchUserRole');
+
+            //pre fill user email
+            modal.find('.user-email strong').text(userEmail);
+
+            //show all roles
+            var availableRoles = $.map(config.consts.ROLES, function (value) {
+                return value;
+            });
+
+            $(availableRoles).each(function (key, value) {
+                modal.find('.role-' + value).show();
+            });
+
+            //hide current role from the radio options (useless to show it)
+            modal.find('.role-' + userRole).hide();
+
+            //disable confirm button
+            modal.find('.switch-role-confirm').attr('disabled', true);
+
+            //deselect all radio
+            modal.find('input:radio').prop('checked', false);
+
+            modal.modal('show');
+
+            modal.on('shown.bs.modal', function (e) {
+                // do something...
+                var newRole = null;
+
+                modal.find('.users__pick-role .radio label').off().on('click', function () {
+
+                    //get the new role
+                    newRole = modal.find('.users__pick-role').find('.radio input:checked').val();
+
+                    //enable confirm button only when user pick a role
+                    modal.find('.switch-role-confirm').attr('disabled', false);
+                });
+
+                //on click confirm, switch role
+                modal.find('.switch-role-confirm').off().on('click', function () {
+
+                    if (newRole === null) {
+                        return false;
+                    }
+
+                    if (!projectSlug || !userEmail) {
+                        return false;
+                    }
+
+                    window.EC5.overlay.fadeIn();
+
+                    //on response, hide modal and show notification
+                    $.when(window.EC5.project_users
+                        .switchUserRole(projectSlug, userEmail, userRole, newRole))
+                        .done(function (response) {
+
+                            var pageName = 'page-' + userRole;
+
+                            //update user list for active tab
+                            //refresh list of users
+                            $.when(window.EC5.project_users.getProjectUsers(pageName, 1).then(function (data) {
+                                // Update the relevant page section
+                                $('.manage-project-users__' + pageName).html(data);
+                                modal.modal('hide');
+                                window.EC5.toast.showSuccess(response.data.message);
+                                window.EC5.overlay.fadeOut();
+
+                            }, function (error) {
+                                window.EC5.overlay.fadeOut();
+                                if (error.responseJSON) {
+                                    window.EC5.toast.showError(error.responseJSON.errors[0].title);
+                                }
+                                else {
+                                    window.EC5.toast.showError(error);
+                                }
+                                modal.modal('hide');
+
+                            }));
+                        }).fail(function (error) {
+                            console.log(error);
+                            window.EC5.overlay.fadeOut();
+                            if (error.responseJSON) {
+                                window.EC5.toast.showError(error.responseJSON.errors[0].title);
+                            }
+                            else {
+                                window.EC5.toast.showError(error);
+                            }
+                            modal.modal('hide');
+                        });
+                });
+            })
+        });
+
+
+    // Bind on click to pagination links
+    manageProjectUsersForm.on('click', '.pagination a', function (e) {
+
+        e.preventDefault();
+
+        window.EC5.overlay.fadeIn();
+
+        // Get manage-project-users container
+        var container = $(this).closest('.manage-project-users');
+
+        // Get data-page-name data attribute from the container
+        var pageName = container.data('page-name');
+
+        // Get search value
+        var search = container.find('.manage-project-users__user-search').val();
+
+        // Get users based on page and any existing search or filter and filter option
+        $.when(window.EC5.project_users.getProjectUsers(pageName, $(this).attr('href').split('=')[1], search).then(function (data) {
+            // Update the relevant page section
+            $('.manage-project-users__' + pageName).html(data);
+            window.EC5.overlay.fadeOut()
+        }, function () {
+            window.EC5.overlay.fadeOut()
+        }));
+    });
+
+    // Bind keyup event to search input
+    manageProjectUsersForm.on('keyup', '.manage-project-users__user-search', function (e) {
+
+        // Get value of input
+        var value = this.value;
+
+        // If the length is 3 or more characters, or the user pressed ENTER, search
+        if (value.length >= 0 || e.keyCode === 13) {
+
+            window.EC5.overlay.fadeIn();
+
+            // Get manage-project-users container
+            var container = $(this).closest('.manage-project-users');
+
+            // Get data-page-name data attribute from the container
+            var pageName = container.data('page-name');
+
+            // Set delay amount
+            // for user to stop typing
+            var requestDelay = 200;
+
+            /**
+             * Throttle user requests so that we can wait until the user
+             * has stopped typing before making ajax calls
+             */
+
+            // Clear the previous timeout request
+            clearTimeout(requestTimeout);
+
+            // Set new timeout request
+            requestTimeout = setTimeout(function () {
+                // Get users based on this search (with filter values, if applicable)
+                $.when(window.EC5.project_users.getProjectUsers(pageName, 1, value).then(function (data) {
+                    // Update the relevant page section
+                    $('.manage-project-users__' + pageName).html(data);
+                    window.EC5.overlay.fadeOut();
+                }, function () {
+                    window.EC5.overlay.fadeOut();
+                }));
+
+            }, requestDelay);
+        }
+
+    });
+
+    // Bind on click to reset table
+    manageProjectUsersForm.on('click', '.manage-project-users__reset', function (e) {
+
+        window.EC5.overlay.fadeIn();
+
+        e.preventDefault();
+
+        // Get manage-project-users container
+        var container = $(this).closest('.manage-project-users');
+
+        // Get data-page-name data attribute from the container
+        var pageName = container.data('page-name');
+
+        // Remove search text
+        $('.manage-project-users__user-search').val('');
+
+        //refresh list of users
+        $.when(window.EC5.project_users.getProjectUsers(pageName, 1).then(function (data) {
+            // Update the relevant page section
+            $('.manage-project-users__' + pageName).html(data);
+            window.EC5.overlay.fadeOut();
+        }, function () {
+            window.EC5.overlay.fadeOut();
+        }));
+    });
+
+    // Bind on click to remove user
+    manageProjectUsersForm.on('submit', '.manage-project-users__table__remove-form', function (e) {
+
+        e.preventDefault();
+
+        // Retrieve form data
+        var formData = $(this).serializeArray();
+
+        // Get action url
+        var url = $(this).attr('action');
+
+        // Get manage-project-users container
+        var container = $(this).closest('.manage-project-users');
+
+        // Get data-page-name data attribute from the container
+        var pageName = container.data('page-name');
+
+        // Get page number
+        var page = container.find('.pagination .active span').html();
+
+        // Get search value
+        var search = container.find('.manage-project-users__user-search').val();
+
+        window.EC5.project_users.removeUserProjectRole(url, formData, pageName, page, search);
+    });
+
+    // Bind on click to add existing user from modal
+    $('.manage-project-users__existing-user-add-form').on('submit', function (e) {
+
+        e.preventDefault();
+
+        // Retrieve form data
+        var formData = $(this).serializeArray();
+
+        // Get action url
+        var url = $(this).attr('action');
+
+        // Get current page name
+        var pageName = formData[1].value ? 'page-' + formData[1].value : 'page-creator';
+
+        window.EC5.project_users.addUserProjectRole(url, formData, pageName, function () {
+            // Clear email
+            $('#ec5ModalExistingUser').find('input[type=email]').val('');
+            // Close this modal
+            $('#ec5ModalExistingUser').modal('hide');
+        });
+
+    });
+
+    // Bind on click to add new user from modal
+    $('.manage-project-users__new-user-add-form').on('submit', function (e) {
+
+        e.preventDefault();
+
+        // Retrieve form data
+        var thisFormData = $(this).serializeArray();
+
+        // Retrieve form data from the previous form (email, role)
+        var lastFormData = $('.manage-project-users__existing-user-add-form').serializeArray();
+
+        // Concat two arrays
+        var postData = thisFormData.concat(lastFormData);
+
+        // Get action url
+        var url = $(this).attr('action');
+
+        // Get current page name
+        var pageName = postData[2] && postData[2].value ? 'page-' + postData[2].value : 'page-creator';
+
+        window.EC5.project_users.addUserProjectRole(url, postData, pageName, function () {
+
+            // Clear email
+            $('#ec5ModalExistingUser').find('input[type=email]').val('');
+            // Close previous modal
+            $('#ec5ModalExistingUser').modal('hide');
+            // Close this modal
+            $('#ec5ModalNewUser').modal('hide');
+        });
+
+    });
+
+    //pick a csv file
+    $('.manage-user-more__import-users').off().on('click', function () {
+
+        var target = $(this);
+
+        //import file first then show modal to pick which column (if more than one)
+        //todo not use window, use formbuilder object
+        if (!window.EC5.project_users.isOpeningFileBrowser) {
+
+            var file_input = target.find('.manage-user-more__import-users__input-file');
+
+            window.EC5.project_users.isOpeningFileBrowser = true;
+
+            file_input.off('change').on('change', function () {
+                //perform the import
+                window.EC5.project_users.pickCSVFile(this.files);
+                $(this).val(null);
+            });
+
+            target.find('.manage-user-more__import-users__input-file').trigger('click');
+        }
+
+        //to avoid a infinte loop (since we are triggering the click event)
+        //we remove the flag later, to be able to upload another file
+        //even if the user tapped on "cancel"
+        window.setTimeout(function () {
+            window.EC5.project_users.isOpeningFileBrowser = false;
+        }, 3000);
+    });
+
+
+    //export users
+    $('.manage-user-more__export-users').off().on('click', function () {
+
+        var projectSlug = $(this).find('a').data('project-slug');
+
+        window.EC5.overlay.fadeIn();
+
+        $.when(window.EC5.project_users.exportUsersToCSV(projectSlug)).then(function () {
+            window.EC5.overlay.fadeOut();
+        }, function (error) {
+            if (error.responseJSON) {
+                window.EC5.toast.showError(error.responseJSON.errors[0].title);
+            }
+            else {
+                window.EC5.toast.showError(error);
+            }
+            window.EC5.overlay.fadeOut();
+        });
+    });
+
+    /**
+     * Remove all users by role
+     */
+    $('.manage-project-users__delete-by-role').off().on('click', function () {
+
+        var projectSlug = $(this).data('project-slug');
+        var role = $(this).data('role');
+
+        window.EC5.overlay.fadeIn();
+
+        $.when(window.EC5.project_users.removeUsersByRole(projectSlug, role)).then(function (response) {
+            window.EC5.toast.showSuccess(response.data.message);
+
+            //refresh list of users
+            $.when(window.EC5.project_users.getProjectUsers(pageName, 1).then(function (data) {
+                // Update the relevant page section
+                $('.manage-project-users__' + pageName).html(data);
+                window.EC5.overlay.fadeOut();
+            }, function () {
+                window.EC5.overlay.fadeOut();
+            }));
+
+        }, function (error) {
+            window.EC5.overlay.fadeOut();
+            if (error.responseJSON) {
+                window.EC5.toast.showError(error.responseJSON.errors[0].title);
+            }
+            else {
+                window.EC5.toast.showError(error);
+            }
+        });
+    });
+});
+
+'use strict';
+window.EC5 = window.EC5 || {};
+
+$(document).ready(function () {
+
+    var maxAmountOfMaps = 4;
+    var pageMappingData = $('.page-mapping-data');
+    var postURL = pageMappingData.data('url');
+
+    //do not do anything if not on the mapping page
+    if (pageMappingData.length === 0) {
+        return;
+    }
+
+    //bind form selection dropdown
+    $('.form-list-selection').on('click', 'li', function () {
+
+        var selectedForm = $(this);
+        var formRef = $(selectedForm).data('form-ref');
+        var mapIndex = $('.map-data__tabs li.active').data('map-index');
+        var tabContent =  $('#map-data-tabcontent-' + mapIndex + ' .panel-body');
+        //set selected option text as the text of the dropdown
+        selectedForm
+            .parents('.form-list-selection')
+            .find('.dropdown-toggle .form-list-selection__form-name')
+            .text(selectedForm.text());
+
+        //show mapping for selected form
+        tabContent.find('.table-responsive').fadeOut().addClass('hidden');
+        tabContent.find('[data-form-ref="' + formRef + '"]').hide().removeClass('hidden').fadeIn();
+    });
+
+    //handle update/make default
+    $('.map-data--actions__btns').on('click', '[data-toggle="push"]', function () {
+        var target = $(this);
+        var action = target.data('action');
+        var activeTab = $('.map-data__tabs li.active');
+        var inactiveTabs = $('.map-data__tabs li').not('.active').not('.map-data__tabs__add-form');
+        var mapIndex = activeTab.data('map-index');
+        var mapName = activeTab.data('map-name');
+        console.log(action);
+
+        switch (action) {
+            case 'make-default':
+                window.EC5.mapping.makeDefault(postURL, action, mapIndex, mapName, activeTab, inactiveTabs);
+                break;
+            case 'update':
+                window.EC5.mapping.update(postURL, action, mapIndex, mapName);
+                break;
+        }
+    });
+
+    //Handle modals
+    $('#modal__mapping-data').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget); // Button that triggered the modal
+        var action = button.data('action'); //action to perform
+        var modal = $(this);
+        var title = button.data('trans');
+        var confirm_btn = modal.find('.map-data__modal__save-btn');
+        var activeTab = $('.map-data__tabs li.active');
+        var isDefault = !activeTab.find('.map-data__default-pin').hasClass('invisible');
+        var mapIndex = activeTab.data('map-index');
+        var mapName = activeTab.data('map-name');
+        var tabContentWrapper = $('.page-mapping-data .tab-content');
+
+        modal.find('.modal-title').text(title);
+
+        switch (action) {
+            case 'delete':
+                window.EC5.mapping.delete(postURL, action, mapIndex, mapName, activeTab, modal, confirm_btn, isDefault, tabContentWrapper);
+                break;
+            case 'rename':
+                window.EC5.mapping.rename(postURL, action, mapIndex, mapName, activeTab, modal, confirm_btn);
+                break;
+            case 'add-mapping':
+                window.EC5.mapping.addMapping(postURL, modal, confirm_btn, maxAmountOfMaps, tabContentWrapper, tabContentWrapper);
+                break;
+        }
+    });
+
+
+    //get active tab and set the active tab content on page load
+    //$('.map-data__tabs li.active a').tab('show');
+});
+
+'use strict';
+window.EC5 = window.EC5 || {};
+
+window.EC5.projectUtils = window.EC5.projectUtils || {};
+
+(function projectUtils(module) {
+
+    module.postRequest = function (url, data) {
+        return $.ajax({
+            url: url,
+            contentType: 'application/vnd.api+json',
+            data: JSON.stringify(data),
+            dataType: 'json',
+            method: 'POST',
+            crossDomain: true
+        });
+    };
+
+    module.showErrors = function (response) {
+
+        var errorMessage = '';
+
+        $(response.responseJSON.errors).each(function (index, error) {
+            errorMessage += error.title + '<br/>';
+        });
+        window.EC5.toast.showError(errorMessage);
+    };
+
+}(window.EC5.projectUtils));
+
+
+'use strict';
+window.EC5 = window.EC5 || {};
+window.EC5.mapping = window.EC5.mapping || {};
+
+(function mapping(module) {
+
+    //get default map index, the one with the visible pin on the tabs buttons
+    module.addMapping = function (postURL, modal, confirm_btn, maxAmountOfMaps, tabContentWrapper) {
+
+        modal.find('.map-data__modal__mapping-name').show();
+        modal.find('.map-data__modal-delete-warning').addClass('hidden');
+        modal.find('map-data__modal__name-rules').removeClass('hidden');
+
+        //set empty name in input field
+        modal.find('.map-data__modal__mapping-name').val('');
+
+        confirm_btn.off().on('click', function () {
+
+            window.EC5.toast.clear();
+
+            // Validate mapping name
+            var name = modal.find('.map-data__modal__mapping-name').val();
+
+            window.EC5.projectUtils.postRequest(postURL, {
+                name: name,
+                is_default: false
+            }).done(function (response) {
+                console.log(response);
+                window.EC5.toast.showSuccess(name + ' mapping added');
+
+                var newMapIndex = response.data.map_index;
+
+                //refresh ui adding the new mapping tab
+                var html = '<li role="presentation" data-map-index="' + newMapIndex + '" data-map-name="' + name + '">';
+                html += ' <a href="#map-data-tabcontent-' + newMapIndex + '" role="tab" data-toggle="tab">';
+                html += '<span class="map-data__map-name">' + name + '&nbsp;</span>';
+                html += '<i class="fa fa-thumb-tack invisible" aria-hidden="true"></i>';
+                html += '</a>';
+                html += '</li>';
+
+                $('.map-data__tabs li').not('.map-data__tabs__add-form').last().after(html);
+                //remove add mapping tab if we reached the max number of maps
+
+                //mapping object can be object or array as we do not keep the indexes in sequence
+                //and the json parsing  will either generate an array or an object dependeing on the numeric keys
+                if ($.isArray(response.data.mapping)) {
+                    if (response.data.mapping.length === maxAmountOfMaps) {
+                        $('.map-data__tabs li.map-data__tabs__add-form').addClass('hidden');
+                    }
+                }
+                else {
+                    if (Object.keys(response.data.mapping).length === maxAmountOfMaps) {
+                        $('.map-data__tabs li.map-data__tabs__add-form').addClass('hidden');
+                    }
+                }
+                //add mapping markup, cloning the default EC5_AUTO from the dom. (with events)
+                var defaultMappingMarkup = tabContentWrapper.find('#map-data-tabcontent-0').clone(true, true);
+
+                //amend id
+                defaultMappingMarkup.attr('id', 'map-data-tabcontent-' + newMapIndex);
+
+                //amend data attributes
+                defaultMappingMarkup.attr('data-map-index', newMapIndex);
+                defaultMappingMarkup.attr('data-map-name', name);
+
+                //update map index in dom
+                defaultMappingMarkup.find('[data-map-index]').each(function (index, element) {
+                    $(element).attr('data-map-index', newMapIndex);
+                });
+
+                //activate all buttons
+                defaultMappingMarkup.find('.map-data--actions__btns .btn').each(function (index, element) {
+                    $(element).prop('disabled', false);
+                });
+
+                //activate all inputs per each row
+                defaultMappingMarkup.find('.table-responsive').each(function (index, element) {
+                        var inputElement = $(element).find('tr td input');
+                        inputElement.prop('disabled', false).prop('readonly', false);
+                    }
+                );
+
+                //add markup
+                tabContentWrapper.append(defaultMappingMarkup);
+
+                //switch to newly created mapping:
+
+                //hide active tab
+                $('.map-data__tabs li.active').removeClass('active');
+                $('.page-mapping-data .tab-content .tab-pane[data-map-index="0"]').removeClass('active in');
+
+                //show new tab
+                $('.map-data__tabs li[data-map-index="' + newMapIndex + '"]').addClass('active');
+                $('.map-data__tabs li[data-map-index="' + newMapIndex + '"] a').tab('show');
+
+                window.setTimeout(function () {
+                    modal.modal('hide');
+                }, 250);
+
+            }).fail(function (error) {
+                console.log(error);
+                window.EC5.projectUtils.showErrors(error);
+            });
+        });
+    };
+
+}(window.EC5.mapping));
+
+'use strict';
+window.EC5 = window.EC5 || {};
+window.EC5.mapping = window.EC5.mapping || {};
+
+(function mapping(module) {
+
+    //get default map index, the one with the visible pin on the tabs buttons
+    module.delete = function (postURL, action, mapIndex, mapName, activeTab, modal, confirm_btn, isDefault, tabContentWrapper) {
+
+        modal.find('.map-data__modal__mapping-name').hide();
+        modal.find('.map-data__modal-delete-warning').removeClass('hidden');
+        modal.find('map-data__modal__name-rules').addClass('hidden');
+
+        confirm_btn.off().on('click', function () {
+            window.EC5.toast.clear();
+            window.EC5.projectUtils.postRequest(postURL + '/delete', {
+                map_index: mapIndex
+            }).done(function (data) {
+
+                var tabs = $('.map-data__tabs');
+
+                window.EC5.toast.showSuccess(mapName + ' deleted');
+
+                //remove active tab
+                activeTab.remove();
+
+                //remove mapping markup
+                tabContentWrapper.find('#map-data-tabcontent-' + mapIndex).remove();
+
+                //set the EC5 Auto as the selected tab
+                tabs.find('a[href="#map-data-tabcontent-0"]').tab('show');
+
+                //if we deleted the default map, set EC5 Auto as default (the first tab)
+                if (isDefault) {
+                    tabs.find('.map-data__default-pin').first().removeClass('invisible');
+                }
+
+                //show "Add Mapping" tab button
+                $('.map-data__tabs li.map-data__tabs__add-form').removeClass('hidden');
+
+                modal.modal('hide');
+
+            }).fail(function (error) {
+                console.log(error);
+                window.EC5.projectUtils.showErrors(error);
+            });
+        });
+    };
+
+}(window.EC5.mapping));
+
+'use strict';
+window.EC5 = window.EC5 || {};
+window.EC5.mapping = window.EC5.mapping || {};
+
+(function mapping(module) {
+
+    //get default map index, the one with the visible pin on the tabs buttons
+    module.getDefaultMapIndex = function () {
+        var defaultMapIndex = 0;
+        var tabs = $('.map-data__tabs li');
+
+        tabs.each(function (index, tab) {
+
+            var mapIndex = $(tab).attr('data-map-index');
+            if (!$(tab).find('.map-data__default-pin').hasClass('invisible')) {
+                defaultMapIndex = mapIndex;
+                return false;
+            }
+        });
+        return parseInt(defaultMapIndex, 10);
+    };
+
+}(window.EC5.mapping));
+
+'use strict';
+window.EC5 = window.EC5 || {};
+window.EC5.mapping = window.EC5.mapping || {};
+
+(function mapping(module) {
+
+    //get default map index, the one with the visible pin on the tabs buttons
+    module.makeDefault = function (postURL, action, mapIndex, mapName, activeTab, inactiveTabs) {
+
+        window.EC5.toast.clear();
+
+        window.EC5.projectUtils.postRequest(postURL + '/update', {
+            action: action,
+            map_index: mapIndex
+        }).done(function (response) {
+            console.log(JSON.stringify(response));
+            window.EC5.toast.showSuccess(mapName + ' set as default');
+
+            //update tabs button markup to "pin' the default one only, which is the active tab
+            activeTab.find('.map-data__default-pin').removeClass('invisible');
+            //hide any other pin
+            inactiveTabs.each(function (index, tab) {
+                $(tab).find('.map-data__default-pin').addClass('invisible');
+            });
+        }).fail(function (error) {
+            window.EC5.projectUtils.showErrors(error);
+        });
+    };
+
+}(window.EC5.mapping));
+
+'use strict';
+window.EC5 = window.EC5 || {};
+window.EC5.mapping = window.EC5.mapping || {};
+
+(function mapping(module) {
+
+    //get default map index, the one with the visible pin on the tabs buttons
+    module.rename = function (postURL, action, mapIndex, mapName, activeTab, modal, confirm_btn) {
+
+        modal.find('.map-data__modal__mapping-name').show();
+        modal.find('.map-data__modal-delete-warning').addClass('hidden');
+        modal.find('map-data__modal__name-rules').removeClass('hidden');
+        //set existing name in input field
+        modal.find('.map-data__modal__mapping-name').val(mapName);
+
+        confirm_btn.off().on('click', function () {
+
+            window.EC5.toast.clear();
+
+            // Validate mapping name
+            var name = modal.find('.map-data__modal__mapping-name').val();
+
+            window.EC5.projectUtils.postRequest(postURL + '/update', {
+                action: action,
+                map_index: mapIndex,
+                name: name
+            }).done(function (data) {
+
+                activeTab.attr('data-map-name', name);
+                activeTab.find('.map-data__map-name').text(name);
+
+                //dismiss modal on success
+                modal.modal('hide');
+
+                window.EC5.toast.showSuccess(name + ' renamed');
+            }).fail(function (error) {
+                console.log(error);
+                window.EC5.projectUtils.showErrors(error);
+            });
+        });
+    };
+
+}(window.EC5.mapping));
+
+'use strict';
+window.EC5 = window.EC5 || {};
+window.EC5.mapping = window.EC5.mapping || {};
+
+(function mapping(module) {
+
+    //build mapping object only for active mapping tab
+    module.update = function (postURL, action, mapIndex, mapName) {
+
+        window.EC5.toast.clear();
+        window.EC5.overlay.fadeIn();
+
+        var mapping = {};
+        var tab_panel = $('.page-mapping-data .tab-content .tab-pane[data-map-index="' + mapIndex + '"]');
+        var isMappingValid = true;
+        var hasDuplicateIdentifier = null;
+        var formMapTos = {};
+
+        //alphanumeric with underscore only, 1 to 20 length
+        //imp: we do not allow '-' because of the json export
+        var mappingToRegex = /^[a-zA-Z0-9_]{1,20}$/;
+        var mappingPossibleAnswerToRegex = /^((?![<>]).){1,150}$/;
+
+        var tables = tab_panel.find('.panel-body .table-responsive');
+
+        tab_panel.find('input').parent().removeClass('has-error');
+
+        mapping[mapIndex] = {};
+        mapping[mapIndex].name = mapName;
+        mapping[mapIndex].forms = {};
+        mapping[mapIndex].map_index = mapIndex;
+        mapping[mapIndex].is_default = window.EC5.mapping.getDefaultMapIndex() === mapIndex;
+
+        tables.each(function (index, table) {
+
+            var currentMapping = mapping[mapIndex];
+            var formRef = $(table).attr('data-form-ref');
+            var rows = $(table).find('tbody tr');
+            var rowIndex = 0;
+
+            //keep track of duplicates
+            formMapTos[formRef] = [];
+
+            currentMapping.forms[formRef] = {};
+
+            while (rowIndex < rows.length) {
+
+                var currentForm = currentMapping.forms[formRef];
+                var inputRef = $(rows[rowIndex]).attr('data-input-ref');
+                var mapToInput = $(rows[rowIndex]).find('.mapping-data__map-to input');
+                var mapTo = mapToInput.val();
+                var hide = $(rows[rowIndex]).find('.mapping-data__hide-checkbox input').is(':checked');
+
+                mapTo = (mapTo === undefined) ? undefined : mapTo.trim();
+
+                //is it a question or possible answers?
+                if (inputRef) {
+
+                    //it is a top level question
+                    currentForm[inputRef] = {};
+                    currentForm[inputRef].possible_answers = {};
+                    currentForm[inputRef].branch = {};
+                    currentForm[inputRef].group = {};
+                    currentForm[inputRef].map_to = mapTo;
+                    currentForm[inputRef].hide = hide;
+
+                    //cache mapTo value
+                    if (mapTo !== undefined) {
+                        formMapTos[formRef].push(mapTo);
+                    }
+
+                    //if the mapping value is invalid, show input error
+                    if (!mapTo.match(mappingToRegex)) {
+                        isMappingValid = false;
+                        $(rows[rowIndex]).find('.mapping-data__map-to input').parent().addClass('has-error');
+                    }
+
+                    switch ($(rows[rowIndex]).attr('data-input-type')) {
+
+                        case 'branch':
+                            //get the next elements with [data-is-branch-input] to get all the branch inputs
+                            var branchInputs = $(rows[rowIndex]).nextUntil('[data-top-level-input]', '[data-is-branch-input]');
+
+                            currentForm[inputRef].branch = {};
+
+                            //loop all branch inputs
+                            $(branchInputs).each(function (branchIndex, branchInput) {
+
+                                var branchInputRef = $(branchInput).attr('data-input-ref');
+                                var currentBranch;
+                                var mapToInput = $(branchInput).find('.mapping-data__map-to input');
+                                var mapTo = mapToInput.val();
+                                var hide = $(branchInput).find('.mapping-data__hide-checkbox input').is(':checked');
+
+                                //trim any mapTo value (if found)
+                                mapTo = (mapTo === undefined) ? undefined : mapTo.trim();
+
+                                //is it a question or possible answers?
+                                if (branchInputRef) {
+                                    //this row is a branch question
+                                    currentForm[inputRef].branch[branchInputRef] = {};
+                                    currentBranch = currentForm[inputRef].branch[branchInputRef];
+                                    currentBranch.possible_answers = {};
+                                    currentBranch.branch = {};
+                                    currentBranch.group = {};
+                                    currentBranch.map_to = mapTo;
+                                    currentBranch.hide = hide;
+
+                                    //cache mapTo value
+                                    if (mapTo !== undefined) {
+                                        formMapTos[formRef].push(mapTo);
+                                    }
+
+                                    if (!mapTo.match(mappingToRegex)) {
+                                        isMappingValid = false;
+                                        $(branchInput).find('.mapping-data__map-to input').parent().addClass('has-error');
+                                    }
+
+                                    //do we have a nested group?
+                                    if ($(branchInput).attr('data-input-type') === 'group') {
+
+                                        //grab all nested group inputs
+                                        /**
+                                         * Careful here. Stop when:
+                                         * - we get a "data-is-branch-input" i.e the user added another branch input after the nedted group input
+                                         * - we get "data-top-level-input" i.e the nested group is the last input of the branch and the next element is a top level input
+                                         *
+                                         */
+
+                                        var nestedGroupInputs = $(branchInput).nextUntil('[data-is-branch-input], [data-top-level-input]', '[data-is-group-input]');
+
+                                        currentBranch.group = {};
+
+                                        $(nestedGroupInputs).each(function (nestedGroupIndex, nestedGroupInput) {
+
+                                            var nestedGroupInputRef = $(nestedGroupInput).attr('data-input-ref');
+                                            var mapToInput = $(nestedGroupInput).find('.mapping-data__map-to input');
+                                            var mapTo = mapToInput.val();
+                                            var hide = $(nestedGroupInput).find('.mapping-data__hide-checkbox input').is(':checked');
+                                            //trim any mapTo value (if found)
+                                            mapTo = (mapTo === undefined) ? undefined : mapTo.trim();
+
+                                            //is it a question or possible answers?
+                                            if (nestedGroupInputRef) {
+
+                                                currentBranch.group[nestedGroupInputRef] = {};
+                                                currentBranch.group[nestedGroupInputRef].possible_answers = {};
+                                                currentBranch.group[nestedGroupInputRef].branch = {};
+                                                currentBranch.group[nestedGroupInputRef].group = {};
+                                                currentBranch.group[nestedGroupInputRef].map_to = mapTo;
+                                                currentBranch.group[nestedGroupInputRef].hide = hide;
+
+                                                //cache mapTo value
+                                                if (mapTo !== undefined) {
+                                                    formMapTos[formRef].push(mapTo);
+                                                }
+
+                                                if (!mapTo.match(mappingToRegex)) {
+                                                    isMappingValid = false;
+                                                    $(nestedGroupInput).find('.mapping-data__map-to input').parent().addClass('has-error');
+                                                }
+                                            }
+                                            else {
+                                                //this row is the possible answers for the current nested group input question
+                                                $(nestedGroupInput).find('.mapping-data__possible_answer__map-to input').each(function (index, inputItem) {
+
+                                                    //get previous row nested group input ref
+                                                    var nestedGroupInputRef = $(nestedGroupInput).prev().attr('data-input-ref');
+                                                    var prevNestedGroupInput = currentForm[inputRef].branch[branchInputRef].group[nestedGroupInputRef];
+                                                    var answerRef = $(inputItem).attr('data-answer-ref');
+                                                    var mapTo = $(inputItem).val();
+
+                                                    //trim any mapTo value (if found)
+                                                    mapTo = (mapTo === undefined) ? undefined : mapTo.trim();
+
+                                                    if (!mapTo.match(mappingPossibleAnswerToRegex)) {
+                                                        isMappingValid = false;
+                                                        $(inputItem).parent().addClass('has-error');
+                                                    }
+
+                                                    prevNestedGroupInput.possible_answers[answerRef] = {};
+                                                    prevNestedGroupInput.possible_answers[answerRef].map_to = mapTo;
+                                                });
+                                            }
+                                        });
+
+                                        //skip by nestedGroupInputs.length to skip to the next branch input
+                                        rowIndex += nestedGroupInputs.length;
+                                    }
+                                }
+                                else {
+                                    //this row is the possible answers for the current branch question
+                                    $(branchInput)
+                                        .find('.mapping-data__possible_answer__map-to input')
+                                        .each(function (index, inputItem) {
+
+                                            //get previous row input ref
+                                            var branchInputRef = $(branchInput).prev().attr('data-input-ref');
+                                            var prevBranchInput = currentForm[inputRef].branch[branchInputRef];
+                                            var answerRef = $(inputItem).attr('data-answer-ref');
+                                            var mapTo = $(inputItem).val();
+
+                                            //trim any mapTo value (if found)
+                                            mapTo = (mapTo === undefined) ? undefined : mapTo.trim();
+
+                                            if (!mapTo.match(mappingPossibleAnswerToRegex)) {
+                                                isMappingValid = false;
+                                                $(inputItem).parent().addClass('has-error');
+                                            }
+
+                                            prevBranchInput.possible_answers[answerRef] = {};
+                                            prevBranchInput.possible_answers[answerRef].map_to = mapTo;
+                                        });
+                                }
+                            });
+
+                            //skip by branchInputs.length to skip to the next top level input
+                            rowIndex += branchInputs.length;
+                            break;
+
+                        case 'group':
+
+                            var groupInputs = $(rows[rowIndex]).nextUntil('[data-top-level-input]', '[data-is-group-input]');
+
+                            $(groupInputs).each(function (groupIndex, groupInput) {
+
+                                var groupInputRef = $(groupInput).attr('data-input-ref');
+                                var currentGroup;
+                                var mapToInput = $(groupInput).find('.mapping-data__map-to input');
+                                var mapTo = mapToInput.val();
+
+                                //trim any mapTo value (if found)
+                                mapTo = (mapTo === undefined) ? undefined : mapTo.trim();
+
+                                var hide = $(groupInput).find('.mapping-data__hide-checkbox input').is(':checked');
+
+                                //is it a question or possible answers?
+                                if (groupInputRef) {
+                                    //this row is a branch question
+                                    currentForm[inputRef].group[groupInputRef] = {};
+                                    currentGroup = currentForm[inputRef].group[groupInputRef];
+                                    currentGroup.possible_answers = {};
+                                    currentGroup.branch = {};
+                                    currentGroup.group = {};
+                                    currentGroup.map_to = mapTo;
+                                    currentGroup.hide = hide;
+
+                                    //cache mapTo value
+                                    if (mapTo !== undefined) {
+                                        formMapTos[formRef].push(mapTo);
+                                    }
+
+                                    if (!mapTo.match(mappingToRegex)) {
+                                        isMappingValid = false;
+                                        $(groupInput).find('.mapping-data__map-to input').parent().addClass('has-error');
+                                    }
+                                }
+                                else {
+                                    //this row is the possible answers for the current group question
+                                    $(groupInput).find('.mapping-data__possible_answer__map-to input').each(function (index, inputItem) {
+
+                                        //get previous row input ref
+                                        var groupInputRef = $(groupInput).prev().attr('data-input-ref');
+                                        var prevGroupInput = currentForm[inputRef].group[groupInputRef];
+                                        var answerRef = $(inputItem).attr('data-answer-ref');
+                                        var mapTo = $(inputItem).val();
+                                        //trim any mapTo value (if found)
+                                        mapTo = (mapTo === undefined) ? undefined : mapTo.trim();
+
+                                        if (!mapTo.match(mappingPossibleAnswerToRegex)) {
+                                            isMappingValid = false;
+                                            $(inputItem).parent().addClass('has-error');
+                                        }
+
+                                        prevGroupInput.possible_answers[answerRef] = {};
+                                        prevGroupInput.possible_answers[answerRef].map_to = mapTo;
+                                    });
+                                }
+                            });
+
+                            //skip by branchInputs.length to skip to the next top level input
+                            rowIndex += groupInputs.length;
+                            break;
+                    }
+                    rowIndex++;
+                }
+                else {
+                    //get possible answers for current input
+                    $(rows[rowIndex]).find('.mapping-data__possible_answer__map-to input').each(function (index, inputItem) {
+
+                        var inputRef = $(rows[rowIndex - 1]).attr('data-input-ref');
+                        var answerRef = $(inputItem).attr('data-answer-ref');
+                        var mapTo = $(inputItem).val();
+                        //trim any mapTo value (if found)
+                        mapTo = (mapTo === undefined) ? undefined : mapTo.trim();
+
+                        if (!mapTo.match(mappingPossibleAnswerToRegex)) {
+                            isMappingValid = false;
+                            $(inputItem).parent().addClass('has-error');
+                        }
+
+                        currentForm[inputRef].possible_answers[answerRef] = {};
+                        currentForm[inputRef].possible_answers[answerRef].map_to = mapTo;
+
+                    });
+                    rowIndex++;
+                }
+            }
+
+            console.log(JSON.stringify(formMapTos));
+
+            $.each(formMapTos, function (formIndex, form) {
+
+                //find duplicated identfier if any
+                var duplicates = [];
+
+                $.each(form, function (itemIndex, item) {
+
+                    //do we have a duplicate?
+                    if ($.inArray(item.trim(), duplicates) === -1) {
+                        //no, add it
+                        duplicates.push(item.trim());
+                    }
+                    else {
+                        //we have a duplicate, bail out
+                        hasDuplicateIdentifier = { key: item, formRef: formIndex };
+                        isMappingValid = false;
+                        console.log(item);
+                        return false;
+                    }
+                });
+            });
+        });
+
+        console.log(JSON.stringify(mapping[mapIndex]));
+
+        if (isMappingValid) {
+            //post mapping
+            window.EC5.projectUtils.postRequest(postURL + '/update', {
+                action: action,
+                map_index: mapIndex,
+                mapping: mapping[mapIndex]
+            }).done(function (response) {
+                // console.log(JSON.stringify(response));
+                window.EC5.overlay.fadeOut();
+                window.EC5.toast.showSuccess(mapName + ' updated');
+            }).fail(function (error) {
+                window.EC5.overlay.fadeOut();
+                window.EC5.projectUtils.showErrors(error);
+            });
+        }
+        else {
+            if (hasDuplicateIdentifier) {
+                //highlight duplicate identifiers in the dom
+                tables.each(function (index, table) {
+
+                    if ($(table).data('form-ref') === hasDuplicateIdentifier.formRef) {
+                        var rows = $(table).find('tbody tr');
+
+                        rows.each(function (rowIndex, row) {
+
+                            if ($(row).find('.mapping-data__map-to input').val() === hasDuplicateIdentifier.key) {
+                                $(row).find('.mapping-data__map-to').addClass('has-error');
+                            }
+                        });
+                    }
+                });
+
+                window.EC5.toast.showError(mapName + ' has got duplicate identifier: ' + hasDuplicateIdentifier.key);
+            }
+            else {
+                window.EC5.toast.showError(mapName + ' has got invalid identifier(s)');
+            }
+            window.EC5.overlay.fadeOut();
+        }
+    };
+
+}(window.EC5.mapping));
+
+'use strict';
+window.EC5 = window.EC5 || {};
+window.EC5.project_users = window.EC5.project_users || {};
+
+(function (module) {
+    /**
+     * Function to add a user project role
+     *
+     * @param url
+     * @param formData
+     * @param pageName
+     * @param callBack
+     */
+    module.addUserProjectRole = function (url, formData, pageName, callBack) {
+
+        var i;
+
+        // Make ajax request to load users
+        $.ajax({
+            url: url,
+            type: 'POST',
+            dataType: 'json',
+            data: formData
+        }).done(function (data) {
+            // Show success
+            window.EC5.toast.showSuccess(data.data.message);
+
+            // Get project users based on page and any existing search
+            $.when(module.getProjectUsers(pageName, 1)).then(function(response){
+
+                var selectedUserRole = pageName.replace('page-', '');
+                // Update the relevant page section
+                $('.manage-project-users__' + pageName).html(response);
+
+                //switch tab
+                $('.page-manage-users .nav-tabs li').find('a.'+ selectedUserRole+ '-tab-btn').trigger('click');
+
+                // If passed a callback function
+                if (callBack) {
+                    callBack();
+                }
+            });
+        }).fail(function (error) {
+
+            var userDoesntExist = 'ec5_90';
+
+            if (error.responseJSON.errors) {
+                // Show the errors
+                if (error.responseJSON.errors.length > 0) {
+
+                    for (i = 0; i < error.responseJSON.errors.length; i++) {
+                        if (error.responseJSON.errors[i].code === userDoesntExist) {
+                            // If the user doesn't exist, ask the user if they want to add
+                            $('#ec5ModalNewUser').modal();
+
+                        } else {
+                            window.EC5.toast.showError(error.responseJSON.errors[i].title);
+                        }
+                    }
+                }
+            }
+        });
+    };
+
+}(window.EC5.project_users));
+
+'use strict';
+window.EC5 = window.EC5 || {};
+window.EC5.project_users = window.EC5.project_users || {};
+
+(function config(module) {
+
+    module.config = {
+        messages: {
+            error: {
+                CSV_FILE_INVALID: 'CSV file is invalid',
+                INVALID_EMAILS: 'Invalid emails',
+                BROWSER_NOT_SUPPORTED: 'Browser not supported'
+
+            },
+            success: {
+                USERS_IMPORTED: 'Users added to the project'
+            },
+            warning: {
+                SOME_USERS_NOT_IMPORTED: 'Some users could not be imported'
+            }
+        },
+        consts: {
+            CSV_FILE_EXTENSION: 'csv',
+            ANIMATION_FAST: 200,
+            ANIMATION_NORMAL: 500,
+            ROLES: {
+                CREATOR: 'creator',
+                MANAGER: 'manager',
+                CURATOR: 'curator',
+                COLLECTOR: 'collector',
+                VIEWER: 'viewer'
+            }
+        },
+        errorCodes: {
+            userDoesntExist: 'ec5_90',
+            importerDoesNotHavePermission: 'ec5_91',
+            invalidValue: 'ec5_29', //if role or provider are invalid
+            invalidEmailAddress: 'ec5_42',
+            creatorEmailAddress: 'ec5_217',
+            managerEmailAddress: 'ec5_344'
+        },
+        invalidEmailAddresses: []
+    }
+
+}(window.EC5.project_users));
+
+'use strict';
+window.EC5 = window.EC5 || {};
+window.EC5.project_users = window.EC5.project_users || {};
+
+(function (module) {
+
+    module.exportUsersToCSV = function (projectSlug) {
+
+        var self = this;
+        var config = self.config;
+        var deferred = new $.Deferred();
+        var url = window.EC5.SITE_URL + '/api/internal/project-users/' + projectSlug;
+
+        // Make ajax request to load users
+        $.ajax({
+            url: url,
+            type: 'GET',
+            dataType: 'json'
+        }).done(function (response) {
+
+            var users = {
+                all: [],
+                creators: [],
+                managers: [],
+                curators: [],
+                collectors: [],
+                viewers: []
+            };
+
+            var users_csv = {
+                all: '',
+                creators: '',
+                managers: '',
+                curators: '',
+                collectors: '',
+                viewers: ''
+            };
+
+            //do a bit of parsng
+            $(response.data).each(function (index, user) {
+
+                users.all.push(user);
+
+                switch (user.role) {
+                    case 'creator':
+                        users.creators.push(user);
+                        break;
+                    case 'manager':
+                        users.managers.push(user);
+                        break;
+                    case 'curator':
+                        users.curators.push(user);
+                        break;
+                    case 'collector':
+                        users.collectors.push(user);
+                        break;
+                    case 'viewer':
+                        users.viewers.push(user);
+                        break;
+                    default:
+                    //do nothing
+                }
+
+            });
+
+            //create a csv string per each role and one with all the users
+            $.each(users, function (key) {
+                users_csv[key] = Papa.unparse({
+                    data: users[key]
+                }, {
+                    quotes: false,
+                    quoteChar: '',
+                    delimiter: ',',
+                    header: true,
+                    newline: '\r\n'
+                });
+            });
+
+            //create a file per each string
+            var zip = new JSZip();
+            $.each(users_csv, function (key, content) {
+                zip.file(key + '.csv', content);
+            });
+
+            //zip files and serve zip
+            zip.generateAsync({ type: 'blob' })
+                .then(function (content) {
+                    // see FileSaver.js
+                    try {
+                        saveAs(content, projectSlug + '_users.zip');
+                        deferred.resolve();
+                    }
+                    catch (error) {
+                        console.log(error);
+                        //show error browser not compatible to user (IE <10)
+                        deferred.reject(config.messages.error.BROWSER_NOT_SUPPORTED);
+                    }
+                });
+
+        }).fail(function (error) {
+            deferred.reject(error);
+        });
+
+        return deferred.promise();
+    }
+
+    module.getTotalsByRole = function (projectSlug) {
+
+        var deferred = new $.Deferred();
+        var url = window.EC5.SITE_URL + '/api/internal/project-users/' + projectSlug;
+
+        // Make ajax request to load users
+        $.ajax({
+            url: url,
+            type: 'GET',
+            dataType: 'json'
+        }).done(function (response) {
+
+            var users = {
+                creator: 0,
+                manager: 0,
+                curator: 0,
+                collector: 0,
+                viewer: 0
+            };
+            //do a bit of parsing
+            $(response.data).each(function (i, user) {
+                users[user.role]++;
+            });
+
+
+
+            deferred.resolve(users);
+
+        }).fail(function (error) {
+            deferred.reject(error);
+        });
+
+        return deferred.promise();
+    }
+
+}(window.EC5.project_users));
+
+'use strict';
+window.EC5 = window.EC5 || {};
+window.EC5.project_users = window.EC5.project_users || {};
+
+(function getProjectUsers(module) {
+    /**
+     * Function for asynchronously retrieving the
+     * list of project users, based on any search
+     * criteria, with pagination
+     *
+     * @param pageName
+     * @param page
+     * @param search
+     */
+    module.getProjectUsers = function (pageName, page, search) {
+
+        var deferred = new $.Deferred();
+        var data = {};
+
+        // Set defaults
+        page = typeof page !== 'undefined' ? page : 1;
+        search = typeof search !== 'undefined' ? search : '';
+
+        // Set up data object
+        data[pageName] = page;
+        data.search = search;
+
+        // Make ajax request to load users
+        $.ajax({
+            url: '',
+            type: 'GET',
+            dataType: 'json',
+            data: data
+        }).done(function (data) {
+            //update role counters
+            $.when(window.EC5.project_users.updateRoleCounters()).always(function () {
+                deferred.resolve(data);
+            });
+        }).fail(function (error) {
+            //update role counters anyway
+            $.when(window.EC5.project_users.updateRoleCounters()).always(function () {
+                deferred.reject(error);
+            });
+        });
+
+        return deferred.promise();
+    };
+}(window.EC5.project_users));
+
+'use strict';
+window.EC5 = window.EC5 || {};
+window.EC5.project_users = window.EC5.project_users || {};
+
+(function (module) {
+
+    function _isValidEmailAddress(emailAddress) {
+
+        var pattern = /^([a-z\d!#$%&'*+\-\/=?^_`{|}~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+(\.[a-z\d!#$%&'*+\-\/=?^_`{|}~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+)*|"((([ \t]*\r\n)?[ \t]+)?([\x01-\x08\x0b\x0c\x0e-\x1f\x7f\x21\x23-\x5b\x5d-\x7e\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]|\\[\x01-\x09\x0b\x0c\x0d-\x7f\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]))*(([ \t]*\r\n)?[ \t]+)?")@(([a-z\d\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]|[a-z\d\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF][a-z\d\-._~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]*[a-z\d\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])\.)+([a-z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]|[a-z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF][a-z\d\-._~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]*[a-z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])\.?$/i;
+        return pattern.test(emailAddress);
+    }
+
+    module.importUsersByEmail = function (params) {
+
+        var validEmailAddresses = [];
+        var selectedHeaderIndex = params.selectedHeaderIndex;
+        var importedJson = params.importedJson;
+        var headers = importedJson.meta.fields;
+        var doesFirstRowContainsHeaders = params.doesFirstRowContainsHeaders;
+        var selectedUserRole = params.selectedUserRole;
+        var postURL = params.postURL;
+        var deferred = new $.Deferred();
+        var config = window.EC5.project_users.config;
+
+        //reset invalid email addresses
+        config.invalidEmailAddresses = [];
+
+        //if no column is selected abort
+        if (selectedHeaderIndex === null) {
+            return false;
+        }
+
+        //headers on first row or not?
+        if (!doesFirstRowContainsHeaders) {
+
+            var first_row = {};
+            first_row[importedJson.meta.fields[selectedHeaderIndex]] = importedJson.meta.fields[selectedHeaderIndex];
+            //csv file does not have any headers, prepend meta.fields (which is the headers)
+            importedJson.data.unshift(first_row);
+        }
+
+        $(importedJson.data).each(function (index, item) {
+
+            var userEmail = item[headers[selectedHeaderIndex]];
+
+            //validate emails addresses front end and reject both empty and invalid
+            if (userEmail.trim() !== '') {
+                if (_isValidEmailAddress(userEmail)) {
+                    validEmailAddresses.push(userEmail)
+                }
+                else {
+                    config.invalidEmailAddresses.push(userEmail);
+                }
+            }
+        });
+
+        var data = {
+            role: selectedUserRole,
+             emails: $.unique(validEmailAddresses).slice(0,100)//duplicates get removed
+        };
+
+        $.ajax({
+            url: postURL,
+            type: 'POST',
+            dataType: 'json',
+            data: data
+        }).done(function (response) {
+            deferred.resolve(response);
+        }).fail(function (error) {
+            deferred.reject(error);
+        });
+
+        return deferred.promise();
+    }
+
+}(window.EC5.project_users));
+
+'use strict';
+window.EC5 = window.EC5 || {};
+window.EC5.project_users = window.EC5.project_users || {};
+
+(function (module) {
+
+    module.pickCSVFile = function (files) {
+
+        var self = this;
+        var file = files[0];
+        var file_parts;
+        var file_ext;
+        var config = self.config;
+
+        function _parseErrors(error) {
+
+            var parsedErrors = '';
+
+            if (error.responseJSON) {
+                $.each(error.responseJSON.errors, function (index, error) {
+                    parsedErrors += error.title + '<br/>';
+                });
+            }
+            else {
+                parsedErrors = error;
+            }
+            return parsedErrors;
+        }
+
+        //show overlay and cursor
+        window.EC5.overlay.fadeIn();
+
+        self.isOpeningFileBrowser = false;
+
+        //if the user cancels the action
+        if (!file) {
+            //hide overlay
+            window.EC5.overlay.fadeOut(config.consts.ANIMATION_FAST);
+            window.EC5.toast.showError(config.messages.error.CSV_FILE_INVALID);
+            return;
+        }
+
+        file_parts = file.name.split('.');
+        file_ext = file_parts[file_parts.length - 1];
+
+        //it must be csv
+        if (file_ext !== config.consts.CSV_FILE_EXTENSION) {
+            //hide overlay
+            window.EC5.overlay.fadeOut(config.consts.ANIMATION_FAST);
+            window.EC5.toast.showError(config.messages.error.CSV_FILE_INVALID);
+            return;
+        }
+        //file is valid, let's parse it
+        var reader = new FileReader();
+
+        reader.onload = function (e) {
+
+            var content = e.target.result;
+            var json = Papa.parse(content, { header: true, delimiter: ',' });
+            var headers = json.meta.fields;
+            var modal = $('#ec5ModalImportUsers');
+
+            if (json.data.length === 0) {
+                //empty csv file, show error
+                window.EC5.overlay.fadeOut(config.consts.ANIMATION_FAST);
+                window.EC5.toast.showError(config.messages.error.CSV_FILE_INVALID);
+                return;
+            }
+
+            modal.modal();
+
+            modal.off().on('shown.bs.modal', function () {
+
+                var column_picker = modal.find('.users-column-picker');
+                var column_items = '';
+                var selectedHeaderIndex = null;
+                var params;
+                var doesFirstRowContainsHeaders;
+                var selectedUserRole;
+                var postURL = modal.data('post-url');
+
+                //reset column picker
+                column_picker.find('.btn').html('Pick column' + ' <span class="caret"></span>');
+                column_picker.find('.btn').val('');
+
+                //reset other controls
+                modal.find('.users__first-row-headers input').prop('checked', true);
+
+                //reset other controls
+                modal.find('.users__pick-role input#collector').prop('checked', true);
+
+                //disable import button
+                modal.find('.users-perform-import').attr('disabled', true);
+
+                window.EC5.overlay.fadeOut(config.consts.ANIMATION_FAST);
+
+                //show list of headers so the user can select which column to use
+                //generate list items
+                $(headers).each(function (headerIndex, header) {
+                    column_items += '<li>';
+                    column_items += '<a href="#">' + header.trunc(25) + '</a>';
+                    column_items += '</li>';
+                });
+
+                //append items
+                column_picker.find('.dropdown-menu').empty().append(column_items);
+
+                //show selected column in dropdown picker
+                column_picker.find('.dropdown-menu li').off().on('click', function () {
+                    $(this).parents('.users-column-picker').find('.btn').html($(this).text() + ' <span class="caret"></span>');
+                    $(this).parents('.users-column-picker').find('.btn').val($(this).data('value'));
+
+                    selectedHeaderIndex = $(this).index();
+
+                    //enable import button
+                    modal.find('.users-perform-import').attr('disabled', false);
+                });
+
+                $('.users-perform-import').off().on('click', function () {
+
+                    if (selectedHeaderIndex === null) {
+                        return false;
+                    }
+
+                    //show overlay and cursor
+                    window.EC5.overlay.fadeIn();
+
+                    //get parameters from modals
+                    doesFirstRowContainsHeaders = modal.find('.users__first-row-headers').find('.checkbox input').is(':checked');
+
+                    selectedUserRole = modal.find('.users__pick-role').find('.radio input:checked').val();
+
+                    //add callback to handle the import
+                    params = {
+                        doesFirstRowContainsHeaders: doesFirstRowContainsHeaders,
+                        selectedUserRole: selectedUserRole,
+                        importedJson: json,
+                        selectedHeaderIndex: selectedHeaderIndex,
+                        postURL: postURL
+                    };
+
+                    window.setTimeout(function () {
+                        //show overlay and cursor
+                        console.log('imported');
+
+                        $.when(self.importUsersByEmail(params)).then(function (response) {
+                            //get current active page
+                            var pageName = 'page-' + selectedUserRole;
+
+                            $.when(window.EC5.project_users.getProjectUsers(pageName, 1, '').then(function (data) {
+                                // Update the relevant page section
+                                $('.manage-project-users__' + pageName).html(data);
+
+                                $('.page-manage-users .nav-tabs li').find('a.' + selectedUserRole + '-tab-btn').trigger('click');
+
+                                //hide overlay and modal
+                                window.EC5.overlay.fadeOut();
+                                $('#ec5ModalImportUsers').modal('hide');
+
+                                //show errors
+                                if (config.invalidEmailAddresses.length > 0) {
+                                    window.EC5.toast.showWarning(config.messages.warning.SOME_USERS_NOT_IMPORTED);
+                                    window.EC5.toast.showError(config.messages.error.INVALID_EMAILS + ': <br/>' + config.invalidEmailAddresses.join('<br/>'));
+                                }
+                                else {
+                                    window.EC5.toast.showSuccess(config.messages.success.USERS_IMPORTED);
+                                }
+                            }, function () {
+                                window.EC5.overlay.fadeOut()
+                            }));
+                        }, function (error) {
+
+                            var pageName = 'page-' + selectedUserRole;
+
+                            $.when(window.EC5.project_users.getProjectUsers(pageName, 1, '').then(function (data) {
+                                // Update the relevant page section
+                                $('.manage-project-users__' + pageName).html(data);
+
+                                //switch tab
+                                $('.page-manage-users .nav-tabs li').find('a.' + selectedUserRole + '-tab-btn').trigger('click');
+
+                                //hide overlay and modal
+                                window.EC5.overlay.fadeOut();
+                                $('#ec5ModalImportUsers').modal('hide');
+                                //show errors
+                                window.EC5.toast.showError(_parseErrors(error));
+                                if (config.invalidEmailAddresses.length > 0) {
+                                    window.EC5.toast.showWarning(config.messages.warning.SOME_USERS_NOT_IMPORTED);
+                                    window.EC5.toast.showError(config.messages.error.INVALID_EMAILS + ': <br/>' + config.invalidEmailAddresses.join('<br/>'));
+                                }
+                            }, function () {
+                                window.EC5.overlay.fadeOut()
+                            }));
+                        });
+                    }, 1000);
+                });
+            });
+
+            //add events to hide the modal manually (was nt working, go figure)
+            modal.find('button[data-dismiss="modal"]').one('click', function () {
+                modal.modal('hide');
+            });
+        };
+
+        reader.readAsText(file);
+    };
+
+}(window.EC5.project_users));
+
+'use strict';
+window.EC5 = window.EC5 || {};
+window.EC5.project_users = window.EC5.project_users || {};
+
+(function (module) {
+    /**
+     * Function to remove a user project role
+     *
+     * @param url
+     * @param formData
+     * @param pageName
+     * @param page
+     * @param search
+     */
+    module.removeUserProjectRole = function (url, formData, pageName, page, search) {
+
+        var config = window.EC5.project_users.config;
+        var len = formData.length;
+        var dataObj = {};
+        var i;
+
+        //show overlay
+        window.EC5.overlay.fadeIn();
+
+        // Get all values from form data
+        for (i = 0; i < len; i++) {
+            dataObj[formData[i].name] = formData[i].value;
+        }
+
+        // Reduce total users by one, as we are removing one
+        var totalPages = dataObj['total-users'] - 1;
+
+        // If we have no users left on this page,
+        // send user to the previous page
+        if (totalPages === 0) {
+            page = page - 1;
+        }
+
+        // Make ajax request to load users
+        $.ajax({
+            url: url,
+            type: 'POST',
+            dataType: 'json',
+            data: formData,
+            page: page
+        }).done(function (data) {
+            // Get project users based on page and any existing search
+            $.when(module.getProjectUsers(pageName, page, search)).then(function (response) {
+                // Update the relevant page section
+                $('.manage-project-users__' + pageName).html(response);
+                // Show success
+                window.setTimeout(function () {
+                    window.EC5.toast.showSuccess(data.data.message);
+                    window.EC5.overlay.fadeOut();
+                }, config.consts.ANIMATION_NORMAL);
+            }, function (error) {
+
+                window.setTimeout(function () {
+                    if (error.responseJSON.errors) {
+                        // Show the errors
+                        if (error.responseJSON.errors.length > 0) {
+                            for (i = 0; i < error.responseJSON.errors.length; i++) {
+                                window.EC5.toast.showError(error.responseJSON.errors[i].title);
+                            }
+                        }
+                    }
+                    window.EC5.overlay.fadeOut();
+                }, config.consts.ANIMATION_NORMAL);
+            });
+        }).fail(function (error) {
+            window.setTimeout(function () {
+                if (error.responseJSON.errors) {
+                    // Show the errors
+                    if (error.responseJSON.errors.length > 0) {
+                        for (i = 0; i < error.responseJSON.errors.length; i++) {
+                            window.EC5.toast.showError(error.responseJSON.errors[i].title);
+                        }
+                    }
+                }
+                window.EC5.overlay.fadeOut();
+            }, config.consts.ANIMATION_NORMAL);
+        });
+    };
+}(window.EC5.project_users));
+
+'use strict';
+window.EC5 = window.EC5 || {};
+window.EC5.project_users = window.EC5.project_users || {};
+
+(function (module) {
+
+    /**
+     *
+     * @param projectSlug
+     */
+    module.removeUsersByRole = function (projectSlug, role) {
+
+        var deferred = new $.Deferred();
+        var url = window.EC5.SITE_URL + '/api/internal/project-users/' + projectSlug + '/remove-by-role';
+
+        // Make ajax request to load users
+        $.ajax({
+            url: url,
+            type: 'POST',
+            dataType: 'json',
+            data: { role : role}
+        }).done(function (response) {
+            var pageName = 'page-' + role;
+            $('.manage-project-users__' + pageName).html('');
+            deferred.resolve(response);
+        }).fail(function(error){
+            deferred.reject(error);
+        });
+
+        return deferred.promise();
+
+    };
+}(window.EC5.project_users));
+
+'use strict';
+window.EC5 = window.EC5 || {};
+window.EC5.project_users = window.EC5.project_users || {};
+
+(function (module) {
+    /**
+     *
+     * @param projectSlug
+     * @param email
+     * @param currentRole
+     * @param newRole
+     */
+    module.switchUserRole = function (projectSlug, email, currentRole, newRole) {
+
+        var url = window.EC5.SITE_URL + '/api/internal/project-users/' + projectSlug + '/switch-role';
+        var config = window.EC5.project_users.config;
+        var availableRoles = $.map(config.consts.ROLES, function(value){return value;});
+        var deferred = new $.Deferred();
+
+        //invalid role
+        if ($.inArray(currentRole, availableRoles) === -1 || $.inArray(newRole, availableRoles) === -1) {
+            deferred.reject('Invalid role!');
+        }
+
+        //same role?
+        if (currentRole === newRole) {
+            deferred.reject('Old role and new role are the same!');
+        }
+
+        var params = {
+            email: email,
+            currentRole: currentRole,
+            newRole: newRole
+        };
+
+        // Make ajax request to load users
+        $.ajax({
+            url: url,
+            type: 'POST',
+            dataType: 'json',
+            data: params
+        }).done(function (response) {
+            console.log(response);
+            deferred.resolve(response);
+        }).fail(function (error) {
+            console.log(error);
+            deferred.reject(error);
+        });
+
+        return deferred.promise();
+    };
+
+}(window.EC5.project_users));
+
+'use strict';
+window.EC5 = window.EC5 || {};
+window.EC5.project_users = window.EC5.project_users || {};
+
+(function (module) {
+    /**
+     *
+     * @param projectSlug
+     * @param email
+     * @param currentRole
+     * @param newRole
+     */
+    module.updateRoleCounters = function () {
+
+        var pageManageUser = $('.page-manage-users');
+        var deferred = new $.Deferred();
+        var projectSlug = pageManageUser.data('project-slug');
+
+        //get hold of users-by-role counters
+        var counterHandlers = {
+            all: pageManageUser.find('.count-overall'),
+            creator: pageManageUser.find('.nav-tabs-roles').find('.count-creator'),
+            manager: pageManageUser.find('.nav-tabs-roles').find('.count-manager'),
+            curator: pageManageUser.find('.nav-tabs-roles').find('.count-curator'),
+            collector: pageManageUser.find('.nav-tabs-roles').find('.count-collector'),
+            viewer: pageManageUser.find('.nav-tabs-roles').find('.count-viewer')
+        }
+
+        var total = 0;
+        $.when(window.EC5.project_users.getTotalsByRole(projectSlug)).then(function (counts) {
+            Object.keys(counterHandlers).forEach(function (k) {
+                counterHandlers[k].text(counts[k]);
+                console.log(counts[k]);
+                total += counts[k] || 0;
+            });
+            counterHandlers.all.text(total);
+
+        }).fail(function (error) {
+            deferred.reject(error);
+        }).always(function () {
+            deferred.resolve();
+        });
+
+        return deferred.promise();
+    };
+
+}(window.EC5.project_users));

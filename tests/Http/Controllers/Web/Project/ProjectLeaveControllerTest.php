@@ -2,37 +2,22 @@
 
 namespace Tests\Http\Controllers\Web\Project;
 
-use ec5\Http\Controllers\ProjectControllerBase;
-use ec5\Http\Controllers\Web\Project\ProjectDeleteController;
 use ec5\Models\Eloquent\BranchEntry;
 use ec5\Models\Eloquent\Entry;
 use ec5\Models\Eloquent\OAuthClientProjects;
 use ec5\Models\Eloquent\Project;
-use ec5\Models\Eloquent\ProjectFeatured;
 use ec5\Models\Eloquent\ProjectRole;
 use ec5\Models\Eloquent\ProjectStat;
 use ec5\Models\Eloquent\ProjectStructure;
-use ec5\Models\Projects\Project as LegacyProject;
-use ec5\Models\ProjectRoles\ProjectRole as LegacyProjectRole;
-use ec5\Models\Users\User as LegacyUser;
-use ec5\Models\Projects\ProjectDefinition;
-use ec5\Models\Projects\ProjectExtra;
-use ec5\Models\Projects\ProjectMapping;
-use ec5\Models\Projects\ProjectStats;
 use ec5\Models\Users\User;
-use ec5\Repositories\QueryBuilder\Project\SearchRepository;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Illuminate\Foundation\Testing\WithoutMiddleware;
-use Illuminate\Http\Request;
 use Tests\TestCase;
 use Mockery;
 use Config;
 
-class ProjectDeleteControllerTest extends TestCase
+class ProjectLeaveControllerTest extends TestCase
 {
     use DatabaseTransactions;
-
-    // use WithoutMiddleware;
 
     const DRIVER = 'web';
 
@@ -47,20 +32,17 @@ class ProjectDeleteControllerTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_delete_page_renders_correctly()
+    public function test_leave_page_forbidden_to_creator()
     {
         //create mock user
-        $user = factory(User::class)->create();
-
+        $creator = factory(User::class)->create();
         //create a fake project with that user
-        $project = factory(Project::class)->create(['created_by' => $user->id]);
+        $project = factory(Project::class)->create(['created_by' => $creator->id]);
 
-        //assign the user to that project with the CREATOR role
-        $role = \Illuminate\Support\Facades\Config::get('ec5Strings.project_roles.creator');
         $projectRole = factory(ProjectRole::class)->create([
-            'user_id' => $user->id,
+            'user_id' => $creator->id,
             'project_id' => $project->id,
-            'role' => $role
+            'role' => Config::get('ec5Strings.project_roles.creator')
         ]);
 
         //set up project stats and project structures (to make R&A middleware work, to be removed)
@@ -74,14 +56,152 @@ class ProjectDeleteControllerTest extends TestCase
         factory(ProjectStructure::class)->create(
             ['project_id' => $project->id]
         );
+        $response = $this
+            ->actingAs($creator, self::DRIVER)
+            ->get('myprojects/' . $project->slug . '/leave');
+        //Bail out since creator cannot leave a project
+        $response->assertStatus(200);
+        $this->assertEquals('errors.gen_error', $response->original->getName());
+        // Assert that there is an error message with key 'ec5_91'
+        $this->assertArrayHasKey('errors', $response->original->getData());
+        // Assert that the view has an 'errors' variable
+        $this->assertTrue($response->original->offsetExists('errors'));
+        // Access the MessageBag and assert specific errors
+        $errors = $response->original->offsetGet('errors');
+        // Ensure that the 'errors' key exists in the MessageBag
+        $this->assertTrue($errors->has('errors'));
+        // Access the 'errors' array directly
+        $errorsArray = $errors->get('errors');
+        // Assert that it is an array and contains 'ec5_91'
+        $this->assertInternalType('array', $errorsArray);
+        $this->assertEquals('ec5_91', $errorsArray[0]);
+    }
 
+    public function test_leave_page_renders_correctly_for_manager()
+    {
+        //create mock user
+        $creator = factory(User::class)->create();
+        $user = factory(User::class)->create();
+        //create a fake project with that user
+        $project = factory(Project::class)->create(['created_by' => $creator->id]);
+        //assign the user to that project with the manager role
+        $role = \Illuminate\Support\Facades\Config::get('ec5Strings.project_roles.manager');
+        $projectRole = factory(ProjectRole::class)->create([
+            'user_id' => $user->id,
+            'project_id' => $project->id,
+            'role' => $role
+        ]);
+        //set up project stats and project structures (to make R&A middleware work, to be removed)
+        //because they are using a repository with joins
+        factory(ProjectStat::class)->create(
+            [
+                'project_id' => $project->id,
+                'total_entries' => 0
+            ]
+        );
+        factory(ProjectStructure::class)->create(
+            ['project_id' => $project->id]
+        );
         $response = $this
             ->actingAs($user, self::DRIVER)
-            ->get('myprojects/' . $project->slug . '/delete')
+            ->get('myprojects/' . $project->slug . '/leave')
             ->assertStatus(200);
     }
 
-    public function test_soft_delete()
+    public function test_leave_page_renders_correctly_for_curator()
+    {
+        //create mock user
+        $creator = factory(User::class)->create();
+        $user = factory(User::class)->create();
+        //create a fake project with that user
+        $project = factory(Project::class)->create(['created_by' => $creator->id]);
+        //assign the user to that project with the curator role
+        $role = \Illuminate\Support\Facades\Config::get('ec5Strings.project_roles.curator');
+        $projectRole = factory(ProjectRole::class)->create([
+            'user_id' => $user->id,
+            'project_id' => $project->id,
+            'role' => $role
+        ]);
+        //set up project stats and project structures (to make R&A middleware work, to be removed)
+        //because they are using a repository with joins
+        factory(ProjectStat::class)->create(
+            [
+                'project_id' => $project->id,
+                'total_entries' => 0
+            ]
+        );
+        factory(ProjectStructure::class)->create(
+            ['project_id' => $project->id]
+        );
+        $response = $this
+            ->actingAs($user, self::DRIVER)
+            ->get('myprojects/' . $project->slug . '/leave')
+            ->assertStatus(200);
+    }
+
+    public function test_leave_page_renders_correctly_for_collector()
+    {
+        //create mock user
+        $creator = factory(User::class)->create();
+        $user = factory(User::class)->create();
+        //create a fake project with that user
+        $project = factory(Project::class)->create(['created_by' => $creator->id]);
+        //assign the user to that project with the collector role
+        $role = \Illuminate\Support\Facades\Config::get('ec5Strings.project_roles.collector');
+        $projectRole = factory(ProjectRole::class)->create([
+            'user_id' => $user->id,
+            'project_id' => $project->id,
+            'role' => $role
+        ]);
+        //set up project stats and project structures (to make R&A middleware work, to be removed)
+        //because they are using a repository with joins
+        factory(ProjectStat::class)->create(
+            [
+                'project_id' => $project->id,
+                'total_entries' => 0
+            ]
+        );
+        factory(ProjectStructure::class)->create(
+            ['project_id' => $project->id]
+        );
+        $response = $this
+            ->actingAs($user, self::DRIVER)
+            ->get('myprojects/' . $project->slug . '/leave')
+            ->assertStatus(200);
+    }
+
+    public function test_leave_page_renders_correctly_for_viewer()
+    {
+        //create mock user
+        $creator = factory(User::class)->create();
+        $user = factory(User::class)->create();
+        //create a fake project with that user
+        $project = factory(Project::class)->create(['created_by' => $creator->id]);
+        //assign the user to that project with the viewer role
+        $role = \Illuminate\Support\Facades\Config::get('ec5Strings.project_roles.viewer');
+        $projectRole = factory(ProjectRole::class)->create([
+            'user_id' => $user->id,
+            'project_id' => $project->id,
+            'role' => $role
+        ]);
+        //set up project stats and project structures (to make R&A middleware work, to be removed)
+        //because they are using a repository with joins
+        factory(ProjectStat::class)->create(
+            [
+                'project_id' => $project->id,
+                'total_entries' => 0
+            ]
+        );
+        factory(ProjectStructure::class)->create(
+            ['project_id' => $project->id]
+        );
+        $response = $this
+            ->actingAs($user, self::DRIVER)
+            ->get('myprojects/' . $project->slug . '/leave')
+            ->assertStatus(200);
+    }
+
+    public function test_leave()
     {
         //creator
         $role = Config::get('ec5Strings.project_roles.creator');
@@ -170,6 +290,7 @@ class ProjectDeleteControllerTest extends TestCase
         $this->assertGreaterThan(0, OAuthClientProjects::where('project_id', $project->id)
             ->count());
 
+
         //assert roles are NOT dropped
         $this->assertEquals(1, ProjectRole::where('project_id', $project->id)->count());
         // You can also check for messages in the session
@@ -183,98 +304,16 @@ class ProjectDeleteControllerTest extends TestCase
 
     }
 
-    public function test_hard_delete()
+    public function test_leave_missing_permission_as_creator()
     {
         //creator
         $role = Config::get('ec5Strings.project_roles.creator');
-        $trashedStatus = Config::get('ec5Strings.project_status.trashed');
-
-        //create a fake user and save it to DB
-        $user = factory(User::class)->create();
-
-        //create mock project with that user
-        $project = factory(Project::class)->create(
-            [
-                'created_by' => $user->id,
-                'status' => $trashedStatus
-            ]
-        );
-
-        //assign the user to that project with the CREATOR role
-        $projectRole = factory(ProjectRole::class)->create([
-            'user_id' => $user->id,
-            'project_id' => $project->id,
-            'role' => $role
-        ]);
-
-        //assert project is present before archiving
-        $this->assertEquals(1, Project::where('id', $project->id)->count());
-        //assert user role  is CREATOR
-        $this->assertEquals(1, ProjectRole::where('project_id', $project->id)->count());
-        $this->assertEquals(1, ProjectRole::where('user_id', $user->id)->count());
-        $this->assertEquals($role, ProjectRole::where('project_id', $project->id)->where('user_id', $user->id)->value('role'));
-
-
-        //set up project stats and project structures (to make R&A middleware work, to be removed)
-        //because they are using a repository with joins
-        factory(ProjectStat::class)->create(
-            [
-                'project_id' => $project->id,
-                'total_entries' => 0
-            ]
-        );
-        factory(ProjectStructure::class)->create(
-            ['project_id' => $project->id]
-        );
-
-        factory(OAuthClientProjects::class)->create(
-            ['project_id' => $project->id]
-        );
-
-        // Act: Simulate the execution of the hardDelete method
-        $response = $this->actingAs($user, self::DRIVER)
-            ->post('/myprojects/' . $project->slug . '/delete', [
-                '_token' => csrf_token()
-            ]);
-
-        //Check if the redirect is successful
-        $response->assertRedirect('/myprojects');
-        //Check if the project is deleted
-        $this->assertEquals(0, Project::where('id', $project->id)
-            ->count());
-        //assert stats are dropped
-        $this->assertEquals(0, ProjectStat::where('project_id', $project->id)
-            ->count());
-        //assert structure is dropped
-        $this->assertEquals(0, ProjectStructure::where('project_id', $project->id)
-            ->count());
-
-        //assert app clients are dropped
-        $this->assertEquals(0, OAuthClientProjects::where('project_id', $project->id)
-            ->count());
-
-        //assert roles are dropped
-        $this->assertEquals(0, ProjectRole::where('project_id', $project->id)->count());
-        // You can also check for messages in the session
-        $response->assertSessionHas('message', 'ec5_114');
-
-        //create a new project, should get a different ID
-        $newProject = factory(Project::class)->create(['created_by' => $user->id]);
-        self::assertNotEquals($newProject->id, $project->id);
-        //check new project has zero entries
-        self::assertEquals(0, Entry::where('project_id', $newProject->id)->count());
-    }
-
-    public function test_delete_missing_permission_as_manager()
-    {
-        //manager
-        $role = Config::get('ec5Strings.project_roles.manager');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
         $anotherUser = factory(User::class)->create();
-        //create mock project with that another user
+        //create a mock project with that another user
         $project = factory(Project::class)->create(['created_by' => $anotherUser->id]);
         //assign another user to that project with the CREATOR role
         $projectRole = factory(ProjectRole::class)->create([
@@ -289,9 +328,9 @@ class ProjectDeleteControllerTest extends TestCase
             'role' => $role
         ]);
 
-        //assert project is present before archiving
+        //assert the project is present before archiving
         $this->assertEquals(1, Project::where('id', $project->id)->count());
-        //assert user role  is MANAGER
+        //assert the user role is creator
         $this->assertEquals(2, ProjectRole::where('project_id', $project->id)->count());
         $this->assertEquals(1, ProjectRole::where('user_id', $user->id)->count());
         $this->assertEquals($role, ProjectRole::where('project_id', $project->id)->where('user_id', $user->id)->value('role'));
@@ -317,16 +356,13 @@ class ProjectDeleteControllerTest extends TestCase
         factory(ProjectStructure::class)->create(
             ['project_id' => $project->id]
         );
-        // Act: Simulate the execution of the softDelete method
-        //$this->withoutMiddleware();
+        // Act: Simulate the execution of the leave method
         $response = $this->actingAs($user, self::DRIVER)
-            ->post('/myprojects/' . $project->slug . '/delete', [
+            ->post('/myprojects/' . $project->slug . '/leave', [
                 '_token' => csrf_token()
             ]);
         //Bail out since user has no permission
         $response->assertRedirect('myprojects/' . $project->slug);
-        //Check if the project is NOT archived
-        $this->assertDatabaseMissing('projects_archive', ['id' => $project->id]);
         //Check if the project is NOT deleted
         $this->assertDatabaseHas('projects', ['id' => $project->id]);
         //assert entries & branch entries are NOT touched
@@ -336,39 +372,109 @@ class ProjectDeleteControllerTest extends TestCase
         $this->assertEquals(2, ProjectRole::where('project_id', $project->id)->count());
         //assert error code is sent back to user
         $this->assertEquals('ec5_91', session('errors')->getBag('default')->first());
-
     }
 
-    public function test_delete_missing_permission_as_curator()
+    public function test_leave_performed_as_manager()
     {
-        //curator
+        //creator
+        $role = Config::get('ec5Strings.project_roles.manager');
+        $numOfEntries = mt_rand(10, 100);
+        $numOfBranchEntries = mt_rand(10, 100);
+        //create a fake user and save it to DB
+        $creator = factory(User::class)->create();
+        $manager = factory(User::class)->create();
+        //create a mock project with that another user
+        $project = factory(Project::class)->create(['created_by' => $creator->id]);
+        //assign another user to that project with the manager role
+        $projectRole = factory(ProjectRole::class)->create([
+            'user_id' => $creator->id,
+            'project_id' => $project->id,
+            'role' => 'creator'
+        ]);
+        //assign the user to that project with the creator role
+        $projectRole = factory(ProjectRole::class)->create([
+            'user_id' => $manager->id,
+            'project_id' => $project->id,
+            'role' => $role
+        ]);
+
+        //assert the user role is manager
+        $this->assertEquals(2, ProjectRole::where('project_id', $project->id)->count());
+        $this->assertEquals(1, ProjectRole::where('user_id', $manager->id)->count());
+        $this->assertEquals($role, ProjectRole::where('project_id', $project->id)->where('user_id', $manager->id)->value('role'));
+        //add mock entries & branch entries to mock project
+        $entriesToArchive = factory(Entry::class, $numOfEntries)->create([
+            'project_id' => $project->id,
+            'form_ref' => $project->ref . '_' . uniqid(),
+            'user_id' => $project->created_by,
+        ]);
+        foreach ($entriesToArchive as $entry) {
+            factory(BranchEntry::class, $numOfBranchEntries)->create([
+                'project_id' => $project->id,
+                'form_ref' => $project->ref . '_' . uniqid(),
+                'user_id' => $project->created_by,
+                'owner_entry_id' => $entry->id //FK!
+            ]);
+        }
+        //set up project stats and project structures (to make R&A middleware work, to be removed)
+        //because they are using a repository with joins
+        factory(ProjectStat::class)->create(
+            ['project_id' => $project->id]
+        );
+        factory(ProjectStructure::class)->create(
+            ['project_id' => $project->id]
+        );
+        // Act: Simulate the execution of the leave method
+        $response = $this->actingAs($manager, self::DRIVER)
+            ->post('/myprojects/' . $project->slug . '/leave', [
+                '_token' => csrf_token()
+            ]);
+        //Bail out since user has no permission
+        $response->assertRedirect('myprojects');
+        //Check if the project is NOT deleted
+        $this->assertDatabaseHas('projects', ['id' => $project->id]);
+        //assert entries & branch entries are NOT touched
+        $this->assertEquals($numOfEntries, Entry::where('project_id', $project->id)->count());
+        $this->assertEquals($numOfBranchEntries * $numOfEntries, BranchEntry::where('project_id', $project->id)->count());
+        //assert the manager role is dropped
+        $this->assertEquals(0, ProjectRole::where('project_id', $project->id)
+            ->where('user_id', $manager->id)->count());
+        $this->assertEquals(1, ProjectRole::where('project_id', $project->id)
+            ->where('user_id', $creator->id)
+            ->count());
+
+        //assert success is sent back to user
+        $response->assertSessionHas('message', 'ec5_396');
+    }
+
+    public function test_leave_performed_as_curator()
+    {
+        //creator
         $role = Config::get('ec5Strings.project_roles.curator');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
         //create a fake user and save it to DB
-        $user = factory(User::class)->create();
-        $anotherUser = factory(User::class)->create();
-        //create mock project with that another user
-        $project = factory(Project::class)->create(['created_by' => $anotherUser->id]);
-        //assign another user to that project with the CREATOR role
+        $creator = factory(User::class)->create();
+        $curator = factory(User::class)->create();
+        //create a mock project with that another user
+        $project = factory(Project::class)->create(['created_by' => $creator->id]);
+        //assign another user to that project with the manager role
         $projectRole = factory(ProjectRole::class)->create([
-            'user_id' => $anotherUser->id,
+            'user_id' => $creator->id,
             'project_id' => $project->id,
             'role' => 'creator'
         ]);
-        //assign the user to that project with the CURATOR role
+        //assign the user to that project with the creator role
         $projectRole = factory(ProjectRole::class)->create([
-            'user_id' => $user->id,
+            'user_id' => $curator->id,
             'project_id' => $project->id,
             'role' => $role
         ]);
 
-        //assert project is present before archiving
-        $this->assertEquals(1, Project::where('id', $project->id)->count());
-        //assert user role  is CURATOR
+        //assert the user role is manager
         $this->assertEquals(2, ProjectRole::where('project_id', $project->id)->count());
-        $this->assertEquals(1, ProjectRole::where('user_id', $user->id)->count());
-        $this->assertEquals($role, ProjectRole::where('project_id', $project->id)->where('user_id', $user->id)->value('role'));
+        $this->assertEquals(1, ProjectRole::where('user_id', $curator->id)->count());
+        $this->assertEquals($role, ProjectRole::where('project_id', $project->id)->where('user_id', $curator->id)->value('role'));
         //add mock entries & branch entries to mock project
         $entriesToArchive = factory(Entry::class, $numOfEntries)->create([
             'project_id' => $project->id,
@@ -391,57 +497,57 @@ class ProjectDeleteControllerTest extends TestCase
         factory(ProjectStructure::class)->create(
             ['project_id' => $project->id]
         );
-        // Act: Simulate the execution of the softDelete method
-        //$this->withoutMiddleware();
-        $response = $this->actingAs($user, self::DRIVER)
-            ->post('/myprojects/' . $project->slug . '/delete', [
+        // Act: Simulate the execution of the leave method
+        $response = $this->actingAs($curator, self::DRIVER)
+            ->post('/myprojects/' . $project->slug . '/leave', [
                 '_token' => csrf_token()
             ]);
         //Bail out since user has no permission
-        $response->assertRedirect('myprojects/' . $project->slug);
-        //Check if the project is NOT archived
-        $this->assertDatabaseMissing('projects_archive', ['id' => $project->id]);
+        $response->assertRedirect('myprojects');
         //Check if the project is NOT deleted
         $this->assertDatabaseHas('projects', ['id' => $project->id]);
         //assert entries & branch entries are NOT touched
         $this->assertEquals($numOfEntries, Entry::where('project_id', $project->id)->count());
         $this->assertEquals($numOfBranchEntries * $numOfEntries, BranchEntry::where('project_id', $project->id)->count());
-        //assert roles are NOT dropped
-        $this->assertEquals(2, ProjectRole::where('project_id', $project->id)->count());
-        //assert error code is sent back to user
-        $this->assertEquals('ec5_91', session('errors')->getBag('default')->first());
+        //assert the manager role is dropped
+        $this->assertEquals(0, ProjectRole::where('project_id', $project->id)
+            ->where('user_id', $curator->id)->count());
+        $this->assertEquals(1, ProjectRole::where('project_id', $project->id)
+            ->where('user_id', $creator->id)
+            ->count());
+
+        //assert success is sent back to user
+        $response->assertSessionHas('message', 'ec5_396');
     }
 
-    public function test_delete_missing_permission_as_collector()
+    public function test_leave_performed_as_collector()
     {
-        //collector
+        //creator
         $role = Config::get('ec5Strings.project_roles.collector');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
         //create a fake user and save it to DB
-        $user = factory(User::class)->create();
-        $anotherUser = factory(User::class)->create();
-        //create mock project with that another user
-        $project = factory(Project::class)->create(['created_by' => $anotherUser->id]);
-        //assign another user to that project with the CREATOR role
+        $creator = factory(User::class)->create();
+        $collector = factory(User::class)->create();
+        //create a mock project with that another user
+        $project = factory(Project::class)->create(['created_by' => $creator->id]);
+        //assign another user to that project with the manager role
         $projectRole = factory(ProjectRole::class)->create([
-            'user_id' => $anotherUser->id,
+            'user_id' => $creator->id,
             'project_id' => $project->id,
             'role' => 'creator'
         ]);
-        //assign the user to that project with the COLLECTOR role
+        //assign the user to that project with the creator role
         $projectRole = factory(ProjectRole::class)->create([
-            'user_id' => $user->id,
+            'user_id' => $collector->id,
             'project_id' => $project->id,
             'role' => $role
         ]);
 
-        //assert project is present before archiving
-        $this->assertEquals(1, Project::where('id', $project->id)->count());
-        //assert user role  is COLLECTOR
+        //assert the user role is manager
         $this->assertEquals(2, ProjectRole::where('project_id', $project->id)->count());
-        $this->assertEquals(1, ProjectRole::where('user_id', $user->id)->count());
-        $this->assertEquals($role, ProjectRole::where('project_id', $project->id)->where('user_id', $user->id)->value('role'));
+        $this->assertEquals(1, ProjectRole::where('user_id', $collector->id)->count());
+        $this->assertEquals($role, ProjectRole::where('project_id', $project->id)->where('user_id', $collector->id)->value('role'));
         //add mock entries & branch entries to mock project
         $entriesToArchive = factory(Entry::class, $numOfEntries)->create([
             'project_id' => $project->id,
@@ -464,57 +570,57 @@ class ProjectDeleteControllerTest extends TestCase
         factory(ProjectStructure::class)->create(
             ['project_id' => $project->id]
         );
-        // Act: Simulate the execution of the softDelete method
-        //$this->withoutMiddleware();
-        $response = $this->actingAs($user, self::DRIVER)
-            ->post('/myprojects/' . $project->slug . '/delete', [
+        // Act: Simulate the execution of the leave method
+        $response = $this->actingAs($collector, self::DRIVER)
+            ->post('/myprojects/' . $project->slug . '/leave', [
                 '_token' => csrf_token()
             ]);
         //Bail out since user has no permission
-        $response->assertRedirect('myprojects/' . $project->slug);
-        //Check if the project is NOT archived
-        $this->assertDatabaseMissing('projects_archive', ['id' => $project->id]);
+        $response->assertRedirect('myprojects');
         //Check if the project is NOT deleted
         $this->assertDatabaseHas('projects', ['id' => $project->id]);
         //assert entries & branch entries are NOT touched
         $this->assertEquals($numOfEntries, Entry::where('project_id', $project->id)->count());
         $this->assertEquals($numOfBranchEntries * $numOfEntries, BranchEntry::where('project_id', $project->id)->count());
-        //assert roles are NOT dropped
-        $this->assertEquals(2, ProjectRole::where('project_id', $project->id)->count());
-        //assert error code is sent back to user
-        $this->assertEquals('ec5_91', session('errors')->getBag('default')->first());
+        //assert the manager role is dropped
+        $this->assertEquals(0, ProjectRole::where('project_id', $project->id)
+            ->where('user_id', $collector->id)->count());
+        $this->assertEquals(1, ProjectRole::where('project_id', $project->id)
+            ->where('user_id', $creator->id)
+            ->count());
+
+        //assert success is sent back to user
+        $response->assertSessionHas('message', 'ec5_396');
     }
 
-    public function test_delete_missing_permission_as_viewer()
+    public function test_leave_performed_as_viewer()
     {
-        //viewer
+        //creator
         $role = Config::get('ec5Strings.project_roles.viewer');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
         //create a fake user and save it to DB
-        $user = factory(User::class)->create();
-        $anotherUser = factory(User::class)->create();
-        //create mock project with that another user
-        $project = factory(Project::class)->create(['created_by' => $anotherUser->id]);
-        //assign another user to that project with the CREATOR role
+        $creator = factory(User::class)->create();
+        $viewer = factory(User::class)->create();
+        //create a mock project with that another user
+        $project = factory(Project::class)->create(['created_by' => $creator->id]);
+        //assign another user to that project with the manager role
         $projectRole = factory(ProjectRole::class)->create([
-            'user_id' => $anotherUser->id,
+            'user_id' => $creator->id,
             'project_id' => $project->id,
             'role' => 'creator'
         ]);
-        //assign the user to that project with the VIEWER role
+        //assign the user to that project with the creator role
         $projectRole = factory(ProjectRole::class)->create([
-            'user_id' => $user->id,
+            'user_id' => $viewer->id,
             'project_id' => $project->id,
             'role' => $role
         ]);
 
-        //assert project is present before archiving
-        $this->assertEquals(1, Project::where('id', $project->id)->count());
-        //assert user role  is VIEWER
+        //assert the user role is manager
         $this->assertEquals(2, ProjectRole::where('project_id', $project->id)->count());
-        $this->assertEquals(1, ProjectRole::where('user_id', $user->id)->count());
-        $this->assertEquals($role, ProjectRole::where('project_id', $project->id)->where('user_id', $user->id)->value('role'));
+        $this->assertEquals(1, ProjectRole::where('user_id', $viewer->id)->count());
+        $this->assertEquals($role, ProjectRole::where('project_id', $project->id)->where('user_id', $viewer->id)->value('role'));
         //add mock entries & branch entries to mock project
         $entriesToArchive = factory(Entry::class, $numOfEntries)->create([
             'project_id' => $project->id,
@@ -537,98 +643,31 @@ class ProjectDeleteControllerTest extends TestCase
         factory(ProjectStructure::class)->create(
             ['project_id' => $project->id]
         );
-        // Act: Simulate the execution of the softDelete method
-        //$this->withoutMiddleware();
-        $response = $this->actingAs($user, self::DRIVER)
-            ->post('/myprojects/' . $project->slug . '/delete', [
+        // Act: Simulate the execution of the leave method
+        $response = $this->actingAs($viewer, self::DRIVER)
+            ->post('/myprojects/' . $project->slug . '/leave', [
                 '_token' => csrf_token()
             ]);
         //Bail out since user has no permission
-        $response->assertRedirect('myprojects/' . $project->slug);
-        //Check if the project is NOT archived
-        $this->assertDatabaseMissing('projects_archive', ['id' => $project->id]);
+        $response->assertRedirect('myprojects');
         //Check if the project is NOT deleted
         $this->assertDatabaseHas('projects', ['id' => $project->id]);
         //assert entries & branch entries are NOT touched
         $this->assertEquals($numOfEntries, Entry::where('project_id', $project->id)->count());
         $this->assertEquals($numOfBranchEntries * $numOfEntries, BranchEntry::where('project_id', $project->id)->count());
-        //assert roles are NOT dropped
-        $this->assertEquals(2, ProjectRole::where('project_id', $project->id)->count());
-        //assert error code is sent back to user
-        $this->assertEquals('ec5_91', session('errors')->getBag('default')->first());
-    }
+        //assert the manager role is dropped
+        $this->assertEquals(0, ProjectRole::where('project_id', $project->id)
+            ->where('user_id', $viewer->id)->count());
+        $this->assertEquals(1, ProjectRole::where('project_id', $project->id)
+            ->where('user_id', $creator->id)
+            ->count());
 
-    public function test_delete_but_project_is_featured()
-    {
-        //CREATOR
-        $role = Config::get('ec5Strings.project_roles.creator');
-        $numOfEntries = mt_rand(10, 100);
-        $numOfBranchEntries = mt_rand(10, 100);
-        //create a fake user and save it to DB
-        $user = factory(User::class)->create();
-        //create mock project with that user
-        $project = factory(Project::class)->create(['created_by' => $user->id]);
-        //assign another user to that project with the CREATOR role
-        $projectRole = factory(ProjectRole::class)->create([
-            'user_id' => $user->id,
-            'project_id' => $project->id,
-            'role' => $role
-        ]);
-
-        //flag the project as featured
-        factory(ProjectFeatured::class)->create(['project_id' => $project->id]);
-
-        //assert project is present before archiving
-        $this->assertEquals(1, Project::where('id', $project->id)->count());
-        //assert user role  is CREATOR
-        $this->assertEquals(1, ProjectRole::where('project_id', $project->id)->count());
-        $this->assertEquals(1, ProjectRole::where('user_id', $user->id)->count());
-        $this->assertEquals($role, ProjectRole::where('project_id', $project->id)->where('user_id', $user->id)->value('role'));
-        //add mock entries & branch entries to mock project
-        $entriesToArchive = factory(Entry::class, $numOfEntries)->create([
-            'project_id' => $project->id,
-            'form_ref' => $project->ref . '_' . uniqid(),
-            'user_id' => $project->created_by,
-        ]);
-        foreach ($entriesToArchive as $entry) {
-            factory(BranchEntry::class, $numOfBranchEntries)->create([
-                'project_id' => $project->id,
-                'form_ref' => $project->ref . '_' . uniqid(),
-                'user_id' => $project->created_by,
-                'owner_entry_id' => $entry->id //FK!
-            ]);
-        }
-        //set up project stats and project structures (to make R&A middleware work, to be removed)
-        //because they are using a repository with joins
-        factory(ProjectStat::class)->create(
-            ['project_id' => $project->id]
-        );
-        factory(ProjectStructure::class)->create(
-            ['project_id' => $project->id]
-        );
-        // Act: Simulate the execution of the softDelete method
-        //$this->withoutMiddleware();
-        $response = $this->actingAs($user, self::DRIVER)
-            ->post('/myprojects/' . $project->slug . '/delete', [
-                '_token' => csrf_token()
-            ]);
-        //Bail out since the project is featured
-        $response->assertRedirect('myprojects/' . $project->slug);
-        //Check if the project is NOT archived
-        $this->assertDatabaseMissing('projects_archive', ['id' => $project->id]);
-        //Check if the project is NOT deleted
-        $this->assertDatabaseHas('projects', ['id' => $project->id]);
-        //assert entries & branch entries are NOT touched
-        $this->assertEquals($numOfEntries, Entry::where('project_id', $project->id)->count());
-        $this->assertEquals($numOfBranchEntries * $numOfEntries, BranchEntry::where('project_id', $project->id)->count());
-        //assert roles are NOT dropped
-        $this->assertEquals(1, ProjectRole::where('project_id', $project->id)->count());
-        //assert error code is sent back to user
-        $this->assertEquals('ec5_221', session('errors')->getBag('default')->first());
+        //assert success is sent back to user
+        $response->assertSessionHas('message', 'ec5_396');
     }
 
     //todo: need refactoring
-    public function test_delete_with_exception()
+    public function test_leave_with_exception()
     {
         //creator
         $role = Config::get('ec5Strings.project_roles.creator');

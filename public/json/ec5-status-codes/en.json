@@ -326,5 +326,7 @@
   "ec5_391": "Local account with the provided email already exists. <br/> Please login via email",
   "ec5_392": "The regular expression is invalid or malformed.",
   "ec5_393": "Project description must be between :min to :max chars long",
-  "ec5_394": "Project small description must be between :min to :max chars long"
+  "ec5_394": "Project small description must be between :min to :max chars long",
+  "ec5_395": "Are you sure you want to leave this project?",
+  "ec5_396": "Project left."
 }

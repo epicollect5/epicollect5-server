@@ -197,6 +197,12 @@ class ProjectRole
         return false;
     }
 
+    //creator cannot leave a project
+    public function canLeaveProject()
+    {
+        return (!$this->isCreator());
+    }
+
     /**
      * @return bool
      */

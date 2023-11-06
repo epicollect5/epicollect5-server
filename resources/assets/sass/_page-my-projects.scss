@@ -7,7 +7,7 @@
     margin-bottom: 15px;
     white-space: nowrap;
     a {
-      color: #333333!important;
+      color: #333333 !important;
     }
 
   }
@@ -17,20 +17,20 @@
     position: relative;
     .thumbnail {
       border: none;
-      position:relative;
+      position: relative;
       .img-circle {
         border: 2px solid $deep-purple;
       }
       .loader {
         //override for thumbnail
         position: absolute;
-        z-index:21;
+        z-index: 21;
         border-bottom: 1.1em solid rgba($light-green, 0.2);
       }
       img {
         //opacity:0;
         z-index: 22;
-        position:relative;
+        position: relative;
         min-height: 130px;
       }
     }
@@ -39,7 +39,7 @@
       @include card-project-name();
     }
 
-    .btn-action {
+    .btn-action, .btn-danger {
       margin-top: 10px;
     }
     .project-small-description {
@@ -92,14 +92,14 @@
   }
   //filter controls, search and grid/list view
   .projects-list__filter-controls {
-      margin-top: 4px;
+    margin-top: 4px;
     //margin: 11px 0 !important;
     .projects-list__project-search {
       text-transform: uppercase;
       text-overflow: ellipsis;
     }
     .dropdown-toggle[data-js="filter-dropdown"] {
-      width: 130px;
+      width: 140px;
       margin-left: 30px;
     }
   }
@@ -112,29 +112,29 @@
     .list-view {
       .row {
         .col-md-2 {
-          padding:0;
+          padding: 0;
         }
         .list-view__created, .list-view__status, .list-view__role {
-          line-height:57px;
+          line-height: 57px;
         }
         .list-view__project-details, .list-view__created, .list-view__status, .list-view__role {
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
-          position:relative;
+          position: relative;
           .loader {
             //override for thumbnail
             position: absolute;
-            z-index:21;
+            z-index: 21;
             right: 93%;
-            top: 55px!important;
-            font-size: 3px!important;
+            top: 55px !important;
+            font-size: 3px !important;
           }
           img {
             margin-top: 4px;
-            opacity:1;
+            opacity: 1;
             z-index: 22;
-            position:relative;
+            position: relative;
             min-height: 50px;
           }
         }

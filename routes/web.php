@@ -60,7 +60,6 @@ Route::group(['middleware' => $passwordlessMiddleware], function () use ($passwo
     // \Log::info(print_r($passwordlessMiddleware));
     // Route::post('login/passwordless/token', 'Web\Auth\PasswordlessController@sendLink')
     //     ->name('passwordless-token-web');
-
     Route::post('login/passwordless/token', 'Web\Auth\PasswordlessController@sendCode')
         ->name('passwordless-token-web');
 
@@ -238,6 +237,10 @@ Route::group(['middleware' => 'auth'], function () {
         // Project deletion
         Route::get('myprojects/{project_slug}/delete', 'Web\Project\ProjectDeleteController@show');
         Route::post('myprojects/{project_slug}/delete', 'Web\Project\ProjectDeleteController@delete');
+
+        //Leaving a project
+        Route::get('myprojects/{project_slug}/leave', 'Web\Project\ProjectLeaveController@show');
+        Route::post('myprojects/{project_slug}/leave', 'Web\Project\ProjectLeaveController@leave');
 
         // Project entries deletion
         Route::get('myprojects/{project_slug}/delete-entries', 'Web\Project\ProjectDeleteEntriesController@show');

@@ -22,12 +22,14 @@
 @import "page-profile";
 @import "page-project-home";
 @import "page-project-delete";
+@import "page-project-leave";
 @import "page-projects-list";
 @import "page-contact";
 @import "page-more";
 @import "page-verification";
 @import "cookie_consent";
 @import "custom-collapse";
+@import "spacing";
 
 html,
 body {
@@ -150,6 +152,11 @@ body {
 
 .btn-action {
   background-color: $solid-green;
+  color: #fff;
+}
+
+.btn-danger {
+  background-color: $red-error;
   color: #fff;
 }
 
