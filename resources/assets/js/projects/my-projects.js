@@ -118,7 +118,6 @@ window.EC5.projects = window.EC5.projects || {};
      * criteria, with pagination
      */
     module.getProjects = function () {
-        debugger;
         // Make ajax request to load projects
         $.ajax({
             url: module.options.url, type: 'GET', dataType: 'json', data: {
