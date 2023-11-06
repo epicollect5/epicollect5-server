@@ -1,4 +1,9 @@
 .page-my-projects {
+  .dropdown-header {
+    color: $deep-purple;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
   min-height: 620px;
   .material-icons {
     vertical-align: middle;

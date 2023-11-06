@@ -41,12 +41,14 @@
                         <ul class="dropdown-menu">
                             <li><a class="option" data-filter-type="" data-filter-value="show all"
                                    href="#">{{ trans('site.show_all') }}</a></li>
+                            <li class="divider"></li>
                             <li class="dropdown-header">Access</li>
                             <li><a class="option" data-filter-type="access" data-filter-value="public"
                                    href="#">{{ trans('site.public') }}</a></li>
                             <li><a class="option" data-filter-type="access" data-filter-value="private"
                                    href="#">{{ trans('site.private') }}</a>
                             </li>
+                            <li class="divider"></li>
                             <li class="dropdown-header">Status</li>
                             <li><a class="option" data-filter-type="status" data-filter-value="active"
                                    href="#">{{ trans('site.active') }}</a></li>
@@ -55,6 +57,7 @@
                             <li><a class="option" data-filter-type="status" data-filter-value="trashed"
                                    href="#">{{ trans('site.trashed') }}</a>
                             </li>
+                            <li class="divider"></li>
                             <li class="dropdown-header">Role</li>
                             <li><a class="option" data-filter-type="role" data-filter-value="creator"
                                    href="#">{{ trans('site.creator') }}</a></li>
