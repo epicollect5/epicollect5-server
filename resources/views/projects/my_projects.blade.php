@@ -38,7 +38,7 @@
                             <span class="caret"></span>
                         </button>
 
-                        <ul class="dropdown-menu">
+                        <ul class="dropdown-menu pre-scrollable">
                             <li><a class="option" data-filter-type="" data-filter-value="show all"
                                    href="#">{{ trans('site.show_all') }}</a></li>
                             <li class="divider"></li>
