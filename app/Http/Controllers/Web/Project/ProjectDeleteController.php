@@ -31,17 +31,29 @@ class ProjectDeleteController extends ProjectControllerBase
         return view('project.project_delete', $vars);
     }
 
-    public function delete()
+    public function delete(Request $request)
     {
-        $projectId = $this->requestedProject->getId();
+        $payload = $request->all();
         $projectSlug = $this->requestedProject->slug;
+
+        //if missing project name, bail out
+        if (empty($payload['project-name'])) {
+            return redirect('myprojects/' . $this->requestedProject->slug . '/delete')->withErrors(['ec5_103']);
+        }
+        $projectId = $this->requestedProject->getId();
+        $projectName = Project::where('id', $projectId)->first()->name;
+
+        //if the project name does not match, bail out
+        if ($projectName !== $payload['project-name']) {
+            return redirect('myprojects/' . $this->requestedProject->slug . '/delete')->withErrors(['ec5_21']);
+        }
         //no permission to delete, bail out
         if (!$this->requestedProjectRole->canDeleteProject()) {
-            return redirect('myprojects/' . $this->requestedProject->slug)->withErrors(['ec5_91']);
+            return redirect('myprojects/' . $this->requestedProject->slug . '/delete')->withErrors(['ec5_91']);
         }
         // Check if this project is featured, cannot be deleted
         if (ProjectFeatured::where('project_id', $projectId)->exists()) {
-            return redirect('myprojects/' . $this->requestedProject->slug)->withErrors(['ec5_221']);
+            return redirect('myprojects/' . $this->requestedProject->slug . '/delete')->withErrors(['ec5_221']);
         }
 
         $projectStat = ProjectStat::where('project_id', $projectId)->first();
@@ -78,7 +90,7 @@ class ProjectDeleteController extends ProjectControllerBase
         } catch (\Exception $e) {
             \Log::error('softDelete() project failure', ['exception' => $e->getMessage()]);
             DB::rollBack();
-            return redirect('myprojects/' . $this->requestedProject->slug)->withErrors(['ec5_104']);
+            return redirect('myprojects/' . $this->requestedProject->slug . '/delete')->withErrors(['ec5_104']);
         }
     }
 
@@ -106,7 +118,7 @@ class ProjectDeleteController extends ProjectControllerBase
         } catch (\Exception $e) {
             \Log::error('hardDelete() project failure', ['exception' => $e->getMessage()]);
             DB::rollBack();
-            return redirect('myprojects/' . $this->requestedProject->slug)->withErrors(['ec5_104']);
+            return redirect('myprojects/' . $this->requestedProject->slug . '/delete')->withErrors(['ec5_104']);
         }
     }
 

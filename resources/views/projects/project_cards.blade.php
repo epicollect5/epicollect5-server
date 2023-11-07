@@ -82,7 +82,7 @@
 
                         <div class="btn-group btn-group-justified margin-top-md" role="group">
                             <a
-                                    class="btn btn-danger btn-sm"
+                                    class="btn btn-action btn-sm"
 
                                     @if ($project->role === 'creator') disabled
                                     @else

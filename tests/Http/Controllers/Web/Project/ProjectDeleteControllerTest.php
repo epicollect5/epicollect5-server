@@ -2,8 +2,6 @@
 
 namespace Tests\Http\Controllers\Web\Project;
 
-use ec5\Http\Controllers\ProjectControllerBase;
-use ec5\Http\Controllers\Web\Project\ProjectDeleteController;
 use ec5\Models\Eloquent\BranchEntry;
 use ec5\Models\Eloquent\Entry;
 use ec5\Models\Eloquent\OAuthClientProjects;
@@ -12,18 +10,8 @@ use ec5\Models\Eloquent\ProjectFeatured;
 use ec5\Models\Eloquent\ProjectRole;
 use ec5\Models\Eloquent\ProjectStat;
 use ec5\Models\Eloquent\ProjectStructure;
-use ec5\Models\Projects\Project as LegacyProject;
-use ec5\Models\ProjectRoles\ProjectRole as LegacyProjectRole;
-use ec5\Models\Users\User as LegacyUser;
-use ec5\Models\Projects\ProjectDefinition;
-use ec5\Models\Projects\ProjectExtra;
-use ec5\Models\Projects\ProjectMapping;
-use ec5\Models\Projects\ProjectStats;
 use ec5\Models\Users\User;
-use ec5\Repositories\QueryBuilder\Project\SearchRepository;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Illuminate\Foundation\Testing\WithoutMiddleware;
-use Illuminate\Http\Request;
 use Tests\TestCase;
 use Mockery;
 use Config;
@@ -79,6 +67,145 @@ class ProjectDeleteControllerTest extends TestCase
             ->actingAs($user, self::DRIVER)
             ->get('myprojects/' . $project->slug . '/delete')
             ->assertStatus(200);
+    }
+
+    public function test_delete_post_request_but_missing_project_name()
+    {
+
+        //creator
+        $role = Config::get('ec5Strings.project_roles.creator');
+        $numOfEntries = mt_rand(10, 100);
+        $numOfBranchEntries = mt_rand(10, 100);
+
+        //create a fake user and save it to DB
+        $user = factory(User::class)->create();
+
+        //create mock project with that user
+        $project = factory(Project::class)->create(['created_by' => $user->id]);
+
+        //assign the user to that project with the CREATOR role
+        $projectRole = factory(ProjectRole::class)->create([
+            'user_id' => $user->id,
+            'project_id' => $project->id,
+            'role' => $role
+        ]);
+
+        //assert project is present before archiving
+        $this->assertEquals(1, Project::where('id', $project->id)->count());
+        //assert user role  is CREATOR
+        $this->assertEquals(1, ProjectRole::where('project_id', $project->id)->count());
+        $this->assertEquals(1, ProjectRole::where('user_id', $user->id)->count());
+        $this->assertEquals($role, ProjectRole::where('project_id', $project->id)->where('user_id', $user->id)->value('role'));
+        //add mock entries & branch entries to mock project
+        $entriesToArchive = factory(Entry::class, $numOfEntries)->create([
+            'project_id' => $project->id,
+            'form_ref' => $project->ref . '_' . uniqid(),
+            'user_id' => $project->created_by,
+        ]);
+        foreach ($entriesToArchive as $entry) {
+            factory(BranchEntry::class, $numOfBranchEntries)->create([
+                'project_id' => $project->id,
+                'form_ref' => $project->ref . '_' . uniqid(),
+                'user_id' => $project->created_by,
+                'owner_entry_id' => $entry->id //FK!
+            ]);
+        }
+
+        //set up project stats and project structures (to make R&A middleware work, to be removed)
+        //because they are using a repository with joins
+        factory(ProjectStat::class)->create(
+            [
+                'project_id' => $project->id,
+                'total_entries' => $numOfEntries
+            ]
+        );
+        factory(ProjectStructure::class)->create(
+            ['project_id' => $project->id]
+        );
+        factory(OAuthClientProjects::class)->create(
+            ['project_id' => $project->id]
+        );
+
+        // Act: Simulate the execution of the softDelete method
+        //$this->withoutMiddleware();
+        $response = $this->actingAs($user, self::DRIVER)
+            ->post('/myprojects/' . $project->slug . '/delete', [
+                '_token' => csrf_token()
+            ]);
+
+        //Check if the redirect is successful
+        $response->assertRedirect('/myprojects/' . $project->slug . '/delete');
+        $this->assertEquals('ec5_103', session('errors')->getBag('default')->first());
+    }
+
+    public function test_delete_post_request_but_project_name_does_not_match()
+    {
+
+        //creator
+        $role = Config::get('ec5Strings.project_roles.creator');
+        $numOfEntries = mt_rand(10, 100);
+        $numOfBranchEntries = mt_rand(10, 100);
+
+        //create a fake user and save it to DB
+        $user = factory(User::class)->create();
+
+        //create mock project with that user
+        $project = factory(Project::class)->create(['created_by' => $user->id]);
+
+        //assign the user to that project with the CREATOR role
+        $projectRole = factory(ProjectRole::class)->create([
+            'user_id' => $user->id,
+            'project_id' => $project->id,
+            'role' => $role
+        ]);
+
+        //assert project is present before archiving
+        $this->assertEquals(1, Project::where('id', $project->id)->count());
+        //assert user role  is CREATOR
+        $this->assertEquals(1, ProjectRole::where('project_id', $project->id)->count());
+        $this->assertEquals(1, ProjectRole::where('user_id', $user->id)->count());
+        $this->assertEquals($role, ProjectRole::where('project_id', $project->id)->where('user_id', $user->id)->value('role'));
+        //add mock entries & branch entries to mock project
+        $entriesToArchive = factory(Entry::class, $numOfEntries)->create([
+            'project_id' => $project->id,
+            'form_ref' => $project->ref . '_' . uniqid(),
+            'user_id' => $project->created_by,
+        ]);
+        foreach ($entriesToArchive as $entry) {
+            factory(BranchEntry::class, $numOfBranchEntries)->create([
+                'project_id' => $project->id,
+                'form_ref' => $project->ref . '_' . uniqid(),
+                'user_id' => $project->created_by,
+                'owner_entry_id' => $entry->id //FK!
+            ]);
+        }
+
+        //set up project stats and project structures (to make R&A middleware work, to be removed)
+        //because they are using a repository with joins
+        factory(ProjectStat::class)->create(
+            [
+                'project_id' => $project->id,
+                'total_entries' => $numOfEntries
+            ]
+        );
+        factory(ProjectStructure::class)->create(
+            ['project_id' => $project->id]
+        );
+        factory(OAuthClientProjects::class)->create(
+            ['project_id' => $project->id]
+        );
+
+        // Act: Simulate the execution of the softDelete method
+        //$this->withoutMiddleware();
+        $response = $this->actingAs($user, self::DRIVER)
+            ->post('/myprojects/' . $project->slug . '/delete', [
+                '_token' => csrf_token(),
+                'project-name' => $project->name . ' fail'
+            ]);
+
+        //Check if the redirect is successful
+        $response->assertRedirect('/myprojects/' . $project->slug . '/delete');
+        $this->assertEquals('ec5_21', session('errors')->getBag('default')->first());
     }
 
     public function test_soft_delete()
@@ -141,7 +268,8 @@ class ProjectDeleteControllerTest extends TestCase
         //$this->withoutMiddleware();
         $response = $this->actingAs($user, self::DRIVER)
             ->post('/myprojects/' . $project->slug . '/delete', [
-                '_token' => csrf_token()
+                '_token' => csrf_token(),
+                'project-name' => $project->name
             ]);
 
         //Check if the redirect is successful
@@ -234,7 +362,8 @@ class ProjectDeleteControllerTest extends TestCase
         // Act: Simulate the execution of the hardDelete method
         $response = $this->actingAs($user, self::DRIVER)
             ->post('/myprojects/' . $project->slug . '/delete', [
-                '_token' => csrf_token()
+                '_token' => csrf_token(),
+                'project-name' => $project->name
             ]);
 
         //Check if the redirect is successful
@@ -321,10 +450,11 @@ class ProjectDeleteControllerTest extends TestCase
         //$this->withoutMiddleware();
         $response = $this->actingAs($user, self::DRIVER)
             ->post('/myprojects/' . $project->slug . '/delete', [
-                '_token' => csrf_token()
+                '_token' => csrf_token(),
+                'project-name' => $project->name
             ]);
         //Bail out since user has no permission
-        $response->assertRedirect('myprojects/' . $project->slug);
+        $response->assertRedirect('/myprojects/' . $project->slug . '/delete');
         //Check if the project is NOT archived
         $this->assertDatabaseMissing('projects_archive', ['id' => $project->id]);
         //Check if the project is NOT deleted
@@ -395,10 +525,11 @@ class ProjectDeleteControllerTest extends TestCase
         //$this->withoutMiddleware();
         $response = $this->actingAs($user, self::DRIVER)
             ->post('/myprojects/' . $project->slug . '/delete', [
-                '_token' => csrf_token()
+                '_token' => csrf_token(),
+                'project-name' => $project->name
             ]);
         //Bail out since user has no permission
-        $response->assertRedirect('myprojects/' . $project->slug);
+        $response->assertRedirect('/myprojects/' . $project->slug . '/delete');
         //Check if the project is NOT archived
         $this->assertDatabaseMissing('projects_archive', ['id' => $project->id]);
         //Check if the project is NOT deleted
@@ -468,10 +599,11 @@ class ProjectDeleteControllerTest extends TestCase
         //$this->withoutMiddleware();
         $response = $this->actingAs($user, self::DRIVER)
             ->post('/myprojects/' . $project->slug . '/delete', [
-                '_token' => csrf_token()
+                '_token' => csrf_token(),
+                'project-name' => $project->name
             ]);
         //Bail out since user has no permission
-        $response->assertRedirect('myprojects/' . $project->slug);
+        $response->assertRedirect('/myprojects/' . $project->slug . '/delete');
         //Check if the project is NOT archived
         $this->assertDatabaseMissing('projects_archive', ['id' => $project->id]);
         //Check if the project is NOT deleted
@@ -541,10 +673,11 @@ class ProjectDeleteControllerTest extends TestCase
         //$this->withoutMiddleware();
         $response = $this->actingAs($user, self::DRIVER)
             ->post('/myprojects/' . $project->slug . '/delete', [
-                '_token' => csrf_token()
+                '_token' => csrf_token(),
+                'project-name' => $project->name
             ]);
         //Bail out since user has no permission
-        $response->assertRedirect('myprojects/' . $project->slug);
+        $response->assertRedirect('/myprojects/' . $project->slug . '/delete');
         //Check if the project is NOT archived
         $this->assertDatabaseMissing('projects_archive', ['id' => $project->id]);
         //Check if the project is NOT deleted
@@ -610,10 +743,11 @@ class ProjectDeleteControllerTest extends TestCase
         //$this->withoutMiddleware();
         $response = $this->actingAs($user, self::DRIVER)
             ->post('/myprojects/' . $project->slug . '/delete', [
-                '_token' => csrf_token()
+                '_token' => csrf_token(),
+                'project-name' => $project->name
             ]);
         //Bail out since the project is featured
-        $response->assertRedirect('myprojects/' . $project->slug);
+        $response->assertRedirect('/myprojects/' . $project->slug . '/delete');
         //Check if the project is NOT archived
         $this->assertDatabaseMissing('projects_archive', ['id' => $project->id]);
         //Check if the project is NOT deleted
