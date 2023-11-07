@@ -164,6 +164,20 @@
                             </div>
                             <div class="col-xs-5 col-sm-2 col-md-2">
                                 <div class="text-center">
+
+                                    <a
+                                            class="btn btn-action"
+
+                                            @if ($project->role === 'creator') disabled
+                                            @else
+                                                href="{{ url('myprojects') . '/' . $project->slug.'/leave' }}"
+                                            @endif
+
+                                    >
+                                        <i class="fa fa-sign-out" aria-hidden="true"></i>
+                                    </a>
+
+
                                     <a class="btn btn-action @if ($project->role === 'collector' || $project->role === 'viewer' || $project->role === 'curator' ) disabled @endif"
                                        href="{{ url('myprojects') . '/' . $project->slug }}">
 
