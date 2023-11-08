@@ -3,7 +3,13 @@
 namespace Tests\Http\Controllers\Web\Project\ProjectCreateController;
 
 use ec5\Http\Validation\Project\RuleCreateRequest;
+use ec5\Libraries\Utilities\Generators;
+use ec5\Models\Eloquent\BranchEntry;
+use ec5\Models\Eloquent\Entry;
+use ec5\Models\Eloquent\EntryArchive;
 use ec5\Models\Eloquent\Project;
+use ec5\Models\Eloquent\ProjectRole;
+use ec5\Models\Eloquent\ProjectStat;
 use ec5\Models\Eloquent\ProjectStructure;
 use ec5\Models\Users\User;
 use Illuminate\Support\Facades\Storage;
@@ -142,8 +148,48 @@ class CreateMethodTest extends TestCase
         $this->assertTrue($this->validator->hasErrors());
         $this->validator->resetErrors();
         $this->reset();
+    }
 
+    public function test_project_created_correctly()
+    {
+        //create a fake user and save it to DB
+        $user = factory(User::class)->create();
+        $projectName = Generators::projectRef();
+        $projectSlug = $projectName;
 
+        $response = $this->actingAs($user, self::DRIVER)
+            ->post('myprojects/create', [
+                '_token' => csrf_token(),
+                'name' => $projectName,
+                'form_name' => 'Form One',
+                'small_description' => 'Just a test project',
+                'access' => 'private'
+            ]);
+
+        //Check if the redirect is successful
+        $response->assertRedirect('myprojects/' . $projectSlug)
+            ->assertSessionHas('projectCreated', true)
+            ->assertSessionHas('tab', 'create');
+        //Check if the project is created
+        $this->assertDatabaseHas('projects', ['slug' => $projectSlug]);
+        $projectId = Project::where('slug', $projectSlug)->where('status', 'active')->first()->id;
+        $this->assertEquals(1, Project::where('id', $projectId)->count());
+
+        //check project stats
+        $this->assertDatabaseHas('project_stats', ['project_id' => $projectId]);
+        //check total_entries is 0
+        $this->assertEquals(1, ProjectStat::where('project_id', $projectId)->count());
+        $totalEntries = ProjectStat::where('project_id', $projectId)->first()->total_entries;
+        $this->assertEquals(0, $totalEntries);
+
+        //check roles (only creator must exist)
+        $this->assertEquals(1, ProjectRole::where('project_id', $projectId)->count());
+        $role = ProjectRole::where('project_id', $projectId)->first()->role;
+        $this->assertEquals('creator', $role);
+
+        //check there are no entries or branch entries for the new project
+        $this->assertEquals(0, Entry::where('project_id', $projectId)->count());
+        $this->assertEquals(0, BranchEntry::where('project_id', $projectId)->count());
     }
 
     public function test_project_name_should_not_have_extra_spaces()
@@ -168,9 +214,11 @@ class CreateMethodTest extends TestCase
             ->assertSessionHas('tab', 'create');
         //Check if the project is created
         $this->assertDatabaseHas('projects', ['slug' => $projectSlug]);
-        //check name is sanitised with extra spaces removed
+        $projectId = Project::where('slug', $projectSlug)->where('status', 'active')->first()->id;
+        $this->assertEquals(1, Project::where('id', $projectId)->count());
+        //check name is sanitized with extra spaces removed
         $this->assertDatabaseHas('projects', ['name' => 'Multiple Spaces between words']);
-        //check original name with extra spaces was not saved
+        //check the original name with extra spaces was not saved
         $this->assertDatabaseMissing('projects', ['name' => $projectName]);
     }
 
