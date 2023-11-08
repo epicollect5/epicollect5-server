@@ -85,7 +85,7 @@
 @stop
 
 @section('scripts')
-    <script src="{{ asset('/js/projects/projects.js').'?'.ENV('RELEASE') }}"></script>
+    <script src="{{ asset('/js/projects/projects.js').'?'.Config::get('app.release') }}"></script>
 @stop
 
 

@@ -136,5 +136,5 @@
 @stop
 
 @section('scripts')
-    <script type="text/javascript" src="{{ asset('js/users/users.js') . '?' . ENV('RELEASE') }}"></script>
+    <script type="text/javascript" src="{{ asset('js/users/users.js') . '?' . Config::get('app.release') }}"></script>
 @stop

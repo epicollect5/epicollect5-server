@@ -18,8 +18,8 @@
                  alt="Epicollect5: Mobile & Web Application for free and easy data collection.">
         </a>
         <!--googleoff: index-->
-    {{--<span class="beta-warning">BETA</span>--}}
-    <!--googleon: index-->
+        {{--<span class="beta-warning">BETA</span>--}}
+        <!--googleon: index-->
     </div>
     <h1 class="home-seo">Epicollect5</h1>
 
@@ -68,7 +68,7 @@
 
                 {{--Find project--}}
                 {{--Show only on production server--}}
-                @if(env('APP_ENV') == 'production')
+                @if(Config::get('app.env') == 'production')
                     <li @if (Request::is('projects/*') || Request::is('projects')) class="active" @endif><a
                                 href="{{ url('/projects/') }}">
                             <i class="material-icons">&#xE880;</i>&nbsp;{{ trans('site.find_project') }}</a>
@@ -93,7 +93,8 @@
                                         class="material-icons">
                                     &#xE31E;</i>&nbsp;{{ trans('site.admin') }}</a></li>
                     @endif
-                    <li><a href="{{ url('logout') }}"><i class="material-icons">&#xE879;</i>&nbsp;{{ trans('site.logout') }}
+                    <li><a href="{{ url('logout') }}"><i
+                                    class="material-icons">&#xE879;</i>&nbsp;{{ trans('site.logout') }}
                         </a></li>
 
                 @else

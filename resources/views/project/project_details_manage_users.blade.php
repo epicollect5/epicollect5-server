@@ -13,14 +13,14 @@
 
                 <div class="btn-group manage-user-more" role="group">
                     <button type="button" class="btn btn-action btn-sm dropdown-toggle" data-toggle="dropdown"
-                        aria-haspopup="true" aria-expanded="false">
+                            aria-haspopup="true" aria-expanded="false">
                         <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-right">
                         <li class="dropdown-header text-center text-warning">Currently in beta.</li>
                         <li class="manage-user-more__import-users">
                             <input type="file" class="manage-user-more__import-users__input-file"
-                                style="display:none" accept=".csv">
+                                   style="display:none" accept=".csv">
                             <a href="#">Import users csv</a>
                         </li>
                         <li class="manage-user-more__export-users">
@@ -43,25 +43,25 @@
             </li>
             <li role="presentation">
                 <a class="manager-tab-btn" href="#manager" aria-controls="manager" role="tab"
-                    data-toggle="tab">{{ trans('site.managers') }}
+                   data-toggle="tab">{{ trans('site.managers') }}
                     <span class="badge count-manager">{{ $countByRole['manager']->total ?? 0 }}
                 </a>
             </li>
             <li role="presentation">
                 <a class="curator-tab-btn" href="#curator" aria-controls="curator" role="tab"
-                    data-toggle="tab">{{ trans('site.curators') }}
+                   data-toggle="tab">{{ trans('site.curators') }}
                     <span class="badge count-curator">{{ $countByRole['curator']->total ?? 0 }}
                 </a>
             </li>
             <li role="presentation">
                 <a class="collector-tab-btn" href="#collector" aria-controls="collector" role="tab"
-                    data-toggle="tab">{{ trans('site.collectors') }}
+                   data-toggle="tab">{{ trans('site.collectors') }}
                     <span class="badge count-collector">{{ $countByRole['collector']->total ?? 0 }}
                 </a>
             </li>
             <li role="presentation">
                 <a class="viewer-tab-btn" href="#viewer" aria-controls="viewer" role="tab"
-                    data-toggle="tab">{{ trans('site.viewers') }}
+                   data-toggle="tab">{{ trans('site.viewers') }}
                     <span class="badge count-viewer">{{ $countByRole['viewer']->total ?? 0 }}
                 </a>
             </li>
@@ -74,8 +74,8 @@
             @foreach ($users as $key => $projectUsers)
 
                 <div role="tabpanel"
-                    class="tab-pane @if ($key == 'creator') active @endif manage-project-users"
-                    id="{{ $key }}" data-page-name="page-{{ $key }}">
+                     class="tab-pane @if ($key == 'creator') active @endif manage-project-users"
+                     id="{{ $key }}" data-page-name="page-{{ $key }}">
                     <div class="row flexbox">
 
                         {{-- Project Users --}}
@@ -88,30 +88,32 @@
 
                                             <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
                                                 <input type="text" name="search"
-                                                    class="form-control manage-project-users__user-search"
-                                                    placeholder="Search for {{ ucfirst($key) }}">
+                                                       class="form-control manage-project-users__user-search"
+                                                       placeholder="Search for {{ ucfirst($key) }}">
                                             </div>
                                             <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
 
                                                 <div class="btn-group manage-project-users_by-role pull-right"
-                                                    role="group">
+                                                     role="group">
                                                     <button type="button"
-                                                        class="btn btn-sm btn-default manage-project-users__reset">Clear
+                                                            class="btn btn-sm btn-default manage-project-users__reset">
+                                                        Clear
                                                         Search
                                                     </button>
                                                     @if (!($key === 'manager' && $requestedProjectRole->getRole() === 'manager'))
                                                         <div class="btn-group" role="group">
                                                             <button type="button"
-                                                                class="btn btn-sm btn-default dropdown-toggle"
-                                                                data-toggle="dropdown" aria-haspopup="true"
-                                                                aria-expanded="false">
+                                                                    class="btn btn-sm btn-default dropdown-toggle"
+                                                                    data-toggle="dropdown" aria-haspopup="true"
+                                                                    aria-expanded="false">
                                                                 <span class="caret"></span>
                                                             </button>
                                                             @if ($requestedProjectRole->canRemoveUsers())
                                                                 <ul class="dropdown-menu dropdown-menu-right">
                                                                     <li
-                                                                        class="dropdown-header text-center text-warning">
-                                                                        Currently in beta.</li>
+                                                                            class="dropdown-header text-center text-warning">
+                                                                        Currently in beta.
+                                                                    </li>
                                                                     <li class="manage-project-users__delete-by-role"
                                                                         data-role="{{ $key }}"
                                                                         data-project-slug="{{ $project->slug }}">
@@ -148,11 +150,11 @@
 
 <!-- Modal 1 -->
 <div class="modal fade" id="ec5ModalExistingUser" tabindex="-1" role="dialog" aria-labelledby="ec5ModalLabel"
-    aria-hidden="true">
+     aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <form method="POST" action="{{ url('myprojects/' . $project->slug . '/add-role') }}"
-                accept-charset="UTF-8" class="manage-project-users__existing-user-add-form">
+                  accept-charset="UTF-8" class="manage-project-users__existing-user-add-form">
 
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -164,8 +166,8 @@
                     <div class="form-group">
                         <label for="email">{{ trans('site.email') }}</label>
                         <input type="email" name="email"
-                            class="form-control manage-project-users__user-add-form__email"
-                            placeholder="{{ trans('site.email_address') }}" required>
+                               class="form-control manage-project-users__user-add-form__email"
+                               placeholder="{{ trans('site.email_address') }}" required>
                     </div>
 
                     <div class="form-group">
@@ -188,7 +190,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary"
-                        data-dismiss="modal">{{ trans('site.close') }}</button>
+                            data-dismiss="modal">{{ trans('site.close') }}</button>
                     <input type="submit" class="btn btn-primary" value="{{ trans('site.add_user') }}">
                 </div>
             </form>
@@ -197,12 +199,12 @@
 </div>
 
 <div class="modal fade" id="ec5ModalImportUsers" tabindex="-1" role="dialog" aria-labelledby="ec5ModalLabel"
-    aria-hidden="true" data-post-url="{{ url('api/internal/project-users/' . $project->slug . '/add-users-bulk') }}">
+     aria-hidden="true" data-post-url="{{ url('api/internal/project-users/' . $project->slug . '/add-users-bulk') }}">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-                        aria-hidden="true">&times;</span></button>
+                            aria-hidden="true">&times;</span></button>
                 <h4 class="modal-title">Import users by email</h4>
             </div>
             <div class="modal-body">
@@ -212,7 +214,7 @@
                         <label>Select email column</label>
                         <div class="users-column-picker btn-group">
                             <button type="button" class="btn btn-default btn-sm dropdown-toggle"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 Pick column <span class="caret"></span>
                             </button>
                             <ul class="dropdown-menu">
@@ -220,7 +222,7 @@
                         </div>
                     </div>
 
-                    <hr />
+                    <hr/>
 
                     <div class="form-group users__first-row-headers">
                         <div class="checkbox">
@@ -230,7 +232,7 @@
                         </div>
                     </div>
 
-                    <hr />
+                    <hr/>
 
                     <div class="form-group users__pick-role">
                         <p><strong>Select user role</strong></p>
@@ -252,7 +254,7 @@
                         <div class="radio">
                             <label>
                                 <input type="radio" name="userRoleOptions" id="collector" value="collector"
-                                    checked>
+                                       checked>
                                 Collector
                             </label>
                         </div>
@@ -268,9 +270,11 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default btn-default pull-left"
-                    data-dismiss="modal">Dismiss</button>
+                        data-dismiss="modal">Dismiss
+                </button>
                 <button type="button" class="btn btn-default btn-action users-perform-import"
-                    disabled>Import</button>
+                        disabled>Import
+                </button>
             </div>
         </div>
     </div>
@@ -278,12 +282,12 @@
 
 {{-- Switch user modal --}}
 <div class="modal fade" id="ec5SwitchUserRole" tabindex="-1" role="dialog" aria-labelledby="ec5ModalLabel"
-    aria-hidden="true">
+     aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-                        aria-hidden="true">&times;</span></button>
+                            aria-hidden="true">&times;</span></button>
                 <h4 class="modal-title">Switch user role</h4>
             </div>
             <div class="modal-body">
@@ -294,7 +298,7 @@
                         </p>
                         <p class="user-email"><strong></strong></p>
                     </div>
-                    <hr />
+                    <hr/>
                     <div class="form-group users__pick-role">
                         <p><strong>Select new role</strong></p>
                         @if ($requestedProjectRole->getRole() === 'creator')
@@ -328,14 +332,17 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default btn-default pull-left"
-                    data-dismiss="modal">Dismiss</button>
+                        data-dismiss="modal">Dismiss
+                </button>
                 <button type="button" class="btn btn-default btn-action switch-role-confirm"
-                    disabled>Confirm</button>
+                        disabled>Confirm
+                </button>
             </div>
         </div>
     </div>
 </div>
 
 @section('scripts')
-    <script type="text/javascript" src="{{ asset('js/project/project.js') . '?' . ENV('RELEASE') }}"></script>
+    <script type="text/javascript"
+            src="{{ asset('js/project/project.js') . '?' . Config::get('app.release') }}"></script>
 @stop

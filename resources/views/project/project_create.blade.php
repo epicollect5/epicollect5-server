@@ -34,11 +34,13 @@
             <div class="col-sm-6 col-md-6 col-md-offset-3 col-sm-offset-3">
                 {{-- Nav tabs --}}
                 <ul class="nav nav-tabs">
-                    <li role="presentation" class="{{ ($tab === 'create') ? 'active' : '' }}" aria-controls="new-project">
+                    <li role="presentation" class="{{ ($tab === 'create') ? 'active' : '' }}"
+                        aria-controls="new-project">
                         <a href="#new-project" role="tab" data-toggle="tab">{{trans('site.new_project')}}
                         </a>
                     </li>
-                    <li role="presentation" class="{{ ($tab === 'import') ? 'active' : '' }}" aria-controls="import-project">
+                    <li role="presentation" class="{{ ($tab === 'import') ? 'active' : '' }}"
+                        aria-controls="import-project">
                         <a href="#import-project" role="tab" data-toggle="tab">{{trans('site.import_project')}}
                         </a>
                     </li>
@@ -61,6 +63,6 @@
 @stop
 
 @section('scripts')
-    <script type="text/javascript" src="{{ asset('js/project/project.js').'?'.ENV('RELEASE') }}"></script>
+    <script type="text/javascript" src="{{ asset('js/project/project.js').'?'.Config::get('app.release') }}"></script>
 @stop
 

@@ -264,5 +264,7 @@ return [
     'reserved_words' => [
         'ec5',
         'EC5'
-    ]
+    ],
+    'release' => env('RELEASE'),
+    'production_server_version' => env('PRODUCTION_SERVER_VERSION')
 ];

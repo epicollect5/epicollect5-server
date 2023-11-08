@@ -54,5 +54,6 @@
 @stop
 
 @section('scripts')
-    <script type="text/javascript" src="{{ asset('js/project/project.js') . '?' . ENV('RELEASE') }}"></script>
+    <script type="text/javascript"
+            src="{{ asset('js/project/project.js') . '?' . Config::get('app.release') }}"></script>
 @stop

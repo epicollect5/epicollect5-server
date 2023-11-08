@@ -6,60 +6,60 @@
 
 {{--Add og: metatag on Epicollect5 home page--}}
 @if(Route::currentRouteName() === 'home')
-<meta property="og:title" content="@yield('title')" />
-<meta property="og:description" content="@yield('description')" />
-<meta property="og:type" content="website" />
-<meta property="og:image" content="{{asset('images/epicollect-icon-og-256x256@2x.png')}}" />
-<meta property="og:image:width" content="128" />
-<meta property="og:image:height" content="128" />
+    <meta property="og:title" content="@yield('title')"/>
+    <meta property="og:description" content="@yield('description')"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:image" content="{{asset('images/epicollect-icon-og-256x256@2x.png')}}"/>
+    <meta property="og:image:width" content="128"/>
+    <meta property="og:image:height" content="128"/>
 
-{{--add twitter card metadata--}}
-<meta name="twitter:card" content="summary" />
-<meta name="twitter:site" content="@EpiCollect" />
-<meta name="twitter:title" content="Epicollect5" />
-<meta name="twitter:description" content="@yield('title')" />
-<meta name="twitter:image" content="{{asset('images/epicollect-icon-og-256x256@2x.png')}}" />
+    {{--add twitter card metadata--}}
+    <meta name="twitter:card" content="summary"/>
+    <meta name="twitter:site" content="@EpiCollect"/>
+    <meta name="twitter:title" content="Epicollect5"/>
+    <meta name="twitter:description" content="@yield('title')"/>
+    <meta name="twitter:image" content="{{asset('images/epicollect-icon-og-256x256@2x.png')}}"/>
 @endif
 
 @if(Route::currentRouteName() === 'login')
-<meta name="robots" content="noindex">
+    <meta name="robots" content="noindex">
 @endif
 
 @if(Route::currentRouteName() === 'forgot-show')
-<meta name="robots" content="noindex">
+    <meta name="robots" content="noindex">
 @endif
 
 {{--Add og: metatag on single project home page--}}
 @if(isset($project))
-@if(Route::currentRouteName() === 'project-home')
-<meta property="og:title" content="{{$project->name}}" />
-<meta property="og:description" content="{{$project->small_description}}" />
-<meta property="og:type" content="article" />
-<meta property="og:image" content="@if($project->logo_url == '') {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
+    @if(Route::currentRouteName() === 'project-home')
+        <meta property="og:title" content="{{$project->name}}"/>
+        <meta property="og:description" content="{{$project->small_description}}"/>
+        <meta property="og:type" content="article"/>
+        <meta property="og:image" content="@if($project->logo_url == '') {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
               @else
               {{ url('/api/internal/media/'.$project->slug . '?type=photo&name=logo.jpg&format=project_thumb') }}
-              @endif" />
-<meta property="og:image:width" content="128" />
-<meta property="og:image:height" content="128" />
+              @endif"/>
+        <meta property="og:image:width" content="128"/>
+        <meta property="og:image:height" content="128"/>
 
-{{--add twitter card metadata--}}
-<meta name="twitter:card" content="summary" />
-<meta name="twitter:site" content="@EpiCollect" />
-<meta name="twitter:title" content="{{$project->name}}" />
-<meta name="twitter:description" content="{{$project->small_description}}" />
-<meta name="twitter:image" content="@if($project->logo_url == '') {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
+        {{--add twitter card metadata--}}
+        <meta name="twitter:card" content="summary"/>
+        <meta name="twitter:site" content="@EpiCollect"/>
+        <meta name="twitter:title" content="{{$project->name}}"/>
+        <meta name="twitter:description" content="{{$project->small_description}}"/>
+        <meta name="twitter:image" content="@if($project->logo_url == '') {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
               @else
               {{ url('/api/internal/media/'.$project->slug . '?type=photo&name=logo.jpg&format=project_thumb') }}
-              @endif" />
+              @endif"/>
 
-{{-- Share Links js--}}
-<script type='text/javascript'
-    src='//platform-api.sharethis.com/js/sharethis.js#property=58d59cc8a1c5fb00126d1e14&product=inline-share-buttons'
-    async='async'>
+        {{-- Share Links js--}}
+        <script type='text/javascript'
+                src='//platform-api.sharethis.com/js/sharethis.js#property=58d59cc8a1c5fb00126d1e14&product=inline-share-buttons'
+                async='async'>
 
-    </script>
+        </script>
 
-@endif
+    @endif
 @endif
 
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -71,10 +71,10 @@
 
 <meta name="description" content="@yield('description')">
 <link rel="stylesheet" type="text/css" href="{{ asset('css/vendor-site.css') }}">
-<link rel="stylesheet" type="text/css" href="{{ asset('css/site.css').'?'.ENV('RELEASE') }}">
+<link rel="stylesheet" type="text/css" href="{{ asset('css/site.css').'?'.Config::get('app.release') }}">
 
-<script src="{{asset('/js/vendor-site.js').'?'.ENV('RELEASE') }}"></script>
-<script src="{{asset('/js/site.js').'?'.ENV('RELEASE') }}"></script>
+<script src="{{asset('/js/vendor-site.js').'?'.Config::get('app.release') }}"></script>
+<script src="{{asset('/js/site.js').'?'.Config::get('app.release') }}"></script>
 <script>
     window.EC5 = window.EC5 || {};
     window.EC5.SITE_URL = '{{url('')}}';
@@ -84,44 +84,44 @@
 
 <!-- JSON-LD markup generated by Google Structured Data Markup Helper. -->
 <script type="application/ld+json">
-  {
-  "@context" : "http://schema.org",
-  "@type" : "MobileApplication",
-  "name" : "Epicollect5: Mobile & Web Application for free and easy data collection.",
-  "image" : "https://lh3.googleusercontent.com/-L5eHfwSk22o/AAAAAAAAAAI/AAAAAAAAABA/yFVSoZ9TcDo/photo.jpg?sz=298",
-  "url" : "http://five.epicollect.net/",
-  "author" : {
-    "@type" : "Organization",
-    "name" : "Oxford University Big Data Institute"
-  },
-  "datePublished" : "2017-01-01",
-  "applicationCategory" : "Mobile & Web Application for free and easy data collection",
-  "operatingSystem": "Android, iOS"
-}
+    {
+    "@context" : "http://schema.org",
+    "@type" : "MobileApplication",
+    "name" : "Epicollect5: Mobile & Web Application for free and easy data collection.",
+    "image" : "https://lh3.googleusercontent.com/-L5eHfwSk22o/AAAAAAAAAAI/AAAAAAAAABA/yFVSoZ9TcDo/photo.jpg?sz=298",
+    "url" : "http://five.epicollect.net/",
+    "author" : {
+      "@type" : "Organization",
+      "name" : "Oxford University Big Data Institute"
+    },
+    "datePublished" : "2017-01-01",
+    "applicationCategory" : "Mobile & Web Application for free and easy data collection",
+    "operatingSystem": "Android, iOS"
+  }
 </script>
 
 @if(Route::currentRouteName() === 'login' OR Route::currentRouteName() === 'profile')
 
-<meta name="appleid-signin-scope" content="name email">
-@if(Route::currentRouteName() === 'login')
-<meta name="appleid-signin-client-id" content="{{env('APPLE_LOGIN_CLIENT_ID')}}">
-<meta name="appleid-signin-redirect-uri" content="{{env('APPLE_LOGIN_REDIRECT_URI')}}">
-@endif
-@if(Route::currentRouteName() === 'profile')
-<meta name="appleid-signin-client-id" content="{{env('APPLE_CONNECT_CLIENT_ID')}}">
-<meta name="appleid-signin-redirect-uri" content="{{env('APPLE_CONNECT_REDIRECT_URI')}}">
-@endif
-<meta name="appleid-signin-nonce" content="{{ csrf_token() }}">
+    <meta name="appleid-signin-scope" content="name email">
+    @if(Route::currentRouteName() === 'login')
+        <meta name="appleid-signin-client-id" content="{{Config::get('auth.apple.login_client_id')}}">
+        <meta name="appleid-signin-redirect-uri" content="{{Config::get('auth.apple.login_redirect_uri')}}">
+    @endif
+    @if(Route::currentRouteName() === 'profile')
+        <meta name="appleid-signin-client-id" content="{{Config::get('auth.apple.connect_client_id')}}">
+        <meta name="appleid-signin-redirect-uri" content="{{Config::get('auth.apple.connect_redirect_uri')}}">
+    @endif
+    <meta name="appleid-signin-nonce" content="{{ csrf_token() }}">
 @endif
 
 
 <!-- End Cookie Consent plugin -->
 
-{{--Add GA only for production site--}}
-@if(env('APP_ENV') == 'production')
-<script defer data-domain="five.epicollect.net" src="https://analytics.cgps.dev/js/plausible.js"></script>
+{{--Add analytics only for production site--}}
+@if(Config::get('app.env') == 'production')
+    <script defer data-domain="five.epicollect.net" src="https://analytics.cgps.dev/js/plausible.js"></script>
 @endif
 
 {{--Apple Sign in--}}
 <script type="text/javascript"
-    src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js"></script>
+        src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js"></script>
