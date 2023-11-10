@@ -46,9 +46,17 @@
   .project-home__small-description {
     padding-top: 0;
     h2 {
-      word-wrap: break-word;
+      word-break: break-all;
+      overflow-wrap: break-word;
     }
   }
+  .project-home__project-description {
+    .well {
+      word-break: break-all;
+      overflow-wrap: break-word;
+    }
+  }
+
   .project-home__action-btns {
     margin-top: 15px;
     .btn {

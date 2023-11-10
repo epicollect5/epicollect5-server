@@ -30,6 +30,12 @@
     }
   }
 
+  .details-view__project-details__small-description,
+  .details-view__project-details__description {
+    word-break: break-all;
+    overflow-wrap: break-word;
+  }
+
   .project-description {
     max-height: 200px;
     overflow: auto;

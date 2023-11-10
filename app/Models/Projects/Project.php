@@ -46,7 +46,7 @@ class Project
     protected $id = null;
     protected $structure_id = null;
     // Null timestamps
-    protected $created_at = null;
+    public $created_at = null;
     protected $updated_at = null;
     // Own public properties, reflecting those in 'projects' db table which are mutable
     public $name = '';
@@ -72,10 +72,11 @@ class Project
      */
     public function __construct(
         ProjectDefinition $projectDefinition,
-        ProjectExtra $projectExtra,
-        ProjectMapping $projectMapping,
-        ProjectStats $projectStats
-    ) {
+        ProjectExtra      $projectExtra,
+        ProjectMapping    $projectMapping,
+        ProjectStats      $projectStats
+    )
+    {
         $this->projectDefinition = $projectDefinition;
         $this->projectExtra = $projectExtra;
         $this->projectMapping = $projectMapping;
@@ -180,7 +181,8 @@ class Project
         $createdBy,
         $projectDefinitionData,
         RuleProjectDefinition $projectDefinitionValidator
-    ) {
+    )
+    {
         // Take new name, slug, default logo_url
         $projectDefinitionData['project']['name'] = $projectName;
         $projectDefinitionData['project']['slug'] = Str::slug($projectName, '-');
@@ -403,25 +405,6 @@ class Project
         return $this->structure_id;
     }
 
-    /**
-     * Return Carbon instance of created_at date
-     * Format optional
-     *
-     * @param string $format
-     * @return Carbon
-     */
-    public function createdAt($format = '')
-    {
-        $date = Carbon::createFromFormat('Y-m-d H:i:s', $this->created_at);
-        if (!empty($format)) {
-            return $date->format($format);
-        }
-        return $date;
-    }
-
-    /**
-     * @return
-     */
     public function getUpdatedAt()
     {
         return $this->updated_at;

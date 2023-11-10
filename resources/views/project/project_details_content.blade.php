@@ -35,19 +35,30 @@
                 </div>
 
                 <div class="details-view__project-details">
-                    <h5 class="details-view__project-details__small-description"><i class="material-icons">
-                            &#xE0C9;</i>&nbsp;{{ $project->small_description }}
+                    <h5 class="details-view__project-details__small-description">
+                        <i class="material-icons">
+                            &#xE0C9;
+                        </i>&nbsp;
+                        {{ $project->small_description }}
                     </h5>
-                    <h5 class="details-view__project-details__created-at"><i
-                                class="material-icons">&#xE878;</i>&nbsp;Created
-                        on {{ $project->createdAt('l d M Y, H:i') }}</h5>
+                    <h5 class="details-view__project-details__created-at">
+                        <i class="material-icons">
+                            &#xE878;
+                        </i>&nbsp;Created on
+                        {{ \Carbon\Carbon::parse($project->created_at)->setTimezone('UTC')->format('l d M Y, H:i') }}
+                        UTC
+                    </h5>
                 </div>
 
                 <div class="clearfix"></div>
                 @if ($project->description === '')
-                    <p class="text-center">{{ trans('site.no_desc_yet') }}</p>
+                    <p class="text-center">
+                        {{ trans('site.no_desc_yet') }}
+                    </p>
                 @else
-                    <p>{!! nl2br(e($project->description)) !!}</p>
+                    <p class="details-view__project-details__description">
+                        {!! nl2br(e($project->description)) !!}
+                    </p>
                 @endif
             </div>
         </div>
