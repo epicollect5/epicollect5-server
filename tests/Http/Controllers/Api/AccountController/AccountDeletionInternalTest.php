@@ -112,6 +112,12 @@ class AccountDeletionInternalTest extends TestCase
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
 
+        //get existing counts
+        $projectsCount = Project::count();
+        $entriesCount = Entry::count();
+        $branchEntriesCount = BranchEntry::count();
+        $projectStatsCount = ProjectStat::count();
+
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
 
@@ -186,7 +192,7 @@ class AccountDeletionInternalTest extends TestCase
 
         //assert user was removed
         $this->assertEquals(0, User::where('email', $user->email)->count());
-        //assert project was archived
+        //assert the project was archived
         $this->assertEquals(1, Project::where('id', $project->id)
             ->where('status', 'archived')
             ->count());
@@ -220,19 +226,30 @@ class AccountDeletionInternalTest extends TestCase
         Storage::disk('entry_original')->deleteDirectory($project->ref);
         Storage::disk('audio')->deleteDirectory($project->ref);
         Storage::disk('video')->deleteDirectory($project->ref);
+
+        //check counts
+        $this->assertEquals($projectsCount + 1, Project::count());
+        $this->assertEquals($entriesCount + $numOfEntries, Entry::count());
+        $this->assertEquals($branchEntriesCount + ($numOfEntries * $numOfBranchEntries), BranchEntry::count());
+        $this->assertEquals($projectStatsCount + 1, ProjectStat::count());
+
     }
 
     public function test_account_deletion_performed_with_role_creator_but_no_entries()
     {
         //creator
         $role = Config::get('ec5Strings.project_roles.creator');
-
+        //get existing counts
+        $projectsCount = Project::count();
+        $entriesCount = Entry::count();
+        $branchEntriesCount = BranchEntry::count();
+        $projectStatsCount = ProjectStat::count();
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
-
         // 2- create mock project with that user
         $project = factory(Project::class)->create(['created_by' => $user->id]);
+
 
         //assign the user to that project with the CREATOR role
         $projectRole = factory(ProjectRole::class)->create([
@@ -305,8 +322,13 @@ class AccountDeletionInternalTest extends TestCase
         Storage::disk('entry_original')->deleteDirectory($project->ref);
         Storage::disk('audio')->deleteDirectory($project->ref);
         Storage::disk('video')->deleteDirectory($project->ref);
-    }
 
+        //check counts
+        $this->assertEquals($projectsCount, Project::count());
+        $this->assertEquals($entriesCount, Entry::count());
+        $this->assertEquals($branchEntriesCount, BranchEntry::count());
+        $this->assertEquals($projectStatsCount, ProjectStat::count());
+    }
 
     public function test_account_deletion_performed_with_role_manager()
     {
@@ -314,6 +336,12 @@ class AccountDeletionInternalTest extends TestCase
         $role = Config::get('ec5Strings.project_roles.manager');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
+
+        //get existing counts
+        $projectsCount = Project::count();
+        $entriesCount = Entry::count();
+        $branchEntriesCount = BranchEntry::count();
+        $projectStatsCount = ProjectStat::count();
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
@@ -423,6 +451,11 @@ class AccountDeletionInternalTest extends TestCase
         Storage::disk('entry_original')->deleteDirectory($project->ref);
         Storage::disk('audio')->deleteDirectory($project->ref);
         Storage::disk('video')->deleteDirectory($project->ref);
+
+        $this->assertEquals($projectsCount + 1, Project::count());
+        $this->assertEquals($entriesCount + $numOfEntries, Entry::count());
+        $this->assertEquals($branchEntriesCount + ($numOfEntries * $numOfBranchEntries), BranchEntry::count());
+        $this->assertEquals($projectStatsCount, ProjectStat::count());
     }
 
     public function test_account_deletion_performed_with_role_curator()
@@ -431,6 +464,12 @@ class AccountDeletionInternalTest extends TestCase
         $role = Config::get('ec5Strings.project_roles.curator');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
+
+        //get existing counts
+        $projectsCount = Project::count();
+        $entriesCount = Entry::count();
+        $branchEntriesCount = BranchEntry::count();
+        $projectStatsCount = ProjectStat::count();
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
@@ -541,6 +580,11 @@ class AccountDeletionInternalTest extends TestCase
         Storage::disk('entry_original')->deleteDirectory($project->ref);
         Storage::disk('audio')->deleteDirectory($project->ref);
         Storage::disk('video')->deleteDirectory($project->ref);
+
+        $this->assertEquals($projectsCount + 1, Project::count());
+        $this->assertEquals($entriesCount + $numOfEntries, Entry::count());
+        $this->assertEquals($branchEntriesCount + ($numOfEntries * $numOfBranchEntries), BranchEntry::count());
+        $this->assertEquals($projectStatsCount, ProjectStat::count());
     }
 
     public function test_account_deletion_performed_with_role_collector()
@@ -550,6 +594,13 @@ class AccountDeletionInternalTest extends TestCase
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
 
+        //get existing counts
+        $projectsCount = Project::count();
+        $entriesCount = Entry::count();
+        $branchEntriesCount = BranchEntry::count();
+        $projectStatsCount = ProjectStat::count();
+
+
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
         $user->state = 'active';
@@ -659,6 +710,12 @@ class AccountDeletionInternalTest extends TestCase
         Storage::disk('entry_original')->deleteDirectory($project->ref);
         Storage::disk('audio')->deleteDirectory($project->ref);
         Storage::disk('video')->deleteDirectory($project->ref);
+
+        //check counts
+        $this->assertEquals($projectsCount + 1, Project::count());
+        $this->assertEquals($entriesCount + $numOfEntries, Entry::count());
+        $this->assertEquals($branchEntriesCount + ($numOfEntries * $numOfBranchEntries), BranchEntry::count());
+        $this->assertEquals($projectStatsCount, ProjectStat::count());
     }
 
     public function test_account_deletion_performed_with_role_viewer()
@@ -668,6 +725,12 @@ class AccountDeletionInternalTest extends TestCase
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
 
+        //get existing counts
+        $projectsCount = Project::count();
+        $entriesCount = Entry::count();
+        $branchEntriesCount = BranchEntry::count();
+        $projectStatsCount = ProjectStat::count();
+
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
         $user->state = 'active';
@@ -778,6 +841,13 @@ class AccountDeletionInternalTest extends TestCase
         Storage::disk('entry_original')->deleteDirectory($project->ref);
         Storage::disk('audio')->deleteDirectory($project->ref);
         Storage::disk('video')->deleteDirectory($project->ref);
+
+        //check counts
+        $this->assertEquals($projectsCount + 1, Project::count());
+        $this->assertEquals($entriesCount + $numOfEntries, Entry::count());
+        $this->assertEquals($branchEntriesCount + ($numOfEntries * $numOfBranchEntries), BranchEntry::count());
+        $this->assertEquals($projectStatsCount, ProjectStat::count());
+
     }
 
     public function test_account_deletion_performed_with_mixed_roles_and_entries()
@@ -794,6 +864,12 @@ class AccountDeletionInternalTest extends TestCase
         $projectRefs = [];
         $numOfEntries = mt_rand(1, 10);
         $numOfBranchEntries = mt_rand(1, 10);
+
+        //get existing counts
+        $projectsCount = Project::count();
+        $entriesCount = Entry::count();
+        $branchEntriesCount = BranchEntry::count();
+        $projectStatsCount = ProjectStat::count();
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
@@ -831,6 +907,11 @@ class AccountDeletionInternalTest extends TestCase
         //create a fake project per each role and assign it to the user
         foreach ($otherRoles as $otherRole) {
             $project = factory(Project::class)->create(['created_by' => $anotherUser->id]);
+            //add fake stats
+            factory(ProjectStat::class)->create([
+                'project_id' => $project->id,
+                'total_entries' => 0
+            ]);
             $projectRefs[] = $project->ref;
             $projectsWithOtherRoles[] = [
                 'id' => $project->id,
@@ -962,7 +1043,7 @@ class AccountDeletionInternalTest extends TestCase
         $this->assertEquals(1, Project::where('id', $project->id)->count());
         $this->assertEquals(1, ProjectRole::where('project_id', $projectRoleCreatorOne->id)->count());
         $this->assertEquals(1, ProjectRole::where('project_id', $projectRoleCreatorTwo->id)->count());
-        //user should be a member of 6 project, 2 with role creator and 4 with the other roles
+        //user should be a member of 6 projects, 2 with role creator and 4 with the other roles
         $this->assertEquals(6, ProjectRole::where('user_id', $user->id)->count());
         $this->assertEquals($role, ProjectRole::where('project_id', $projectRoleCreatorOne->id)->where('user_id', $user->id)->value('role'));
         $this->assertEquals($role, ProjectRole::where('project_id', $projectRoleCreatorTwo->id)->where('user_id', $user->id)->value('role'));
@@ -1066,7 +1147,7 @@ class AccountDeletionInternalTest extends TestCase
                 ->where('status', 'archived')
                 ->count());
 
-            //assert entries by other roles are not touched, we just anonymize entries
+            //assert entries by other roles are not touched; we just anonymize entries
             if ($otherRole !== 'viewer') {
                 $this->assertEquals(2 * $numOfEntries, Entry::where('project_id', $projectId)->count());
                 $this->assertEquals(2 * ($numOfBranchEntries * $numOfEntries), BranchEntry::where('project_id', $projectId)->count());
@@ -1115,6 +1196,13 @@ class AccountDeletionInternalTest extends TestCase
             Storage::disk('audio')->deleteDirectory($projectRef);
             Storage::disk('video')->deleteDirectory($projectRef);
         }
+
+        //check counts
+        $this->assertEquals($projectsCount + 6, Project::count());
+        $this->assertEquals($entriesCount + (6 * $numOfEntries) + (3 * $numOfEntries), Entry::count());
+        $this->assertEquals($branchEntriesCount + (6 * $numOfEntries * $numOfBranchEntries) + (3 * $numOfEntries * $numOfBranchEntries), BranchEntry::count());
+        $this->assertEquals($projectStatsCount + 6, ProjectStat::count());
+
     }
 
     public function test_account_deletion_performed_with_mixed_roles_but_no_entries()
@@ -1128,7 +1216,12 @@ class AccountDeletionInternalTest extends TestCase
             Config::get('ec5Strings.project_roles.viewer')
         ];
         $projectsWithOtherRoles = [];
-        $projectRefs = [];
+
+        //get existing counts
+        $projectsCount = Project::count();
+        $entriesCount = Entry::count();
+        $branchEntriesCount = BranchEntry::count();
+        $projectStatsCount = ProjectStat::count();
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
@@ -1137,9 +1230,7 @@ class AccountDeletionInternalTest extends TestCase
 
         // 2- create a couple of projects with that user
         $projectRoleCreatorOne = factory(Project::class)->create(['created_by' => $user->id]);
-        $projectRefs[] = $projectRoleCreatorOne->ref;
         $projectRoleCreatorTwo = factory(Project::class)->create(['created_by' => $user->id]);
-        $projectRefs[] = $projectRoleCreatorTwo->ref;
         //assign the user to those projects with the CREATOR role
         factory(ProjectRole::class)->create([
             'user_id' => $user->id,
@@ -1166,7 +1257,6 @@ class AccountDeletionInternalTest extends TestCase
         //create a fake project per each role and assign it to the user
         foreach ($otherRoles as $otherRole) {
             $project = factory(Project::class)->create(['created_by' => $anotherUser->id]);
-            $projectRefs[] = $project->ref;
             $projectsWithOtherRoles[] = [
                 'id' => $project->id,
                 'role' => $otherRole
@@ -1183,7 +1273,7 @@ class AccountDeletionInternalTest extends TestCase
                 'role' => $otherRole
             ]);
 
-            //assert project is present
+            //assert the project is present
             $this->assertEquals(1, Project::where('id', $project->id)->count());
             //assert user roles for that project
             $this->assertEquals(2, ProjectRole::where('project_id', $project->id)->count());
@@ -1242,5 +1332,11 @@ class AccountDeletionInternalTest extends TestCase
         Mail::assertSent(UserAccountDeletionConfirmation::class, function ($mail) use ($user) {
             return $mail->hasTo($user->email);
         });
+
+        //check counts
+        $this->assertEquals($projectsCount + 4, Project::count());
+        $this->assertEquals($entriesCount, Entry::count());
+        $this->assertEquals($branchEntriesCount, BranchEntry::count());
+        $this->assertEquals($projectStatsCount, ProjectStat::count());
     }
 }

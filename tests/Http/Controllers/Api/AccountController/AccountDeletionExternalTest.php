@@ -16,6 +16,7 @@ use ec5\Models\Eloquent\ProjectRole;
 use ec5\Models\Eloquent\ProjectStat;
 use ec5\Models\Eloquent\ProjectStructure;
 use ec5\Models\Users\User;
+use ec5\Traits\Eloquent\ProjectsStats;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -82,6 +83,12 @@ class AccountDeletionExternalTest extends TestCase
         $role = Config::get('ec5Strings.project_roles.creator');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
+
+        //get existing counts
+        $projectsCount = Project::count();
+        $entriesCount = Entry::count();
+        $branchEntriesCount = BranchEntry::count();
+        $projectStatsCount = ProjectStat::count();
 
         //create fake user
         $user = factory(User::class)->create(
@@ -192,11 +199,22 @@ class AccountDeletionExternalTest extends TestCase
         Storage::disk('entry_original')->deleteDirectory($project->ref);
         Storage::disk('audio')->deleteDirectory($project->ref);
         Storage::disk('video')->deleteDirectory($project->ref);
+
+        //check counts
+        $this->assertEquals($projectsCount + 1, Project::count());
+        $this->assertEquals($entriesCount + $numOfEntries, Entry::count());
+        $this->assertEquals($branchEntriesCount + ($numOfEntries * $numOfBranchEntries), BranchEntry::count());
+        $this->assertEquals($projectStatsCount + 1, ProjectStat::count());
     }
 
     public function test_account_deletion_performed_with_role_creator_but_no_entries()
     {
         $role = Config::get('ec5Strings.project_roles.creator');
+        //get existing counts
+        $projectsCount = Project::count();
+        $entriesCount = Entry::count();
+        $branchEntriesCount = BranchEntry::count();
+        $projectStatsCount = ProjectStat::count();
 
         //create fake user
         $user = factory(User::class)->create(
@@ -287,6 +305,12 @@ class AccountDeletionExternalTest extends TestCase
         Storage::disk('entry_original')->deleteDirectory($project->ref);
         Storage::disk('audio')->deleteDirectory($project->ref);
         Storage::disk('video')->deleteDirectory($project->ref);
+
+        //check counts
+        $this->assertEquals($projectsCount, Project::count());
+        $this->assertEquals($entriesCount, Entry::count());
+        $this->assertEquals($branchEntriesCount, BranchEntry::count());
+        $this->assertEquals($projectStatsCount, ProjectStat::count());
     }
 
     public function test_valid_request_role_manager()
@@ -295,6 +319,11 @@ class AccountDeletionExternalTest extends TestCase
         $role = Config::get('ec5Strings.project_roles.manager');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
+        //get existing counts
+        $projectsCount = Project::count();
+        $entriesCount = Entry::count();
+        $branchEntriesCount = BranchEntry::count();
+        $projectStatsCount = ProjectStat::count();
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
@@ -413,6 +442,12 @@ class AccountDeletionExternalTest extends TestCase
         Storage::disk('entry_original')->deleteDirectory($project->ref);
         Storage::disk('audio')->deleteDirectory($project->ref);
         Storage::disk('video')->deleteDirectory($project->ref);
+
+        //check counts
+        $this->assertEquals($projectsCount + 1, Project::count());
+        $this->assertEquals($entriesCount + $numOfEntries, Entry::count());
+        $this->assertEquals($branchEntriesCount + ($numOfEntries * $numOfBranchEntries), BranchEntry::count());
+        $this->assertEquals($projectStatsCount, ProjectStat::count());
     }
 
     public function test_valid_request_role_curator()
@@ -421,6 +456,11 @@ class AccountDeletionExternalTest extends TestCase
         $role = Config::get('ec5Strings.project_roles.curator');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
+        //get existing counts
+        $projectsCount = Project::count();
+        $entriesCount = Entry::count();
+        $branchEntriesCount = BranchEntry::count();
+        $projectStatsCount = ProjectStat::count();
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
@@ -538,6 +578,11 @@ class AccountDeletionExternalTest extends TestCase
         Storage::disk('entry_original')->deleteDirectory($project->ref);
         Storage::disk('audio')->deleteDirectory($project->ref);
         Storage::disk('video')->deleteDirectory($project->ref);
+
+        $this->assertEquals($projectsCount + 1, Project::count());
+        $this->assertEquals($entriesCount + $numOfEntries, Entry::count());
+        $this->assertEquals($branchEntriesCount + ($numOfEntries * $numOfBranchEntries), BranchEntry::count());
+        $this->assertEquals($projectStatsCount, ProjectStat::count());
     }
 
     public function test_valid_request_role_collector()
@@ -546,6 +591,12 @@ class AccountDeletionExternalTest extends TestCase
         $role = Config::get('ec5Strings.project_roles.collector');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
+
+        //get existing counts
+        $projectsCount = Project::count();
+        $entriesCount = Entry::count();
+        $branchEntriesCount = BranchEntry::count();
+        $projectStatsCount = ProjectStat::count();
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
@@ -663,6 +714,11 @@ class AccountDeletionExternalTest extends TestCase
         Storage::disk('entry_original')->deleteDirectory($project->ref);
         Storage::disk('audio')->deleteDirectory($project->ref);
         Storage::disk('video')->deleteDirectory($project->ref);
+
+        $this->assertEquals($projectsCount + 1, Project::count());
+        $this->assertEquals($entriesCount + $numOfEntries, Entry::count());
+        $this->assertEquals($branchEntriesCount + ($numOfEntries * $numOfBranchEntries), BranchEntry::count());
+        $this->assertEquals($projectStatsCount, ProjectStat::count());
     }
 
     public function test_valid_request_role_viewer()
@@ -671,6 +727,12 @@ class AccountDeletionExternalTest extends TestCase
         $role = Config::get('ec5Strings.project_roles.viewer');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
+
+        //get existing counts
+        $projectsCount = Project::count();
+        $entriesCount = Entry::count();
+        $branchEntriesCount = BranchEntry::count();
+        $projectStatsCount = ProjectStat::count();
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
@@ -788,6 +850,11 @@ class AccountDeletionExternalTest extends TestCase
         Storage::disk('entry_original')->deleteDirectory($project->ref);
         Storage::disk('audio')->deleteDirectory($project->ref);
         Storage::disk('video')->deleteDirectory($project->ref);
+
+        $this->assertEquals($projectsCount + 1, Project::count());
+        $this->assertEquals($entriesCount + $numOfEntries, Entry::count());
+        $this->assertEquals($branchEntriesCount + ($numOfEntries * $numOfBranchEntries), BranchEntry::count());
+        $this->assertEquals($projectStatsCount, ProjectStat::count());
     }
 
     public function test_invalid_request()
@@ -851,6 +918,11 @@ class AccountDeletionExternalTest extends TestCase
         $projectRefs = [];
         $numOfEntries = mt_rand(1, 10);
         $numOfBranchEntries = mt_rand(1, 10);
+
+        //get existing counts
+        $projectsCount = Project::count();
+        $entriesCount = Entry::count();
+        $branchEntriesCount = BranchEntry::count();
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
@@ -1192,6 +1264,11 @@ class AccountDeletionExternalTest extends TestCase
             Storage::disk('audio')->deleteDirectory($projectRef);
             Storage::disk('video')->deleteDirectory($projectRef);
         }
+
+        //check counts
+        $this->assertEquals($projectsCount + 6, Project::count());
+        $this->assertEquals($entriesCount + (6 * $numOfEntries) + (3 * $numOfEntries), Entry::count());
+        $this->assertEquals($branchEntriesCount + (6 * $numOfEntries * $numOfBranchEntries) + (3 * $numOfEntries * $numOfBranchEntries), BranchEntry::count());
     }
 
     public function test_account_deletion_performed_with_mixed_roles_but_no_entries()
@@ -1205,7 +1282,11 @@ class AccountDeletionExternalTest extends TestCase
             Config::get('ec5Strings.project_roles.viewer')
         ];
         $projectsWithOtherRoles = [];
-        $projectRefs = [];
+
+        //get existing counts
+        $projectsCount = Project::count();
+        $entriesCount = Entry::count();
+        $branchEntriesCount = BranchEntry::count();
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
@@ -1243,7 +1324,6 @@ class AccountDeletionExternalTest extends TestCase
         //create a fake project per each role and assign it to the user
         foreach ($otherRoles as $otherRole) {
             $project = factory(Project::class)->create(['created_by' => $anotherUser->id]);
-            $projectRefs[] = $project->ref;
             $projectsWithOtherRoles[] = [
                 'id' => $project->id,
                 'role' => $otherRole
@@ -1335,5 +1415,10 @@ class AccountDeletionExternalTest extends TestCase
         Mail::assertSent(UserAccountDeletionConfirmation::class, function ($mail) use ($user) {
             return $mail->hasTo($user->email);
         });
+
+        //check counts
+        $this->assertEquals($projectsCount + 4, Project::count());
+        $this->assertEquals($entriesCount, Entry::count());
+        $this->assertEquals($branchEntriesCount, BranchEntry::count());
     }
 }

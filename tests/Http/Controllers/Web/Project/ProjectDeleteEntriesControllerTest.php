@@ -33,8 +33,6 @@ class ProjectDeleteEntriesControllerTest extends TestCase
 {
     use DatabaseTransactions;
 
-    // use WithoutMiddleware;
-
     const DRIVER = 'web';
 
     public function setUp()
@@ -89,6 +87,12 @@ class ProjectDeleteEntriesControllerTest extends TestCase
         $role = Config::get('ec5Strings.project_roles.creator');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
+
+        //get existing counts
+        $projectsCount = Project::count();
+        $entriesCount = Entry::count();
+        $branchEntriesCount = BranchEntry::count();
+
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
         //create mock project with that user
@@ -149,6 +153,11 @@ class ProjectDeleteEntriesControllerTest extends TestCase
         $this->assertEquals(1, ProjectRole::where('project_id', $project->id)->count());
         // You can also check for messages in the session
         $response->assertSessionHas('message', 'ec5_122');
+
+        //check counts
+        $this->assertEquals($projectsCount + 1, Project::count());
+        $this->assertEquals($entriesCount, Entry::count());
+        $this->assertEquals($branchEntriesCount, BranchEntry::count());
     }
 
     public function test_soft_delete_when_role_is_manager()
@@ -204,7 +213,7 @@ class ProjectDeleteEntriesControllerTest extends TestCase
                 'project-name' => strrev($project->name)//just scramble project name
             ]);
 
-        //fails as curator role cannot delete entries in bulk
+        //fails as manager role cannot delete entries in bulk
         $response->assertRedirect('myprojects/' . $project->slug . '/manage-entries');
         $this->assertEquals('ec5_91', session('errors')->getBag('default')->first());
     }
@@ -518,9 +527,15 @@ class ProjectDeleteEntriesControllerTest extends TestCase
         $role = Config::get('ec5Strings.project_roles.creator');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
+
+        //get existing counts
+        $projectsCount = Project::count();
+        $entriesCount = Entry::count();
+        $branchEntriesCount = BranchEntry::count();
+
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
-        //create mock project with that user
+        //create a mock project with that user
         $project = factory(Project::class)->create(['created_by' => $user->id]);
         //assign the user to that project with the CREATOR role
         $projectRole = factory(ProjectRole::class)->create([
@@ -529,9 +544,9 @@ class ProjectDeleteEntriesControllerTest extends TestCase
             'role' => $role
         ]);
 
-        //assert project is present
+        //assert the project is present
         $this->assertEquals(1, Project::where('id', $project->id)->count());
-        //assert user role  is CREATOR
+        //assert the user role is CREATOR
         $this->assertEquals(1, ProjectRole::where('project_id', $project->id)->count());
         $this->assertEquals(1, ProjectRole::where('user_id', $user->id)->count());
         $this->assertEquals($role, ProjectRole::where('project_id', $project->id)->where('user_id', $user->id)->value('role'));
@@ -586,6 +601,11 @@ class ProjectDeleteEntriesControllerTest extends TestCase
             'form_counts->0' => null, // This ensures the first element of the array is null, meaning the array is empty
             'branch_counts->0' => null, // This ensures the first element of the array is null, meaning the array is empty
         ]);
+
+        //check counts
+        $this->assertEquals($projectsCount + 1, Project::count());
+        $this->assertEquals($entriesCount, Entry::count());
+        $this->assertEquals($branchEntriesCount, BranchEntry::count());
     }
 
     public function test_exception()

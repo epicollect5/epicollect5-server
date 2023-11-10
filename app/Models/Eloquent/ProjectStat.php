@@ -2,8 +2,12 @@
 
 namespace ec5\Models\Eloquent;
 
+use Eloquent;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @mixin Eloquent
+ */
 class ProjectStat extends Model
 {
     /**

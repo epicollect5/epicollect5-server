@@ -71,7 +71,6 @@ class ProjectDeleteControllerTest extends TestCase
 
     public function test_delete_post_request_but_missing_project_name()
     {
-
         //creator
         $role = Config::get('ec5Strings.project_roles.creator');
         $numOfEntries = mt_rand(10, 100);
@@ -215,10 +214,15 @@ class ProjectDeleteControllerTest extends TestCase
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
 
+        //get existing counts
+        $projectsCount = Project::count();
+        $entriesCount = Entry::count();
+        $branchEntriesCount = BranchEntry::count();
+
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
 
-        //create mock project with that user
+        //create a mock project with that user
         $project = factory(Project::class)->create(['created_by' => $user->id]);
 
         //assign the user to that project with the CREATOR role
@@ -305,10 +309,14 @@ class ProjectDeleteControllerTest extends TestCase
 
         //create a new project, should get a different ID
         $newProject = factory(Project::class)->create(['created_by' => $user->id]);
-        self::assertNotEquals($newProject->id, $project->id);
-        //check new project has zero entries
-        self::assertEquals(0, Entry::where('project_id', $newProject->id)->count());
+        $this->assertNotEquals($newProject->id, $project->id);
+        //check the new project has zero entries
+        $this->assertEquals(0, Entry::where('project_id', $newProject->id)->count());
 
+        //check counts
+        $this->assertEquals($projectsCount + 2, Project::count());
+        $this->assertEquals($entriesCount + $numOfEntries, Entry::count());
+        $this->assertEquals($branchEntriesCount + ($numOfEntries * $numOfBranchEntries), BranchEntry::count());
     }
 
     public function test_hard_delete()
@@ -316,6 +324,11 @@ class ProjectDeleteControllerTest extends TestCase
         //creator
         $role = Config::get('ec5Strings.project_roles.creator');
         $trashedStatus = Config::get('ec5Strings.project_status.trashed');
+
+        //get existing counts
+        $projectsCount = Project::count();
+        $entriesCount = Entry::count();
+        $branchEntriesCount = BranchEntry::count();
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
@@ -390,8 +403,13 @@ class ProjectDeleteControllerTest extends TestCase
         //create a new project, should get a different ID
         $newProject = factory(Project::class)->create(['created_by' => $user->id]);
         self::assertNotEquals($newProject->id, $project->id);
-        //check new project has zero entries
+        //check the new project has zero entries
         self::assertEquals(0, Entry::where('project_id', $newProject->id)->count());
+
+        //check counts
+        $this->assertEquals($projectsCount + 1, Project::count());
+        $this->assertEquals($entriesCount, Entry::count());
+        $this->assertEquals($branchEntriesCount, BranchEntry::count());
     }
 
     public function test_delete_missing_permission_as_manager()
