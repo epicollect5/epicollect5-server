@@ -16,6 +16,7 @@ use ec5\Models\Eloquent\UserPasswordlessApi;
 class AppleController extends AuthController
 {
     use AppleJWTHandler;
+
     /*
     |--------------------------------------------------------------------------
     | Apple Sign In
@@ -46,6 +47,11 @@ class AppleController extends AuthController
 
         if (!$parsed_id_token) {
             return redirect()->route('login')->withErrors(['ec5_382']);
+        }
+
+        //catching error when email and email_verified are missing from payload
+        if (!isset($parsed_id_token['email_verified'])) {
+            return redirect()->route('login')->withErrors(['ec5_386']);
         }
 
         if ($parsed_id_token['email_verified'] === 'true') {
@@ -181,7 +187,7 @@ class AppleController extends AuthController
      * This verifies an Apple User who already has an account (Google)
      * If the code is valid, the Apple provider is added
      * This is performed only the first time the user logs in with a new provider
-     * 
+     *
      * IMP:Local users are asked to enter the password when they login using a different provider
      * IMP:they are not verified here, local auth has its own verification controller
      */
