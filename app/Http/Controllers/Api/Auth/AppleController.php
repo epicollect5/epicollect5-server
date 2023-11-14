@@ -58,6 +58,7 @@ class AppleController extends AuthController
             }
 
             //catching error when email and email_verified are missing from payload
+            //happens for instance when users change their Apple ID email
             if (!isset($parsed_id_token['email_verified'])) {
                 //return api error
                 $error['api-login-apple'] = ['ec5_386'];

@@ -222,7 +222,6 @@ class StatsRepository extends Base
      */
     public function getFormEntryCounts($projectId, $formRef, $parentEntryUuid)
     {
-        \Log::error('getFormEntryCounts called');
         $stats = DB::table($this->entryTable)
             ->select(DB::raw("COUNT(*) as entries_count"))
             ->where('project_id', '=', $projectId)
@@ -250,7 +249,6 @@ class StatsRepository extends Base
     {
 
         // DB::enableQueryLog();
-        \Log::error('getBranchEntryCounts called');
         $sql = DB::table($this->branchEntryTable)
             ->select(DB::raw("COUNT(*) as branch_entries_count"))
             ->where('project_id', '=', $projectId)
@@ -258,8 +256,6 @@ class StatsRepository extends Base
             ->where('owner_input_ref', '=', $ownerInputRef)
             ->where('owner_uuid', '=', $ownerEntryUuid)
             ->toSql();
-
-        Log::error($sql);
 
 
         $stats = DB::table($this->branchEntryTable)

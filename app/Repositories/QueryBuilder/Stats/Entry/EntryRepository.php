@@ -74,8 +74,6 @@ class EntryRepository extends StatsRepository
      */
     public function updateParentEntryCounts(EntryStructure $entryStructure)
     {
-
-        \Log::error('updateParentEntryCounts called');
         $childCounts = $this->getEntryChildCounts($entryStructure->getProjectId(), $entryStructure->getFormRef(), $entryStructure->getParentUuid());
 
         // Update the parent entry

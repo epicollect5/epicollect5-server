@@ -50,19 +50,13 @@ class AppleController extends AuthController
         }
 
         //catching error when email and email_verified are missing from payload
+        //happens for instance when users change their Apple ID email
         if (!isset($parsed_id_token['email_verified'])) {
             return redirect()->route('login')->withErrors(['ec5_386']);
         }
 
         if ($parsed_id_token['email_verified'] === 'true') {
-            //            Log::error('handleAppleCallback', [
-            //                '$parsed_id_token[email_verified]' =>$parsed_id_token['email_verified'],
-            //            ]);
             if ($parsed_id_token['nonce'] === $nonce) {
-
-                //                Log::error('handleAppleCallback', [
-                //                    '$parsed_id_token[nonce]' =>$parsed_id_token['nonce'],
-                //                ]);
                 //get Apple user email, always sent in the token
                 $email = $parsed_id_token['email'];
                 //look for the user
