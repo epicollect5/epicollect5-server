@@ -1,21 +1,20 @@
 <?php
 
-namespace Tests\Routes\Api\internal;
-
+namespace Tests\Http\Controllers\Web\Auth;
 
 use Carbon\Carbon;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Mail\UserPasswordlessApiMail;
+use ec5\Mail\UserPasswordlessWebMail;
 use ec5\Models\Eloquent\UserPasswordlessWeb;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 
-class PasswordlessInternalTest extends TestCase
+class PasswordlessControllerTest extends TestCase
 {
-    //to reset database after tests
     use DatabaseTransactions;
 
     /**
@@ -26,25 +25,22 @@ class PasswordlessInternalTest extends TestCase
      * imp: instead.
      */
 
-    protected $privateProjectSlug;
-    protected $publicProjectSlug;
 
     public function setup()
     {
         parent::setUp();
-        $this->privateProjectSlug = 'ec5-private';
-        $this->publicProjectSlug = 'ec5-public';
     }
 
-    public function testSendCode()
+    public function test_send_code()
     {
         $email = Config::get('testing.MANAGER_EMAIL');
 
         //send a code to user for authentication
         Mail::fake();
 
-        $response = $this->post('/login/passwordless/token', [
-            'email' => $email
+        $response = $this->post(Route('passwordless-token-web'), [
+            'email' => $email,
+            'g-recaptcha-response' => 'abc'
         ]);
 
         $response->assertStatus(200);
@@ -60,7 +56,47 @@ class PasswordlessInternalTest extends TestCase
         });
     }
 
-    public function testLogin()
+    public function test_missing_recaptcha()
+    {
+        $email = Config::get('testing.MANAGER_EMAIL');
+
+        //send a code to user for authentication
+        Mail::fake();
+
+        // Mock a previous request, we are posting from /login
+        $referer = '/login';
+        $this->serverVariables['HTTP_REFERER'] = $referer;
+
+        $response = $this->post(Route('passwordless-token-web'), [
+            'email' => $email
+        ]);
+
+        $response->assertStatus(302);
+        $response->assertRedirect(route('login'));
+        $this->assertEquals('ec5_21', session('errors')->getBag('default')->first());
+    }
+
+    public function test_missing_email()
+    {
+        $email = Config::get('testing.MANAGER_EMAIL');
+
+        //send a code to user for authentication
+        Mail::fake();
+
+        // Mock a previous request, we are posting from /login
+        $referer = '/login';
+        $this->serverVariables['HTTP_REFERER'] = $referer;
+
+        $response = $this->post(Route('passwordless-token-web'), [
+            'g-recaptcha-response' => 'abc'
+        ]);
+
+        $response->assertStatus(302);
+        $response->assertRedirect(route('login'));
+        $this->assertEquals('ec5_21', session('errors')->getBag('default')->first());
+    }
+
+    public function test_login()
     {
         $email = Config::get('testing.MANAGER_EMAIL');
         $tokenExpiresAt = Config::get('testing.PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
@@ -86,7 +122,7 @@ class PasswordlessInternalTest extends TestCase
         $this->assertEquals(Auth::user()->email, $email);
     }
 
-    public function testFailedLogin()
+    public function test_failed_login()
     {
         $email = Config::get('testing.MANAGER_EMAIL');
         $tokenExpiresAt = Config::get('testing.PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
@@ -161,7 +197,7 @@ class PasswordlessInternalTest extends TestCase
         $this->assertEquals('ec5_378', session('errors')->getBag('default')->first());
     }
 
-    public function testRedirectAfterLogin()
+    public function test_redirect_after_login()
     {
         $email = Config::get('testing.MANAGER_EMAIL');
         $tokenExpiresAt = Config::get('testing.PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
@@ -214,7 +250,7 @@ class PasswordlessInternalTest extends TestCase
         $this->assertEquals(Auth::user()->email, $email);
     }
 
-    public function testRedirectAfterLoginErrors()
+    public function test_redirect_after_login_errors()
     {
         $email = Config::get('testing.MANAGER_EMAIL');
         $tokenExpiresAt = Config::get('testing.PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
@@ -276,7 +312,7 @@ class PasswordlessInternalTest extends TestCase
         $this->assertEquals(Auth::user()->email, $email);
     }
 
-    public function testRedirectAfterRequestingAnotherCode()
+    public function test_redirect_after_requesting_another_code()
     {
         $email = Config::get('testing.MANAGER_EMAIL');
         $tokenExpiresAt = Config::get('testing.PASSWORDLESS_TOKEN_EXPIRES_IN', 300);

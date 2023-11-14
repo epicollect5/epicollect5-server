@@ -13,6 +13,7 @@ use ec5\Models\Eloquent\User;
 use Config;
 use Exception;
 use Firebase\JWT\JWT as FirebaseJwt;
+use Illuminate\Support\Facades\App;
 use Mail;
 use ec5\Models\Eloquent\UserResetPassword;
 use Carbon\Carbon;
@@ -20,6 +21,7 @@ use DB;
 use Log;
 use PDOException;
 use Webpatser\Uuid\Uuid;
+use ec5\Traits\Auth\ReCaptchaValidation;
 
 class ForgotPasswordController extends Controller
 {
@@ -31,6 +33,8 @@ class ForgotPasswordController extends Controller
    | This controller is responsible for handling password reset emails
    |
    */
+
+    use ReCaptchaValidation;
 
     /**
      * Create a new controller instance.
@@ -60,30 +64,13 @@ class ForgotPasswordController extends Controller
             return redirect()->back()->withErrors($validator->errors());
         }
 
-        //get recaptcha response
-        $client = new Client(); //GuzzleHttp\Client
-        $response = $client->post(Config::get('ec5Setup.google_recaptcha.verify_endpoint'), [
-            'form_params' => [
-                'secret' => Config::get('ec5Setup.google_recaptcha.secret_key'),
-                'response' => $inputs['g-recaptcha-response']
-            ]
-        ]);
-
-        /**
-         * Validate the captcha response first
-         */
-        $arrayResponse = json_decode($response->getBody()->getContents(), true);
-
-        $captchaValidator->validate($arrayResponse);
-        if ($captchaValidator->hasErrors()) {
-            // Redirect back if errors
-            return redirect()->back()->withErrors($captchaValidator->errors());
-        }
-
-        $captchaValidator->additionalChecks($arrayResponse);
-        if ($captchaValidator->hasErrors()) {
-            // Redirect back if errors
-            return redirect()->back()->withErrors($captchaValidator->errors());
+        if (!App::environment('testing')) {
+            //parse recaptcha response for any errors
+            $recaptchaResponse = $inputs['g-recaptcha-response'];
+            $recaptchaErrors = $this->getAnyRecaptchaErrors($recaptchaResponse);
+            if (!isEmpty($recaptchaErrors)) {
+                return redirect()->back()->withErrors($recaptchaErrors);
+            }
         }
 
         //try to find local user

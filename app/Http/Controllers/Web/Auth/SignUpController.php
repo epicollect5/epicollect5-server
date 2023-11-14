@@ -11,6 +11,7 @@ use ec5\Http\Validation\Auth\RuleSignup;
 use ec5\Http\Validation\Auth\RuleRecaptcha;
 use ec5\Models\Users\User;
 use Config;
+use Illuminate\Support\Facades\App;
 use PDOException;
 use Exception;
 use Log;
@@ -20,11 +21,12 @@ use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Auth;
 use Carbon\Carbon;
 use DB;
+use ec5\Traits\Auth\ReCaptchaValidation;
+
 
 class SignUpController extends Controller
 {
-
-    use AuthenticatesUsers;
+    use AuthenticatesUsers, ReCaptchaValidation;
 
     public function __construct()
     {
@@ -56,29 +58,13 @@ class SignUpController extends Controller
             return redirect()->back()->withErrors($validator->errors());
         }
 
-        $client = new Client(); //GuzzleHttp\Client
-        $response = $client->post(Config::get('ec5Setup.google_recaptcha.verify_endpoint'), [
-            'form_params' => [
-                'secret' => Config::get('ec5Setup.google_recaptcha.secret_key'),
-                'response' => $inputs['g-recaptcha-response']
-            ]
-        ]);
-
-        /**
-         * Validate the captcha response first
-         */
-        $arrayResponse = json_decode($response->getBody()->getContents(), true);
-
-        $captchaValidator->validate($arrayResponse);
-        if ($captchaValidator->hasErrors()) {
-            // Redirect back if errors
-            return redirect()->back()->withErrors($captchaValidator->errors());
-        }
-
-        $captchaValidator->additionalChecks($arrayResponse);
-        if ($captchaValidator->hasErrors()) {
-            // Redirect back if errors
-            return redirect()->back()->withErrors($captchaValidator->errors());
+        if (!App::environment('testing')) {
+            //parse recaptcha response for any errors
+            $recaptchaResponse = $inputs['g-recaptcha-response'];
+            $recaptchaErrors = $this->getAnyRecaptchaErrors($recaptchaResponse);
+            if (!isEmpty($recaptchaErrors)) {
+                return redirect()->back()->withErrors($recaptchaErrors);
+            }
         }
 
         $user = new User();

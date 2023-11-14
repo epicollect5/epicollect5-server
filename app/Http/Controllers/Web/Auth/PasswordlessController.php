@@ -11,7 +11,6 @@ use ec5\Http\Validation\Auth\RulePasswordlessApiLogin;
 use ec5\Models\Eloquent\UserProvider;
 use ec5\Models\Users\User;
 use Illuminate\Http\Request;
-use GuzzleHttp\Client;
 use Config;
 use Exception;
 use Firebase\JWT\JWT as FirebaseJwt;
@@ -26,10 +25,12 @@ use Webpatser\Uuid\Uuid;
 use Auth;
 use ec5\Libraries\Utilities\Generators;
 use Illuminate\Support\Facades\App;
-
+use ec5\Traits\Auth\ReCaptchaValidation;
 
 class PasswordlessController extends AuthController
 {
+
+    use ReCaptchaValidation;
 
     public function __construct()
     {
@@ -41,125 +42,7 @@ class PasswordlessController extends AuthController
         return view('auth.verification_passwordless');
     }
 
-    public function sendLink(Request $request, RulePasswordlessWeb $validator, RuleRecaptcha $captchaValidator)
-    {
-        $tokenExpiresAt = Config::get('auth.passwordless_token_expire', 300);
-        $inputs = $request->all();
-        //validate request
-        $validator->validate($inputs);
-        if ($validator->hasErrors()) {
-            // Redirect back if errors
-            return redirect()->back()->withErrors($validator->errors());
-        }
-
-        //get recaptcha response
-        $client = new Client(); //GuzzleHttp\Client
-        $response = $client->post(Config::get('ec5Setup.google_recaptcha.verify_endpoint'), [
-            'form_params' => [
-                'secret' => Config::get('ec5Setup.google_recaptcha.secret_key'),
-                'response' => $inputs['g-recaptcha-response']
-            ]
-        ]);
-
-        /**
-         * Validate the captcha response first
-         */
-        $arrayResponse = json_decode($response->getBody()->getContents(), true);
-
-        $captchaValidator->validate($arrayResponse);
-        if ($captchaValidator->hasErrors()) {
-            // Redirect back if errors
-            return redirect()->back()->withErrors($captchaValidator->errors());
-        }
-
-        $captchaValidator->additionalChecks($arrayResponse);
-        if ($captchaValidator->hasErrors()) {
-            // Redirect back if errors
-            return redirect()->back()->withErrors($captchaValidator->errors());
-        }
-
-        $email = $inputs['email'];
-
-        //generate token jwt
-        $jwtConfig = Config::get('auth.jwt-passwordless');
-        try {
-            // Extract the key, from the config file.
-            $secretKey = $jwtConfig['secret_key'];
-            $expiryTime = time() + Config::get('auth.passwordless_token_expire', 300);
-
-            $data = array(
-                'iss' => Config::get('app.url'), // issuer
-                'iat' => time(), // issued at time
-                'jti' => (string)Uuid::generate(4), // unique token uuid v4
-                'exp' => $expiryTime, // expiry time
-                'sub' => $email, //  user email
-            );
-
-            /**
-             *
-             *
-             * iss:The issuer of the token
-             * sub: The subject of the token
-             * aud: The audience of the token
-             * exp: Token expiration time defined in Unix time
-             * nbf: “Not before” time that identifies the time before which the token must not be accepted for processing
-             * iat: “Issued at” time, in Unix time, at which the token was issued
-             * jti: JWT ID claim provides a unique identifier for the web token // Encode the array to a JWT string.
-             */
-
-            $token = FirebaseJwt::encode(
-                $data,      // Data to be encoded in the JWT
-                $secretKey, // The signing key
-                'HS256' // The signing algorithm
-            );
-        } catch (Exception $e) {
-            return redirect()->back()->withErrors([
-                'exception' => $e->getMessage(),
-                'passwordless-request-token' => ['ec5_104']
-            ]);
-        }
-
-        try {
-            DB::beginTransaction();
-            //remove any token for this user (if found)
-            $userPasswordless = UserPasswordlessWeb::where('email', $email);
-            if ($userPasswordless !== null) {
-                $userPasswordless->delete();
-            }
-
-            //add token to db
-            $userPasswordless = new UserPasswordlessWeb();
-            $userPasswordless->email = $email;
-            $userPasswordless->token = $token;
-            $userPasswordless->expires_at = Carbon::now()->addSeconds($tokenExpiresAt)->toDateTimeString();
-            $userPasswordless->save();
-
-            DB::commit();
-        } catch (PDOException $e) {
-            Log::error('Error generating passwordless access token');
-            DB::rollBack();
-            return redirect()->back()->withErrors(['passwordless-request' => ['ec5_104']]);
-        } catch (Exception $e) {
-            Log::error('Error generating password access token');
-            DB::rollBack();
-            return redirect()->back()->withErrors(['passwordless-request' => ['ec5_104']]);
-        }
-
-        //send email with verification token
-        try {
-            Mail::to($email)->send(new UserPasswordlessWebMail(
-                $token,
-                $email
-            ));
-        } catch (Exception $e) {
-            Log::error('Error sending email', ['exception' => $e->getMessage()]);
-            return redirect()->back()->withErrors(['passwordless-request' => ['ec5_116']]);
-        }
-
-        return redirect()->route('login')->with('message', 'ec5_372');
-    }
-
-    public function sendCode(Request $request, RulePasswordlessApiCode $validator, RuleRecaptcha $captchaValidator)
+    public function sendCode(Request $request, RulePasswordlessWeb $validator, RuleRecaptcha $captchaValidator)
     {
         $tokenExpiresAt = Config::get('auth.passwordless_token_expire', 300);
         $inputs = $request->all();
@@ -173,30 +56,11 @@ class PasswordlessController extends AuthController
 
         //imp: skip captcha only when testing
         if (!App::environment('testing')) {
-            //get recaptcha response
-            $client = new Client(); //GuzzleHttp\Client
-            $response = $client->post(Config::get('ec5Setup.google_recaptcha.verify_endpoint'), [
-                'form_params' => [
-                    'secret' => Config::get('ec5Setup.google_recaptcha.secret_key'),
-                    'response' => $inputs['g-recaptcha-response']
-                ]
-            ]);
-
-            /**
-             * Validate the captcha response first
-             */
-            $arrayResponse = json_decode($response->getBody()->getContents(), true);
-
-            $captchaValidator->validate($arrayResponse);
-            if ($captchaValidator->hasErrors()) {
-                // Redirect back if errors
-                return redirect()->back()->withErrors($captchaValidator->errors());
-            }
-
-            $captchaValidator->additionalChecks($arrayResponse);
-            if ($captchaValidator->hasErrors()) {
-                // Redirect back if errors
-                return redirect()->back()->withErrors($captchaValidator->errors());
+            //parse recaptcha response for any errors
+            $recaptchaResponse = $inputs['g-recaptcha-response'];
+            $recaptchaErrors = $this->getAnyRecaptchaErrors($recaptchaResponse);
+            if (!isEmpty($recaptchaErrors)) {
+                return redirect()->back()->withErrors($recaptchaErrors);
             }
         }
 
