@@ -5,7 +5,7 @@ namespace ec5\Http\Controllers\Api\Auth;
 use ec5\Http\Validation\Auth\RulePasswordlessApiCode;
 use ec5\Http\Validation\Auth\RulePasswordlessApiLogin;
 use ec5\Mail\UserPasswordlessApiMail;
-use ec5\Models\Users\User;
+use ec5\Models\Eloquent\User;
 use Illuminate\Http\Request;
 use Config;
 use Exception;

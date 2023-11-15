@@ -3,25 +3,21 @@
 namespace ec5\Http\Controllers\Web\Auth;
 
 use ec5\Http\Validation\Auth\RuleRecaptcha;
-use ec5\Http\Validation\Auth\RulePasswordlessApiCode;
-use ec5\Mail\UserPasswordlessWebMail;
 use ec5\Mail\UserPasswordlessApiMail;
 use ec5\Http\Validation\Auth\RulePasswordlessWeb;
 use ec5\Http\Validation\Auth\RulePasswordlessApiLogin;
 use ec5\Models\Eloquent\UserProvider;
-use ec5\Models\Users\User;
+use ec5\Models\Eloquent\User;
 use Illuminate\Http\Request;
 use Config;
 use Exception;
 use Firebase\JWT\JWT as FirebaseJwt;
 use Mail;
 use ec5\Models\Eloquent\UserPasswordlessWeb;
-use ec5\Models\Eloquent\UserPasswordlessApi;
 use Carbon\Carbon;
 use DB;
 use Log;
 use PDOException;
-use Webpatser\Uuid\Uuid;
 use Auth;
 use ec5\Libraries\Utilities\Generators;
 use Illuminate\Support\Facades\App;
@@ -29,7 +25,6 @@ use ec5\Traits\Auth\ReCaptchaValidation;
 
 class PasswordlessController extends AuthController
 {
-
     use ReCaptchaValidation;
 
     public function __construct()
@@ -45,10 +40,10 @@ class PasswordlessController extends AuthController
     public function sendCode(Request $request, RulePasswordlessWeb $validator, RuleRecaptcha $captchaValidator)
     {
         $tokenExpiresAt = Config::get('auth.passwordless_token_expire', 300);
-        $inputs = $request->all();
+        $params = $request->all();
 
         //validate request
-        $validator->validate($inputs);
+        $validator->validate($params);
         if ($validator->hasErrors()) {
             // Redirect back if errors
             return redirect()->back()->withErrors($validator->errors());
@@ -57,14 +52,14 @@ class PasswordlessController extends AuthController
         //imp: skip captcha only when testing
         if (!App::environment('testing')) {
             //parse recaptcha response for any errors
-            $recaptchaResponse = $inputs['g-recaptcha-response'];
+            $recaptchaResponse = $params['g-recaptcha-response'];
             $recaptchaErrors = $this->getAnyRecaptchaErrors($recaptchaResponse);
             if (!isEmpty($recaptchaErrors)) {
                 return redirect()->back()->withErrors($recaptchaErrors);
             }
         }
 
-        $email = $inputs['email'];
+        $email = $params['email'];
         $code = Generators::randomNumber(6, 1);
 
         try {
@@ -250,15 +245,15 @@ class PasswordlessController extends AuthController
         }
 
         //validate request
-        $inputs = $request->all();
-        $validator->validate($inputs);
+        $params = $request->all();
+        $validator->validate($params);
         if ($validator->hasErrors()) {
             \Log::error('Passwordless auth request error', ['errors' => $validator->errors()]);
             return redirect()->route('login')->withErrors($validator->errors());
         }
 
-        $code = $inputs['code'];
-        $email = $inputs['email'];
+        $code = $params['code'];
+        $email = $params['email'];
 
         //get token from db for comparison (passwordless web table)
         //imp: we use the web table for legacy reasons and also to avoid

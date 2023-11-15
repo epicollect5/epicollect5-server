@@ -3,7 +3,7 @@
 namespace Tests\Routes\Web;
 
 use ec5\Models\Eloquent\UserProvider;
-use ec5\Models\Users\User;
+use ec5\Models\Eloquent\User;
 use Laravel\Socialite\Facades\Socialite;
 use Mockery;
 use Tests\TestCase;

@@ -2,7 +2,7 @@
 
 namespace ec5\Http\Controllers\Web\Auth;
 
-use ec5\Models\Users\User;
+use ec5\Models\Eloquent\User;
 use ec5\Models\Eloquent\UserProvider;
 use ec5\Traits\Auth\AppleJWTHandler;
 use Illuminate\Http\Request;

@@ -2,7 +2,7 @@
 
 namespace ec5\Models\ProjectRoles;
 
-use ec5\Models\Users\User;
+use ec5\Models\Eloquent\User;
 
 class ProjectRole
 {

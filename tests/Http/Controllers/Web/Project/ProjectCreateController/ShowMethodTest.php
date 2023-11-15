@@ -5,7 +5,7 @@ namespace Tests\Http\Controllers\Web\Project\ProjectCreateController;
 use ec5\Http\Validation\Project\RuleCreateRequest;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectStructure;
-use ec5\Models\Users\User;
+use ec5\Models\Eloquent\User;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;

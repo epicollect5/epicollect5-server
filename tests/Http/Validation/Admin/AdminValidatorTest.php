@@ -4,7 +4,7 @@ namespace Tests\Http\Validation\Admin;
 
 use Config;
 use ec5\Http\Validation\Admin\RuleUpdateState;
-use ec5\Models\Users\User;
+use ec5\Models\Eloquent\User;
 use Tests\TestCase;
 
 

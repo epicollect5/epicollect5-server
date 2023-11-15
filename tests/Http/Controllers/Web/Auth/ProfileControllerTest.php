@@ -2,7 +2,7 @@
 
 namespace Tests\Http\Controllers\Web\Auth;
 
-use ec5\Models\Users\User;
+use ec5\Models\Eloquent\User;
 use Tests\TestCase;
 
 class ProfileControllerTest extends TestCase

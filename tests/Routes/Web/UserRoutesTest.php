@@ -2,7 +2,7 @@
 
 namespace Tests\Routes\Web;
 
-use ec5\Models\Users\User;
+use ec5\Models\Eloquent\User;
 use Tests\TestCase;
 
 class UserRoutesTest extends TestCase

@@ -2,7 +2,7 @@
 
 namespace ec5\Mail;
 
-use ec5\Models\Users\User;
+use ec5\Models\Eloquent\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;

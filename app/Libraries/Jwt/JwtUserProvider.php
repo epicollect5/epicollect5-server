@@ -6,7 +6,7 @@ use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 
 use Illuminate\Contracts\Hashing\Hasher as HasherContract;
 use Illuminate\Contracts\Auth\UserProvider;
-use ec5\Models\Users\User;
+use ec5\Models\Eloquent\User;
 use Illuminate\Support\Str;
 
 class JwtUserProvider implements UserProvider
@@ -41,7 +41,7 @@ class JwtUserProvider implements UserProvider
     /**
      * Retrieve a user by their unique identifier.
      *
-     * @param  mixed $identifier
+     * @param mixed $identifier
      * @return \Illuminate\Contracts\Auth\Authenticatable|null
      */
     public function retrieveById($identifier)
@@ -52,8 +52,8 @@ class JwtUserProvider implements UserProvider
     /**
      * Retrieve a user by their unique identifier and "remember me" token.
      *
-     * @param  mixed $identifier
-     * @param  string $token
+     * @param mixed $identifier
+     * @param string $token
      * @return \Illuminate\Contracts\Auth\Authenticatable|null
      */
     public function retrieveByToken($identifier, $token)
@@ -69,8 +69,8 @@ class JwtUserProvider implements UserProvider
     /**
      * Update the "remember me" token for the given user in storage.
      *
-     * @param  AuthenticatableContract $user
-     * @param  string $token
+     * @param AuthenticatableContract $user
+     * @param string $token
      * @return void
      */
     public function updateRememberToken(AuthenticatableContract $user, $token)
@@ -83,7 +83,7 @@ class JwtUserProvider implements UserProvider
     /**
      * Retrieve a user by the given credentials.
      *
-     * @param  array $credentials
+     * @param array $credentials
      * @return AuthenticatableContract|null
      */
     public function retrieveByCredentials(array $credentials)
@@ -105,8 +105,8 @@ class JwtUserProvider implements UserProvider
     /**
      * Validate a user against the given credentials.
      *
-     * @param  AuthenticatableContract $user
-     * @param  array $credentials
+     * @param AuthenticatableContract $user
+     * @param array $credentials
      * @return bool
      */
     public function validateCredentials(AuthenticatableContract $user, array $credentials)
@@ -139,7 +139,7 @@ class JwtUserProvider implements UserProvider
     /**
      * Sets the hasher implementation.
      *
-     * @param  \Illuminate\Contracts\Hashing\Hasher $hasher
+     * @param \Illuminate\Contracts\Hashing\Hasher $hasher
      * @return $this
      */
     public function setHasher(HasherContract $hasher)
@@ -162,7 +162,7 @@ class JwtUserProvider implements UserProvider
     /**
      * Sets the name of the Eloquent user model.
      *
-     * @param  string $model
+     * @param string $model
      * @return $this
      */
     public function setModel($model)

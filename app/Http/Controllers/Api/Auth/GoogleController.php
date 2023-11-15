@@ -5,7 +5,7 @@ namespace ec5\Http\Controllers\Api\Auth;
 use ec5\Http\Controllers\Api\ApiResponse;
 use ec5\Models\Eloquent\UserPasswordlessApi;
 use ec5\Http\Validation\Auth\RulePasswordlessApiLogin;
-use ec5\Models\Users\User;
+use ec5\Models\Eloquent\User;
 use ec5\Libraries\Jwt\JwtUserProvider;
 use ec5\Models\Eloquent\UserProvider;
 use Illuminate\Http\Request;
@@ -47,7 +47,7 @@ class GoogleController extends AuthController
                  *  grant_type: 'authorization_code'
                  *  which is provided by the mobile app post request.
                  *  Without that, it would fail.
-                 *  The $googleUser object is the same we get from the web 
+                 *  The $googleUser object is the same we get from the web
                  *  so we can use the same model methods
                  */
                 $googleUser = Socialite::buildProvider('Laravel\Socialite\Two\GoogleProvider', $providerKey)->stateless()->user();
@@ -105,7 +105,7 @@ class GoogleController extends AuthController
 
                         switch ($user->server_role) {
 
-                                //admins must enter password on the mobile app
+                            //admins must enter password on the mobile app
                             case Config::get('ec5Strings.server_roles.superadmin'):
                             case Config::get('ec5Strings.server_roles.admin'):
                                 $error['api-login-google'] = ['ec5_390'];
@@ -136,7 +136,7 @@ class GoogleController extends AuthController
                         $error['api-login-google'] = ['ec5_383'];
                         return $apiResponse->errorResponse(400, $error);
                     }
-                    /** 
+                    /**
                      * external_api routes use the global pattern
                      * https://laravel.com/docs/5.4/routing#parameters-global-constraints
                      * so they all get the jwt guard when calling guard() without parameters.
@@ -185,7 +185,7 @@ class GoogleController extends AuthController
      * This verifies a Google User who already has an account (Apple)
      * If the code is valid, the Google provider is added
      * This is performed only the first time the user logs in with a new provider
-     * 
+     *
      * IMP:Local users are asked to enter the password when they login using a different provider
      * IMP:they are not verified here, local auth has its own verification controller
      */
@@ -228,7 +228,7 @@ class GoogleController extends AuthController
         }
 
         //add the google provider so next time no verification is needed
-        $userProvider =  new UserProvider();
+        $userProvider = new UserProvider();
         $userProvider->email = $user->email;
         $userProvider->user_id = $user->id;
         $userProvider->provider = $this->googleProviderLabel;

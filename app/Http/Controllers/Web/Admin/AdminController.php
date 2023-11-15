@@ -6,7 +6,7 @@ use ec5\Repositories\Eloquent\User\UserRepository;
 use ec5\Repositories\QueryBuilder\ProjectRole\SearchRepository as ProjectRoleSearch;
 use ec5\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use ec5\Models\Users\User;
+use ec5\Models\Eloquent\User;
 use ec5\Models\Eloquent\Project;
 use Config;
 

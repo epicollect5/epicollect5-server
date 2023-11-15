@@ -3,7 +3,7 @@
 namespace ec5\Http\Controllers;
 
 use ec5\Models\Eloquent\ProjectStat;
-use ec5\Models\Users\User;
+use ec5\Models\Eloquent\User;
 use Illuminate\Http\Request;
 
 use ec5\Models\ProjectRoles\ProjectRole;

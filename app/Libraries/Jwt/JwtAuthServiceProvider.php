@@ -4,7 +4,7 @@ namespace ec5\Libraries\Jwt;
 
 use ec5\Repositories\Eloquent\User\UserRepository;
 use Illuminate\Support\ServiceProvider;
-use ec5\Models\Users\User;
+use ec5\Models\Eloquent\User;
 use Auth;
 
 /**
@@ -23,12 +23,11 @@ class JwtAuthServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        Auth::provider('jwt', function($app, array $config) {
+        Auth::provider('jwt', function ($app, array $config) {
             return new JwtUserProvider($app['hash'], new User);
         });
 
-        Auth::extend('jwt', function($app, $name, array $config)
-        {
+        Auth::extend('jwt', function ($app, $name, array $config) {
             // Create new Jwt User provider and ProjectApiApplication provider
             $userProvider = new JwtUserProvider($app['hash'], new User);
 

@@ -5,7 +5,7 @@ namespace Tests\Routes\Api\external;
 use Carbon\Carbon;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Models\Eloquent\UserPasswordlessApi;
-use ec5\Models\Users\User;
+use ec5\Models\Eloquent\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Config;
 use Tests\TestCase;

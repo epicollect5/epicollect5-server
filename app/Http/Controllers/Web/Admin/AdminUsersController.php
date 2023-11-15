@@ -10,7 +10,7 @@ use ec5\Http\Validation\Admin\RuleUpdateState as UpdateStateValidator;
 use ec5\Http\Validation\Admin\RuleAddUser as AddUserValidator;
 use ec5\Http\Validation\ValidationBase;
 use ec5\Repositories\Eloquent\User\UserRepository;
-use ec5\Models\Users\User;
+use ec5\Models\Eloquent\User;
 use ec5\Models\Eloquent\UserProvider;
 use Illuminate\Http\Request;
 use ec5\Http\Requests;

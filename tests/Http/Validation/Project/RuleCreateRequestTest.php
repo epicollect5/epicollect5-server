@@ -4,7 +4,7 @@ namespace Tests\Http\Validation\Project;
 
 use ec5\Http\Validation\Project\RuleCreateRequest;
 use ec5\Models\Eloquent\Project;
-use ec5\Models\Users\User;
+use ec5\Models\Eloquent\User;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Webpatser\Uuid\Uuid;

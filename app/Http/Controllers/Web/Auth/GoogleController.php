@@ -2,7 +2,7 @@
 
 namespace ec5\Http\Controllers\Web\Auth;
 
-use ec5\Models\Users\User;
+use ec5\Models\Eloquent\User;
 use Illuminate\Http\Request;
 use ec5\Models\Eloquent\UserProvider;
 use Laravel\Socialite\Two\InvalidStateException;
@@ -145,7 +145,7 @@ class GoogleController extends AuthController
                          * if the user is active but the Google provider is not found,
                          * this user created an account with another provider (apple or passwordless)
                          *
-                         * Ask the user to verify the Google account 
+                         * Ask the user to verify the Google account
                          * by sending a one off 6 digits code for verification
                          *
                          */
@@ -185,7 +185,7 @@ class GoogleController extends AuthController
      * This verifies a Google User who already has an account with another provider (Apple)
      * If the code is valid, the Google provider is added and the user is authenticated
      * This is performed only the first time the user logs in with a new provider
-     * 
+     *
      * IMP:Local users are asked to enter the password when they login using a different provider
      * IMP:they are not verified here, local auth has its own verification controller
      */
@@ -244,7 +244,7 @@ class GoogleController extends AuthController
         }
 
         //add the google provider so next time no verification is needed
-        $userProvider =  new UserProvider();
+        $userProvider = new UserProvider();
         $userProvider->email = $user->email;
         $userProvider->user_id = $user->id;
         $userProvider->provider = $this->googleProviderLabel;

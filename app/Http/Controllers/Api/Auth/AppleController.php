@@ -5,7 +5,7 @@ namespace ec5\Http\Controllers\Api\Auth;
 use ec5\Http\Validation\Auth\RulePasswordlessApiLogin;
 use ec5\Models\Eloquent\UserPasswordlessApi;
 use ec5\Http\Controllers\Api\ApiResponse;
-use ec5\Models\Users\User;
+use ec5\Models\Eloquent\User;
 use ec5\Models\Eloquent\UserProvider;
 use ec5\Libraries\Jwt\JwtUserProvider;
 use ec5\Traits\Auth\AppleJWTHandler;

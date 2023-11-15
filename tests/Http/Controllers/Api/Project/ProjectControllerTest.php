@@ -5,7 +5,7 @@ namespace Tests\Http\Controllers\Api\Project;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectStructure;
-use ec5\Models\Users\User;
+use ec5\Models\Eloquent\User;
 use Illuminate\Support\Facades\Config;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;

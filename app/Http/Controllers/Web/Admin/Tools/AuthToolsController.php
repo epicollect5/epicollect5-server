@@ -5,7 +5,7 @@ namespace ec5\Http\Controllers\Web\Admin\Tools;
 use ec5\Http\Controllers\Controller;
 
 use ec5\Models\Eloquent\ProjectStructure;
-use ec5\Models\Users\User;
+use ec5\Models\Eloquent\User;
 use Illuminate\Http\Request;
 use DB;
 

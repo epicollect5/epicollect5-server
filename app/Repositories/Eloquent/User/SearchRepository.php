@@ -1,11 +1,12 @@
 <?php namespace ec5\Repositories\Eloquent\User;
 
 use ec5\Repositories\Contracts\SearchInterface;
-use ec5\Models\Users\User;
+use ec5\Models\Eloquent\User;
 use Auth;
 
 
-trait SearchRepository {
+trait SearchRepository
+{
 
     /**
      * @param $field

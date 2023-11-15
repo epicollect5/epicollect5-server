@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use ec5\Http\Controllers\Controller;
 use ec5\Http\Validation\Auth\RuleSignup;
 use ec5\Http\Validation\Auth\RuleRecaptcha;
-use ec5\Models\Users\User;
+use ec5\Models\Eloquent\User;
 use Config;
 use Illuminate\Support\Facades\App;
 use PDOException;

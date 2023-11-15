@@ -6,7 +6,7 @@ use Config;
 use ec5\Http\Validation\Project\RuleSwitchUserRole;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectRole;
-use ec5\Models\Users\User;
+use ec5\Models\Eloquent\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 

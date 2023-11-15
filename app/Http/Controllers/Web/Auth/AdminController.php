@@ -4,7 +4,7 @@ namespace ec5\Http\Controllers\Web\Auth;
 
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use ec5\Http\Validation\Auth\RuleLogin as LoginValidator;
-use ec5\Models\Users\User;
+use ec5\Models\Eloquent\User;
 use ec5\Models\Eloquent\UserProvider;
 use Illuminate\Http\Request;
 use Auth;
@@ -32,6 +32,7 @@ class AdminController extends AuthController
     {
         return view('admin.login');
     }
+
     /**
      * Handle an admin login request to the application.
      *

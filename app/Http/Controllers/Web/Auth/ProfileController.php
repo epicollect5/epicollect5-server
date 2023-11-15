@@ -3,7 +3,7 @@
 namespace ec5\Http\Controllers\Web\Auth;
 
 use ec5\Http\Controllers\Controller;
-use ec5\Models\Users\User;
+use ec5\Models\Eloquent\User;
 use ec5\Models\Eloquent\UserProvider;
 use Illuminate\Http\Request;
 use Laravel\Socialite\Two\InvalidStateException;

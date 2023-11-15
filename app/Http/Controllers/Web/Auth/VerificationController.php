@@ -6,7 +6,7 @@ use ec5\Models\Eloquent\UserVerify;
 use Illuminate\Http\Request;
 use ec5\Http\Controllers\Controller;
 use ec5\Http\Validation\Auth\RuleVerification;
-use ec5\Models\Users\User;
+use ec5\Models\Eloquent\User;
 use Config;
 use Auth;
 use Log;

@@ -4,7 +4,7 @@ namespace ec5\Http\Controllers\Web\Project;
 
 use ec5\Http\Controllers\ProjectControllerBase;
 use ec5\Repositories\QueryBuilder\Project\SearchRepository as ProjectSearch;
-use ec5\Models\Users\User;
+use ec5\Models\Eloquent\User;
 use ec5\Repositories\QueryBuilder\ProjectRole\SearchRepository as ProjectRoleSearch;
 use ec5\Repositories\QueryBuilder\ProjectRole\CreateRepository as ProjectRoleCreate;
 use ec5\Repositories\QueryBuilder\ProjectRole\DeleteRepository as ProjectRoleDelete;
@@ -42,9 +42,10 @@ class ManageUsersController extends ProjectControllerBase
         ProjectRoleSearch $projectRoleSearch,
         ProjectRoleCreate $projectRoleCreate,
         ProjectRoleDelete $projectRoleDelete,
-        ProjectSearch $projectSearch,
-        Request $request
-    ) {
+        ProjectSearch     $projectSearch,
+        Request           $request
+    )
+    {
 
         $this->projectRoleSearch = $projectRoleSearch;
         $this->projectRoleCreate = $projectRoleCreate;
@@ -159,7 +160,7 @@ class ManageUsersController extends ProjectControllerBase
                 'includeTemplate' => 'manage-users',
                 'project' => $this->requestedProject,
                 'users' => $users,
-                'countOverall' =>  $countOverall->total,
+                'countOverall' => $countOverall->total,
                 'countByRole' => $countByRole,
                 'requestedProjectRole' => $this->requestedProjectRole,
                 'canTransferOwnership' => $canTransferOwnership,

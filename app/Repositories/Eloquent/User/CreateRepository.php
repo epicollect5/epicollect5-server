@@ -1,13 +1,14 @@
 <?php namespace ec5\Repositories\Eloquent\User;
 
-use ec5\Models\Users\User;
+use ec5\Models\Eloquent\User;
 use Exception;
 use ec5\Libraries\Ldap\LdapUser;
 use DB;
 use Log;
 use Config;
 
-trait CreateRepository {
+trait CreateRepository
+{
 
     /**
      * @param $input

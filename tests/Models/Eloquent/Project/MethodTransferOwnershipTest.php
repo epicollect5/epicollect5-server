@@ -5,7 +5,7 @@ namespace Tests\Models\Eloquent\Project;
 use Tests\TestCase;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectRole;
-use ec5\Models\Users\User;
+use ec5\Models\Eloquent\User;
 use Config;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 

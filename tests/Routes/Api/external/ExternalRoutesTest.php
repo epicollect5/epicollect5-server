@@ -4,7 +4,7 @@ namespace Tests\Routes\Api\external;
 
 
 use ec5\Models\Eloquent\Project;
-use ec5\Models\Users\User;
+use ec5\Models\Eloquent\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Auth;
 use Tests\TestCase;

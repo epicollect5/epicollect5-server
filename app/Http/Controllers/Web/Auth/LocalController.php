@@ -4,7 +4,7 @@ namespace ec5\Http\Controllers\Web\Auth;
 
 
 use ec5\Http\Validation\Auth\RuleLogin as LoginValidator;
-use ec5\Models\Users\User;
+use ec5\Models\Eloquent\User;
 use ec5\Models\Eloquent\UserProvider;
 use Illuminate\Http\Request;
 use Config;
@@ -34,7 +34,7 @@ class LocalController extends AuthController
     }
 
     /**
-     * Handle a staff login request to the application 
+     * Handle a staff login request to the application
      * only if local lohins are enabled
      *
      * @param Request $request
@@ -112,7 +112,7 @@ class LocalController extends AuthController
             $userModel->state = Config::get('ec5Strings.user_state.active');
             return $userModel->save();
         } catch (\Exception $e) {
-            \Log::error('Error verifying local user',  ['exception' => $e->getMessage()]);
+            \Log::error('Error verifying local user', ['exception' => $e->getMessage()]);
             return false;
         }
     }

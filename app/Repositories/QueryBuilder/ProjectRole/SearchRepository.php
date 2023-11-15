@@ -5,7 +5,7 @@ use ec5\Repositories\Eloquent\User\UserRepository;
 use ec5\Repositories\Contracts\SearchInterface;
 
 use ec5\Models\ProjectRoles\ProjectRole;
-use ec5\Models\Users\User;
+use ec5\Models\Eloquent\User;
 
 use DB;
 
@@ -129,8 +129,8 @@ class SearchRepository implements SearchInterface
                 ->where(function ($query) use ($search) {
                     // if we have search criteria, add to where clause
                     if (!empty($search)) {
-                        $query->where('users.name', 'LIKE',  '%'.$search . '%')
-                            ->orWhere('users.email', 'LIKE', '%'.$search . '%');
+                        $query->where('users.name', 'LIKE', '%' . $search . '%')
+                            ->orWhere('users.email', 'LIKE', '%' . $search . '%');
                     }
                 })
                 ->orderBy('users.name', 'asc');
@@ -156,7 +156,7 @@ class SearchRepository implements SearchInterface
 
         $users = array();
 
-        foreach ($projectRoles as $index =>$projectRole) {
+        foreach ($projectRoles as $index => $projectRole) {
             $users[$index] = $this->userRepository->find($projectRole->user_id);
             $users[$index]['role'] = $projectRole->role;
         }

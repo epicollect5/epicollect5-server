@@ -7,7 +7,7 @@ use ec5\Libraries\Utilities\Generators;
 use ec5\Libraries\Utilities\Strings;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectStructure;
-use ec5\Models\Users\User;
+use ec5\Models\Eloquent\User;
 use Tests\Generators\FakeProjectDefinitionGenerator;
 use Tests\TestCase;
 use Illuminate\Support\Facades\Storage;
