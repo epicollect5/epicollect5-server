@@ -15,8 +15,8 @@ use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectRole;
 use ec5\Models\Eloquent\ProjectStat;
 use ec5\Models\Eloquent\ProjectStructure;
-use ec5\Models\Users\User;
-use ec5\Traits\Eloquent\ProjectsStats;
+use ec5\Models\Eloquent\UserProvider;
+use ec5\Models\Eloquent\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -44,12 +44,13 @@ class AccountDeletionExternalTest extends TestCase
     public function test_account_deletion_performed_without_any_roles()
     {
         //create fake user
-        factory(User::class)->create(
+        $user = factory(User::class)->create(
             ['email' => Config::get('testing.UNIT_TEST_RANDOM_EMAIL')]
         );
-
-        $user = User::where('email', Config::get('testing.UNIT_TEST_RANDOM_EMAIL'))->first();
-        $user->state = 'active';
+        $provider = factory(UserProvider::class)->create([
+            'user_id' => $user->id,
+            'email' => $user->email
+        ]);
 
         //user must have no roles in any project
         $projectRoles = ProjectRole::where('user_id', $user->id)->first();
@@ -94,6 +95,10 @@ class AccountDeletionExternalTest extends TestCase
         $user = factory(User::class)->create(
             ['email' => Config::get('testing.UNIT_TEST_RANDOM_EMAIL')]
         );
+        $provider = factory(UserProvider::class)->create([
+            'user_id' => $user->id,
+            'email' => $user->email
+        ]);
 
         //create fake project
         $project = factory(Project::class)->create(['created_by' => $user->id]);
@@ -220,6 +225,10 @@ class AccountDeletionExternalTest extends TestCase
         $user = factory(User::class)->create(
             ['email' => Config::get('testing.UNIT_TEST_RANDOM_EMAIL')]
         );
+        $provider = factory(UserProvider::class)->create([
+            'user_id' => $user->id,
+            'email' => $user->email
+        ]);
 
         //create fake project
         $project = factory(Project::class)->create(['created_by' => $user->id]);
@@ -327,8 +336,10 @@ class AccountDeletionExternalTest extends TestCase
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
-        $user->state = 'active';
-        $user->save();
+        $provider = factory(UserProvider::class)->create([
+            'user_id' => $user->id,
+            'email' => $user->email
+        ]);
 
         // 2- create mock project with another user set as CREATOR
         $anotherUser = factory(User::class)->create(['state' => 'active']);
@@ -464,8 +475,10 @@ class AccountDeletionExternalTest extends TestCase
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
-        $user->state = 'active';
-        $user->save();
+        $provider = factory(UserProvider::class)->create([
+            'user_id' => $user->id,
+            'email' => $user->email
+        ]);
 
         // 2- create mock project with another user set as CREATOR
         $anotherUser = factory(User::class)->create(['state' => 'active']);
@@ -600,8 +613,10 @@ class AccountDeletionExternalTest extends TestCase
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
-        $user->state = 'active';
-        $user->save();
+        $provider = factory(UserProvider::class)->create([
+            'user_id' => $user->id,
+            'email' => $user->email
+        ]);
 
         // 2- create mock project with another user set as CREATOR
         $anotherUser = factory(User::class)->create(['state' => 'active']);
@@ -736,8 +751,10 @@ class AccountDeletionExternalTest extends TestCase
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
-        $user->state = 'active';
-        $user->save();
+        $provider = factory(UserProvider::class)->create([
+            'user_id' => $user->id,
+            'email' => $user->email
+        ]);
 
         // 2- create mock project with another user set as CREATOR
         $anotherUser = factory(User::class)->create(['state' => 'active']);
@@ -877,9 +894,10 @@ class AccountDeletionExternalTest extends TestCase
     {
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
-        $user->state = 'active';
-        $user->email = 'user-to-be-deleted@example.com';
-        $user->save();
+        $provider = factory(UserProvider::class)->create([
+            'user_id' => $user->id,
+            'email' => $user->email
+        ]);
 
         //Login manager user as passwordless to get a JWT
         Auth::guard('api_external')->login($user, false);
@@ -926,8 +944,16 @@ class AccountDeletionExternalTest extends TestCase
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
+        $provider = factory(UserProvider::class)->create([
+            'user_id' => $user->id,
+            'email' => $user->email
+        ]);
         //create another user
         $anotherUser = factory(User::class)->create();
+        $provider = factory(UserProvider::class)->create([
+            'user_id' => $anotherUser->id,
+            'email' => $anotherUser->email
+        ]);
 
         // 2- create a couple of projects with that user
         $projectRoleCreatorOne = factory(Project::class)->create(['created_by' => $user->id]);
@@ -1176,9 +1202,9 @@ class AccountDeletionExternalTest extends TestCase
                 ]
             ]);
 
-        //assert user was removed
+        //assert user was archived and mail scrambled
         $this->assertEquals(0, User::where('email', $user->email)->count());
-        $this->assertEquals(0, User::where('id', $user->id)->count());
+        $this->assertEquals(1, User::where('id', $user->id)->count());
 
         //assert projects with CREATOR role were archived
         $this->assertEquals(0, Project::where('id', $projectRoleCreatorOne->id)
@@ -1290,8 +1316,16 @@ class AccountDeletionExternalTest extends TestCase
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
+        $provider = factory(UserProvider::class)->create([
+            'user_id' => $user->id,
+            'email' => $user->email
+        ]);
         //create another user
         $anotherUser = factory(User::class)->create();
+        $provider = factory(UserProvider::class)->create([
+            'user_id' => $anotherUser->id,
+            'email' => $anotherUser->email
+        ]);
 
         // 2- create a couple of projects with that user
         $projectRoleCreatorOne = factory(Project::class)->create(['created_by' => $user->id]);
@@ -1381,9 +1415,9 @@ class AccountDeletionExternalTest extends TestCase
                 ]
             ]);
 
-        //assert user was removed
+        //assert user was archived and email scrambled
         $this->assertEquals(0, User::where('email', $user->email)->count());
-        $this->assertEquals(0, User::where('id', $user->id)->count());
+        $this->assertEquals(1, User::where('id', $user->id)->count());
 
         //assert projects with CREATOR role were removed
         $this->assertEquals(0, Project::where('id', $projectRoleCreatorOne->id)

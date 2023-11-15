@@ -14,7 +14,8 @@ use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectRole;
 use ec5\Models\Eloquent\ProjectStat;
 use ec5\Models\Eloquent\ProjectStructure;
-use ec5\Models\Users\User;
+use ec5\Models\Eloquent\UserProvider;
+use ec5\Models\Eloquent\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Mail;
@@ -45,7 +46,7 @@ class AccountDeletionInternalTest extends TestCase
         //account deletion request    
         Mail::fake();
         $this->actingAs($user, self::DRIVER)
-            ->json('POST', '/api/internal/profile/account-deletion-request', [])
+            ->json('POST', Route('internalAccountDelete'), [])
             ->assertStatus(200)
             ->assertExactJson([
                 "data" => [
@@ -61,6 +62,7 @@ class AccountDeletionInternalTest extends TestCase
 
         //assert user was dropped
         $this->assertEquals(0, User::where('email', $user->email)->count());
+        $this->assertEquals(0, User::where('id', $user->id)->count());
     }
 
     //no user, fail
@@ -103,6 +105,7 @@ class AccountDeletionInternalTest extends TestCase
 
         //assert user was dropped
         $this->assertEquals(0, User::where('email', $user->email)->count());
+        $this->assertEquals(0, User::where('id', $user->id)->count());
     }
 
     public function test_account_deletion_performed_with_role_creator_and_entries()
@@ -120,6 +123,11 @@ class AccountDeletionInternalTest extends TestCase
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
+        //add a user provider
+        $provider = factory(UserProvider::class)->create([
+            'user_id' => $user->id,
+            'email' => $user->email
+        ]);
 
         // 2- create mock project with that user
         $project = factory(Project::class)->create(['created_by' => $user->id]);
@@ -137,9 +145,9 @@ class AccountDeletionInternalTest extends TestCase
             'total_entries' => $numOfEntries
         ]);
 
-        //assert project is present before archiving
+        //assert the project is present before archiving
         $this->assertEquals(1, Project::where('id', $project->id)->count());
-        //assert user role  is CREATOR
+        //assert the user role is CREATOR
         $this->assertEquals(1, ProjectRole::where('project_id', $project->id)->count());
         $this->assertEquals(1, ProjectRole::where('user_id', $user->id)->count());
         $this->assertEquals($role, ProjectRole::where('project_id', $project->id)->where('user_id', $user->id)->value('role'));
@@ -181,7 +189,7 @@ class AccountDeletionInternalTest extends TestCase
         //4 delete user account
         Mail::fake();
         $this->actingAs($user, self::DRIVER)
-            ->json('POST', '/api/internal/profile/account-deletion-request', [])
+            ->json('POST', Route('internalAccountDelete'), [])
             ->assertStatus(200)
             ->assertExactJson([
                 "data" => [
@@ -190,8 +198,9 @@ class AccountDeletionInternalTest extends TestCase
                 ]
             ]);
 
-        //assert user was removed
+        //assert user was archived and email scrambled (due to DB uniqueness constraint)
         $this->assertEquals(0, User::where('email', $user->email)->count());
+        $this->assertEquals(1, User::where('id', $user->id)->count());
         //assert the project was archived
         $this->assertEquals(1, Project::where('id', $project->id)
             ->where('status', 'archived')
@@ -247,9 +256,12 @@ class AccountDeletionInternalTest extends TestCase
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
+        $provider = factory(UserProvider::class)->create([
+            'user_id' => $user->id,
+            'email' => $user->email
+        ]);
         // 2- create mock project with that user
         $project = factory(Project::class)->create(['created_by' => $user->id]);
-
 
         //assign the user to that project with the CREATOR role
         $projectRole = factory(ProjectRole::class)->create([
@@ -273,18 +285,17 @@ class AccountDeletionInternalTest extends TestCase
             ['project_id' => $project->id]
         );
 
-        //assert project is present before archiving
+        //assert the project is present before archiving
         $this->assertEquals(1, Project::where('id', $project->id)->count());
-        //assert user role  is CREATOR
+        //assert the user role is CREATOR
         $this->assertEquals(1, ProjectRole::where('project_id', $project->id)->count());
         $this->assertEquals(1, ProjectRole::where('user_id', $user->id)->count());
         $this->assertEquals($role, ProjectRole::where('project_id', $project->id)->where('user_id', $user->id)->value('role'));
 
-
         //4 delete user account
         Mail::fake();
         $this->actingAs($user, self::DRIVER)
-            ->json('POST', '/api/internal/profile/account-deletion-request', [])
+            ->json('POST', Route('internalAccountDelete'), [])
             ->assertStatus(200)
             ->assertExactJson([
                 "data" => [
@@ -293,9 +304,10 @@ class AccountDeletionInternalTest extends TestCase
                 ]
             ]);
 
-        //assert user was removed
+        //assert user was archived, not removed
         $this->assertEquals(0, User::where('email', $user->email)->count());
-        //assert project was removed
+        $this->assertEquals(1, User::where('id', $user->id)->count());
+        //assert the project was removed
         $this->assertEquals(0, Project::where('id', $project->id)
             ->count());
 
@@ -347,6 +359,11 @@ class AccountDeletionInternalTest extends TestCase
         $user = factory(User::class)->create();
         $user->state = 'active';
         $user->save();
+
+        $provider = factory(UserProvider::class)->create([
+            'user_id' => $user->id,
+            'email' => $user->email
+        ]);
 
         // 2- create mock project with another user set as CREATOR
         $anotherUser = factory(User::class)->create(['state' => 'active']);
@@ -413,8 +430,9 @@ class AccountDeletionInternalTest extends TestCase
                 ]
             ]);
 
-        //assert user was removed
+        //assert user was archived and email scrambled (due to DB uniqueness constraint)
         $this->assertEquals(0, User::where('email', $user->email)->count());
+        $this->assertEquals(1, User::where('id', $user->id)->count());
         //assert project was NOT archived
         $this->assertEquals(0, Project::where('id', $project->id)
             ->where('status', 'archived')
@@ -475,6 +493,11 @@ class AccountDeletionInternalTest extends TestCase
         $user = factory(User::class)->create();
         $user->state = 'active';
         $user->save();
+
+        $provider = factory(UserProvider::class)->create([
+            'user_id' => $user->id,
+            'email' => $user->email
+        ]);
 
         // 2- create mock project with another user set as CREATOR
         $anotherUser = factory(User::class)->create(['state' => 'active']);
@@ -542,8 +565,9 @@ class AccountDeletionInternalTest extends TestCase
                 ]
             ]);
 
-        //assert user was removed
+        //assert user was archived and email scrambled (due to DB uniqueness constraint)
         $this->assertEquals(0, User::where('email', $user->email)->count());
+        $this->assertEquals(1, User::where('id', $user->id)->count());
         //assert project was NOT archived
         $this->assertEquals(0, Project::where('id', $project->id)
             ->where('status', 'archived')
@@ -606,6 +630,11 @@ class AccountDeletionInternalTest extends TestCase
         $user->state = 'active';
         $user->save();
 
+        $provider = factory(UserProvider::class)->create([
+            'user_id' => $user->id,
+            'email' => $user->email
+        ]);
+
         // 2- create mock project with another user set as CREATOR
         $anotherUser = factory(User::class)->create(['state' => 'active']);
         $project = factory(Project::class)->create(['created_by' => $anotherUser->id]);
@@ -671,9 +700,9 @@ class AccountDeletionInternalTest extends TestCase
                 ]
             ]);
 
-        //assert user was removed
+        //assert user was archived and email scrambled (due to DB uniqueness constraint)
         $this->assertEquals(0, User::where('email', $user->email)->count());
-        //assert project was NOT archived
+        $this->assertEquals(1, User::where('id', $user->id)->count());
         //assert project was NOT archived
         $this->assertEquals(0, Project::where('id', $project->id)
             ->where('status', 'archived')
@@ -736,6 +765,11 @@ class AccountDeletionInternalTest extends TestCase
         $user->state = 'active';
         $user->save();
 
+        $provider = factory(UserProvider::class)->create([
+            'user_id' => $user->id,
+            'email' => $user->email
+        ]);
+
         // 2- create mock project with another user set as CREATOR
         $anotherUser = factory(User::class)->create(['state' => 'active']);
         $project = factory(Project::class)->create(['created_by' => $anotherUser->id]);
@@ -802,8 +836,9 @@ class AccountDeletionInternalTest extends TestCase
                 ]
             ]);
 
-        //assert user was removed
+        //assert user was archived
         $this->assertEquals(0, User::where('email', $user->email)->count());
+        $this->assertEquals(1, User::where('id', $user->id)->count());
         //assert project was NOT archived
         $this->assertEquals(0, Project::where('id', $project->id)
             ->where('status', 'archived')
@@ -813,7 +848,6 @@ class AccountDeletionInternalTest extends TestCase
         $this->assertEquals(0, EntryArchive::where('project_id', $project->id)->count());
         $this->assertEquals($numOfEntries * $numOfBranchEntries, BranchEntry::where('project_id', $project->id)->count());
         $this->assertEquals(0, BranchEntryArchive::where('project_id', $project->id)->count());
-
 
         //assert media files are not touched
         $photos = Storage::disk('entry_original')->files($project->ref);
@@ -873,8 +907,16 @@ class AccountDeletionInternalTest extends TestCase
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
+        $provider = factory(UserProvider::class)->create([
+            'user_id' => $user->id,
+            'email' => $user->email
+        ]);
         //create another user
         $anotherUser = factory(User::class)->create();
+        $provider = factory(UserProvider::class)->create([
+            'user_id' => $anotherUser->id,
+            'email' => $anotherUser->email
+        ]);
 
         // 2- create a couple of projects with that user
         $projectRoleCreatorOne = factory(Project::class)->create(['created_by' => $user->id]);
@@ -1117,9 +1159,9 @@ class AccountDeletionInternalTest extends TestCase
                 ]
             ]);
 
-        //assert user was removed
+        //assert user was archived and email scrambled (due to DB uniqueness constraint)
         $this->assertEquals(0, User::where('email', $user->email)->count());
-        $this->assertEquals(0, User::where('id', $user->id)->count());
+        $this->assertEquals(1, User::where('id', $user->id)->count());
 
         //assert projects with CREATOR role were archived
         $this->assertEquals(1, Project::where('id', $projectRoleCreatorOne->id)
@@ -1225,8 +1267,18 @@ class AccountDeletionInternalTest extends TestCase
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
+        //add a user provider
+        $provider = factory(UserProvider::class)->create([
+            'user_id' => $user->id,
+            'email' => $user->email
+        ]);
         //create another user
         $anotherUser = factory(User::class)->create();
+        //add a user provider
+        $provider = factory(UserProvider::class)->create([
+            'user_id' => $anotherUser->id,
+            'email' => $anotherUser->email
+        ]);
 
         // 2- create a couple of projects with that user
         $projectRoleCreatorOne = factory(Project::class)->create(['created_by' => $user->id]);
@@ -1294,9 +1346,9 @@ class AccountDeletionInternalTest extends TestCase
                 ]
             ]);
 
-        //assert user was removed
+        //assert user was archived
         $this->assertEquals(0, User::where('email', $user->email)->count());
-        $this->assertEquals(0, User::where('id', $user->id)->count());
+        $this->assertEquals(1, User::where('id', $user->id)->count());
 
         //assert projects with CREATOR role were removed
         $this->assertEquals(0, Project::where('id', $projectRoleCreatorOne->id)

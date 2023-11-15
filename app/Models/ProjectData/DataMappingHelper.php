@@ -4,13 +4,12 @@ namespace ec5\Models\ProjectData;
 
 use Config;
 use ec5\Models\Projects\Project;
-use ec5\Models\Users\User;
+use ec5\Models\Eloquent\User;
 use ec5\Libraries\Utilities\GpointConverter;
 use ec5\Libraries\Utilities\DateFormatConverter;
 
 class DataMappingHelper
 {
-
     protected $project;
     protected $format;
     protected $entryType;
@@ -183,7 +182,8 @@ class DataMappingHelper
         if ($this->project->isPrivate()) {
             $entryOut['created_by'] = 'n/a';
             if ($userId) {
-                $user = User::find($userId);
+                $user = User::where('id', $userId)
+                    ->where('status', '<>', 'archived');
                 if ($user) {
                     $entryOut['created_by'] = $user->email;
                 }
@@ -329,7 +329,8 @@ class DataMappingHelper
         if ($this->project->isPrivate()) {
             $entryOut['created_by'] = 'n/a';
             if ($userId) {
-                $user = User::find($userId);
+                $user = User::where('id', $userId)
+                    ->where('status', '<>', 'archived');
                 if ($user) {
                     $entryOut['created_by'] = $user->email;
                 }
@@ -511,7 +512,7 @@ class DataMappingHelper
 
         switch ($type) {
 
-                //todo input type should be constants....
+            //todo input type should be constants....
             case 'radio':
             case 'dropdown':
                 $parsedAnswer = $this->getPossibleAnswerMapping($ec5Input, $answer);
@@ -648,7 +649,7 @@ class DataMappingHelper
                 break;
             case 'integer':
                 //force cast to int
-                $parsedAnswer = ($answer === '') ? '' : (int) $answer;
+                $parsedAnswer = ($answer === '') ? '' : (int)$answer;
                 break;
             case 'decimal':
                 //force cast to float (iOS decimals comes as strings)

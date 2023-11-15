@@ -55,10 +55,10 @@ $factory->define(ec5\Models\Eloquent\User::class, function (Faker\Generator $fak
     ];
 });
 
-$factory->define(ec5\Models\Eloquent\UserProvider::class, function (Faker\Generator $faker) {
+$factory->define(ec5\Models\Eloquent\UserProvider::class, function (Faker\Generator $faker, $params) {
     return [
-        'user_id' => 123456789,//todo this must be passed in?
-        'email' => $faker->safeEmail,
+        'user_id' => $params['user_id'],
+        'email' => $params['email'],
         'provider' => 'local'
     ];
 });

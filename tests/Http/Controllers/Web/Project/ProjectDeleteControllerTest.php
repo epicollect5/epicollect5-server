@@ -10,7 +10,8 @@ use ec5\Models\Eloquent\ProjectFeatured;
 use ec5\Models\Eloquent\ProjectRole;
 use ec5\Models\Eloquent\ProjectStat;
 use ec5\Models\Eloquent\ProjectStructure;
-use ec5\Models\Users\User;
+use ec5\Models\Eloquent\UserProvider;
+use ec5\Models\Eloquent\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 use Mockery;
@@ -39,6 +40,11 @@ class ProjectDeleteControllerTest extends TestCase
     {
         //create mock user
         $user = factory(User::class)->create();
+        //add a user provider
+        $provider = factory(UserProvider::class)->create([
+            'user_id' => $user->id,
+            'email' => $user->email
+        ]);
 
         //create a fake project with that user
         $project = factory(Project::class)->create(['created_by' => $user->id]);
@@ -78,6 +84,11 @@ class ProjectDeleteControllerTest extends TestCase
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
+        //add a user provider
+        $provider = factory(UserProvider::class)->create([
+            'user_id' => $user->id,
+            'email' => $user->email
+        ]);
 
         //create mock project with that user
         $project = factory(Project::class)->create(['created_by' => $user->id]);
@@ -147,6 +158,11 @@ class ProjectDeleteControllerTest extends TestCase
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
+        //add a user provider
+        $provider = factory(UserProvider::class)->create([
+            'user_id' => $user->id,
+            'email' => $user->email
+        ]);
 
         //create mock project with that user
         $project = factory(Project::class)->create(['created_by' => $user->id]);
@@ -221,6 +237,11 @@ class ProjectDeleteControllerTest extends TestCase
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
+        //add a user provider
+        $provider = factory(UserProvider::class)->create([
+            'user_id' => $user->id,
+            'email' => $user->email
+        ]);
 
         //create a mock project with that user
         $project = factory(Project::class)->create(['created_by' => $user->id]);
@@ -332,6 +353,11 @@ class ProjectDeleteControllerTest extends TestCase
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
+        //add a user provider
+        $provider = factory(UserProvider::class)->create([
+            'user_id' => $user->id,
+            'email' => $user->email
+        ]);
 
         //create mock project with that user
         $project = factory(Project::class)->create(
@@ -420,7 +446,17 @@ class ProjectDeleteControllerTest extends TestCase
         $numOfBranchEntries = mt_rand(10, 100);
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
+        //add a user provider
+        $provider = factory(UserProvider::class)->create([
+            'user_id' => $user->id,
+            'email' => $user->email
+        ]);
         $anotherUser = factory(User::class)->create();
+        //add a user provider
+        $provider = factory(UserProvider::class)->create([
+            'user_id' => $anotherUser->id,
+            'email' => $anotherUser->email
+        ]);
         //create mock project with that another user
         $project = factory(Project::class)->create(['created_by' => $anotherUser->id]);
         //assign another user to that project with the CREATOR role
@@ -474,7 +510,9 @@ class ProjectDeleteControllerTest extends TestCase
         //Bail out since user has no permission
         $response->assertRedirect('/myprojects/' . $project->slug . '/delete');
         //Check if the project is NOT archived
-        $this->assertDatabaseMissing('projects_archive', ['id' => $project->id]);
+        $this->assertEquals(0, Project::where('id', $project->id)
+            ->where('status', 'archived')->count());
+
         //Check if the project is NOT deleted
         $this->assertDatabaseHas('projects', ['id' => $project->id]);
         //assert entries & branch entries are NOT touched
@@ -495,7 +533,15 @@ class ProjectDeleteControllerTest extends TestCase
         $numOfBranchEntries = mt_rand(10, 100);
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
+        $provider = factory(UserProvider::class)->create([
+            'user_id' => $user->id,
+            'email' => $user->email
+        ]);
         $anotherUser = factory(User::class)->create();
+        $provider = factory(UserProvider::class)->create([
+            'user_id' => $anotherUser->id,
+            'email' => $anotherUser->email
+        ]);
         //create mock project with that another user
         $project = factory(Project::class)->create(['created_by' => $anotherUser->id]);
         //assign another user to that project with the CREATOR role
@@ -549,7 +595,9 @@ class ProjectDeleteControllerTest extends TestCase
         //Bail out since user has no permission
         $response->assertRedirect('/myprojects/' . $project->slug . '/delete');
         //Check if the project is NOT archived
-        $this->assertDatabaseMissing('projects_archive', ['id' => $project->id]);
+        //Check if the project is NOT archived
+        $this->assertEquals(0, Project::where('id', $project->id)
+            ->where('status', 'archived')->count());
         //Check if the project is NOT deleted
         $this->assertDatabaseHas('projects', ['id' => $project->id]);
         //assert entries & branch entries are NOT touched
@@ -569,7 +617,15 @@ class ProjectDeleteControllerTest extends TestCase
         $numOfBranchEntries = mt_rand(10, 100);
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
+        $provider = factory(UserProvider::class)->create([
+            'user_id' => $user->id,
+            'email' => $user->email
+        ]);
         $anotherUser = factory(User::class)->create();
+        $provider = factory(UserProvider::class)->create([
+            'user_id' => $anotherUser->id,
+            'email' => $anotherUser->email
+        ]);
         //create mock project with that another user
         $project = factory(Project::class)->create(['created_by' => $anotherUser->id]);
         //assign another user to that project with the CREATOR role
@@ -623,7 +679,9 @@ class ProjectDeleteControllerTest extends TestCase
         //Bail out since user has no permission
         $response->assertRedirect('/myprojects/' . $project->slug . '/delete');
         //Check if the project is NOT archived
-        $this->assertDatabaseMissing('projects_archive', ['id' => $project->id]);
+        //Check if the project is NOT archived
+        $this->assertEquals(0, Project::where('id', $project->id)
+            ->where('status', 'archived')->count());
         //Check if the project is NOT deleted
         $this->assertDatabaseHas('projects', ['id' => $project->id]);
         //assert entries & branch entries are NOT touched
@@ -643,7 +701,15 @@ class ProjectDeleteControllerTest extends TestCase
         $numOfBranchEntries = mt_rand(10, 100);
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
+        $provider = factory(UserProvider::class)->create([
+            'user_id' => $user->id,
+            'email' => $user->email
+        ]);
         $anotherUser = factory(User::class)->create();
+        $provider = factory(UserProvider::class)->create([
+            'user_id' => $anotherUser->id,
+            'email' => $anotherUser->email
+        ]);
         //create mock project with that another user
         $project = factory(Project::class)->create(['created_by' => $anotherUser->id]);
         //assign another user to that project with the CREATOR role
@@ -697,8 +763,9 @@ class ProjectDeleteControllerTest extends TestCase
         //Bail out since user has no permission
         $response->assertRedirect('/myprojects/' . $project->slug . '/delete');
         //Check if the project is NOT archived
-        $this->assertDatabaseMissing('projects_archive', ['id' => $project->id]);
-        //Check if the project is NOT deleted
+        //Check if the project is NOT archived
+        $this->assertEquals(0, Project::where('id', $project->id)
+            ->where('status', 'archived')->count());        //Check if the project is NOT deleted
         $this->assertDatabaseHas('projects', ['id' => $project->id]);
         //assert entries & branch entries are NOT touched
         $this->assertEquals($numOfEntries, Entry::where('project_id', $project->id)->count());
@@ -717,6 +784,10 @@ class ProjectDeleteControllerTest extends TestCase
         $numOfBranchEntries = mt_rand(10, 100);
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
+        $provider = factory(UserProvider::class)->create([
+            'user_id' => $user->id,
+            'email' => $user->email
+        ]);
         //create mock project with that user
         $project = factory(Project::class)->create(['created_by' => $user->id]);
         //assign another user to that project with the CREATOR role
@@ -767,7 +838,9 @@ class ProjectDeleteControllerTest extends TestCase
         //Bail out since the project is featured
         $response->assertRedirect('/myprojects/' . $project->slug . '/delete');
         //Check if the project is NOT archived
-        $this->assertDatabaseMissing('projects_archive', ['id' => $project->id]);
+        //Check if the project is NOT archived
+        $this->assertEquals(0, Project::where('id', $project->id)
+            ->where('status', 'archived')->count());
         //Check if the project is NOT deleted
         $this->assertDatabaseHas('projects', ['id' => $project->id]);
         //assert entries & branch entries are NOT touched
@@ -788,6 +861,10 @@ class ProjectDeleteControllerTest extends TestCase
         $numOfBranchEntries = mt_rand(10, 100);
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
+        $provider = factory(UserProvider::class)->create([
+            'user_id' => $user->id,
+            'email' => $user->email
+        ]);
         //create mock project with that user
         $project = factory(Project::class)->create(['created_by' => $user->id]);
         //assign the user to that project with the CREATOR role

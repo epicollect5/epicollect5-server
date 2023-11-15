@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use ec5\Models\Eloquent\Entry;
 use ec5\Models\Eloquent\ProjectFeatured;
 use Illuminate\Support\Facades\Config;
+use Log;
 
 class ProjectDeleteController extends ProjectControllerBase
 {
@@ -58,9 +59,19 @@ class ProjectDeleteController extends ProjectControllerBase
 
         $projectStat = ProjectStat::where('project_id', $projectId)->first();
         if ($projectStat->total_entries === 0) {
-            return $this->hardDelete($projectId, $projectSlug);
+            if ($this->hardDelete($projectId, $projectSlug)) {
+                return redirect('myprojects')->with('message', 'ec5_114');
+            } else {
+                return redirect('myprojects/' . $this->requestedProject->slug . '/delete')
+                    ->withErrors(['ec5_104']);
+            }
         } else {
-            return $this->softDelete($projectId, $projectSlug);
+            if ($this->softDelete($projectId, $projectSlug)) {
+                return redirect('myprojects')->with('message', 'ec5_114');
+            } else {
+                return redirect('myprojects/' . $this->requestedProject->slug . '/delete')
+                    ->withErrors(['ec5_104']);
+            }
         }
     }
 
@@ -76,22 +87,12 @@ class ProjectDeleteController extends ProjectControllerBase
     - project_roles,
     - oauth_client_projects,
     - project_datasets
+
+    None of them get touched
     */
     public function softDelete($projectId, $projectSlug)
     {
-        try {
-            DB::beginTransaction();
-            if (!$this->archiveProject($projectId, $projectSlug)) {
-                throw new \Exception('Project archive failed');
-            }
-            DB::commit();
-            //redirect to user projects
-            return redirect('myprojects')->with('message', 'ec5_114');
-        } catch (\Exception $e) {
-            \Log::error('softDelete() project failure', ['exception' => $e->getMessage()]);
-            DB::rollBack();
-            return redirect('myprojects/' . $this->requestedProject->slug . '/delete')->withErrors(['ec5_104']);
-        }
+        return $this->archiveProject($projectId, $projectSlug);
     }
 
     /*hard delete a project
@@ -108,17 +109,21 @@ class ProjectDeleteController extends ProjectControllerBase
             DB::beginTransaction();
             //project must have trashed status
             $trashedStatus = Config::get('ec5Strings.project_status.trashed');
-            Project::where('id', $projectId)
+            $project = Project::where('id', $projectId)
                 ->where('slug', $projectSlug)
-                ->where('status', $trashedStatus)
-                ->delete();
-            DB::commit();
-            //redirect to user projects
-            return redirect('myprojects')->with('message', 'ec5_114');
+                ->where('status', $trashedStatus);
+
+            if ($project->delete()) {
+                DB::commit();
+                return true;
+            } else {
+                DB::rollBack();
+                return false;
+            }
         } catch (\Exception $e) {
-            \Log::error('hardDelete() project failure', ['exception' => $e->getMessage()]);
+            Log::error('hardDelete() project failure', ['exception' => $e->getMessage()]);
             DB::rollBack();
-            return redirect('myprojects/' . $this->requestedProject->slug . '/delete')->withErrors(['ec5_104']);
+            return false;
         }
     }
 

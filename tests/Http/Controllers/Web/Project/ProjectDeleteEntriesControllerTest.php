@@ -20,7 +20,7 @@ use ec5\Models\Projects\ProjectDefinition;
 use ec5\Models\Projects\ProjectExtra;
 use ec5\Models\Projects\ProjectMapping;
 use ec5\Models\Projects\ProjectStats;
-use ec5\Models\Users\User;
+use ec5\Models\Eloquent\User;
 use ec5\Repositories\QueryBuilder\Project\SearchRepository;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\WithoutMiddleware;
