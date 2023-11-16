@@ -43,7 +43,6 @@ class SearchProjectsControllerTest extends TestCase
 
         $this->validator->validate($parameters);
         $this->assertFalse($this->validator->hasErrors());
-        fwrite(STDOUT, print_r($this->validator->errors()) . "\n");
         $this->validator->resetErrors();
     }
 

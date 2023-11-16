@@ -30,7 +30,7 @@ class ArchiveEntriesTest extends TestCase
             $numOfBranchEntries = mt_rand(10, 100);
             $numOfAdditionalBranchEntries = mt_rand(10, 100);
 
-            echo "Archived " . $numOfEntries . ' entries, ' . $numOfBranchEntries . ' branches, ' . ($i + 1) . ' run ' . "\n"; // Log iteration number to console
+            //echo "Archived " . $numOfEntries . ' entries, ' . $numOfBranchEntries . ' branches, ' . ($i + 1) . ' run ' . "\n"; // Log iteration number to console
             // Create a test project (created with system admin ID)
             $project = factory(Project::class)->create([
                 'created_by' => User::where('email', Config::get('testing.SUPER_ADMIN_EMAIL'))->first()['id']

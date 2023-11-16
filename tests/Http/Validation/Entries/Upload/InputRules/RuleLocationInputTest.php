@@ -53,7 +53,7 @@ class RuleLocationInputTest extends TestCase
      */
     public function test_is_valid_positive_latitude()
     {
-        fwrite(STDOUT, __FUNCTION__ . "\n");
+
         // Valid positive latitude
         $answer = [
             'latitude' => 77,
@@ -69,7 +69,7 @@ class RuleLocationInputTest extends TestCase
 
     public function test_is_valid_positive_longitude()
     {
-        fwrite(STDOUT, __FUNCTION__ . "\n");
+
         // Valid positive latitude
         $answer = [
             'latitude' => 77,
@@ -88,7 +88,7 @@ class RuleLocationInputTest extends TestCase
      */
     public function test_is_valid_negative_latitude()
     {
-        fwrite(STDOUT, __FUNCTION__ . "\n");
+
         // Valid positive latitude
         $answer = [
             'latitude' => -42.538734,
@@ -108,7 +108,7 @@ class RuleLocationInputTest extends TestCase
      */
     public function test_is_valid_negative_longitude()
     {
-        fwrite(STDOUT, __FUNCTION__ . "\n");
+
         // Valid positive latitude
         $answer = [
             'latitude' => 19.884310,
@@ -125,7 +125,7 @@ class RuleLocationInputTest extends TestCase
 
     public function test_invalid_latitude_should_not_pass_through()
     {
-        fwrite(STDOUT, __FUNCTION__ . "\n");
+
         // Invalid latitude
         $answer = [
             'latitude' => -89777,
@@ -153,7 +153,7 @@ class RuleLocationInputTest extends TestCase
 
     public function test_invalid_longitude_should_not_pass_through()
     {
-        fwrite(STDOUT, __FUNCTION__ . "\n");
+
         // Invalid longitude
         $answer = [
             'latitude' => 65.987634,
@@ -182,7 +182,7 @@ class RuleLocationInputTest extends TestCase
     //
     public function test_is_empty_location()
     {
-        fwrite(STDOUT, __FUNCTION__ . "\n");
+
         // Valid answer (empty, user did not answer)
         $answer = [
             'latitude' => '',
@@ -199,7 +199,7 @@ class RuleLocationInputTest extends TestCase
 
     public function test_is_null_latitude()
     {
-        fwrite(STDOUT, __FUNCTION__ . "\n");
+
         // Valid answer (empty, user did not answer)
         $answer = [
             'latitude' => null,
@@ -216,7 +216,7 @@ class RuleLocationInputTest extends TestCase
 
     public function test_is_null_longitude()
     {
-        fwrite(STDOUT, __FUNCTION__ . "\n");
+
         // Valid answer (empty, user did not answer)
         $answer = [
             'latitude' => 34,
@@ -233,7 +233,7 @@ class RuleLocationInputTest extends TestCase
 
     public function test_is_null_accuracy()
     {
-        fwrite(STDOUT, __FUNCTION__ . "\n");
+
         // Valid answer (empty, user did not answer)
         $answer = [
             'latitude' => 34,
@@ -250,7 +250,7 @@ class RuleLocationInputTest extends TestCase
 
     public function test_is_invalid_accuracy()
     {
-        fwrite(STDOUT, __FUNCTION__ . "\n");
+
         //negative accuracy
         $answer = [
             'latitude' => 34,
@@ -307,7 +307,7 @@ class RuleLocationInputTest extends TestCase
      */
     public function test_has_not_numeric_coords()
     {
-        fwrite(STDOUT, __FUNCTION__ . "\n");
+
         // Valid answer (empty, user did not answer)
         $this->validator->resetErrors();
         $answer = [

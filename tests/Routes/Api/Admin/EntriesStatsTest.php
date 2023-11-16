@@ -17,7 +17,7 @@ class EntriesStatsTest extends TestCase
      */
     public function testEntriesStatsApiResponse()
     {
-        fwrite(STDOUT, __FUNCTION__ . "\n");
+
 
         $apiContentTypeHeaderKey = Config('ec5Api.responseContentTypeHeaderKey');
         $apiContentTypeHeaderValue = Config('ec5Api.responseContentTypeHeaderValue');

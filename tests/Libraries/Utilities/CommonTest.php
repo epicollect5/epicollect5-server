@@ -56,23 +56,17 @@ class CommonTest extends TestCase
         //form name with lenght 255 (max)
         $branchName = 'Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts. Separated they live in Bookmarksgrove right at the coast of the Semantics, a large language ocean. A small river named Duden flows by thei';
 
-
-        fwrite(STDOUT, '***** Testing download file names ************************************' . "\n");
-
         //generate filename (protected method, via reflection)
         $generatedFilename = $this->generateFilenameMethod
             ->invokeArgs($this->fileCreateRepository, array($form_prefix . '-' . $form_index, $formName));
         //should return true
         $this->assertTrue(strlen($generatedFilename) < $systemMaxLength);
-        fwrite(STDOUT, $generatedFilename . "\n");
 
         //generate filename (protected method, via reflection)
         $generatedFilename = $this->generateFilenameMethod
             ->invokeArgs($this->fileCreateRepository, array($branch_prefix . '-' . $branch_index, $branchName));
         //should return true
         $this->assertTrue(strlen($generatedFilename) < $systemMaxLength);
-        fwrite(STDOUT, $generatedFilename . "\n");
-
 
         //form name with lenght 50 (max)
         $formName = 'Person';
@@ -85,15 +79,12 @@ class CommonTest extends TestCase
             ->invokeArgs($this->fileCreateRepository, array($form_prefix . '-' . $form_index, $formName));
         //should return true
         $this->assertTrue(strlen($generatedFilename) < $systemMaxLength);
-        fwrite(STDOUT, $generatedFilename . "\n");
 
         //generate filename (protected method, via reflection)
         $generatedFilename = $this->generateFilenameMethod
             ->invokeArgs($this->fileCreateRepository, array($branch_prefix . '-' . $branch_index, $branchName));
         //should return true
         $this->assertTrue(strlen($generatedFilename) < $systemMaxLength);
-        fwrite(STDOUT, $generatedFilename . "\n");
 
-        fwrite(STDOUT, '**************************************************************************' . "\n");
     }
 }

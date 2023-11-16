@@ -16,7 +16,7 @@ class ProjectsStatsTest extends TestCase
      */
     public function test_projects_stats_api_response()
     {
-        fwrite(STDOUT, __FUNCTION__ . "\n");
+
 
         $apiContentTypeHeaderKey = Config('ec5Api.responseContentTypeHeaderKey');
         $apiContentTypeHeaderValue = Config('ec5Api.responseContentTypeHeaderValue');

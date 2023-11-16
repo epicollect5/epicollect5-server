@@ -13,7 +13,7 @@ class MethodTransferOwnershipTest extends TestCase
 {
     use DatabaseTransactions;
 
-    public function testTransferOwnership()
+    public function test_transfer_ownership()
     {
         $creatorRole = Config::get('ec5Permissions.projects.creator_role');
         $managerRole = Config::get('ec5Permissions.projects.manager_role');
