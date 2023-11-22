@@ -30,6 +30,7 @@ class AuthController extends Controller
     protected $ldapProviderlabel;
     protected $passwordlessProviderLabel;
     protected $isAuthWebEnabled;
+    protected $isAuthApiLocalEnabled;
 
     public function __construct()
     {
@@ -100,7 +101,6 @@ class AuthController extends Controller
         // 1 - private project -> login + dataviewer
         // 2 - public project -> dataviewer (without add entry button)
         $parts = explode('/', $backlink);
-        \Log::info('url parts ->', ['parts' => $parts]);
         //check for dataviewer url segments
         if (end($parts) === 'data' || end($parts) === 'data?restore=1') {
             array_pop($parts);
@@ -109,6 +109,7 @@ class AuthController extends Controller
         }
 
         //handle PWA (add-entry)
+        //todo: this is useless as after logging out I cannot add or edit an entry?
         if (Str::startsWith(end($parts), 'add-entry')) {
             array_pop($parts);
             $projectSlug = end($parts);
@@ -133,20 +134,5 @@ class AuthController extends Controller
             5,
             10
         );
-    }
-
-    protected function isLocalUnverified($user)
-    {
-        $providers = UserProvider::where('email', $user->email)->pluck('provider')->toArray();
-
-        return in_array(Config::get('ec5Strings.providers.local'), $providers) && $user->state === Config::get('ec5Strings.user_state.unverified');
-    }
-
-    //does the user have a local account and active?
-    protected function isLocalActive($user)
-    {
-        $providers = UserProvider::where('email', $user->email)->pluck('provider')->toArray();
-
-        return in_array(Config::get('ec5Strings.providers.local'), $providers) && $user->state === Config::get('ec5Strings.user_state.active');
     }
 }
