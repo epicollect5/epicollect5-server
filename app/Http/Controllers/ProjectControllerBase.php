@@ -7,8 +7,7 @@ use ec5\Models\Eloquent\User;
 use Illuminate\Http\Request;
 
 use ec5\Models\ProjectRoles\ProjectRole;
-use ec5\Models\Eloquent\Project;
-
+use ec5\Models\Projects\Project;
 use ec5\Repositories\QueryBuilder\Stats\Entry\StatsRepository;
 use ec5\Repositories\QueryBuilder\Project\SearchRepository as SearchProjectRepository;
 use ec5\Traits\Eloquent\Archiver;
@@ -17,9 +16,24 @@ class ProjectControllerBase extends Controller
 {
     use Archiver;
 
+    /**
+     * @var Request
+     */
     protected $request;
+
+    /**
+     * @var Project
+     */
     protected $requestedProject;
+
+    /**
+     * @var User
+     */
     protected $requestedUser;
+
+    /**
+     * @var ProjectRole
+     */
     protected $requestedProjectRole;
 
     /**
@@ -57,9 +71,6 @@ class ProjectControllerBase extends Controller
         $projectDefinitionPrettyPrint = json_encode($this->requestedProject->getProjectDefinition()->getData(), JSON_PRETTY_PRINT);
         $projectExtraPrettyPrint = json_encode($this->requestedProject->getProjectExtra()->getData(), JSON_PRETTY_PRINT);
         $projectStats = ProjectStat::where('project_id', $this->requestedProject->getId())->first();
-        $creatorEmail = Project::creatorEmail();
-
-        $this->requestedProject->creatorEmail = $creatorEmail;
 
         return [
             'includeTemplate' => $includeTemplate,
