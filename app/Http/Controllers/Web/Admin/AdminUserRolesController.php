@@ -23,14 +23,7 @@ class AdminUserRolesController extends Controller
     |
     */
 
-    /**
-     * @var ProjectRoleCreate object
-     */
     protected $projectRoleCreate;
-
-    /**
-     * @var ProjectRoleDelete object
-     */
     protected $projectRoleDelete;
 
     /**
@@ -47,7 +40,6 @@ class AdminUserRolesController extends Controller
 
     public function update(Request $request, ApiResponse $apiResponse, ProjectRoleValidator $projectRoleValidator)
     {
-
         // Get request data
         $input = $request->all();
 

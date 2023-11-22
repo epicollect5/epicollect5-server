@@ -36,7 +36,7 @@ class UserRoutesTest extends TestCase
         $response->assertRedirect('/');
 
         $response = $this->get('/admin');
-        $response->assertRedirect('/login/admin');
+        $response->assertStatus(422);
     }
 
     /**
@@ -63,7 +63,7 @@ class UserRoutesTest extends TestCase
         $response->assertRedirect('/login');
 
         $response = $this->get('/admin');
-        $response->assertRedirect('/login/admin');
+        $response->assertStatus(422);
     }
 
     /**
@@ -77,7 +77,7 @@ class UserRoutesTest extends TestCase
         $this->actingAs($user);
 
         $response = $this->get('/admin');
-        $response->assertStatus(200);
+        $response->assertStatus(422);
     }
 
     /**
@@ -91,7 +91,7 @@ class UserRoutesTest extends TestCase
         $this->actingAs($user);
 
         $response = $this->get('/admin');
-        $response->assertStatus(200);
+        $response->assertStatus(422);
     }
 
     /**
@@ -111,6 +111,6 @@ class UserRoutesTest extends TestCase
         $response->assertRedirect('/login');
 
         $response = $this->get('/admin');
-        $response->assertRedirect('/login/admin');
+        $response->assertStatus(422);
     }
 }

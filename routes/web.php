@@ -38,57 +38,24 @@ Route::group(['middleware' => ['guest']], function () {
     Route::post('login/verification/apple', 'Web\Auth\AppleController@verify')->name('verification-apple');
 });
 
-//Registration for local users (show this page only to guest, not users already logged in)
-//Route::group(['middleware' => ['guest', 'throttle:5,1']], function () {
-//    Route::get('signup', 'Web\Auth\SignUpController@show')->name('signup');
-//    Route::post('signup', 'Web\Auth\SignUpController@store')->name('signup-post');
-//
-//    Route::get('login/forgot', 'Web\Auth\ForgotPasswordController@show')
-//        ->name('forgot-show');
-//    Route::post('login/forgot', 'Web\Auth\ForgotPasswordController@sendResetEmail')
-//        ->name('forgot-post');
-////    // Password reset routes...
-//    Route::get('login/reset/{token}', 'Web\Auth\ResetPasswordController@show')
-//        ->name('login-reset');
-//    Route::post('login/reset', 'Web\Auth\ResetPasswordController@reset')
-//        ->name('login-reset-post');
-//});
 
 //Passwordless routes, 5 requests max every 30 minutes
 $passwordlessMiddleware = App::isLocal() ? ['guest'] : ['guest', 'throttle:5,30'];
 Route::group(['middleware' => $passwordlessMiddleware], function () use ($passwordlessMiddleware) {
-    // \Log::info(print_r($passwordlessMiddleware));
-    // Route::post('login/passwordless/token', 'Web\Auth\PasswordlessController@sendLink')
-    //     ->name('passwordless-token-web');
     Route::post('login/passwordless/token', 'Web\Auth\PasswordlessController@sendCode')
         ->name('passwordless-token-web');
 
-    // Route::get('login/passwordless/verification', 'Web\Auth\PasswordlessController@show')
-    //     ->name('passwordless-verification');
-
     Route::post('login/passwordless/verification', 'Web\Auth\PasswordlessController@authenticateWithCode')
         ->name('passwordless-auth-web');
-
-    Route::get('login/passwordless/auth/{token}', 'Web\Auth\PasswordlessController@authenticate')
-        ->name('passwordless-authenticate-web');
 });
-
-
-//Show this routes only to unverified users. 5 requests per minute throttling
-//Route::group(['middleware' => ['unverified', 'throttle:5,1']], function () {
-//    Route::get('signup/verification', 'Web\Auth\VerificationController@show')->name('verify');
-//    Route::post('signup/verification', 'Web\Auth\VerificationController@verify')->name('verify-post');
-//    Route::post('signup/verification/resend', 'Web\Auth\VerificationController@resend')->name('resend');
-//});
 
 // Admin area and functions
 Route::group(['middleware' => 'auth.admin'], function () {
     // Administration
     Route::get('admin/projects', 'Web\Admin\AdminController@showProjects')->name('admin-projects');
     Route::get('admin/stats', 'Web\Admin\AdminController@showStats')->name('admin-stats');
-    Route::get('admin/{action?}', 'Web\Admin\AdminController@index')->name('admin-home');
+    Route::get('admin/users', 'Web\Admin\AdminController@showUsers')->name('admin-users');
 
-    Route::post('admin/update-user-server-role', 'Web\Admin\AdminUsersController@updateUserServerRole');
     Route::post('admin/update-user-state', 'Web\Admin\AdminUsersController@updateUserState');
     Route::post('admin/add-user', 'Web\Admin\AdminUsersController@addUser');
 
@@ -150,12 +117,6 @@ Route::group(['middleware' => 'auth.admin'], function () {
     Route::get('admin/tools/carbon', 'Web\Admin\Tools\PHPToolsController@carbon');
 });
 
-// Auth middleware
-Route::group(['middleware' => 'auth'], function () {
-    // User search
-    Route::get('users/search-by-email', 'Web\Admin\AdminUsersController@searchByEmail');
-});
-
 // Projects & categories
 Route::get('projects/search', 'Web\Projects\SearchProjectsController@show')->name('projects-search');
 Route::get('projects/{category?}', 'Web\Projects\ListedProjectsController@show');
@@ -168,7 +129,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('profile', 'Web\Auth\ProfileController@show')->name('profile');
     // Logout route
     Route::get('logout', 'Web\Auth\AuthController@logout')->name('logout');
-    // Route::get('profile/reset', 'Web\Auth\ProfileController@reset')->name('profile-reset-password');
+
     Route::get('profile/connect-google', 'Web\Auth\ProfileController@connectGoogle')->name('profile-connect-google');
 
     Route::post('profile/disconnect-google', 'Web\Auth\ProfileController@disconnectGoogle')->name('profile-disconnect-google');
@@ -194,13 +155,13 @@ Route::group(['middleware' => 'auth'], function () {
 
         Route::get('myprojects/{project_slug}', 'Web\Project\ProjectController@details');
 
-        Route::get('myprojects/{project_slug}/formbuilder', 'Web\Project\ProjectController@edit');
+        Route::get('myprojects/{project_slug}/formbuilder', 'Web\Project\ProjectController@formbuilder')->name('formbuilder');
 
         Route::post('myprojects/{project_slug}/settings/{action?}', 'Web\Project\ProjectEditController@settings');
 
         Route::post('myprojects/{project_slug}/details', 'Web\Project\ProjectEditController@details');
 
-        Route::get('myprojects/{project_slug}/download-structure', 'Web\Project\ProjectController@downloadStructure');
+        Route::get('myprojects/{project_slug}/download-project-definition', 'Web\Project\ProjectController@downloadProjectDefinition');
 
         // Cloning
         Route::get('myprojects/{project_slug}/clone', 'Web\Project\ProjectCloneController@show');
@@ -260,7 +221,7 @@ Route::group(['middleware' => 'auth'], function () {
     });
 
     // Users must authenticate in order to add/edit entries, even for public projects
-    //Also viewer role cannot add/edit entries
+    //Also the viewer role cannot add/edit entries
     Route::group(['middleware' => ['project.permissions', 'project.permissions.viewer.role']], function () {
         // Data editor Add/Edit
         Route::get('project/{project_slug}/add-entry', 'Web\Project\ProjectDataController@add')->name('data-editor-add');
@@ -273,6 +234,6 @@ Route::group(['middleware' => 'auth'], function () {
 Route::group(['middleware' => 'project.permissions'], function () {
     Route::get('project/{project_slug?}', 'Web\Project\ProjectController@show')
         ->name('project-home');
-    Route::get('project/{project_slug?}/data', 'Web\Project\ProjectController@data')
+    Route::get('project/{project_slug?}/data', 'Web\Project\ProjectController@dataviewer')
         ->name('dataviewer');
 });

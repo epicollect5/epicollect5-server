@@ -12,8 +12,8 @@
 
         {{-- Nav tabs --}}
         <ul class="nav nav-tabs">
-            <li role="presentation" @if($action == 'user-administration') class="active" @endif>
-                <a href="{{ url('admin/user-administration') }}">{{trans('site.users')}}
+            <li role="presentation" @if($action == 'users') class="active" @endif>
+                <a href="{{ url('admin/users') }}">{{trans('site.users')}}
                 </a>
             </li>
             <li role="presentation" @if($action == 'projects') class="active" @endif>
@@ -28,7 +28,8 @@
 
         {{-- Tab panes --}}
         <div class="tab-content">
-            @if($action == 'user-administration')
+            @if($action == 'users')
+
                 <div class="tab-pane active user-administration" id="user-administration">
                     @include('admin.tabs.users')
                 </div>
