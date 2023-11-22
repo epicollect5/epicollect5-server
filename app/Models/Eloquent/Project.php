@@ -80,6 +80,12 @@ class Project extends Model
             ->get();
     }
 
+    public static function creatorEmail()
+    {
+        return Project::join(Config::get('ec5Tables.users'), 'projects.created_by', '=', Config::get('ec5Tables.users') . '.id')
+            ->first()->email;
+    }
+
     public static function version($slug)
     {
         return Project::join(Config::get('ec5Tables.project_structures'), 'projects.id', '=', Config::get('ec5Tables.project_structures') . '.project_id')
