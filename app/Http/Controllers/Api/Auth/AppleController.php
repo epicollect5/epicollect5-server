@@ -8,6 +8,7 @@ use ec5\Http\Controllers\Api\ApiResponse;
 use ec5\Models\Eloquent\User;
 use ec5\Models\Eloquent\UserProvider;
 use ec5\Libraries\Jwt\JwtUserProvider;
+use ec5\Services\UserService;
 use ec5\Traits\Auth\AppleJWTHandler;
 use Illuminate\Http\Request;
 use Exception;
@@ -104,7 +105,7 @@ class AppleController extends AuthController
                  * create the user as new with the Apple provider
                  * and return it
                  */
-                $user = $userModel->createAppleUser($appleUserFirstName, $appleUserLastName, $email);
+                $user = UserService::createAppleUser($appleUserFirstName, $appleUserLastName, $email);
             }
 
             //if the user is disabled, kick him out
@@ -123,7 +124,7 @@ class AppleController extends AuthController
              * the user gets verified via Apple
              */
             if ($user->state === Config::get('ec5Strings.user_state.unverified')) {
-                if (!$userModel->updateAppleUser($appleUserFirstName, $appleUserLastName, $email, true)) {
+                if (!UserService::updateAppleUser($appleUserFirstName, $appleUserLastName, $email, true)) {
 
                     $error['api-login-apple'] = ['ec5_45'];
                     return $apiResponse->errorResponse(400, $error);
@@ -167,13 +168,13 @@ class AppleController extends AuthController
 
                     //update user name and last name only when they are still placeholders
                     if ($user->name === config('ec5Strings.user_placeholder.apple_first_name')) {
-                        if (!$userModel->updateAppleUser($appleUserFirstName, $appleUserLastName, $email, false)) {
+                        if (!UserService::updateAppleUser($appleUserFirstName, $appleUserLastName, $email, false)) {
                             $error['api-login-apple'] = ['ec5_45'];
                             return $apiResponse->errorResponse(400, $error);
                         }
                     }
                     if ($user->name === config('ec5Strings.user_placeholder.passwordless_first_name')) {
-                        if (!$userModel->updateAppleUser($appleUserFirstName, $appleUserLastName, $email, false)) {
+                        if (!UserService::updateAppleUser($appleUserFirstName, $appleUserLastName, $email, false)) {
                             $error['api-login-apple'] = ['ec5_45'];
                             return $apiResponse->errorResponse(400, $error);
                         }

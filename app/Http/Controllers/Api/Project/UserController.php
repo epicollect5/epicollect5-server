@@ -9,7 +9,6 @@ use ec5\Http\Validation\Project\RuleSwitchUserRole;
 use ec5\Http\Validation\Project\RuleBulkImportUsers;
 use ec5\Models\Eloquent\ProjectRole;
 use ec5\Models\Eloquent\User;
-use ec5\Models\Users\User as LegacyUser; //-> Antonio model
 use Illuminate\Http\Request;
 use ec5\Http\Controllers\Api\ApiResponse;
 
@@ -24,8 +23,9 @@ class UserController extends ProjectControllerBase
     public function __construct(
         ProjectRoleSearch $projectRoleSearch,
         ProjectRoleCreate $projectRoleCreate,
-        Request $request
-    ) {
+        Request           $request
+    )
+    {
         $this->projectRoleSearch = $projectRoleSearch;
         $this->projectRoleCreate = $projectRoleCreate;
 
@@ -33,23 +33,21 @@ class UserController extends ProjectControllerBase
     }
 
     /**
-     * return json object with all the users belonging to a project by role
+     * return a json object with all the users belonging to a project by role
      **/
     public function all()
     {
         //todo bail out if not manager and up?
-
         $users = $this->projectRoleSearch->users($this->requestedProject->getId());
-
         $jsonUsers = [];
 
         foreach ($users as $user) {
-            array_push($jsonUsers, [
+            $jsonUsers[] = [
                 'name' => $user->name,
                 'last_name' => $user->last_name,
                 'email' => $user->email,
                 'role' => $user->role
-            ]);
+            ];
         }
 
         return response()->apiResponse($jsonUsers);
@@ -57,8 +55,6 @@ class UserController extends ProjectControllerBase
 
     /**
      * Remove all the users of the specified role from the project
-     * @param $request
-     * @param $apiResponse : the response
      */
     public function removeByRole(Request $request, ApiResponse $apiResponse)
     {
@@ -112,10 +108,11 @@ class UserController extends ProjectControllerBase
     }
 
     public function switchRole(
-        Request $request,
-        ApiResponse $apiResponse,
+        Request            $request,
+        ApiResponse        $apiResponse,
         RuleSwitchUserRole $ruleSwitchUserRole
-    ) {
+    )
+    {
         // Only managers and up have access
         if (!$this->requestedProjectRole->canSwitchUserRole()) {
             //return error json
@@ -188,9 +185,9 @@ class UserController extends ProjectControllerBase
 
         foreach ($emails as $email) {
             // Retrieve the user whose role is to be added
-            $user = LegacyUser::where('email', '=', $email)->first();
+            $user = User::where('email', '=', $email)->first();
             if (!$user) {
-                $user = new LegacyUser();
+                $user = new User();
                 $user->email = $email;
                 $user->save();
             }

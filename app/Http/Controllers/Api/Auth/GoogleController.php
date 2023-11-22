@@ -8,6 +8,7 @@ use ec5\Http\Validation\Auth\RulePasswordlessApiLogin;
 use ec5\Models\Eloquent\User;
 use ec5\Libraries\Jwt\JwtUserProvider;
 use ec5\Models\Eloquent\UserProvider;
+use ec5\Services\UserService;
 use Illuminate\Http\Request;
 use Exception;
 use Laravel\Socialite\Facades\Socialite;
@@ -52,6 +53,7 @@ class GoogleController extends AuthController
                  */
                 $googleUser = Socialite::buildProvider('Laravel\Socialite\Two\GoogleProvider', $providerKey)->stateless()->user();
 
+
                 // Check user exists in Epicollect5 system and is active
                 $userModel = new User();
                 $user = $userModel->where('email', $googleUser->email)->first();
@@ -62,7 +64,11 @@ class GoogleController extends AuthController
                  * and return it
                  */
                 if (!$user) {
-                    $user = $userModel->createGoogleUser($googleUser);
+                    $user = UserService::createGoogleUser($googleUser);
+                    if (!$user) {
+                        $error['api-login-google'] = ['ec5_376'];
+                        return $apiResponse->errorResponse(400, $error);
+                    }
                 }
 
                 //if the user is disabled, kick him out
@@ -83,7 +89,7 @@ class GoogleController extends AuthController
                  * the user gets verified via Google
                  */
                 if ($user->state === Config::get('ec5Strings.user_state.unverified')) {
-                    if (!$userModel->updateGoogleUser($googleUser)) {
+                    if (!UserService::updateGoogleUser($googleUser)) {
                         $error['api-login-google'] = ['ec5_45'];
                         return $apiResponse->errorResponse(400, $error);
                     }
@@ -147,7 +153,7 @@ class GoogleController extends AuthController
                      */
 
                     //we always update user details just in case the google account was updated 
-                    if (!$userModel->updateGoogleUserDetails($googleUser)) {
+                    if (!UserService::updateGoogleUserDetails($googleUser)) {
                         //well, details not updated is not a show stopping error, just log it
                         Log::error('Could not update Google User details');
                     }

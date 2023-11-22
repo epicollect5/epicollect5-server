@@ -2,9 +2,9 @@
 
 namespace ec5\Http\Controllers\Web\Admin;
 
-use ec5\Repositories\Eloquent\User\UserRepository;
 use ec5\Repositories\QueryBuilder\ProjectRole\SearchRepository as ProjectRoleSearch;
 use ec5\Http\Controllers\Controller;
+use ec5\Services\UserService;
 use Illuminate\Http\Request;
 use ec5\Models\Eloquent\User;
 use ec5\Models\Eloquent\Project;
@@ -16,87 +16,33 @@ class AdminController extends Controller
     |--------------------------------------------------------------------------
     | Admin Controller
     |--------------------------------------------------------------------------
-    |
-    | This controller handles the server administration tasks.
-    |
     */
-
-    protected $userRepository;
-
     protected $projectModel;
-
     protected $projectRoleSearch;
 
     /**
      * Create a new admin controller instance.
      * Restricted to admin and superadmin users
-     *
-     * @param UserRepository $userRepository
      */
     public function __construct(
-        UserRepository    $userRepository,
         Project           $projectModel,
         ProjectRoleSearch $projectRoleSearch
     )
     {
-        $this->userRepository = $userRepository;
         $this->projectModel = $projectModel;
         $this->projectRoleSearch = $projectRoleSearch;
     }
 
     /**
-     * @param Request $request
-     * @param null $action
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Http\JsonResponse|\Illuminate\View\View
-     * @throws \Throwable
-     */
-    public function index(Request $request, $action = null)
-    {
-        // The view that will be returned if an ajax call is made, ie pagination of users, projects etc
-        $ajaxView = '';
-
-        switch ($action) {
-            case 'projects':
-                $params = $this->projects($request);
-                $action = 'projects';
-                $ajaxView = 'admin.tables.projects';
-                break;
-            case 'import-project':
-                // No further action needed
-                break;
-            case 'stats':
-                $action = 'stats';
-                break;
-            default:
-                $params = $this->users($request);
-                $action = 'user-administration';
-                $ajaxView = 'admin.tables.users';
-        }
-
-        $params['action'] = $action;
-
-        // If ajax, return rendered html from $ajaxView
-        if ($request->ajax()) {
-            return response()->json(view($ajaxView, $params)->render());
-        }
-
-        // Return view with relevant params
-        return view('admin.admin', $params);
-    }
-
-    /**
      * Display a list of users, paginated, against an optional search/filter query
-     *
-     * @param Request $request
-     * @return array
      */
-    private function users(Request $request)
+    public function showUsers(Request $request)
     {
         // Get request data
         $data = $request->all();
         $perPage = Config::get('ec5Limits.users_per_page');
-
         $adminUser = $request->user();
+        $ajaxView = 'admin.tables.users';
 
         // Set search/filter/filter option defaults
         $search = !empty($data['search']) ? $data['search'] : '';
@@ -104,39 +50,22 @@ class AdminController extends Controller
         $options['filter_option'] = !empty($data['filterOption']) ? $data['filterOption'] : '';
         $currentPage = !empty($data['page']) ? $data['page'] : 1;
 
-        $users = $this->userRepository->paginate($perPage, $currentPage, $search, $options);
+        $users = UserService::getAllUsers($perPage, $currentPage, $search, $options);
         $users->appends($options);
         $users->appends(['search' => $search]);
 
-        return ['users' => $users, 'adminUser' => $adminUser];
-    }
+        $params = [
+            'action' => 'users',
+            'users' => $users,
+            'adminUser' => $adminUser
+        ];
 
-    /**
-     * Display a list of projects, paginated, against an optional search/filter query
-     *
-     * @param Request $request
-     * @return array
-     */
-    private function projects(Request $request)
-    {
-        $adminUser = $request->user();
-
-        // Get request data
-        $options = $request->all();
-        $perPage = Config::get('ec5Limits.admin_projects_per_page');
-
-        //get projects paginated
-        $projects = $this->projectModel->admin($perPage, $options);
-
-        // Append the creator user's User object and current user's ProjectRole object
-        foreach ($projects as $project) {
-            $project->user = User::where('id', '=', $project->created_by)->first();
-            $project->my_role = $this->projectRoleSearch->getRole($adminUser, $project->project_id)->getRole();
+        // If ajax, return rendered html from $ajaxView
+        if ($request->ajax()) {
+            return response()->json(view($ajaxView, $params)->render());
         }
-
-        $projects->appends($options);
-
-        return ['projects' => $projects];
+        // Return view with relevant params
+        return view('admin.admin', $params);
     }
 
     public function showProjects(Request $request)
@@ -174,12 +103,10 @@ class AdminController extends Controller
         return view('admin.admin', $params);
     }
 
-    //return stats view
     public function showStats(Request $request)
     {
         $action = 'stats';
-
-        // Return view with relevant params
+        // Return stats view with relevant params
         return view('admin.admin', ['action' => $action]);
     }
 }

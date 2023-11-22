@@ -3,6 +3,7 @@
 namespace ec5\Http\Controllers\Web\Auth;
 
 use ec5\Models\Eloquent\User;
+use ec5\Services\UserService;
 use Illuminate\Http\Request;
 use ec5\Models\Eloquent\UserProvider;
 use Laravel\Socialite\Two\InvalidStateException;
@@ -55,12 +56,7 @@ class GoogleController extends AuthController
             ->withErrors(['ec5_55']);
     }
 
-    /**
-     * Function for handling the Google specific auth callback
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\Response
-     */
+    //Function for handling the Google specific auth callback
     public function handleCallback(Request $request)
     {
         //check if local logins are enabled
@@ -69,10 +65,10 @@ class GoogleController extends AuthController
         $isLocalAuthEnabled = in_array($this->localProviderLabel, $this->authMethods, true);
 
         try {
-            // Find the google user
+            // Find the Google user
             $googleUser = Socialite::with($provider)->user();
 
-            // If we found a google user
+            // If we found a Google user
             if ($googleUser) {
                 // Check user exists in Epicollect5 system and is active
                 $userModel = new User();
@@ -84,7 +80,10 @@ class GoogleController extends AuthController
                  * and return it
                  */
                 if (!$user) {
-                    $user = $userModel->createGoogleUser($googleUser);
+                    $user = UserService::createGoogleUser($googleUser);
+                    if (!$user) {
+                        return redirect()->route('login')->withErrors(['ec5_376']);
+                    }
                 }
 
                 //if the user is disabled, kick him out
@@ -103,7 +102,7 @@ class GoogleController extends AuthController
                  * the user gets verified via Google
                  */
                 if ($user->state === Config::get('ec5Strings.user_state.unverified')) {
-                    if (!$userModel->updateGoogleUser($googleUser)) {
+                    if (!UserService::updateGoogleUser($googleUser)) {
                         return redirect()->route('login')->withErrors(['ec5_45']);
                     }
                     //set user as active since it was verified correctly
@@ -161,7 +160,7 @@ class GoogleController extends AuthController
                     }
 
                     //we always update user details just in case the google account was updated 
-                    if (!$userModel->updateGoogleUserDetails($googleUser)) {
+                    if (!UserService::updateGoogleUserDetails($googleUser)) {
                         //well, details not updated is not a show stopping error, just log it
                         Log::error('Could not update Google User details');
                     }

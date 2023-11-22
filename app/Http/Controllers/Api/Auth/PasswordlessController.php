@@ -6,6 +6,7 @@ use ec5\Http\Validation\Auth\RulePasswordlessApiCode;
 use ec5\Http\Validation\Auth\RulePasswordlessApiLogin;
 use ec5\Mail\UserPasswordlessApiMail;
 use ec5\Models\Eloquent\User;
+use ec5\Services\UserService;
 use Illuminate\Http\Request;
 use Config;
 use Exception;
@@ -126,20 +127,11 @@ class PasswordlessController extends AuthController
             //look for existing user
             $user = User::where('email', $email)->first();
             if ($user === null) {
-                //create user
-                $user = new User();
-                $user->name = config('ec5Strings.user_placeholder.passwordless_first_name');
-                $user->email = $email;
-                $user->server_role = Config::get('ec5Strings.server_roles.basic');
-                $user->state = Config::get('ec5Strings.user_state.active');
-                $user->save();
-
-                //add passwordless provider
-                $userProvider = new UserProvider();
-                $userProvider->email = $user->email;
-                $userProvider->user_id = $user->id;
-                $userProvider->provider = Config::get('ec5Strings.providers.passwordless');
-                $userProvider->save();
+                //create the new user as passwordless
+                $user = UserService::createPasswordlessUser($email);
+                if (!$user) {
+                    return $apiResponse->errorResponse(400, ['passwordless-api' => ['ec5_376']]);
+                }
             }
 
             /**

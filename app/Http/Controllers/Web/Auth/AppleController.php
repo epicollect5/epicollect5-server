@@ -4,6 +4,7 @@ namespace ec5\Http\Controllers\Web\Auth;
 
 use ec5\Models\Eloquent\User;
 use ec5\Models\Eloquent\UserProvider;
+use ec5\Services\UserService;
 use ec5\Traits\Auth\AppleJWTHandler;
 use Illuminate\Http\Request;
 use Exception;
@@ -83,7 +84,7 @@ class AppleController extends AuthController
                      * create the user as new with the Apple provider
                      * and return it
                      */
-                    $user = $userModel->createAppleUser($appleUserFirstName, $appleUserLastName, $email);
+                    $user = UserService::createAppleUser($appleUserFirstName, $appleUserLastName, $email);
                 }
 
                 //if the user is disabled, kick him out
@@ -101,7 +102,7 @@ class AppleController extends AuthController
                  * the user gets verified via Apple
                  */
                 if ($user->state === Config::get('ec5Strings.user_state.unverified')) {
-                    if (!$userModel->updateAppleUser($appleUserFirstName, $appleUserLastName, $email, true)) {
+                    if (!UserService::updateAppleUser($appleUserFirstName, $appleUserLastName, $email, true)) {
 
                         return redirect()->route('login')->withErrors(['ec5_45']);
                     }
@@ -159,7 +160,7 @@ class AppleController extends AuthController
 
                     //Update exiting user name and last name when a user object is received
                     if ($appleUser) {
-                        if (!$userModel->updateAppleUser($appleUserFirstName, $appleUserLastName, $email, false)) {
+                        if (!UserService::updateAppleUser($appleUserFirstName, $appleUserLastName, $email, false)) {
                             return redirect()->route('login')->withErrors(['ec5_45']);
                         }
                     }
