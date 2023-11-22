@@ -1,7 +1,6 @@
 <?php namespace ec5\Repositories\QueryBuilder\ProjectRole;
 
 use ec5\Repositories\QueryBuilder\Project\SearchRepository as ProjectSearch;
-use ec5\Repositories\Eloquent\User\UserRepository;
 use ec5\Repositories\Contracts\SearchInterface;
 
 use ec5\Models\ProjectRoles\ProjectRole;
@@ -11,35 +10,12 @@ use DB;
 
 class SearchRepository implements SearchInterface
 {
-
-    /**
-     * @var UserRepository Object $userRepository
-     */
-    protected $userRepository;
-
-    /**
-     * @var ProjectSearch $projectSearch
-     */
     protected $projectSearch;
-
-    /**
-     * @var ProjectRole $projectRole
-     */
     protected $projectRole;
-
-    /**
-     * @var $errors
-     */
     protected $errors = [];
 
-    /**
-     * @param UserRepository $userRepository
-     * @param ProjectSearch $projectSearch
-     * @param ProjectRole $projectRole
-     */
-    public function __construct(UserRepository $userRepository, ProjectSearch $projectSearch, ProjectRole $projectRole)
+    public function __construct(ProjectSearch $projectSearch, ProjectRole $projectRole)
     {
-        $this->userRepository = $userRepository;
         $this->projectSearch = $projectSearch;
         $this->projectRole = $projectRole;
 
@@ -157,7 +133,7 @@ class SearchRepository implements SearchInterface
         $users = array();
 
         foreach ($projectRoles as $index => $projectRole) {
-            $users[$index] = $this->userRepository->find($projectRole->user_id);
+            $users[$index] = User::where('id', $projectRole->user_id)->first();
             $users[$index]['role'] = $projectRole->role;
         }
 
