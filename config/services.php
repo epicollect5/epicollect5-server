@@ -31,7 +31,7 @@ return [
     ],
 
     'stripe' => [
-        'model' => ec5\Models\Users\User::class,
+        'model' => ec5\Models\Eloquent\User::class,
         'key' => env('STRIPE_KEY'),
         'secret' => env('STRIPE_SECRET'),
 

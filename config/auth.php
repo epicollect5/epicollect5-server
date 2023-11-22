@@ -72,7 +72,7 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => ec5\Models\Users\User::class,
+            'model' => ec5\Models\Eloquent\User::class,
         ]
     ],
 
