@@ -27,26 +27,13 @@ use Webpatser\Uuid\Uuid;
 
 /** @var \Illuminate\Database\Eloquent\Factory $factory */
 
-$factory->define(ec5\Models\Users\User::class, function (Faker\Generator $faker) {
+$factory->define(User::class, function (Faker\Generator $faker) {
 
     static $password;
 
     return [
         'name' => $faker->name,
-        'email' => $faker->safeEmail,
-        'password' => $password ?: $password = bcrypt('secret'),
-        'remember_token' => str_random(10),
-        'state' => 'active',
-        'server_role' => 'basic'
-    ];
-});
-
-$factory->define(ec5\Models\Eloquent\User::class, function (Faker\Generator $faker) {
-
-    static $password;
-
-    return [
-        'name' => $faker->name,
+        'last_name' => $faker->lastName,
         'email' => $faker->safeEmail,
         'password' => $password ?: $password = bcrypt('secret'),
         'remember_token' => str_random(10),
