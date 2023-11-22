@@ -2,73 +2,36 @@
 
 namespace ec5\Models\ProjectRoles;
 
-use ec5\Models\Eloquent\User;
-
 class ProjectRole
 {
-
-    /**
-     * @var User
-     */
     protected $user;
-
-    /**
-     * @var
-     */
     protected $role;
-
-    /**
-     * @var
-     */
     protected $projectId;
 
-    /**
-     * @param $user
-     * @param $projectId
-     * @param $role
-     */
-    public function setRole(User $user = null, $projectId, $role)
+    public function setRole($user, $projectId, $role)
     {
-        $this->user = $user;
+        $this->user = $user ?? null;
         $this->projectId = $projectId;
         $this->role = $role;
     }
 
-    /**
-     * Check if a role exists
-     *
-     * @return bool
-     */
-    public function hasRole()
-    {
-        return !empty($this->user) && !empty($this->projectId) && !empty($this->role);
-    }
-
-    /**
-     * Get the role
-     *
-     * @return mixed
-     */
     public function getRole()
     {
         return $this->role;
     }
 
-    /**
-     * @return bool
-     */
-    public function isCreator()
+    public function hasRole(): bool
     {
-        if ($this->role == 'creator') {
-            return true;
-        }
-        return false;
+        return !empty($this->user) && !empty($this->projectId) && !empty($this->role);
     }
 
-    /**
-     * @return bool
-     */
-    public function isManager()
+
+    public function isCreator(): bool
+    {
+        return $this->role === 'creator';
+    }
+
+    public function isManager(): bool
     {
         if ($this->role == 'manager' || $this->isCreator()) {
             return true;
@@ -78,169 +41,106 @@ class ProjectRole
 
     }
 
-    /**
-     * @return bool
-     */
-    public function isCurator()
+    public function isCurator(): bool
     {
-
-        if ($this->role == 'curator') {
-            return true;
-        }
-
-        return false;
-
+        return $this->role === 'curator';
     }
 
-    /**
-     * @return bool
-     */
-    public function isCollector()
+    public function isCollector(): bool
     {
-
-        if ($this->role == 'collector') {
-            return true;
-        }
-
-        return false;
-
+        return $this->role === 'collector';
     }
 
-    public function isViewer()
+    public function isViewer(): bool
     {
-        return ($this->role === 'viewer');
+        return $this->role === 'viewer';
     }
 
-    /**
-     * @return bool
-     */
-    public function canEditData()
+    public function canEditData(): bool
     {
-        if ($this->isManager() || $this->isCurator()) {
-            return true;
-        }
-
-        return false;
+        return ($this->isManager() || $this->isCurator());
     }
 
     /**
      * Only creator and manager can delete all the entries at once
-     * @return bool
+     * @uses canDeleteEntries
      */
-    public function canDeleteEntries()
+    public function canDeleteEntries(): bool
     {
         return $this->isManager() || $this->isCreator();
-
     }
 
-    /**
-     * @param $entry
-     * @return bool
-     */
-    public function canDeleteEntry($entry)
+    public function canDeleteEntry($entry): bool
     {
         if ($this->isManager() || $this->isCurator() ||
             ($this->user && $this->user->id == $entry->user_id)) {
             return true;
         }
-
         return false;
     }
 
-    /**
-     * @return bool
-     */
-    public function canUpload()
+    public function canUpload(): bool
     {
         if ($this->isManager() || $this->isCurator() || $this->isCollector()) {
             return true;
         }
-
         return false;
     }
 
-    public function canBulkUpload()
+    public function canBulkUpload(): bool
     {
         if ($this->isCreator() || $this->isManager() || $this->isCurator() || $this->isCollector()) {
             return true;
         }
-
         return false;
     }
 
-
-    /**
-     * @return bool
-     */
-    public function canEditProject()
+    public function canEditProject(): bool
     {
-        return ($this->isManager());
+        return $this->isManager();
     }
 
-    /**
-     * @return bool
-     */
     public function canDeleteProject(): bool
     {
         return $this->isCreator();
     }
 
-    /**
-     * @return bool
-     */
-    public function canViewProject()
+    public function canViewProject(): bool
     {
         if ($this->isManager() || $this->isCurator() || $this->isCollector() || $this->isViewer()) {
             return true;
         }
-
         return false;
     }
 
     //creator cannot leave a project
-    public function canLeaveProject()
+    public function canLeaveProject(): bool
     {
         return (!$this->isCreator());
     }
 
-    /**
-     * @return bool
-     */
-    public function canAddUsers()
+    public function canAddUsers(): bool
     {
         return $this->isManager();
     }
 
-    /**
-     * @return bool
-     */
-    public function canRemoveUsers()
+    public function canRemoveUsers(): bool
     {
         return $this->isManager();
     }
 
-    /**
-     * @return bool
-     */
-    public function canSwitchUserRole()
+    public function canSwitchUserRole(): bool
     {
         return $this->isManager();
     }
 
-    /**
-     * @return User
-     */
     public function getUser()
     {
         return $this->user;
     }
 
-    /**
-     * @return int
-     */
-    public function getProjectId()
+    public function getProjectId(): int
     {
         return $this->projectId;
     }
-
 }
