@@ -48,13 +48,7 @@ class ExternalRoutesTest extends TestCase
         $response = $this->json('GET', 'api/project/ec5-private', [], [
             'Authorization' => 'Bearer ' . $jwt
         ]);
-        //dd($response);
 
-
-        // //token valid but not a member? get out
-        // $this->json('GET', 'ec5-api-external-routes-tests', [], [
-        //     'Authorization' => 'Bearer ' . $jwt
-        // ])->assertStatus(200);
     }
 
     public function testPrivateExternalRoutesWithoutJWT()

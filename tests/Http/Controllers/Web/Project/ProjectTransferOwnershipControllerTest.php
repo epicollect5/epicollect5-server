@@ -2,6 +2,7 @@
 
 namespace Tests\Http\Controllers\Web\Project;
 
+use ec5\Libraries\Utilities\Generators;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectRole;
 use ec5\Models\Eloquent\ProjectStat;
@@ -22,8 +23,13 @@ class ProjectTransferOwnershipControllerTest extends TestCase
         //create mock user
         $user = factory(User::class)->create();
 
-        //create a fake project with that user
-        $project = factory(Project::class)->create(['created_by' => $user->id]);
+        //create a fake project with that user, use ref to have unique name and slug
+        $ref = Generators::projectRef();
+        $project = factory(Project::class)->create([
+            'name' => $ref,
+            'slug' => $ref,
+            'created_by' => $user->id
+        ]);
 
         //assign the user to that project with the CREATOR role
         $role = Config::get('ec5Strings.project_roles.creator');

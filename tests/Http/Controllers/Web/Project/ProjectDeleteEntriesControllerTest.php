@@ -2,29 +2,16 @@
 
 namespace Tests\Http\Controllers\Web\Project;
 
-use ec5\Http\Controllers\ProjectControllerBase;
-use ec5\Http\Controllers\Web\Project\ProjectDeleteController;
 use ec5\Models\Eloquent\BranchEntry;
 use ec5\Models\Eloquent\BranchEntryArchive;
 use ec5\Models\Eloquent\Entry;
 use ec5\Models\Eloquent\EntryArchive;
 use ec5\Models\Eloquent\Project;
-use ec5\Models\Eloquent\ProjectFeatured;
 use ec5\Models\Eloquent\ProjectRole;
 use ec5\Models\Eloquent\ProjectStat;
 use ec5\Models\Eloquent\ProjectStructure;
-use ec5\Models\Projects\Project as LegacyProject;
-use ec5\Models\ProjectRoles\ProjectRole as LegacyProjectRole;
-use ec5\Models\Users\User as LegacyUser;
-use ec5\Models\Projects\ProjectDefinition;
-use ec5\Models\Projects\ProjectExtra;
-use ec5\Models\Projects\ProjectMapping;
-use ec5\Models\Projects\ProjectStats;
 use ec5\Models\Eloquent\User;
-use ec5\Repositories\QueryBuilder\Project\SearchRepository;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Illuminate\Foundation\Testing\WithoutMiddleware;
-use Illuminate\Http\Request;
 use Tests\TestCase;
 use Mockery;
 use Config;
@@ -55,7 +42,7 @@ class ProjectDeleteEntriesControllerTest extends TestCase
         $project = factory(Project::class)->create(['created_by' => $user->id]);
 
         //assign the user to that project with the CREATOR role
-        $role = \Illuminate\Support\Facades\Config::get('ec5Strings.project_roles.creator');
+        $role = Config::get('ec5Strings.project_roles.creator');
         $projectRole = factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,

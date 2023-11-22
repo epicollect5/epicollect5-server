@@ -32,7 +32,6 @@ class SearchProjectsControllerTest extends TestCase
      */
     public function test_parameters()
     {
-
         //valid parameters
         $parameters = [
             'sort_by' => 'total_entries',
