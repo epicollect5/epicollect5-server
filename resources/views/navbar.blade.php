@@ -89,7 +89,7 @@
                 {{--Logged in options--}}
                 @if(Auth::guard()->check())
                     @if (Auth::user()->isAdmin() || Auth::user()->isSuperAdmin())
-                        <li @if (Request::is('admin')) class="active" @endif><a href="{{ url('/admin') }}"><i
+                        <li @if (Request::is('admin')) class="active" @endif><a href="{{ url('/admin/stats') }}"><i
                                         class="material-icons">
                                     &#xE31E;</i>&nbsp;{{ trans('site.admin') }}</a></li>
                     @endif

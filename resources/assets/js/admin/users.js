@@ -44,10 +44,10 @@ window.EC5.users = window.EC5.users || {};
 
         // Make ajax request to load users
         $.ajax({
-            url: window.EC5.SITE_URL + '/admin',
+            url: window.EC5.SITE_URL + '/admin/users',
             type: 'GET',
             dataType: 'json',
-            data: { page: page, search: search, filter: filter, filterOption: filterOption }
+            data: {page: page, search: search, filter: filter, filterOption: filterOption}
         }).done(function (data) {
 
             $('.user-administration__users').html(data);
@@ -190,8 +190,8 @@ $(document).ready(function () {
     });
 
     // Default state and access array values
-    var stateValues = { active: 'Active', disabled: 'Disabled' };
-    var accessValues = { basic: 'Basic', admin: 'Admin', superadmin: 'Superadmin' };
+    var stateValues = {active: 'Active', disabled: 'Disabled'};
+    var accessValues = {basic: 'Basic', admin: 'Admin', superadmin: 'Superadmin'};
 
     // Bind on change event for filter drop down to populate filter options
     userAdministration.on('change', '.user-administration__user-filter', function (e) {
