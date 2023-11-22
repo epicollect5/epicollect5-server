@@ -4,8 +4,7 @@ namespace ec5\Console\Commands;
 
 use ec5\Models\Eloquent\ProjectsTotals;
 use Illuminate\Console\Command;
-
-use ec5\Models\Eloquent\User;
+use ec5\Models\Eloquent\UsersTotals;
 use ec5\Models\Eloquent\Entry;
 use ec5\Models\Eloquent\BranchEntry;
 use ec5\Models\Eloquent\SystemStats as SystemStatsModel;
@@ -34,8 +33,8 @@ class SystemStatsCommand extends Command
     public function handle()
     {
         $systemStatsModel = new SystemStatsModel();
-        $user = new User();
-        $project = new ProjectsTotals();
+        $usersTotals = new UsersTotals();
+        $projectsTotals = new ProjectsTotals();
         $entry = new Entry();
         $branchEntry = new BranchEntry();
 
@@ -43,8 +42,8 @@ class SystemStatsCommand extends Command
         try {
             $entriesStats = $entry->getStats();
             $branchEntriesStats = $branchEntry->getStats();
-            $userStats = $user->getStats();
-            $projectStats = $project->getStats();
+            $userStats = $usersTotals->getStats();
+            $projectStats = $projectsTotals->getStats();
 
             $systemStatsModel->user_stats = json_encode($userStats);
             $systemStatsModel->project_stats = json_encode($projectStats);
