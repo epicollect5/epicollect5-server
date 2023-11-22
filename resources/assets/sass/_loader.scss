@@ -12,7 +12,7 @@
   right: 0;
   //margin: 60px auto;
   //font-size: 10px;
-  font-size:5px;
+  font-size: 5px;
   //position: relative;
   text-indent: -9999em;
   border-top: 1.1em solid rgba($light-green, 0.2);
@@ -25,6 +25,7 @@
   -webkit-animation: load8 1.1s infinite linear;
   animation: load8 1.1s infinite linear;
 }
+
 .loader,
 .loader:after {
   border-radius: 50%;
@@ -32,6 +33,7 @@
   height: 10em;
 
 }
+
 @-webkit-keyframes load8 {
   0% {
     -webkit-transform: rotate(0deg);
@@ -42,6 +44,7 @@
     transform: rotate(360deg);
   }
 }
+
 @keyframes load8 {
   0% {
     -webkit-transform: rotate(0deg);
@@ -52,10 +55,23 @@
     transform: rotate(360deg);
   }
 }
+
 .drawer__entry-loader {
   //font-size:5px;
 }
+
 .table-loader {
-  top:121px;//to consider the navbars
+  top: 121px; //to consider the navbars
   // font-size:5px;
+}
+
+.loader-inner {
+  position: absolute;
+  margin-top: 16px;
+  transform: translate(0, -50%);
+}
+
+.panel-shadow {
+  -webkit-box-shadow: 0 1px 4px rgba(0, 0, 0, .3);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .3);
 }

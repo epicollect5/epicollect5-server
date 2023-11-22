@@ -25,23 +25,22 @@ window.EC5.project_users = window.EC5.project_users || {};
         data[pageName] = page;
         data.search = search;
 
-        // Make ajax request to load users
-        $.ajax({
+        var usersRequest = $.ajax({
             url: '',
             type: 'GET',
             dataType: 'json',
             data: data
-        }).done(function (data) {
-            //update role counters
-            $.when(window.EC5.project_users.updateRoleCounters()).always(function () {
-                deferred.resolve(data);
-            });
-        }).fail(function (error) {
-            //update role counters anyway
-            $.when(window.EC5.project_users.updateRoleCounters()).always(function () {
-                deferred.reject(error);
-            });
         });
+
+        var updateCounters = window.EC5.project_users.updateRoleCounters();
+
+        $.when(usersRequest, updateCounters)
+            .then(function (data) {
+                deferred.resolve(data[0]);
+            })
+            .fail(function (error) {
+                deferred.reject(error[0]);
+            });
 
         return deferred.promise();
     };

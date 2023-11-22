@@ -27,8 +27,7 @@ window.EC5.projectDetails = window.EC5.projectDetails || {};
 
                 if ($(item).data('value') === onValue) {
                     $(this).addClass('btn-action');
-                }
-                else {
+                } else {
                     $(this).removeClass('btn-action');
                 }
 
@@ -43,8 +42,7 @@ window.EC5.projectDetails = window.EC5.projectDetails || {};
         settings_elements.each(function (idx, item) {
             if ($(item).data('value') === onValue) {
                 $(this).addClass('btn-action');
-            }
-            else {
+            } else {
                 $(this).removeClass('btn-action');
             }
         });
@@ -74,8 +72,8 @@ window.EC5.projectDetails = window.EC5.projectDetails || {};
                 //show errors to user
                 window.EC5.projectUtils.showErrors(e);
             }).always(function () {
-                window.EC5.overlay.fadeOut();
-            });
+            window.EC5.overlay.fadeOut();
+        });
     };
 
 })(window.EC5.projectDetails);
