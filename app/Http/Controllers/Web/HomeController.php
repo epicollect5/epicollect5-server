@@ -35,7 +35,6 @@ class HomeController extends Controller
      */
     public function index(Request $request)
     {
-
         $columns = [
             'projects.name',
             'projects.slug',
@@ -45,7 +44,6 @@ class HomeController extends Controller
         ];
 
         try {
-
             //get all featured projects (ordered by updated timestamp)
             $allFeaturedProjects = $this->projectModel->featured();
             //first row with 3 projects, as we have the community column

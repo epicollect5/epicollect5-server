@@ -40,12 +40,12 @@ class ProjectEditController extends ProjectControllerBase
      * @param UpdateRep $updateRep
      * @param Search $search
      */
-    public function __construct(Request $request,
-                                ApiResponse $apiResponse,
-                                RuleSettings $ruleSettings,
-        RuleProjectDefinitionDetails $ruleProjectDefinitionDetails,
-                                UpdateRep $updateRep,
-                                Search $search)
+    public function __construct(Request                      $request,
+                                ApiResponse                  $apiResponse,
+                                RuleSettings                 $ruleSettings,
+                                RuleProjectDefinitionDetails $ruleProjectDefinitionDetails,
+                                UpdateRep                    $updateRep,
+                                Search                       $search)
     {
 
         parent::__construct($request);
@@ -55,7 +55,7 @@ class ProjectEditController extends ProjectControllerBase
         $this->ruleSettings = $ruleSettings;
         $this->updateRep = $updateRep;
         $this->search = $search;
-        $this->allowedSettingActions = Config::get('ec5Enums.edit_settings');
+        $this->allowedSettingActions = config('ec5Enums.edit_settings');
 
     }
 
@@ -66,7 +66,7 @@ class ProjectEditController extends ProjectControllerBase
      * @param $action
      * @return \Illuminate\Http\JsonResponse
      */
-    public function settings($slug, $action)
+    public function settings($action)
     {
         $this->action = $action;
 
@@ -84,7 +84,6 @@ class ProjectEditController extends ProjectControllerBase
 
         // If fails return
         if ($this->ruleSettings->hasErrors()) {
-
             return $this->apiResponse->errorResponse(400, ['errors' => $this->ruleSettings->errors()]);
         }
 
@@ -109,7 +108,7 @@ class ProjectEditController extends ProjectControllerBase
     /**
      * Handle all details Edit requests
      *
-     * @param  string $slug project -> slug
+     * @param string $slug project -> slug
      * @return \Illuminate\Http\Response
      */
     /**
@@ -192,30 +191,24 @@ class ProjectEditController extends ProjectControllerBase
      */
     private function saveLogos($driver)
     {
-        return UploadImage::saveImage($this->requestedProject->ref, $this->request->file('logo_url'), 'logo.jpg', $driver, Config::get('ec5Media.' . $driver));
+        return UploadImage::saveImage($this->requestedProject->ref, $this->request->file('logo_url'), 'logo.jpg', $driver, config('ec5Media.' . $driver));
 
     }
 
     /**
-     * Which status depending  on input
+     * Which status depending on input
      *
      * @param $input
      * @return array
      */
-    private function statusInput($input) : array
+    private function statusInput($input): array
     {
+        $statuses = [
+            config('ec5Strings.project_status.trashed'),
+            config('ec5Strings.project_status.locked'),
+        ];
+        $input['status'] = in_array($input['status'], $statuses) ? $input['status'] : config('ec5Strings.project_status.active');
 
-        switch ($input['status']) {
-            case Config::get('ec5Strings.project_status.trashed'):
-                $input['status'] = Config::get('ec5Strings.project_status.trashed');
-                break;
-            case Config::get('ec5Strings.project_status.locked'):
-                $input['status'] = Config::get('ec5Strings.project_status.locked');
-                break;
-            default:
-                $input['status'] = Config::get('ec5Strings.project_status.active');
-                break;
-        }
         return $input;
     }
 

@@ -139,7 +139,7 @@
                 </div>
                 <div class="panel-body">
                     <div class="table-responsive">
-                        <table summary="" class="table">
+                        <table class="table">
                             <caption class="text-center">
                             </caption>
                             <tbody>
@@ -290,13 +290,9 @@
                     <div class="tab-content">
 
                         <div role="tabpanel" class="tab-pane active" id="project-details">
-
                             <p>Project Id : {{ $project->getId() }}</p>
-
                             <p>Project Ref : {{ $project->ref }}</p>
-
-                            <p>Created By : {{ ec5\Models\Users\User::find($project->created_by)->email }}</p>
-
+                            <p>Created By : {{ $project->creatorEmail }}</p>
                             <p>Updated at : {{ $project->getUpdatedAt() }}</p>
                         </div>
 
@@ -316,9 +312,12 @@
 @endif
 
 {{-- js variables --}}
-<div class="js-project-details hidden" data-js-status="{{ $project->status }}"
-     data-js-access="{{ $project->access }}" data-js-visibility="{{ $project->visibility }}"
-     data-js-logo_url="{{ $project->logo_url }}" data-js-category="{{ $project->category }}"
+<div class="js-project-details hidden"
+     data-js-status="{{ $project->status }}"
+     data-js-access="{{ $project->access }}"
+     data-js-visibility="{{ $project->visibility }}"
+     data-js-logo_url="{{ $project->logo_url }}"
+     data-js-category="{{ $project->category }}"
      data-js-slug="{{ $project->slug }}">
 </div>
 

@@ -2,7 +2,6 @@
 
 namespace ec5\Libraries\Jwt;
 
-use ec5\Repositories\Eloquent\User\UserRepository;
 use Illuminate\Support\ServiceProvider;
 use ec5\Models\Eloquent\User;
 use Auth;
@@ -32,7 +31,7 @@ class JwtAuthServiceProvider extends ServiceProvider
             $userProvider = new JwtUserProvider($app['hash'], new User);
 
             // Pass this to the Jwt Guard
-            $guard = new JwtGuard($userProvider, $app['request'], new Jwt(new UserRepository));
+            $guard = new JwtGuard($userProvider, $app['request'], new Jwt());
 
             // Set cookie jar
             if (method_exists($guard, 'setCookieJar')) {

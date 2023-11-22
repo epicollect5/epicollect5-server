@@ -74,7 +74,6 @@ class ProfileController extends Controller
 
     public function connectGoogle(Request $request)
     {
-
         //local users cannot connect Google
         if ($this->isLocal($this->user)) {
             return redirect()->back();
@@ -138,7 +137,7 @@ class ProfileController extends Controller
 
                     $googleProvider->save();
 
-                    //redirect with success message
+                    //redirect with a success message
                     return redirect()->route('profile')
                         ->with([
                             'message' => 'ec5_379',
@@ -160,7 +159,7 @@ class ProfileController extends Controller
         }
     }
 
-    //this is going to be a post
+    //this is going to be a post request as a callback by Apple
     public function handleAppleConnectCallback(Request $request)
     {
         $appleUser = null;
@@ -249,7 +248,7 @@ class ProfileController extends Controller
                             }
                         }
 
-                        //redirect with success message
+                        //redirect with a success message
                         session()->forget('nonce');
                         return redirect()->route('profile')
                             ->with([
@@ -276,16 +275,6 @@ class ProfileController extends Controller
             5,
             10
         );
-    }
-
-    private function isLocalUnverified($user)
-    {
-        return $user->provider === Config::get('ec5Strings.providers.local') && $user->state === Config::get('ec5Strings.user_state.unverified');
-    }
-
-    private function isLocalActive($user)
-    {
-        return $user->provider === Config::get('ec5Strings.providers.local') && $user->state === Config::get('ec5Strings.user_state.active');
     }
 
     private function isLocal($user)

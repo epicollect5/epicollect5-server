@@ -32,7 +32,7 @@ class ProjectController extends ProjectControllerBase
      */
     public function show()
     {
-        $vars = $this->defaultProjectDetailsParams('', '',  true);
+        $vars = $this->defaultProjectDetailsParams('', '', true);
         $canShowSocialMediaShareBtns = false;
         $PUBLIC = Config::get('ec5Strings.project_access.public');
         $LISTED = Config::get('ec5Strings.project_visibility.listed');
@@ -77,9 +77,9 @@ class ProjectController extends ProjectControllerBase
     }
 
     /**
-     * Download the project structure JSON
+     * Download the project definition as JSON
      */
-    public function downloadStructure()
+    public function downloadProjectDefinition()
     {
         return new JsonResponse(
             ['data' => $this->requestedProject->getProjectDefinition()->getData()],
@@ -92,53 +92,25 @@ class ProjectController extends ProjectControllerBase
     }
 
     /**
-     * Show the form for editing the specified resource.
-     * NO POSTS ALLOWED should only be get to show data
-     *
-     * @param  \Illuminate\Http\Request $request
-     * @param  slug
-     * @return \Illuminate\Http\Response
+     * Show formbuilder page
      */
-    public function edit(Request $request, $slug)
+    public function formbuilder()
     {
-        $action = last($request->segments());
-
         if (!$this->requestedProjectRole->canEditProject()) {
             $errors = ['ec5_91'];
             return view('errors.gen_error')->withErrors(['errors' => $errors]);
         }
-
-        if ($action == 'formbuilder') {
-            return view(
-                'project.formbuilder',
-                ['projectName' => $this->requestedProject->name]
-            );
-        }
-
-        $vars = $this->defaultProjectDetailsParams('edit', 'details-edit');
-        $vars['action'] = $action;
-
-        return view('project.project_details', $vars);
+        return view(
+            'project.formbuilder',
+            ['projectName' => $this->requestedProject->name]
+        );
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \Illuminate\Http\Request $request
-     * @param  string $slug project -> slug
-     * @return \Illuminate\Http\Response
+    /*
+     * Show dataviewer page
      */
-    public function data(Request $request, $slug)
+    public function dataviewer(Request $request, $slug)
     {
-        //get project name
-        //HACK FOR COG-UK: stop users not logged in
-        if ($this->requestedProject->ref === '293a6f6a46ea438d8940e102acb008e4') {
-            if (!$this->requestedProjectRole->canEditData()) {
-                return view('errors.gen_error')->withErrors(['errors' => ['ec5_91']]);
-            }
-        }
-        //END HACK
-
         return view('project.dataviewer', [
             'project' => $this->requestedProject
         ]);

@@ -90,7 +90,8 @@
             <th>mapping</th>
             <th>
                 {{ $mapping['name'] }}
-                @if ($mapping['is_default']) <em>(default)</em>
+                @if ($mapping['is_default'])
+                    <em>(default)</em>
                 @endif
             </th>
         </tr>
@@ -111,7 +112,8 @@
 
 
 <p>
-    <a class="btn btn-action btn-sm pull-right" href="{{ url('/myprojects/'.$project->slug.'/download-structure')}}">
+    <a class="btn btn-action btn-sm pull-right"
+       href="{{ url('/myprojects/'.$project->slug.'/download-project-definition')}}">
         <i class="material-icons">archive</i>
         {{trans('site.download_project_definition')}}
     </a>

@@ -22,11 +22,8 @@ use Config;
 class ManageUsersController extends ProjectControllerBase
 {
     protected $projectRoleSearch;
-
     protected $projectRoleCreate;
-
     protected $projectRoleDelete;
-
     protected $projectSearch;
 
     /**
@@ -64,41 +61,35 @@ class ManageUsersController extends ProjectControllerBase
         if (!$this->requestedProjectRole->isManager()) {
             return Redirect::back()->withErrors(['ec5_91']);
         }
-
-        // Get request data
-        $input = $request->all();
-
+        $params = $request->all();
         // Set per page limit
         $perPage = Config::get('ec5Limits.users_per_page');
 
         // Set search/roles/current page option defaults
-        $search = !empty($input['search']) ? $input['search'] : '';
-        $options = [];
-        $options['roles'] = [];
+        $search = $params['search'] ?? '';
+        $options = [
+            'roles' => []
+        ];
         $currentPage = 1;
 
-        // Set up the roles and current page to retrieve
-        if (!empty($input['page-manager'])) {
-            $options['roles'] = ['manager'];
-            $currentPage = $input['page-manager'];
-        } else {
-            if (!empty($input['page-curator'])) {
-                $options['roles'] = ['curator'];
-                $currentPage = $input['page-curator'];
-            } else {
-                if (!empty($input['page-collector'])) {
-                    $options['roles'] = ['collector'];
-                    $currentPage = $input['page-collector'];
-                } else {
-                    if (!empty($input['page-viewer'])) {
-                        $options['roles'] = ['viewer'];
-                        $currentPage = $input['page-viewer'];
-                    } else {
-                        // Otherwise set up all user roles
-                        $options['roles'] = array_keys(Config::get('ec5Permissions.projects.roles'));
-                    }
-                }
+        $pageToRoleMapping = [
+            'page-manager' => ['manager'],
+            'page-curator' => ['curator'],
+            'page-collector' => ['collector'],
+            'page-viewer' => ['viewer']
+        ];
+
+        foreach ($pageToRoleMapping as $key => $role) {
+            if (!empty($params[$key])) {
+                $options['roles'] = $role;
+                $currentPage = $params[$key];
+                break; // Exit the loop if a match is found
             }
+        }
+
+        if (!isset($options['roles'])) {
+            // Otherwise set up all user roles
+            $options['roles'] = array_keys(Config::get('ec5Permissions.projects.roles'));
         }
 
         // Set project id in options
@@ -182,8 +173,8 @@ class ManageUsersController extends ProjectControllerBase
     {
         $requestedUser = $request->attributes->get('requestedUser');
 
-        // Only creators and managers have access
-        if (!$this->requestedProjectRole->isManager()) {
+        // Only creators and managers can add users
+        if (!$this->requestedProjectRole->canAddUsers()) {
             // If ajax, return error json
             if ($request->ajax()) {
                 return $apiResponse->errorResponse(404, ['manage-users' => ['ec5_91']]);
@@ -192,11 +183,10 @@ class ManageUsersController extends ProjectControllerBase
         }
 
         // Retrieve post data
-        $input = $request->all();
+        $params = $request->all();
 
-
-        // Validate the input
-        $validator->validate($input);
+        // Validate the params
+        $validator->validate($params);
         if ($validator->hasErrors()) {
             // If ajax, return error json
             if ($request->ajax()) {
@@ -206,12 +196,12 @@ class ManageUsersController extends ProjectControllerBase
         }
 
         // Retrieve the user whose role is to be added
-        $user = User::where('email', '=', $input['email'])->first();
+        $user = User::where('email', '=', $params['email'])->first();
         if (!$user) {
             // If no user, add a placeholder user to the system
             //other fields will be filled in when the user logs in
             $user = new User();
-            $user->email = $input['email'];
+            $user->email = $params['email'];
             $user->save();
         }
         // Attempt to get their existing role, if they have one
@@ -223,7 +213,7 @@ class ManageUsersController extends ProjectControllerBase
             $requestedUser,
             $user,
             $this->requestedProjectRole->getRole(),
-            $input['role'],
+            $params['role'],
             $userProjectRole->getRole()
         );
         if ($validator->hasErrors()) {
@@ -243,7 +233,7 @@ class ManageUsersController extends ProjectControllerBase
         }
 
         // Create the project role for this user
-        $this->projectRoleCreate->create($user->id, $this->requestedProject->getId(), $input['role']);
+        $this->projectRoleCreate->create($user->id, $this->requestedProject->getId(), $params['role']);
 
         // If ajax, return success json
         if ($request->ajax()) {
@@ -253,7 +243,7 @@ class ManageUsersController extends ProjectControllerBase
         }
 
         // Redirect back to admin page with hash value
-        return Redirect::to(URL::previous() . '#' . $input['role'])->with('message', 'ec5_88');
+        return Redirect::to(URL::previous() . '#' . $params['role'])->with('message', 'ec5_88');
     }
 
     /**
@@ -280,10 +270,10 @@ class ManageUsersController extends ProjectControllerBase
         }
 
         // Retrieve post data
-        $input = $request->all();
+        $params = $request->all();
 
         // Retrieve the user whose role is to be removed
-        $user = User::where('email', '=', $input['email'])->first();
+        $user = User::where('email', '=', $params['email'])->first();
         if (!$user) {
             if ($request->ajax()) {
                 return $apiResponse->errorResponse(400, ['manage-users' => ['ec5_90']]);

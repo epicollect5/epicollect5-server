@@ -54,8 +54,7 @@ if ($('.page-search-projects').length > 0) {
 
                     console.log(projectName);
                 }, 500);
-            }
-            else {
+            } else {
                 //reset giving all projects
                 if (projectName.trim() == '') {
                     delay(function () {
