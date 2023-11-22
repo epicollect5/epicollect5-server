@@ -62,7 +62,7 @@ class SignUpController extends Controller
             //parse recaptcha response for any errors
             $recaptchaResponse = $inputs['g-recaptcha-response'];
             $recaptchaErrors = $this->getAnyRecaptchaErrors($recaptchaResponse);
-            if (!isEmpty($recaptchaErrors)) {
+            if (!empty($recaptchaErrors)) {
                 return redirect()->back()->withErrors($recaptchaErrors);
             }
         }
