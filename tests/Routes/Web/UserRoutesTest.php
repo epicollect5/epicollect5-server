@@ -3,10 +3,12 @@
 namespace Tests\Routes\Web;
 
 use ec5\Models\Eloquent\User;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class UserRoutesTest extends TestCase
 {
+    use DatabaseTransactions;
 
     /**
      * Test an authenticated user's routes

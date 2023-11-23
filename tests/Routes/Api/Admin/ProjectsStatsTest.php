@@ -2,12 +2,14 @@
 
 namespace Tests\Routes\Api\Admin;
 
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\WithoutMiddleware;
 use Tests\TestCase;
 
 class ProjectsStatsTest extends TestCase
 {
     use WithoutMiddleware;
+    use DatabaseTransactions;
 
     /**
      * A basic test example.
@@ -16,8 +18,6 @@ class ProjectsStatsTest extends TestCase
      */
     public function test_projects_stats_api_response()
     {
-
-
         $apiContentTypeHeaderKey = Config('ec5Api.responseContentTypeHeaderKey');
         $apiContentTypeHeaderValue = Config('ec5Api.responseContentTypeHeaderValue');
 

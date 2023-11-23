@@ -3,10 +3,13 @@
 namespace Tests\Http\Controllers\Web\Projects;
 
 use ec5\Models\Eloquent\User;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class MyProjectsControllerTest extends TestCase
 {
+    use DatabaseTransactions;
+    
     const DRIVER = 'web';
 
     public function test_my_projects_page_renders_correctly()

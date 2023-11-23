@@ -146,7 +146,7 @@ class ImportMethodTest extends TestCase
         $user = factory(User::class)->create();
         $projectName = 'Multiple    Spaces      between   words   ';
         $projectSlug = 'multiple-spaces-between-words';
-        $projectDefinition = (ProjectDefinitionGenerator::createSampleProject(1));
+        $projectDefinition = (ProjectDefinitionGenerator::createProject(1));
         $projectDefinition['data']['project']['name'] = $projectName;
         $projectDefinition['data']['project']['slug'] = $projectSlug;
         // Create a temporary file with content

@@ -2,6 +2,7 @@
 
 namespace Tests\Routes\Api\Admin;
 
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\WithoutMiddleware;
 use Tests\TestCase;
 
@@ -9,6 +10,7 @@ class EntriesStatsTest extends TestCase
 {
 
     use WithoutMiddleware;
+    use DatabaseTransactions;
 
     /**
      * Test entries stats api json response

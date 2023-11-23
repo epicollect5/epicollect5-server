@@ -4,6 +4,7 @@ namespace Tests\Routes\Web;
 
 use ec5\Models\Eloquent\UserProvider;
 use ec5\Models\Eloquent\User;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Laravel\Socialite\Facades\Socialite;
 use Mockery;
 use Tests\TestCase;
@@ -12,6 +13,8 @@ use Tests\TestCase;
 
 class UserAuthTest extends TestCase
 {
+    use DatabaseTransactions;
+
     /**
      * Mock the Socialite Factory, so we can hijack the OAuth Request.
      * @param string $email
