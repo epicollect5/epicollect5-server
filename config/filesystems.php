@@ -63,11 +63,6 @@ return [
             'root' => storage_path('app/entries/photo/entry_original'),
         ],
 
-        'entry_sidebar' => [
-            'driver' => 'local',
-            'root' => storage_path('app/entries/photo/entry_sidebar'),
-        ],
-
         'entry_thumb' => [
             'driver' => 'local',
             'root' => storage_path('app/entries/photo/entry_thumb'),
@@ -109,11 +104,6 @@ return [
         'orphan_entry_original' => [
             'driver' => 'local',
             'root' => storage_path('app/orphans/photo/entry_original'),
-        ],
-
-        'orphan_entry_sidebar' => [
-            'driver' => 'local',
-            'root' => storage_path('app/orphans/photo/entry_sidebar'),
         ],
 
         'orphan_entry_thumb' => [

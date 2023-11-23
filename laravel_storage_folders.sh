@@ -11,7 +11,7 @@ mkdir -p ${DIR}/app/projects/{project_mobile_logo,project_thumb}
 
 mkdir -p ${DIR}/app/entries/{audio,photo,video}
 
-mkdir -p ${DIR}/app/entries/photo/{entry_original,entry_sidebar,entry_thumb}
+mkdir -p ${DIR}/app/entries/photo/{entry_original,entry_thumb}
 
 mkdir -p ${DIR}/framework/{cache,sessions,views}
 

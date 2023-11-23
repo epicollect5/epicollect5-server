@@ -117,7 +117,6 @@ class ImageToolsController extends Controller
 
         // Array of drivers we're going to copy and resize the original entry image to
         $drivers = [
-            'entry_sidebar',
             'entry_thumb'
         ];
 
@@ -152,7 +151,7 @@ class ImageToolsController extends Controller
 
                     // Get the file destination path
                     $fileDestPath = $disk->getDriver()->getAdapter()->getPathPrefix() . $filePath;
-                    
+
                     // Get original image
                     $imageOriginal = new UploadedFile($fileSourcePath, $fileName);
 

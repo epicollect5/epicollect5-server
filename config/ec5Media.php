@@ -6,7 +6,6 @@ return [
     'entry_original' => [1024, 768],
     'entry_original_portrait' => [768, 1024],
     'entry_original_landscape' => [1024, 768],
-    'entry_sidebar' => [400, 300],
     'entry_thumb' => [100, 100],
     'project_thumb' => [512, 512],
     'project_mobile_logo' => [128, 128],
@@ -35,7 +34,6 @@ return [
     // List of types viewable via the media controller
     'viewable' => [
         'entry_original',
-        'entry_sidebar',
         'entry_thumb',
         'project_thumb',
         'project_mobile_logo',
@@ -46,7 +44,6 @@ return [
     // List of the directory drivers we want to delete files from when deleting a project
     'project_deletable' => [
         'entry_original',
-        'entry_sidebar',
         'entry_thumb',
         'project_thumb',
         'project_mobile_logo',
@@ -55,7 +52,6 @@ return [
     ],
     'entries_deletable' => [
         'entry_original',
-        'entry_sidebar',
         'entry_thumb',
         'video',
         'audio'
