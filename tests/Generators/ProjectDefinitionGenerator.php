@@ -4,15 +4,14 @@ namespace Tests\Generators;
 
 use Carbon\Carbon;
 use ec5\Libraries\Utilities\Generators;
+use Illuminate\Support\Str;
 
-class FakeProjectDefinitionGenerator
+class ProjectDefinitionGenerator
 {
     /**
      * Generate a sample project array for testing.
-     *
-     * @return array
      */
-    public static function createSampleProject($howManyForms = 1): array
+    public static function createProject($howManyForms = 1): array
     {
         $projectRef = Generators::projectRef();
         $forms = [];
@@ -89,14 +88,12 @@ class FakeProjectDefinitionGenerator
 
     /**
      * Generate a sample project array with a specific name.
-     *
-     * @param string $name
-     * @return array
      */
-    public static function createSampleProjectWithName(string $name): array
+    public static function create(string $name): array
     {
-        $project = self::createSampleProject();
+        $project = self::createProject();
         $project['data']['project']['name'] = $name;
+        $project['data']['project']['slug'] = Str::slug($name, '-');
 
         return $project;
     }

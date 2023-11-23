@@ -13,6 +13,7 @@
 // Internal api routes
 Route::group(['middleware' => ['project.permissions']], function () {
 
+    //used by the dataviewer
     Route::get('api/internal/project/{project_slug}', 'Api\Project\ProjectController@show');
 
     //Datasets
@@ -23,7 +24,7 @@ Route::group(['middleware' => ['project.permissions']], function () {
 
     //    Route::post('api/internal/dataset/{project_slug}/delete', 'Api\Project\DatasetController@destroy');
 
-    // Media
+    // Media, used by the dataviewer
     Route::get('api/internal/media/{project_slug}', 'Api\Project\MediaController@getMedia');
 
     // Temp Media

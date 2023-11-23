@@ -8,7 +8,7 @@ use ec5\Libraries\Utilities\Strings;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectStructure;
 use ec5\Models\Eloquent\User;
-use Tests\Generators\FakeProjectDefinitionGenerator;
+use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\UploadedFile;
@@ -146,7 +146,7 @@ class ImportMethodTest extends TestCase
         $user = factory(User::class)->create();
         $projectName = 'Multiple    Spaces      between   words   ';
         $projectSlug = 'multiple-spaces-between-words';
-        $projectDefinition = (FakeProjectDefinitionGenerator::createSampleProject(1));
+        $projectDefinition = (ProjectDefinitionGenerator::createSampleProject(1));
         $projectDefinition['data']['project']['name'] = $projectName;
         $projectDefinition['data']['project']['slug'] = $projectSlug;
         // Create a temporary file with content

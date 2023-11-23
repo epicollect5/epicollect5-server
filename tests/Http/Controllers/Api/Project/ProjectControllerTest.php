@@ -3,17 +3,22 @@
 namespace Tests\Http\Controllers\Api\Project;
 
 use ec5\Libraries\Utilities\Generators;
+use ec5\Models\Eloquent\OAuthClientProjects;
 use ec5\Models\Eloquent\Project;
+use ec5\Models\Eloquent\ProjectRole;
+use ec5\Models\Eloquent\ProjectStat;
 use ec5\Models\Eloquent\ProjectStructure;
 use ec5\Models\Eloquent\User;
 use Illuminate\Support\Facades\Config;
+use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use ec5\Traits\Assertions;
 
 
 class ProjectControllerTest extends TestCase
 {
-    use DatabaseTransactions;
+    use DatabaseTransactions, Assertions;
 
     const DRIVER = 'web';
 
@@ -43,17 +48,17 @@ class ProjectControllerTest extends TestCase
             ->json('GET', 'api/internal/exists/' . $project->slug)
             ->assertStatus(200)
             ->assertExactJson([
-                "data" => [
-                    "type" => "exists",
-                    "id" => $project->slug,
-                    "exists" => true
+                'data' => [
+                    'type' => 'exists',
+                    'id' => $project->slug,
+                    'exists' => true
                 ]
             ])
             ->assertJsonStructure([
-                "data" => [
-                    "type",
-                    "id",
-                    "exists",
+                'data' => [
+                    'type',
+                    'id',
+                    'exists',
                 ]
             ]);
         $responseData = ($response->json())['data']; // Convert the JSON data response to an array.
@@ -80,20 +85,20 @@ class ProjectControllerTest extends TestCase
         $response = $this->json('GET', 'api/internal/exists/' . $project->slug)
             ->assertStatus(404)
             ->assertExactJson([
-                "errors" => [
+                'errors' => [
                     [
-                        "code" => "ec5_219",
-                        "title" => "Page not found.",
-                        "source" => "auth"
+                        'code' => 'ec5_219',
+                        'title' => 'Page not found.',
+                        'source' => 'auth'
                     ]
                 ]
             ])
             ->assertJsonStructure([
-                "errors" => [
+                'errors' => [
                     [
-                        "code",
-                        "title",
-                        "source"
+                        'code',
+                        'title',
+                        'source'
                     ]
                 ]
             ]);
@@ -116,17 +121,17 @@ class ProjectControllerTest extends TestCase
             ->json('GET', 'api/internal/exists/' . $ref)
             ->assertStatus(200)
             ->assertExactJson([
-                "data" => [
-                    "type" => "exists",
-                    "id" => $ref,
-                    "exists" => false
+                'data' => [
+                    'type' => 'exists',
+                    'id' => $ref,
+                    'exists' => false
                 ]
             ])
             ->assertJsonStructure([
-                "data" => [
-                    "type",
-                    "id",
-                    "exists",
+                'data' => [
+                    'type',
+                    'id',
+                    'exists',
                 ]
             ]);
         $responseData = ($response->json())['data']; // Convert the JSON data response to an array.
@@ -153,28 +158,28 @@ class ProjectControllerTest extends TestCase
         $response = $this->json('GET', 'api/projects/' . $project->name)
             ->assertStatus(200)
             ->assertExactJson([
-                "data" => [
+                'data' => [
                     [
-                        "type" => "project",
-                        "id" => $ref,
-                        "project" => [
-                            "name" => $ref,
-                            "slug" => $ref,
-                            "access" => "public",
-                            "ref" => $ref
+                        'type' => 'project',
+                        'id' => $ref,
+                        'project' => [
+                            'name' => $ref,
+                            'slug' => $ref,
+                            'access' => 'public',
+                            'ref' => $ref
                         ]
                     ]
                 ]
             ])
-            ->assertJsonStructure(["data" => [
+            ->assertJsonStructure(['data' => [
                 [
-                    "type",
-                    "id",
-                    "project" => [
-                        "name",
-                        "slug",
-                        "access",
-                        "ref"
+                    'type',
+                    'id',
+                    'project' => [
+                        'name',
+                        'slug',
+                        'access',
+                        'ref'
                     ]
                 ]
             ]]);
@@ -189,7 +194,7 @@ class ProjectControllerTest extends TestCase
 
         $numOfProjects = 20;
         $needle = 'EC5 Unit ';
-        //create fake projects (use "EC5 Unit" to avoid uniqueness issues)
+        //create fake projects (use 'EC5 Unit' to avoid uniqueness issues)
         for ($i = 0; $i < $numOfProjects; $i++) {
             $project = factory(Project::class)->create([
                 'name' => 'EC5 Unit Tests ' . $i,
@@ -202,15 +207,15 @@ class ProjectControllerTest extends TestCase
         //assert structure of each element returned
         $response = $this->json('GET', 'api/projects/' . $needle)
             ->assertStatus(200)
-            ->assertJsonStructure(["data" => [
+            ->assertJsonStructure(['data' => [
                 [
-                    "type",
-                    "id",
-                    "project" => [
-                        "name",
-                        "slug",
-                        "access",
-                        "ref"
+                    'type',
+                    'id',
+                    'project' => [
+                        'name',
+                        'slug',
+                        'access',
+                        'ref'
                     ]
                 ]
             ]]);
@@ -229,7 +234,7 @@ class ProjectControllerTest extends TestCase
 
         $numOfProjects = 20;
         $needle = 'EC5 Unit ';
-        //create fake projects (use "EC5 Unit" to avoid uniqueness issues)
+        //create fake projects (use 'EC5 Unit' to avoid uniqueness issues)
         for ($i = 0; $i < $numOfProjects; $i++) {
             $project = factory(Project::class)->create([
                 'name' => 'EC5 Unit Tests ' . $i,
@@ -243,7 +248,7 @@ class ProjectControllerTest extends TestCase
         //assert structure of each element returned
         $response = $this->json('GET', 'api/projects/' . $needle)
             ->assertStatus(200)
-            ->assertJsonStructure(["data" => []]);
+            ->assertJsonStructure(['data' => []]);
 
         $responseData = ($response->json())['data']; // Convert the JSON data response to an array.
         $this->assertCount(0, $responseData);
@@ -258,7 +263,7 @@ class ProjectControllerTest extends TestCase
 
         $numOfProjects = 20;
         $needle = 'EC5 Unit ';
-        //create fake projects (use "EC5 Unit" to avoid uniqueness issues)
+        //create fake projects (use 'EC5 Unit' to avoid uniqueness issues)
         for ($i = 0; $i < $numOfProjects; $i++) {
             $project = factory(Project::class)->create([
                 'name' => 'EC5 Unit Tests ' . $i,
@@ -272,7 +277,7 @@ class ProjectControllerTest extends TestCase
         //assert structure of each element returned
         $response = $this->json('GET', 'api/projects/' . $needle)
             ->assertStatus(200)
-            ->assertJsonStructure(["data" => []]);
+            ->assertJsonStructure(['data' => []]);
 
         $responseData = ($response->json())['data']; // Convert the JSON data response to an array.
         $this->assertCount(0, $responseData);
@@ -298,7 +303,7 @@ class ProjectControllerTest extends TestCase
         $response = $this->json('GET', 'api/projects/')
             ->assertStatus(200)
             ->assertExactJson([
-                "data" => []
+                'data' => []
             ]);
 
         $responseData = ($response->json())['data']; // Convert the JSON data response to an array.
@@ -329,21 +334,21 @@ class ProjectControllerTest extends TestCase
         $response = $this->json('GET', 'api/project-version/' . $project->slug)
             ->assertStatus(200)
             ->assertExactJson([
-                "data" => [
-                    "type" => "project-version",
-                    "id" => $project->slug,
-                    "attributes" => [
-                        "structure_last_updated" => $projectStructure->updated_at->toDateTimeString(),
-                        "version" => (string)$projectStructure->updated_at->timestamp
+                'data' => [
+                    'type' => 'project-version',
+                    'id' => $project->slug,
+                    'attributes' => [
+                        'structure_last_updated' => $projectStructure->updated_at->toDateTimeString(),
+                        'version' => (string)$projectStructure->updated_at->timestamp
                     ]
                 ]
             ])
-            ->assertJsonStructure(["data" => [
-                "type",
-                "id",
-                "attributes" => [
-                    "structure_last_updated",
-                    "version",
+            ->assertJsonStructure(['data' => [
+                'type',
+                'id',
+                'attributes' => [
+                    'structure_last_updated',
+                    'version',
                 ]
             ]]);
 
@@ -360,19 +365,19 @@ class ProjectControllerTest extends TestCase
         $response = $this->json('GET', 'api/project-version/' . $ref)
             ->assertStatus(500)
             ->assertExactJson([
-                "errors" => [
+                'errors' => [
                     [
-                        "code" => "ec5_11",
-                        "title" => "Project does not exist.",
-                        "source" => "version"
+                        'code' => 'ec5_11',
+                        'title' => 'Project does not exist.',
+                        'source' => 'version'
                     ]
                 ]
             ])
-            ->assertJsonStructure(["errors" => [
+            ->assertJsonStructure(['errors' => [
                 [
-                    "code",
-                    "title",
-                    "source"
+                    'code',
+                    'title',
+                    'source'
                 ]
             ]]);
 
@@ -380,16 +385,75 @@ class ProjectControllerTest extends TestCase
         $this->assertKeysNotEmpty($responseError);
     }
 
-    public function assertKeysNotEmpty(array $data)
+
+    public function test_should_return_project_definition_as_json()
     {
-        foreach ($data as $key => $value) {
-            if (is_array($value)) {
-                $this->assertKeysNotEmpty($value);
-            } else {
-                if ($value === null || $value === '') {
-                    $this->fail("Key [$key] has an empty value.");
-                }
-            }
+        $user = factory(User::class)->create();
+        // 2- create mock project with that user
+        $project = factory(Project::class)->create(['created_by' => $user->id]);
+
+        //assign the user to that project with the CREATOR role
+        $projectRole = factory(ProjectRole::class)->create([
+            'user_id' => $user->id,
+            'project_id' => $project->id,
+            'role' => config('ec5Strings.project_roles.creator')
+        ]);
+
+        //add fake stats
+        factory(ProjectStat::class)->create([
+            'project_id' => $project->id,
+            'total_entries' => 0
+        ]);
+        //fake structure
+        $projectDefinition = ProjectDefinitionGenerator::create($project->name);
+        factory(ProjectStructure::class)->create(
+            [
+                'project_id' => $project->id,
+                //pass the "data" content as the controller tested will add it under "data" again
+                'project_definition' => json_encode($projectDefinition['data'])
+            ]
+        );
+
+        $response = $this->json('GET', 'api/internal/project/' . $project->slug)
+            ->assertStatus(200)
+            ->assertJsonStructure([
+                'meta' => [
+                    'project_extra' => [],
+                    'project_user' => [],
+                    'project_mapping' => [],
+                    'project_stats' => []
+                ],
+                'data' => config('testing.JSON_STRUCTURES_WITH_WILDCARD.project_definition')
+            ]);
+
+        $jsonResponse = json_decode($response->getContent(), true);
+
+        $this->assertProjectResponse($jsonResponse);
+
+    }
+
+    //test response by getting existing projects randomly
+    public function test_should_assert_response_using_existing_projects()
+    {
+        $projects = Project::inRandomOrder()->take(100)->get();
+        //use superadmin account to be able to access any project
+        $superadmin = User::where('email', config('ec5Setup.super_admin_user.email'))->first();
+
+        foreach ($projects as $project) {
+            $response = $this->actingAs($superadmin)
+                ->json('GET', 'api/internal/project/' . $project->slug)
+                ->assertStatus(200)
+                ->assertJsonStructure([
+                    'meta' => [
+                        'project_extra' => [],
+                        'project_user' => [],
+                        'project_mapping' => [],
+                        'project_stats' => []
+                    ],
+                    'data' => config('testing.JSON_STRUCTURES_WITH_WILDCARD.project_definition')
+                ]);
+            $jsonResponse = json_decode($response->getContent(), true);
+            $this->assertProjectResponse($jsonResponse);
         }
     }
 }

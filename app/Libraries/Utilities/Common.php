@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
 
 class Common
 {
-    public static function getPossibleAnswers($input)
+    public static function getPossibleAnswers($input): array
     {
         $possibleAnswers = $input['possible_answers'];
         $possibles = [];
@@ -27,7 +27,7 @@ class Common
         return $possibles;
     }
 
-    public static function generateFilename($prefix, $f)
+    public static function generateFilename($prefix, $f): string
     {
         /**
          *  Truncate anything bigger than 100 chars
@@ -40,14 +40,14 @@ class Common
         return $prefix . '__' . Str::slug(substr(strtolower($f), 0, 100));
     }
 
-    public static function isValidTimestamp($timestamp)
+    public static function isValidTimestamp($timestamp): bool
     {
         return ((string)(int)$timestamp === $timestamp)
             && ($timestamp <= PHP_INT_MAX)
             && ($timestamp >= ~PHP_INT_MAX);
     }
 
-    public static function formatBytes($bytes, $precision = 2)
+    public static function formatBytes($bytes, $precision = 2): string
     {
         $units = array('B', 'KB', 'MB', 'GB', 'TB');
 
@@ -80,4 +80,6 @@ class Common
 
         return round($number / pow(1000, ($i = floor(log($number, 1000)))), $round) . $unit[$i];
     }
+
+
 }

@@ -28,13 +28,13 @@ class ProjectController extends ProjectControllerBase
     {
         $data = $this->requestedProject->getProjectDefinition()->getData();
 
-        //HACK:, we needed to expose the creation date of a project at a later stage and this was the laziest way ;)
+        //HACK:, we needed to expose the creation date of a project at a later stage, and this was the laziest way ;)
         $data['project']['created_at'] = $this->requestedProject->getCreatedAt();
 
-        //HACK:, we needed to expose the can_bulk_upload property of a project at a later stage and this was the laziest way ;)
+        //HACK:, we needed to expose the can_bulk_upload property of a project at a later stage, and this was the laziest way ;)
         $data['project']['can_bulk_upload'] = $this->requestedProject->getCanBulkUpload();
 
-        //HACK:, we needed to expose the project homepage property of a project at a later stage and this was the laziest way ;)
+        //HACK:, we needed to expose the project homepage property of a project at a later stage, and this was the laziest way ;)
         $homepage = config('app.url') . '/project/' . $this->requestedProject->slug;
         $data['project']['homepage'] = $homepage;
 
