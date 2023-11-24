@@ -4,7 +4,6 @@ namespace ec5\Http\Validation\Media;
 
 use ec5\Models\Projects\Project;
 use ec5\Http\Validation\ValidationBase;
-use Config;
 
 class RuleMedia extends ValidationBase
 {
@@ -22,7 +21,7 @@ class RuleMedia extends ValidationBase
     public function __construct()
     {
         // Add the format check to rules, from media config file
-        $this->rules['format'] = 'required|in:' . implode(Config::get('ec5Media.viewable'), ',');
+        $this->rules['format'] = 'required|in:' . implode(config('epicollect.media.formats'), ',');
     }
 
     /**

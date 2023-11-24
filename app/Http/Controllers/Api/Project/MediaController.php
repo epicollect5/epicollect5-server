@@ -2,17 +2,15 @@
 
 namespace ec5\Http\Controllers\Api\Project;
 
-use ec5\Http\Validation\Media\RuleMedia as MediaValidator;
-
+use ec5\Http\Validation\Media\RuleMedia;
 use ec5\Http\Controllers\Api\ApiResponse;
 use ec5\Http\Controllers\ProjectControllerBase;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Exception;
-use Illuminate\Support\Facades\Config;
 use Response;
 use Storage;
-use Image;
 use Log;
 use ec5\Libraries\Utilities\MediaStreaming;
 
@@ -20,34 +18,36 @@ class MediaController extends ProjectControllerBase
 {
     /*
     |--------------------------------------------------------------------------
-    | View Entry Controller
+    | Media Controller
     |--------------------------------------------------------------------------
     |
-    | This controller handles the export of entry data from the server
+    | This controller serves media files
     |
     */
 
     /**
      * @param Request $request
      * @param ApiResponse $apiResponse
-     * @param MediaValidator $mediaValidator
+     * @param ruleMedia $ruleMedia
+     * @return JsonResponse|\Illuminate\Http\Response
+     * @throws FileNotFoundException
      */
-    public function getMedia(Request $request, ApiResponse $apiResponse, MediaValidator $mediaValidator)
+    public function getMedia(Request $request, ApiResponse $apiResponse, RuleMedia $ruleMedia)
     {
         // todo get the uuid if the media is entry media
         // so collectors can only view their own media
         // Check permissions
-        $input = $request->all();
+        $params = $request->all();
 
-        // Validate the options
-        $mediaValidator->validate($input);
-        if ($mediaValidator->hasErrors()) {
-            return $apiResponse->errorResponse(400, $mediaValidator->errors());
+        // Validate request params
+        $ruleMedia->validate($params);
+        if ($ruleMedia->hasErrors()) {
+            return $apiResponse->errorResponse(400, $ruleMedia->errors());
         }
 
-        $inputType = $input['type'];
-        $format = $request->query('format');
-        if ($format === 'project_mobile_logo') {
+        $inputType = $params['type'];
+        $format = $params['format'];
+        if ($format === config('epicollect.media.project_mobile_logo')) {
             //randomly slow down api responses to avoid out of memory errors
             $delay = mt_rand(250000000, 500000000);
             time_nanosleep(0, $delay);
@@ -55,31 +55,29 @@ class MediaController extends ProjectControllerBase
 
         // Set up type and content type
         switch ($inputType) {
-            case 'audio':
-                $contentType = 'audio/mp4';
-                $defaultName = 'ec5-placeholder-256x256.jpg';
+            case config('epicollect.strings.inputs_type.audio'):
+                $contentType = config('epicollect.media.content_type.audio');
                 break;
-            case 'video':
-                $contentType = 'video/mp4';
-                $defaultName = 'ec5-placeholder-256x256.jpg';
+            case config('epicollect.strings.inputs_type.video'):
+                $contentType = config('epicollect.media.content_type.video');
                 break;
             default:
-                $contentType = 'image/jpeg';
-                $defaultName = 'ec5-placeholder-256x256.jpg';
+                $contentType = config('epicollect.media.content_type.photo');
         }
+        $defaultName = config('epicollect.media.photo_placeholder.filename');
 
         // If a name was supplied, attempt to find file
-        if (!empty($input['name'])) {
+        if (!empty($params['name'])) {
             // Attempt to retrieve media
             try {
                 // Use the provided 'format' as the driver
-                $file = Storage::disk($format)->get($this->requestedProject->ref . '/' . $input['name']);
+                $file = Storage::disk($format)->get($this->requestedProject->ref . '/' . $params['name']);
                 //get storage real path
                 $filepath = Storage::disk($format)->getAdapter()->getPathPrefix();
                 //get file real path
-                $filepath = $filepath . $this->requestedProject->ref . '/' . $input['name'];
+                $filepath = $filepath . $this->requestedProject->ref . '/' . $params['name'];
                 //stream only audio and video
-                if ($inputType !== 'photo') {
+                if ($inputType !== config('epicollect.strings.inputs_type.photo')) {
                     //serve as 206  partial response
                     $stream = new MediaStreaming($filepath, 'audio');
                     $stream->start();
@@ -90,8 +88,7 @@ class MediaController extends ProjectControllerBase
                     return $response;
                 }
             } catch (FileNotFoundException $e) {
-
-                if ($inputType === config('ec5Strings.inputs_type.photo')) {
+                if ($inputType === config('epicollect.strings.inputs_type.photo')) {
                     //Return default placeholder image for photo questions
                     $file = Storage::disk('public')->get($defaultName);
                     $response = Response::make($file, 200);
@@ -99,7 +96,7 @@ class MediaController extends ProjectControllerBase
                     return $response;
                 }
 
-                //File not found i.e. not synced yet, send 404 for audio and video
+                //File not found i.e., not synced yet, send 404 for audio and video
                 $error['api-media-controller'] = ['ec5_69'];
                 return $apiResponse->errorResponse(404, $error);
             } catch (Exception $e) {
@@ -119,120 +116,45 @@ class MediaController extends ProjectControllerBase
     /**
      * @param Request $request
      * @param ApiResponse $apiResponse
-     * @param MediaValidator $mediaValidator
+     * @param ruleMedia $ruleMedia
+     * @return JsonResponse|\Illuminate\Http\Response
+     * @throws FileNotFoundException
      */
-    //imp: method is not used yet
-    public function getApiMedia(Request $request, ApiResponse $apiResponse, MediaValidator $mediaValidator)
+    public function getTempMedia(Request $request, ApiResponse $apiResponse, ruleMedia $ruleMedia)
     {
-        // todo get the uuid if the media is entry media
-        // so collectors can only view their own media
-        // Check permissions
-
-        $input = $request->all();
-
-        // Validate the options
-        $mediaValidator->validate($input);
-        if ($mediaValidator->hasErrors()) {
-            return $apiResponse->errorResponse(400, $mediaValidator->errors());
+        $params = $request->all();
+        // Validate request params
+        $ruleMedia->validate($params);
+        if ($ruleMedia->hasErrors()) {
+            return $apiResponse->errorResponse(400, $ruleMedia->errors());
         }
 
-
-        $format = $request->query('format');
-        if ($format === 'entry_thumb' || $format === 'project_mobile_logo') {
-            //randomly slow down api responses to avoid out of memory errors
-            $delay = mt_rand(250000000, 500000000);
-            time_nanosleep(0, $delay);
-        }
-
-        // Set up type and content type
-        switch ($input['type']) {
-            case 'audio':
-                $contentType = 'audio/mpeg';
-                $defaultName = 'ec5-placeholder-256x256.jpg';
-                break;
-            case 'video':
-                $contentType = 'video/mp4';
-                $defaultName = 'ec5-placeholder-256x256.jpg';
-                break;
-            default:
-                $contentType = 'image/jpeg';
-                $defaultName = 'ec5-placeholder-256x256.jpg';
-        }
-
-        // If a name was supplied, attempt to find file
-        if (!empty($input['name'])) {
-            // Attempt to retrieve media
-            try {
-                // Use the provided 'format' as the driver
-                $file = Storage::disk($format)->get($this->requestedProject->ref . '/' . $input['name']);
-                $response = Response::make($file, 200);
-                $response->header("Content-Type", $contentType);
-
-                //Throttle for 1/4 of a second so the server does not get smashed by media requests
-                time_nanosleep(0, (int)(Config::get('ec5Api.response_delay.media')));
-
-                return $response;
-            } catch (Exception $e) {
-                //  Log::error('Cannot get media file', ['exception' => $e->getMessage()]);
-                Log::error('Error getting media file', ['exception' => $e->getMessage()]);
-            }
-        }
-
-        // Otherwise return default placeholder media
-        $file = Storage::disk('public')->get($defaultName);
-        $response = Response::make($file, 200);
-        $response->header("Content-Type", $contentType);
-
-        return $response;
-    }
-
-    /**
-     * @param Request $request
-     * @param ApiResponse $apiResponse
-     * @param MediaValidator $mediaValidator
-     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
-     */
-    public function getTempMedia(Request $request, ApiResponse $apiResponse, MediaValidator $mediaValidator)
-    {
-
-        $input = $request->all();
-
-
-        // Validate the options
-        $mediaValidator->validate($input);
-        if ($mediaValidator->hasErrors()) {
-            return $apiResponse->errorResponse(400, $mediaValidator->errors());
-        }
-
-        $inputType = $input['type'];
+        $inputType = $params['type'];
 
         // Set up type and content type
         switch ($inputType) {
-            case 'audio':
-                $contentType = 'audio/mpeg';
-                $defaultName = 'ec5-placeholder-256x256.jpg';
+            case config('epicollect.strings.inputs_type.audio'):
+                $contentType = config('epicollect.media.content_type.audio');
                 break;
-            case 'video':
-                $contentType = 'video/mp4';
-                $defaultName = 'ec5-placeholder-256x256.jpg';
+            case config('epicollect.strings.inputs_type.video'):
+                $contentType = config('epicollect.media.content_type.video');
                 break;
             default:
-                $contentType = 'image/jpeg';
-                $defaultName = 'ec5-placeholder-256x256.jpg';
+                $contentType = config('epicollect.media.content_type.photo');
         }
-
+        $defaultName = config('epicollect.media.photo_placeholder.filename');
         // If a name was supplied, attempt to find file
-        if (!empty($input['name'])) {
+        if (!empty($params['name'])) {
             // Attempt to retrieve media
             try {
                 // Use the provided 'format' as the driver
-                $file = Storage::disk('temp')->get($inputType . '/' . $this->requestedProject->ref . '/' . $input['name']);
+                $file = Storage::disk('temp')->get($inputType . '/' . $this->requestedProject->ref . '/' . $params['name']);
                 //get storage real path
                 $filepath = Storage::disk('temp')->getAdapter()->getPathPrefix();
                 //get file real path
-                $filepath = $filepath . $inputType . '/' . $this->requestedProject->ref . '/' . $input['name'];
+                $filepath = $filepath . $inputType . '/' . $this->requestedProject->ref . '/' . $params['name'];
                 //stream only audio and video
-                if ($inputType !== 'photo') {
+                if ($inputType !== config('epicollect.strings.inputs_type.photo')) {
                     $stream = new MediaStreaming($filepath, 'audio');
                     $stream->start();
                 } else {
@@ -242,8 +164,8 @@ class MediaController extends ProjectControllerBase
                     return $response;
                 }
             } catch (Exception $e) {
-                // If the file is not found, see if we have it in the non temp folders
-                return $this->getMedia($request, $apiResponse, $mediaValidator);
+                // If the file is not found, see if we have it in the non-temp folders
+                return $this->getMedia($request, $apiResponse, $ruleMedia);
             }
         }
 

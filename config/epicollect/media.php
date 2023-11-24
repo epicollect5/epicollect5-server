@@ -1,5 +1,6 @@
 <?php
 
+
 return [
     'entry_max' => 1024,
     'entry_min' => 768,
@@ -56,5 +57,15 @@ return [
         'video',
         'audio'
     ],
-    'placeholder_filename' => 'ec5-placeholder-256x256.jpg'
+    'photo_placeholder' => [
+        'filename' => 'ec5-placeholder-256x256.jpg',
+        'width' => 256,
+        'height' => 256,
+        'size_in_bytes' => 3735
+    ],
+    'content_type' => [
+        'audio' => 'audio/mp4',
+        'photo' => 'image/jpeg',
+        'video' => 'video/mp4'
+    ]
 ];
