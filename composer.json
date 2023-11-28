@@ -23,7 +23,8 @@
     "league/csv": "^9.5",
     "madewithlove/license-checker": "0.10.0",
     "ext-json": "*",
-    "ext-pdo": "*"
+    "ext-pdo": "*",
+    "ext-zlib": "*"
   },
   "require-dev": {
     "fzaninotto/faker": "~1.4",
