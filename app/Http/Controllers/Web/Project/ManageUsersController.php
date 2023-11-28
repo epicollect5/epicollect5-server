@@ -22,8 +22,11 @@ use Config;
 class ManageUsersController extends ProjectControllerBase
 {
     protected $projectRoleSearch;
+
     protected $projectRoleCreate;
+
     protected $projectRoleDelete;
+
     protected $projectSearch;
 
     /**
@@ -61,34 +64,26 @@ class ManageUsersController extends ProjectControllerBase
         if (!$this->requestedProjectRole->isManager()) {
             return Redirect::back()->withErrors(['ec5_91']);
         }
+
+        // Get request data
         $params = $request->all();
         // Set per page limit
         $perPage = Config::get('ec5Limits.users_per_page');
-
         // Set search/roles/current page option defaults
-        $search = $params['search'] ?? '';
-        $options = [
-            'roles' => []
-        ];
+        $search = !empty($params['search']) ? $params['search'] : '';
         $currentPage = 1;
+        $roles = ['page-manager' => 'manager', 'page-curator' => 'curator', 'page-collector' => 'collector', 'page-viewer' => 'viewer'];
+        $options = ['roles' => []];
 
-        $pageToRoleMapping = [
-            'page-manager' => ['manager'],
-            'page-curator' => ['curator'],
-            'page-collector' => ['collector'],
-            'page-viewer' => ['viewer']
-        ];
-
-        foreach ($pageToRoleMapping as $key => $role) {
-            if (!empty($params[$key])) {
-                $options['roles'] = $role;
-                $currentPage = $params[$key];
-                break; // Exit the loop if a match is found
+        foreach ($roles as $paramKey => $role) {
+            if (!empty($params[$paramKey])) {
+                $options['roles'] = [$role];
+                $currentPage = $params[$paramKey];
+                break;
             }
         }
 
-        if (!isset($options['roles'])) {
-            // Otherwise set up all user roles
+        if (empty($options['roles'])) {
             $options['roles'] = array_keys(Config::get('ec5Permissions.projects.roles'));
         }
 
@@ -98,7 +93,6 @@ class ManageUsersController extends ProjectControllerBase
         // Get paginated project users, based on per page, specified roles, current page and search term
         $users = $this->projectRoleSearch->paginate($perPage, $currentPage, $search, $options);
 
-        // dd($this->projectRoleSearch->users($this->requestedProject->getId()));
         //CREATOR role can transfer ownership
         $canTransferOwnership = $this->requestedProjectRole->isCreator();
 
@@ -114,8 +108,7 @@ class ManageUsersController extends ProjectControllerBase
 
         // If ajax, return rendered html
         if ($request->ajax()) {
-
-            // For ajax we only want to return one rendered view
+            // For ajax, we only want to return one rendered view
             // and one set of users for the specified role
             $projectUsers = $users[$options['roles'][0]];
 
@@ -139,11 +132,9 @@ class ManageUsersController extends ProjectControllerBase
             unset($authMethods[$invalidAuthMethod]);
         }
 
-
         $projectRole = new ProjectRole();
         $countByRole = $projectRole->getCountByRole($this->requestedProject->getId());
         $countOverall = $projectRole->getCountOverlall($this->requestedProject->getId());
-
 
         return view(
             'project.project_details',
@@ -173,8 +164,8 @@ class ManageUsersController extends ProjectControllerBase
     {
         $requestedUser = $request->attributes->get('requestedUser');
 
-        // Only creators and managers can add users
-        if (!$this->requestedProjectRole->canAddUsers()) {
+        // Only creators and managers have access
+        if (!$this->requestedProjectRole->isManager()) {
             // If ajax, return error json
             if ($request->ajax()) {
                 return $apiResponse->errorResponse(404, ['manage-users' => ['ec5_91']]);
@@ -185,7 +176,8 @@ class ManageUsersController extends ProjectControllerBase
         // Retrieve post data
         $params = $request->all();
 
-        // Validate the params
+
+        // Validate the input
         $validator->validate($params);
         if ($validator->hasErrors()) {
             // If ajax, return error json

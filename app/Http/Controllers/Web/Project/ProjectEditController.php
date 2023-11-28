@@ -66,7 +66,7 @@ class ProjectEditController extends ProjectControllerBase
      * @param $action
      * @return \Illuminate\Http\JsonResponse
      */
-    public function settings($action)
+    public function settings($slug, $action)
     {
         $this->action = $action;
 

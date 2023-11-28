@@ -97,7 +97,7 @@ class ProjectRole
 
     public function canEditProject(): bool
     {
-        return $this->isManager();
+        return $this->isManager() || $this->isCreator();
     }
 
     public function canDeleteProject(): bool
