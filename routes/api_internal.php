@@ -27,7 +27,7 @@ Route::group(['middleware' => ['project.permissions']], function () {
     // Media, used by the dataviewer
     Route::get('api/internal/media/{project_slug}', 'Api\Project\MediaController@getMedia');
 
-    // Temp Media
+    // Temp Media (used by PWA to get a temp file while adding an entry)
     Route::get('api/internal/temp-media/{project_slug}', 'Api\Project\MediaController@getTempMedia');
 
     // Entry downloads (whole project)
