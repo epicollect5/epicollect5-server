@@ -15,41 +15,15 @@ use ec5\Http\Validation\Entries\Upload\RuleAnswers;
 
 use ec5\Repositories\QueryBuilder\Entry\Search\BranchEntryRepository;
 use ec5\Repositories\QueryBuilder\Entry\Search\EntryRepository;
-
 use Config;
-use Log;
 
 abstract class EntrySearchControllerBase extends ProjectApiControllerBase
 {
-
-    /**
-     * @var
-     */
     protected $entryRepository;
-
-    /**
-     * @var
-     */
     protected $branchEntryRepository;
-
-    /**
-     * @var
-     */
     protected $ruleQueryString;
-
-    /**
-     * @var
-     */
     protected $ruleAnswers;
-
-    /**
-     * @var
-     */
     protected $allowedSearchKeys;
-
-    /**
-     * @var
-     */
     protected $validateErrors;
 
     /**
@@ -63,15 +37,15 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
      * @param RuleAnswers $ruleAnswers
      */
     public function __construct(
-        Request $request,
-        ApiRequest $apiRequest,
-        ApiResponse $apiResponse,
-        EntryRepository $entryRepository,
+        Request               $request,
+        ApiRequest            $apiRequest,
+        ApiResponse           $apiResponse,
+        EntryRepository       $entryRepository,
         BranchEntryRepository $branchEntryRepository,
-        RuleQueryString $ruleQueryString,
-        RuleAnswers $ruleAnswers
-    ) {
-
+        RuleQueryString       $ruleQueryString,
+        RuleAnswers           $ruleAnswers
+    )
+    {
         parent::__construct($request, $apiRequest, $apiResponse);
 
         $this->entryRepository = $entryRepository;
@@ -85,24 +59,23 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
      * @param $perPage
      * @return array
      */
-    protected function getRequestOptions(Request $request, $perPage)
+    protected function getRequestParams(Request $request, $perPage)
     {
-
-        $options = [];
+        $params = [];
         foreach ($this->allowedSearchKeys as $k) {
-            $options[$k] = $request->get($k) ?? '';
+            $params[$k] = $request->get($k) ?? '';
         }
 
         // Defaults for sort by and sort order
-        $options['sort_by'] = !empty($options['sort_by']) ? $options['sort_by'] : Config::get('ec5Enums.search_data_entries_defaults.sort_by');
-        $options['sort_order'] = !empty($options['sort_order']) ? $options['sort_order'] : Config::get('ec5Enums.search_data_entries_defaults.sort_order');
+        $params['sort_by'] = !empty($params['sort_by']) ? $params['sort_by'] : Config::get('ec5Enums.search_data_entries_defaults.sort_by');
+        $params['sort_order'] = !empty($params['sort_order']) ? $params['sort_order'] : Config::get('ec5Enums.search_data_entries_defaults.sort_order');
 
         // Set defaults
-        if (empty($options['per_page'])) {
-            $options['per_page'] = $perPage;
+        if (empty($params['per_page'])) {
+            $params['per_page'] = $perPage;
         }
-        if (empty($options['page'])) {
-            $options['page'] = 1;
+        if (empty($params['page'])) {
+            $params['page'] = 1;
         }
 
         // Check user project role
@@ -111,58 +84,57 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
             $this->requestedProject->isPrivate()
             && $this->requestedProjectRole->isCollector()
         ) {
-            $options['user_id'] = $this->requestedProjectRole->getUser()->id;
+            $params['user_id'] = $this->requestedProjectRole->getUser()->id;
         }
 
         // Set default form_ref (first form), if not supplied
-        if (empty($options['form_ref'])) {
-            $options['form_ref'] = $this->requestedProject->getProjectDefinition()->getFirstFormRef();
+        if (empty($params['form_ref'])) {
+            $params['form_ref'] = $this->requestedProject->getProjectDefinition()->getFirstFormRef();
         }
 
         //if no map_index provide, return default map (check of empty string, as 0 is a valid map index)
-        if ($options['map_index'] === '') {
-            $options['map_index'] = $this->requestedProject->getProjectMapping()->getDefaultMapIndex();
+        if ($params['map_index'] === '') {
+            $params['map_index'] = $this->requestedProject->getProjectMapping()->getDefaultMapIndex();
         }
 
-        // Format of the data i.e. json, csv
-        $options['format'] = !empty($options['format']) ? $options['format'] : Config::get('ec5Enums.search_data_entries_defaults.format');
+        // Format of the data i.e., json, csv
+        $params['format'] = !empty($params['format']) ? $params['format'] : Config::get('ec5Enums.search_data_entries_defaults.format');
         // Whether to include headers for csv
-        $options['headers'] = !empty($options['headers']) ? $options['headers'] : Config::get('ec5Enums.search_data_entries_defaults.headers');
+        $params['headers'] = !empty($params['headers']) ? $params['headers'] : Config::get('ec5Enums.search_data_entries_defaults.headers');
 
-        return $options;
+        return $params;
     }
 
     // Common Validation
 
     /**
-     * @param array $options - Request options
+     * @param array $params - Request options
      * @return bool
      */
-    protected function validateOptions(array $options): bool
+    protected function validateParams(array $params): bool
     {
-
-        $this->ruleQueryString->validate($options);
+        $this->ruleQueryString->validate($params);
         if ($this->ruleQueryString->hasErrors()) {
             $this->validateErrors = $this->ruleQueryString->errors();
             return false;
         }
         // Do additional checks
-        $this->ruleQueryString->additionalChecks($this->requestedProject, $options);
+        $this->ruleQueryString->additionalChecks($this->requestedProject, $params);
         if ($this->ruleQueryString->hasErrors()) {
             $this->validateErrors = $this->ruleQueryString->errors();
             return false;
         }
 
-        $inputRef = (empty($options['input_ref'])) ? '' : $options['input_ref'];
+        $inputRef = (empty($params['input_ref'])) ? '' : $params['input_ref'];
 
         if (empty($inputRef)) {
             return true;
         }
 
-        // Otherwise check if valid value ie date is date min max etc
+        // Otherwise, check if valid value i.e., date is date min max etc.
         //$inputType = $this->requestedProject->getProjectExtra()->getInputDetail($inputRef, 'type');
-        $value = $options['search'];
-        //$value2 = $options['search_two'];
+        $value = $params['search'];
+        //$value2 = $params['search_two'];
 
         return $this->validateValue($inputRef, $value);
     }
@@ -190,39 +162,39 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
     //END Common Validation
 
     /**
-     * @param array $options
+     * @param array $params
      * @param array $columns
      * @return \Illuminate\Database\Query\Builder
      */
-    protected function runQuery(array $options, array $columns)
+    protected function runQuery(array $params, array $columns)
     {
         // NOTE: form_ref is never empty here
 
         // Single Entry
-        if (!empty($options['uuid'])) {
+        if (!empty($params['uuid'])) {
             $query = $this->entryRepository->getEntry(
                 $this->requestedProject->getId(),
-                $options,
+                $params,
                 $columns
             );
         } else {
-            if (!empty($options['parent_uuid'])) {
+            if (!empty($params['parent_uuid'])) {
                 // Child Entries
                 $query = $this->entryRepository->getChildEntriesForParent(
                     $this->requestedProject->getId(),
-                    $options,
+                    $params,
                     $columns
                 );
             }
 
             // Search based on input ref
-            //        else if (!empty($options['input_ref'])) {
+            //        else if (!empty($params['input_ref'])) {
             //
             //            // Search based on search value
-            //            if (!empty($options['search'])) {
+            //            if (!empty($params['search'])) {
             //                return $this->entryRepository->searchAnswersForInputWithValue(
             //                    $this->requestedProject->getId(),
-            //                    $options,
+            //                    $params,
             //                    $columns
             //                );
             //            }
@@ -232,7 +204,7 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
                 // All Form Entries
                 $query = $this->entryRepository->getEntries(
                     $this->requestedProject->getId(),
-                    $options,
+                    $params,
                     $columns
                 );
             }
@@ -242,51 +214,35 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
     }
 
     /**
-     * @param array $options
+     * @param array $params
      * @param array $columns
      * @return \Illuminate\Database\Query\Builder
      */
-    protected function runQueryBranch(array $options, array $columns)
+    protected function runQueryBranch(array $params, array $columns)
     {
 
         // NOTE: branch_ref is never empty here
 
         // Single Branch Entry
-        if (!empty($options['uuid'])) {
+        if (!empty($params['uuid'])) {
             $query = $this->branchEntryRepository->getEntry(
                 $this->requestedProject->getId(),
-                $options,
+                $params,
                 $columns
             );
         } else {
-            if (!empty($options['branch_owner_uuid'])) {
+            if (!empty($params['branch_owner_uuid'])) {
                 // Branch Entries for Branch Ref and Branch Owner
                 $query = $this->branchEntryRepository->getBranchEntriesForBranchRefAndOwner(
                     $this->requestedProject->getId(),
-                    $options,
+                    $params,
                     $columns
                 );
-            }
-
-            // Search based on input ref
-            //        else if (!empty($options['input_ref'])) {
-            //
-            //            // Search based on search value
-            //            if (!empty($options['search'])) {
-            //                return $this->branchEntryRepository->searchAnswersForInputWithValue(
-            //                    $this->requestedProject->getId(),
-            //                    $options,
-            //                    $columns
-            //                );
-            //            }
-            //
-            //        }
-
-            else {
+            } else {
                 // All Branch Entries for Branch Ref
                 $query = $this->branchEntryRepository->getBranchEntriesForBranchRef(
                     $this->requestedProject->getId(),
-                    $options,
+                    $params,
                     $columns
                 );
             }
@@ -299,16 +255,16 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
 
     /**
      * @param LengthAwarePaginator $entryData
-     * @param $options
+     * @param $params
      */
-    protected function appendOptions(LengthAwarePaginator $entryData, $options)
+    protected function appendOptions(LengthAwarePaginator $entryData, $params)
     {
-        // Unset the user's user_id so it's not exposed
+        // Unset the user's user_id, so it's not exposed
         // Note: if this was exposed, it would only be the current user's user_id
-        // If the user changed this it would have no effect
-        unset($options['user_id']);
+        // If the user changed this, it would have no effect
+        unset($params['user_id']);
         // Append options to the LengthAwarePaginator
-        $entryData->appends($options);
+        $entryData->appends($params);
     }
 
     /**
@@ -318,15 +274,13 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
     protected function getLinks(LengthAwarePaginator $entryData)
     {
         // Links
-        $links = [
+        return [
             'self' => $entryData->url($entryData->currentPage()),
             'first' => $entryData->url(1),
             'prev' => $entryData->previousPageUrl(),
             'next' => $entryData->nextPageUrl(),
             'last' => $entryData->url($entryData->lastPage())
         ];
-
-        return $links;
     }
 
     /**
@@ -337,12 +291,11 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
      */
     protected function getMeta(LengthAwarePaginator $entryData, $newest = null, $oldest = null): array
     {
-
-        $meta = [
+        return [
             'total' => $entryData->total(),
             //imp: cast to int for consistency:
             //imp: sometimes the paginator gives a string back, go figure
-            'per_page' => (int) $entryData->perPage(),
+            'per_page' => (int)$entryData->perPage(),
             'current_page' => $entryData->currentPage(),
             'last_page' => $entryData->lastPage(),
             // todo - duplication here, remove when dataviewer is rewritten
@@ -351,7 +304,5 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
             'newest' => $newest,
             'oldest' => $oldest
         ];
-
-        return $meta;
     }
 }

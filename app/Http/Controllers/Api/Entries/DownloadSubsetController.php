@@ -52,17 +52,18 @@ class DownloadSubsetController extends EntrySearchControllerBase
      * @param FileCreateRepository $fileCreateRepository
      */
     public function __construct(
-        Request $request,
-        ApiRequest $apiRequest,
-        ApiResponse $apiResponse,
-        EntryRepository $entryRepository,
+        Request               $request,
+        ApiRequest            $apiRequest,
+        ApiResponse           $apiResponse,
+        EntryRepository       $entryRepository,
         BranchEntryRepository $branchEntryRepository,
-        RuleQueryString $ruleQueryString,
-        RuleAnswers $ruleAnswers,
-        FileCreateRepository $fileCreateRepository,
-        DataMappingHelper $dataMappingHelper
+        RuleQueryString       $ruleQueryString,
+        RuleAnswers           $ruleAnswers,
+        FileCreateRepository  $fileCreateRepository,
+        DataMappingHelper     $dataMappingHelper
 
-    ) {
+    )
+    {
         parent::__construct(
             $request,
             $apiRequest,
@@ -82,9 +83,9 @@ class DownloadSubsetController extends EntrySearchControllerBase
     {
         // Check the mapping is valid
         $projectMapping = $this->requestedProject->getProjectMapping();
-        $params = $this->getRequestOptions($request, Config::get('ec5Limits.entries_table.per_page'));
+        $params = $this->getRequestParams($request, Config::get('ec5Limits.entries_table.per_page'));
 
-        //Get raw query params,  $this->getRequestOptions is doing some filtering
+        //Get raw query params, $this->getRequestParams is doing some filtering
         $rawParams = $request->all();
 
         $cookieName = Config::get('ec5Strings.cookies.download-entries');
@@ -191,13 +192,13 @@ class DownloadSubsetController extends EntrySearchControllerBase
 
         //get handle of empty file just created
         $CSVfilepath = Storage::disk('temp')
-            ->getAdapter()
-            ->getPathPrefix()
+                ->getAdapter()
+                ->getPathPrefix()
             . 'subset/' . $projectRef . '/' . $csvFilename;
 
         $zipFilepath = Storage::disk('temp')
-            ->getAdapter()
-            ->getPathPrefix()
+                ->getAdapter()
+                ->getPathPrefix()
             . 'subset/' . $projectRef . '/' . $zipFilename;
 
 

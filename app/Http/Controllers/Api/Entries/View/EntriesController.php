@@ -46,15 +46,16 @@ class EntriesController extends EntrySearchControllerBase
      * @param DataMappingHelper $dataMappingHelper
      */
     public function __construct(
-        Request $request,
-        ApiRequest $apiRequest,
-        ApiResponse $apiResponse,
-        EntryRepository $entryRepository,
+        Request               $request,
+        ApiRequest            $apiRequest,
+        ApiResponse           $apiResponse,
+        EntryRepository       $entryRepository,
         BranchEntryRepository $branchEntryRepository,
-        RuleQueryString $ruleQueryString,
-        RuleAnswers $ruleAnswers,
-        DataMappingHelper $dataMappingHelper
-    ) {
+        RuleQueryString       $ruleQueryString,
+        RuleAnswers           $ruleAnswers,
+        DataMappingHelper     $dataMappingHelper
+    )
+    {
 
         parent::__construct(
             $request,
@@ -82,7 +83,7 @@ class EntriesController extends EntrySearchControllerBase
         // Check the mapping is valid
         $projectMapping = $this->requestedProject->getProjectMapping();
 
-        $options = $this->getRequestOptions($request, Config::get('ec5Limits.entries_table.per_page'));
+        $options = $this->getRequestParams($request, Config::get('ec5Limits.entries_table.per_page'));
 
         // Validate the options and query string
         if (!$this->validateOptions($options)) {
@@ -160,7 +161,7 @@ class EntriesController extends EntrySearchControllerBase
      */
     public function show(Request $request)
     {
-        $options = $this->getRequestOptions($request, Config::get('ec5Limits.entries_table.per_page'));
+        $options = $this->getRequestParams($request, Config::get('ec5Limits.entries_table.per_page'));
 
         // Validate the options and query string
         if (!$this->validateOptions($options)) {

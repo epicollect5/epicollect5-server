@@ -30,14 +30,15 @@ class EntriesLocationsController extends EntrySearchControllerBase
      * @param RuleAnswers $ruleAnswers
      */
     public function __construct(
-        Request $request,
-        ApiRequest $apiRequest,
-        ApiResponse $apiResponse,
-        EntryRepository $entryRepository,
+        Request               $request,
+        ApiRequest            $apiRequest,
+        ApiResponse           $apiResponse,
+        EntryRepository       $entryRepository,
         BranchEntryRepository $branchEntryRepository,
-        RuleQueryString $ruleQueryString,
-        RuleAnswers $ruleAnswers
-    ) {
+        RuleQueryString       $ruleQueryString,
+        RuleAnswers           $ruleAnswers
+    )
+    {
 
         parent::__construct($request, $apiRequest, $apiResponse, $entryRepository,
             $branchEntryRepository, $ruleQueryString, $ruleAnswers);
@@ -150,7 +151,7 @@ class EntriesLocationsController extends EntrySearchControllerBase
     {
         $columns = ['geo_json_data'];
 
-        $options = $this->getRequestOptions($request, Config::get('ec5Limits.entries_map.per_page'));
+        $options = $this->getRequestParams($request, Config::get('ec5Limits.entries_map.per_page'));
 
         // Validate the options
         $ruleQueryStringMapData->validate($options);
