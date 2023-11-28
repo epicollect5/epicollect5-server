@@ -4,29 +4,22 @@ namespace ec5\Http\Controllers\Api\Entries;
 
 use ec5\Http\Controllers\Api\ApiRequest;
 use ec5\Http\Controllers\Api\ApiResponse;
-
 use ec5\Http\Controllers\Api\Entries\View\EntrySearchControllerBase;
 use ec5\Http\Validation\Entries\Upload\RuleAnswers;
 use ec5\Http\Validation\Entries\Search\RuleQueryString;
-use ec5\Http\Validation\Entries\Download\RuleDownload as DownloadValidator;
-
+use ec5\Http\Validation\Entries\Download\RuleDownload;
 use ec5\Repositories\QueryBuilder\Entry\Search\BranchEntryRepository;
 use ec5\Repositories\QueryBuilder\Entry\Search\EntryRepository;
 use ec5\Repositories\QueryBuilder\Entry\ToFile\CreateRepository as FileCreateRepository;
 use ec5\Http\Validation\Entries\Upload\RuleUploadTemplate;
 use ec5\Http\Validation\Entries\Upload\RuleUploadHeaders;
-
 use Illuminate\Http\Request;
-
 use ec5\Models\Eloquent\ProjectStructure;
-
 use Auth;
-use Config;
 use Storage;
 use Cookie;
 use Illuminate\Support\Str;
 use ec5\Libraries\Utilities\Common;
-
 
 class DownloadController extends EntrySearchControllerBase
 {
@@ -39,14 +32,7 @@ class DownloadController extends EntrySearchControllerBase
     |
     */
 
-    /**
-     * @var FileCreateRepository
-     */
     protected $fileCreateRepository;
-
-    /**
-     * @var
-     */
     protected $allowedSearchKeys;
 
     /**
@@ -61,16 +47,17 @@ class DownloadController extends EntrySearchControllerBase
      * @param FileCreateRepository $fileCreateRepository
      */
     public function __construct(
-        Request $request,
-        ApiRequest $apiRequest,
-        ApiResponse $apiResponse,
-        EntryRepository $entryRepository,
+        Request               $request,
+        ApiRequest            $apiRequest,
+        ApiResponse           $apiResponse,
+        EntryRepository       $entryRepository,
         BranchEntryRepository $branchEntryRepository,
-        RuleQueryString $ruleQueryString,
-        RuleAnswers $ruleAnswers,
-        FileCreateRepository $fileCreateRepository
+        RuleQueryString       $ruleQueryString,
+        RuleAnswers           $ruleAnswers,
+        FileCreateRepository  $fileCreateRepository
 
-    ) {
+    )
+    {
         parent::__construct(
             $request,
             $apiRequest,
@@ -81,48 +68,44 @@ class DownloadController extends EntrySearchControllerBase
             $ruleAnswers
         );
 
-        $this->allowedSearchKeys = Config::get('ec5Enums.download_data_entries');
+        $this->allowedSearchKeys = array_keys(config('epicollect.strings.download_data_entries'));
         $this->fileCreateRepository = $fileCreateRepository;
     }
 
     /**
-     * @param Request $request
-     * @param DownloadValidator $downloadValidator
-     * @return \Illuminate\Http\JsonResponse|\Symfony\Component\HttpFoundation\BinaryFileResponse
      */
-    public function index(Request $request, DownloadValidator $downloadValidator)
+    public function index(Request $request, RuleDownload $ruleDownload)
     {
         $user = Auth::user();
-        $options = $this->getRequestOptions($request, Config::get('ec5Limits.entries_table.per_page_download'));
-
-        $cookieName = Config::get('ec5Strings.cookies.download-entries');
+        $params = $this->getRequestParams($request, config('epicollect.limits.entries_table.per_page_download'));
+        $cookieName = config('epicollect.strings.cookies.download-entries');
 
         if ($user === null) {
             return $this->apiResponse->errorResponse(400, ['download-entries' => ['ec5_86']]);
         }
 
-        // Validate the options
-        $downloadValidator->validate($options);
-        if ($this->ruleQueryString->hasErrors()) {
+        // Validate the params
+        $ruleDownload->validate($params);
+        if ($ruleDownload->hasErrors()) {
             return $this->apiResponse->errorResponse(400, $this->ruleQueryString->errors());
         }
 
         //todo do this better and use a form request maybe
-        //we send a "media-request" parameter in the query tring with a timestamp. to generate a cookie with the same timestamp
+        //we send a "media-request" parameter in the query string with a timestamp. to generate a cookie with the same timestamp
         $timestamp = $request->query($cookieName);
         if ($timestamp) {
             //check if the timestamp is valid
             if (!Common::isValidTimestamp($timestamp) && strlen($timestamp) === 13) {
-                abort(404); //so it goes to an error page
+                return $this->apiResponse->errorResponse(404, ['download-entries' => ['ec5_29']]);
             }
         } else {
             //error no timestamp was passed
-            abort(404); //s it goes to an error page
+            return $this->apiResponse->errorResponse(404, ['download-entries' => ['ec5_29']]);
         }
 
         // Default format if not supplied
-        if (!isset($options['format']) || empty($options['format'])) {
-            $options['format'] = Config::get('ec5Enums.download_data_entries_format_default');
+        if (empty($params['format'])) {
+            $params['format'] = config('epicollect.strings.download_data_entries_format_default');
         }
 
         // Setup storage
@@ -142,12 +125,12 @@ class DownloadController extends EntrySearchControllerBase
         $projectDir = $projectDir . '/' . $user->id;
 
         // Try and create the files
-        $this->fileCreateRepository->create($this->requestedProject, $projectDir, $options);
+        $this->fileCreateRepository->create($this->requestedProject, $projectDir, $params);
         if ($this->fileCreateRepository->hasErrors()) {
             return $this->apiResponse->errorResponse(400, $this->fileCreateRepository->errors());
         }
 
-        $zipName = $this->requestedProject->slug . '-' . $options['format'] . '.zip';
+        $zipName = $this->requestedProject->slug . '-' . $params['format'] . '.zip';
         return $this->returnZip($projectDir . '/' . $zipName, $zipName, $timestamp);
     }
 
@@ -159,10 +142,10 @@ class DownloadController extends EntrySearchControllerBase
         $projectMappings = json_decode($projectStructure->project_mapping);
         $projectDefinition = json_decode($projectStructure->project_definition);
         $params = $request->all();
-        $readmeType = Config::get('ec5Strings.inputs_type.readme');
-        $locationType = Config::get('ec5Strings.inputs_type.location');
-        $groupType = Config::get('ec5Strings.inputs_type.group');
-        $cookieName = Config::get('ec5Strings.cookies.download-entries');
+        $readmeType = config('epicollect.strings.inputs_type.readme');
+        $locationType = config('epicollect.strings.inputs_type.location');
+        $groupType = config('epicollect.strings.inputs_type.group');
+        $cookieName = config('epicollect.strings.cookies.download-entries');
 
         //todo validation request
         $validator->validate($params);
@@ -170,7 +153,7 @@ class DownloadController extends EntrySearchControllerBase
             return $this->apiResponse->errorResponse(400, $validator->errors());
         }
 
-        //we send a "media-request" parameter in the query tring with a timestamp. to generate a cookie with the same timestamp
+        //we send a "media-request" parameter in the query string with a timestamp. to generate a cookie with the same timestamp
         $timestamp = $request->query($cookieName);
         if ($timestamp) {
             //check if the timestamp is valid
@@ -190,7 +173,7 @@ class DownloadController extends EntrySearchControllerBase
 
         $mapTos = [];
         $mapName = $projectMappings[$mapIndex]->name;
-        $bulkUploadables = Config::get('ec5Enums.bulk_uploadables');
+        $bulkUploadables = array_keys(config('epicollect.strings.bulk_uploadables'));
 
         //are we looking for a branch template?
         if ($branchRef !== '') {
@@ -284,9 +267,9 @@ class DownloadController extends EntrySearchControllerBase
         $projectMappings = json_decode($projectStructure->project_mapping);
         $projectDefinition = json_decode($projectStructure->project_definition);
         $params = $request->all();
-        $readmeType = Config::get('ec5Strings.inputs_type.readme');
-        $locationType = Config::get('ec5Strings.inputs_type.location');
-        $groupType = Config::get('ec5Strings.inputs_type.group');
+        $readmeType = config('epicollect.strings.inputs_type.readme');
+        $locationType = config('epicollect.strings.inputs_type.location');
+        $groupType = config('epicollect.strings.inputs_type.group');
 
         //todo validation request
         $validator->validate($params);
@@ -300,7 +283,7 @@ class DownloadController extends EntrySearchControllerBase
         $formRef = $projectDefinition->project->forms[$formIndex]->ref;
 
         $mapTos = [];
-        $bulkUploadables = Config::get('ec5Enums.bulk_uploadables');
+        $bulkUploadables = array_keys(config('epicollect.strings.bulk_uploadables'));
 
         //are we looking for a branch template?
         if ($branchRef !== '') {
@@ -374,21 +357,20 @@ class DownloadController extends EntrySearchControllerBase
         return response()->apiResponse($content);
     }
 
-    public function subset(Request $request, DownloadValidator $downloadValidator)
+    public function subset(Request $request, RuleDownload $ruleDownload)
     {
+        $params = $this->getRequestParams($request, config('epicollect.limits.entries_table.per_page_download'));
 
-        $options = $this->getRequestOptions($request, Config::get('ec5Limits.entries_table.per_page_download'));
-
-        $cookieName = Config::get('ec5Strings.cookies.download-entries');
+        $cookieName = config('epicollect.strings.cookies.download-entries');
 
         // Validate the options
-        $downloadValidator->validate($options);
+        $ruleDownload->validate($params);
         if ($this->ruleQueryString->hasErrors()) {
             return $this->apiResponse->errorResponse(400, $this->ruleQueryString->errors());
         }
 
         //todo do this better and use a form request maybe
-        //we send a "media-request" parameter in the query tring with a timestamp. to generate a cookie with the same timestamp
+        //we send a "media-request" parameter in the query string with a timestamp. to generate a cookie with the same timestamp
         $timestamp = $request->query($cookieName);
         if ($timestamp) {
             //check if the timestamp is valid
@@ -401,8 +383,8 @@ class DownloadController extends EntrySearchControllerBase
         }
 
         // Default format if not supplied
-        if (!isset($options['format']) || empty($options['format'])) {
-            $options['format'] = Config::get('ec5Enums.download_data_entries_format_default');
+        if (empty($params['format'])) {
+            $params['format'] = config('epicollect.strings.download_data_entries_format_default');
         }
 
         // Setup storage
@@ -416,29 +398,22 @@ class DownloadController extends EntrySearchControllerBase
 
         //todo check if there is a zip file already, send it
         //todo it gets destroyed when we post entries returnZip
-
         $projectDir = $storagePrefix . $this->requestedProject->ref;
 
-
         // Try and create the files
-        $this->fileCreateRepository->create($this->requestedProject, $projectDir, $options);
+        $this->fileCreateRepository->create($this->requestedProject, $projectDir, $params);
         if ($this->fileCreateRepository->hasErrors()) {
             return $this->apiResponse->errorResponse(400, $this->fileCreateRepository->errors());
         }
 
-        $zipName = $this->requestedProject->slug . '-' . $options['format'] . '.zip';
+        $zipName = $this->requestedProject->slug . '-' . $params['format'] . '.zip';
 
         return $this->returnZip($projectDir . '/' . $zipName, $zipName, $timestamp);
     }
 
-    /**
-     * @param $filepath
-     * @param $filename
-     * @param null $timestamp
-     */
     private function returnZip($filepath, $filename, $timestamp = null)
     {
-        $cookieName = Config::get('ec5Strings.cookies.download-entries');
+        $cookieName = config('epicollect.strings.cookies.download-entries');
 
         //"If set to 0, or omitted, the cookie will expire at the end of the session (when the browser closes)."
         $mediaCookie = Cookie::make($cookieName, $timestamp, 0, null, null, false, false);
