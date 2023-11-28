@@ -3,6 +3,7 @@
 namespace ec5\Models\Projects;
 
 use Config;
+use ec5\Libraries\Utilities\Arrays;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,7 +24,7 @@ class ProjectDefinition extends ProjectModelBase
         $projectDefinitionStructure = Config::get('ec5ProjectStructures.project_definition');
 
         // Replace key values from $data into the $projectStructure
-        $this->data = $this->mergeArrays($projectDefinitionStructure, $data, []);
+        $this->data = Arrays::merge($projectDefinitionStructure, $data);
     }
 
     /**

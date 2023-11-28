@@ -3,6 +3,7 @@
 namespace ec5\Models\Projects;
 
 use Config;
+use ec5\Libraries\Utilities\Arrays;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,23 +15,15 @@ use Config;
 
 class ProjectExtra extends ProjectModelBase
 {
-
-    /**
-     * @param array $data
-     */
     public function create(array $data)
     {
-
         // Retrieve project extra template
         $projectExtraStructure = Config::get('ec5ProjectStructures.project_extra');
-
         // Replace the {{form_ref}} key with the actual form ref
         $projectExtraStructure['forms'][$data['project']['forms'][0]] = $projectExtraStructure['forms']['{{form_ref}}'];
         unset($projectExtraStructure['forms']['{{form_ref}}']);
-
         // Replace key values from $data into the $projectExtraStructure
-        $this->data = $this->mergeArrays($projectExtraStructure, $data, []);
-
+        $this->data = Arrays::merge($projectExtraStructure, $data);
     }
 
     /**
@@ -40,27 +33,19 @@ class ProjectExtra extends ProjectModelBase
     {
         // Retrieve project extra (keys only) template
         $projectExtraStructure = Config::get('ec5ProjectStructures.project_extra_reset');
-
         $this->data = $projectExtraStructure;
     }
 
     /* PROJECT */
-
-    /**
-     * @param array $data
-     */
     public function addProjectDetails(array $data)
     {
         $this->data['project']['details'] = $data;
         $this->data['project']['forms'] = [];
-
     }
 
     /**
      * Update project details, if the same keys exist
      * in $this->data and $data
-     *
-     * @param array $data
      */
     public function updateProjectDetails(array $data)
     {
@@ -72,29 +57,19 @@ class ProjectExtra extends ProjectModelBase
     }
 
     /* FORMS */
-
-    /**
-     * @param $ref
-     * @param $which
-     * @return array
-     */
-    public function getFormData($ref, $which) : array
+    public function getFormData($ref, $which): array
     {
         return $this->data['forms'][$ref][$which] ?? [];
     }
 
     /**
      * Add form, form_ref and add details from data
-     * data should contains things like name, ref etc
+     * data should contain things like name, ref etc
      * update counts
-     *
-     * @param $formRef
-     * @param $data
      */
     public function addFormDetails($formRef, $data)
     {
         $this->data['project']['forms'][] = $formRef;
-
         $this->data['forms'][$formRef]['details'] = $data;
         $this->data['forms'][$formRef]['inputs'] = [];
         $this->data['forms'][$formRef]['lists'] = [
@@ -108,7 +83,6 @@ class ProjectExtra extends ProjectModelBase
         ];
         $this->data['forms'][$formRef]['branch'] = [];
         $this->data['forms'][$formRef]['group'] = [];
-
     }
 
     /**
@@ -116,37 +90,27 @@ class ProjectExtra extends ProjectModelBase
      *
      * @return array
      **/
-    public function getForms() : array
+    public function getForms(): array
     {
         return $this->data['forms'] ?? [];
     }
 
     /**
      * Get ALL FORM REFS otherwise empty array
-     *
-     * @return array
      **/
-    public function getFormRefs() : array
+    public function getFormRefs(): array
     {
         return $this->data['project']['forms'] ?? [];
     }
 
     /**
      * Get the form details otherwise empty array
-     *
-     * @param $formRef
-     * @return array
      **/
-    public function getFormDetails($formRef) : array
+    public function getFormDetails($formRef): array
     {
         return $this->data['forms'][$formRef] ?? [];
     }
 
-    /**
-     * @param $formRef
-     * @param $type
-     * @param $inputRef
-     */
     public function addFormSpecialType($formRef, $type, $inputRef)
     {
         $this->data['forms'][$formRef][$type][$inputRef] = [];
@@ -154,9 +118,6 @@ class ProjectExtra extends ProjectModelBase
 
     /**
      * Check if a form has a parent
-     *
-     * @param string $formRef
-     * @return array|null
      */
     public function formHasParent($formRef)
     {
@@ -176,127 +137,74 @@ class ProjectExtra extends ProjectModelBase
 
     /* INPUTS */
 
-    /**
-     * @return array
-     */
-    public function getInputs() : array
+    public function getInputs(): array
     {
         return $this->data['inputs'] ?? [];
     }
 
-    /**
-     * @param $formRef
-     * @return array
-     */
-    public function getFormInputs($formRef) : array
+    public function getFormInputs($formRef): array
     {
         return $this->data['forms'][$formRef]['inputs'] ?? [];
     }
 
-    /**
-     * @param string $formRef
-     * @param string $branchOwnerInputRef
-     * @return array
-     */
-    public function getBranchInputs($formRef, $branchOwnerInputRef) : array
+    public function getBranchInputs($formRef, $branchOwnerInputRef): array
     {
         return $this->data['forms'][$formRef]['branch'][$branchOwnerInputRef] ?? [];
     }
 
-    /**
-     * @param string $formRef
-     * @param string $inputRef
-     * @return array
-     */
-    public function getGroupInputs($formRef, $inputRef) : array
+    public function getGroupInputs($formRef, $inputRef): array
     {
         return $this->data['forms'][$formRef]['group'][$inputRef] ?? [];
     }
 
-    /**
-     * @param $inputRef
-     * @return array
-     */
-    public function getInputData($inputRef) : array
+    public function getInputData($inputRef): array
     {
         return $this->data['inputs'][$inputRef]['data'] ?? [];
     }
 
-    /**
-     * @param $inputRef
-     * @return array
-     */
-    public function getInput($inputRef) : array
+    public function getInput($inputRef): array
     {
         return $this->data['inputs'][$inputRef] ?? [];
     }
 
     /**
      * Return a particular input detail - eg 'type', 'possible_answers' etc
-     *
-     * @param $inputRef
-     * @param $which
-     * @return mixed
      */
     public function getInputDetail($inputRef, $which)
     {
         return $this->data['inputs'][$inputRef]['data'][$which] ?? '';
     }
 
-    /**
-     * @param $formRef
-     * @param $inputRef
-     */
     public function addTopLevelRef($formRef, $inputRef)
     {
         if (!isset($this->data['forms'][$formRef])) {
             return;
         }
-
         $this->data['forms'][$formRef]['inputs'][] = $inputRef;
-
     }
 
-    /**
-     * @param $formRef
-     * @param $inputRef
-     * @param $input
-     * @param null $branchRef
-     */
     public function addInput($formRef, $inputRef, $input, $branchRef = null)
     {
-
         $this->data['inputs'][$inputRef]['data'] = $input;
         $this->dealWithInput($formRef, $inputRef, $input, $branchRef);
-
     }
 
     /**
      * Add extra information to the Project Extra for certain inputs
-     *
-     * @param $formRef
-     * @param $inputRef
-     * @param $input
-     * @param $branchRef
      */
     private function dealWithInput($formRef, $inputRef, $input, $branchRef)
     {
-
         switch ($input['type']) {
-
             //the following types have all possible answers
             case 'dropdown':
             case 'radio':
             case 'checkbox':
             case 'searchsingle':
             case 'searchmultiple':
-
                 $possibleAnswers = [];
-
                 foreach ($input['possible_answers'] as $possibleAnswer) {
                     $possibleAnswers[$possibleAnswer['answer_ref']] = $possibleAnswer['answer'];
                 }
-
                 // Branch or Form?
                 if ($branchRef) {
                     // Add to the order
@@ -316,7 +224,6 @@ class ProjectExtra extends ProjectModelBase
                             'possible_answers' => $possibleAnswers
                         ];
                 }
-
                 break;
             case 'location':
                 $this->data['forms'][$formRef]['lists']['location_inputs'][] = [
@@ -325,16 +232,9 @@ class ProjectExtra extends ProjectModelBase
                     'question' => $input['question']
                 ];
                 break;
-
         }
     }
 
-    /**
-     * @param $formRef
-     * @param $type - branch, group
-     * @param $ownerRef
-     * @param $inputRef
-     */
     public function addFormSpecialTypeInput($formRef, $type, $ownerRef, $inputRef)
     {
         $this->data['forms'][$formRef][$type][$ownerRef][] = $inputRef;
@@ -342,24 +242,16 @@ class ProjectExtra extends ProjectModelBase
 
     /**
      * Check if a branch exists by ref
-     *
-     * @param string $formRef
-     * @param string $inputRef
-     * @return bool
      */
-    public function branchExists($formRef, $inputRef)
+    public function branchExists($formRef, $inputRef): bool
     {
         return (isset($this->data['forms'][$formRef]['branch'][$inputRef]) ? true : false);
     }
 
     /**
      * Check if an input belongs to a branch
-     *
-     * @param string $formRef
-     * @param string $inputRef
-     * @return bool
      */
-    public function isBranchInput($formRef, $inputRef)
+    public function isBranchInput($formRef, $inputRef): bool
     {
         if (isset($this->data['forms'][$formRef]['branch'])) {
 
@@ -382,24 +274,16 @@ class ProjectExtra extends ProjectModelBase
                                 if ($inputRef == $groupInputRef) {
                                     return true;
                                 }
-
                             }
                         }
                     }
-
                 }
             }
-
         }
-
         return false;
     }
 
-    /**
-     * @param $inputRef
-     * @return array
-     */
-    public function getPossibleAnswers($inputRef)
+    public function getPossibleAnswers($inputRef): array
     {
         $possibleAnswers = $this->getInputDetail($inputRef, 'possible_answers');
         $possibles = [];
@@ -414,12 +298,7 @@ class ProjectExtra extends ProjectModelBase
         return $possibles;
     }
 
-    /**
-     * @param $inputRef
-     * @param $answerRef
-     * @return bool
-     */
-    public function possibleAnswerExists($inputRef, $answerRef) : bool
+    public function possibleAnswerExists($inputRef, $answerRef): bool
     {
         $possibleAnswers = $this->getInputDetail($inputRef, 'possible_answers');
 
@@ -428,15 +307,11 @@ class ProjectExtra extends ProjectModelBase
                 return true;
             }
         }
-
         return false;
     }
 
     /**
      * Get branches for a form
-     *
-     * @param string $formRef
-     * @return array
      */
     public function getBranches($formRef)
     {
@@ -445,13 +320,9 @@ class ProjectExtra extends ProjectModelBase
 
     /**
      * Get all form input data, including group inputs but not the main group input
-     *
-     * @param $formRef
-     * @return array
      */
-    public function getFormInputData(string $formRef) : array
+    public function getFormInputData(string $formRef): array
     {
-
         $formInputRefs = $this->getFormInputs($formRef);
         $inputs = [];
 
@@ -472,11 +343,8 @@ class ProjectExtra extends ProjectModelBase
             } else {
                 $inputs[] = $input;
             }
-
         }
-
         return $inputs;
-
     }
 
     /**
@@ -486,7 +354,7 @@ class ProjectExtra extends ProjectModelBase
      * @param string $branchRef
      * @return array
      */
-    public function getBranchInputData(string $formRef, string $branchRef) : array
+    public function getBranchInputData(string $formRef, string $branchRef): array
     {
         $branchInputRefs = $this->getBranchInputs($formRef, $branchRef);
         $inputs = [];

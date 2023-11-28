@@ -3,7 +3,7 @@
 namespace ec5\Models\Projects;
 
 use Config;
-use phpDocumentor\Reflection\Types\String_;
+use ec5\Libraries\Utilities\Arrays;
 
 /*
 |--------------------------------------------------------------------------
@@ -116,7 +116,7 @@ class ProjectMapping extends ProjectModelBase
         // Initialise an empty map
         $map = [];
 
-        // Loop forms and get the auto generated map for each
+        // Loop forms and get the auto-generated map for each
         foreach ($forms as $formRef => $form) {
             // Map all the form's inputs
             $map[$formRef] = $this->mapInputs($projectExtra, $formRef, $form['inputs']);
@@ -336,7 +336,7 @@ class ProjectMapping extends ProjectModelBase
                 continue;
             }
             // Merge each map with the auto generated
-            $this->data[$mapIndex] = $this->mergeArrays($this->data[0], $this->data[$mapIndex], []);
+            $this->data[$mapIndex] = Arrays::merge($this->data[0], $this->data[$mapIndex]);
         }
     }
 
@@ -397,7 +397,7 @@ class ProjectMapping extends ProjectModelBase
 
     }
 
-    public function getDefaultMapName(): String
+    public function getDefaultMapName(): string
     {
         // Retrieve default map name
         foreach ($this->data as $mapIndex => $mapping) {

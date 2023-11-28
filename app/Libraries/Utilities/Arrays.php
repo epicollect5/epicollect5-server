@@ -9,18 +9,12 @@ class Arrays
      * If a key is not present in $array2, but present in $array1, will take the value from $array1
      *
      * Works recursively for multidimensional associative arrays
-     *
-     * @param array $array1
-     * @param array $array2
-     * @param array $to
-     * @return array
      */
-    public static function merge(array $array1, array $array2, array $to = []) : array
+    public static function merge(array $array1, array $array2): array
     {
-
+        $to = [];
         // Loop $array1
         foreach ($array1 as $key => $value) {
-
             // If the key exists in $array2
             if (isset($array2[$key])) {
                 // If we have an array
@@ -32,9 +26,8 @@ class Arrays
                         // Otherwise, call this function again with the array
                         $to[$key] = self::merge($value, $array2[$key]);
                     }
-
                 } else {
-                    // Otherwise set the value for this key from $array2
+                    // Otherwise, set the value for this key from $array2
                     $to[$key] = $array2[$key];
                 }
             } else {
@@ -42,7 +35,6 @@ class Arrays
                 $to[$key] = $value;
             }
         }
-
         return $to;
     }
 
@@ -50,15 +42,9 @@ class Arrays
      * Implode an array to receive all values in the array
      *
      * Works recursively for multidimensional associative arrays
-     *
-     * @param array $pieces
-     * @param string $glue
-     * @param array $to
-     * @return string
      */
-    public static function implodeMulti(array $pieces, string $glue = '', array $to = []) : string
+    public static function implodeMulti(array $pieces, string $glue = '', array $to = []): string
     {
-
         // Loop $pieces
         foreach ($pieces as $key => $value) {
             // If array, call recursively
@@ -66,7 +52,7 @@ class Arrays
                 $to[] = self::implodeMulti($value, $glue);
             } else {
                 try {
-                    if ((string) $value && $value !== '') {
+                    if ((string)$value && $value !== '') {
                         // Otherwise append, using glue
                         $to[] = $value;
 
@@ -77,8 +63,7 @@ class Arrays
 
             }
         }
-
-        // Return flattened array imploded
+        // Return a flattened array imploded
         return implode($to, $glue);
     }
 }
