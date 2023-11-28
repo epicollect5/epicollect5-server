@@ -149,7 +149,6 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
      */
     protected function validateValue(string $inputRef, string $value): bool
     {
-
         $input = $this->requestedProject->getProjectExtra()->getInputData($inputRef);
         $this->ruleAnswers->validateAnswer($input, $value, $this->requestedProject);
         if ($this->ruleAnswers->hasErrors()) {
@@ -185,22 +184,7 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
                     $params,
                     $columns
                 );
-            }
-
-            // Search based on input ref
-            //        else if (!empty($params['input_ref'])) {
-            //
-            //            // Search based on search value
-            //            if (!empty($params['search'])) {
-            //                return $this->entryRepository->searchAnswersForInputWithValue(
-            //                    $this->requestedProject->getId(),
-            //                    $params,
-            //                    $columns
-            //                );
-            //            }
-            //
-            //        }
-            else {
+            } else {
                 // All Form Entries
                 $query = $this->entryRepository->getEntries(
                     $this->requestedProject->getId(),
@@ -220,7 +204,6 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
      */
     protected function runQueryBranch(array $params, array $columns)
     {
-
         // NOTE: branch_ref is never empty here
 
         // Single Branch Entry

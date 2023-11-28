@@ -91,7 +91,7 @@ class DownloadSubsetController extends EntrySearchControllerBase
         $cookieName = Config::get('ec5Strings.cookies.download-entries');
 
         // Validate the options and query string
-        if (!$this->validateOptions($params)) {
+        if (!$this->validateParams($params)) {
             return $this->apiResponse->errorResponse(400, $this->validateErrors);
         }
 

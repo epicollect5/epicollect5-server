@@ -86,7 +86,7 @@ class EntriesController extends EntrySearchControllerBase
         $options = $this->getRequestParams($request, Config::get('ec5Limits.entries_table.per_page'));
 
         // Validate the options and query string
-        if (!$this->validateOptions($options)) {
+        if (!$this->validateParams($options)) {
             return $this->apiResponse->errorResponse(400, $this->validateErrors);
         }
 
@@ -164,7 +164,7 @@ class EntriesController extends EntrySearchControllerBase
         $options = $this->getRequestParams($request, Config::get('ec5Limits.entries_table.per_page'));
 
         // Validate the options and query string
-        if (!$this->validateOptions($options)) {
+        if (!$this->validateParams($options)) {
             return $this->apiResponse->errorResponse(400, $this->validateErrors);
         }
 
