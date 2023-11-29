@@ -9,48 +9,24 @@ use ec5\Http\Controllers\Api\Entries\View\EntrySearchControllerBase;
 use ec5\Http\Validation\Entries\Upload\RuleAnswers;
 use ec5\Http\Validation\Entries\Search\RuleQueryString;
 use ec5\Http\Validation\Entries\Download\RuleDownloadSubset as DownloadSubsetValidator;
-use Illuminate\Support\Collection;
-
-
 use ec5\Libraries\Utilities\Common;
 use ec5\Repositories\QueryBuilder\Entry\Search\BranchEntryRepository;
 use ec5\Repositories\QueryBuilder\Entry\Search\EntryRepository;
-use ec5\Repositories\QueryBuilder\Entry\ToFile\CreateRepository as FileCreateRepository;
 use ec5\Models\ProjectData\DataMappingHelper;
-
+use Exception;
 use Illuminate\Http\Request;
-
-use ec5\Models\Eloquent\ProjectStructure;
 use ZipArchive;
-
 use Config;
 use Storage;
 use Cookie;
-use Illuminate\Support\Str;
 use League\Csv\Writer;
-use SplTempFileObject;
-use Auth;
 use Ramsey\Uuid\Uuid;
-
 
 class DownloadSubsetController extends EntrySearchControllerBase
 {
-
-    protected $fileCreateRepository;
     protected $allowedSearchKeys;
     protected $dataMappingHelper;
 
-    /**
-     * DownloadController constructor.
-     * @param Request $request
-     * @param ApiRequest $apiRequest
-     * @param ApiResponse $apiResponse
-     * @param EntryRepository $entryRepository
-     * @param BranchEntryRepository $branchEntryRepository
-     * @param RuleQueryString $ruleQueryString
-     * @param RuleAnswers $ruleAnswers
-     * @param FileCreateRepository $fileCreateRepository
-     */
     public function __construct(
         Request               $request,
         ApiRequest            $apiRequest,
@@ -59,7 +35,6 @@ class DownloadSubsetController extends EntrySearchControllerBase
         BranchEntryRepository $branchEntryRepository,
         RuleQueryString       $ruleQueryString,
         RuleAnswers           $ruleAnswers,
-        FileCreateRepository  $fileCreateRepository,
         DataMappingHelper     $dataMappingHelper
 
     )
@@ -74,8 +49,7 @@ class DownloadSubsetController extends EntrySearchControllerBase
             $ruleAnswers
         );
 
-        $this->allowedSearchKeys = Config::get('ec5Enums.download_subset_entries');
-        $this->fileCreateRepository = $fileCreateRepository;
+        $this->allowedSearchKeys = array_keys(config('epicollect.strings.download_subset_entries'));
         $this->dataMappingHelper = $dataMappingHelper;
     }
 
@@ -87,8 +61,7 @@ class DownloadSubsetController extends EntrySearchControllerBase
 
         //Get raw query params, $this->getRequestParams is doing some filtering
         $rawParams = $request->all();
-
-        $cookieName = Config::get('ec5Strings.cookies.download-entries');
+        $cookieName = Config::get('epicollect.strings.cookies.download-entries');
 
         // Validate the options and query string
         if (!$this->validateParams($params)) {
@@ -111,12 +84,10 @@ class DownloadSubsetController extends EntrySearchControllerBase
             //error no timestamp was passed
             abort(404); //s it goes to an error page
         }
-
         // If the map_index value passed does not exist, error out
         if (!in_array($params['map_index'], $projectMapping->getMapIndexes())) {
             return $this->apiResponse->errorResponse(400, ['map_index: ' . $params['map_index'] => ['ec5_322']]);
         }
-
         // Set the mapping
         $this->dataMappingHelper->initialiseMapping(
             $this->requestedProject,
@@ -141,11 +112,9 @@ class DownloadSubsetController extends EntrySearchControllerBase
             return $this->apiResponse->errorResponse(400, $this->errors);
             //todo should I delete any leftovers here?
         }
-
         //"If set to 0, or omitted, the cookie will expire at the end of the session (when the browser closes)."
         $mediaCookie = Cookie::make($cookieName, $timestamp, 0, null, null, false, false);
         Cookie::queue($mediaCookie);
-
 
         return response()->download($filepath, $filename)->deleteFileAfterSend(true);
         //        return response((string)$file, 200, [
@@ -158,22 +127,18 @@ class DownloadSubsetController extends EntrySearchControllerBase
     private function getEntriesQuery(array $params)
     {
         $columns = ['title', 'entry_data', 'branch_counts', 'child_counts', 'user_id', 'uploaded_at'];
-        $query = $this->runQuery($params, $columns);
-
-        return $query;
+        return $this->runQuery($params, $columns);
     }
 
     private function getBranchEntriesQuery(array $params)
     {
         $columns = ['title', 'entry_data', 'user_id', 'uploaded_at'];
-        $query = $this->runQueryBranch($params, $columns);
-
-        return $query;
+        return $this->runQueryBranch($params, $columns);
     }
 
     private function writeFileCsvZipped($query, $filename)
     {
-        $exportChunk = Config::get('ec5Limits.entries_export_chunk');
+        $exportChunk = Config::get('epicollect.limits.entries_export_chunk');
         $projectRef = $this->requestedProject->ref;
         //generate unique temp file name to cover concurrent users per project
         $csvFilename = Uuid::uuid4()->toString() . '.csv';
@@ -201,18 +166,14 @@ class DownloadSubsetController extends EntrySearchControllerBase
                 ->getPathPrefix()
             . 'subset/' . $projectRef . '/' . $zipFilename;
 
-
         //create empty zip file
-        $zip->open($zipFilepath, \ZipArchive::CREATE);
-
-
+        $zip->open($zipFilepath, ZipArchive::CREATE);
         //write to file one row at a time to keep memory usage low
         $csv = Writer::createFromPath($CSVfilepath, 'w+');
 
         try {
             //write headers
             $csv->insertOne($this->dataMappingHelper->headerRowCsv());
-
             //chuck feature keeps memory usage low
             $query->chunk($exportChunk, function ($entries) use ($csv) {
                 foreach ($entries as $entry) {
@@ -227,14 +188,13 @@ class DownloadSubsetController extends EntrySearchControllerBase
                 //   \LOG::error('Usage: ' . Common::formatBytes(memory_get_usage()));
                 //     \LOG::error('Peak Usage: ' . Common::formatBytes(memory_get_peak_usage()));
             });
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Error writing to file
             $this->errors['entries-subset-csv'] = ['ec5_83'];
         }
 
         $zip->addFile($CSVfilepath, basename(str_replace('.zip', '.csv', $filename)));
         $zip->close();
-
         //delete temp csv file
         Storage::disk('temp')->delete('subset/' . $projectRef . '/' . $csvFilename);
 

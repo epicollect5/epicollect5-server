@@ -73,7 +73,7 @@ class DownloadControllerTest extends TestCase
             );
     }
 
-    public function test_download_json()
+    public function test_download_json_public()
     {
         //create user
         $format = 'json';
@@ -83,6 +83,186 @@ class DownloadControllerTest extends TestCase
             [
                 'created_by' => $user->id,
                 'access' => config('ec5Strings.project_access.public')
+            ]
+        );
+
+        //assign role
+        factory(ProjectRole::class)->create([
+            'user_id' => $user->id,
+            'project_id' => $project->id,
+            'role' => config('epicollect.strings.project_roles.creator')
+        ]);
+
+        factory(ProjectStructure::class)->create(
+            [
+                'project_id' => $project->id
+            ]
+        );
+
+        factory(ProjectStat::class)->create(
+            [
+                'project_id' => $project->id,
+                'total_entries' => 0
+            ]
+        );
+        $cookies = [config('epicollect.strings.cookies.download-entries') => Carbon::now()->timestamp];
+        $params = [
+            config('epicollect.strings.cookies.download-entries') => Carbon::now()->timestamp,
+            'format' => $format
+        ];
+        $response = $this->actingAs($user)->call('GET', 'api/internal/download-entries/' . $project->slug, $params, $cookies);
+
+        $response->assertStatus(200);
+        // Assert that the returned file is a zip file
+        $this->assertTrue($response->headers->get('Content-Type') === 'application/zip');
+        //assert filename
+        $zipName = $project->slug . '-' . $params['format'] . '.zip';
+        // Get the Content-Disposition header
+        $contentDisposition = $response->headers->get('Content-Disposition');
+        // Extract the filename from the header
+        preg_match('/filename="(.+)"/', $contentDisposition, $matches);
+        $extractedFilename = $matches[1] ?? null;
+        $this->assertEquals($zipName, $extractedFilename);
+        // Get the response content as a file
+        $responseContent = $response->getFile();
+        // Get the downloaded file's path
+        $filePath = $responseContent->getPathname();
+
+        $this->assertZipContent($filePath, $format);
+
+        Storage::delete($filePath);
+    }
+
+    public function test_download_json_private()
+    {
+        //create user
+        $format = 'json';
+        $user = factory(User::class)->create();
+        //create project
+        $project = factory(Project::class)->create(
+            [
+                'created_by' => $user->id,
+                'access' => config('ec5Strings.project_access.private')
+            ]
+        );
+
+        //assign role
+        factory(ProjectRole::class)->create([
+            'user_id' => $user->id,
+            'project_id' => $project->id,
+            'role' => config('epicollect.strings.project_roles.creator')
+        ]);
+
+        factory(ProjectStructure::class)->create(
+            [
+                'project_id' => $project->id
+            ]
+        );
+
+        factory(ProjectStat::class)->create(
+            [
+                'project_id' => $project->id,
+                'total_entries' => 0
+            ]
+        );
+        $cookies = [config('epicollect.strings.cookies.download-entries') => Carbon::now()->timestamp];
+        $params = [
+            config('epicollect.strings.cookies.download-entries') => Carbon::now()->timestamp,
+            'format' => $format
+        ];
+        $response = $this->actingAs($user)->call('GET', 'api/internal/download-entries/' . $project->slug, $params, $cookies);
+
+        $response->assertStatus(200);
+        // Assert that the returned file is a zip file
+        $this->assertTrue($response->headers->get('Content-Type') === 'application/zip');
+        //assert filename
+        $zipName = $project->slug . '-' . $params['format'] . '.zip';
+        // Get the Content-Disposition header
+        $contentDisposition = $response->headers->get('Content-Disposition');
+        // Extract the filename from the header
+        preg_match('/filename="(.+)"/', $contentDisposition, $matches);
+        $extractedFilename = $matches[1] ?? null;
+        $this->assertEquals($zipName, $extractedFilename);
+        // Get the response content as a file
+        $responseContent = $response->getFile();
+        // Get the downloaded file's path
+        $filePath = $responseContent->getPathname();
+
+        $this->assertZipContent($filePath, $format);
+
+        Storage::delete($filePath);
+    }
+
+    public function test_download_csv_public()
+    {
+        //create user
+        $format = 'csv';
+        $user = factory(User::class)->create();
+        //create project
+        $project = factory(Project::class)->create(
+            [
+                'created_by' => $user->id,
+                'access' => config('ec5Strings.project_access.public')
+            ]
+        );
+
+        //assign role
+        factory(ProjectRole::class)->create([
+            'user_id' => $user->id,
+            'project_id' => $project->id,
+            'role' => config('epicollect.strings.project_roles.creator')
+        ]);
+
+        factory(ProjectStructure::class)->create(
+            [
+                'project_id' => $project->id
+            ]
+        );
+
+        factory(ProjectStat::class)->create(
+            [
+                'project_id' => $project->id,
+                'total_entries' => 0
+            ]
+        );
+        $cookies = [config('epicollect.strings.cookies.download-entries') => Carbon::now()->timestamp];
+        $params = [
+            config('epicollect.strings.cookies.download-entries') => Carbon::now()->timestamp,
+            'format' => $format
+        ];
+        $response = $this->actingAs($user)->call('GET', 'api/internal/download-entries/' . $project->slug, $params, $cookies);
+
+        $response->assertStatus(200);
+        // Assert that the returned file is a zip file
+        $this->assertTrue($response->headers->get('Content-Type') === 'application/zip');
+        //assert filename
+        $zipName = $project->slug . '-' . $params['format'] . '.zip';
+        // Get the Content-Disposition header
+        $contentDisposition = $response->headers->get('Content-Disposition');
+        // Extract the filename from the header
+        preg_match('/filename="(.+)"/', $contentDisposition, $matches);
+        $extractedFilename = $matches[1] ?? null;
+        $this->assertEquals($zipName, $extractedFilename);
+        // Get the response content as a file
+        $responseContent = $response->getFile();
+        // Get the downloaded file's path
+        $filePath = $responseContent->getPathname();
+
+        $this->assertZipContent($filePath, $format);
+
+        Storage::delete($filePath);
+    }
+
+    public function test_download_csv_private()
+    {
+        //create user
+        $format = 'csv';
+        $user = factory(User::class)->create();
+        //create project
+        $project = factory(Project::class)->create(
+            [
+                'created_by' => $user->id,
+                'access' => config('ec5Strings.project_access.private')
             ]
         );
 
@@ -190,66 +370,6 @@ class DownloadControllerTest extends TestCase
         $response = $this->actingAs($user)->call('GET', 'api/internal/download-entries/' . $project->slug, $params, $cookies);
         $response->assertStatus(400);
 
-    }
-
-    public function test_download_csv()
-    {
-        //create user
-        $format = 'csv';
-        $user = factory(User::class)->create();
-        //create project
-        $project = factory(Project::class)->create(
-            [
-                'created_by' => $user->id,
-                'access' => config('ec5Strings.project_access.public')
-            ]
-        );
-
-        //assign role
-        factory(ProjectRole::class)->create([
-            'user_id' => $user->id,
-            'project_id' => $project->id,
-            'role' => config('epicollect.strings.project_roles.creator')
-        ]);
-
-        factory(ProjectStructure::class)->create(
-            [
-                'project_id' => $project->id
-            ]
-        );
-
-        factory(ProjectStat::class)->create(
-            [
-                'project_id' => $project->id,
-                'total_entries' => 0
-            ]
-        );
-        $cookies = [config('epicollect.strings.cookies.download-entries') => Carbon::now()->timestamp];
-        $params = [
-            config('epicollect.strings.cookies.download-entries') => Carbon::now()->timestamp,
-            'format' => $format
-        ];
-        $response = $this->actingAs($user)->call('GET', 'api/internal/download-entries/' . $project->slug, $params, $cookies);
-
-        $response->assertStatus(200);
-        // Assert that the returned file is a zip file
-        $this->assertTrue($response->headers->get('Content-Type') === 'application/zip');
-        //assert filename
-        $zipName = $project->slug . '-' . $params['format'] . '.zip';
-        // Get the Content-Disposition header
-        $contentDisposition = $response->headers->get('Content-Disposition');
-        // Extract the filename from the header
-        preg_match('/filename="(.+)"/', $contentDisposition, $matches);
-        $extractedFilename = $matches[1] ?? null;
-        $this->assertEquals($zipName, $extractedFilename);
-        // Get the response content as a file
-        $responseContent = $response->getFile();
-        // Get the downloaded file's path
-        $filePath = $responseContent->getPathname();
-
-        $this->assertZipContent($filePath, $format);
-
-        Storage::delete($filePath);
     }
 
     public function test_should_abort_if_timestamp_missing()
@@ -365,6 +485,28 @@ class DownloadControllerTest extends TestCase
         $this->assertEquals($expectedContent, $jsonContent);
     }
 
+    public function test_upload_headers()
+    {
+        //todo
+
+        //todo use formbuilder store() to fill in the database tables
+        //so that project extra, mapping etc is all set
+        //by passing a real project definition with 300 inputs
+        //and branches and groups
+
+
+    }
+
+    public function test_upload_template()
+    {
+        //todo
+    }
+
+    public function test_subset()
+    {
+        //todo
+    }
+
     private function assertZipContent($filePath, $extension)
     {
         $zip = new ZipArchive();
@@ -374,6 +516,9 @@ class DownloadControllerTest extends TestCase
         for ($i = 0; $i < $zip->numFiles; $i++) {
             $fileInfo = $zip->statIndex($i);
             $extractedFilename = $fileInfo['name'];
+
+            //assert filename
+
             // Check if the file has a .json extension
             if (pathinfo($extractedFilename, PATHINFO_EXTENSION) === $extension) {
                 $fileFound = true;

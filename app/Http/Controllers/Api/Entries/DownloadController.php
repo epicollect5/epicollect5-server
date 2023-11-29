@@ -10,9 +10,10 @@ use ec5\Http\Validation\Entries\Search\RuleQueryString;
 use ec5\Http\Validation\Entries\Download\RuleDownload;
 use ec5\Repositories\QueryBuilder\Entry\Search\BranchEntryRepository;
 use ec5\Repositories\QueryBuilder\Entry\Search\EntryRepository;
-use ec5\Repositories\QueryBuilder\Entry\ToFile\CreateRepository as FileCreateRepository;
 use ec5\Http\Validation\Entries\Upload\RuleUploadTemplate;
 use ec5\Http\Validation\Entries\Upload\RuleUploadHeaders;
+use ec5\Services\DataMappingService;
+use ec5\Services\DownloadEntriesService;
 use Illuminate\Http\Request;
 use ec5\Models\Eloquent\ProjectStructure;
 use Auth;
@@ -32,7 +33,6 @@ class DownloadController extends EntrySearchControllerBase
     |
     */
 
-    protected $fileCreateRepository;
     protected $allowedSearchKeys;
 
     /**
@@ -44,7 +44,6 @@ class DownloadController extends EntrySearchControllerBase
      * @param BranchEntryRepository $branchEntryRepository
      * @param RuleQueryString $ruleQueryString
      * @param RuleAnswers $ruleAnswers
-     * @param FileCreateRepository $fileCreateRepository
      */
     public function __construct(
         Request               $request,
@@ -53,9 +52,7 @@ class DownloadController extends EntrySearchControllerBase
         EntryRepository       $entryRepository,
         BranchEntryRepository $branchEntryRepository,
         RuleQueryString       $ruleQueryString,
-        RuleAnswers           $ruleAnswers,
-        FileCreateRepository  $fileCreateRepository
-
+        RuleAnswers           $ruleAnswers
     )
     {
         parent::__construct(
@@ -69,7 +66,6 @@ class DownloadController extends EntrySearchControllerBase
         );
 
         $this->allowedSearchKeys = array_keys(config('epicollect.strings.download_data_entries'));
-        $this->fileCreateRepository = $fileCreateRepository;
     }
 
     /**
@@ -83,14 +79,11 @@ class DownloadController extends EntrySearchControllerBase
         if ($user === null) {
             return $this->apiResponse->errorResponse(400, ['download-entries' => ['ec5_86']]);
         }
-
-        // Validate the params
+        // Validate the request params
         $ruleDownload->validate($params);
         if ($ruleDownload->hasErrors()) {
             return $this->apiResponse->errorResponse(400, $this->ruleQueryString->errors());
         }
-
-        //todo do this better and use a form request maybe
         //we send a "media-request" parameter in the query string with a timestamp. to generate a cookie with the same timestamp
         $timestamp = $request->query($cookieName);
         if ($timestamp) {
@@ -102,36 +95,9 @@ class DownloadController extends EntrySearchControllerBase
             //error no timestamp was passed
             return $this->apiResponse->errorResponse(404, ['download-entries' => ['ec5_29']]);
         }
-
-        // Default format if not supplied
-        if (empty($params['format'])) {
-            $params['format'] = config('epicollect.strings.download_data_entries_format_default');
-        }
-
-        // Setup storage
-        $storage = Storage::disk('entries_zip');
-        // Check storage error here
-        if ($storage == null) {
-            $this->errors = ['download' => ['ec5_21']];
-            return $this->apiResponse->errorResponse(400, $this->errors);
-        }
-        $storagePrefix = (empty($storage)) ? '' : $storage->getDriver()->getAdapter()->getPathPrefix();
-
-        //todo check if there is a zip file already, send it
-        //todo it gets destroyed when we post entries returnZip
-
-        $projectDir = $storagePrefix . $this->requestedProject->ref;
-        //append user ID to handle concurrency -> MUST be logged in to download!
-        $projectDir = $projectDir . '/' . $user->id;
-
+        $projectDir = $this->getArchivePath($user);
         // Try and create the files
-        $this->fileCreateRepository->create($this->requestedProject, $projectDir, $params);
-        if ($this->fileCreateRepository->hasErrors()) {
-            return $this->apiResponse->errorResponse(400, $this->fileCreateRepository->errors());
-        }
-
-        $zipName = $this->requestedProject->slug . '-' . $params['format'] . '.zip';
-        return $this->returnZip($projectDir . '/' . $zipName, $zipName, $timestamp);
+        return $this->createArchive($projectDir, $params, $timestamp);
     }
 
     public function uploadTemplate(Request $request, RuleUploadTemplate $validator)
@@ -142,7 +108,6 @@ class DownloadController extends EntrySearchControllerBase
         $projectMappings = json_decode($projectStructure->project_mapping);
         $projectDefinition = json_decode($projectStructure->project_definition);
         $params = $request->all();
-        $readmeType = config('epicollect.strings.inputs_type.readme');
         $locationType = config('epicollect.strings.inputs_type.location');
         $groupType = config('epicollect.strings.inputs_type.group');
         $cookieName = config('epicollect.strings.cookies.download-entries');
@@ -173,7 +138,6 @@ class DownloadController extends EntrySearchControllerBase
 
         $mapTos = [];
         $mapName = $projectMappings[$mapIndex]->name;
-        $bulkUploadables = array_keys(config('epicollect.strings.bulk_uploadables'));
 
         //are we looking for a branch template?
         if ($branchRef !== '') {
@@ -197,7 +161,6 @@ class DownloadController extends EntrySearchControllerBase
             }
 
             $selectedMapping = $projectMappings[$mapIndex]->forms->{$formRef}->{$branchRef}->branch;
-
             $branchName = $projectDefinition->project->forms[$formIndex]->inputs[$branchIndex]->question;
             //truncate (and slugify) branch name to avoid super long file names
             $branchNameTruncated = Str::slug(substr(strtolower($branchName), 0, 100));
@@ -212,46 +175,20 @@ class DownloadController extends EntrySearchControllerBase
             $filename = $projectSlug . '__' . $formName . '__' . $mapName . '__upload-template.csv';
         }
 
-        //loop inputs in order
-        foreach ($inputs as $input) {
-
-            $inputRef = $input->ref;
-            //only use question types bulk-uploadable
-            if (in_array($input->type, $bulkUploadables)) {
-                //need to split location in its parts (no UTM for now)
-                if ($input->type === $locationType) {
-                    $mapTos[] = 'lat_' . $selectedMapping->{$inputRef}->map_to;
-                    $mapTos[] = 'long_' . $selectedMapping->{$inputRef}->map_to;
-                    $mapTos[] = 'accuracy_' . $selectedMapping->{$inputRef}->map_to;
-                } else {
-                    //if the input is a group, flatten the group inputs
-                    if ($input->type === $groupType) {
-
-                        foreach ($input->group as $groupInput) {
-
-                            $groupInputRef = $groupInput->ref;
-                            if (in_array($groupInput->type, $bulkUploadables)) {
-                                if ($groupInput->type === $locationType) {
-                                    $mapTos[] = 'lat_' . $selectedMapping->{$inputRef}->group->{$groupInputRef}->map_to;
-                                    $mapTos[] = 'long_' . $selectedMapping->{$inputRef}->group->{$groupInputRef}->map_to;
-                                    $mapTos[] = 'accuracy_' . $selectedMapping->{$inputRef}->group->{$groupInputRef}->map_to;
-                                } else {
-                                    $mapTos[] = $selectedMapping->{$inputRef}->group->{$groupInputRef}->map_to;
-                                }
-                            }
-                        }
-                    } else {
-                        $mapTos[] = $selectedMapping->{$inputRef}->map_to;
-                    }
-                }
-            }
-        }
+        //get csv headers in order
+        $csvHeaders = $this->getCSVHeaders(
+            $inputs,
+            $locationType,
+            $selectedMapping,
+            $groupType,
+            $mapTos[]
+        );
 
         //"If set to 0, or omitted, the cookie will expire at the end of the session (when the browser closes)."
         $mediaCookie = Cookie::make($cookieName, $timestamp, 0, null, null, false, false);
         Cookie::queue($mediaCookie);
 
-        $content = implode(',', $mapTos);
+        $content = implode(',', $csvHeaders);
         //return a csv file with the proper column headers
         $headers = [
             'Content-type' => 'text/csv',
@@ -260,21 +197,20 @@ class DownloadController extends EntrySearchControllerBase
         return response()->make($content, 200, $headers);
     }
 
-    public function uploadHeaders(Request $request, RuleUploadHeaders $validator)
+    public function uploadHeaders(Request $request, RuleUploadHeaders $ruleUploadHeaders)
     {
         $projectId = $this->requestedProject->getId();
         $projectStructure = ProjectStructure::where('project_id', $projectId)->first();
         $projectMappings = json_decode($projectStructure->project_mapping);
         $projectDefinition = json_decode($projectStructure->project_definition);
         $params = $request->all();
-        $readmeType = config('epicollect.strings.inputs_type.readme');
         $locationType = config('epicollect.strings.inputs_type.location');
         $groupType = config('epicollect.strings.inputs_type.group');
 
-        //todo validation request
-        $validator->validate($params);
-        if ($validator->hasErrors()) {
-            return $this->apiResponse->errorResponse(400, $validator->errors());
+        //validate request
+        $ruleUploadHeaders->validate($params);
+        if ($ruleUploadHeaders->hasErrors()) {
+            return $this->apiResponse->errorResponse(400, $ruleUploadHeaders->errors());
         }
 
         $mapIndex = $params['map_index'];
@@ -283,19 +219,16 @@ class DownloadController extends EntrySearchControllerBase
         $formRef = $projectDefinition->project->forms[$formIndex]->ref;
 
         $mapTos = [];
-        $bulkUploadables = array_keys(config('epicollect.strings.bulk_uploadables'));
 
         //are we looking for a branch template?
         if ($branchRef !== '') {
-            $branchIndex = 0;
             $inputs = $projectDefinition->project->forms[$formIndex]->inputs;
 
             //find the branch inputs
             $branchFound = false;
-            foreach ($inputs as $inputIndex => $input) {
+            foreach ($inputs as $input) {
                 if ($input->ref === $branchRef) {
                     $inputs = $input->branch;
-                    $branchIndex = $inputIndex;
                     $branchFound = true;
                     break;
                 }
@@ -316,60 +249,34 @@ class DownloadController extends EntrySearchControllerBase
             $mapTos[] = 'ec5_uuid';
         }
 
-        //loop inputs in order
-        foreach ($inputs as $input) {
+        //get csv headers in order
+        $csvHeaders = $this->getCSVHeaders(
+            $inputs,
+            $locationType,
+            $selectedMapping,
+            $groupType,
+            $mapTos);
 
-            $inputRef = $input->ref;
-            //only use question types bulk-uploadable
-            if (in_array($input->type, $bulkUploadables)) {
-                //need to split location in its parts (no UTM for now)
-                if ($input->type === $locationType) {
-                    $mapTos[] = 'lat_' . $selectedMapping->{$inputRef}->map_to;
-                    $mapTos[] = 'long_' . $selectedMapping->{$inputRef}->map_to;
-                    $mapTos[] = 'accuracy_' . $selectedMapping->{$inputRef}->map_to;
-                } else {
-                    //if the input is a group, flatten the group inputs
-                    if ($input->type === $groupType) {
-
-                        foreach ($input->group as $groupInput) {
-
-                            $groupInputRef = $groupInput->ref;
-                            if (in_array($groupInput->type, $bulkUploadables)) {
-                                if ($groupInput->type === $locationType) {
-                                    $mapTos[] = 'lat_' . $selectedMapping->{$inputRef}->group->{$groupInputRef}->map_to;
-                                    $mapTos[] = 'long_' . $selectedMapping->{$inputRef}->group->{$groupInputRef}->map_to;
-                                    $mapTos[] = 'accuracy_' . $selectedMapping->{$inputRef}->group->{$groupInputRef}->map_to;
-                                } else {
-                                    $mapTos[] = $selectedMapping->{$inputRef}->group->{$groupInputRef}->map_to;
-                                }
-                            }
-                        }
-                    } else {
-                        $mapTos[] = $selectedMapping->{$inputRef}->map_to;
-                    }
-                }
-            }
-        }
-
-        $content = ['headers' => $mapTos];
+        $content = ['headers' => $csvHeaders];
         //return json with the proper column headers
-
         return response()->apiResponse($content);
     }
 
     public function subset(Request $request, RuleDownload $ruleDownload)
     {
+        $user = Auth::user();
+        if ($user === null) {
+            return $this->apiResponse->errorResponse(400, ['download-subset' => ['ec5_86']]);
+        }
+
         $params = $this->getRequestParams($request, config('epicollect.limits.entries_table.per_page_download'));
-
         $cookieName = config('epicollect.strings.cookies.download-entries');
-
-        // Validate the options
+        // Validate request params
         $ruleDownload->validate($params);
         if ($this->ruleQueryString->hasErrors()) {
             return $this->apiResponse->errorResponse(400, $this->ruleQueryString->errors());
         }
 
-        //todo do this better and use a form request maybe
         //we send a "media-request" parameter in the query string with a timestamp. to generate a cookie with the same timestamp
         $timestamp = $request->query($cookieName);
         if ($timestamp) {
@@ -381,40 +288,14 @@ class DownloadController extends EntrySearchControllerBase
             //error no timestamp was passed
             abort(404); //s it goes to an error page
         }
-
-        // Default format if not supplied
-        if (empty($params['format'])) {
-            $params['format'] = config('epicollect.strings.download_data_entries_format_default');
-        }
-
-        // Setup storage
-        $storage = Storage::disk('entries_zip');
-        // Check storage error here
-        if ($storage == null) {
-            $this->errors = ['download' => ['ec5_21']];
-            return $this->apiResponse->errorResponse(400, $this->errors);
-        }
-        $storagePrefix = (empty($storage)) ? '' : $storage->getDriver()->getAdapter()->getPathPrefix();
-
-        //todo check if there is a zip file already, send it
-        //todo it gets destroyed when we post entries returnZip
-        $projectDir = $storagePrefix . $this->requestedProject->ref;
-
+        $projectDir = $this->getArchivePath($user);
         // Try and create the files
-        $this->fileCreateRepository->create($this->requestedProject, $projectDir, $params);
-        if ($this->fileCreateRepository->hasErrors()) {
-            return $this->apiResponse->errorResponse(400, $this->fileCreateRepository->errors());
-        }
-
-        $zipName = $this->requestedProject->slug . '-' . $params['format'] . '.zip';
-
-        return $this->returnZip($projectDir . '/' . $zipName, $zipName, $timestamp);
+        return $this->createArchive($projectDir, $params, $timestamp);
     }
 
-    private function returnZip($filepath, $filename, $timestamp = null)
+    private function sendArchive($filepath, $filename, $timestamp = null)
     {
         $cookieName = config('epicollect.strings.cookies.download-entries');
-
         //"If set to 0, or omitted, the cookie will expire at the end of the session (when the browser closes)."
         $mediaCookie = Cookie::make($cookieName, $timestamp, 0, null, null, false, false);
         Cookie::queue($mediaCookie);
@@ -429,5 +310,66 @@ class DownloadController extends EntrySearchControllerBase
             $content = trans('status_codes.ec5_364');
             return response()->attachment($content, $filename);
         }
+    }
+
+    private function createArchive(string $projectDir, array $params, $timestamp)
+    {
+        $downloadEntriesService = new DownloadEntriesService(new DataMappingService());
+
+        $downloadEntriesService->create($this->requestedProject, $projectDir, $params);
+        if ($downloadEntriesService->hasErrors()) {
+            return $this->apiResponse->errorResponse(400, $downloadEntriesService->errors());
+        }
+        $zipName = $this->requestedProject->slug . '-' . $params['format'] . '.zip';
+        return $this->sendArchive($projectDir . '/' . $zipName, $zipName, $timestamp);
+    }
+
+    private function getArchivePath($user)
+    {
+        // Setup storage
+        $storage = Storage::disk('entries_zip');
+        $storagePrefix = $storage->getDriver()->getAdapter()->getPathPrefix();
+        $projectDir = $storagePrefix . $this->requestedProject->ref;
+        //append user ID to handle concurrency -> MUST be logged in to download!
+        return $projectDir . '/' . $user->id;
+    }
+
+    private function getCSVHeaders($inputs, $locationType, $selectedMapping, $groupType, $mapTos): array
+    {
+        $bulkUploadables = array_keys(config('epicollect.strings.bulk_uploadables'));
+        $csvHeaders = $mapTos;
+        foreach ($inputs as $input) {
+            $inputRef = $input->ref;
+            //only use question types bulk-uploadable
+            if (in_array($input->type, $bulkUploadables)) {
+                //need to split location in its parts (no UTM for now)
+                if ($input->type === $locationType) {
+                    $csvHeaders[] = 'lat_' . $selectedMapping->{$inputRef}->map_to;
+                    $csvHeaders[] = 'long_' . $selectedMapping->{$inputRef}->map_to;
+                    $csvHeaders[] = 'accuracy_' . $selectedMapping->{$inputRef}->map_to;
+                } else {
+                    //if the input is a group, flatten the group inputs
+                    if ($input->type === $groupType) {
+
+                        foreach ($input->group as $groupInput) {
+
+                            $groupInputRef = $groupInput->ref;
+                            if (in_array($groupInput->type, $bulkUploadables)) {
+                                if ($groupInput->type === $locationType) {
+                                    $csvHeaders[] = 'lat_' . $selectedMapping->{$inputRef}->group->{$groupInputRef}->map_to;
+                                    $csvHeaders[] = 'long_' . $selectedMapping->{$inputRef}->group->{$groupInputRef}->map_to;
+                                    $csvHeaders[] = 'accuracy_' . $selectedMapping->{$inputRef}->group->{$groupInputRef}->map_to;
+                                } else {
+                                    $csvHeaders[] = $selectedMapping->{$inputRef}->group->{$groupInputRef}->map_to;
+                                }
+                            }
+                        }
+                    } else {
+                        $csvHeaders[] = $selectedMapping->{$inputRef}->map_to;
+                    }
+                }
+            }
+        }
+        return $csvHeaders;
     }
 }
