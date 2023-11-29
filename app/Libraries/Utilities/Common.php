@@ -1,12 +1,5 @@
 <?php
 
-/**
- * Created by PhpStorm.
- * User: mirko
- * Date: 04/08/2020
- * Time: 11:11
- */
-
 namespace ec5\Libraries\Utilities;
 
 use Illuminate\Support\Str;
@@ -23,7 +16,6 @@ class Common
                 $possibles[] = $possibleAnswer['answer_ref'];
             }
         }
-
         return $possibles;
     }
 
@@ -42,7 +34,7 @@ class Common
 
     public static function isValidTimestamp($timestamp): bool
     {
-        return ((string)(int)$timestamp === $timestamp)
+        return ((string)(int)$timestamp === (string)$timestamp)
             && ($timestamp <= PHP_INT_MAX)
             && ($timestamp >= ~PHP_INT_MAX);
     }

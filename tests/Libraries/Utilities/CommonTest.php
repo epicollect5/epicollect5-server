@@ -2,47 +2,17 @@
 
 namespace Tests\Libraries\Utilities;
 
+use ec5\Libraries\Utilities\Common;
 use Tests\TestCase;
 
 class CommonTest extends TestCase
 {
-    protected $dataMappingHelper;
-    protected $entrySearch;
-    protected $branchEntrySearch;
-    protected $generateFilenameMethod;
-    protected $fileCreateRepository;
-
-    /**
-     * // This method will automatically be called prior to any test cases
-     */
     public function setUp()
     {
         parent::setUp();
-        $this->generateFilenameMethod = self::getMethod('generateFilename');
-        $this->fileCreateRepository = \Mockery::mock('\ec5\Repositories\QueryBuilder\Entry\ToFile\CreateRepository');
     }
 
-    /**
-     * Helper to get protected/private method for testing
-     * todo put it in parent class and make it more dynamic??
-     *
-     * @param $name
-     * @return mixed
-     */
-    protected static function getMethod($name)
-    {
-        $class = new \ReflectionClass('\ec5\Repositories\QueryBuilder\Entry\ToFile\CreateRepository');
-        $method = $class->getMethod($name);
-        $method->setAccessible(true);
-        return $method;
-    }
-
-    /**
-     * Test lenght of generated filename
-     *
-     * @return void
-     */
-    public function test_it_should_be_within_system_length()
+    public function test_filename_should_be_within_system_length()
     {
         $systemMaxLength = 255;
         $form_prefix = 'form';
@@ -50,41 +20,63 @@ class CommonTest extends TestCase
         $branch_prefix = 'branch';
         $branch_index = rand(1, 300);
 
-        //form name with lenght 50 (max)
+        //form name with length 50 (max)
         $formName = 'Far far away, behind the word mountains, far from.';
 
-        //form name with lenght 255 (max)
+        //form name with length 255 (max)
         $branchName = 'Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts. Separated they live in Bookmarksgrove right at the coast of the Semantics, a large language ocean. A small river named Duden flows by thei';
 
         //generate filename (protected method, via reflection)
-        $generatedFilename = $this->generateFilenameMethod
-            ->invokeArgs($this->fileCreateRepository, array($form_prefix . '-' . $form_index, $formName));
+        $generatedFilename = Common::generateFilename($form_prefix . '-' . $form_index, $formName);
         //should return true
         $this->assertTrue(strlen($generatedFilename) < $systemMaxLength);
 
         //generate filename (protected method, via reflection)
-        $generatedFilename = $this->generateFilenameMethod
-            ->invokeArgs($this->fileCreateRepository, array($branch_prefix . '-' . $branch_index, $branchName));
+        $generatedFilename = Common::generateFilename($branch_prefix . '-' . $branch_index, $branchName);
         //should return true
         $this->assertTrue(strlen($generatedFilename) < $systemMaxLength);
 
-        //form name with lenght 50 (max)
+        //form name with length 50 (max)
         $formName = 'Person';
 
-        //form name with lenght 255 (max)
+        //form name with length 255 (max)
         $branchName = 'Family Members';
 
         //generate filename (protected method, via reflection)
-        $generatedFilename = $this->generateFilenameMethod
-            ->invokeArgs($this->fileCreateRepository, array($form_prefix . '-' . $form_index, $formName));
+        $generatedFilename = Common::generateFilename($form_prefix . '-' . $form_index, $formName);
         //should return true
         $this->assertTrue(strlen($generatedFilename) < $systemMaxLength);
 
         //generate filename (protected method, via reflection)
-        $generatedFilename = $this->generateFilenameMethod
-            ->invokeArgs($this->fileCreateRepository, array($branch_prefix . '-' . $branch_index, $branchName));
+        $generatedFilename = Common::generateFilename($branch_prefix . '-' . $branch_index, $branchName);
         //should return true
         $this->assertTrue(strlen($generatedFilename) < $systemMaxLength);
 
+    }
+
+    public function test_invalid_timestamp(): void
+    {
+        $invalidTimestamps = [
+            '2021-12-19', // Not a Unix timestamp
+            'abc',        // Not a numeric value
+            PHP_INT_MAX + 1, // Greater than PHP_INT_MAX
+            PHP_INT_MIN - 1, // Less than ~PHP_INT_MAX
+        ];
+
+        foreach ($invalidTimestamps as $timestamp) {
+            $this->assertFalse(Common::isValidTimestamp($timestamp));
+        }
+    }
+
+    public function test_valid_timestamp(): void
+    {
+        $validTimestamps = [
+            1639862400, // An example of a valid Unix timestamp (2021-12-19 00:00:00 UTC)
+            1609459200, // Another valid Unix timestamp (2021-01-01 00:00:00 UTC)
+        ];
+
+        foreach ($validTimestamps as $timestamp) {
+            $this->assertTrue(Common::isValidTimestamp($timestamp));
+        }
     }
 }
