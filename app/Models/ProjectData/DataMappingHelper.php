@@ -183,7 +183,8 @@ class DataMappingHelper
             $entryOut['created_by'] = 'n/a';
             if ($userId) {
                 $user = User::where('id', $userId)
-                    ->where('status', '<>', 'archived');
+                    ->where('state', '<>', 'archived')
+                    ->first();
                 if ($user) {
                     $entryOut['created_by'] = $user->email;
                 }
@@ -330,7 +331,7 @@ class DataMappingHelper
             $entryOut['created_by'] = 'n/a';
             if ($userId) {
                 $user = User::where('id', $userId)
-                    ->where('status', '<>', 'archived');
+                    ->where('state', '<>', 'archived');
                 if ($user) {
                     $entryOut['created_by'] = $user->email;
                 }
