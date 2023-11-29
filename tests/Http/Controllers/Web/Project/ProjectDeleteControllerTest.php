@@ -2,6 +2,7 @@
 
 namespace Tests\Http\Controllers\Web\Project;
 
+use ec5\Libraries\Utilities\Generators;
 use ec5\Models\Eloquent\BranchEntry;
 use ec5\Models\Eloquent\Entry;
 use ec5\Models\Eloquent\OAuthClientProjects;
@@ -13,6 +14,7 @@ use ec5\Models\Eloquent\ProjectStructure;
 use ec5\Models\Eloquent\UserProvider;
 use ec5\Models\Eloquent\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 use Mockery;
 use Config;
@@ -150,7 +152,6 @@ class ProjectDeleteControllerTest extends TestCase
 
     public function test_delete_post_request_but_project_name_does_not_match()
     {
-
         //creator
         $role = Config::get('ec5Strings.project_roles.creator');
         $numOfEntries = mt_rand(10, 100);
@@ -164,8 +165,13 @@ class ProjectDeleteControllerTest extends TestCase
             'email' => $user->email
         ]);
 
-        //create mock project with that user
-        $project = factory(Project::class)->create(['created_by' => $user->id]);
+        //create a mock project with that user
+        $projectName = Generators::projectRef();
+        $project = factory(Project::class)->create([
+            'created_by' => $user->id,
+            'name' => $projectName,
+            'slug' => Str::slug($projectName, '-')
+        ]);
 
         //assign the user to that project with the CREATOR role
         $projectRole = factory(ProjectRole::class)->create([

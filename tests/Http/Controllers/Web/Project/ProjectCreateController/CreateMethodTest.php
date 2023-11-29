@@ -13,6 +13,7 @@ use ec5\Models\Eloquent\ProjectStat;
 use ec5\Models\Eloquent\ProjectStructure;
 use ec5\Models\Eloquent\User;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
@@ -155,7 +156,7 @@ class CreateMethodTest extends TestCase
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
         $projectName = Generators::projectRef();
-        $projectSlug = $projectName;
+        $projectSlug = Str::slug($projectName, '-');
 
         $response = $this->actingAs($user, self::DRIVER)
             ->post('myprojects/create', [
@@ -244,12 +245,17 @@ class CreateMethodTest extends TestCase
             ->assertSessionHas('tab', 'create');
 
         $this->assertDatabaseHas('projects', ['slug' => $projectSlug]);
+
         //check name is sanitised with extra spaces removed
         $this->assertDatabaseHas('projects', ['name' => 'Multiple Spaces between words']);
-        //check original name with extra spaces was not saved
+        //check the original name with extra spaces was not saved
         $this->assertDatabaseMissing('projects', ['name' => $projectName]);
 
-        $project = Project::where('slug', $projectSlug)->first();
+        $project = Project::where('slug', $projectSlug)
+            ->where('status', '<>', 'archived')
+            ->first();
+        $this->assertDatabaseHas('project_structures', ['project_id' => $project->id]);
+
         $projectDefinition = json_decode(ProjectStructure::where('project_id', $project->id)
             ->value('project_definition'));
 
