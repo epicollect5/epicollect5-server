@@ -11,6 +11,7 @@
 |
 */
 
+use ec5\Libraries\Utilities\Generators;
 use ec5\Models\Eloquent\User;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectStructure;
@@ -86,7 +87,7 @@ $factory->define(Project::class, function (Faker\Generator $faker) {
     return [
         'name' => $name,
         'slug' => Str::slug($name, '-'),
-        'ref' => \ec5\Libraries\Utilities\Generators::projectRef(),
+        'ref' => Generators::projectRef(),
         'description' => $faker->sentence,
         'small_description' => $faker->text($smallDescMin) . $faker->text($smallDescMax - $smallDescMin),
         'logo_url' => '',
@@ -169,10 +170,7 @@ $factory->define(ProjectStructure::class, function (Faker\Generator $faker, $par
                                 'possible_answers' => [
                                 ],
                                 'min' => null
-                            ],
-                            'name' => $formName,
-                            'type' => 'hierarchy',
-                            'ref' => $formRef
+                            ]
                         ]
                     ]
                 ],
