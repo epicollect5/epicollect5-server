@@ -2,11 +2,11 @@
 
 namespace ec5\Console\Commands;
 
+use ec5\Models\Eloquent\BranchEntryTotals;
 use ec5\Models\Eloquent\ProjectsTotals;
 use Illuminate\Console\Command;
 use ec5\Models\Eloquent\UsersTotals;
-use ec5\Models\Eloquent\Entry;
-use ec5\Models\Eloquent\BranchEntry;
+use ec5\Models\Eloquent\EntryTotals;
 use ec5\Models\Eloquent\SystemStats as SystemStatsModel;
 
 class SystemStatsCommand extends Command
@@ -35,10 +35,10 @@ class SystemStatsCommand extends Command
         $systemStatsModel = new SystemStatsModel();
         $usersTotals = new UsersTotals();
         $projectsTotals = new ProjectsTotals();
-        $entry = new Entry();
-        $branchEntry = new BranchEntry();
+        $entry = new EntryTotals();
+        $branchEntry = new BranchEntryTotals();
 
-        //get the daily stats and save to the db
+        //get the daily stats and save it to the db
         try {
             $entriesStats = $entry->getStats();
             $branchEntriesStats = $branchEntry->getStats();
