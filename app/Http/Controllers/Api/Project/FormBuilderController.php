@@ -43,9 +43,6 @@ class FormBuilderController extends ProjectControllerBase
         parent::__construct($request);
     }
 
-    /**
-     * @return $this
-     */
     public function store()
     {
         // Get posted Project Definition which is gzipped and base64 encoded

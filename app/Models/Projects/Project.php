@@ -94,6 +94,7 @@ class Project
         $this->addProjectDefinition($data->project_definition ?? []);
         $this->addProjectExtra($data->project_extra ?? []);
         $this->addProjectMapping($data->project_mapping ?? []);
+
         $this->addProjectStats([
             'total_entries' => $data->total_entries ?? 0,
             'total_users' => $data->total_users ?? 0,

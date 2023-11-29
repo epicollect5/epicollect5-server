@@ -46,9 +46,6 @@ abstract class ProjectModelBase
         return $this->data;
     }
 
-    /**
-     * @return string
-     */
     public function getJsonData()
     {
         return json_encode($this->data);

@@ -68,10 +68,8 @@ class ProjectStats extends ProjectModelBase
 
     /**
      * Get project stats data from public class properties (JSON encoded)
-     *
-     * @return array
      */
-    public function getJsonData(): array
+    public function getJsonData()
     {
         $out = [];
         // Get this class properties
