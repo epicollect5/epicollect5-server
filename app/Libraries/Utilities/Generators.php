@@ -10,7 +10,7 @@ class Generators
      * Generate a random number passing how many digits
      * and how many duplicated digits
      */
-    public static function randomNumber($len = 6, $dup = 1)
+    public static function randomNumber($len = 6, $dup = 1): string
     {
         if ($dup < 1) {
             $dup = 1;
@@ -33,6 +33,11 @@ class Generators
     public static function projectRef(): string
     {
         return str_replace('-', '', Uuid::generate(4));
+    }
+
+    public static function archivedUserEmail(): string
+    {
+        return self::projectRef() . '@' . self::projectRef() . '.com';
     }
 
     public static function formRef($projectRef): string

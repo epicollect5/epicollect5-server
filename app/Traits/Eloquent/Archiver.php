@@ -11,7 +11,6 @@ use ec5\Models\Eloquent\BranchEntryArchive;
 use ec5\Models\Eloquent\ProjectRole;
 use ec5\Models\Eloquent\User;
 use ec5\Models\Eloquent\UserProvider;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Log;
 use PDOException;
@@ -35,7 +34,7 @@ trait Archiver
                 ->where('slug', $projectSlug)
                 ->first();
 
-            $project->status = Config::get('ec5Strings.project_status.archived');
+            $project->status = config('epicollect.strings.project_status.archived');
             //set name and slug to a unique string to avoid duplicates with new projects
             $ref = Generators::projectRef();
             $project->name = $ref;
@@ -44,10 +43,10 @@ trait Archiver
             $project->small_description = 'Project was archived';
             $project->description = '';
             $project->logo_url = '';
-            $project->access = Config::get('ec5Strings.project_access.private');
-            $project->visibility = Config::get('ec5Strings.project_visibility.hidden');
-            $project->category = Config::get('ec5Enums.project_categories_icons.general');
-            $project->can_bulk_upload = Config::get('ec5Strings.can_bulk_upload.NOBODY');
+            $project->access = config('epicollect.strings.project_access.private');
+            $project->visibility = config('epicollect.strings.project_visibility.hidden');
+            $project->category = config('epicollect.strings.project_categories_icons.general');
+            $project->can_bulk_upload = config('epicollect.strings.can_bulk_upload.nobody');
 
 
             if ($project->save()) {
@@ -115,7 +114,7 @@ trait Archiver
                 ->first();
 
             //if any role, remove them manually,
-            //this happens when the project has entries and the user is archived not deleted
+            //this happens when the project has entries and the user needs to be archived not deleted
             $roles = ProjectRole::where('user_id', $userId);
             /*
              * This expression will ensure that $areRolesDeleted
@@ -125,16 +124,16 @@ trait Archiver
             $areRolesDeleted = !($roles->count() > 0) || $roles->delete();
 
             //remove all user providers manually
-            //at least 1 user provider is always present
+            //at least 1 user provider is always present if a user has authenticated...
             $providers = UserProvider::where('user_id', $userId);
-            $areProvidersDeleted = $providers->delete();
+            $areProvidersDeleted = !($providers->count() > 0) || $providers->delete();
 
             //archive user by anonymizing row
             $user->state = 'archived';
             $user->name = '-';
             $user->last_name = '-';
             //assign a fake unique value to email field(email has a unique index constraint)
-            $user->email = Generators::projectRef();
+            $user->email = Generators::archivedUserEmail();
             $user->remember_token = ' ';
             $user->api_token = ' ';
 
