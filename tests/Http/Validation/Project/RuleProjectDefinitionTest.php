@@ -16,31 +16,21 @@ use Illuminate\Support\Str;
 use Tests\TestCase;
 use Webpatser\Uuid\Uuid;
 
-class ProjectMaxInputsTest extends TestCase
+class RuleProjectDefinitionTest extends TestCase
 {
-
-    /*
-    |--------------------------------------------------------------------------
-    | ProjectTest
-    |--------------------------------------------------------------------------
-    |
-    |
-    |
-    */
     protected $validator;
     protected $project;
-    protected $projectExtraDetailsValidator;
-    protected $formValidator;
-    protected $inputValidator;
+    protected $ruleProjectExtraDetails;
+    protected $ruleForm;
+    protected $ruleInput;
     protected $projectExtra;
     protected $projectMapping;
     protected $projectStats;
     protected $projectDefinition;
     protected $projectExtraCreateMethod;
     protected $inputs_limit;
-    protected $error_too_many_questions;
 
-    protected static function getProjectExtraMethod($name)
+    protected static function getProjectExtraMethod($name): \ReflectionMethod
     {
         $class = new \ReflectionClass('\ec5\Models\Projects\ProjectExtra');
         $method = $class->getMethod($name);
@@ -48,7 +38,7 @@ class ProjectMaxInputsTest extends TestCase
         return $method;
     }
 
-    private function getProjectMock()
+    private function getProjectMock(): array
     {
         $projectRef = str_replace('-', '', Uuid::generate(4));
         $projectName = 'Test inputs limit';
@@ -69,7 +59,7 @@ class ProjectMaxInputsTest extends TestCase
         ];
     }
 
-    private function getFormMock($projectRef, $formIndex)
+    private function getFormMock($projectRef, $formIndex): array
     {
         // Create project and first form refs
         $formRef = $projectRef . '_' . uniqid();
@@ -85,7 +75,7 @@ class ProjectMaxInputsTest extends TestCase
 
     }
 
-    private function getInputMock($formRef)
+    private function getInputMock($formRef): array
     {
         //input types
         $inputTypes = ['text', 'integer', 'phone'];
@@ -111,35 +101,31 @@ class ProjectMaxInputsTest extends TestCase
         ];
     }
 
-    /**
-     *
-     */
     public function setUp()
     {
         // This method will automatically be called prior to any of your test cases
         parent::setUp();
 
-        $this->projectExtraDetailsValidator = new  RuleProjectExtraDetails();
-        $this->formValidator = new RuleForm();
-        $this->inputValidator = new RuleInput();
+        $this->ruleProjectExtraDetails = new  RuleProjectExtraDetails();
+        $this->ruleForm = new RuleForm();
+        $this->ruleInput = new RuleInput();
         $this->projectExtra = new ProjectExtra();
         $this->projectMapping = new ProjectMapping();
         $this->projectStats = new ProjectStats();
         $this->projectDefinition = new ProjectDefinition();
 
         $this->validator = new RuleProjectDefinition(
-            $this->projectExtraDetailsValidator,
-            $this->formValidator,
-            $this->inputValidator,
+            $this->ruleProjectExtraDetails,
+            $this->ruleForm,
+            $this->ruleInput,
             $this->projectExtra,
             $this->projectDefinition
         );
 
         $this->inputs_limit = config('ec5Limits.formlimits.inputs');
-        $this->error_too_many_questions = 'ec5_262';
     }
 
-    public function testMaxInputsOneForm()
+    public function test_max_inputs_one_form()
     {
         $project = new Project(
             $this->projectDefinition,
@@ -175,7 +161,7 @@ class ProjectMaxInputsTest extends TestCase
         $this->assertFalse($this->validator->hasErrors());
     }
 
-    public function testTooManyInputsOneForm()
+    public function test_too_many_inputs_one_form()
     {
         $project = new Project(
             $this->projectDefinition,
@@ -209,10 +195,10 @@ class ProjectMaxInputsTest extends TestCase
 
         $this->validator->validate($project);
         $this->assertTrue($this->validator->hasErrors());
-        $this->assertEquals($this->validator->errors['validation'][0], $this->error_too_many_questions);
+        $this->assertEquals($this->validator->errors['validation'][0], 'ec5_262');
     }
 
-    public function testTooManyInputsTwoForms()
+    public function test_too_many_inputs_two_forms()
     {
         $project = new Project(
             $this->projectDefinition,
@@ -250,10 +236,10 @@ class ProjectMaxInputsTest extends TestCase
 
         $this->validator->validate($project);
         $this->assertTrue($this->validator->hasErrors());
-        $this->assertEquals($this->validator->errors['validation'][0], $this->error_too_many_questions);
+        $this->assertEquals($this->validator->errors['validation'][0], 'ec5_262');
     }
 
-    public function testTooManyInputsThreeForms()
+    public function test_too_many_inputs_three_forms()
     {
         $project = new Project(
             $this->projectDefinition,
@@ -293,10 +279,10 @@ class ProjectMaxInputsTest extends TestCase
 
         $this->validator->validate($project);
         $this->assertTrue($this->validator->hasErrors());
-        $this->assertEquals($this->validator->errors['validation'][0], $this->error_too_many_questions);
+        $this->assertEquals($this->validator->errors['validation'][0], 'ec5_262');
     }
 
-    public function testTooManyInputsFourForms()
+    public function test_too_many_inputs_four_forms()
     {
         $project = new Project(
             $this->projectDefinition,
@@ -338,10 +324,10 @@ class ProjectMaxInputsTest extends TestCase
 
         $this->validator->validate($project);
         $this->assertTrue($this->validator->hasErrors());
-        $this->assertEquals($this->validator->errors['validation'][0], $this->error_too_many_questions);
+        $this->assertEquals($this->validator->errors['validation'][0], 'ec5_262');
     }
 
-    public function testTooManyInputsFiveForms()
+    public function test_too_many_inputs_five_forms()
     {
         $project = new Project(
             $this->projectDefinition,
@@ -384,10 +370,10 @@ class ProjectMaxInputsTest extends TestCase
 
         $this->validator->validate($project);
         $this->assertTrue($this->validator->hasErrors());
-        $this->assertEquals($this->validator->errors['validation'][0], $this->error_too_many_questions);
+        $this->assertEquals($this->validator->errors['validation'][0], 'ec5_262');
     }
 
-    public function testOneGroupInputWithMaxInputs()
+    public function test_one_group_input_with_max_inputs()
     {
         $project = new Project(
             $this->projectDefinition,
@@ -430,7 +416,7 @@ class ProjectMaxInputsTest extends TestCase
         $this->assertFalse($this->validator->hasErrors());
     }
 
-    public function testOneBranchInputWithMaxInputs()
+    public function test_one_branch_input_with_max_inputs()
     {
         $project = new Project(
             $this->projectDefinition,
@@ -473,7 +459,7 @@ class ProjectMaxInputsTest extends TestCase
         $this->assertFalse($this->validator->hasErrors());
     }
 
-    public function testOneBranchInputWithTooManyInputs()
+    public function test_one_branch_input_with_too_many_inputs()
     {
         $project = new Project(
             $this->projectDefinition,
@@ -514,10 +500,10 @@ class ProjectMaxInputsTest extends TestCase
 
         $this->validator->validate($project);
         $this->assertTrue($this->validator->hasErrors());
-        $this->assertEquals($this->validator->errors['validation'][0], $this->error_too_many_questions);
+        $this->assertEquals($this->validator->errors['validation'][0], 'ec5_262');
     }
 
-    public function testOneGroupInputTooManyInputs()
+    public function test_one_group_input_too_many_inputs()
     {
         $project = new Project(
             $this->projectDefinition,
@@ -558,10 +544,10 @@ class ProjectMaxInputsTest extends TestCase
 
         $this->validator->validate($project);
         $this->assertTrue($this->validator->hasErrors());
-        $this->assertEquals($this->validator->errors['validation'][0], $this->error_too_many_questions);
+        $this->assertEquals($this->validator->errors['validation'][0], 'ec5_262');
     }
 
-    public function testOneNestedGroupWithMaxInputs()
+    public function test_one_nested_group_with_max_inputs()
     {
         $project = new Project(
             $this->projectDefinition,
@@ -612,7 +598,7 @@ class ProjectMaxInputsTest extends TestCase
         $this->assertFalse($this->validator->hasErrors());
     }
 
-    public function testOneNestedGroupWithTooManyInputs()
+    public function test_one_nested_group_with_too_many_inputs()
     {
         $project = new Project(
             $this->projectDefinition,
@@ -661,6 +647,6 @@ class ProjectMaxInputsTest extends TestCase
 
         $this->validator->validate($project);
         $this->assertTrue($this->validator->hasErrors());
-        $this->assertEquals($this->validator->errors['validation'][0], $this->error_too_many_questions);
+        $this->assertEquals($this->validator->errors['validation'][0], 'ec5_262');
     }
 }

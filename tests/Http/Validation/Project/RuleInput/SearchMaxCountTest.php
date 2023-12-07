@@ -15,7 +15,7 @@ use ec5\Models\Projects\ProjectStats;
 use Illuminate\Support\Str;
 use Webpatser\Uuid\Uuid;
 
-class SearchLimitsTest extends InputTest
+class SearchMaxCountTest extends InputTest
 {
     protected $validator;
     protected $project;

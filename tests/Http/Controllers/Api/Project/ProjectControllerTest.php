@@ -10,6 +10,8 @@ use ec5\Models\Eloquent\ProjectStat;
 use ec5\Models\Eloquent\ProjectStructure;
 use ec5\Models\Eloquent\User;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Str;
+use League\Csv\Exception;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -385,7 +387,6 @@ class ProjectControllerTest extends TestCase
         $this->assertKeysNotEmpty($responseError);
     }
 
-
     public function test_should_return_project_definition_as_json()
     {
         $user = factory(User::class)->create();
@@ -404,8 +405,12 @@ class ProjectControllerTest extends TestCase
             'project_id' => $project->id,
             'total_entries' => 0
         ]);
-        //fake structure
-        $projectDefinition = ProjectDefinitionGenerator::create($project->name);
+
+        //create fake structure, and rename to match the existing project
+        $projectDefinition = ProjectDefinitionGenerator::createProject(1);
+        $projectDefinition['data']['project']['name'] = $project->name;
+        $projectDefinition['data']['project']['slug'] = Str::slug($project->name);
+
         factory(ProjectStructure::class)->create(
             [
                 'project_id' => $project->id,
@@ -414,22 +419,24 @@ class ProjectControllerTest extends TestCase
             ]
         );
 
-        $response = $this->json('GET', 'api/internal/project/' . $project->slug)
-            ->assertStatus(200)
-            ->assertJsonStructure([
-                'meta' => [
-                    'project_extra' => [],
-                    'project_user' => [],
-                    'project_mapping' => [],
-                    'project_stats' => []
-                ],
-                'data' => config('testing.JSON_STRUCTURES_WITH_WILDCARD.project_definition')
-            ]);
-
-        $jsonResponse = json_decode($response->getContent(), true);
-
-        $this->assertProjectResponse($jsonResponse);
-
+        $response = [];
+        try {
+            $response[] = $this->json('GET', 'api/internal/project/' . $project->slug)
+                ->assertStatus(200)
+                ->assertJsonStructure([
+                    'meta' => [
+                        'project_extra' => [],
+                        'project_user' => [],
+                        'project_mapping' => [],
+                        'project_stats' => []
+                    ],
+                    'data' => config('testing.JSON_STRUCTURES_WITH_WILDCARD.project_definition')
+                ]);
+            $jsonResponse = json_decode($response[0]->getContent(), true);
+            $this->assertProjectResponse($jsonResponse);
+        } catch (Exception $e) {
+            dd($e->getMessage(), $response[0]->getContent());
+        }
     }
 
     //test response by getting existing projects randomly
@@ -455,5 +462,54 @@ class ProjectControllerTest extends TestCase
             $jsonResponse = json_decode($response->getContent(), true);
             $this->assertProjectResponse($jsonResponse);
         }
+    }
+
+    public function test_should_update_bulk_upload_status()
+    {
+        $canBulkUploadStatuses = config('epicollect.strings.can_bulk_upload');
+
+        $user = factory(User::class)->create(
+            ['email' => Config::get('testing.UNIT_TEST_RANDOM_EMAIL')]
+        );
+        //create a fake project (use ref for name and slug to avoid uniqueness issues)
+        $ref = Generators::projectRef();
+        $project = factory(Project::class)->create([
+            'name' => $ref,
+            'slug' => $ref,
+            'ref' => $ref,
+            'access' => 'private',
+            'created_by' => $user->id
+        ]);
+        //assign the user to that project with the CREATOR role
+        $projectRole = factory(ProjectRole::class)->create([
+            'user_id' => $user->id,
+            'project_id' => $project->id,
+            'role' => config('ec5Strings.project_roles.creator')
+        ]);
+
+        //add fake stats
+        factory(ProjectStat::class)->create([
+            'project_id' => $project->id,
+            'total_entries' => 0
+        ]);
+        factory(ProjectStructure::class)->create(
+            ['project_id' => $project->id]
+        );
+
+        $desiredStatus = $canBulkUploadStatuses[array_rand($canBulkUploadStatuses)];
+        $response = $this->actingAs($user)
+            ->json('POST', 'api/internal/can-bulk-upload/' . $project->slug,
+                ['can_bulk_upload' => $desiredStatus]
+            )->assertStatus(200)
+            ->assertExactJson([
+                'data' => [
+                    'message' => 'Bulk upload settings updated.'
+                ]
+            ]);
+
+        $storedProject = Project::where('id', $project->id)->first();
+        $responseData = ($response->json())['data'];
+        $this->assertKeysNotEmpty($responseData);
+        $this->assertEquals($storedProject->can_bulk_upload, $desiredStatus);
     }
 }
