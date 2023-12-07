@@ -2,438 +2,326 @@
 
 namespace ec5\Services;
 
-use ec5\Libraries\Utilities\DateFormatConverter;
+use Carbon\Carbon;
 use ec5\Libraries\Utilities\GpointConverter;
 use ec5\Models\Eloquent\User;
 use ec5\Models\Projects\Project;
+use Exception;
 
 class DataMappingService
 {
     protected $project;
+    protected $forms;
     protected $format;
-    protected $entryType;
-    protected $inputsInOrder;
+    protected $type;
+    protected $inputsFlattened;
     protected $map;
-    protected $mappingReservedKeys;
-    protected $outputUuid = true;
+    protected $mappingEC5Keys;
     protected $parentFormMap = [];
     protected $isTopHierarchyForm = false;
-    protected $phpDateFormatSwap = false;
+    protected $datetimeFormatsPHP;
 
     public function __construct()
     {
-        $this->mappingReservedKeys = config('epicollect.strings.mapping_reserved_keys');
-        $this->phpDateFormatSwap = config('epicollect.strings.datetime_format_php');
+        $this->mappingEC5Keys = config('epicollect.strings.mapping_ec5_keys');
+        $this->datetimeFormatsPHP = config('epicollect.strings.datetime_formats_php');
         // todo: this file is a candidate for refactor using a common interface and two concrete
         // todo: implementations for writing to file - csvFileWriter and jsonFileWriter
     }
 
-    /**
-     * @param Project $project
-     * @param $format
-     * @param $entryType
-     * @param $formRef
-     * @param $branchRef
-     * @param $mapIndex
-     */
-    public function initialiseMapping(Project $project, $format, $entryType, $formRef, $branchRef, $mapIndex)
+    public function init(Project $project, $format, $type, $formRef, $branchRef, $mapIndex)
     {
         $this->project = $project;
+        $this->forms = $project->getProjectDefinition()->getData()['project']['forms'];
         //Is this the top hierarchy form?
-        $topHierarchyFormRef = $project->getProjectDefinition()->getData()['project']['forms'][0]['ref'];
-        $this->isTopHierarchyForm = $topHierarchyFormRef === $formRef;
+        $this->isTopHierarchyForm = $this->forms[0]['ref'] === $formRef;
         $this->format = $format;
-        $this->entryType = $entryType;
+        $this->type = $type;
         // Set the mapping
-        $this->setMappingInfo($formRef, $branchRef, $mapIndex);
+        $this->setupMapping($formRef, $branchRef, $mapIndex);
     }
 
-    /**
-     * csv header structure !
-     * split location make sure its also in function swapOutEntryCsv(below) as LAT and then LONG
-     **/
-    public function headerRowCsv(): array
+    public function getHeaderRowCSV(): array
     {
-        $entryOut = $this->getRelatedHeaderCsv();
-        $entryOut[] = 'created_at';
-        $entryOut[] = 'uploaded_at';
+        $output = $this->getUUIDHeadersCSV();
+        $output[] = 'created_at';
+        $output[] = 'uploaded_at';
 
-        // Add email to private project downloads
+        // Add creates_by metadata (will be user email) to private projects downloads
         if ($this->project->isPrivate()) {
-            $entryOut[] = 'created_by';
+            $output[] = 'created_by';
         }
 
-        $entryOut[] = 'title';
+        $output[] = 'title';
 
-        foreach ($this->inputsInOrder as $key => $value) {
+        foreach ($this->inputsFlattened as $input) {
 
-            $inputRef = $value['ref'];
+            $inputRef = $input['ref'];
+            $inputMapping = $this->getInputMapping($inputRef);
 
-            $outputKeys = $this->getOutputKeys($inputRef);
+            if (!$inputMapping['hide'] && $inputMapping['mapTo']) {
 
-            if ($outputKeys['show'] && $outputKeys['mapKey']) {
-
-                switch ($value['type']) {
-
+                switch ($input['type']) {
                     case 'location':
-                        $entryOut[] = 'lat_' . $outputKeys['mapKey'];
-                        $entryOut[] = 'long_' . $outputKeys['mapKey'];
-                        $entryOut[] = 'accuracy_' . $outputKeys['mapKey'];
-                        $entryOut[] = 'UTM_Northing_' . $outputKeys['mapKey'];
-                        $entryOut[] = 'UTM_Easting_' . $outputKeys['mapKey'];
-
-                        $entryOut[] = 'UTM_Zone_' . $outputKeys['mapKey'];
+                        $output[] = 'lat_' . $inputMapping['mapTo'];
+                        $output[] = 'long_' . $inputMapping['mapTo'];
+                        $output[] = 'accuracy_' . $inputMapping['mapTo'];
+                        $output[] = 'UTM_Northing_' . $inputMapping['mapTo'];
+                        $output[] = 'UTM_Easting_' . $inputMapping['mapTo'];
+                        $output[] = 'UTM_Zone_' . $inputMapping['mapTo'];
                         break;
 
                     default:
-                        $entryOut[] = $outputKeys['mapKey'];
+                        $output[] = $inputMapping['mapTo'];
                         break;
                 }
             }
         }
-        return $entryOut;
+        return $output;
     }
 
-    /**
-     * csv extra header structure !
-     **/
-    public function getRelatedHeaderCsv(): array
+    public function getUUIDHeadersCSV(): array
     {
         $out = [];
-        if ($this->outputUuid) {
-            if ($this->entryType == config('epicollect.strings.branch')) {
-                $out[] = $this->mappingReservedKeys['branch_owner_uuid'];
-                $out[] = $this->mappingReservedKeys['branch_uuid'];
-            } else {
-                //guess both or one ???
-                $out[] = $this->mappingReservedKeys['entry_uuid'];
-                if (!$this->isTopHierarchyForm) {
-                    $out[] = $this->mappingReservedKeys['parent_uuid'];
-                }
+        if ($this->type == config('epicollect.strings.branch')) {
+            $out[] = $this->mappingEC5Keys['ec5_branch_owner_uuid'];
+            $out[] = $this->mappingEC5Keys['ec5_branch_uuid'];
+        } else {
+            //guess both or one ???
+            $out[] = $this->mappingEC5Keys['ec5_uuid'];
+            if (!$this->isTopHierarchyForm) {
+                $out[] = $this->mappingEC5Keys['ec5_parent_uuid'];
             }
         }
         return $out;
     }
 
-    /**
-     * csv rows !
-     * split location make sure its also in function headerRowCsv(above) as LAT and then LONG
-     *
-     * @param $jsonEntryString
-     * @param string $branchCountsString
-     * @param $userId
-     * @return array
-     */
-    public function swapOutEntryCsv($jsonEntryString, $branchCountsString = '', $userId, $title, $uploaded_at)
+    public function getMappedEntryCSV($JSONEntryString, $userId, $title, $uploaded_at, $branchCountsString = ''): array
     {
-        $jsonEntry = null;
-        $entryOut = [];
-
+        $output = [];
         try {
-            $jsonEntry = json_decode($jsonEntryString);
-            $jsonBranchCounts = json_decode($branchCountsString);
-        } catch (\Exception $e) {
+            $JSONEntry = json_decode($JSONEntryString, true);
+            $JSONBranchCounts = json_decode($branchCountsString, true);
+        } catch (Exception $e) {
             return [];
         }
 
-        if (empty($jsonEntry)) {
-            return $entryOut;
+        if (empty($JSONEntry)) {
+            return $output;
         }
 
-        $type = $jsonEntry->type;
-
-        $entry = ($jsonEntry->$type) ? ($jsonEntry->$type) : null;
-
-        // If we are outputting the uuid
-        if ($this->outputUuid) {
-            switch ($this->entryType) {
-                case 'branch':
-                    $entryOut = $this->getRelatedValuesCSVBranch(
-                        $jsonEntry->branch_entry->entry_uuid,
-                        $jsonEntry->relationships
-                    );
-                    break;
-                case 'form':
-                    $entryOut = $this->getRelatedValuesCSVForm(
-                        $jsonEntry->entry->entry_uuid,
-                        $jsonEntry->relationships
-                    );
-                    break;
-            }
+        $entry = [];
+        switch ($this->type) {
+            case config('epicollect.strings.form'):
+                $entry = $JSONEntry['entry'];
+                $output = $this->getUUIDHeadersForm(
+                    $JSONEntry['entry']['entry_uuid'],
+                    $JSONEntry['relationships']
+                );
+                break;
+            case config('epicollect.strings.branch'):
+                $entry = $JSONEntry['branch_entry'];
+                $output = $this->getUUIDHeadersBranch(
+                    $JSONEntry['branch_entry']['entry_uuid'],
+                    $JSONEntry['relationships']
+                );
+                break;
         }
 
-        $entryOut[] = $entry->created_at;
-        $entryOut[] = DateFormatConverter::mySQLToISO($uploaded_at); //uploaded_at
+        $output[] = $entry['created_at'];
+        $output[] = $this->convertMYSQLDateToISO($uploaded_at);
 
         // Add email to private project downloads
         if ($this->project->isPrivate()) {
-            $entryOut['created_by'] = 'n/a';
+            $output['created_by'] = 'n/a';
             if ($userId) {
                 $user = User::where('id', $userId)
                     ->where('state', '<>', 'archived')
                     ->first();
                 if ($user) {
-                    $entryOut['created_by'] = $user->email;
+                    $output['created_by'] = $user->email;
                 }
             }
         }
         //add title (fingers crossed)
-        $entryOut[] = $title; //title
+        $output[] = $title; //title
 
-        if ($entry == null) {
-            return $entryOut;
-        }
-
-        // Value here == to ec5 input structure, ie type, min, max etc...
-        foreach ($this->inputsInOrder as $key => $input) {
-
+        foreach ($this->inputsFlattened as $input) {
             $inputRef = $input['ref'];
-            $outputKeys = $this->getOutputKeys($inputRef);
+            $inputMapping = $this->getInputMapping($inputRef);
 
-            if ($outputKeys['show'] && $outputKeys['mapKey']) {
+            if (!$inputMapping['hide'] && $inputMapping['mapTo']) {
 
-                $answer = $entry->answers->$inputRef->answer ?? '';
+                $answer = $entry['answers'][$inputRef]['answer'] ?? '';
 
                 switch ($input['type']) {
-
                     case 'location':
-                        $locAnswer = $this->parseInputAnswer('csv-location', $answer, $input);
-                        $entryOut[] = $locAnswer[0] ?? '';
-                        $entryOut[] = $locAnswer[1] ?? '';
-                        $entryOut[] = $locAnswer[2] ?? '';
-                        $entryOut[] = $locAnswer[3] ?? '';
-                        $entryOut[] = $locAnswer[4] ?? '';
-                        $entryOut[] = $locAnswer[5] ?? '';
+                        $locationAnswer = $this->parseAnswer('csv-location', $answer, $input);
+                        $output[] = $locationAnswer[0] ?? '';
+                        $output[] = $locationAnswer[1] ?? '';
+                        $output[] = $locationAnswer[2] ?? '';
+                        $output[] = $locationAnswer[3] ?? '';
+                        $output[] = $locationAnswer[4] ?? '';
+                        $output[] = $locationAnswer[5] ?? '';
                         break;
                     case 'branch':
-                        $entryOut[] = $this->parseInputAnswer(
+                        $output[] = $this->parseAnswer(
                             $input['type'],
-                            $jsonBranchCounts->$inputRef ?? 0,
+                            $JSONBranchCounts[$inputRef] ?? 0,
                             $input
                         );
                         break;
                     default:
-                        $entryOut[] = $this->parseInputAnswer($input['type'], $answer, $input);
+                        $output[] = $this->parseAnswer($input['type'], $answer, $input);
                         break;
                 }
             }
         }
-        return $entryOut;
+
+        return $output;
     }
 
-    /**
-     * DO NOT DELETE OR RENAME
-     * name of function import uses ->$entryType to be called
-     * csv extra  ! only run if $this->outputUuid == true
-     *
-     * @param $uuid
-     * @param $a
-     * @return array
-     */
-    private function getRelatedValuesCSVForm($uuid, $a)
+    private function getUUIDHeadersForm($uuid, $a): array
     {
+        //imp: order matters so don't change, otherwise need to change other places where header is ...
         $out = [];
-
-        //!!! remember order matters so don't change, otherwise need to change other places where header is ...
-
         $out[] = $uuid;
-
         if ($this->isTopHierarchyForm) {
             return $out;
         }
-
         $out[] = $a->parent->data->parent_entry_uuid ?? '';
-
         return $out;
     }
 
-    /**
-     * DO NOT DELETE OR RENAME
-     * name of function import uses ->$entryType to be called
-     * csv extra  ! only run if $this->outputUuid == true
-     *
-     * @param $uuid
-     * @param $relationships
-     * @return array - on csv col headings
-     */
-    private function getRelatedValuesCSVBranch($uuid, $relationships)
+    private function getUUIDHeadersBranch($uuid, $relationships): array
     {
         $out = [];
-        //!!! remember order matters so don't change, otherwise need to change other places where header is ...
-
+        //imp: order matters so don't change, otherwise need to change other places where header is ...
         $out[] = $relationships->branch->data->owner_entry_uuid ?? '';
         $out[] = $uuid;
-
-        //      //  $inputRef = $relationships->branch->data->owner_input_ref ?? '';
-        //        $out[] = (!empty($inputRef) && isset($this->parentFormMap[$inputRef]['map_to'])) ? $this->parentFormMap[$inputRef]['map_to'] : '';
-
         return $out;
     }
 
-    /**
-     * @param $jsonEntryString
-     * @param string $branchCountsString
-     * @param $userId
-     * @param $title
-     * @param $uploaded_at
-     * @return array|string
-     */
-    public function swapOutEntryJson($jsonEntryString, $branchCountsString = '', $userId, $title, $uploaded_at)
+    public function getMappedEntryJSON($JSONEntryString, $userId, $title, $uploaded_at, $branchCountsString = '')
     {
-        $jsonEntry = null;
-        $entryOut = [];
-
+        $output = [];
         try {
-            $jsonEntry = json_decode($jsonEntryString);
-            $jsonBranchCounts = json_decode($branchCountsString);
-        } catch (\Exception $e) {
+            $JSONEntry = json_decode($JSONEntryString, true);
+            $JSONBranchCounts = json_decode($branchCountsString, true);
+        } catch (Exception $e) {
             return '';
         }
 
-        if (empty($jsonEntry)) {
-            return $entryOut;
+        if (empty($JSONEntry)) {
+            return $output;
         }
 
-        $type = $jsonEntry->type;
-        $entry = $jsonEntry->{$type} ?? null;
-
-
-        // If we are outputting the uuid
-        if ($this->outputUuid) {
-            switch ($this->entryType) {
-                case 'branch':
-                    $entryOut = $this->getRelatedValuesJSONBranch($entry->entry_uuid, $jsonEntry->relationships);
-                    break;
-                case 'form':
-                    $entryOut = $this->getRelatedValuesJSONForm($entry->entry_uuid, $jsonEntry->relationships);
-                    break;
-            }
+        $type = $JSONEntry['type'];
+        $entry = $JSONEntry[$type] ?? null;
+        switch ($this->type) {
+            case 'form':
+                $output = $this->getUUIDHeadersJSONForm($entry['entry_uuid'], $JSONEntry['relationships']);
+                break;
+            case 'branch':
+                $output = $this->getUUIDHeadersJSONBranch($entry['entry_uuid'], $JSONEntry['relationships']);
+                break;
         }
-
-        $entryOut['created_at'] = $entry->created_at;
-        $entryOut['uploaded_at'] = DateFormatConverter::mySQLToISO($uploaded_at);
-
+        //add timestamps (ISO)
+        $output['created_at'] = $entry['created_at'];
+        $output['uploaded_at'] = $this->convertMYSQLDateToISO($uploaded_at);
         // Add email to private project downloads
         if ($this->project->isPrivate()) {
-            $entryOut['created_by'] = 'n/a';
+            $output['created_by'] = 'n/a';
             if ($userId) {
                 $user = User::where('id', $userId)
                     ->where('state', '<>', 'archived')
                     ->first();
                 if ($user) {
-                    $entryOut['created_by'] = $user->email;
+                    $output['created_by'] = $user->email;
                 }
             }
         }
 
         if ($entry == null) {
-            return $entryOut;
+            return $output;
         }
 
         //add title (finger crossed)
-        $entryOut['title'] = $title;
+        $output['title'] = $title;
 
-        foreach ($this->inputsInOrder as $key => $input) {
+        foreach ($this->inputsFlattened as $input) {
 
             $inputRef = $input['ref'];
-            $outputKeys = $this->getOutputKeys($inputRef);
+            $inputMapping = $this->getInputMapping($inputRef);
 
-            if ($outputKeys['show'] && $outputKeys['mapKey']) {
+            if (!$inputMapping['hide'] && $inputMapping['mapTo']) {
 
-                $answer = $entry->answers->$inputRef->answer ?? '';
+                $answer = $entry['answers'][$inputRef]['answer'] ?? '';
 
                 switch ($input['type']) {
-
                     case 'branch':
-                        $entryOut[$outputKeys['mapKey']] = $this->parseInputAnswer(
+                        $output[$inputMapping['mapTo']] = $this->parseAnswer(
                             $input['type'],
-                            $jsonBranchCounts->$inputRef ?? 0,
+                            $JSONBranchCounts[$inputRef] ?? 0,
                             $input
                         );
                         break;
                     case 'location':
-                        $entryOut[$outputKeys['mapKey']] = $this->parseInputAnswer('json-location', $answer, $input);
+                        $output[$inputMapping['mapTo']] = $this->parseAnswer('json-location', $answer, $input);
                         break;
                     case 'checkbox':
-                        $entryOut[$outputKeys['mapKey']] = $this->parseInputAnswer('json-checkbox', $answer, $input);
+                        $output[$inputMapping['mapTo']] = $this->parseAnswer('json-checkbox', $answer, $input);
                         break;
-
                     case 'searchsingle':
-                        $entryOut[$outputKeys['mapKey']] = $this->parseInputAnswer('json-searchsingle', $answer, $input);
+                        $output[$inputMapping['mapTo']] = $this->parseAnswer('json-searchsingle', $answer, $input);
                         break;
                     case 'searchmultiple':
-                        $entryOut[$outputKeys['mapKey']] = $this->parseInputAnswer('json-searchmultiple', $answer, $input);
+                        $output[$inputMapping['mapTo']] = $this->parseAnswer('json-searchmultiple', $answer, $input);
                         break;
                     default:
-                        $entryOut[$outputKeys['mapKey']] = $this->parseInputAnswer($input['type'], $answer, $input);
+                        $output[$inputMapping['mapTo']] = $this->parseAnswer($input['type'], $answer, $input);
                         break;
                 }
             }
         }
 
         // JSON_UNESCAPED_SLASHES will not escape forward slashes, in dates etc
-        return json_encode($entryOut, JSON_UNESCAPED_SLASHES);
+        return json_encode($output, JSON_UNESCAPED_SLASHES);
     }
 
-    /**
-     ** DO NOT DELETE OR RENAME
-     * name of function import uses ->$entryType to be called
-     * csv extra! only run if $this->outputUuid == true
-     *
-     * @param $uuid
-     * @param $relationships
-     */
-    private function getRelatedValuesJSONForm($uuid, $relationships): array
+    private function getUUIDHeadersJSONForm($uuid, $relationships): array
     {
         $out = [];
 
         //!!! remember order matters so don't change, otherwise need to change other places where header is ...
-        $out[$this->mappingReservedKeys['entry_uuid']] = $uuid;
+        $out[$this->mappingEC5Keys['ec5_uuid']] = $uuid;
 
         if ($this->isTopHierarchyForm) {
             return $out;
         }
 
-        $out[$this->mappingReservedKeys['parent_uuid']] = $relationships->parent->data->parent_entry_uuid ?? '';
+        $out[$this->mappingEC5Keys['ec5_parent_uuid']] = $relationships->parent->data->parent_entry_uuid ?? '';
 
         return $out;
     }
 
-    /**
-     * DO NOT DELETE OR RENAME
-     * name of function import uses ->$entryType to be called
-     * csv extra  ! only run if $this->outputUuid == true
-     * @param $uuid
-     * @param $relationships
-     * @return array - on csv col headings
-     */
-    private function getRelatedValuesJSONBranch($uuid, $relationships)
+    private function getUUIDHeadersJSONBranch($uuid, $relationships): array
     {
-
-        $out = [];
+        $output = [];
         //!!! remember order matters so don't change, otherwise need to change other places where header is ...
-
-        $out[$this->mappingReservedKeys['branch_owner_uuid']] = $relationships->branch->data->owner_entry_uuid ?? '';
-        $out[$this->mappingReservedKeys['branch_uuid']] = $uuid;
-
-        //$inputRef = $relationships->branch->data->owner_input_ref ?? '';
-
-        //        $out[$this->mappingReservedKeys['branch_ref']] =
-        //            (!empty($inputRef) && isset($this->parentFormMap[$inputRef]['map_to'])) ? $this->parentFormMap[$inputRef]['map_to'] : '';
-        return $out;
+        $output[$this->mappingEC5Keys['ec5_branch_owner_uuid']] = $relationships->branch->data->owner_entry_uuid ?? '';
+        $output[$this->mappingEC5Keys['ec5_branch_uuid']] = $uuid;
+        return $output;
     }
 
     /**
      * Get keys for output show and key for mapping
-     *
-     * @param $inputRef
-     * @return array
      */
-    private function getOutputKeys($inputRef)
+    private function getInputMapping($inputRef): array
     {
         return [
-            'show' => (isset($this->map[$inputRef]['hide']) && $this->map[$inputRef]['hide']) ? false : true,
-            'mapKey' => (empty($this->map[$inputRef]['map_to'])) ? false : $this->map[$inputRef]['map_to']
+            'hide' => (isset($this->map[$inputRef]['hide']) && $this->map[$inputRef]['hide']),
+            'mapTo' => (empty($this->map[$inputRef]['map_to'])) ? false : $this->map[$inputRef]['map_to']
         ];
     }
 
@@ -441,46 +329,42 @@ class DataMappingService
      * Get custom or default mapping and inputs in order for swap
      * Groups are added to the top level for ease of access
      */
-    private function setMappingInfo($formRef, $branchRef, $mapIndex)
+    private function setupMapping($formRef, $branchRef, $mapIndex)
     {
         $projectMapping = $this->project->getProjectMapping();
-        $projectExtra = $this->project->getProjectExtra();
-        $outputMap = $projectMapping->getMap($mapIndex, $formRef);
+        $selectedMapping = $projectMapping->getMap($mapIndex, $formRef);
 
-        if (empty($outputMap)) {
-            $outputMap = $projectMapping->getMap(0, $formRef);
+        if (empty($selectedMapping)) {
+            $selectedMapping = $projectMapping->getMap(0, $formRef);
         }
 
-        switch ($this->entryType) {
-            case 'form':
-                // Get the form inputs in order
-                $this->inputsInOrder = $projectExtra->getFormInputData($formRef);
+        switch ($this->type) {
+            case config('epicollect.strings.form'):
+                // Get the form inputs as a flat array
+                $this->inputsFlattened = $this->getInputsFlattened($this->forms, $formRef);
                 break;
-            case 'branch':
+            case config('epicollect.strings.branch'):
                 // Set the parent form map
-                $this->parentFormMap = $outputMap;
+                $this->parentFormMap = $selectedMapping;
                 // Get the branch map
-                $outputMap = $outputMap[$branchRef]['branch'];
+                $selectedMapping = $selectedMapping[$branchRef]['branch'];
                 // Get the branch inputs in order
-                $this->inputsInOrder = $projectExtra->getBranchInputData($formRef, $branchRef);
+                $this->inputsFlattened = $this->getBranchInputsFlattened($this->forms, $formRef, $branchRef);
                 break;
         }
 
-        $map = $outputMap;
-        // Merge nested group maps with top level map array
-        foreach ($outputMap as $inputRef => $input) {
+        $mapping = $selectedMapping;
+        // Merge nested group maps with the top level map array
+        foreach ($selectedMapping as $input) {
             if (count($input['group']) > 0) {
-                $map = array_merge($map, $input['group']);
+                $mapping = array_merge($mapping, $input['group']);
             }
         }
 
-        $this->map = $map;
+        $this->map = $mapping;
     }
 
-    /**
-     * Parse the answer
-     */
-    private function parseInputAnswer($type, $answer, $ec5Input)
+    private function parseAnswer($type, $answer, $input)
     {
         $parsedAnswer = '';
         $converter = new GpointConverter();
@@ -489,24 +373,20 @@ class DataMappingService
             //todo input type should be constants....
             case 'radio':
             case 'dropdown':
-                $parsedAnswer = $this->getPossibleAnswerMapping($ec5Input, $answer);
+                $parsedAnswer = $this->getPossibleAnswerMapTo($input, $answer);
                 break;
 
             case 'searchsingle':
             case 'searchmultiple':
             case 'checkbox':
-
                 $temp = [];
-
                 if (is_array($answer)) {
-                    foreach ($answer as $key => $value) {
-                        $parsedAnswer = $this->getPossibleAnswerMapping($ec5Input, $value);
-
-                        //if $parsedAnswer contains commas, wrap in quotes as per csv specs. 
+                    foreach ($answer as $value) {
+                        $parsedAnswer = $this->getPossibleAnswerMapTo($input, $value);
+                        //if $parsedAnswer contains commas, wrap in quotes as per csv specs.
                         if (strpos($parsedAnswer, ',') !== false) {
                             $parsedAnswer = '"' . $parsedAnswer . '"';
                         }
-
                         $temp[] = $parsedAnswer;
                     }
                 }
@@ -517,10 +397,9 @@ class DataMappingService
             case 'json-searchmultiple':
             case 'json-checkbox':
                 $temp = [];
-
                 if (is_array($answer)) {
-                    foreach ($answer as $key => $value) {
-                        $parsedAnswer = $this->getPossibleAnswerMapping($ec5Input, $value);
+                    foreach ($answer as $value) {
+                        $parsedAnswer = $this->getPossibleAnswerMapTo($input, $value);
                         $temp[] = $parsedAnswer;
                     }
                 }
@@ -540,9 +419,9 @@ class DataMappingService
                         $converter->convertLLtoTM(null);
 
                         $parsedAnswer = [
-                            $answer->latitude ?? '',
-                            $answer->longitude ?? '',
-                            $answer->accuracy ?? '',
+                            $answer->latitude,
+                            $answer->longitude,
+                            $answer->accuracy,
                             (int)$converter->N(),
                             (int)$converter->E(),
                             $converter->Z()
@@ -557,7 +436,7 @@ class DataMappingService
                             ''
                         ];
                     }
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     //we get here when there is not an answer?
                     $parsedAnswer = [
                         '',
@@ -593,7 +472,7 @@ class DataMappingService
                             'UTM_Zone' => ''
                         ];
                     }
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $parsedAnswer = [
                         'latitude' => '',
                         'longitude' => '',
@@ -608,8 +487,8 @@ class DataMappingService
             case 'time':
                 // If we have a non-empty date/time, parse
                 if (!empty($answer)) {
-                    $dFormat = $this->phpDateFormatSwap[$ec5Input['datetime_format']];
-                    $parsedAnswer = (empty($dFormat)) ? '' : date($dFormat, strtotime($answer));
+                    $datetimeFormat = $this->datetimeFormatsPHP[$input['datetime_format']];
+                    $parsedAnswer = (empty($datetimeFormat)) ? '' : date($datetimeFormat, strtotime($answer));
                 }
                 break;
             case 'photo':
@@ -633,7 +512,6 @@ class DataMappingService
                 $parsedAnswer = $answer;
                 break;
         }
-
         return $parsedAnswer;
     }
 
@@ -648,8 +526,67 @@ class DataMappingService
         return $fileName;
     }
 
-    private function getPossibleAnswerMapping($input, $answerRef)
+    private function getPossibleAnswerMapTo($input, $answerRef)
     {
         return $this->map[$input['ref']]['possible_answers'][$answerRef]['map_to'] ?? '';
+    }
+
+    /* This function returns a flat list of inputs and nested group inputs, 
+    * dropping the group inputs owner
+    */
+    private function getInputsFlattened($forms, $formRef): array
+    {
+        $inputs = [];
+        $flattenInputs = [];
+        foreach ($forms as $form) {
+            if ($form['ref'] === $formRef) {
+                $inputs = $form['inputs'];
+            }
+        }
+
+        //todo: where is the readme skipped?
+        foreach ($inputs as $input) {
+            if ($input['type'] == config('epicollect.strings.inputs_type.group')) {
+                foreach ($input['group'] as $groupInput) {
+                    $flattenInputs[] = $groupInput;
+                }
+            } else {
+                $flattenInputs[] = $input;
+            }
+        }
+        return $flattenInputs;
+    }
+
+    private function getBranchInputsFlattened($forms, $formRef, $branchInputRef): array
+    {
+        $branchInputs = [];
+        $flattenBranchInputs = [];
+        foreach ($forms as $form) {
+            if ($form['ref'] === $formRef) {
+                $inputs = $form['inputs'];
+                foreach ($inputs as $input) {
+                    if ($input['ref'] === $branchInputRef) {
+                        $branchInputs = $input['branch'];
+                    }
+                }
+            }
+        }
+
+        //todo: where is the readme skipped?
+        foreach ($branchInputs as $branchInput) {
+            if ($branchInput['type'] == config('epicollect.strings.inputs_type.group')) {
+                foreach ($branchInput['group'] as $groupInput) {
+                    $flattenBranchInputs[] = $groupInput;
+                }
+            } else {
+                $flattenBranchInputs[] = $branchInput;
+            }
+        }
+        return $flattenBranchInputs;
+    }
+
+    private function convertMYSQLDateToISO($mysqlDate): string
+    {
+        return Carbon::createFromFormat('Y-m-d H:i:s', $mysqlDate)->format('Y-m-d\TH:i:s.000\Z');
     }
 }

@@ -17,6 +17,7 @@ use ec5\Services\DownloadEntriesService;
 use Illuminate\Http\Request;
 use ec5\Models\Eloquent\ProjectStructure;
 use Auth;
+use Illuminate\Support\Facades\Response;
 use Storage;
 use Cookie;
 use Illuminate\Support\Str;
@@ -315,10 +316,8 @@ class DownloadController extends EntrySearchControllerBase
     private function createArchive(string $projectDir, array $params, $timestamp)
     {
         $downloadEntriesService = new DownloadEntriesService(new DataMappingService());
-
-        $downloadEntriesService->create($this->requestedProject, $projectDir, $params);
-        if ($downloadEntriesService->hasErrors()) {
-            return $this->apiResponse->errorResponse(400, $downloadEntriesService->errors());
+        if (!$downloadEntriesService->createArchive($this->requestedProject, $projectDir, $params)) {
+            return $this->apiResponse->errorResponse(400, ['download-entries' => ['ec5_83']]);
         }
         $zipName = $this->requestedProject->slug . '-' . $params['format'] . '.zip';
         return $this->sendArchive($projectDir . '/' . $zipName, $zipName, $timestamp);

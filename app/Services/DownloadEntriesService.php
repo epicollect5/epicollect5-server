@@ -6,9 +6,11 @@ use ec5\Libraries\Utilities\Common;
 use ec5\Models\Eloquent\BranchEntry;
 use ec5\Models\Eloquent\Entry;
 use ec5\Models\Projects\Project;
+use Exception;
 use File;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
+use Log;
 use Storage;
 use ZipArchive;
 
@@ -26,7 +28,7 @@ class DownloadEntriesService
     /**
      * Try and create all files
      */
-    public function create(Project $project, $projectDir, $params): bool
+    public function createArchive(Project $project, $projectDir, $params): bool
     {
         // Set default sort order
         $params['entry_col'] = 'created_at';
@@ -37,6 +39,8 @@ class DownloadEntriesService
 
         $format = $params['format'];
         $mapIndex = $params['map_index'];
+
+
         $forms = $project->getProjectDefinition()->getData()['project']['forms'];
         $formCount = 1;
         $branchCount = 1;
@@ -47,7 +51,7 @@ class DownloadEntriesService
             $prefix = config('epicollect.strings.form') . '-' . $formCount;
             $fileName = Common::generateFilename($prefix, $form['slug']);
             // Set the mapping
-            $this->dataMappingService->initialiseMapping($this->project, $format, config('epicollect.strings.form'), $form['ref'], null, $mapIndex);
+            $this->dataMappingService->init($this->project, $format, config('epicollect.strings.form'), $form['ref'], null, $mapIndex);
 
             $columns = ['title', 'entry_data', 'branch_counts', 'child_counts', 'user_id', 'uploaded_at'];
 
@@ -69,13 +73,13 @@ class DownloadEntriesService
             foreach ($branches as $branch) {
                 // Set the branch ref into the options
                 $params['branch_ref'] = $branch['ref'];
-                $prefix = config('epicollect.string.branch') . '-' . $branchCount;
+                $prefix = config('epicollect.strings.branch') . '-' . $branchCount;
                 $fileName = Common::generateFilename($prefix, $branch['question']);
                 // Set the mapping
-                $this->dataMappingService->initialiseMapping(
+                $this->dataMappingService->init(
                     $this->project,
                     $format,
-                    config('epicollect.string.branch'),
+                    config('epicollect.strings.branch'),
                     $form['ref'],
                     $branch['ref'],
                     $mapIndex
@@ -98,12 +102,16 @@ class DownloadEntriesService
             }
             $formCount++;
         }
-
-        $this->createZipArchive($projectDir, $project->slug, $format);
+        try {
+            $this->buildZipArchive($projectDir, $project->slug, $format);
+        } catch (Exception $e) {
+            Log::error('buildZipArchive failed', ['exception' => $e->getMessage()]);
+            return false;
+        }
         return true;
     }
 
-    private function createZipArchive($projectDir, $projectSlug, $format)
+    private function buildZipArchive($projectDir, $projectSlug, $format)
     {
         $zip = new ZipArchive();
         $zipFileName = $projectSlug . '-' . $format . '.zip';
@@ -145,149 +153,103 @@ class DownloadEntriesService
         return false;
     }
 
-    /**
-     * @param Builder $query
-     * @param $outputFile
-     * @return bool
-     */
     public function writeCSV(Builder $query, $outputFile): bool
     {
         //check memory consumption
         //  LOG::error('Usage: '.Common::formatBytes(memory_get_usage()));
         //  LOG::error('Peak Usage: '.Common::formatBytes(memory_get_peak_usage()));
+        try {
+            $file = fopen($outputFile, "w");
+            // Acquire an exclusive lock
+            if (flock($file, LOCK_EX)) {
+                //Add BOM for Excel (UTF-8 languages do not display correctly by default)
+                fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
+                fputcsv($file, $this->dataMappingService->getHeaderRowCSV());
+                $chunkLimit = config('epicollect.limits.download_entries_chunk_limit');
 
-        $file = fopen($outputFile, "w");
-
-        // Acquire an exclusive lock
-        if (flock($file, LOCK_EX)) {
-
-            //Add BOM for Excel (UTF-8 languages do not display correctly by default)
-            fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
-
-            fputcsv($file, $this->dataMappingService->headerRowCsv(), ',');
-            $chunkLimit = config('epicollect.limits.download_entries_chunk_limit');
-
-
-            $query->chunk(
-                $chunkLimit,
-                function (Collection $entries) use (&$count, $file) {
-                    //check memory consumption
-                    //LOG::error('Usage: '.Common::formatBytes(memory_get_usage()));
-                    // LOG::error('Peak Usage: '.Common::formatBytes(memory_get_peak_usage()));
-                    foreach ($entries as $entry) {
-
-                        if (
-                            fputcsv($file, $this->dataMappingService->swapOutEntryCsv(
-                                $entry->entry_data,
-                                $entry->branch_counts ?? null,
-                                $entry->user_id,
-                                $entry->title,
-                                $entry->uploaded_at
-                            ), ',') === false
-                        ) {
-                            // Error
-                            $this->errors[] = 'ec5_232';
-                            return;
+                $query->chunk(
+                    $chunkLimit,
+                    function (Collection $entries) use (&$count, $file) {
+                        //check memory consumption
+                        //LOG::error('Usage: '.Common::formatBytes(memory_get_usage()));
+                        // LOG::error('Peak Usage: '.Common::formatBytes(memory_get_peak_usage()));
+                        foreach ($entries as $entry) {
+                            if (
+                                fputcsv($file, $this->dataMappingService->getMappedEntryCSV(
+                                    $entry->entry_data,
+                                    $entry->user_id,
+                                    $entry->title,
+                                    $entry->uploaded_at,
+                                    $entry->branch_counts ?? null
+                                )) === false
+                            ) {
+                                fclose($file);
+                                return false;
+                            }
                         }
                     }
-                }
-            );
+                );
 
-            if ($this->hasErrors()) {
+                fflush($file);
+                flock($file, LOCK_UN);
+                //  LOG::error('Usage: '.Common::formatBytes(memory_get_usage()));
+                //   LOG::error('Peak Usage: '.Common::formatBytes(memory_get_peak_usage()));
+            } else {
                 fclose($file);
                 return false;
             }
-
-            fflush($file);
-            flock($file, LOCK_UN);
-
-            //check memory consumption
-            //  LOG::error('Usage: '.Common::formatBytes(memory_get_usage()));
-            //   LOG::error('Peak Usage: '.Common::formatBytes(memory_get_peak_usage()));
-
-        } else {
-            $this->errors[] = 'ec5_232';
             fclose($file);
+            return true;
+        } catch (Exception $e) {
+            Log::error('writeCSV failed', ['exception' => $e->getMessage()]);
             return false;
         }
-
-        fclose($file);
-        return true;
     }
 
-    /**
-     * @param Builder $query
-     * @param $outputFile
-     * @return bool
-     */
     public function writeJSON(Builder $query, $outputFile): bool
     {
-        $file = fopen($outputFile, "w");
-
-        // Acquire an exclusive lock
-        if (flock($file, LOCK_EX)) {
-
-            $count = 1;
-            fwrite($file, '{"data": [');
-
-            // Get total of entries
-            $total = $query->count('id');
-            $chunkLimit = config('epicollect.limits.download_entries_chunk_limit');
-
-            $query->chunk(
-                $chunkLimit,
-                function (Collection $entries) use (&$count, $total, $file) {
-                    foreach ($entries as $entry) {
-
-                        // Whether to append comma or not
-                        $append = ',';
-                        if ($count == $total) {
-                            $append = '';
+        try {
+            $file = fopen($outputFile, "w");
+            // Acquire an exclusive lock
+            if (flock($file, LOCK_EX)) {
+                $count = 1;
+                fwrite($file, '{"data": [');
+                // Get total of entries
+                $total = $query->count('id');
+                $chunkLimit = config('epicollect.limits.download_entries_chunk_limit');
+                $query->chunk(
+                    $chunkLimit,
+                    function (Collection $entries) use (&$count, $total, $file) {
+                        foreach ($entries as $entry) {
+                            // Whether to append comma or not
+                            $append = ',';
+                            if ($count == $total) {
+                                $append = '';
+                            }
+                            $count++;
+                            // Write row to file
+                            fwrite($file, $this->dataMappingService->getMappedEntryJSON(
+                                    $entry->entry_data,
+                                    $entry->user_id,
+                                    $entry->title,
+                                    $entry->uploaded_at,
+                                    $entry->branch_counts ?? null
+                                ) . $append);
                         }
-                        $count++;
-
-                        // Write row to file
-                        fwrite($file, $this->dataMappingService->swapOutEntryJson(
-                                $entry->entry_data,
-                                $entry->branch_counts ?? null,
-                                $entry->user_id,
-                                $entry->title,
-                                $entry->uploaded_at
-                            ) . $append);
                     }
-                }
-            );
-            // todo - check memory consumption
-            //            var_dump(memory_get_usage());
-            //            var_dump(memory_get_peak_usage());
-
-            fwrite($file, ']}');
-
-            fflush($file);
-            flock($file, LOCK_UN);
-        } else {
-            $this->errors[] = 'ec5_232';
+                );
+                fwrite($file, ']}');
+                fflush($file);
+                flock($file, LOCK_UN);
+            } else {
+                fclose($file);
+                return false;
+            }
             fclose($file);
+            return true;
+        } catch (Exception $e) {
+            Log::error('writeJSON failed', ['exception' => $e->getMessage()]);
             return false;
         }
-
-        fclose($file);
-        return true;
-    }
-
-    /**
-     * @return bool
-     */
-    public function hasErrors(): bool
-    {
-        return count($this->errors) > 0;
-    }
-
-    /**
-     * @return array
-     */
-    public function errors(): array
-    {
-        return $this->errors;
     }
 }
