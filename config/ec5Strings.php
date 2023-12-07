@@ -100,9 +100,9 @@ return [
         'download-entries' => 'epicollect5-download-entries'
     ],
     'can_bulk_upload' => [
-        'NOBODY' => 'nobody',
-        'MEMBERS' => 'members',
-        'EVERYBODY' => 'everybody'
+        'nobody' => 'nobody',
+        'members' => 'members',
+        'everybody' => 'everybody'
     ],
     'user_placeholder' => [
         'apple_first_name' => 'Apple User',
