@@ -3,8 +3,7 @@
 namespace ec5\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Response;
-use Config;
+use Illuminate\Support\Facades\Response;
 
 class ResponseApiServiceProvider extends ServiceProvider
 {
@@ -17,10 +16,8 @@ class ResponseApiServiceProvider extends ServiceProvider
     {
         //create a macro to wrap the response in "data" root property and set custom header according to jsonapi.org
         Response::macro('apiResponse', function ($content) {
-
-            $apiContentTypeHeaderKey = Config('ec5Api.responseContentTypeHeaderKey');
-            $apiContentTypeHeaderValue = Config('ec5Api.responseContentTypeHeaderValue');
-
+            $apiContentTypeHeaderKey = config('epicollect.setup.api.responseContentTypeHeaderKey');
+            $apiContentTypeHeaderValue = config('epicollect.setup.api.responseContentTypeHeaderValue');
             return response()
                 ->json([
                     'data' => $content
@@ -31,14 +28,11 @@ class ResponseApiServiceProvider extends ServiceProvider
         });
 
         Response::macro('attachment', function ($content, $filename) {
-
             $headers = [
-                'Content-type'        => 'text/csv',
-                'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+                'Content-type' => 'text/csv',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
             ];
-
             return Response::make($content, 200, $headers);
-
         });
     }
 
