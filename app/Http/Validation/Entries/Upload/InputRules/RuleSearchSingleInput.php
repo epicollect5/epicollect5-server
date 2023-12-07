@@ -34,15 +34,14 @@ class RuleSearchSingleInput extends RuleInputBase
     {
         if (!empty($answer) && count($answer) > 0) {
 
-            if(!is_array($answer))
-            {
+            if (!is_array($answer)) {
                 $this->errors[$inputDetails['ref']] = ['ec5_25'];
                 return $answer;
             }
 
             //check that search single has got only 1 single answer
-            if (count($answer) > 1){
-                $this->errors[$inputDetails['ref']] = ['ec5_25'];
+            if (count($answer) > 1) {
+                $this->errors[$inputDetails['ref']] = ['ec5_397'];
             }
 
             $possibles = Common::getPossibleAnswers($inputDetails);
@@ -72,7 +71,7 @@ class RuleSearchSingleInput extends RuleInputBase
                 foreach ($answer as $answerRef) {
 
                     //any null anwer refs? Coming from bulk upload
-                    if($answerRef === null) {
+                    if ($answerRef === null) {
                         $this->errors[$inputDetails['ref']] = ['ec5_25'];
                         break;
                     }

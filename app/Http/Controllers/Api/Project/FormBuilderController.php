@@ -3,52 +3,46 @@
 namespace ec5\Http\Controllers\Api\Project;
 
 use ec5\Http\Controllers\ProjectControllerBase;
+use Exception;
 use Illuminate\Http\Request;
-use ec5\Http\Validation\Project\RuleProjectDefinition as ProjectDefinitionValidator;
+use ec5\Http\Validation\Project\RuleProjectDefinition;
 use ec5\Repositories\QueryBuilder\Project\UpdateRepository as ProjectUpdate;
 use ec5\Http\Controllers\Api\ApiResponse as ApiResponse;
 use ec5\Libraries\Utilities\Arrays;
 use ec5\Libraries\Utilities\Strings;
-
 use Log;
 
 class FormBuilderController extends ProjectControllerBase
 {
-
     protected $projectUpdate;
     protected $request;
     protected $apiResponse;
-    protected $projectDefinitionValidator;
+    protected $ruleProjectDefinition;
 
-    /**
-     * FormBuilderController constructor.
-     *
-     * @param Request $request
-     * @param ProjectUpdate $projectUpdate
-     * @param ProjectDefinitionValidator $projectDefinitionValidator
-     * @param ApiResponse $apiResponse
-     */
     public function __construct(
-        Request                    $request,
-        ProjectUpdate              $projectUpdate,
-        ProjectDefinitionValidator $projectDefinitionValidator,
-        ApiResponse                $apiResponse
+        Request               $request,
+        ProjectUpdate         $projectUpdate,
+        RuleProjectDefinition $ruleProjectDefinition,
+        ApiResponse           $apiResponse
     )
     {
         $this->request = $request;
         $this->apiResponse = $apiResponse;
         $this->projectUpdate = $projectUpdate;
-        $this->projectDefinitionValidator = $projectDefinitionValidator;
+        $this->ruleProjectDefinition = $ruleProjectDefinition;
 
         parent::__construct($request);
     }
 
     public function store()
     {
-        // Get posted Project Definition which is gzipped and base64 encoded
+        //unpack posted project definition which is gzipped and base64 encoded
         try {
             $requestContent = json_decode(gzdecode(base64_decode($this->request->getContent())), true);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
+            Log::error('Formbuilder decoding failed', [
+                'exception' => $e->getMessage()
+            ]);
             return $this->apiResponse->errorResponse('422', ['Request' => ['ec5_62']]);
         }
 
@@ -93,15 +87,12 @@ class FormBuilderController extends ProjectControllerBase
         $this->requestedProject->addProjectDefinition($projectDefinition);
 
         // Validate and generate Project Extra from Project Definition
-        $this->projectDefinitionValidator->validate($this->requestedProject);
+        $this->ruleProjectDefinition->validate($this->requestedProject);
 
         // Check for any errors so far
-        if ($this->projectDefinitionValidator->hasErrors()) {
-
-
-            return $this->apiResponse->errorResponse('422', $this->projectDefinitionValidator->errors());
+        if ($this->ruleProjectDefinition->hasErrors()) {
+            return $this->apiResponse->errorResponse('422', $this->ruleProjectDefinition->errors());
         }
-
         // Update Project Mappings
         $this->requestedProject->updateProjectMappings();
 

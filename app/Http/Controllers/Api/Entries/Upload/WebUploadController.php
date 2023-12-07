@@ -5,27 +5,19 @@ declare(strict_types=1);
 namespace ec5\Http\Controllers\Api\Entries\Upload;
 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-
-use ec5\Http\Validation\Entries\Upload\RuleUpload as UploadValidator;
+use ec5\Http\Validation\Entries\Upload\RuleUpload;
 use ec5\Http\Validation\Entries\Upload\RuleFileEntry as FileValidator;
 use ec5\Repositories\QueryBuilder\Stats\Entry\StatsRepository as EntryStatsRepository;
-
 use ec5\Repositories\QueryBuilder\Entry\Upload\Create\EntryRepository as EntryCreateRepository;
 use ec5\Repositories\QueryBuilder\Entry\Upload\Create\BranchEntryRepository as BranchEntryCreateRepository;
-
 use ec5\Http\Controllers\Api\ApiResponse;
 use ec5\Http\Controllers\Api\ApiRequest;
-
 use ec5\Models\Entries\EntryStructure;
 use ec5\Models\Eloquent\Entry;
 use ec5\Models\Eloquent\BranchEntry;
-
 use ec5\Libraries\Utilities\DateFormatConverter;
-
 use Illuminate\Http\Request;
-
 use Storage;
-use Config;
 use File;
 
 class WebUploadController extends UploadControllerBase
@@ -79,13 +71,12 @@ class WebUploadController extends UploadControllerBase
     }
 
     /**
-     * @param UploadValidator $uploadValidator
      * @return bool|\Illuminate\Http\JsonResponse
      */
-    public function store(UploadValidator $uploadValidator)
+    public function store(RuleUpload $ruleUpload)
     {
         //check the request is valid
-        if (!$this->upload($uploadValidator)) {
+        if (!$this->upload($ruleUpload)) {
             return $this->apiResponse->errorResponse(400, $this->errors);
         }
 
@@ -131,7 +122,7 @@ class WebUploadController extends UploadControllerBase
             $input = $projectExtra->getInputData($inputRef);
 
             // If we have a group
-            if ($input['type'] === Config::get('ec5Strings.inputs_type.group')) {
+            if ($input['type'] === config('epicollect.strings.inputs_type.group')) {
                 // Loop the group inputs
                 $groupInputs = $projectExtra->getGroupInputs($formRef, $inputRef);
                 foreach ($groupInputs as $groupInputRef) {
@@ -150,7 +141,7 @@ class WebUploadController extends UploadControllerBase
         }
 
         //Throttle for half a second so the server does not get smashed by uploads
-        time_nanosleep(0, (int)(Config::get('ec5Api.response_delay.upload')));
+        time_nanosleep(0, (int)(config('epicollect.setup.api.response_delay.upload')));
 
 
         /* PASSED */
@@ -159,17 +150,17 @@ class WebUploadController extends UploadControllerBase
     }
 
     /**
-     * @param UploadValidator $uploadValidator
+     * @param RuleUpload $ruleUpload
      * @return bool|\Illuminate\Http\JsonResponse
      *
      * Let's call the web upload controller @store method
      * We do this because the @storeBulk endpoint goes through
      * a middleware to check for bulk upload permissions
      */
-    public function storeBulk(UploadValidator $uploadValidator)
+    public function storeBulk(RuleUpload $ruleUpload)
     {
         $this->isBulkUpload = true;
-        return $this->store($uploadValidator);
+        return $this->store($ruleUpload);
     }
 
     /**
@@ -180,7 +171,7 @@ class WebUploadController extends UploadControllerBase
     private function moveFile($rootFolder, $input)
     {
         // If we don't have a media input type
-        if (!in_array($input['type'], Config::get('ec5Enums.media_input_types'))) {
+        if (!in_array($input['type'], array_keys(config('epicollect.strings.media_input_types')))) {
             return false;
         }
 
@@ -202,16 +193,18 @@ class WebUploadController extends UploadControllerBase
             );
         } catch (\ErrorException $e) {
             // File doesn't exist
-            return $this->apiResponse->errorResponse(400, ['web upload' => ['ec5_231']]);
+            return $this->apiResponse->errorResponse(400, ['web upload' => [
+                'ec5_231'
+            ]]);
         }
 
         // Load everything into an entry structure model
         $entryStructure = new EntryStructure();
 
-        $entryData = Config::get('ec5ProjectStructures.entry_data');
+        $entryData = config('epicollect.structures.entry_data');
         $entryData['id'] = $this->entryStructure->getEntryUuid();
-        $entryData['type'] = Config::get('ec5Strings.entry_types.file_entry');
-        $entryData[Config::get('ec5Strings.entry_types.file_entry')] = [
+        $entryData['type'] = array_keys(config('epicollect.strings.entry_types.file_entry'));
+        $entryData[$entryData['type']] = [
             'type' => $input['type'],
             'name' => $fileName,
             'input_ref' => $input['ref']
@@ -219,7 +212,6 @@ class WebUploadController extends UploadControllerBase
 
         $entryStructure->createStructure($entryData);
         $entryStructure->setFile($file);
-
 
         // Move file
         // Note: the file has already been validated on initial upload to temp folder

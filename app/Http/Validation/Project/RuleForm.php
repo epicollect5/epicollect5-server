@@ -20,7 +20,7 @@ class RuleForm extends ValidationBase
      */
     public function __construct()
     {
-        $this->rules['name'] = 'required|max:' . Config::get('ec5Limits.form_name_limit');
+        $this->rules['name'] = 'required|max:' . config('epicollect.limits.form_name_maxlength');
     }
 
     /**
@@ -37,6 +37,21 @@ class RuleForm extends ValidationBase
         if ($this->hasErrors()) {
             return;
         }
+
+        //form name only allows alphanumeric chars and space, '-', '_'
+        if (!preg_match("/^[a-zA-Z0-9_\- ]+$/", $form['name'])) {
+            $this->errors[$form['ref']] = ['ec5_29'];
+        }
+
+        //form slug only allows alphanumeric chars and '-'
+        if (!preg_match("/^[a-zA-Z0-9\-]+$/", $form['slug'])) {
+            $this->errors[$form['ref']] = ['ec5_29'];
+        }
+
+        if ($form['name'])
+            if ($this->hasErrors()) {
+                return;
+            }
 
         $inputs = $form['inputs'];
 

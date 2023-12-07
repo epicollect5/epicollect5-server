@@ -160,16 +160,13 @@ abstract class ValidationBase
         $this->errors[$ref] = [$code];
     }
 
-    /**
-     * @param $ref
-     */
     protected function isValidRef($ref)
     {
-
         $inputRef = (isset($this->data['ref'])) ? $this->data['ref'] : '';
-
         if (!preg_match("/^{$ref}+_[a-zA-Z0-9]{13}$/", $inputRef)) {
             $this->errors[$inputRef] = ['ec5_243'];
+        } else {
+            return true;
         }
     }
 

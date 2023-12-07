@@ -38,7 +38,6 @@ class ProjectController extends ProjectControllerBase
         $homepage = config('app.url') . '/project/' . $this->requestedProject->slug;
         $data['project']['homepage'] = $homepage;
 
-        $apiResponse->setData($data);
 
         $projectExtra = $this->requestedProject->getProjectExtra()->getData();
 
@@ -74,6 +73,7 @@ class ProjectController extends ProjectControllerBase
                 'structure_last_updated' => $this->requestedProject->getProjectStats()->getProjectStructureLastUpdated()
             ])
         ]);
+        $apiResponse->setData($data);
 
         return $apiResponse->toJsonResponse('200', $options = 0);
     }
@@ -115,7 +115,7 @@ class ProjectController extends ProjectControllerBase
         $projects = [];
 
         if (!empty($name)) {
-            //get all projects where the name starts with the needle provided
+            //get all projects where the name starts with the needle provided (archived and trashed are filtered)
             $hits = Project::startsWith($name, ['name', 'slug', 'access', 'ref']);
         }
         // Build the json api response
@@ -168,7 +168,7 @@ class ProjectController extends ProjectControllerBase
         return $apiResponse->toJsonResponse('200', $options = 0);
     }
 
-    public function updateCanBulkUpload(Request $request, ApiResponse $apiResponse, RuleCanBulkUpload $validator)
+    public function updateCanBulkUpload(Request $request, ApiResponse $apiResponse, RuleCanBulkUpload $ruleCanBulkUpload)
     {
         if (!$this->requestedProjectRole->canEditProject()) {
             $errors = ['ec5_91'];
@@ -179,9 +179,9 @@ class ProjectController extends ProjectControllerBase
         $params = $request->all();
 
         //validate params
-        $validator->validate($params);
-        if ($validator->hasErrors()) {
-            return $apiResponse->errorResponse(400, $validator->errors());
+        $ruleCanBulkUpload->validate($params);
+        if ($ruleCanBulkUpload->hasErrors()) {
+            return $apiResponse->errorResponse(400, $ruleCanBulkUpload->errors());
         }
 
         $canBulkUpload = $params['can_bulk_upload'];

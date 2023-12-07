@@ -3,136 +3,79 @@
 namespace ec5\Http\Validation\Project;
 
 use ec5\Http\Validation\Project\RuleProjectExtraDetails as ProjectExtraDetailsValidator;
-use ec5\Http\Validation\Project\RuleForm as FormValidator;
-use ec5\Http\Validation\Project\RuleInput as InputValidator;
-
 use ec5\Models\Projects\Project;
 use ec5\Models\Projects\ProjectDefinition;
 use ec5\Models\Projects\ProjectExtra;
-
-use ec5\Libraries\Utilities\Strings;
-use Config;
 use Illuminate\Support\Str;
 
 class RuleProjectDefinition
 {
 
     protected $projectExtraDetailsValidator;
-    protected $formValidator;
-    protected $inputValidator;
-
+    protected $ruleForm;
+    protected $ruleInput;
     public $errors = [];
-    protected $stopAtFirstError = false;
-
-    /**
-     * @var ProjectExtra
-     */
     protected $projectExtra;
-    /**
-     * @var ProjectDefinition
-     */
     protected $projectDefinition;
-
-    protected $mappingCreate;
-    protected $limitForms = 0;
-    protected $limitInputs = 0;
-    protected $limitSearchInputs = 0;
-    protected $limitTitles = 0;
-    protected $titleCounts = [];
-
-    protected $currentFormRef = ''; //when looping, which form am i currently testing
-    protected $counterFormInputs = 0;
-    protected $counterSearchInputs = 0;
+    protected $counterTitles = [];
+    protected $currentFormRef = ''; //when looping, which form
+    protected $counterFormInputs;
+    protected $counterSearchInputs;
     protected $hasJumps = [];
     protected $hasLocation = [];
     protected $formNames = []; //test for duplicate for names
     protected $formRefs = []; //holds all form refs
 
-    /**
-     * RuleProjectDefinition constructor.
-     * @param ProjectExtraDetailsValidator $projectExtraDetailsValidator
-     * @param RuleForm $formValidator
-     * @param RuleInput $inputValidator
-     * @param ProjectExtra $projectExtra
-     * @param ProjectDefinition $projectDefinition
-     */
     public function __construct(
         ProjectExtraDetailsValidator $projectExtraDetailsValidator,
-        FormValidator $formValidator,
-        InputValidator $inputValidator,
-        ProjectExtra $projectExtra,
-        ProjectDefinition $projectDefinition
-    ) {
+        RuleForm                     $ruleForm,
+        RuleInput                    $ruleInput,
+        ProjectExtra                 $projectExtra,
+        ProjectDefinition            $projectDefinition
+    )
+    {
 
         $this->projectExtra = $projectExtra;
         $this->projectDefinition = $projectDefinition;
-
         $this->projectExtraDetailsValidator = $projectExtraDetailsValidator;
-        $this->formValidator = $formValidator;
-        $this->inputValidator = $inputValidator;
-        $this->limitForms = Config::get('ec5Limits.formlimits.forms');
-        $this->limitInputs = Config::get('ec5Limits.formlimits.inputs');
-        $this->limitSearchInputs = Config::get('ec5Limits.search_per_project');
-        $this->limitTitles = Config::get('ec5Limits.formlimits.titles');
+        $this->ruleForm = $ruleForm;
+        $this->ruleInput = $ruleInput;
     }
 
-    /**
-     * return the errors array
-     *
-     * @return array
-     */
-    public function errors()
+    public function errors(): array
     {
         return $this->errors;
     }
 
-    /**
-     * return count of errors array
-     *
-     * @return boolean
-     */
-    public function hasErrors()
+    public function hasErrors(): bool
     {
         return count($this->errors) > 0;
     }
 
-    /**
-     * @param array $e
-     */
     protected function addArrayToErrors(array $e)
     {
         $this->errors = array_merge($this->errors, $e);
     }
 
-    /**
-     * return count of errors array
-     *
-     */
-    public function getProjectExtra()
+    public function getProjectExtra(): ProjectExtra
     {
         return $this->projectExtra;
     }
 
     /**
      * Validate the Project Definition
-     *
-     * @param Project $project
      */
-    public function validate(Project $project)
+    public function validate(Project $project): bool
     {
-
         $this->projectExtra = $project->getProjectExtra();
         // Reset the existing data, ready to rebuild
         $this->projectExtra->reset();
-
         $this->projectDefinition = $project->getProjectDefinition();
-
         $projectData = $this->projectDefinition->getData()['project'];
-
         // If failed, just add errors and bail
         if (empty($projectData) || empty($projectData['forms'])) {
             $this->errors['validation'] = ['ec5_67'];
-            return;
+            return false;
         }
 
         $forms = (is_array($projectData['forms'])) ? $projectData['forms'] : [];
@@ -140,48 +83,54 @@ class RuleProjectDefinition
         // If no forms
         if (count($forms) == 0) {
             $this->errors['validation'] = ['ec5_66'];
-            return;
+            return false;
         }
         // If too many forms
-        if (count($forms) > $this->limitForms) {
+        if (count($forms) > config('epicollect.limits.formsMaxCount')) {
             $this->errors['validation'] = ['ec5_263'];
-            return;
+            return false;
         }
 
-        // Test projectDetails, has to have existing ref as ref , bail if error
+        // Test projectDetails, has to have existing ref as ref, bail if error
         $test = $this->validateProjectDetails($project->ref, $projectData);
         if (!$test) {
-            return;
+            return false;
         }
 
+        $this->formNames = [];
+        $this->formRefs = [];
+        //search inputs currently 5 max per project
+        $this->counterSearchInputs = 0;
         foreach ($forms as $key => $form) {
+            //cannot have a form name empty
+            if (empty($form['name'])) {
+                $this->errors['validation'] = ['ec5_246'];
+                break;
+            }
 
-            // $data['slug'] = (empty($data['name'])) ? '' : Str::slug($data['name'],"-");
             // Need to keep track of form names or slug to check unique name for each form
-            if (empty($form['name']) || in_array($form['name'], $this->formNames)) {
-                $this->errors['validation'] = ['ec5_67'];
-                if ($this->stopAtFirstError) {
-                    break;
-                } else {
-                    continue;
-                }
+            if (in_array($form['name'], $this->formNames)) {
+                $this->errors['validation'] = ['ec5_245'];
+                break;
             } else {
                 $form['name'] = trim($form['name']);
                 $this->formNames[] = $form['name'];
             }
 
+            // Need to keep track of ref to check uniqueness for each form ref
+            if (in_array($form['ref'], $this->formRefs)) {
+                $this->errors['validation'] = ['ec5_224'];
+                break;
+            } else {
+                $this->formRefs[] = $form['ref'];
+            }
+
             // Set our counter to 0
             $this->counterFormInputs = 0;
-
             // Skip or bail if empty inputs or not array;
             if (empty($form['inputs']) || !is_array($form['inputs'])) {
-
                 $this->errors['validation'] = ['ec5_68'];
-                if ($this->stopAtFirstError) {
-                    break;
-                } else {
-                    continue;
-                }
+                break;
             }
 
             $formInputs = $form['inputs'];
@@ -190,205 +139,163 @@ class RuleProjectDefinition
             // Skip or bail if no inputs
             if ($this->counterFormInputs == 0) {
                 $this->errors['validation'] = ['ec5_68'];
-                return;
+                return false;
             }
             // Skip or bail if no inputs
-            if ($this->counterFormInputs > $this->limitInputs) {
+            if ($this->counterFormInputs > config('epicollect.limits.inputsMaxCount')) {
                 $this->errors['validation'] = ['ec5_262'];
-                return;
+                return false;
             }
 
-            // Test formDetails, skip and continue to next form
-            $test = $this->validateFormDetails($projectData['ref'], $form);
-            if (!$test) {
-                continue;
+            // Test form metadata
+            if (!$this->isFormValid($projectData['ref'], $form)) {
+                return false;
             }
 
             $formRef = $form['ref'];
             $this->currentFormRef = $formRef;
             $this->formRefs[] = $formRef;
 
-            // For each input
-            foreach ($formInputs as $inputKey => $input) {
 
+            foreach ($formInputs as $inputKey => $input) {
                 // Validate top level input break or skip if not valid
                 // Note: validateInput also adds the input to the projectStructure inputs[]
-                $validInput = $this->validateInput($formRef, $input);
-
-                //todo validate jumps destinations
-
-                if (!$validInput) {
-                    if ($this->stopAtFirstError) {
-                        break;
-                    } else {
-                        continue;
-                    }
+                if (!$this->isInputValid($formRef, $input)) {
+                    break;
                 }
+                //todo validate jumps destinations
 
                 $inputType = $input['type'];
                 $inputRef = $input['ref'];
 
-                // Add  top level link
                 $this->projectExtra->addTopLevelRef($formRef, $inputRef);
 
                 switch ($inputType) {
-
-                    case Config::get('ec5Strings.branch'):
-                        // Validate branch inputs
+                    case config('epicollect.strings.branch'):
                         // Note: inputs are retrieved from 'branch' array in input
-                        $test = $this->validateBranchInputs($formRef, $inputRef,
-                            $input[Config::get('ec5Strings.branch')]);
-                        if (!$test) {
-                            if ($this->stopAtFirstError) {
-                                break;
-                            } else {
-                                continue;
-                            }
+                        if (!$this->areValidBranchInputs(
+                            $formRef,
+                            $inputRef,
+                            $input[config('epicollect.strings.branch')])
+                        ) {
+                            break;
                         }
                         break;
-                    case Config::get('ec5Strings.group'):
-                        // Validate group inputs
+                    case config('epicollect.strings.group'):
                         // Note: inputs are retrieved from 'group' array in input
-                        $test = $this->validateGroupInputs($formRef, $inputRef,
-                            $input[Config::get('ec5Strings.group')]);
-                        if (!$test) {
-                            if ($this->stopAtFirstError) {
-                                break;
-                            } else {
-                                continue;
-                            }
+                        if (!$this->areValidGroupInputs(
+                            $formRef,
+                            $inputRef,
+                            $input[config('epicollect.strings.group')])
+                        ) {
+                            break;
                         }
                         break;
-                    case Config::get('ec5Strings.inputs_type.searchsingle'):
-                    case Config::get('ec5Strings.inputs_type.searchmultiple'):
+                    case config('epicollect.strings.inputs_type.searchsingle'):
+                    case config('epicollect.strings.inputs_type.searchmultiple'):
                         //update search inputs counter
                         $this->counterSearchInputs++;
                 }
             }
 
-            if ($this->counterSearchInputs > Config::get('ec5Limits.search_per_project')) {
+            //if too many search inputs for this project, return error
+            if ($this->counterSearchInputs > config('epicollect.limits.searchMaxCount')) {
                 $this->errors['validation'] = ['ec5_333'];
-                return;
+                return false;
             }
         }
 
         // Add any extra info collect e.g. "has_location"
         $this->addExtraFormDetails();
 
-    }
-
-    /**
-     * validate project structure details
-     *
-     * @param Existing Project Ref
-     * @param $data
-     * @return bool
-     */
-    private function validateProjectDetails($parentRef, $data)
-    {
-
-        // Test against project validation rules
-        $this->projectExtraDetailsValidator->validate($data, true);
-
-        // If failed, just add errors from validationHandler as well and bail
-        if ($this->projectExtraDetailsValidator->hasErrors()) {
-            return $this->errorHelper('projectExtraDetailsValidator', 'ec5_63', '',
-                $this->projectExtraDetailsValidator->errors());
-        }
-
-        // Test against project validation rules
-        $this->projectExtraDetailsValidator->additionalChecks($parentRef);
-
-        // If failed, just add errors from validationHandler as well and bail
-        if ($this->projectExtraDetailsValidator->hasErrors()) {
-            return $this->errorHelper('projectExtraDetailsValidator', 'ec5_63', '',
-                $this->projectExtraDetailsValidator->errors());
-        }
-
-        // Create and add the project extra details
-        $projectExtraDetails = [];
-        foreach (Config::get('ec5ProjectStructures.project_extra.project.details') as $property => $value) {
-            $projectExtraDetails[$property] = $data[$property] ?? '';
-        }
-
-        // Add the project details
-        $this->projectExtra->addProjectDetails($projectExtraDetails);
-
-        // Add the entries limits
-        $this->projectExtra->addEntriesLimits($data['entries_limits'] ?? []);
-
         return true;
     }
 
     /**
      * validate project structure details
-     *
-     * @param $projectRef
-     * @param $form
-     * @return bool
      */
-    private function validateFormDetails($projectRef, $form)
+    private function validateProjectDetails($parentRef, $data): bool
+    {
+        // Test against project validation rules
+        $this->projectExtraDetailsValidator->validate($data, true);
+        // If failed, just add errors from validationHandler as well and bail
+        if ($this->projectExtraDetailsValidator->hasErrors()) {
+            return $this->errorHelper('projectExtraDetailsValidator', 'ec5_63', '',
+                $this->projectExtraDetailsValidator->errors());
+        }
+        // Test against project validation rules
+        $this->projectExtraDetailsValidator->additionalChecks($parentRef);
+        // If failed, just add errors from validationHandler as well and bail
+        if ($this->projectExtraDetailsValidator->hasErrors()) {
+            return $this->errorHelper('projectExtraDetailsValidator', 'ec5_63', '',
+                $this->projectExtraDetailsValidator->errors());
+        }
+        // Create and add the project extra details
+        $projectExtraDetails = [];
+        foreach (config('ec5ProjectStructures.project_extra.project.details') as $property => $value) {
+            $projectExtraDetails[$property] = $data[$property] ?? '';
+        }
+        // Add the project details
+        $this->projectExtra->addProjectDetails($projectExtraDetails);
+        // Add the entries limits
+        $this->projectExtra->addEntriesLimits($data['entries_limits'] ?? []);
+        return true;
+    }
+
+    private function isFormValid($projectRef, $form): bool
     {
         // Test against required keys and Form validation rules
-        $this->formValidator->validate($form, true);
-
+        $this->ruleForm->validate($form, true);
         // If failed, just add errors from validationHandler as well and bail
-        if ($this->formValidator->hasErrors()) {
-            return $this->errorHelper('formValidator', 'ec5_64', '', $this->formValidator->errors());
+        if ($this->ruleForm->hasErrors()) {
+            $errorCodeFirst = array_values($this->ruleForm->errors())[0][0];
+            $this->errors['validation'][] = $errorCodeFirst;
+            return false;
         }
 
         // Test against Form validation rules
-        $this->formValidator->additionalChecks($projectRef, $form);
+        $this->ruleForm->additionalChecks($projectRef, $form);
 
         // If failed, just add errors from validationHandler as well and bail
-        if ($this->formValidator->hasErrors()) {
-            return $this->errorHelper('formValidator', 'ec5_64', '', $this->formValidator->errors());
+        if ($this->ruleForm->hasErrors()) {
+            $errorCodeFirst = array_values($this->ruleForm->errors())[0][0];
+            $this->errors['validation'][] = $errorCodeFirst;
+            return false;
         }
 
-        $form['slug'] = (empty($form['name'])) ? '' : Str::slug($form['name'], "-");
+        $form['slug'] = (empty($form['name'])) ? '' : Str::slug($form['name']);
         $this->projectExtra->addFormDetails($form['ref'], $form);
 
         return true;
-
     }
 
     /**
      * Validate an input
-     *
-     * @param $ownerRef
-     * @param $input
-     * @param string|null $branchRef
-     * @return bool
      */
-    private function validateInput($ownerRef, $input, $branchRef = null)
+    private function isInputValid($ownerRef, $input, $branchRef = null): bool
     {
-
         // Add additional rules to validate (differentiate between a form and a branch)
-        $this->inputValidator->addAdditionalRules(!empty($branchRef));
-
+        $this->ruleInput->addAdditionalRules(!empty($branchRef));
         // Validate input
-        $this->inputValidator->validate($input, $check_keys = true);
+        $this->ruleInput->validate($input, $check_keys = true);
         $inputRef = (isset($input['ref'])) ? $input['ref'] : '';
-
         // If failed, just add errors from validationHandler as well and bail
-        if ($this->inputValidator->hasErrors()) {
-            return $this->errorHelper('inputValidator', 'ec5_65', $inputRef, $this->inputValidator->errors());
+        if ($this->ruleInput->hasErrors()) {
+            return $this->errorHelper('ruleInput', 'ec5_65', $inputRef, $this->ruleInput->errors());
         }
-
         // Test against project validation rules
-        $this->inputValidator->additionalChecks($ownerRef);
+        $this->ruleInput->additionalChecks($ownerRef);
 
         // If failed, just add errors from validationHandler as well and bail
-        if ($this->inputValidator->hasErrors()) {
-            return $this->errorHelper('inputValidator', 'ec5_65', $inputRef, $this->inputValidator->errors());
+        if ($this->ruleInput->hasErrors()) {
+            return $this->errorHelper('ruleInput', 'ec5_65', $inputRef, $this->ruleInput->errors());
         }
-
         // Check number of titles hasn't exceeded the allowed total
         if ($input['is_title']) {
-            // If we have a branch ref, use this to check the titles limit
-            // i.e. we have a group in a branch, so the group input is added to the branch title count
-            if ($this->checkTitlesLimit($branchRef ?? $ownerRef)) {
-                return $this->errorHelper('inputValidator', 'ec5_211', $inputRef, $this->inputValidator->errors());
+            // If we have a branch ref, use this to check the title max count
+            // i.e., we have a group in a branch, so the group input is added to the branch title count
+            if ($this->isValidTitlesCount($branchRef ?? $ownerRef)) {
+                return $this->errorHelper('ruleInput', 'ec5_211', $inputRef, $this->ruleInput->errors());
             }
         }
 
@@ -405,9 +312,7 @@ class RuleProjectDefinition
         }
 
         $this->projectExtra->addInput($this->currentFormRef, $input['ref'], $input, $branchRef);
-
         return true;
-
     }
 
     /**
@@ -419,42 +324,42 @@ class RuleProjectDefinition
      * @param string|null $branchRef
      * @return bool
      */
-    private function validateGroupInputs($formRef, $inputRef, $groupInputs, $branchRef = null)
+    private function areValidGroupInputs($formRef, $inputRef, $groupInputs, string $branchRef = ''): bool
     {
-
         $valid = true;
-
         $hasInputs = (empty($groupInputs)) ? 0 : count($groupInputs);
         $this->counterFormInputs += $hasInputs;
 
-        $test = $this->checkInputLimit($hasInputs);
+        $test = $this->isValidInputsCount($hasInputs);
         if (!$test) {
             return false;
         }
 
         // Add an array to the project extra for this group
-        $this->projectExtra->addFormSpecialType($formRef, Config::get('ec5Strings.group'), $inputRef);
+        $this->projectExtra->addFormSpecialType($formRef, config('epicollect.strings.group'), $inputRef);
 
         foreach ($groupInputs as $key => $groupInput) {
 
             // Test against project validation rules
-            $test = $this->validateInput($inputRef, $groupInput, $branchRef);
-            if (!$test) {
+            if (!$this->isInputValid(
+                $inputRef,
+                $groupInput,
+                $branchRef)
+            ) {
                 $valid = false;
-                if ($this->stopAtFirstError) {
-                    break;
-                } else {
-                    continue;
-                }
+                break;
             }
-            $this->projectExtra->addFormSpecialTypeInput($formRef, Config::get('ec5Strings.group'), $inputRef,
+            $this->projectExtra->addFormSpecialTypeInput(
+                $formRef,
+                config('epicollect.strings.group'),
+                $inputRef,
                 $groupInput['ref']);
 
             //update search inputs counter
-            if ($groupInput['type'] === Config::get('ec5Strings.inputs_type.searchsingle')) {
+            if ($groupInput['type'] === config('epicollect.strings.inputs_type.searchsingle')) {
                 $this->counterSearchInputs++;
             }
-            if ($groupInput['type'] === Config::get('ec5Strings.inputs_type.searchmultiple')) {
+            if ($groupInput['type'] === config('epicollect.strings.inputs_type.searchmultiple')) {
                 $this->counterSearchInputs++;
             }
         }
@@ -470,137 +375,115 @@ class RuleProjectDefinition
      * @param $branchInputs
      * @return bool
      */
-    private function validateBranchInputs($formRef, $inputRef, $branchInputs)
+    private function areValidBranchInputs($formRef, $inputRef, $branchInputs): bool
     {
-
         $valid = true;
-
         $hasInputs = (empty($branchInputs)) ? 0 : count($branchInputs);
         $this->counterFormInputs += $hasInputs;
 
-        $test = $this->checkInputLimit($hasInputs);
+        $test = $this->isValidInputsCount($hasInputs);
         if (!$test) {
             return false;
         }
 
-        $this->projectExtra->addFormSpecialType($formRef, Config::get('ec5Strings.branch'), $inputRef);
+        $this->projectExtra->addFormSpecialType($formRef, config('epicollect.strings.branch'), $inputRef);
 
         foreach ($branchInputs as $key => $branchInput) {
-
-            // Validate the input, passing in the branch ref so we know it's a branch input
-            $test = $this->validateInput($inputRef, $branchInput, $inputRef);
-            if (!$test) {
+            // Validate the input, passing in the branch ref, so we know it's a branch input
+            if (!$this->isInputValid($inputRef, $branchInput, $inputRef)) {
                 $valid = false;
-                if ($this->stopAtFirstError) {
-                    break;
-                } else {
-                    continue;
-                }
+                break;
             }
 
-            $this->projectExtra->addFormSpecialTypeInput($formRef, Config::get('ec5Strings.branch'), $inputRef,
+            $this->projectExtra->addFormSpecialTypeInput(
+                $formRef, config('epicollect.strings.branch'),
+                $inputRef,
                 $branchInput['ref']);
 
             // Check if this input type is a group
-            if ($branchInput['type'] == Config::get('ec5Strings.group')) {
+            if ($branchInput['type'] == config('epicollect.strings.group')) {
                 // Validate group inputs
                 // Note: inputs are retrieved from 'group' array in input
-                $valid = $this->validateGroupInputs($formRef, $branchInput['ref'],
-                    $branchInput[Config::get('ec5Strings.group')], $inputRef);
+                if (!$this->areValidGroupInputs(
+                    $formRef,
+                    $branchInput['ref'],
+                    $branchInput[config('epicollect.strings.group')],
+                    $inputRef
+                )) {
+                    $valid = false;
+                    break;
+                }
             }
 
             //update search inputs counter
-            if ($branchInput['type'] === Config::get('ec5Strings.inputs_type.searchsingle')) {
+            if ($branchInput['type'] === config('epicollect.strings.inputs_type.searchsingle')) {
                 $this->counterSearchInputs++;
             }
-            if ($branchInput['type'] === Config::get('ec5Strings.inputs_type.searchmultiple')) {
+            if ($branchInput['type'] === config('epicollect.strings.inputs_type.searchmultiple')) {
                 $this->counterSearchInputs++;
             }
 
         }
-
         return $valid;
-
     }
 
     /**
-     * keep an eye on the total number of inputs including sub levels, branches, groups etc
-     * @param $hasInputs - check me against 0 or counter is over limit
-     * @return bool
+     * keep an eye on the total number of inputs including sub-levels, branches, groups etc
      */
-    private function checkInputLimit($hasInputs)
+    private function isValidInputsCount($hasInputs): bool
     {
-
         if ($hasInputs == 0) {
             $this->errors['validation'][] = 'ec5_68';
             return false;
         }
 
-        if ($this->counterFormInputs > $this->limitInputs) {
+        if ($this->counterFormInputs > config('epicollect.limits.inputsMaxCount')) {
             $this->errors['validation'][] = 'ec5_262';
             return false;
         }
-
         return true;
     }
 
     /**
      * Error helper add to errors array
-     *
-     * @param $type
-     * @param $code
-     * @param $ref
-     * @param $errors
-     * @return bool
      */
-    private function errorHelper($type, $code, $ref, $errors)
+    private function errorHelper($type, $code, $ref, $errors): bool
     {
         ($ref == '') ? $this->errors[$type][] = $code : $this->errors[$ref] = [$code];
         $this->addArrayToErrors($errors);
         return false;
     }
 
-    /**
-     * @param $ownerRef
-     * @return bool
-     */
-    private function checkTitlesLimit($ownerRef)
+    private function isValidTitlesCount($ownerRef): bool
     {
         // If we've not seen a count for this form/branch ref yet, set to 0
-        if (!isset($this->titleCounts[$ownerRef])) {
-            $this->titleCounts[$ownerRef] = 0;
+        if (!isset($this->counterTitles[$ownerRef])) {
+            $this->counterTitles[$ownerRef] = 0;
         }
         // Increment count for this form/branch ref title count
-        $this->titleCounts[$ownerRef] += 1;
-
+        $this->counterTitles[$ownerRef] += 1;
         // If the set limit has been exceeded, error out
-        if ($this->titleCounts[$ownerRef] > $this->limitTitles) {
+        if ($this->counterTitles[$ownerRef] > config('epicollect.limits.titlesMaxCount')) {
             return true;
         }
-
         return false;
-
     }
 
     /**
-     * Add a couple of things to top level forms, ie has location input
+     * Add a couple of things to top level forms, i.e., has location input
      * Data was collected while looping into this->formRefs
      */
     private function addExtraFormDetails()
     {
         foreach ($this->formRefs as $key => $ref) {
-
             $formDetails = $this->projectExtra->getFormData($ref, 'details');
             if ($formDetails == null) {
                 continue;
             }
-
             $details = [];
-
             // Check if this form has a location
             $details['has_location'] = in_array($ref, $this->hasLocation);
             $this->projectExtra->addExtraFormDetails($ref, $details);
         }
     }
-
 }
