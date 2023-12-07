@@ -53,7 +53,7 @@ class ProjectControllerBase extends Controller
         $projectDefinitionPrettyPrint = json_encode($this->requestedProject->getProjectDefinition()->getData(), JSON_PRETTY_PRINT);
         $projectExtraPrettyPrint = json_encode($this->requestedProject->getProjectExtra()->getData(), JSON_PRETTY_PRINT);
         $projectStats = ProjectStat::where('project_id', $this->requestedProject->getId())->first();
-        $creatorEmail = Project::creatorEmail();
+        $creatorEmail = Project::creatorEmail($this->requestedProject->getId());
 
         $this->requestedProject->creatorEmail = $creatorEmail;
 

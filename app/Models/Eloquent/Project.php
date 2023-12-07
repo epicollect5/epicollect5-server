@@ -15,7 +15,7 @@ class Project extends Model
     public function myProjects($perPage, $userId, $params)
     {
         return DB::table($this->getTable())
-            ->leftJoin(Config::get('ec5Tables.project_roles'), $this->getQualifiedKeyName(), '=', 'project_roles.project_id')
+            ->leftJoin(config('epicollect.tables.project_roles'), $this->getQualifiedKeyName(), '=', 'project_roles.project_id')
             ->where('project_roles.user_id', $userId)
             ->where(function ($query) use ($params) {
                 if (!empty($params['filter_type']) && !empty($params['filter_value'])) {
@@ -35,13 +35,13 @@ class Project extends Model
     public function publicAndListed($category = null, $params = [])
     {
         // Define constants
-        $trashedStatus = Config::get('ec5Strings.project_status.trashed');
-        $archivedStatus = Config::get('ec5Strings.project_status.archived');
-        $publicAccess = Config::get('ec5Strings.project_access.public');
-        $listedVisibility = Config::get('ec5Strings.project_visibility.listed');
-        $projectsPerPage = Config::get('ec5Limits.projects_per_page');
-        $sortBy = Config::get('ec5Enums.search_projects_defaults.sort_by');
-        $sortOrder = Config::get('ec5Enums.search_projects_defaults.sort_order');
+        $trashedStatus = config('epicollect.strings.project_status.trashed');
+        $archivedStatus = config('epicollect.strings.project_status.archived');
+        $publicAccess = config('epicollect.strings.project_access.public');
+        $listedVisibility = config('epicollect.strings.project_visibility.listed');
+        $projectsPerPage = config('epicollect.limits.projects_per_page');
+        $sortBy = config('epicollect.strings.search_projects_defaults.sort_by');
+        $sortOrder = config('epicollect.strings.search_projects_defaults.sort_order');
 
         // Base query
         $query = DB::table($this->getTable())->join($this->projectStatsTable, 'projects.id', '=', $this->projectStatsTable . '.project_id')
@@ -75,20 +75,21 @@ class Project extends Model
 
     public function featured()
     {
-        return Project::join(Config::get('ec5Tables.projects_featured'), 'projects.id', '=', Config::get('ec5Tables.projects_featured') . '.project_id')
+        return Project::join(config('epicollect.tables.projects_featured'), 'projects.id', '=', config('epicollect.tables.projects_featured') . '.project_id')
             ->orderBy('projects_featured.id', 'asc')
             ->get();
     }
 
-    public static function creatorEmail()
+    public static function creatorEmail($projectId)
     {
-        return Project::join(Config::get('ec5Tables.users'), 'projects.created_by', '=', Config::get('ec5Tables.users') . '.id')
+        return Project::join(config('epicollect.tables.users'), 'projects.created_by', config('epicollect.tables.users') . '.id')
+            ->where('projects.id', $projectId)
             ->first()->email;
     }
 
     public static function version($slug)
     {
-        return Project::join(Config::get('ec5Tables.project_structures'), 'projects.id', '=', Config::get('ec5Tables.project_structures') . '.project_id')
+        return Project::join(config('epicollect.tables.project_structures'), 'projects.id', '=', config('epicollect.tables.project_structures') . '.project_id')
             ->where('projects.slug', $slug)
             ->pluck('project_structures.updated_at')
             ->first();
@@ -128,11 +129,11 @@ class Project extends Model
 
             //set old Creator as Manager
             $oldCreator = ProjectRole::where('project_id', $projectId)->where('user_id', $creatorId)->firstOrFail();
-            $oldCreator->role = Config::get('ec5Permissions.projects.manager_role');
+            $oldCreator->role = config('epicollect.strings.project_roles.manager');
 
             //set the new Manager as Creator
             $newCreator = ProjectRole::where('project_id', $projectId)->where('user_id', $managerId)->firstOrFail();
-            $newCreator->role = Config::get('ec5Permissions.projects.creator_role');
+            $newCreator->role = config('epicollect.strings.project_roles.creator');
 
             //try to commit all changes
             DB::transaction(function () use ($project, $oldCreator, $newCreator) {
@@ -164,8 +165,8 @@ class Project extends Model
      */
     public static function startsWith($name, $columns = ['*'])
     {
-        $trashedStatus = Config::get('ec5Strings.project_status.trashed');
-        $archivedStatus = Config::get('ec5Strings.project_status.archived');
+        $trashedStatus = config('epicollect.strings.project_status.trashed');
+        $archivedStatus = config('epicollect.strings.project_status.archived');
 
         return static::select($columns)
             ->where('name', 'like', $name . '%')
