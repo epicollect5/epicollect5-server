@@ -119,7 +119,7 @@ return [
         'hh:mm',
         'mm:ss'
     ],
-    'datetime_format_php' => [
+    'datetime_formats_php' => [
         'dd/MM/YYYY' => 'd/m/Y',
         'MM/dd/YYYY' => 'm/d/Y',
         'YYYY/MM/dd' => 'Y/m/d',

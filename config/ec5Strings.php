@@ -198,7 +198,7 @@ return [
         'hh:mm' => 'H:i',
         'mm:ss' => 'i:s'
     ],
-    'datetime_format_php' => [
+    'datetime_formats_php' => [
         'dd/MM/YYYY' => 'd/m/Y',
         'MM/dd/YYYY' => 'm/d/Y',
         'YYYY/MM/dd' => 'Y/m/d',
@@ -209,6 +209,11 @@ return [
         'HH:mm' => 'H:i',
         'hh:mm' => 'H:i',
         'mm:ss' => 'i:s'
+    ],
+    'carbon_formats' => [
+        'ISO' => 'Y-m-d\TH:i:s.000\Z',
+        'fake_date' => 'Y-m-d\T00:00:00.000\Z',
+        'fake_time' => '1970-01-01\TH:i:s.000\Z'
     ],
     'project_categories' => [
         'general' => 'general',

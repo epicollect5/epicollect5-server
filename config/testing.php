@@ -147,5 +147,9 @@ return [
             'role',
             'id'
         ]
+    ],
+    'WEB_UPLOAD_CONTROLLER_PROJECT' => [
+        'name' => 'EC5 Web Upload Controller Project',
+        'slug' => 'ec5-web-upload-controller-project'
     ]
 ];

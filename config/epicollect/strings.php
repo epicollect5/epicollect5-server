@@ -77,6 +77,13 @@ return [
         'branch_ref' => 'ec5_branch_ref',
         'branch_uuid' => 'ec5_branch_uuid'
     ],
+    'mapping_ec5_keys' => [
+        'ec5_uuid' => 'ec5_uuid',
+        'ec5_parent_uuid' => 'ec5_parent_uuid',
+        'ec5_branch_owner_uuid' => 'ec5_branch_owner_uuid',
+        'ec5_branch_ref' => 'ec5_branch_ref',
+        'ec5_branch_uuid' => 'ec5_branch_uuid'
+    ],
     'jumps' => [
         'ALL' => 'ALL',
         'NO_ANSWER_GIVEN' => 'NO_ANSWER_GIVEN',
@@ -186,6 +193,20 @@ return [
         'filter_by' => 'filter_by'
     ],
     'download_data_entries_format_default' => 'csv',
+    'date_formats' => [
+        'dd/MM/YYYY' => 'dd/MM/YYYY',
+        'MM/dd/YYYY' => 'MM/dd/YYYY',
+        'YYYY/MM/dd' => 'YYYY/MM/dd',
+        'MM/YYYY' => 'MM/YYYY',
+        'dd/MM' => 'dd/MM',
+    ],
+    'time_formats' => [
+        'HH:mm:ss' => 'HH:mm:ss',
+        'hh:mm:ss' => 'hh:mm:ss',
+        'HH:mm' => 'HH:mm',
+        'hh:mm' => 'hh:mm',
+        'mm:ss' => 'mm:ss'
+    ],
     'datetime_format' => [
         'dd/MM/YYYY' => 'd/m/Y',
         'MM/dd/YYYY' => 'm/d/Y',
@@ -198,7 +219,7 @@ return [
         'hh:mm' => 'H:i',
         'mm:ss' => 'i:s'
     ],
-    'datetime_format_php' => [
+    'datetime_formats_php' => [
         'dd/MM/YYYY' => 'd/m/Y',
         'MM/dd/YYYY' => 'm/d/Y',
         'YYYY/MM/dd' => 'Y/m/d',
@@ -308,6 +329,10 @@ return [
         'photo' => 'photo',
         'audio' => 'audio',
         'video' => 'video'
+    ],
+    'media_file_extension' => [
+        'jpg' => 'jpg',
+        'mp4' => 'mp4'
     ],
     'database_tables' => ['users' => 'users',
         'projects' => 'projects',
