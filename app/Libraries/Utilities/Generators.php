@@ -44,4 +44,14 @@ class Generators
     {
         return $formRef . '_' . uniqid();
     }
+
+    public static function branchInputRef($inputRef): string
+    {
+        return $inputRef . '_' . uniqid();
+    }
+
+    public static function groupInputRef($inputRef): string
+    {
+        return self::branchInputRef($inputRef);
+    }
 }

@@ -19,8 +19,8 @@ class DateFormatConverter
 
     //passing in created_at (request) and created_at DB
     //{"request":"2020-10-21T13:08:22.398Z","db":"2020-10-21 13:08:22"}
-    public static function areTimestampsEqual($requestTimestamp, $dbTimestamp){
-
+    public static function areTimestampsEqual($requestTimestamp, $dbTimestamp): bool
+    {
         $requestDate = explode('T', $requestTimestamp)[0];
         $requestTime = explode('.', explode('T', $requestTimestamp)[1])[0];
         $dbDate = explode(' ', $dbTimestamp)[0];
