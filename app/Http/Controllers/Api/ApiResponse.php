@@ -103,11 +103,6 @@ class ApiResponse
 
     /**
      * Returns the JsonResponse.
-     *
-     * @param $httpStatusCode
-     * @param int $options
-     * @param array $additionalHeaders
-     * @return JsonResponse
      */
     public function toJsonResponse($httpStatusCode, $options = JSON_UNESCAPED_SLASHES, $additionalHeaders = [])
     {
@@ -191,13 +186,11 @@ class ApiResponse
 
 
                         //another ugly hack to get better error response (with parameters)
-                        //do not translate if "ec5_" is not in the $errorValue string
+                        //does not translate if "ec5_" is not in the $errorValue string
                         //as it was already translated
-//                        \Log::error(strpos($errorValue, 'ec5_'), ['$errorValue' => $errorValue]);
                         if (strpos($errorValue, 'ec5_') === false) {
                             $tempArray['title'] = $errorValue;
-                        }
-                        else {
+                        } else {
                             $tempArray['title'] = Lang::get('status_codes.' . $errorValue);
 
                         }

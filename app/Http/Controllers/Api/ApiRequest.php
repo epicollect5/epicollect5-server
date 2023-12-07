@@ -12,8 +12,10 @@ use Exception;
  * Class ApiRequest
  * @package ec5\Http\Controllers\Api
  *
- * This class was written by a junior developer with no clue, sorry for the mess
- * I am just patching stuff as I do not have the time to do a complete rewrite
+ * Please note that this class might not reflect the most optimal code practices.
+ * It was developed by a less experienced team member, and due to time constraints,
+ * I'm currently working on patching and improving specific sections rather than a complete rewrite.
+ * Apologies for any inconvenience this might cause.
  */
 class ApiRequest
 {
