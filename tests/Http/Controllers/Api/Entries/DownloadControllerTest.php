@@ -497,7 +497,6 @@ class DownloadControllerTest extends TestCase
         Storage::delete($filePath);
     }
 
-
     public function test_error_response_with_wrong_params()
     {
         //create user
@@ -557,8 +556,7 @@ class DownloadControllerTest extends TestCase
 
     }
 
-    public
-    function test_should_abort_if_timestamp_missing()
+    public function test_should_abort_if_timestamp_missing()
     {
         //create user
         $user = factory(User::class)->create();
@@ -613,8 +611,7 @@ class DownloadControllerTest extends TestCase
             );
     }
 
-    public
-    function test_should_abort_if_timestamp_malformed()
+    public function test_should_abort_if_timestamp_malformed()
     {
         //create user
         $user = factory(User::class)->create();
@@ -670,31 +667,6 @@ class DownloadControllerTest extends TestCase
 
         // Assert that the decoded JSON content matches the expected structure exactly
         $this->assertEquals($expectedContent, $jsonContent);
-    }
-
-    public
-    function test_upload_headers()
-    {
-        //todo
-
-        //todo use formbuilder store() to fill in the database tables
-        //so that project extra, mapping etc is all set
-        //by passing a real project definition with 300 inputs
-        //and branches and groups
-
-
-    }
-
-    public
-    function test_upload_template()
-    {
-        //todo
-    }
-
-    public
-    function test_subset()
-    {
-        //todo
     }
 
     private function assertZipContent($filePath, $extension, $filesCountForm, $filesCountBranch)

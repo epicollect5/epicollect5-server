@@ -14,7 +14,7 @@ class ArchiveProjectTest extends TestCase
 {
     use DatabaseTransactions;
 
-    public function it_archives_projects()
+    public function test_it_archives_projects()
     {
         $repeatCount = 100; // Number of times to repeat the test case
         // Create a Faker instance

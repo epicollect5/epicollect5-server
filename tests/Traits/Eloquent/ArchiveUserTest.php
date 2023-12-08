@@ -30,7 +30,7 @@ class ArchiveUserTest extends TestCase
             $this->assertTrue($result);
             //assert the user is archived
             $this->assertEquals(1, User::where('id', $user->id)
-                ->where('status', 'archived')
+                ->where('state', 'archived')
                 ->count());
 
             $this->assertEquals(0, User::where('email', $user->email)
