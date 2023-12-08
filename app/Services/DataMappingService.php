@@ -103,7 +103,7 @@ class DataMappingService
             $JSONEntry = json_decode($JSONEntryString, true);
             $JSONBranchCounts = json_decode($branchCountsString, true);
         } catch (Exception $e) {
-            return [];
+            return $output;
         }
 
         if (empty($JSONEntry)) {

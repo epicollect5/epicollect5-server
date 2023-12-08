@@ -4,19 +4,20 @@ namespace ec5\Http\Controllers\Api\Entries;
 
 use ec5\Http\Controllers\Api\ApiRequest;
 use ec5\Http\Controllers\Api\ApiResponse;
-
 use ec5\Http\Controllers\Api\Entries\View\EntrySearchControllerBase;
 use ec5\Http\Validation\Entries\Upload\RuleAnswers;
 use ec5\Http\Validation\Entries\Search\RuleQueryString;
-use ec5\Http\Validation\Entries\Download\RuleDownloadSubset as DownloadSubsetValidator;
+use ec5\Http\Validation\Entries\Download\RuleDownloadSubset;
 use ec5\Libraries\Utilities\Common;
+use ec5\Models\Eloquent\BranchEntry;
+use ec5\Models\Eloquent\Entry;
 use ec5\Repositories\QueryBuilder\Entry\Search\BranchEntryRepository;
 use ec5\Repositories\QueryBuilder\Entry\Search\EntryRepository;
-use ec5\Models\ProjectData\DataMappingHelper;
+use ec5\Services\DataMappingService;
 use Exception;
 use Illuminate\Http\Request;
+use Log;
 use ZipArchive;
-use Config;
 use Storage;
 use Cookie;
 use League\Csv\Writer;
@@ -25,7 +26,7 @@ use Ramsey\Uuid\Uuid;
 class DownloadSubsetController extends EntrySearchControllerBase
 {
     protected $allowedSearchKeys;
-    protected $dataMappingHelper;
+    protected $dataMappingService;
 
     public function __construct(
         Request               $request,
@@ -35,8 +36,7 @@ class DownloadSubsetController extends EntrySearchControllerBase
         BranchEntryRepository $branchEntryRepository,
         RuleQueryString       $ruleQueryString,
         RuleAnswers           $ruleAnswers,
-        DataMappingHelper     $dataMappingHelper
-
+        DataMappingService    $dataMappingService
     )
     {
         parent::__construct(
@@ -50,27 +50,27 @@ class DownloadSubsetController extends EntrySearchControllerBase
         );
 
         $this->allowedSearchKeys = array_keys(config('epicollect.strings.download_subset_entries'));
-        $this->dataMappingHelper = $dataMappingHelper;
+        $this->dataMappingService = $dataMappingService;
     }
 
-    public function subset(Request $request, DownloadSubsetValidator $validator)
+    public function subset(Request $request, RuleDownloadSubset $ruleDownloadSubset)
     {
         // Check the mapping is valid
         $projectMapping = $this->requestedProject->getProjectMapping();
-        $params = $this->getRequestParams($request, Config::get('ec5Limits.entries_table.per_page'));
+        $params = $this->getRequestParams($request, config('epicollect.limits.entries_table.per_page'));
 
         //Get raw query params, $this->getRequestParams is doing some filtering
         $rawParams = $request->all();
-        $cookieName = Config::get('epicollect.strings.cookies.download-entries');
+        $cookieName = config('epicollect.strings.cookies.download-entries');
 
         // Validate the options and query string
         if (!$this->validateParams($params)) {
             return $this->apiResponse->errorResponse(400, $this->validateErrors);
         }
 
-        $validator->validate($rawParams);
-        if ($validator->hasErrors()) {
-            return $this->apiResponse->errorResponse(400, $validator->errors());
+        $ruleDownloadSubset->validate($rawParams);
+        if ($ruleDownloadSubset->hasErrors()) {
+            return $this->apiResponse->errorResponse(400, $ruleDownloadSubset->errors());
         }
 
         $timestamp = $request->query($cookieName);
@@ -88,8 +88,8 @@ class DownloadSubsetController extends EntrySearchControllerBase
         if (!in_array($params['map_index'], $projectMapping->getMapIndexes())) {
             return $this->apiResponse->errorResponse(400, ['map_index: ' . $params['map_index'] => ['ec5_322']]);
         }
-        // Set the mapping
-        $this->dataMappingHelper->initialiseMapping(
+
+        $this->dataMappingService->init(
             $this->requestedProject,
             $params['format'],
             $params['branch_ref'] !== '' ? 'branch' : 'form',
@@ -99,14 +99,21 @@ class DownloadSubsetController extends EntrySearchControllerBase
         );
 
         if ($params['branch_ref'] !== '') {
-            //branch
-            $query = $this->getBranchEntriesQuery($params);
+            $columns = ['uuid', 'title', 'entry_data', 'user_id', 'uploaded_at'];
+            // Get the query for these branch entries
+            $query = BranchEntry::getBranchEntriesByBranchRef(
+                $this->requestedProject->getId(),
+                $params,
+                $columns
+            );
         } else {
             //hierarchy
-            $query = $this->getEntriesQuery($params);
+            $columns = ['title', 'entry_data', 'branch_counts', 'child_counts', 'user_id', 'uploaded_at'];
+            // Get the query for these entries
+            $query = Entry::getEntriesByForm($this->requestedProject->getId(), $params, $columns);
         }
 
-        $filepath = $this->writeFileCsvZipped($query, $filename);
+        $filepath = $this->createSubsetArchive($query, $filename);
 
         if (count($this->errors) > 0) {
             return $this->apiResponse->errorResponse(400, $this->errors);
@@ -117,28 +124,11 @@ class DownloadSubsetController extends EntrySearchControllerBase
         Cookie::queue($mediaCookie);
 
         return response()->download($filepath, $filename)->deleteFileAfterSend(true);
-        //        return response((string)$file, 200, [
-        //            'Content-Type' => 'text/csv',
-        //            'Content-Transfer-Encoding' => 'binary',
-        //            'Content-Disposition' => 'attachment'
-        //        ]);
     }
 
-    private function getEntriesQuery(array $params)
+    private function createSubsetArchive($query, $filename): string
     {
-        $columns = ['title', 'entry_data', 'branch_counts', 'child_counts', 'user_id', 'uploaded_at'];
-        return $this->runQuery($params, $columns);
-    }
-
-    private function getBranchEntriesQuery(array $params)
-    {
-        $columns = ['title', 'entry_data', 'user_id', 'uploaded_at'];
-        return $this->runQueryBranch($params, $columns);
-    }
-
-    private function writeFileCsvZipped($query, $filename)
-    {
-        $exportChunk = Config::get('epicollect.limits.entries_export_chunk');
+        $exportChunk = config('epicollect.limits.entries_export_chunk');
         $projectRef = $this->requestedProject->ref;
         //generate unique temp file name to cover concurrent users per project
         $csvFilename = Uuid::uuid4()->toString() . '.csv';
@@ -173,16 +163,16 @@ class DownloadSubsetController extends EntrySearchControllerBase
 
         try {
             //write headers
-            $csv->insertOne($this->dataMappingHelper->headerRowCsv());
+            $csv->insertOne($this->dataMappingService->getHeaderRowCSV());
             //chuck feature keeps memory usage low
             $query->chunk($exportChunk, function ($entries) use ($csv) {
                 foreach ($entries as $entry) {
-                    $csv->insertOne($this->dataMappingHelper->swapOutEntryCsv(
+                    $csv->insertOne($this->dataMappingService->getMappedEntryCSV(
                         $entry->entry_data,
-                        $entry->branch_counts ?? null,
                         $entry->user_id,
                         $entry->title,
-                        $entry->uploaded_at
+                        $entry->uploaded_at,
+                        $entry->branch_counts ?? null
                     ));
                 }
                 //   \LOG::error('Usage: ' . Common::formatBytes(memory_get_usage()));
@@ -190,6 +180,9 @@ class DownloadSubsetController extends EntrySearchControllerBase
             });
         } catch (Exception $e) {
             // Error writing to file
+            Log::error('createSubsetArchive failure', [
+                'exception' => $e->getMessage()
+            ]);
             $this->errors['entries-subset-csv'] = ['ec5_83'];
         }
 

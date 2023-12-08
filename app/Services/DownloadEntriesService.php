@@ -54,7 +54,6 @@ class DownloadEntriesService
             $this->dataMappingService->init($this->project, $format, config('epicollect.strings.form'), $form['ref'], null, $mapIndex);
 
             $columns = ['title', 'entry_data', 'branch_counts', 'child_counts', 'user_id', 'uploaded_at'];
-
             // Get the query for these entries
             $query = Entry::getEntriesByForm($this->project->getId(), $params, $columns);
             // Write to file
