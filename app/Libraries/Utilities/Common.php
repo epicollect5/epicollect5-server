@@ -73,5 +73,42 @@ class Common
         return round($number / pow(1000, ($i = floor(log($number, 1000)))), $round) . $unit[$i];
     }
 
-
+    public static function getTemplateHeaders($inputs, $selectedMapping, $mapTos): array
+    {
+        $bulkUploadables = array_keys(config('epicollect.strings.bulk_uploadables'));
+        $csvHeaders = $mapTos;
+        foreach ($inputs as $input) {
+            $inputRef = $input['ref'];
+            //only use question types bulk-uploadable
+            if (in_array($input['type'], $bulkUploadables)) {
+                //need to split location in its parts (no UTM for now)
+                $mapTo = $selectedMapping[$inputRef]['map_to'];
+                if ($input['type'] === config('epicollect.strings.inputs_type.location')) {
+                    $csvHeaders[] = 'lat_' . $mapTo;
+                    $csvHeaders[] = 'long_' . $mapTo;
+                    $csvHeaders[] = 'accuracy_' . $mapTo;
+                } else {
+                    //if the input is a group, flatten the group inputs
+                    if ($input['type'] === config('epicollect.strings.inputs_type.group')) {
+                        foreach ($input['group'] as $groupInput) {
+                            $groupInputRef = $groupInput['ref'];
+                            if (in_array($groupInput['type'], $bulkUploadables)) {
+                                $groupInputMapTo = $selectedMapping[$inputRef]['group'][$groupInputRef]['map_to'];
+                                if ($groupInput['type'] === config('epicollect.strings.inputs_type.location')) {
+                                    $csvHeaders[] = 'lat_' . $groupInputMapTo;
+                                    $csvHeaders[] = 'long_' . $groupInputMapTo;
+                                    $csvHeaders[] = 'accuracy_' . $groupInputMapTo;
+                                } else {
+                                    $csvHeaders[] = $groupInputMapTo;
+                                }
+                            }
+                        }
+                    } else {
+                        $csvHeaders[] = $mapTo;
+                    }
+                }
+            }
+        }
+        return $csvHeaders;
+    }
 }
