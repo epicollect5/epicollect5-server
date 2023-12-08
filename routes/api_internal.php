@@ -35,11 +35,11 @@ Route::group(['middleware' => ['project.permissions']], function () {
 
     Route::get('api/internal/download-entries-subset/{project_slug}', 'Api\Entries\DownloadSubsetController@subset');
 
-    // Entry upload template file
-    Route::get('api/internal/upload-template/{project_slug}', 'Api\Entries\DownloadController@uploadTemplate');
+    // Entry upload template (returns a csv file)
+    Route::get('api/internal/upload-template/{project_slug}', 'Api\Entries\DownloadTemplateController@sendTemplateFileCSV');
 
-    // Entry upload header (Json)
-    Route::get('api/internal/upload-headers/{project_slug}', 'Api\Entries\DownloadController@uploadHeaders');
+    // Entry upload header (returns a JSON response)
+    Route::get('api/internal/upload-headers/{project_slug}', 'Api\Entries\DownloadTemplateController@sendTemplateResponseJSON');
 
     // Entry Media downloads
     Route::get('api/internal/download-media/{project_slug}', 'Api\Entries\DownloadController@media');

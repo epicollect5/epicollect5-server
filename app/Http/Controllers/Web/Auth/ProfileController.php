@@ -229,7 +229,7 @@ class ProfileController extends Controller
                             $appleUserFirstName = $appleUser['name']['firstName'];
                             $appleUserLastName = $appleUser['name']['lastName'];
                         } catch (Exception $e) {
-                            Log::error('Apple user object exception', ['exception' => $e->getMessage()]);
+                            Log::info('Apple user object exception, existing user, use defaults', ['exception' => $e->getMessage()]);
                             //if no user name found, default to Apple User
                             $appleUserFirstName = config('ec5Strings.user_placeholder.apple_first_name');
                             $appleUserLastName = config('ec5Strings.user_placeholder.apple_last_name');

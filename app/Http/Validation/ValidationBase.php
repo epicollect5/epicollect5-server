@@ -14,9 +14,7 @@ abstract class ValidationBase
 {
 
     protected $rules = []; //overwrite in child
-
-    public $errors = []; //todo reset as protected
-
+    public $errors = [];
     protected $messages = [
         'required' => 'ec5_21',
         'confirmed' => 'ec5_40',
