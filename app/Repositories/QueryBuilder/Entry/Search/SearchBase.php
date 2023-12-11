@@ -30,7 +30,7 @@ abstract class SearchBase
      * @param $options
      * @return Builder
      */
-    protected function createFilterOptions(Builder $q, $options)
+    protected function createFilterOptions(Builder $q, $options): Builder
     {
         $inputRef = (empty($options['input_ref'])) ? null : $options['input_ref'];
         $search = (empty($options['search'])) ? null : $options['search'];
@@ -83,16 +83,15 @@ abstract class SearchBase
 
         //filter by title
         if (!empty($options['title'])) {
-            $q->where('title', 'LIKE', '%'.$options['title'].'%');
+            $q->where('title', 'LIKE', '%' . $options['title'] . '%');
         }
 
         // Sorting
         if (!empty($options['sort_by']) && !empty($options['sort_order'])) {
-            if($options['sort_by'] === 'title') {
+            if ($options['sort_by'] === 'title') {
                 //handle the natural sort on alphanumeric titles -> t.ly/tl5X
                 $q->orderByRaw('LENGTH(' . $options['sort_by'] . ') ' . $options['sort_order'] . ' , ' . $options['sort_by'] . ' ' . $options['sort_order']);
-            }
-            else {
+            } else {
                 $q->orderBy($options['sort_by'], $options['sort_order']);
             }
 
@@ -121,7 +120,6 @@ abstract class SearchBase
                     $query->where('user_id', '=', $options['user_id']);
                 }
             })
-
             ->select($columns);
 
         if (!empty($options['input_ref'])) {
@@ -139,20 +137,5 @@ abstract class SearchBase
      */
     abstract public function getEntry($projectId, $options, $columns = array('*'));
 
-    /**
-     * Search for entries based on answers
-     *
-     * @param $projectId
-     * @param $options
-     * @param array $columns
-     * @return Builder
-     */
-    public function searchAnswersForInputWithValue($projectId, $options, $columns = array('*'))
-    {
 
-        $q = DB::table($this->table)
-            ->select($columns);
-
-        return $this->sortAndFilterEntries($q, $options);
-    }
 }

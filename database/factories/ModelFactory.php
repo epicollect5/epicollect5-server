@@ -331,7 +331,7 @@ $factory->define(BranchEntry::class, function (Faker\Generator $faker, $params) 
     return [
         'project_id' => null,
         'uuid' => $faker->uuid(),
-        'owner_entry_id' => 0, //FK
+        'owner_entry_id' => null, //FK
         'owner_uuid' => '',
         'owner_input_ref' => '',
         'form_ref' => '',

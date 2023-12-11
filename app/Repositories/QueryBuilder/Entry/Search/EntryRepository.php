@@ -3,7 +3,6 @@
 namespace ec5\Repositories\QueryBuilder\Entry\Search;
 
 use DB;
-use ec5\Models\Projects\Project;
 use Config;
 use Illuminate\Database\Query\Builder;
 
@@ -103,30 +102,6 @@ class EntryRepository extends SearchBase
     }
 
     /**
-     * @param $projectId
-     * @param $options
-     * @param array $columns
-     * @return Builder
-     */
-    public function getEntriesForForm($projectId, $options, $columns = array('*'))
-    {
-
-        $q = DB::table(Config::get('ec5Tables.entries'))
-            ->where('project_id', '=', $projectId)
-            ->where('form_ref', '=', $options['form_ref'])
-            ->where(function ($query) use ($options) {
-                // If we have a user ID
-                if (!empty($options['user_id'])) {
-                    $query->where('user_id', '=', $options['user_id']);
-                }
-            })
-            ->select($columns);
-
-        return $this->sortAndFilterEntries($q, $options);
-
-    }
-
-    /**
      * Get all related (descendants) entry uuids for a single entry uuid
      *
      * @param $projectId
@@ -138,7 +113,7 @@ class EntryRepository extends SearchBase
     {
         // Get all child entries, chunking data (batches of 100)
         // NOTE: we need the same $uuids array, so pass by reference
-        DB::table(Config::get('ec5Tables.entries'))
+        DB::table(config('ec5Tables.entries'))
             ->where('project_id', '=', $projectId)
             ->where('parent_uuid', '=', $uuid)
             ->select('uuid')

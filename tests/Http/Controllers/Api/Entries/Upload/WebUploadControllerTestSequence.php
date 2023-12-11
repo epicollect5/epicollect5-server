@@ -12,7 +12,6 @@ use ec5\Models\Eloquent\User;
 use ec5\Models\Eloquent\UserProvider;
 use Exception;
 use Faker\Factory as Faker;
-use Illuminate\Support\Str;
 use Tests\Generators\EntryGenerator;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
@@ -766,5 +765,8 @@ class WebUploadControllerTestSequence extends TestCase
             Entry::where('project_id', $project->id)->delete();
             BranchEntry::where('project_id', $project->id)->delete();
         }
+
+        //also remove leftover users from other tests or failures
+        User::where('email', 'LIKE', '%@example.org%')->delete();
     }
 }

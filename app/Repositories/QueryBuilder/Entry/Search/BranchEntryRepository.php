@@ -3,13 +3,10 @@
 namespace ec5\Repositories\QueryBuilder\Entry\Search;
 
 use DB;
-use ec5\Models\Projects\Project;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Query\Builder;
 
 class BranchEntryRepository extends SearchBase
 {
-
     /**
      * BranchEntryRepository constructor.
      */
@@ -104,29 +101,6 @@ class BranchEntryRepository extends SearchBase
      * @param array $columns
      * @return Builder
      */
-    public function getBranchEntriesForBranchOwner($projectId, $options, $columns = array('*'))
-    {
-        $q = DB::table($this->table)
-            ->where('project_id', '=', $projectId)
-            ->where('form_ref', '=', $options['form_ref'])
-            ->where('owner_uuid', '=', $options['owner_uuid'])
-            ->where(function ($query) use ($options) {
-                // If we have a user ID
-                if (!empty($options['user_id'])) {
-                    $query->where('user_id', '=', $options['user_id']);
-                }
-            })
-            ->select($columns);
-
-        return $this->sortAndFilterEntries($q, $options);
-    }
-
-    /**
-     * @param $projectId
-     * @param $options
-     * @param array $columns
-     * @return Builder
-     */
     public function getBranchEntriesForBranchRef($projectId, $options, $columns = array('*'))
     {
         $q = DB::table($this->table)
@@ -151,7 +125,7 @@ class BranchEntryRepository extends SearchBase
      * @param array $entries
      * @return array
      */
-    public function getBranchEntries($projectId, array $entries) : array
+    public function getBranchEntries($projectId, array $entries): array
     {
         // Array of all the entry uuids we'll collect
         $uuids = [];
