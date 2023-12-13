@@ -71,7 +71,7 @@ trait Archiver
                 foreach ($rowsToMove as $row) {
                     //todo: check the id AUTO_INCREMENT...
                     $rowToArchive = $row->replicate();
-                    // make into array for mass assign. 
+                    // make into an array for mass assign.
                     $rowToArchive = $rowToArchive->toArray();
                     //create copy to projects_archive table
                     EntryArchive::create($rowToArchive);

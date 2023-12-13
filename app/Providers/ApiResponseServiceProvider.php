@@ -5,7 +5,7 @@ namespace ec5\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Response;
 
-class ResponseApiServiceProvider extends ServiceProvider
+class ApiResponseServiceProvider extends ServiceProvider
 {
     /**
      * Bootstrap the application services.

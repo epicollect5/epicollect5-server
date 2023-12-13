@@ -2,9 +2,9 @@
 
 namespace ec5\Http\Controllers\Web\Admin;
 
-use ec5\Http\Controllers\Controller;
-use ec5\Models\Eloquent\SystemStats;
 use ec5\Http\Controllers\Api\ApiResponse;
+use ec5\Http\Controllers\Controller;
+use ec5\Models\Eloquent\System\SystemStats;
 
 
 class AdminDataController extends Controller
@@ -60,7 +60,7 @@ class AdminDataController extends Controller
             "id" => uniqid(),
             "type" => 'entries-stats',
             "entries" => $this->dailySystemStats->getEntriesStats(),
-            "branch_entries" =>  $this->dailySystemStats->getBranchEntriesStats()
+            "branch_entries" => $this->dailySystemStats->getBranchEntriesStats()
         );
 
         if (sizeof($stats['entries']) === 0 && sizeOf($stats['branch_entries']) === 0) {

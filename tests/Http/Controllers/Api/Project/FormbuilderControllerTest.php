@@ -5,7 +5,7 @@ namespace Tests\Http\Controllers\Api\Project;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectRole;
-use ec5\Models\Eloquent\ProjectStat;
+use ec5\Models\Eloquent\ProjectStats;
 use ec5\Models\Eloquent\ProjectStructure;
 use ec5\Models\Eloquent\User;
 use Illuminate\Support\Arr;
@@ -57,7 +57,7 @@ class FormbuilderControllerTest extends TestCase
                 'project_definition' => json_encode($projectDefinition['data'])
             ]
         );
-        factory(ProjectStat::class)->create(
+        factory(ProjectStats::class)->create(
             [
                 'project_id' => $project->id,
                 'total_entries' => 0

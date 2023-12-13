@@ -8,7 +8,7 @@ use ec5\Http\Controllers\Api\ApiResponse;
 use ec5\Http\Controllers\Controller;
 use ec5\Mail\UserAccountDeletionConfirmation;
 use ec5\Models\Eloquent\ProjectFeatured;
-use ec5\Models\Eloquent\ProjectStat;
+use ec5\Models\Eloquent\ProjectStats;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
@@ -144,7 +144,7 @@ class AccountController extends Controller
                     throw new Exception('Project archive failed because is featured project');
                 }
 
-                $projectStat = ProjectStat::where('project_id', $projectId)->first();
+                $projectStat = ProjectStats::where('project_id', $projectId)->first();
                 if ($projectStat->total_entries === 0) {
                     //if the project has no entries, it can be removed
                     if (!$this->removeProject($projectId, $projectSlug)) {

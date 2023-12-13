@@ -3,7 +3,7 @@
 namespace Tests\Traits\Eloquent;
 
 use ec5\Models\Eloquent\OAuthClientProjects;
-use ec5\Models\Eloquent\ProjectStat;
+use ec5\Models\Eloquent\ProjectStats;
 use ec5\Models\Eloquent\ProjectStructure;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Config;
@@ -32,7 +32,7 @@ class RemoveProjectTest extends TestCase
             ]);
 
             //add fake stats
-            factory(ProjectStat::class)->create([
+            factory(ProjectStats::class)->create([
                 'project_id' => $project->id,
                 'total_entries' => 0
             ]);
@@ -59,7 +59,7 @@ class RemoveProjectTest extends TestCase
             $this->assertEquals(0, Project::where('id', $project->id)
                 ->count());
             //assert stats are dropped
-            $this->assertEquals(0, ProjectStat::where('project_id', $project->id)
+            $this->assertEquals(0, ProjectStats::where('project_id', $project->id)
                 ->count());
             //assert structure is dropped
             $this->assertEquals(0, ProjectStructure::where('project_id', $project->id)

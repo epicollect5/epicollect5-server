@@ -6,7 +6,7 @@ use ec5\Models\Eloquent\BranchEntry;
 use ec5\Models\Eloquent\Entry;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectRole;
-use ec5\Models\Eloquent\ProjectStat;
+use ec5\Models\Eloquent\ProjectStats;
 use ec5\Models\Eloquent\ProjectStructure;
 use ec5\Models\Eloquent\User;
 use Exception;
@@ -65,7 +65,7 @@ class WebUploadControllerTestMultiple extends TestCase
                 'project_definition' => json_encode($projectDefinition['data'], JSON_UNESCAPED_SLASHES)
             ]
         );
-        factory(ProjectStat::class)->create(
+        factory(ProjectStats::class)->create(
             [
                 'project_id' => $project->id,
                 'total_entries' => 0

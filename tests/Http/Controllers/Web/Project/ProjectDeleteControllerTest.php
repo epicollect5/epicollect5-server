@@ -9,7 +9,7 @@ use ec5\Models\Eloquent\OAuthClientProjects;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectFeatured;
 use ec5\Models\Eloquent\ProjectRole;
-use ec5\Models\Eloquent\ProjectStat;
+use ec5\Models\Eloquent\ProjectStats;
 use ec5\Models\Eloquent\ProjectStructure;
 use ec5\Models\Eloquent\UserProvider;
 use ec5\Models\Eloquent\User;
@@ -61,7 +61,7 @@ class ProjectDeleteControllerTest extends TestCase
 
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
-        factory(ProjectStat::class)->create(
+        factory(ProjectStats::class)->create(
             [
                 'project_id' => $project->id,
                 'total_entries' => 0
@@ -125,7 +125,7 @@ class ProjectDeleteControllerTest extends TestCase
 
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
-        factory(ProjectStat::class)->create(
+        factory(ProjectStats::class)->create(
             [
                 'project_id' => $project->id,
                 'total_entries' => $numOfEntries
@@ -203,7 +203,7 @@ class ProjectDeleteControllerTest extends TestCase
 
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
-        factory(ProjectStat::class)->create(
+        factory(ProjectStats::class)->create(
             [
                 'project_id' => $project->id,
                 'total_entries' => $numOfEntries
@@ -282,7 +282,7 @@ class ProjectDeleteControllerTest extends TestCase
 
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
-        factory(ProjectStat::class)->create(
+        factory(ProjectStats::class)->create(
             [
                 'project_id' => $project->id,
                 'total_entries' => $numOfEntries
@@ -319,7 +319,7 @@ class ProjectDeleteControllerTest extends TestCase
         $this->assertEquals($numOfBranchEntries * $numOfEntries, BranchEntry::where('project_id', $project->id)->count());
 
         //assert stats are NOT dropped
-        $this->assertEquals(1, ProjectStat::where('project_id', $project->id)
+        $this->assertEquals(1, ProjectStats::where('project_id', $project->id)
             ->count());
         //assert structure is NOT dropped
         $this->assertEquals(1, ProjectStructure::where('project_id', $project->id)
@@ -390,7 +390,7 @@ class ProjectDeleteControllerTest extends TestCase
 
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
-        factory(ProjectStat::class)->create(
+        factory(ProjectStats::class)->create(
             [
                 'project_id' => $project->id,
                 'total_entries' => 0
@@ -417,7 +417,7 @@ class ProjectDeleteControllerTest extends TestCase
         $this->assertEquals(0, Project::where('id', $project->id)
             ->count());
         //assert stats are dropped
-        $this->assertEquals(0, ProjectStat::where('project_id', $project->id)
+        $this->assertEquals(0, ProjectStats::where('project_id', $project->id)
             ->count());
         //assert structure is dropped
         $this->assertEquals(0, ProjectStructure::where('project_id', $project->id)
@@ -500,7 +500,7 @@ class ProjectDeleteControllerTest extends TestCase
         }
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
-        factory(ProjectStat::class)->create(
+        factory(ProjectStats::class)->create(
             ['project_id' => $project->id]
         );
         factory(ProjectStructure::class)->create(
@@ -585,7 +585,7 @@ class ProjectDeleteControllerTest extends TestCase
         }
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
-        factory(ProjectStat::class)->create(
+        factory(ProjectStats::class)->create(
             ['project_id' => $project->id]
         );
         factory(ProjectStructure::class)->create(
@@ -669,7 +669,7 @@ class ProjectDeleteControllerTest extends TestCase
         }
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
-        factory(ProjectStat::class)->create(
+        factory(ProjectStats::class)->create(
             ['project_id' => $project->id]
         );
         factory(ProjectStructure::class)->create(
@@ -753,7 +753,7 @@ class ProjectDeleteControllerTest extends TestCase
         }
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
-        factory(ProjectStat::class)->create(
+        factory(ProjectStats::class)->create(
             ['project_id' => $project->id]
         );
         factory(ProjectStructure::class)->create(
@@ -828,7 +828,7 @@ class ProjectDeleteControllerTest extends TestCase
         }
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
-        factory(ProjectStat::class)->create(
+        factory(ProjectStats::class)->create(
             ['project_id' => $project->id]
         );
         factory(ProjectStructure::class)->create(
@@ -902,7 +902,7 @@ class ProjectDeleteControllerTest extends TestCase
 
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
-        factory(ProjectStat::class)->create(
+        factory(ProjectStats::class)->create(
             ['project_id' => $project->id]
         );
         factory(ProjectStructure::class)->create(

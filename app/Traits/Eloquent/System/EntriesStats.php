@@ -1,13 +1,14 @@
 <?php
 
-namespace ec5\Traits\Eloquent;
+namespace ec5\Traits\Eloquent\System;
 
-use DB;
 use Carbon\Carbon;
+use DB;
+use Illuminate\Support\Collection;
 
 trait EntriesStats
 {
-    public function getEntriesTotal($table)
+    public function getEntriesTotal($table): Collection
     {
         return DB::table($table)
             ->leftJoin('projects', 'projects.id', '=', $table . '.project_id')
@@ -16,7 +17,7 @@ trait EntriesStats
             ->get();
     }
 
-    public function getEntriesYesterday($table)
+    public function getEntriesYesterday($table): Collection
     {
         return DB::table($table)->leftJoin('projects', 'projects.id', '=', $table . '.project_id')
             ->selectRaw('count(' . $table . '.id) as entries_total, projects.access')
@@ -25,7 +26,7 @@ trait EntriesStats
             ->get();
     }
 
-    public function getEntriesLastWeek($table)
+    public function getEntriesLastWeek($table): Collection
     {
         return DB::table($table)->leftJoin('projects', 'projects.id', '=', $table . '.project_id')
             ->selectRaw('count(' . $table . '.id) as entries_total, projects.access')
@@ -35,7 +36,7 @@ trait EntriesStats
             ->get();
     }
 
-    public function getEntriesLastMonth($table)
+    public function getEntriesLastMonth($table): Collection
     {
         return DB::table($table)->leftJoin('projects', 'projects.id', '=', $table . '.project_id')
             ->selectRaw('count(' . $table . '.id) as entries_total, projects.access')
@@ -44,7 +45,7 @@ trait EntriesStats
             ->get();
     }
 
-    public function getEntriesLastYear($table)
+    public function getEntriesLastYear($table): Collection
     {
         return DB::table($table)->leftJoin('projects', 'projects.id', '=', $table . '.project_id')
             ->selectRaw('count(' . $table . '.id) as entries_total, projects.access')
@@ -54,7 +55,7 @@ trait EntriesStats
             ->get();
     }
 
-    public function getEntriesByMonth($table)
+    public function getEntriesByMonth($table): Collection
     {
         //count in sql is faster than eloquent, use raw!
         return DB::table($table)
@@ -65,7 +66,7 @@ trait EntriesStats
             ->get();
     }
 
-    public function getEntriesByPlatform($table)
+    public function getEntriesByPlatform($table): Collection
     {
         return DB::table($table)
             ->selectRaw('count(' . $table . '.id) as total, platform')

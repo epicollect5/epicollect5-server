@@ -2,31 +2,21 @@
 
 namespace ec5\Http\Controllers\Web\Admin\Tools;
 
-use Carbon\CarbonInterval;
-use ec5\Http\Controllers\Controller;
-use ec5\Models\Eloquent\StorageStats;
-use ec5\Models\Eloquent\ProjectStructure;
-use ec5\Models\Eloquent\Project;
-use ec5\Models\Eloquent\Entry;
-use Symfony\Component\HttpFoundation\Request;
-use DB;
-use Storage;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Config;
+use Carbon\CarbonInterval;
+use DB;
+use ec5\Http\Controllers\Controller;
 use ec5\Libraries\DirectoryGenerator\DirectoryGenerator;
 use ec5\Libraries\Utilities\Common;
+use ec5\Models\Eloquent\System\StorageStats;
 use Exception;
-use ZipArchive;
-use Cookie;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\File;
 use League\Csv\Writer;
-use SplTempFileObject;
-use Auth;
-use Ramsey\Uuid\Uuid;
-use Log;
-use RecursiveIteratorIterator;
 use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use Storage;
+use ZipArchive;
 
 class SearchToolsController extends Controller
 {

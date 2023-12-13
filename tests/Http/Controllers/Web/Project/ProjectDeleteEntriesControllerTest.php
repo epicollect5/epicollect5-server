@@ -8,7 +8,7 @@ use ec5\Models\Eloquent\Entry;
 use ec5\Models\Eloquent\EntryArchive;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectRole;
-use ec5\Models\Eloquent\ProjectStat;
+use ec5\Models\Eloquent\ProjectStats;
 use ec5\Models\Eloquent\ProjectStructure;
 use ec5\Models\Eloquent\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -51,7 +51,7 @@ class ProjectDeleteEntriesControllerTest extends TestCase
 
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
-        factory(ProjectStat::class)->create(
+        factory(ProjectStats::class)->create(
             [
                 'project_id' => $project->id,
                 'total_entries' => 0
@@ -114,7 +114,7 @@ class ProjectDeleteEntriesControllerTest extends TestCase
 
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
-        factory(ProjectStat::class)->create(
+        factory(ProjectStats::class)->create(
             ['project_id' => $project->id]
         );
         factory(ProjectStructure::class)->create(
@@ -188,7 +188,7 @@ class ProjectDeleteEntriesControllerTest extends TestCase
 
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
-        factory(ProjectStat::class)->create(
+        factory(ProjectStats::class)->create(
             ['project_id' => $project->id]
         );
         factory(ProjectStructure::class)->create(
@@ -245,7 +245,7 @@ class ProjectDeleteEntriesControllerTest extends TestCase
 
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
-        factory(ProjectStat::class)->create(
+        factory(ProjectStats::class)->create(
             ['project_id' => $project->id]
         );
         factory(ProjectStructure::class)->create(
@@ -316,7 +316,7 @@ class ProjectDeleteEntriesControllerTest extends TestCase
 
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
-        factory(ProjectStat::class)->create(
+        factory(ProjectStats::class)->create(
             ['project_id' => $project->id]
         );
         factory(ProjectStructure::class)->create(
@@ -375,7 +375,7 @@ class ProjectDeleteEntriesControllerTest extends TestCase
 
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
-        factory(ProjectStat::class)->create(
+        factory(ProjectStats::class)->create(
             ['project_id' => $project->id]
         );
         factory(ProjectStructure::class)->create(
@@ -433,7 +433,7 @@ class ProjectDeleteEntriesControllerTest extends TestCase
 
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
-        factory(ProjectStat::class)->create(
+        factory(ProjectStats::class)->create(
             ['project_id' => $project->id]
         );
         factory(ProjectStructure::class)->create(
@@ -491,7 +491,7 @@ class ProjectDeleteEntriesControllerTest extends TestCase
 
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
-        factory(ProjectStat::class)->create(
+        factory(ProjectStats::class)->create(
             ['project_id' => $project->id]
         );
         factory(ProjectStructure::class)->create(
@@ -554,7 +554,7 @@ class ProjectDeleteEntriesControllerTest extends TestCase
 
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
-        factory(ProjectStat::class)->create(
+        factory(ProjectStats::class)->create(
             ['project_id' => $project->id]
         );
         factory(ProjectStructure::class)->create(
@@ -582,7 +582,7 @@ class ProjectDeleteEntriesControllerTest extends TestCase
         $response->assertSessionHas('message', 'ec5_122');
 
         //assert stats are updated
-        $this->assertEquals(0, ProjectStat::where('project_id', $project->id)->value('total_entries'));
+        $this->assertEquals(0, ProjectStats::where('project_id', $project->id)->value('total_entries'));
         $this->assertDatabaseHas('project_stats', [
             'project_id' => $project->id,
             'form_counts->0' => null, // This ensures the first element of the array is null, meaning the array is empty

@@ -181,7 +181,7 @@ return [
         ec5\Providers\AuthServiceProvider::class,
         ec5\Providers\EventServiceProvider::class,
         ec5\Providers\RouteServiceProvider::class,
-        ec5\Providers\ResponseApiServiceProvider::class,
+        ec5\Providers\ApiResponseServiceProvider::class,
 
         /**
          * Custom Service Providers

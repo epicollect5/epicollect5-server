@@ -7,7 +7,7 @@ use ec5\Models\Eloquent\Entry;
 use ec5\Models\Eloquent\OAuthClientProjects;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectRole;
-use ec5\Models\Eloquent\ProjectStat;
+use ec5\Models\Eloquent\ProjectStats;
 use ec5\Models\Eloquent\ProjectStructure;
 use ec5\Models\Eloquent\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -47,7 +47,7 @@ class ProjectLeaveControllerTest extends TestCase
 
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
-        factory(ProjectStat::class)->create(
+        factory(ProjectStats::class)->create(
             [
                 'project_id' => $project->id,
                 'total_entries' => 0
@@ -93,7 +93,7 @@ class ProjectLeaveControllerTest extends TestCase
         ]);
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
-        factory(ProjectStat::class)->create(
+        factory(ProjectStats::class)->create(
             [
                 'project_id' => $project->id,
                 'total_entries' => 0
@@ -124,7 +124,7 @@ class ProjectLeaveControllerTest extends TestCase
         ]);
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
-        factory(ProjectStat::class)->create(
+        factory(ProjectStats::class)->create(
             [
                 'project_id' => $project->id,
                 'total_entries' => 0
@@ -155,7 +155,7 @@ class ProjectLeaveControllerTest extends TestCase
         ]);
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
-        factory(ProjectStat::class)->create(
+        factory(ProjectStats::class)->create(
             [
                 'project_id' => $project->id,
                 'total_entries' => 0
@@ -186,7 +186,7 @@ class ProjectLeaveControllerTest extends TestCase
         ]);
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
-        factory(ProjectStat::class)->create(
+        factory(ProjectStats::class)->create(
             [
                 'project_id' => $project->id,
                 'total_entries' => 0
@@ -244,7 +244,7 @@ class ProjectLeaveControllerTest extends TestCase
 
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
-        factory(ProjectStat::class)->create(
+        factory(ProjectStats::class)->create(
             [
                 'project_id' => $project->id,
                 'total_entries' => $numOfEntries
@@ -312,7 +312,7 @@ class ProjectLeaveControllerTest extends TestCase
 
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
-        factory(ProjectStat::class)->create(
+        factory(ProjectStats::class)->create(
             [
                 'project_id' => $project->id,
                 'total_entries' => $numOfEntries
@@ -383,7 +383,7 @@ class ProjectLeaveControllerTest extends TestCase
         }
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
-        factory(ProjectStat::class)->create(
+        factory(ProjectStats::class)->create(
             ['project_id' => $project->id]
         );
         factory(ProjectStructure::class)->create(
@@ -452,7 +452,7 @@ class ProjectLeaveControllerTest extends TestCase
         }
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
-        factory(ProjectStat::class)->create(
+        factory(ProjectStats::class)->create(
             ['project_id' => $project->id]
         );
         factory(ProjectStructure::class)->create(
@@ -526,7 +526,7 @@ class ProjectLeaveControllerTest extends TestCase
         }
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
-        factory(ProjectStat::class)->create(
+        factory(ProjectStats::class)->create(
             ['project_id' => $project->id]
         );
         factory(ProjectStructure::class)->create(
@@ -600,7 +600,7 @@ class ProjectLeaveControllerTest extends TestCase
         }
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
-        factory(ProjectStat::class)->create(
+        factory(ProjectStats::class)->create(
             ['project_id' => $project->id]
         );
         factory(ProjectStructure::class)->create(
@@ -674,7 +674,7 @@ class ProjectLeaveControllerTest extends TestCase
         }
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
-        factory(ProjectStat::class)->create(
+        factory(ProjectStats::class)->create(
             ['project_id' => $project->id]
         );
         factory(ProjectStructure::class)->create(
@@ -743,7 +743,7 @@ class ProjectLeaveControllerTest extends TestCase
 
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
-        factory(ProjectStat::class)->create(
+        factory(ProjectStats::class)->create(
             ['project_id' => $project->id]
         );
         factory(ProjectStructure::class)->create(

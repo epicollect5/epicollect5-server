@@ -1,11 +1,10 @@
 <?php
 
-namespace ec5\Models\Eloquent;
+namespace ec5\Models\Eloquent\System;
 
 use Carbon\Carbon;
-use Config;
 use DB;
-use ec5\Traits\Eloquent\ProjectsStats;
+use ec5\Traits\Eloquent\System\ProjectsStats;
 use Illuminate\Database\Eloquent\Model;
 
 class ProjectsTotals extends Model

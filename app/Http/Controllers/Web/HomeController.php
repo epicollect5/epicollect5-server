@@ -3,11 +3,11 @@
 namespace ec5\Http\Controllers\Web;
 
 use ec5\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use ec5\Models\Eloquent\Project;
-use ec5\Models\Eloquent\SystemStats;
 use ec5\Libraries\Utilities\Common;
+use ec5\Models\Eloquent\Project;
+use ec5\Models\Eloquent\System\SystemStats;
 use Exception;
+use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {

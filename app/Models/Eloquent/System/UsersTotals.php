@@ -1,10 +1,10 @@
 <?php
 
-namespace ec5\Models\Eloquent;
+namespace ec5\Models\Eloquent\System;
 
-use Illuminate\Database\Eloquent\Model;
-use DB;
 use Carbon\Carbon;
+use DB;
+use Illuminate\Database\Eloquent\Model;
 
 class UsersTotals extends Model
 {

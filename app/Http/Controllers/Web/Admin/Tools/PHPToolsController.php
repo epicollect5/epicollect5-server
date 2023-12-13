@@ -2,23 +2,22 @@
 
 namespace ec5\Http\Controllers\Web\Admin\Tools;
 
-use ec5\Traits\Eloquent\ProjectsStats;
-use ec5\Libraries\Utilities\GpointConverter;
-use Config;
-use ec5\Models\Eloquent\Project;
-use ec5\Models\Projects\Project as LegacyProject;
-use Storage;
-use ec5\Models\Images\CreateProjectLogoAvatar;
-use ec5\Http\Controllers\ProjectControllerBase;
-use Illuminate\Http\Request;
-use ec5\Repositories\QueryBuilder\Project\UpdateRepository as UpdateRep;
-use Illuminate\Support\Facades\Mail;
 use Auth;
 use Carbon\Carbon;
+use Config;
+use ec5\Http\Controllers\ProjectControllerBase;
 use ec5\Libraries\Utilities\Generators;
+use ec5\Libraries\Utilities\GpointConverter;
 use ec5\Mail\DebugEmailSending;
-
+use ec5\Models\Eloquent\Project;
+use ec5\Models\Images\CreateProjectLogoAvatar;
+use ec5\Models\Projects\Project as LegacyProject;
+use ec5\Repositories\QueryBuilder\Project\UpdateRepository as UpdateRep;
+use ec5\Traits\Eloquent\System\ProjectsStats;
 use Exception;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use Storage;
 
 class PHPToolsController extends ProjectControllerBase
 {

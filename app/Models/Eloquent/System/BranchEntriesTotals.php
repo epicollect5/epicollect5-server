@@ -1,11 +1,11 @@
 <?php
 
-namespace ec5\Models\Eloquent;
+namespace ec5\Models\Eloquent\System;
 
+use ec5\Traits\Eloquent\System\EntriesStats;
 use Illuminate\Database\Eloquent\Model;
-use ec5\Traits\Eloquent\EntriesStats;
 
-class BranchEntryTotals extends Model
+class BranchEntriesTotals extends Model
 {
     use EntriesStats;
 

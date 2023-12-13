@@ -3,7 +3,7 @@
 namespace ec5\Http\Controllers\Web\Project;
 
 use ec5\Http\Controllers\ProjectControllerBase;
-use ec5\Models\Eloquent\ProjectStat;
+use ec5\Models\Eloquent\ProjectStats;
 use ec5\Models\Eloquent\Project;
 use Illuminate\Http\Request;
 use ec5\Repositories\QueryBuilder\Project\DeleteRepository as DeleteProject;
@@ -57,7 +57,7 @@ class ProjectDeleteController extends ProjectControllerBase
             return redirect('myprojects/' . $this->requestedProject->slug . '/delete')->withErrors(['ec5_221']);
         }
 
-        $projectStat = ProjectStat::where('project_id', $projectId)->first();
+        $projectStat = ProjectStats::where('project_id', $projectId)->first();
         if ($projectStat->total_entries === 0) {
             if ($this->hardDelete($projectId, $projectSlug)) {
                 return redirect('myprojects')->with('message', 'ec5_114');

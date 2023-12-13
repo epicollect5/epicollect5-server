@@ -11,7 +11,7 @@ use Log;
 
 class UserService
 {
-    public static function createGoogleUser($googleUser)
+    public static function createGoogleUser($googleUser): ?User
     {
         $provider = config('ec5Strings.providers.google');
         try {
@@ -45,7 +45,7 @@ class UserService
         return null;
     }
 
-    public static function createAppleUser($name, $lastName, $email)
+    public static function createAppleUser($name, $lastName, $email): ?User
     {
         //create new Apple user
         $provider = config('ec5Strings.providers.apple');
@@ -75,7 +75,7 @@ class UserService
         return null;
     }
 
-    public static function createPasswordlessUser($email)
+    public static function createPasswordlessUser($email): ?User
     {
         $provider = config('ec5Strings.providers.passwordless');
         try {
@@ -225,7 +225,7 @@ class UserService
         return $user;
     }
 
-    public static function findOrCreateLdapUser(LdapUser $ldapUser)
+    public static function findOrCreateLdapUser(LdapUser $ldapUser): ?User
     {
         // Check if we already have registered
         $user = User::where('email', '=', $ldapUser->getAuthIdentifier())->first();

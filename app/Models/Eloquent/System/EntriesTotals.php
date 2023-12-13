@@ -1,17 +1,15 @@
 <?php
 
-namespace ec5\Models\Eloquent;
+namespace ec5\Models\Eloquent\System;
 
-use DB;
-use Carbon\Carbon;
-use ec5\Traits\Eloquent\EntriesStats;
+use ec5\Traits\Eloquent\System\EntriesStats;
 use Illuminate\Database\Eloquent\Model;
 
 /**
  * Class Entry
  * @package ec5\Models\Eloquent
  */
-class EntryTotals extends Model
+class EntriesTotals extends Model
 {
     use EntriesStats;
 

@@ -12,7 +12,7 @@ use ec5\Models\Eloquent\EntryArchive;
 use ec5\Models\Eloquent\OAuthClientProjects;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectRole;
-use ec5\Models\Eloquent\ProjectStat;
+use ec5\Models\Eloquent\ProjectStats;
 use ec5\Models\Eloquent\ProjectStructure;
 use ec5\Models\Eloquent\UserProvider;
 use ec5\Models\Eloquent\User;
@@ -119,7 +119,7 @@ class AccountDeletionInternalTest extends TestCase
         $projectsCount = Project::count();
         $entriesCount = Entry::count();
         $branchEntriesCount = BranchEntry::count();
-        $projectStatsCount = ProjectStat::count();
+        $projectStatsCount = ProjectStats::count();
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
@@ -140,7 +140,7 @@ class AccountDeletionInternalTest extends TestCase
         ]);
 
         //add fake stats
-        factory(ProjectStat::class)->create([
+        factory(ProjectStats::class)->create([
             'project_id' => $project->id,
             'total_entries' => $numOfEntries
         ]);
@@ -240,7 +240,7 @@ class AccountDeletionInternalTest extends TestCase
         $this->assertEquals($projectsCount + 1, Project::count());
         $this->assertEquals($entriesCount + $numOfEntries, Entry::count());
         $this->assertEquals($branchEntriesCount + ($numOfEntries * $numOfBranchEntries), BranchEntry::count());
-        $this->assertEquals($projectStatsCount + 1, ProjectStat::count());
+        $this->assertEquals($projectStatsCount + 1, ProjectStats::count());
 
     }
 
@@ -252,7 +252,7 @@ class AccountDeletionInternalTest extends TestCase
         $projectsCount = Project::count();
         $entriesCount = Entry::count();
         $branchEntriesCount = BranchEntry::count();
-        $projectStatsCount = ProjectStat::count();
+        $projectStatsCount = ProjectStats::count();
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
@@ -271,7 +271,7 @@ class AccountDeletionInternalTest extends TestCase
         ]);
 
         //add fake stats
-        factory(ProjectStat::class)->create([
+        factory(ProjectStats::class)->create([
             'project_id' => $project->id,
             'total_entries' => 0
         ]);
@@ -312,7 +312,7 @@ class AccountDeletionInternalTest extends TestCase
             ->count());
 
         //assert stats are dropped
-        $this->assertEquals(0, ProjectStat::where('project_id', $project->id)
+        $this->assertEquals(0, ProjectStats::where('project_id', $project->id)
             ->count());
         //assert structure is dropped
         $this->assertEquals(0, ProjectStructure::where('project_id', $project->id)
@@ -339,7 +339,7 @@ class AccountDeletionInternalTest extends TestCase
         $this->assertEquals($projectsCount, Project::count());
         $this->assertEquals($entriesCount, Entry::count());
         $this->assertEquals($branchEntriesCount, BranchEntry::count());
-        $this->assertEquals($projectStatsCount, ProjectStat::count());
+        $this->assertEquals($projectStatsCount, ProjectStats::count());
     }
 
     public function test_account_deletion_performed_with_role_manager()
@@ -353,7 +353,7 @@ class AccountDeletionInternalTest extends TestCase
         $projectsCount = Project::count();
         $entriesCount = Entry::count();
         $branchEntriesCount = BranchEntry::count();
-        $projectStatsCount = ProjectStat::count();
+        $projectStatsCount = ProjectStats::count();
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
@@ -473,7 +473,7 @@ class AccountDeletionInternalTest extends TestCase
         $this->assertEquals($projectsCount + 1, Project::count());
         $this->assertEquals($entriesCount + $numOfEntries, Entry::count());
         $this->assertEquals($branchEntriesCount + ($numOfEntries * $numOfBranchEntries), BranchEntry::count());
-        $this->assertEquals($projectStatsCount, ProjectStat::count());
+        $this->assertEquals($projectStatsCount, ProjectStats::count());
     }
 
     public function test_account_deletion_performed_with_role_curator()
@@ -487,7 +487,7 @@ class AccountDeletionInternalTest extends TestCase
         $projectsCount = Project::count();
         $entriesCount = Entry::count();
         $branchEntriesCount = BranchEntry::count();
-        $projectStatsCount = ProjectStat::count();
+        $projectStatsCount = ProjectStats::count();
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
@@ -608,7 +608,7 @@ class AccountDeletionInternalTest extends TestCase
         $this->assertEquals($projectsCount + 1, Project::count());
         $this->assertEquals($entriesCount + $numOfEntries, Entry::count());
         $this->assertEquals($branchEntriesCount + ($numOfEntries * $numOfBranchEntries), BranchEntry::count());
-        $this->assertEquals($projectStatsCount, ProjectStat::count());
+        $this->assertEquals($projectStatsCount, ProjectStats::count());
     }
 
     public function test_account_deletion_performed_with_role_collector()
@@ -622,7 +622,7 @@ class AccountDeletionInternalTest extends TestCase
         $projectsCount = Project::count();
         $entriesCount = Entry::count();
         $branchEntriesCount = BranchEntry::count();
-        $projectStatsCount = ProjectStat::count();
+        $projectStatsCount = ProjectStats::count();
 
 
         //create a fake user and save it to DB
@@ -744,7 +744,7 @@ class AccountDeletionInternalTest extends TestCase
         $this->assertEquals($projectsCount + 1, Project::count());
         $this->assertEquals($entriesCount + $numOfEntries, Entry::count());
         $this->assertEquals($branchEntriesCount + ($numOfEntries * $numOfBranchEntries), BranchEntry::count());
-        $this->assertEquals($projectStatsCount, ProjectStat::count());
+        $this->assertEquals($projectStatsCount, ProjectStats::count());
     }
 
     public function test_account_deletion_performed_with_role_viewer()
@@ -758,7 +758,7 @@ class AccountDeletionInternalTest extends TestCase
         $projectsCount = Project::count();
         $entriesCount = Entry::count();
         $branchEntriesCount = BranchEntry::count();
-        $projectStatsCount = ProjectStat::count();
+        $projectStatsCount = ProjectStats::count();
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
@@ -880,7 +880,7 @@ class AccountDeletionInternalTest extends TestCase
         $this->assertEquals($projectsCount + 1, Project::count());
         $this->assertEquals($entriesCount + $numOfEntries, Entry::count());
         $this->assertEquals($branchEntriesCount + ($numOfEntries * $numOfBranchEntries), BranchEntry::count());
-        $this->assertEquals($projectStatsCount, ProjectStat::count());
+        $this->assertEquals($projectStatsCount, ProjectStats::count());
 
     }
 
@@ -903,7 +903,7 @@ class AccountDeletionInternalTest extends TestCase
         $projectsCount = Project::count();
         $entriesCount = Entry::count();
         $branchEntriesCount = BranchEntry::count();
-        $projectStatsCount = ProjectStat::count();
+        $projectStatsCount = ProjectStats::count();
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
@@ -937,11 +937,11 @@ class AccountDeletionInternalTest extends TestCase
         ]);
 
         //add fake stats
-        factory(ProjectStat::class)->create([
+        factory(ProjectStats::class)->create([
             'project_id' => $projectRoleCreatorOne->id,
             'total_entries' => $numOfEntries
         ]);
-        factory(ProjectStat::class)->create([
+        factory(ProjectStats::class)->create([
             'project_id' => $projectRoleCreatorTwo->id,
             'total_entries' => $numOfEntries
         ]);
@@ -950,7 +950,7 @@ class AccountDeletionInternalTest extends TestCase
         foreach ($otherRoles as $otherRole) {
             $project = factory(Project::class)->create(['created_by' => $anotherUser->id]);
             //add fake stats
-            factory(ProjectStat::class)->create([
+            factory(ProjectStats::class)->create([
                 'project_id' => $project->id,
                 'total_entries' => 0
             ]);
@@ -1243,7 +1243,7 @@ class AccountDeletionInternalTest extends TestCase
         $this->assertEquals($projectsCount + 6, Project::count());
         $this->assertEquals($entriesCount + (6 * $numOfEntries) + (3 * $numOfEntries), Entry::count());
         $this->assertEquals($branchEntriesCount + (6 * $numOfEntries * $numOfBranchEntries) + (3 * $numOfEntries * $numOfBranchEntries), BranchEntry::count());
-        $this->assertEquals($projectStatsCount + 6, ProjectStat::count());
+        $this->assertEquals($projectStatsCount + 6, ProjectStats::count());
 
     }
 
@@ -1263,7 +1263,7 @@ class AccountDeletionInternalTest extends TestCase
         $projectsCount = Project::count();
         $entriesCount = Entry::count();
         $branchEntriesCount = BranchEntry::count();
-        $projectStatsCount = ProjectStat::count();
+        $projectStatsCount = ProjectStats::count();
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
@@ -1297,11 +1297,11 @@ class AccountDeletionInternalTest extends TestCase
         ]);
 
         //add fake stats
-        factory(ProjectStat::class)->create([
+        factory(ProjectStats::class)->create([
             'project_id' => $projectRoleCreatorOne->id,
             'total_entries' => 0
         ]);
-        factory(ProjectStat::class)->create([
+        factory(ProjectStats::class)->create([
             'project_id' => $projectRoleCreatorTwo->id,
             'total_entries' => 0
         ]);
@@ -1389,6 +1389,6 @@ class AccountDeletionInternalTest extends TestCase
         $this->assertEquals($projectsCount + 4, Project::count());
         $this->assertEquals($entriesCount, Entry::count());
         $this->assertEquals($branchEntriesCount, BranchEntry::count());
-        $this->assertEquals($projectStatsCount, ProjectStat::count());
+        $this->assertEquals($projectStatsCount, ProjectStats::count());
     }
 }

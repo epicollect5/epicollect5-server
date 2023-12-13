@@ -10,12 +10,11 @@ trait JsonRequest
      * @param Request $request
      * @return bool
      */
-    public function isJsonRequest(Request $request)
+    public function isJsonRequest(Request $request): bool
     {
         if ($request->isJson() || $request->wantsJson() || preg_match('#^/api#', $request->getPathInfo())) {
             return true;
         }
-
         return false;
     }
 }

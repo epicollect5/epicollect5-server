@@ -30,7 +30,7 @@ class InternalRoutesTest extends TestCase
      */
     //imp: cannot be done due to custom Models created by previous devs.
     //imp: come back when refactoring
-    public function testPrivateInternalRoutes()
+    public function test_private_internal_routes()
     {
         // //fake user
         // $user = factory(User::class)->create();
@@ -75,7 +75,7 @@ class InternalRoutesTest extends TestCase
         // //     ->assertStatus(404);
     }
 
-    public function testPublicInternalRoutes()
+    public function test_public_internal_routes()
     {
         //create fake public project
         $project = factory(Project::class)->create([

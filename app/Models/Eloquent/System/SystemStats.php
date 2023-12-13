@@ -1,11 +1,10 @@
 <?php
 
-namespace ec5\Models\Eloquent;
+namespace ec5\Models\Eloquent\System;
 
-use Illuminate\Database\Eloquent\Model;
-
-use Log;
 use Exception;
+use Illuminate\Database\Eloquent\Model;
+use Log;
 
 class SystemStats extends Model
 {

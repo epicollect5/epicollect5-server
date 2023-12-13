@@ -2,7 +2,7 @@
 
 namespace ec5\Http\Controllers;
 
-use ec5\Models\Eloquent\ProjectStat;
+use ec5\Models\Eloquent\ProjectStats;
 use Illuminate\Http\Request;
 use ec5\Models\Eloquent\Project;
 use ec5\Repositories\QueryBuilder\Stats\Entry\StatsRepository;
@@ -52,7 +52,7 @@ class ProjectControllerBase extends Controller
         $descriptionSpecs = config('ec5Limits.project.description.min') . ' to ' . config('ec5Limits.project.description.max') . ' chars';
         $projectDefinitionPrettyPrint = json_encode($this->requestedProject->getProjectDefinition()->getData(), JSON_PRETTY_PRINT);
         $projectExtraPrettyPrint = json_encode($this->requestedProject->getProjectExtra()->getData(), JSON_PRETTY_PRINT);
-        $projectStats = ProjectStat::where('project_id', $this->requestedProject->getId())->first();
+        $projectStats = ProjectStats::where('project_id', $this->requestedProject->getId())->first();
         $creatorEmail = Project::creatorEmail($this->requestedProject->getId());
 
         $this->requestedProject->creatorEmail = $creatorEmail;

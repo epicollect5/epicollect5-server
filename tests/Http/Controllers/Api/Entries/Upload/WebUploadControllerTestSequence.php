@@ -6,7 +6,7 @@ use ec5\Models\Eloquent\BranchEntry;
 use ec5\Models\Eloquent\Entry;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectRole;
-use ec5\Models\Eloquent\ProjectStat;
+use ec5\Models\Eloquent\ProjectStats;
 use ec5\Models\Eloquent\ProjectStructure;
 use ec5\Models\Eloquent\User;
 use ec5\Models\Eloquent\UserProvider;
@@ -71,7 +71,7 @@ class WebUploadControllerTestSequence extends TestCase
                     'project_definition' => json_encode($projectDefinition['data'], JSON_UNESCAPED_SLASHES)
                 ]
             );
-            factory(ProjectStat::class)->create(
+            factory(ProjectStats::class)->create(
                 [
                     'project_id' => $project->id,
                     'total_entries' => 0
@@ -761,7 +761,7 @@ class WebUploadControllerTestSequence extends TestCase
             Project::where('id', $project->id)->delete();
             ProjectRole::where('project_id', $project->id)->delete();
             ProjectStructure::where('project_id', $project->id)->delete();
-            ProjectStat::where('project_id', $project->id)->delete();
+            ProjectStats::where('project_id', $project->id)->delete();
             Entry::where('project_id', $project->id)->delete();
             BranchEntry::where('project_id', $project->id)->delete();
         }

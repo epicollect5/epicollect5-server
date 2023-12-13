@@ -9,7 +9,7 @@ use ec5\Models\Eloquent\Entry;
 use ec5\Models\Eloquent\EntryArchive;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectRole;
-use ec5\Models\Eloquent\ProjectStat;
+use ec5\Models\Eloquent\ProjectStats;
 use ec5\Models\Eloquent\ProjectStructure;
 use ec5\Models\Eloquent\User;
 use Illuminate\Support\Facades\Storage;
@@ -179,8 +179,8 @@ class CreateMethodTest extends TestCase
         //check project stats
         $this->assertDatabaseHas('project_stats', ['project_id' => $projectId]);
         //check total_entries is 0
-        $this->assertEquals(1, ProjectStat::where('project_id', $projectId)->count());
-        $totalEntries = ProjectStat::where('project_id', $projectId)->first()->total_entries;
+        $this->assertEquals(1, ProjectStats::where('project_id', $projectId)->count());
+        $totalEntries = ProjectStats::where('project_id', $projectId)->first()->total_entries;
         $this->assertEquals(0, $totalEntries);
 
         //check roles (only creator must exist)
