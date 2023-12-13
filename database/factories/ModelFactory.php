@@ -11,6 +11,7 @@
 |
 */
 
+use Carbon\Carbon;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Models\Eloquent\User;
 use ec5\Models\Eloquent\Project;
@@ -22,7 +23,7 @@ use ec5\Models\Eloquent\UserPasswordlessApi;
 use ec5\Models\Eloquent\UserPasswordlessWeb;
 use ec5\Models\Eloquent\ProjectRole;
 use ec5\Models\Eloquent\ProjectFeatured;
-use ec5\Models\Eloquent\ProjectStat;
+use ec5\Models\Eloquent\ProjectStats;
 use Illuminate\Support\Str;
 use Webpatser\Uuid\Uuid;
 
@@ -323,7 +324,9 @@ $factory->define(Entry::class, function (Faker\Generator $faker, $params) {
         'entry_data' => json_encode([]),
         'geo_json_data' => json_encode([]),
         'child_counts' => 0,
-        'branch_counts' => json_encode([])
+        'branch_counts' => json_encode([]),
+        'created_at' => Carbon::now()->toDateTimeString(),
+        'uploaded_at' => Carbon::now()->addHours(2)->toDateTimeString()
     ];
 });
 
@@ -344,7 +347,7 @@ $factory->define(BranchEntry::class, function (Faker\Generator $faker, $params) 
     ];
 });
 
-$factory->define(ProjectStat::class, function (Faker\Generator $faker) {
+$factory->define(ProjectStats::class, function (Faker\Generator $faker) {
     return [
         'project_id' => null,
         'total_entries' => 0,

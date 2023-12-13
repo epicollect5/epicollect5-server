@@ -90,7 +90,6 @@ class StatsRepository extends Base
      */
     public function updateAdditionalStats(Project $project, EntryStructure $entryStructure)
     {
-        //
     }
 
     /**
@@ -277,7 +276,7 @@ class StatsRepository extends Base
      * @param $formRef
      * @return int
      */
-    public function getMaxCountForm($projectId, $formRef)
+    public function getMaxCountForm($projectId, $formRef): int
     {
         $counts = DB::table($this->entryTable)
             ->select(DB::raw("COUNT(*) as entries_counts"))

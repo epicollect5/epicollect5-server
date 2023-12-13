@@ -99,26 +99,25 @@ class ProjectDefinitionGenerator
                     $inputs[$inputIndex]['is_title'] = true;
                     $titlesLeft--;
                 }
-
-                $inputs[] = ProjectDefinitionGenerator::createIntegerInput($formRef);
-                $inputs[] = ProjectDefinitionGenerator::createDecimalInput($formRef);
-                $inputs[] = ProjectDefinitionGenerator::createTimeInput($formRef);
-                $inputs[] = ProjectDefinitionGenerator::createDateInput($formRef);
-                $inputs[] = ProjectDefinitionGenerator::createMultipleChoiceInput($formRef);
-                $inputs[] = ProjectDefinitionGenerator::createMultipleChoiceInput($formRef);
-                $inputs[] = ProjectDefinitionGenerator::createMultipleChoiceInput($formRef);
-                $inputs[] = ProjectDefinitionGenerator::createMultipleChoiceInput($formRef);
-                //make sure there is at least 1 location input
-                $inputs[] = ProjectDefinitionGenerator::createLocationInput($formRef);
-                //add some media inputs
-                $inputs[] = ProjectDefinitionGenerator::createMediaInput($formRef);
-                $inputs[] = ProjectDefinitionGenerator::createMediaInput($formRef);
-                $inputs[] = ProjectDefinitionGenerator::createMediaInput($formRef);
-                //add one group
-                $inputs[] = ProjectDefinitionGenerator::createGroup($formRef);
-                //add one branch
-                $inputs[] = ProjectDefinitionGenerator::createBranch($formRef);
             }
+            $inputs[] = ProjectDefinitionGenerator::createIntegerInput($formRef);
+            $inputs[] = ProjectDefinitionGenerator::createDecimalInput($formRef);
+            $inputs[] = ProjectDefinitionGenerator::createTimeInput($formRef);
+            $inputs[] = ProjectDefinitionGenerator::createDateInput($formRef);
+            $inputs[] = ProjectDefinitionGenerator::createMultipleChoiceInput($formRef);
+            $inputs[] = ProjectDefinitionGenerator::createMultipleChoiceInput($formRef);
+            $inputs[] = ProjectDefinitionGenerator::createMultipleChoiceInput($formRef);
+            $inputs[] = ProjectDefinitionGenerator::createMultipleChoiceInput($formRef);
+            //make sure there is at least 1 location input
+            $inputs[] = ProjectDefinitionGenerator::createLocationInput($formRef);
+            //add some media inputs
+            $inputs[] = ProjectDefinitionGenerator::createMediaInput($formRef);
+            $inputs[] = ProjectDefinitionGenerator::createMediaInput($formRef);
+            $inputs[] = ProjectDefinitionGenerator::createMediaInput($formRef);
+            //add one group
+            $inputs[] = ProjectDefinitionGenerator::createGroup($formRef);
+            //add one branch
+            $inputs[] = ProjectDefinitionGenerator::createBranch($formRef);
 
             //add 1 search input (limit is 5 across one project)
             $inputs[] = ProjectDefinitionGenerator::createSearchInput($formRef);

@@ -2,24 +2,17 @@
 
 namespace ec5\Http\Controllers\Api\Entries;
 
-use ec5\Http\Controllers\Api\ApiRequest;
 use ec5\Http\Controllers\Api\ApiResponse;
-use ec5\Http\Controllers\Api\ProjectApiControllerBase;
-
-use ec5\Http\Validation\Entries\Archive\RuleArchive as ArchiveValidator;
-
+use ec5\Http\Controllers\Controller;
+use ec5\Http\Validation\Entries\Archive\RuleArchive;
+use ec5\Models\Eloquent\BranchEntry;
+use ec5\Models\Eloquent\Entry;
 use ec5\Models\Entries\EntryStructure;
-use ec5\Repositories\QueryBuilder\Entry\Archive\EntryRepository as EntryArchive;
-use ec5\Repositories\QueryBuilder\Entry\Archive\BranchEntryRepository as BranchEntryArchive;
-use ec5\Repositories\QueryBuilder\Entry\Search\EntryRepository as EntrySearch;
-use ec5\Repositories\QueryBuilder\Entry\Search\BranchEntryRepository as BranchEntrySearch;
-use ec5\Repositories\QueryBuilder\Stats\Entry\EntryRepository as EntryStats;
-use ec5\Repositories\QueryBuilder\Stats\Entry\BranchEntryRepository as BranchEntryStats;
-use ec5\Repositories\QueryBuilder\Stats\Entry\StatsRepository;
+use Illuminate\Http\JsonResponse;
+use ec5\Traits\Requests\RequestAttributes;
+use ec5\Services\ArchiveEntryService;
 
-use Illuminate\Http\Request;
-
-class ArchiveController extends ProjectApiControllerBase
+class ArchiveController extends Controller
 {
     /*
     |--------------------------------------------------------------------------
@@ -30,182 +23,91 @@ class ArchiveController extends ProjectApiControllerBase
     |
     */
 
-    /**
-     * @var EntryArchive
-     */
-    protected $entryArchive;
+    use RequestAttributes;
 
-    /**
-     * @var BranchEntryArchive
-     */
-    protected $branchEntryArchive;
-
-    /**
-     * @var EntrySearch
-     */
-    protected $entrySearch;
-
-    /**
-     * @var BranchEntrySearch
-     */
-    protected $branchEntrySearch;
-
-    /**
-     * @var EntryStats
-     */
-    protected $entryStats;
-
-    /**
-     * @var BranchEntryStats
-     */
-    protected $branchEntryStats;
+    protected $apiResponse;
+    protected $errors = [];
+    protected $request;
 
     /**
      * ArchiveController constructor.
-     * @param Request $request
-     * @param ApiRequest $apiRequest
      * @param ApiResponse $apiResponse
-     * @param EntryArchive $entryArchive
-     * @param BranchEntryArchive $branchEntryArchive
-     * @param EntrySearch $entrySearch
-     * @param BranchEntrySearch $branchEntrySearch
-     * @param EntryStats $entryStats
-     * @param BranchEntryStats $branchEntryStats
      */
-    public function __construct(Request            $request,
-                                ApiRequest         $apiRequest,
-                                ApiResponse        $apiResponse,
-                                EntryArchive       $entryArchive,
-                                BranchEntryArchive $branchEntryArchive,
-                                EntrySearch        $entrySearch,
-                                BranchEntrySearch  $branchEntrySearch,
-                                EntryStats         $entryStats,
-                                BranchEntryStats   $branchEntryStats
+    public function __construct(
+        ApiResponse $apiResponse
     )
     {
-
-        $this->entryArchive = $entryArchive;
-        $this->branchEntryArchive = $branchEntryArchive;
-        $this->entrySearch = $entrySearch;
-        $this->branchEntrySearch = $branchEntrySearch;
-        $this->entryStats = $entryStats;
-        $this->branchEntryStats = $branchEntryStats;
-
-        parent::__construct($request, $apiRequest, $apiResponse);
-
+        $this->apiResponse = $apiResponse;
     }
 
     /**
      * Archive an entry
      *
-     * @param ArchiveValidator $archiveValidator
-     * @param EntryStructure $entryStructure
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
-    public function index(ArchiveValidator $archiveValidator, EntryStructure $entryStructure)
+    public function index(RuleArchive $ruleArchive, EntryStructure $entryStructure, ArchiveEntryService $archiveEntryService)
     {
-
-        // Check if the api request has any errors
-        if ($this->apiRequest->hasErrors()) {
-            $this->errors = $this->apiRequest->errors();
-            return $this->apiResponse->errorResponse(400, $this->errors);
-        }
-
-        $data = $this->apiRequest->getData();
         // Validate the $data
-        $archiveValidator->validate($data);
-        if ($archiveValidator->hasErrors()) {
-            return $this->apiResponse->errorResponse(400, $archiveValidator->errors());
+        $data = request()->get('data');
+        $ruleArchive->validate($data);
+        if ($ruleArchive->hasErrors()) {
+            return $this->apiResponse->errorResponse(400, $ruleArchive->errors());
         }
 
         // Load an entry structure
         $entryStructure->createStructure($data);
         // Add project id to entry structure
-        $entryStructure->setProjectId($this->requestedProject->getId());
+        $entryStructure->setProjectId($this->requestedProject()->getId());
 
         // Perform additional checks on the $entryStructure
-        $archiveValidator->additionalChecks($this->requestedProject, $entryStructure);
-        if ($archiveValidator->hasErrors()) {
-            return $this->apiResponse->errorResponse(400, $archiveValidator->errors());
+        $ruleArchive->additionalChecks($this->requestedProject(), $entryStructure);
+        if ($ruleArchive->hasErrors()) {
+            return $this->apiResponse->errorResponse(400, $ruleArchive->errors());
         }
 
         $isBranch = !empty($entryStructure->getOwnerInputRef());
 
         // Options to be able to retrieve the entry
-        $options = ['uuid' => $entryStructure->getEntryUuid(), 'form_ref' => $entryStructure->getFormRef()];
+        $params = ['uuid' => $entryStructure->getEntryUuid(), 'form_ref' => $entryStructure->getFormRef()];
 
         // Is it a branch entry?
         if ($isBranch) {
-            $archiveRepository = $this->branchEntryArchive;
-            $searchRepository = $this->branchEntrySearch;
-            $statsRepository = $this->branchEntryStats;
+            $entryModel = new BranchEntry();
             // Add the owner_entry_uuid to the options, so we know we've been supplied the right params
-            $options['owner_entry_uuid'] = $entryStructure->getOwnerUuid();
+            $params['owner_entry_uuid'] = $entryStructure->getOwnerUuid();
         } else {
             // Or a main entry?
-            $archiveRepository = $this->entryArchive;
-            $searchRepository = $this->entrySearch;
-            $statsRepository = $this->entryStats;
+            $entryModel = new Entry();
             // Add the parent_entry_uuid to the options, so we know we've been supplied the right params
-            $options['parent_entry_uuid'] = $entryStructure->getParentUuid();
+            $params['parent_entry_uuid'] = $entryStructure->getParentUuid();
         }
 
         // Check this $entryUuid belongs to this project
         // todo check that the entry exists given parent_uuid, branch_owner etc etc
-
-        $entry = $searchRepository->getEntry($this->requestedProject->getId(), $options)->first();
+        $entry = $entryModel->getEntry($this->requestedProject()->getId(), $params)->first();
         if (count($entry) == 0) {
             return $this->apiResponse->errorResponse(400, ['entry_archive' => ['ec5_239']]);
         }
 
         // Check if this user has permission to delete the entry
-        if (!$this->requestedProjectRole->canDeleteEntry($entry)) {
+        if (!$this->requestedProjectRole()->canDeleteEntry($entry)) {
             return $this->apiResponse->errorResponse(400, ['entry_archive' => ['ec5_91']]);
         }
 
         // Attempt to Archive
-        if (!$archiveRepository->archive($this->requestedProject->getId(), $entryStructure->getFormRef(), $entryStructure->getEntryUuid())) {
-            return $this->apiResponse->errorResponse(400, $archiveRepository->errors());
+        if ($isBranch) {
+            if (!$archiveEntryService->archiveBranchEntry(
+                $this->requestedProject(),
+                $entryStructure->getEntryUuid(),
+                $entryStructure,
+                false)) {
+                return $this->apiResponse->errorResponse(400, ['branch_entry_archive' => ['ec5_96']]);
+            }
+        } else {
+            if (!$archiveEntryService->archiveHierarchyEntry($this->requestedProject(), $entryStructure)) {
+                return $this->apiResponse->errorResponse(400, ['entry_archive' => ['ec5_96']]);
+            }
         }
-
-        // Update the entry stats
-        $this->updateStats($entryStructure, $statsRepository);
-
         return $this->apiResponse->successResponse('ec5_236');
-
     }
-
-    /**
-     *
-     */
-    public function destroy()
-    {
-        //
-    }
-
-    /**
-     *
-     */
-    public function restore()
-    {
-        //
-    }
-
-    /**
-     * @param EntryStructure $entryStructure
-     * @param $statsRepository
-     */
-    private function updateStats(EntryStructure $entryStructure, StatsRepository $statsRepository)
-    {
-        // Update the project stats counts
-        if (!$statsRepository->updateProjectEntryStats($this->requestedProject)) {
-            $this->errors['entry_archive'] = ['ec5_94'];
-        }
-
-        // Update additional stats
-        if (!$statsRepository->updateAdditionalStats($this->requestedProject, $entryStructure)) {
-            $this->errors['entry_archive'] = ['ec5_94'];
-        }
-    }
-
 }

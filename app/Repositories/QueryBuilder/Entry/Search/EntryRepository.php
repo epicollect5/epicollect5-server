@@ -25,7 +25,7 @@ class EntryRepository extends SearchBase
      * @param array $columns
      * @return Builder
      */
-    public function getEntry($projectId, $options, $columns = array('*'))
+    public function getEntry($projectId, $options, $columns = array('*')): Builder
     {
         $q = DB::table($this->table)->select($columns)
             ->where('project_id', '=', $projectId)
@@ -109,7 +109,7 @@ class EntryRepository extends SearchBase
      * @param $uuid
      * @return array
      */
-    public function getRelatedEntries($projectId, array $uuids, $uuid): array
+    public function getChildEntries($projectId, array $uuids, $uuid): array
     {
         // Get all child entries, chunking data (batches of 100)
         // NOTE: we need the same $uuids array, so pass by reference
@@ -120,15 +120,13 @@ class EntryRepository extends SearchBase
             ->orderBy('created_at', 'DESC')
             ->chunk(100, function ($data) use (&$uuids, $projectId) {
                 foreach ($data as $entry) {
-                    // Get next set of related child entries
-                    $uuids = $this->getRelatedEntries($projectId, $uuids, $entry->uuid);
+                    // Get the next level down of child entries
+                    $uuids = $this->getChildEntries($projectId, $uuids, $entry->uuid);
                     // Add uuid to array
                     $uuids[] = $entry->uuid;
                 }
-
             });
 
         return $uuids;
     }
-
 }

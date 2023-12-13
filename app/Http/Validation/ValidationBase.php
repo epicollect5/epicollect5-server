@@ -84,7 +84,7 @@ abstract class ValidationBase
      * @param bool $checkKeys
      * @return bool
      */
-    public function validate(&$data, $checkKeys = false)
+    public function validate(&$data, bool $checkKeys = false): bool
     {
         try {
             $this->errors = [];
@@ -92,40 +92,34 @@ abstract class ValidationBase
 
             // Check data is an array
             if (!is_array($this->data)) {
-                // todo return an error
-                $this->errors = array_merge($this->errors, []);
+                //return error as 'data' should be defined and array
+                $this->errors['validation'] = ['ec5_269'];
                 return false;
             }
 
             // Make sure only the keys we defined
             if ($checkKeys) {
-
                 // If we have any missing keys, error
                 $missingKeys = array_diff_key($this->rules, $this->data);
                 if (count($missingKeys) > 0) {
                     $this->errors['missing_keys'] = ['ec5_60'];
                     return false;
                 }
-
                 // If we have any extra keys, remove
                 $extraKeys = array_diff_key($this->data, $this->rules);
                 if (count($extraKeys) > 0) {
                     $this->data = array_intersect_key($this->data, $this->rules);
                 }
             }
-
             // Add our ec5 custom validation rules
             $this->addCustomRules();
-
             // make a new validator object
             $v = Validator::make($this->data, $this->rules, $this->messages);
-
             // check for failure
             if ($v->fails()) {
                 $this->errors = array_merge($this->errors, $v->errors()->getMessages());
                 return false;
             }
-
             // Validation pass
             return true;
         } catch (\Exception $e) {
