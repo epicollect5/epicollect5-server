@@ -61,13 +61,13 @@ class ProfileControllerTest extends TestCase
             [
                 'user_id' => $user->id,
                 'email' => $user->email,
-                'provider' => config('ec5Strings.providers.google')
+                'provider' => config('epicollect.strings.providers.google')
             ]);
 
         $this->assertDatabaseHas('users_providers', [
             'user_id' => $user->id,
             'email' => $user->email,
-            'provider' => config('ec5Strings.providers.google')
+            'provider' => config('epicollect.strings.providers.google')
         ]);
 
         $response = $this->actingAs($user)->post(Route('profile-disconnect-google'))->assertStatus(302);
@@ -77,7 +77,7 @@ class ProfileControllerTest extends TestCase
         $this->assertDatabaseMissing('users_providers', [
             'user_id' => $user->id,
             'email' => $user->email,
-            'provider' => config('ec5Strings.providers.google')
+            'provider' => config('epicollect.strings.providers.google')
         ]);
 
 
@@ -93,13 +93,13 @@ class ProfileControllerTest extends TestCase
             [
                 'user_id' => $user->id,
                 'email' => $user->email,
-                'provider' => config('ec5Strings.providers.apple')
+                'provider' => config('epicollect.strings.providers.apple')
             ]);
 
         $this->assertDatabaseHas('users_providers', [
             'user_id' => $user->id,
             'email' => $user->email,
-            'provider' => config('ec5Strings.providers.apple')
+            'provider' => config('epicollect.strings.providers.apple')
         ]);
 
         $response = $this->actingAs($user)->post(Route('profile-disconnect-apple'))->assertStatus(302);
@@ -109,7 +109,7 @@ class ProfileControllerTest extends TestCase
         $this->assertDatabaseMissing('users_providers', [
             'user_id' => $user->id,
             'email' => $user->email,
-            'provider' => config('ec5Strings.providers.apple')
+            'provider' => config('epicollect.strings.providers.apple')
         ]);
 
 

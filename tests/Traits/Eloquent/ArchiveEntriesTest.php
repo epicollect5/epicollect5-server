@@ -33,7 +33,7 @@ class ArchiveEntriesTest extends TestCase
             //echo "Archived". $numOfEntries . ' entries, ' . $numOfBranchEntries . ' branches, ' . ($i + 1) . ' run ' . "\n"; // Log iteration number to console
             // Create a test project (created with system admin ID)
             $project = factory(Project::class)->create([
-                'created_by' => User::where('email', Config::get('testing.SUPER_ADMIN_EMAIL'))->first()['id']
+                'created_by' => User::where('email', config('testing.SUPER_ADMIN_EMAIL'))->first()['id']
             ]);
             // Create some test entries...
             $entriesToArchive = factory(Entry::class, $numOfEntries)->create([
@@ -43,7 +43,7 @@ class ArchiveEntriesTest extends TestCase
             ]);
             // Create additional entries that should not be archived
             $additionalProject = factory(Project::class)->create([
-                'created_by' => User::where('email', Config::get('testing.SUPER_ADMIN_EMAIL'))->first()['id']
+                'created_by' => User::where('email', config('testing.SUPER_ADMIN_EMAIL'))->first()['id']
             ]);
             $additionalEntries = factory(Entry::class, $numOfAdditionalEntries)->create([
                 'project_id' => $additionalProject->id,
@@ -76,8 +76,9 @@ class ArchiveEntriesTest extends TestCase
             $this->assertEquals($numOfEntries * $numOfBranchEntries, BranchEntry::where('project_id', $project->id)->count());
 
             // Run the archiveEntries function
-            $result = $this->app->call('ec5\Http\Controllers\ProjectControllerBase@archiveEntries', [
+            $result = $this->app->call('ec5\Http\Controllers\Web\Project\ProjectDeleteEntriesController@archiveEntries', [
                 'projectId' => $project->id,
+                'projectRef' => $project->ref
             ]);
 
             // Assert that the function returned true

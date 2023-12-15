@@ -33,8 +33,8 @@ class ProfileController extends Controller
             $this->providers = UserProvider::where('email', $this->user->email)
                 ->pluck('provider')->toArray();
 
-            $this->appleProviderLabel = Config::get('ec5Strings.providers.apple');
-            $this->googleProviderLabel = Config::get('ec5Strings.providers.google');
+            $this->appleProviderLabel = config('epicollect.strings.providers.apple');
+            $this->googleProviderLabel = config('epicollect.strings.providers.google');
 
             return $next($request);
         });
@@ -81,7 +81,7 @@ class ProfileController extends Controller
 
         return Socialite::with('google')
             ->with(['prompt' => 'select_account']) //todo not sure we might remove this
-            ->redirectUrl(Config::get('auth.google.connect_redirect_uri'))
+            ->redirectUrl(config('auth.google.connect_redirect_uri'))
             ->redirect();
     }
 
@@ -114,7 +114,7 @@ class ProfileController extends Controller
         try {
             // Find the Google user
             $googleUser = Socialite::with('google')
-                ->redirectUrl(Config::get('auth.google.connect_redirect_uri'))
+                ->redirectUrl(config('auth.google.connect_redirect_uri'))
                 ->user();
 
             // If we found a Google user
@@ -125,13 +125,13 @@ class ProfileController extends Controller
                     $googleProvider = new UserProvider();
                     $googleProvider->email = $this->user->email;
                     $googleProvider->user_id = $this->user->id;
-                    $googleProvider->provider = Config::get('ec5Strings.providers.google');
+                    $googleProvider->provider = config('epicollect.strings.providers.google');
 
                     //if name is either Apple User or User, update user
-                    if ($this->user->name === config('ec5Strings.user_placeholder.apple_first_name')) {
+                    if ($this->user->name === config('epicollect.mappings.user_placeholder.apple_first_name')) {
                         $this->updateUserDetailsWithGoogle($googleUser);
                     }
-                    if ($this->user->name === config('ec5Strings.user_placeholder.passwordless_first_name')) {
+                    if ($this->user->name === config('epicollect.mappings.user_placeholder.passwordless_first_name')) {
                         $this->updateUserDetailsWithGoogle($googleUser);
                     }
 
@@ -182,7 +182,7 @@ class ProfileController extends Controller
             // Log::error('Apple request', ['$params' => $params]);
 
             //get public keys from Apple endpoint
-            $apple_jwk_keys = json_decode(file_get_contents(Config::get('auth.apple.public_keys_endpoint')), null, 512, JSON_OBJECT_AS_ARRAY);
+            $apple_jwk_keys = json_decode(file_get_contents(config('auth.apple.public_keys_endpoint')), null, 512, JSON_OBJECT_AS_ARRAY);
             $keys = array();
             foreach ($apple_jwk_keys->keys as $key) {
                 $keys[] = (array)$key;
@@ -219,7 +219,7 @@ class ProfileController extends Controller
                         $appleProvider = new UserProvider();
                         $appleProvider->email = $this->user->email;
                         $appleProvider->user_id = $this->user->id;
-                        $appleProvider->provider = Config::get('ec5Strings.providers.apple');
+                        $appleProvider->provider = config('epicollect.strings.providers.apple');
                         $appleProvider->save();
 
                         //let's see if we have a user object
@@ -231,18 +231,18 @@ class ProfileController extends Controller
                         } catch (Exception $e) {
                             Log::info('Apple user object exception, existing user, use defaults', ['exception' => $e->getMessage()]);
                             //if no user name found, default to Apple User
-                            $appleUserFirstName = config('ec5Strings.user_placeholder.apple_first_name');
-                            $appleUserLastName = config('ec5Strings.user_placeholder.apple_last_name');
+                            $appleUserFirstName = config('epicollect.mappings.user_placeholder.apple_first_name');
+                            $appleUserLastName = config('epicollect.mappings.user_placeholder.apple_last_name');
                         }
 
                         //if user object and the current user does not have a name, update
-                        if ($this->user->name === config('ec5Strings.user_placeholder.passwordless_first_name')) {
+                        if ($this->user->name === config('epicollect.mappings.user_placeholder.passwordless_first_name')) {
                             if ($appleUser) {
                                 $this->updateUserDetailsWithApple($appleUserFirstName, $appleUserLastName);
                             }
                         }
 
-                        if ($this->user->name === config('ec5Strings.user_placeholder.apple_first_name')) {
+                        if ($this->user->name === config('epicollect.mappings.user_placeholder.apple_first_name')) {
                             if ($appleUser) {
                                 $this->updateUserDetailsWithApple($appleUserFirstName, $appleUserLastName);
                             }
@@ -279,7 +279,7 @@ class ProfileController extends Controller
 
     private function isLocal($user)
     {
-        return $user->provider === Config::get('ec5Strings.providers.local');
+        return $user->provider === config('epicollect.strings.providers.local');
     }
 
     private function updateUserDetailsWithGoogle($googleUser)

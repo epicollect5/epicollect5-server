@@ -3,7 +3,6 @@
 namespace Tests\Http\Controllers\Api\Project;
 
 use ec5\Libraries\Utilities\Generators;
-use ec5\Models\Eloquent\OAuthClientProjects;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectRole;
 use ec5\Models\Eloquent\ProjectStats;
@@ -33,7 +32,7 @@ class ProjectControllerTest extends TestCase
     {
         //create fake user
         $user = factory(User::class)->create(
-            ['email' => Config::get('testing.UNIT_TEST_RANDOM_EMAIL')]
+            ['email' => config('testing.UNIT_TEST_RANDOM_EMAIL')]
         );
 
         //create a fake project (use ref for name and slug to avoid uniqueness issues)
@@ -71,7 +70,7 @@ class ProjectControllerTest extends TestCase
     {
         //create fake user
         $user = factory(User::class)->create(
-            ['email' => Config::get('testing.UNIT_TEST_RANDOM_EMAIL')]
+            ['email' => config('testing.UNIT_TEST_RANDOM_EMAIL')]
         );
 
         //create a fake project (use ref for name and slug to avoid uniqueness issues)
@@ -112,7 +111,7 @@ class ProjectControllerTest extends TestCase
     {
         //create fake user
         $user = factory(User::class)->create(
-            ['email' => Config::get('testing.UNIT_TEST_RANDOM_EMAIL')]
+            ['email' => config('testing.UNIT_TEST_RANDOM_EMAIL')]
         );
 
         //do not create a project
@@ -144,7 +143,7 @@ class ProjectControllerTest extends TestCase
     {
         //create fake user
         $user = factory(User::class)->create(
-            ['email' => Config::get('testing.UNIT_TEST_RANDOM_EMAIL')]
+            ['email' => config('testing.UNIT_TEST_RANDOM_EMAIL')]
         );
 
         //create a fake project (use ref for name and slug to avoid uniqueness issues)
@@ -191,7 +190,7 @@ class ProjectControllerTest extends TestCase
     {
         //create fake user
         $user = factory(User::class)->create(
-            ['email' => Config::get('testing.UNIT_TEST_RANDOM_EMAIL')]
+            ['email' => config('testing.UNIT_TEST_RANDOM_EMAIL')]
         );
 
         $numOfProjects = 20;
@@ -231,7 +230,7 @@ class ProjectControllerTest extends TestCase
     {
         //create fake user
         $user = factory(User::class)->create(
-            ['email' => Config::get('testing.UNIT_TEST_RANDOM_EMAIL')]
+            ['email' => config('testing.UNIT_TEST_RANDOM_EMAIL')]
         );
 
         $numOfProjects = 20;
@@ -260,7 +259,7 @@ class ProjectControllerTest extends TestCase
     {
         //create fake user
         $user = factory(User::class)->create(
-            ['email' => Config::get('testing.UNIT_TEST_RANDOM_EMAIL')]
+            ['email' => config('testing.UNIT_TEST_RANDOM_EMAIL')]
         );
 
         $numOfProjects = 20;
@@ -289,7 +288,7 @@ class ProjectControllerTest extends TestCase
     {
         //create fake user
         $user = factory(User::class)->create(
-            ['email' => Config::get('testing.UNIT_TEST_RANDOM_EMAIL')]
+            ['email' => config('testing.UNIT_TEST_RANDOM_EMAIL')]
         );
 
         //create a fake project (use ref for name and slug to avoid uniqueness issues)
@@ -316,7 +315,7 @@ class ProjectControllerTest extends TestCase
     {
         //create fake user
         $user = factory(User::class)->create(
-            ['email' => Config::get('testing.UNIT_TEST_RANDOM_EMAIL')]
+            ['email' => config('testing.UNIT_TEST_RANDOM_EMAIL')]
         );
 
         //create a fake project (use ref for name and slug to avoid uniqueness issues)
@@ -397,7 +396,7 @@ class ProjectControllerTest extends TestCase
         $projectRole = factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
-            'role' => config('ec5Strings.project_roles.creator')
+            'role' => config('epicollect.strings.project_roles.creator')
         ]);
 
         //add fake stats
@@ -444,7 +443,7 @@ class ProjectControllerTest extends TestCase
     {
         $projects = Project::inRandomOrder()->take(100)->get();
         //use superadmin account to be able to access any project
-        $superadmin = User::where('email', config('ec5Setup.super_admin_user.email'))->first();
+        $superadmin = User::where('email', config('epicollect.setup.super_admin_user.email'))->first();
 
         foreach ($projects as $project) {
             $response = $this->actingAs($superadmin)
@@ -469,7 +468,7 @@ class ProjectControllerTest extends TestCase
         $canBulkUploadStatuses = config('epicollect.strings.can_bulk_upload');
 
         $user = factory(User::class)->create(
-            ['email' => Config::get('testing.UNIT_TEST_RANDOM_EMAIL')]
+            ['email' => config('testing.UNIT_TEST_RANDOM_EMAIL')]
         );
         //create a fake project (use ref for name and slug to avoid uniqueness issues)
         $ref = Generators::projectRef();
@@ -484,7 +483,7 @@ class ProjectControllerTest extends TestCase
         $projectRole = factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
-            'role' => config('ec5Strings.project_roles.creator')
+            'role' => config('epicollect.strings.project_roles.creator')
         ]);
 
         //add fake stats

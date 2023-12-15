@@ -35,7 +35,7 @@ class AddUsersProvidersTable extends Migration
                 ->insert([
                     'user_id' => $user->id,
                     'email' => $user->email,
-                    'provider' => Config::get('ec5Strings.providers.google'),
+                    'provider' => config('epicollect.strings.providers.google'),
                 ]);
         }
 

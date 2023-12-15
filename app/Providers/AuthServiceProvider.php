@@ -22,7 +22,7 @@ class AuthServiceProvider extends ServiceProvider
     /**
      * Register any application authentication / authorization services.
      *
-     * @param  \Illuminate\Contracts\Auth\Access\Gate  $gate
+     * @param \Illuminate\Contracts\Auth\Access\Gate $gate
      * @return void
      */
     public function boot(GateContract $gate)
@@ -30,6 +30,6 @@ class AuthServiceProvider extends ServiceProvider
         $this->registerPolicies();
 
         // Set the expiry time for Passport access tokens
-        Passport::tokensExpireIn(Carbon::now()->addSeconds(Config::get('auth.passport.expire')));
+        Passport::tokensExpireIn(Carbon::now()->addSeconds(config('auth.passport.expire')));
     }
 }

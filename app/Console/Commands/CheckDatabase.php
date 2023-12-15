@@ -38,8 +38,8 @@ class CheckDatabase extends Command
         } catch (Exception $e) {
             $this->error('MYSQL is currently down!');
             Mail::raw('MYSQL is currently down!', function ($message) {
-                $message->from(Config::get('mail.from.address'), Config::get('mail.from.name'));
-                $message->to(Config::get('ec5Setup.system.email'));
+                $message->from(config('mail.from.address'), config('mail.from.name'));
+                $message->to(config('epicollect.setup.system.email'));
                 $message->subject('MYSQL is down...');
             });
         }

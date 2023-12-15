@@ -40,7 +40,7 @@ class BranchEntryCounter extends Model
         $branchCounts = $this->getEntryBranchCounts($project, $entryStructure->getProjectId(), $entryStructure->getFormRef(), $entryStructure->getOwnerUuid());
 
         // Update the owner entry
-        $entriesTable = config('epicollect.strings.database_tables.entries');
+        $entriesTable = config('epicollect.tables.entries');
         DB::table($entriesTable)
             ->where('project_id', '=', $entryStructure->getProjectId())
             ->where('uuid', '=', $entryStructure->getOwnerUuid())

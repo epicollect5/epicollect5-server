@@ -2,8 +2,6 @@
 
 namespace ec5\Http\Controllers\Web\Auth;
 
-use GuzzleHttp\Exception\GuzzleException;
-use GuzzleHttp\Client;
 use ec5\Models\Eloquent\UserVerify;
 use Illuminate\Http\Request;
 use ec5\Http\Controllers\Controller;
@@ -39,7 +37,7 @@ class SignUpController extends Controller
 
     public function store(Request $request, RuleSignup $validator, RuleRecaptcha $captchaValidator)
     {
-        $codeExpiresAt = Config::get('auth.account_code.expire');
+        $codeExpiresAt = config('auth.account_code.expire');
 
         //validate request parameters
         $inputs = $request->all();
@@ -58,7 +56,7 @@ class SignUpController extends Controller
             return redirect()->back()->withErrors($validator->errors());
         }
 
-        if (!App::environment('testing')) {
+        if (!(App::environment() === 'testing')) {
             //parse recaptcha response for any errors
             $recaptchaResponse = $inputs['g-recaptcha-response'];
             $recaptchaErrors = $this->getAnyRecaptchaErrors($recaptchaResponse);
@@ -71,10 +69,10 @@ class SignUpController extends Controller
 
         $user->name = trim($inputs['name']);
         $user->email = trim($inputs['email']);
-        $user->password = bcrypt($inputs['password'], ['rounds' => Config::get('auth.bcrypt_rounds')]);
-        $user->provider = Config::get('ec5Strings.providers.local');
-        $user->server_role = Config::get('ec5Strings.server_roles.basic');
-        $user->state = Config::get('ec5Strings.user_state.unverified');
+        $user->password = bcrypt($inputs['password'], ['rounds' => config('auth.bcrypt_rounds')]);
+        $user->provider = config('epicollect.strings.providers.local');
+        $user->server_role = config('epicollect.strings.server_roles.basic');
+        $user->state = config('epicollect.strings.user_state.unverified');
 
         try {
             DB::beginTransaction();
@@ -83,9 +81,9 @@ class SignUpController extends Controller
                 $credentials = array(
                     'email' => $user->email,
                     'password' => $inputs['password'],
-                    'state' => Config::get('ec5Strings.user_state.unverified'),
+                    'state' => config('epicollect.strings.user_state.unverified'),
                     // Only local providers allowed to login this way
-                    'provider' => Config::get('ec5Strings.providers.local')
+                    'provider' => config('epicollect.strings.providers.local')
                 );
 
                 // Attempt to log the user in
@@ -93,7 +91,7 @@ class SignUpController extends Controller
 
                     $user = Auth::getLastAttempted();
 
-                    if ($user->state !== Config::get('ec5Strings.user_state.unverified')) {
+                    if ($user->state !== config('epicollect.strings.user_state.unverified')) {
                         return view('auth.signup')->withErrors(['ec5_12']);
                     }
                     // Log unverified user in

@@ -21,7 +21,7 @@ class RuleSwitchUserRole extends ValidationBase
         $this->messages['in'] = 'ec5_98';
 
         // Allowed roles that can be added for a user (note: 'creator' is not a role that can be assigned after project creation)
-        $roles = Config::get('ec5Permissions.projects.roles.creator');
+        $roles = config('epicollect.permissions.projects.roles.creator');
         $this->rules['currentRole'] = 'required|in:' . implode($roles, ',');
         $this->rules['newRole'] = 'required|in:' . implode($roles, ',');
 
@@ -53,7 +53,7 @@ class RuleSwitchUserRole extends ValidationBase
         }
 
         // $currentActiveUser must have a valid role
-        if (!is_array(Config::get('ec5Permissions.projects.roles.' . $currentActiveUserRole))) {
+        if (!is_array(config('epicollect.permissions.projects.roles.' . $currentActiveUserRole))) {
             $this->errors['user'] = ['ec5_91'];
             return;
         }
@@ -62,7 +62,7 @@ class RuleSwitchUserRole extends ValidationBase
         //CREATOR can switch any role (aside from CREATOR)
         //MANAGER can switch curator and collector users only
         if ($userToSwitch) {
-            if (!in_array($userToSwitchNewRole, Config::get('ec5Permissions.projects.roles.' . $currentActiveUserRole))) {
+            if (!in_array($userToSwitchNewRole, config('epicollect.permissions.projects.roles.' . $currentActiveUserRole))) {
                 $this->errors['user'] = ['ec5_91'];
                 return;
             }
@@ -70,7 +70,7 @@ class RuleSwitchUserRole extends ValidationBase
             /**
              * if current user is a manager, he cannot switch another manager role
              */
-            if (!in_array($userToSwitchCurrentRole, Config::get('ec5Permissions.projects.roles.' . $currentActiveUserRole))) {
+            if (!in_array($userToSwitchCurrentRole, config('epicollect.permissions.projects.roles.' . $currentActiveUserRole))) {
                 $this->errors['user'] = ['ec5_91'];
                 return;
             }

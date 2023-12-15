@@ -7,7 +7,7 @@
                     <li>
                         <small><a href="https://www.pathogensurveillance.net/">&copy; {{ date('Y') }} Centre for
                                 Genomic Pathogen
-                                Surveillance</a>,&nbsp;v{{ Config::get('app.production_server_version') }}
+                                Surveillance</a>,&nbsp;v{{ config('app.production_server_version') }}
                         </small>
                     </li>
 

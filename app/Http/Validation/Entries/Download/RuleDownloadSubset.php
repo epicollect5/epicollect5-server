@@ -15,7 +15,7 @@ class RuleDownloadSubset extends ValidationBase
 
     public function __construct()
     {
-        $cookieName = config('epicollect.strings.cookies.download-entries');
+        $cookieName = config('epicollect.mappings.cookies.download-entries');
         $this->rules[$cookieName] = 'required';//this is the cookie name
     }
 

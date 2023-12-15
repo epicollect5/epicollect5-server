@@ -67,7 +67,7 @@ class ResetPasswordController extends Controller
         $user = Auth::user();
         //reset user password view (only if the user is a local one!)
         $userProvider = UserProvider::where('user_id', $user->id)
-            ->where('provider', config('ec5Strings.providers.local'))->first();
+            ->where('provider', config('epicollect.strings.providers.local'))->first();
 
         if ($userProvider === null) {
             Log::error('Error user not a local one', ['error' => 'Not a local user']);
@@ -100,14 +100,14 @@ class ResetPasswordController extends Controller
 
         //reset user password (only if the user is a local one!)
         $userProvider = UserProvider::where('user_id', $user->id)
-            ->where('provider', config('ec5Strings.providers.local'))->first();
+            ->where('provider', config('epicollect.strings.providers.local'))->first();
 
         if ($userProvider === null) {
             Log::error('Error user not a local one', ['error' => 'Not a local user']);
             return redirect()->route('home')->withErrors(['staff-reset' => ['ec5_366']]);
         }
 
-        $user->password = bcrypt($inputs['password'], ['rounds' => Config::get('auth.bcrypt_rounds')]);
+        $user->password = bcrypt($inputs['password'], ['rounds' => config('auth.bcrypt_rounds')]);
         try {
             DB::beginTransaction();
             $user->save();

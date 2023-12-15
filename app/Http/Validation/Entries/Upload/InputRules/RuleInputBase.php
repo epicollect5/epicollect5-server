@@ -50,8 +50,8 @@ class RuleInputBase extends ValidationBase
     {
         // Check the max length of this input answer has not been exceeded
         // If a limit exists for the input type
-        if (Config::get('ec5Limits.entry_answer_limits.' . $inputDetails['type']) !== null) {
-            $this->rules[$inputDetails['ref']][] = 'ec5_max_length:' . Config::get('ec5Limits.entry_answer_limits.' . $inputDetails['type']);
+        if (config('epicollect.limits.entry_answer_limits.' . $inputDetails['type']) !== null) {
+            $this->rules[$inputDetails['ref']][] = 'ec5_max_length:' . config('epicollect.limits.entry_answer_limits.' . $inputDetails['type']);
         }
 
     }

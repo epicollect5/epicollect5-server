@@ -11,7 +11,7 @@ class RuleCategories extends ValidationBase
 
     public function __construct()
     {
-        $this->rules['category'] = 'required|in:' . implode(',', Config::get('ec5Enums.project_categories'));
+        $this->rules['category'] = 'required|in:' . implode(',', array_keys(config('epicollect.strings.project_categories')));
     }
 
 

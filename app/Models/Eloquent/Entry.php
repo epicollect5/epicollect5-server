@@ -106,7 +106,7 @@ class Entry extends Model
     {
         // Get all child entries, chunking data (batches of 100)
         // NOTE: we need the same $uuids array, so pass by reference
-        DB::table(config('ec5Tables.entries'))
+        DB::table(config('epicollect.tables.entries'))
             ->where('project_id', '=', $projectId)
             ->where('parent_uuid', '=', $uuid)
             ->select('uuid')
@@ -125,7 +125,7 @@ class Entry extends Model
 
     public static function getEntriesByForm($projectId, $params, $columns = array('*')): \Illuminate\Database\Query\Builder
     {
-        $q = DB::table(config('epicollect.strings.database_tables.entries'))
+        $q = DB::table(config('epicollect.tables.entries'))
             ->where('project_id', '=', $projectId)
             ->where('form_ref', '=', $params['form_ref'])
             ->where(function ($query) use ($params) {

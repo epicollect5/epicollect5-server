@@ -12,7 +12,7 @@ trait AppleJWTHandler
 {
     public function parseIdentityToken($identityToken)
     {
-        $apple_jwk_keys = json_decode(file_get_contents(Config::get('auth.apple.public_keys_endpoint')), null, 512, JSON_OBJECT_AS_ARRAY);
+        $apple_jwk_keys = json_decode(file_get_contents(config('auth.apple.public_keys_endpoint')), null, 512, JSON_OBJECT_AS_ARRAY);
         $keys = array();
         foreach ($apple_jwk_keys->keys as $key) {
             $keys[] = (array)$key;

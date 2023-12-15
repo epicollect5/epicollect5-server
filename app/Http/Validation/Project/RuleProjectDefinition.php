@@ -232,7 +232,7 @@ class RuleProjectDefinition
         }
         // Create and add the project extra details
         $projectExtraDetails = [];
-        foreach (config('ec5ProjectStructures.project_extra.project.details') as $property => $value) {
+        foreach (config('epicollect.structures.project_extra.project.details') as $property => $value) {
             $projectExtraDetails[$property] = $data[$property] ?? '';
         }
         // Add the project details

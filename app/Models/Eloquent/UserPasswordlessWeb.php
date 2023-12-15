@@ -29,7 +29,7 @@ class UserPasswordlessWeb extends Model
     public function isValidToken($decodedSent)
     {
         //decode
-        $jwtConfig = Config::get('auth.jwt-passwordless');
+        $jwtConfig = config('auth.jwt-passwordless');
         $secretKey = $jwtConfig['secret_key'];
 
         try {
@@ -40,7 +40,7 @@ class UserPasswordlessWeb extends Model
         }
 
         //is the token uuid the same?
-        if ($decodedStored['jti'] ===  $decodedSent['jti']) {
+        if ($decodedStored['jti'] === $decodedSent['jti']) {
             //is the token timestamp still valid?
             if (Carbon::parse($this->attributes['expires_at'])->greaterThan(Carbon::now())) {
                 return true;

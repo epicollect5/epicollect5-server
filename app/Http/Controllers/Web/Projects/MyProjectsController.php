@@ -20,7 +20,7 @@ class MyProjectsController extends Controller
     public function show(Request $request)
     {
         $data = $request->all();
-        $perPage = Config::get('ec5Limits.projects_per_page');
+        $perPage = config('epicollect.limits.projects_per_page');
         // Set search/filter/filter option defaults
         $params['search'] = !empty($data['search']) ? $data['search'] : '';
         $params['filter_type'] = !empty($data['filter_type']) ? $data['filter_type'] : '';

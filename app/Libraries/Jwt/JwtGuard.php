@@ -247,7 +247,7 @@ class JwtGuard implements Guard
     /**
      * Validate a user's credentials.
      *
-     * @param  array $credentials
+     * @param array $credentials
      * @return bool
      */
     public function validate(array $credentials = [])
@@ -258,10 +258,10 @@ class JwtGuard implements Guard
     /**
      * Attempt to authenticate a user using the given credentials.
      *
-     * @param  array $credentials
-     * @param  bool $remember
-     * @param  bool $login
-     * @param  bool $setCookie
+     * @param array $credentials
+     * @param bool $remember
+     * @param bool $login
+     * @param bool $setCookie
      * @return bool
      */
     public function attempt(array $credentials = [], $remember = false, $login = true, $setCookie = false)
@@ -285,8 +285,8 @@ class JwtGuard implements Guard
     /**
      * Determine if the user matches the credentials.
      *
-     * @param  mixed $user
-     * @param  array $credentials
+     * @param mixed $user
+     * @param array $credentials
      * @return bool
      */
     protected function hasValidCredentials($user, $credentials)
@@ -297,7 +297,7 @@ class JwtGuard implements Guard
     /**
      * Log a user into the application.
      *
-     * @param  AuthenticatableContract $user
+     * @param AuthenticatableContract $user
      * @param $remember
      * @param $setCookie
      * @param $passwordless ->to bypass system wide jwt expiration for passwordless
@@ -313,7 +313,7 @@ class JwtGuard implements Guard
          */
         $isPasswordless = Route::currentRouteName() === 'passwordless-auth';
 
-        $jwtConfig = Config::get('auth.jwt');
+        $jwtConfig = config('auth.jwt');
 
         // Generate new api_token
         $token = $this->jwt->generateApiToken($user->id);
@@ -321,7 +321,7 @@ class JwtGuard implements Guard
         // Save api token to user
         $this->saveToken($user, $token);
 
-        if($isPasswordless) {
+        if ($isPasswordless) {
             /**
              * we need to send a jwt token to the user
              * bypassing the jwt driver because we want a token that expires in 24 hours
@@ -331,8 +331,7 @@ class JwtGuard implements Guard
              *
              */
             $this->jwtToken = $this->jwt->generatePasswordlessToken($token);
-        }
-        else {
+        } else {
             $this->jwtToken = $this->jwt->generateToken($token);
         }
 
@@ -403,7 +402,7 @@ class JwtGuard implements Guard
     /**
      * Set the current user.
      *
-     * @param  AuthenticatableContract $user
+     * @param AuthenticatableContract $user
      * @return void
      */
     public function setUser(AuthenticatableContract $user)
@@ -486,7 +485,7 @@ class JwtGuard implements Guard
     /**
      * Set the cookie creator instance used by the guard.
      *
-     * @param  \Illuminate\Contracts\Cookie\QueueingFactory $cookie
+     * @param \Illuminate\Contracts\Cookie\QueueingFactory $cookie
      * @return void
      */
     public function setCookieJar(CookieJar $cookie)
@@ -497,7 +496,7 @@ class JwtGuard implements Guard
     /**
      * Refresh the "remember me" token for the user.
      *
-     * @param  AuthenticatableContract $user
+     * @param AuthenticatableContract $user
      * @return void
      */
     protected function refreshRememberToken(AuthenticatableContract $user)
@@ -510,7 +509,7 @@ class JwtGuard implements Guard
     /**
      * Create a new "remember me" token for the user if one doesn't already exist.
      *
-     * @param  AuthenticatableContract $user
+     * @param AuthenticatableContract $user
      * @return void
      */
     protected function createRememberTokenIfDoesntExist(AuthenticatableContract $user)
@@ -523,7 +522,7 @@ class JwtGuard implements Guard
     /**
      * Queue the recaller cookie into the cookie jar.
      *
-     * @param  AuthenticatableContract $user
+     * @param AuthenticatableContract $user
      * @return void
      */
     protected function queueRecallerCookie(AuthenticatableContract $user)
@@ -536,7 +535,7 @@ class JwtGuard implements Guard
     /**
      * Create a "remember me" cookie for a given ID.
      *
-     * @param  string $value
+     * @param string $value
      * @return \Symfony\Component\HttpFoundation\Cookie
      */
     protected function createRecaller($value)

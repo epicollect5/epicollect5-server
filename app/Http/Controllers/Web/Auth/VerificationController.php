@@ -66,7 +66,7 @@ class VerificationController extends Controller
                 try {
                     DB::beginTransaction();
                     $userVerified = User::find($user->id);
-                    $userVerified->state = Config::get('ec5Strings.user_state.active');
+                    $userVerified->state = config('epicollect.strings.user_state.active');
                     $userVerified->save();
 
                     //remove code row from users_verify table
@@ -91,7 +91,7 @@ class VerificationController extends Controller
 
     public function resend()
     {
-        $codeExpiresAt = Config::get('auth.account_code.expire');
+        $codeExpiresAt = config('auth.account_code.expire');
 
         $user = Auth::user();
         $userVerify = UserVerify::where('user_id', $user->id)

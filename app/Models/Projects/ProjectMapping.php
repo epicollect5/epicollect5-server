@@ -137,7 +137,7 @@ class ProjectMapping extends ProjectModelBase
     {
 
         $map = [];
-        $excludedTypes = Config::get('ec5Enums.exclude_from_mapping');
+        $excludedTypes = array_keys(config('epicollect.strings.exclude_from_mapping'));
 
         foreach ($inputs as $index => $inputRef) {
             $inputData = $projectExtra->getInputData($inputRef);
@@ -256,7 +256,7 @@ class ProjectMapping extends ProjectModelBase
         $text = preg_replace('/[^A-Za-z0-9\_]/', '', $text);
 
         // Substring if too long
-        $text = substr(preg_replace('/\\s+/', '_', $text), 0, Config::get('ec5Limits.project_mappings.map_key_length'));
+        $text = substr(preg_replace('/\\s+/', '_', $text), 0, config('epicollect.limits.project_mappings.map_key_length'));
 
         return $text;
     }

@@ -13,13 +13,13 @@ class UserService
 {
     public static function createGoogleUser($googleUser): ?User
     {
-        $provider = config('ec5Strings.providers.google');
+        $provider = config('epicollect.strings.providers.google');
         try {
             DB::beginTransaction();
             $user = new User();
             $user->email = $googleUser->email;
-            $user->state = config('ec5Strings.user_state.active');
-            $user->server_role = config('ec5Strings.server_roles.basic');
+            $user->state = config('epicollect.strings.user_state.active');
+            $user->server_role = config('epicollect.strings.server_roles.basic');
             $user->name = $googleUser->user['given_name'] ?? '';
             $user->last_name = $googleUser->user['family_name'] ?? '';
             $user->avatar = $googleUser->avatar ?? '';
@@ -48,7 +48,7 @@ class UserService
     public static function createAppleUser($name, $lastName, $email): ?User
     {
         //create new Apple user
-        $provider = config('ec5Strings.providers.apple');
+        $provider = config('epicollect.strings.providers.apple');
         try {
             DB::beginTransaction();
             $user = new User();
@@ -56,8 +56,8 @@ class UserService
             $user->name = $name;
             $user->last_name = $lastName;
             $user->email = $email;
-            $user->server_role = config('ec5Strings.server_roles.basic');
-            $user->state = config('ec5Strings.user_state.active');
+            $user->server_role = config('epicollect.strings.server_roles.basic');
+            $user->state = config('epicollect.strings.user_state.active');
             $user->save();
 
             $userProvider = new UserProvider();
@@ -77,15 +77,15 @@ class UserService
 
     public static function createPasswordlessUser($email): ?User
     {
-        $provider = config('ec5Strings.providers.passwordless');
+        $provider = config('epicollect.strings.providers.passwordless');
         try {
             DB::beginTransaction();
             //create user
             $user = new User();
-            $user->name = config('ec5Strings.user_placeholder.passwordless_first_name');
+            $user->name = config('epicollect.mappings.user_placeholder.passwordless_first_name');
             $user->email = $email;
-            $user->server_role = config('ec5Strings.server_roles.basic');
-            $user->state = config('ec5Strings.user_state.active');
+            $user->server_role = config('epicollect.strings.server_roles.basic');
+            $user->state = config('epicollect.strings.user_state.active');
             $isUserSaved = $user->save();
 
             //add passwordless provider
@@ -110,14 +110,14 @@ class UserService
 
     public static function updateUnverifiedPasswordlessUser($user): bool
     {
-        $provider = config('ec5Strings.providers.passwordless');
+        $provider = config('epicollect.strings.providers.passwordless');
         try {
             DB::beginTransaction();
-            $user->state = config('ec5Strings.user_state.active');
+            $user->state = config('epicollect.strings.user_state.active');
             //update name if empty
             //happens when users are added to a project before they create an ec5 account
             if ($user->name === '') {
-                $user->name = config('ec5Strings.user_placeholder.passwordless_first_name');
+                $user->name = config('epicollect.mappings.user_placeholder.passwordless_first_name');
             }
             $isUserSaved = $user->save();
 
@@ -143,7 +143,7 @@ class UserService
 
     public static function updateGoogleUser($googleUser): bool
     {
-        $provider = config('ec5Strings.providers.google');
+        $provider = config('epicollect.strings.providers.google');
         try {
             DB::beginTransaction();
             $user = self::amendUserDetailsGoogle($googleUser);
@@ -184,13 +184,13 @@ class UserService
 
     public static function updateAppleUser($name, $lastName, $email, $needProvider): bool
     {
-        $provider = config('ec5Strings.providers.apple');
+        $provider = config('epicollect.strings.providers.apple');
         try {
             DB::beginTransaction();
             $user = User::where('email', $email)->first();
             $user->name = $name;
             $user->last_name = $lastName;
-            $user->state = config('ec5Strings.user_state.active');
+            $user->state = config('epicollect.strings.user_state.active');
             $isUserSaved = $user->save();
 
             if ($needProvider) {
@@ -221,7 +221,7 @@ class UserService
         $user->name = $googleUser->user['given_name'] ?? '';
         $user->last_name = $googleUser->user['family_name'] ?? '';
         $user->avatar = $googleUser->avatar ?? '';
-        $user->state = config('ec5Strings.user_state.active');
+        $user->state = config('epicollect.strings.user_state.active');
         return $user;
     }
 
@@ -234,9 +234,9 @@ class UserService
             // If not, create new
             $user = new User();
             $user->email = $ldapUser->getAuthIdentifier();
-            $user->provider = config('ec5Strings.providers.ldap');
-            $user->state = config('ec5Strings.user_state.active');
-            $user->server_role = config('ec5Strings.server_roles.basic');
+            $user->provider = config('epicollect.strings.providers.ldap');
+            $user->state = config('epicollect.strings.user_state.active');
+            $user->server_role = config('epicollect.strings.server_roles.basic');
             $user->save();
         }
 
@@ -252,8 +252,8 @@ class UserService
 
         //unverified but not local? This user was added to a project
         //before he/she had an account
-        if ($user->state === config('ec5Strings.user_state.unverified')) {
-            if ($user->provider === config('ec5Strings.providers.local')) {
+        if ($user->state === config('epicollect.strings.user_state.unverified')) {
+            if ($user->provider === config('epicollect.strings.providers.local')) {
                 //local and unverified -> just return the user for further verification
                 return $user;
             }
@@ -261,7 +261,7 @@ class UserService
             //unverified but not local, update user as active
             $user->name = $ldapUser->getName();
             $user->last_name = $ldapUser->getLastName();
-            $user->state = config('ec5Strings.user_state.active');
+            $user->state = config('epicollect.strings.user_state.active');
             $user->update();
 
             return $user;

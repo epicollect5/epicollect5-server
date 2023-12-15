@@ -192,7 +192,7 @@ class SearchSingleTest extends InputTest
 
     public function test_max_number_of_possible_answers()
     {
-        $limit = config('ec5Limits.possible_answers_search_limit');
+        $limit = config('epicollect.limits.possible_answers_search_limit');
         $this->inputDetails['possible_answers'] = [];
         $this->inputDetails['jumps'] = [];
 

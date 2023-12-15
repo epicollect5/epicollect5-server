@@ -18,8 +18,8 @@ class ProjectsStatsTest extends TestCase
      */
     public function test_projects_stats_api_response()
     {
-        $apiContentTypeHeaderKey = Config('ec5Api.responseContentTypeHeaderKey');
-        $apiContentTypeHeaderValue = Config('ec5Api.responseContentTypeHeaderValue');
+        $apiContentTypeHeaderKey = config('epicollect.setup.api.responseContentTypeHeaderKey');
+        $apiContentTypeHeaderValue = config('epicollect.setup.api.responseContentTypeHeaderValue');
 
         $this->json('GET', 'api/internal/admin/projects-stats')
             ->assertStatus(200)

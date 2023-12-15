@@ -16,9 +16,9 @@ trait ReCaptchaValidation
 
         $client = new Client(); //GuzzleHttp\Client
         $ruleRecaptcha = new RuleRecaptcha();
-        $response = $client->post(Config::get('ec5Setup.google_recaptcha.verify_endpoint'), [
+        $response = $client->post(config('epicollect.setup.google_recaptcha.verify_endpoint'), [
             'form_params' => [
-                'secret' => Config::get('ec5Setup.google_recaptcha.secret_key'),
+                'secret' => config('epicollect.setup.google_recaptcha.secret_key'),
                 'response' => $recaptchaResponse
             ]
         ]);

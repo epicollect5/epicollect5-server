@@ -18,7 +18,7 @@
             @foreach ($projects as $project)
                 <tr>
                     <td class="text-center"><img class="project-logo" width="32" height="32"
-                            src=" {{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_mobile_logo') }}" />
+                                                 src=" {{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_mobile_logo') }}"/>
                     </td>
                     <td>
                         <a title="{{ trans('site.view_project') }}" href="{{ url('project/' . $project->slug) }}">
@@ -47,9 +47,9 @@
                         <div class="btn-group">
                             <select class="form-control project-roles" data-project-id="{{ $project->project_id }}">
                                 <option value="">{{ trans('site.no_role') }}</option>
-                                @foreach (Config::get('ec5Enums.project_roles') as $role)
+                                @foreach (array_keys(config('epicollect.strings.project_roles')) as $role)
                                     <option value="{{ $role }}"
-                                        @if ($project->my_role == $role) selected @endif>
+                                            @if ($project->my_role == $role) selected @endif>
                                         {{ trans('site.project_roles.' . $role) }}
                                     </option>
                                 @endforeach
@@ -57,7 +57,7 @@
                         </div>
                     </td>
                     <td><a title="{{ trans('site.view_project_details') }}" class="btn btn-action btn-sm"
-                            href="{{ url('myprojects/' . $project->slug) }}">Details</a></td>
+                           href="{{ url('myprojects/' . $project->slug) }}">Details</a></td>
                 </tr>
             @endforeach
         </table>

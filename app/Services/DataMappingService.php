@@ -24,7 +24,7 @@ class DataMappingService
     public function __construct()
     {
         $this->mappingEC5Keys = config('epicollect.strings.mapping_ec5_keys');
-        $this->datetimeFormatsPHP = config('epicollect.strings.datetime_formats_php');
+        $this->datetimeFormatsPHP = config('epicollect.mappings.datetime_formats_php');
         // todo: this file is a candidate for refactor using a common interface and two concrete
         // todo: implementations for writing to file - csvFileWriter and jsonFileWriter
     }

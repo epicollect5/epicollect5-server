@@ -35,14 +35,14 @@ class AuthController extends Controller
     public function __construct()
     {
         // Determine which authentication methods are available
-        $this->authMethods = Config::get('auth.auth_methods');
+        $this->authMethods = config('auth.auth_methods');
 
         //set providers values
-        $this->appleProviderLabel = Config::get('ec5Strings.providers.apple');
-        $this->googleProviderLabel = Config::get('ec5Strings.providers.google');
-        $this->localProviderLabel = Config::get('ec5Strings.providers.local');
-        $this->ldapProviderlabel = Config::get('ec5Strings.providers.ldap');
-        $this->passwordlessProviderLabel = Config::get('ec5Strings.providers.passwordless');
+        $this->appleProviderLabel = config('epicollect.strings.providers.apple');
+        $this->googleProviderLabel = config('epicollect.strings.providers.google');
+        $this->localProviderLabel = config('epicollect.strings.providers.local');
+        $this->ldapProviderlabel = config('epicollect.strings.providers.ldap');
+        $this->passwordlessProviderLabel = config('epicollect.strings.providers.passwordless');
 
         // Always pass the authentication method variables to the login view
         View::composer('auth.login', function ($view) {
@@ -53,8 +53,8 @@ class AuthController extends Controller
             $view->with('colSize', $colSize);
         });
 
-        $this->isAuthApiLocalEnabled = Config::get('auth.auth_api_local_enabled');
-        $this->isAuthWebEnabled = Config::get('auth.auth_web_enabled');
+        $this->isAuthApiLocalEnabled = config('auth.auth_api_local_enabled');
+        $this->isAuthWebEnabled = config('auth.auth_web_enabled');
     }
 
     /**
@@ -78,7 +78,7 @@ class AuthController extends Controller
             session(['nonce' => csrf_token()]);
 
             return view('auth.login', [
-                'gcaptcha' => Config::get('ec5Setup.google_recaptcha.site_key')
+                'gcaptcha' => config('epicollect.setup.google_recaptcha.site_key')
             ]);
         }
         return redirect()->route('home');

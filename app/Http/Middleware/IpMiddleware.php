@@ -16,11 +16,11 @@ class IpMiddleware extends MiddlewareBase
      */
     public function handle($request, Closure $next)
     {
-        $ips = Config::get('auth.ip_whitelist');
+        $ips = config('auth.ip_whitelist');
 
         //localhost $request->ip() gives ::1, we filter only in production
         //for localhost testing, disable middleware as needed
-        if (Config::get('ec5Setup.ip_filtering_enabled')) {
+        if (config('epicollect.setup.ip_filtering_enabled')) {
             if (!in_array($request->ip(), $ips)) {
                 $errors = ['auth' => ['ec5_256']];
                 return $this->apiResponse->errorResponse(404, $errors);

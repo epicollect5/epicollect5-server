@@ -54,7 +54,7 @@ class RuleProjectDefinitionTest extends TestCase
             'logo_url' => 'path-to-file',
             'description' => 'A long description here',
             'entries_limits' => [],
-            'category' => Config::get('ec5Enums.search_projects_defaults.category'),
+            'category' => config('epicollect.strings.project_categories.general'),
             'forms' => []
         ];
     }
@@ -122,7 +122,7 @@ class RuleProjectDefinitionTest extends TestCase
             $this->projectDefinition
         );
 
-        $this->inputs_limit = config('ec5Limits.formlimits.inputs');
+        $this->inputs_limit = config('epicollect.limits.formlimits.inputs');
     }
 
     public function test_max_inputs_one_form()

@@ -24,7 +24,7 @@ class ProjectPermissionsViewerRole extends ProjectPermissionsBase
      */
     public function hasPermission()
     {
-        $viewerRole = Config::get('ec5Strings.project_roles.viewer');
+        $viewerRole = config('epicollect.strings.project_roles.viewer');
 
         // Only need to check for a user/role if the project is private
         if ($this->requestedProject->isPrivate()) {

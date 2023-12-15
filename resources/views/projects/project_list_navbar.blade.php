@@ -1,14 +1,15 @@
 <div class="row ">
-    <div class="btn-pref btn-group btn-group-justified btn-group-lg page-projects-list__nav" role="group" aria - label="...">
+    <div class="btn-pref btn-group btn-group-justified btn-group-lg page-projects-list__nav" role="group" aria -
+         label="...">
 
-        @foreach(Config::get('ec5Enums.project_categories') as $category)
+        @foreach(array_keys(config('epicollect.strings.project_categories')) as $category)
             <a href="{{ url('projects/' . $category) }}" class="btn-group text-center
-@if($category == $selectedCategory && Route::getCurrentRoute()->uri() !== Config::get('ec5Strings.search')) active
+@if($category == $selectedCategory && Route::getCurrentRoute()->uri() !== config('epicollect.strings.search')) active
                 @endif
                     " role="group"
             >
                 <div>
-                    <i class="fa fa-2x {{ Config::get('ec5Enums.project_categories_icons.' . $category) }}"
+                    <i class="fa fa-2x {{ config('epicollect.mappings.categories_icons.' . $category) }}"
                        aria-hidden="true">
 
                     </i>

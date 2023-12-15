@@ -36,7 +36,7 @@ class UserAccountActivationMail extends Mailable
      */
     public function build()
     {
-        return $this->from(Config::get('mail.from.address'), Config::get('mail.from.name'))
+        return $this->from(config('mail.from.address'), config('mail.from.name'))
             ->subject(trans('site.activate_your_account') . ' ' . $this->name)
             ->view('emails.user_registration');
     }

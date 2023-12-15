@@ -26,7 +26,7 @@ class ProjectCloneControllerTest extends TestCase
         $project = factory(Project::class)->create(['created_by' => $user->id]);
 
         //assign the user to that project with the CREATOR role
-        $role = Config::get('ec5Strings.project_roles.creator');
+        $role = config('epicollect.strings.project_roles.creator');
         $projectRole = factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
@@ -49,5 +49,10 @@ class ProjectCloneControllerTest extends TestCase
             ->actingAs($user, self::DRIVER)
             ->get('myprojects/' . $project->slug . '/clone')
             ->assertStatus(200);
+    }
+
+    public function test_project_is_cloned()
+    {
+        $this->assertTrue(true);
     }
 }

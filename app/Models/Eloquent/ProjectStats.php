@@ -44,7 +44,16 @@ class ProjectStats extends Model
         return $mostRecentTimestamp > 0 ? $mostRecentTimestamp : '';
     }
 
-    public function updateProjectStats($projectId): bool
+
+    /**
+     * Function to update the project stats for entries.
+     * Including counts for each form, total number of entries across all forms
+     * and counts for each branch for each form.
+     *
+     * @param int $projectId
+     * @return bool
+     */
+    public function updateProjectStats(int $projectId): bool
     {
         try {
             DB::beginTransaction();
@@ -62,10 +71,14 @@ class ProjectStats extends Model
         }
     }
 
+    /* Update the total entries and
+       form counts
+     *
+     */
     public function updateEntryCounters($projectId)
     {
         //find total entries per each form
-        $entriesTable = config('epicollect.strings.database_tables.entries');
+        $entriesTable = config('epicollect.tables.entries');
         $stats = DB::table($entriesTable)
             ->select(DB::raw("count(*) as total_entries, min(created_at) as first_entry_created, max(created_at) as last_entry_created, form_ref"))
             ->where('project_id', '=', $projectId)
@@ -99,9 +112,12 @@ class ProjectStats extends Model
             );
     }
 
+    /*
+     * Upodate the branch counts
+     */
     public function updateBranchEntryCounters($projectId)
     {
-        $branchEntriesTable = config('epicollect.strings.database_tables.branch_entries');
+        $branchEntriesTable = config('epicollect.tables.branch_entries');
         $stats = DB::table($branchEntriesTable)
             ->select(DB::raw("COUNT(*) as total_entries, min(created_at) as first_entry_created, max(created_at) as last_entry_created, owner_input_ref"))
             ->where('project_id', '=', $projectId)

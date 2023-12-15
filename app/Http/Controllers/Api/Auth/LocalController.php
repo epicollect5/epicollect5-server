@@ -45,7 +45,7 @@ class LocalController extends AuthController
             if (Auth::guard()->attempt([
                 'email' => $credentials['username'],
                 'password' => $credentials['password'],
-                'state' => Config::get('ec5Strings.user_state.active')
+                'state' => config('epicollect.strings.user_state.active')
             ])) {
                 // Log::info('Local Login successful: ' . $credentials['username']);
                 // Jwt

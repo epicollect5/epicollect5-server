@@ -45,7 +45,7 @@ class AccountDeletionExternalTest extends TestCase
     {
         //create fake user
         $user = factory(User::class)->create(
-            ['email' => Config::get('testing.UNIT_TEST_RANDOM_EMAIL')]
+            ['email' => config('testing.UNIT_TEST_RANDOM_EMAIL')]
         );
         $provider = factory(UserProvider::class)->create([
             'user_id' => $user->id,
@@ -81,7 +81,7 @@ class AccountDeletionExternalTest extends TestCase
 
     public function test_account_deletion_performed_with_role_creator_and_entries()
     {
-        $role = Config::get('ec5Strings.project_roles.creator');
+        $role = config('epicollect.strings.project_roles.creator');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
 
@@ -93,7 +93,7 @@ class AccountDeletionExternalTest extends TestCase
 
         //create fake user
         $user = factory(User::class)->create(
-            ['email' => Config::get('testing.UNIT_TEST_RANDOM_EMAIL')]
+            ['email' => config('testing.UNIT_TEST_RANDOM_EMAIL')]
         );
         $provider = factory(UserProvider::class)->create([
             'user_id' => $user->id,
@@ -214,7 +214,7 @@ class AccountDeletionExternalTest extends TestCase
 
     public function test_account_deletion_performed_with_role_creator_but_no_entries()
     {
-        $role = Config::get('ec5Strings.project_roles.creator');
+        $role = config('epicollect.strings.project_roles.creator');
         //get existing counts
         $projectsCount = Project::count();
         $entriesCount = Entry::count();
@@ -223,7 +223,7 @@ class AccountDeletionExternalTest extends TestCase
 
         //create fake user
         $user = factory(User::class)->create(
-            ['email' => Config::get('testing.UNIT_TEST_RANDOM_EMAIL')]
+            ['email' => config('testing.UNIT_TEST_RANDOM_EMAIL')]
         );
         $provider = factory(UserProvider::class)->create([
             'user_id' => $user->id,
@@ -325,7 +325,7 @@ class AccountDeletionExternalTest extends TestCase
     public function test_valid_request_role_manager()
     {
         //MANAGER
-        $role = Config::get('ec5Strings.project_roles.manager');
+        $role = config('epicollect.strings.project_roles.manager');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
         //get existing counts
@@ -464,7 +464,7 @@ class AccountDeletionExternalTest extends TestCase
     public function test_valid_request_role_curator()
     {
         //CURATOR
-        $role = Config::get('ec5Strings.project_roles.curator');
+        $role = config('epicollect.strings.project_roles.curator');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
         //get existing counts
@@ -601,7 +601,7 @@ class AccountDeletionExternalTest extends TestCase
     public function test_valid_request_role_collector()
     {
         //COLLECTOR
-        $role = Config::get('ec5Strings.project_roles.collector');
+        $role = config('epicollect.strings.project_roles.collector');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
 
@@ -739,7 +739,7 @@ class AccountDeletionExternalTest extends TestCase
     public function test_valid_request_role_viewer()
     {
         //VIEWER
-        $role = Config::get('ec5Strings.project_roles.viewer');
+        $role = config('epicollect.strings.project_roles.viewer');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
 
@@ -925,12 +925,12 @@ class AccountDeletionExternalTest extends TestCase
     public function test_account_deletion_performed_with_mixed_roles_and_entries()
     {
         //creator
-        $role = Config::get('ec5Strings.project_roles.creator');
+        $role = config('epicollect.strings.project_roles.creator');
         $otherRoles = [
-            Config::get('ec5Strings.project_roles.manager'),
-            Config::get('ec5Strings.project_roles.curator'),
-            Config::get('ec5Strings.project_roles.collector'),
-            Config::get('ec5Strings.project_roles.viewer')
+            config('epicollect.strings.project_roles.manager'),
+            config('epicollect.strings.project_roles.curator'),
+            config('epicollect.strings.project_roles.collector'),
+            config('epicollect.strings.project_roles.viewer')
         ];
         $projectsWithOtherRoles = [];
         $projectRefs = [];
@@ -1300,12 +1300,12 @@ class AccountDeletionExternalTest extends TestCase
     public function test_account_deletion_performed_with_mixed_roles_but_no_entries()
     {
         //creator
-        $role = Config::get('ec5Strings.project_roles.creator');
+        $role = config('epicollect.strings.project_roles.creator');
         $otherRoles = [
-            Config::get('ec5Strings.project_roles.manager'),
-            Config::get('ec5Strings.project_roles.curator'),
-            Config::get('ec5Strings.project_roles.collector'),
-            Config::get('ec5Strings.project_roles.viewer')
+            config('epicollect.strings.project_roles.manager'),
+            config('epicollect.strings.project_roles.curator'),
+            config('epicollect.strings.project_roles.collector'),
+            config('epicollect.strings.project_roles.viewer')
         ];
         $projectsWithOtherRoles = [];
 

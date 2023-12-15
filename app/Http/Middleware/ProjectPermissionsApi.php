@@ -79,7 +79,7 @@ class ProjectPermissionsApi extends ProjectPermissionsBase
     {
 
         // Only need to check for a permission if the project is private
-        if ($this->requestedProject->access == Config::get('ec5Strings.project_access.private')) {
+        if ($this->requestedProject->access == config('epicollect.strings.project_access.private')) {
 
             // Taken from TokenGuard:
             // First, we will convert the Symfony request to a PSR-7 implementation which will

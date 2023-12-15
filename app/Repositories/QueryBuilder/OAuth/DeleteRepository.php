@@ -30,12 +30,12 @@ class DeleteRepository extends Base
     {
         try {
             // Delete client
-            DB::table(Config::get('ec5Tables.oauth_clients'))
+            DB::table(config('epicollect.tables.oauth_clients'))
                 ->where('id', '=', $clientId)
                 ->delete();
 
             // Delete project client
-            DB::table(Config::get('ec5Tables.oauth_client_projects'))
+            DB::table(config('epicollect.tables.oauth_client_projects'))
                 ->where('client_id', '=', $clientId)
                 ->where('project_id', '=', $projectId)
                 ->delete();
@@ -57,7 +57,7 @@ class DeleteRepository extends Base
     {
         try {
             // Delete client access tokens
-            DB::table(Config::get('ec5Tables.oauth_access_tokens'))
+            DB::table(config('epicollect.tables.oauth_access_tokens'))
                 ->where('client_id', '=', $clientId)
                 ->delete();
 

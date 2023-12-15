@@ -31,7 +31,7 @@ class PasswordlessController extends AuthController
 
     public function sendCode(Request $request, RulePasswordlessApiCode $validator, ApiResponse $apiResponse)
     {
-        $tokenExpiresAt = Config::get('auth.passwordless_token_expire', 300);
+        $tokenExpiresAt = config('auth.passwordless_token_expire', 300);
 
         $inputs = $request->all();
 
@@ -56,7 +56,7 @@ class PasswordlessController extends AuthController
             //add token to db
             $userPasswordless = new UserPasswordlessApi();
             $userPasswordless->email = $email;
-            $userPasswordless->code = bcrypt($code, ['rounds' => Config::get('auth.bcrypt_rounds')]);
+            $userPasswordless->code = bcrypt($code, ['rounds' => config('auth.bcrypt_rounds')]);
             $userPasswordless->expires_at = Carbon::now()->addSeconds($tokenExpiresAt)->toDateTimeString();
             $userPasswordless->save();
 
@@ -101,7 +101,7 @@ class PasswordlessController extends AuthController
         }
 
         // Check this auth method is allowed
-        if (in_array('passwordless', Config::get('auth.auth_methods'))) {
+        if (in_array('passwordless', config('auth.auth_methods'))) {
 
             $code = $inputs['code'];
             $email = $inputs['email'];
@@ -138,12 +138,12 @@ class PasswordlessController extends AuthController
              * If the user is unverified, set is as verified and add the passwordless provider
              *
              */
-            if ($user->state === Config::get('ec5Strings.user_state.unverified')) {
-                $user->state = Config::get('ec5Strings.user_state.active');
+            if ($user->state === config('epicollect.strings.user_state.unverified')) {
+                $user->state = config('epicollect.strings.user_state.active');
                 //update name if empty
                 //happens when users are added to a project before they create an ec5 account
                 if ($user->name === '') {
-                    $user->name = config('ec5Strings.user_placeholder.passwordless_first_name');
+                    $user->name = config('epicollect.mappings.user_placeholder.passwordless_first_name');
                 }
                 $user->save();
 
@@ -151,7 +151,7 @@ class PasswordlessController extends AuthController
                 $userProvider = new UserProvider();
                 $userProvider->email = $user->email;
                 $userProvider->user_id = $user->id;
-                $userProvider->provider = Config::get('ec5Strings.providers.passwordless');
+                $userProvider->provider = config('epicollect.strings.providers.passwordless');
                 $userProvider->save();
             }
 
@@ -167,7 +167,7 @@ class PasswordlessController extends AuthController
             /**
              * User was found and active, does this user have a passwordless provider?
              */
-            if ($user->state === Config::get('ec5Strings.user_state.active')) {
+            if ($user->state === config('epicollect.strings.user_state.active')) {
 
                 $userProvider = UserProvider::where('email', $email)->where('provider', $this->passwordlessProviderLabel)->first();
 
@@ -182,7 +182,7 @@ class PasswordlessController extends AuthController
                     $userProvider = new UserProvider();
                     $userProvider->email = $email;
                     $userProvider->user_id = $user->id;
-                    $userProvider->provider = Config::get('ec5Strings.providers.passwordless');
+                    $userProvider->provider = config('epicollect.strings.providers.passwordless');
                     $userProvider->save();
                 }
             }

@@ -23,7 +23,7 @@ class RuleAddUser extends ValidationBase
      */
     public function additionalChecks($email)
     {
-        $providerLocal = config('ec5Strings.providers.local');
+        $providerLocal = config('epicollect.strings.providers.local');
 
         //email and local provider must be unique 
         if (UserProvider::where('email', $email)->where('provider', $providerLocal)->first()) {

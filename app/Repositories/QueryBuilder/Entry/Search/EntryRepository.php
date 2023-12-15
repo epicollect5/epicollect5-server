@@ -113,7 +113,7 @@ class EntryRepository extends SearchBase
     {
         // Get all child entries, chunking data (batches of 100)
         // NOTE: we need the same $uuids array, so pass by reference
-        DB::table(config('ec5Tables.entries'))
+        DB::table(config('epicollect.tables.entries'))
             ->where('project_id', '=', $projectId)
             ->where('parent_uuid', '=', $uuid)
             ->select('uuid')

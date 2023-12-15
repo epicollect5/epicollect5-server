@@ -62,13 +62,13 @@ class ImageToolsController extends Controller
                 list($width, $height) = getimagesize($fileSourcePath);
 
                 // Default dimensions to landscape
-                $dimensions = Config::get('ec5Media.entry_original_landscape');
+                $dimensions = config('epicollect.media.entry_original_landscape');
 
                 // Check if it's landscape
                 if ($width > $height) {
 
                     // If any of the current dimensions are off, image needs to be resized
-                    if ($height != Config::get('ec5Media.entry_min') || $width != Config::get('ec5Media.entry_max')) {
+                    if ($height != config('epicollect.media.entry_min') || $width != config('epicollect.media.entry_max')) {
                         // Dimensions already set to landscape
                         // Resize this image
                         $resize = true;
@@ -77,9 +77,9 @@ class ImageToolsController extends Controller
                     // Otherwise it's portrait (or square)
 
                     // If any of the current dimensions are off, image needs to be resized
-                    if ($height != Config::get('ec5Media.entry_max') || $width != Config::get('ec5Media.entry_min')) {
+                    if ($height != config('epicollect.media.entry_max') || $width != config('epicollect.media.entry_min')) {
                         // Set portrait dimensions
-                        $dimensions = Config::get('ec5Media.entry_original_portrait');
+                        $dimensions = config('epicollect.media.entry_original_portrait');
                         // Resize this image
                         $resize = true;
                     }
@@ -165,7 +165,7 @@ class ImageToolsController extends Controller
                     if ($fileSaved) {
 
                         // Get the default dimensions (based on the driver)
-                        $dimensions = Config::get('ec5Media.' . $driver);
+                        $dimensions = config('epicollect.media.' . $driver);
 
                         // Attempt to resize and save the new image
                         $resizedImage = UploadImage::storeImage($directory, $fileDestPath, $fileName, $driver, $dimensions);

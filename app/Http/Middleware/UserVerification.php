@@ -12,16 +12,16 @@ class UserVerification
      * Check local user account for verification
      * Google Account are verified by Google
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
+     * @param \Illuminate\Http\Request $request
+     * @param \Closure $next
      * @return mixed
      */
     public function handle($request, Closure $next)
     {
-        if(! is_null($request->user()) && ! $request->user()->verified) {
+        if (!is_null($request->user()) && !$request->user()->verified) {
 
             //not verified? Check only if "local" user
-            if($request->user()->provider === Config::get('ec5Strings.providers.local')) {
+            if ($request->user()->provider === config('epicollect.strings.providers.local')) {
                 throw new UserNotVerifiedException;
             }
         }

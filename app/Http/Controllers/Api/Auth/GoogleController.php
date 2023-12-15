@@ -38,7 +38,7 @@ class GoogleController extends AuthController
             $providerLocal = $this->localProviderLabel;
             // Attempt to find the google user
             try {
-                $providerKey = config::get('services.google_api');
+                $providerKey = config('services.google_api');
 
                 // We want stateless here, as using jwt
                 // Build the custom provider driver based on google driver and load the user
@@ -72,7 +72,7 @@ class GoogleController extends AuthController
                 }
 
                 //if the user is disabled, kick him out
-                if ($user->state === Config::get('ec5Strings.user_state.disabled')) {
+                if ($user->state === config('epicollect.strings.user_state.disabled')) {
                     Log::error('Google Login failed - user not active anymore: ' . $googleUser->email);
                     $error['api-login-google'] = ['ec5_32'];
                     return $apiResponse->errorResponse(400, $error);
@@ -88,19 +88,19 @@ class GoogleController extends AuthController
                  *
                  * the user gets verified via Google
                  */
-                if ($user->state === Config::get('ec5Strings.user_state.unverified')) {
+                if ($user->state === config('epicollect.strings.user_state.unverified')) {
                     if (!UserService::updateGoogleUser($googleUser)) {
                         $error['api-login-google'] = ['ec5_45'];
                         return $apiResponse->errorResponse(400, $error);
                     }
                     //set user as active since it was verified correctly
-                    $user->state = Config::get('ec5Strings.user_state.active');
+                    $user->state = config('epicollect.strings.user_state.active');
                 }
 
                 /**
                  * User was found and active, does this user have a Google provider?
                  */
-                if ($user->state === Config::get('ec5Strings.user_state.active')) {
+                if ($user->state === config('epicollect.strings.user_state.active')) {
 
                     $userProviders = UserProvider::where('email', $googleUser->email)
                         ->pluck('provider')->toArray();
@@ -112,8 +112,8 @@ class GoogleController extends AuthController
                         switch ($user->server_role) {
 
                             //admins must enter password on the mobile app
-                            case Config::get('ec5Strings.server_roles.superadmin'):
-                            case Config::get('ec5Strings.server_roles.admin'):
+                            case config('epicollect.strings.server_roles.superadmin'):
+                            case config('epicollect.strings.server_roles.admin'):
                                 $error['api-login-google'] = ['ec5_390'];
                                 return $apiResponse->errorResponse(400, $error);
                                 break;

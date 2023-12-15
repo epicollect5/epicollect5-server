@@ -23,8 +23,8 @@ class DataMappingHelper
 
     public function __construct()
     {
-        $this->mappingReservedKeys = Config::get('ec5Strings.mapping_reserved_keys');
-        $this->phpDateFormatSwap = Config::get('ec5Enums.datetime_formats_php');
+        $this->mappingReservedKeys = config('epicollect.mappings.reserved_keys');
+        $this->phpDateFormatSwap = config('epicollect.mappings.datetime_formats_php');
 
         // todo: this file is a candidate for refactor using a common interface and two concrete
         // todo: implementations for writing to file - csvFileWriter and jsonFileWriter
@@ -112,7 +112,7 @@ class DataMappingHelper
 
         if ($this->outputUuid) {
 
-            if ($this->entryType == Config::get('ec5Strings.branch')) {
+            if ($this->entryType == config('epicollect.strings.branch')) {
 
                 $out[] = $this->mappingReservedKeys['branch_owner_uuid'];
                 $out[] = $this->mappingReservedKeys['branch_uuid'];

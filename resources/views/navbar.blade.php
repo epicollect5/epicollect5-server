@@ -68,7 +68,7 @@
 
                 {{--Find project--}}
                 {{--Show only on production server--}}
-                @if(Config::get('app.env') == 'production')
+                @if(config('app.env') == 'production')
                     <li @if (Request::is('projects/*') || Request::is('projects')) class="active" @endif><a
                                 href="{{ url('/projects/') }}">
                             <i class="material-icons">&#xE880;</i>&nbsp;{{ trans('site.find_project') }}</a>

@@ -19,6 +19,6 @@ class ProjectImportException extends Exception
      */
     public function __construct()
     {
-        parent::__construct(Config::get('status_codes.ec5_225'));
+        parent::__construct(config('status_codes.ec5_225'));
     }
 }

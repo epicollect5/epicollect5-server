@@ -64,7 +64,7 @@ class LdapController extends AuthController
                 $user = $this->provider->findUserByEmail($ldapUser->getAuthIdentifier());
 
                 // Check user exists
-                if (!$user || $user->state != Config::get('ec5Strings.user_state.active')) {
+                if (!$user || $user->state != config('epicollect.strings.user_state.active')) {
                     Log::error('LDAP Login failed - cant find ec5 user: ' . $credentials['username']);
                     $error['api/login'] = ['ec5_33'];
                     return $apiResponse->errorResponse(404, $error);

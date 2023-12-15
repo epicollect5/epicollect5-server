@@ -14,8 +14,8 @@ class OpenCageController extends Controller
     public function fetchAPI($search)
     {
         $client = new Client();
-        $url = Config::get('ec5Setup.opencage.endpoint');
-        $key = Config::get('ec5Setup.opencage.key');
+        $url = config('epicollect.setup.opencage.endpoint');
+        $key = config('epicollect.setup.opencage.key');
         //build endpoint
         $url = $url . '?q=' . $search . '&key=' . $key;
 

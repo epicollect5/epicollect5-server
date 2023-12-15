@@ -40,7 +40,7 @@ class AdminController extends Controller
     {
         // Get request data
         $data = $request->all();
-        $perPage = Config::get('ec5Limits.users_per_page');
+        $perPage = config('epicollect.limits.users_per_page');
         $adminUser = $request->user();
         $ajaxView = 'admin.tables.users';
 
@@ -76,7 +76,7 @@ class AdminController extends Controller
 
         // Get request data
         $options = $request->all();
-        $perPage = Config::get('ec5Limits.admin_projects_per_page');
+        $perPage = config('epicollect.limits.admin_projects_per_page');
 
         //get projects paginated
         $projects = $this->projectModel->admin($perPage, $options);

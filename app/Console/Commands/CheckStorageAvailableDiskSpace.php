@@ -43,8 +43,8 @@ class CheckStorageAvailableDiskSpace extends Command
     public function handle()
     {
         $admins = [
-            Config::get('ec5Setup.system.email'),
-            Config::get('ec5Setup.super_admin_user.email')
+            config('epicollect.setup.system.email'),
+            config('epicollect.setup.super_admin_user.email')
         ];
         $storagePath = storage_path();
         // Get the free disk space in bytes for the storage folder
@@ -53,7 +53,7 @@ class CheckStorageAvailableDiskSpace extends Command
         $freeSpaceInGB = (int)ceil($freeSpaceInBytes / 1024 / 1024 / 1024);
         //if less than 50GB, alert admins
         //todo: maybe we can increase a DO Volume via the API?
-        if ($freeSpaceInGB <= Config::get('ec5Setup.storage_available_min_threshold')) {
+        if ($freeSpaceInGB <= config('epicollect.setup.storage_available_min_threshold')) {
             //send low storage notification to system admins
             if (App::environment() === 'production') {
                 Mail::to($admins)

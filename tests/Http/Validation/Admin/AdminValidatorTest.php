@@ -46,7 +46,7 @@ class AdminValidatorTest extends TestCase
     public function test_update_state_additional_validator()
     {
         $validator = new \ec5\Http\Validation\Admin\RuleUpdateState();
-        $serverRoles = Config::get('ec5Permissions.server.roles');
+        $serverRoles = config('epicollect.permissions.server.roles');
 
         // Test state being updated by users with various server_roles
 
@@ -147,7 +147,7 @@ class AdminValidatorTest extends TestCase
     public function test_update_server_role_additional_validator()
     {
         $validator = new \ec5\Http\Validation\Admin\RuleUpdateServerRole();
-        $serverRoles = Config::get('ec5Permissions.server.roles');
+        $serverRoles = config('epicollect.permissions.server.roles');
 
         // Test server role being updated by users with various server_roles
 

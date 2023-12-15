@@ -89,17 +89,17 @@ class AdminUsersController extends Controller
             $user->name = $inputs['first_name'];
             $user->last_name = $inputs['last_name'];
             $user->email = $email;
-            $user->password = bcrypt($inputs['password'], ['rounds' => Config::get('auth.bcrypt_rounds')]);
-            $user->state = Config::get('ec5Strings.user_state.active');
-            $user->server_role = Config::get('ec5Strings.server_roles.basic');
+            $user->password = bcrypt($inputs['password'], ['rounds' => config('auth.bcrypt_rounds')]);
+            $user->state = config('epicollect.strings.user_state.active');
+            $user->server_role = config('epicollect.strings.server_roles.basic');
             $user->save();
         }
 
         //if the user exists but unverified, update existing user
-        if ($user->state === config('ec5Strings.user_state.unverified')) {
+        if ($user->state === config('epicollect.strings.user_state.unverified')) {
             $user->name = $inputs['first_name'];
             $user->last_name = $inputs['last_name'];
-            $user->password = bcrypt($inputs['password'], ['rounds' => Config::get('auth.bcrypt_rounds')]);
+            $user->password = bcrypt($inputs['password'], ['rounds' => config('auth.bcrypt_rounds')]);
             $user->save();
         }
 
@@ -107,7 +107,7 @@ class AdminUsersController extends Controller
         $userProvider = new UserProvider();
         $userProvider->email = $user->email;
         $userProvider->user_id = $user->id;
-        $userProvider->provider = config('ec5Strings.providers.local');
+        $userProvider->provider = config('epicollect.strings.providers.local');
         $userProvider->save();
 
         // If successfully created

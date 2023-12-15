@@ -17,8 +17,8 @@ class RuleCanBulkUpload extends ValidationBase
 
     public function __construct()
     {
-        $canBulkUploadEnums = Config::get('ec5Enums.can_bulk_upload');
-        $this->rules['can_bulk_upload'] = 'required|in:'.implode(',',$canBulkUploadEnums);
+        $canBulkUploadEnums = array_keys(config('epicollect.strings.can_bulk_upload'));
+        $this->rules['can_bulk_upload'] = 'required|in:' . implode(',', $canBulkUploadEnums);
     }
 
     /**

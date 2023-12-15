@@ -18,7 +18,7 @@ class ProjectExtra extends ProjectModelBase
     public function create(array $data)
     {
         // Retrieve project extra template
-        $projectExtraStructure = Config::get('ec5ProjectStructures.project_extra');
+        $projectExtraStructure = config('epicollect.structures.project_extra');
         // Replace the {{form_ref}} key with the actual form ref
         $projectExtraStructure['forms'][$data['project']['forms'][0]] = $projectExtraStructure['forms']['{{form_ref}}'];
         unset($projectExtraStructure['forms']['{{form_ref}}']);
@@ -32,7 +32,7 @@ class ProjectExtra extends ProjectModelBase
     public function reset()
     {
         // Retrieve project extra (keys only) template
-        $projectExtraStructure = Config::get('ec5ProjectStructures.project_extra_reset');
+        $projectExtraStructure = config('epicollect.structures.project_extra_reset');
         $this->data = $projectExtraStructure;
     }
 
@@ -330,7 +330,7 @@ class ProjectExtra extends ProjectModelBase
 
             $input = $this->getInputData($inputRef);
             // If we have a group, add the group inputs
-            if ($input['type'] == Config::get('ec5Strings.inputs_type.group')) {
+            if ($input['type'] == config('epicollect.strings.inputs_type.group')) {
 
                 $groupInputRefs = $this->getGroupInputs($formRef, $inputRef);
 
@@ -363,7 +363,7 @@ class ProjectExtra extends ProjectModelBase
 
             $input = $this->getInputData($inputRef);
             // If we have a group, add the group inputs
-            if ($input['type'] == Config::get('ec5Strings.inputs_type.group')) {
+            if ($input['type'] == config('epicollect.strings.inputs_type.group')) {
 
                 $groupInputRefs = $this->getGroupInputs($formRef, $inputRef);
 

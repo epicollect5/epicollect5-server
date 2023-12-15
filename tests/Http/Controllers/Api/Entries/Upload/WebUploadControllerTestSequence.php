@@ -54,7 +54,7 @@ class WebUploadControllerTestSequence extends TestCase
                     'name' => array_get($projectDefinition, 'data.project.name'),
                     'slug' => array_get($projectDefinition, 'data.project.slug'),
                     'ref' => array_get($projectDefinition, 'data.project.ref'),
-                    'access' => config('ec5Strings.project_access.private')
+                    'access' => config('epicollect.strings.project_access.private')
                 ]
             );
             //add role
@@ -140,7 +140,9 @@ class WebUploadControllerTestSequence extends TestCase
                         ]
                     ]
                 );
+            $uuid = $entry['data']['id'];
             $this->assertCount(1, Entry::where('project_id', $project->id)->get());
+            $this->assertEquals(0, Entry::where('uuid', $uuid)->value('child_counts'));
             return [
                 'entry' => $entry,
                 'parentEntry' => null,
@@ -193,6 +195,10 @@ class WebUploadControllerTestSequence extends TestCase
                 );
             $this->assertCount(2, Entry::where('project_id', $project->id)->get());
             $this->assertCount(1, Entry::where('form_ref', $childFormRef)->get());
+            $this->assertEquals(1, Entry::where('uuid', $parentEntryUuid)->value('child_counts'));
+            $this->assertEquals(0, Entry::where('uuid', $childEntry1['data']['id'])->value('child_counts'));
+
+
             return [
                 'entry' => $entry,
                 'childEntry1' => $childEntry1,
@@ -246,6 +252,13 @@ class WebUploadControllerTestSequence extends TestCase
                 );
             $this->assertCount(3, Entry::where('project_id', $project->id)->get());
             $this->assertCount(1, Entry::where('form_ref', $childFormRef)->get());
+            $this->assertEquals(1, Entry::where('uuid', $entry['data']['id'])
+                ->value('child_counts'));
+            $this->assertEquals(1, Entry::where('uuid', $childEntry1['data']['id'])
+                ->value('child_counts'));
+            $this->assertEquals(0, Entry::where('uuid', $childEntry2['data']['id'])
+                ->value('child_counts'));
+
             return [
                 'entry' => $entry,
                 'childEntry1' => $childEntry1,
@@ -301,6 +314,15 @@ class WebUploadControllerTestSequence extends TestCase
                 );
             $this->assertCount(4, Entry::where('project_id', $project->id)->get());
             $this->assertCount(1, Entry::where('form_ref', $childFormRef)->get());
+
+            $this->assertEquals(1, Entry::where('uuid', $entry['data']['id'])
+                ->value('child_counts'));
+            $this->assertEquals(1, Entry::where('uuid', $childEntry1['data']['id'])
+                ->value('child_counts'));
+            $this->assertEquals(1, Entry::where('uuid', $childEntry2['data']['id'])
+                ->value('child_counts'));
+            $this->assertEquals(0, Entry::where('uuid', $childEntry3['data']['id'])
+                ->value('child_counts'));
             return [
                 'entry' => $entry,
                 'childEntry1' => $childEntry1,
@@ -317,7 +339,6 @@ class WebUploadControllerTestSequence extends TestCase
                 'project' => $project
             ]);
             dd($e->getMessage());
-            //dd($e->getMessage(), $response, json_encode($entry), json_encode($projectDefinition));
         }
     }
 
@@ -359,6 +380,18 @@ class WebUploadControllerTestSequence extends TestCase
                 );
             $this->assertCount(5, Entry::where('project_id', $project->id)->get());
             $this->assertCount(1, Entry::where('form_ref', $childFormRef)->get());
+
+            $this->assertEquals(1, Entry::where('uuid', $entry['data']['id'])
+                ->value('child_counts'));
+            $this->assertEquals(1, Entry::where('uuid', $childEntry1['data']['id'])
+                ->value('child_counts'));
+            $this->assertEquals(1, Entry::where('uuid', $childEntry2['data']['id'])
+                ->value('child_counts'));
+            $this->assertEquals(1, Entry::where('uuid', $childEntry3['data']['id'])
+                ->value('child_counts'));
+            $this->assertEquals(0, Entry::where('uuid', $childEntry4['data']['id'])
+                ->value('child_counts'));
+
             return [
                 'entry' => $entry,
                 'childEntry1' => $childEntry1,
@@ -430,6 +463,26 @@ class WebUploadControllerTestSequence extends TestCase
                     'project_id', $project->id)
                     //   ->where('owner_uuid', $uuid)
                     ->get());
+
+            $this->assertEquals(1, Entry::where('uuid', $entry['data']['id'])
+                ->value('child_counts'));
+            $this->assertEquals(1, Entry::where('uuid', $childEntry1['data']['id'])
+                ->value('child_counts'));
+            $this->assertEquals(1, Entry::where('uuid', $childEntry2['data']['id'])
+                ->value('child_counts'));
+            $this->assertEquals(1, Entry::where('uuid', $childEntry3['data']['id'])
+                ->value('child_counts'));
+            $this->assertEquals(0, Entry::where('uuid', $childEntry4['data']['id'])
+                ->value('child_counts'));
+
+            $branchCounts = json_decode(Entry::where('uuid', $entry['data']['id'])
+                ->value('branch_counts'), true);
+
+            $this->assertEquals([
+                $branches[0]['ref'] => 1
+            ], $branchCounts);
+
+
             return [
                 'entry' => $entry,
                 'childEntry1' => $childEntry1,
@@ -507,6 +560,14 @@ class WebUploadControllerTestSequence extends TestCase
                     'project_id', $project->id)
                     //   ->where('owner_uuid', $uuid)
                     ->get());
+
+            $branchCounts = json_decode(Entry::where('uuid', $uuid)
+                ->value('branch_counts'), true);
+
+            $this->assertEquals([
+                $branches[0]['ref'] => 1
+            ], $branchCounts);
+
             return [
                 'entry' => $entry,
                 'childEntry1' => $childEntry1,
@@ -584,6 +645,13 @@ class WebUploadControllerTestSequence extends TestCase
                     'project_id', $project->id)
                     //   ->where('owner_uuid', $uuid)
                     ->get());
+
+            $branchCounts = json_decode(Entry::where('uuid', $uuid)
+                ->value('branch_counts'), true);
+
+            $this->assertEquals([
+                $branches[0]['ref'] => 1
+            ], $branchCounts);
             return [
                 'entry' => $entry,
                 'childEntry1' => $childEntry1,
@@ -661,6 +729,13 @@ class WebUploadControllerTestSequence extends TestCase
                     'project_id', $project->id)
                     //   ->where('owner_uuid', $uuid)
                     ->get());
+
+            $branchCounts = json_decode(Entry::where('uuid', $uuid)
+                ->value('branch_counts'), true);
+
+            $this->assertEquals([
+                $branches[0]['ref'] => 1
+            ], $branchCounts);
             return [
                 'entry' => $entry,
                 'childEntry1' => $childEntry1,
@@ -734,6 +809,14 @@ class WebUploadControllerTestSequence extends TestCase
                     'project_id', $project->id)
                     //   ->where('owner_uuid', $uuid)
                     ->get());
+
+            $branchCounts = json_decode(Entry::where('uuid', $uuid)
+                ->value('branch_counts'), true);
+
+            $this->assertEquals([
+                $branches[0]['ref'] => 1
+            ], $branchCounts);
+
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project

@@ -164,7 +164,7 @@ class EntryGenerator
                 ];
                 break;
             case 'date':
-                $formatDate = config('ec5Strings.carbon_formats.fake_date');
+                $formatDate = config('epicollect.strings.carbon_formats.fake_date');
                 // Generate a random DateTime within this decade using Faker
                 $randomDateTime = $this->faker->dateTimeThisDecade->format('Y-m-d H:i:s');
                 // Convert the generated string to Carbon
@@ -177,7 +177,7 @@ class EntryGenerator
                 ];
                 break;
             case 'time':
-                $formatTime = config('ec5Strings.carbon_formats.fake_time');
+                $formatTime = config('epicollect.strings.carbon_formats.fake_time');
                 // Generate a random DateTime within this decade using Faker
                 $randomDateTime = $this->faker->dateTimeThisDecade->format('Y-m-d H:i:s');
                 // Convert the generated string to Carbon
@@ -270,7 +270,7 @@ class EntryGenerator
                 ],
                 'entry' => [
                     'entry_uuid' => $uuid,
-                    'created_at' => Carbon::now()->format(config('ec5Strings.carbon_formats.ISO')),
+                    'created_at' => Carbon::now()->format(config('epicollect.strings.carbon_formats.ISO')),
                     'device_id' => '',
                     'platform' => 'WEB',
                     'title' => $title,
@@ -338,7 +338,7 @@ class EntryGenerator
                 ],
                 'entry' => [
                     'entry_uuid' => $uuid,
-                    'created_at' => Carbon::now()->format(config('ec5Strings.carbon_formats.ISO')),
+                    'created_at' => Carbon::now()->format(config('epicollect.strings.carbon_formats.ISO')),
                     'device_id' => '',
                     'platform' => 'WEB',
                     'title' => $title,
@@ -396,7 +396,7 @@ class EntryGenerator
                 ],
                 'branch_entry' => [
                     'entry_uuid' => $uuid,
-                    'created_at' => Carbon::now()->format(config('ec5Strings.carbon_formats.ISO')),
+                    'created_at' => Carbon::now()->format(config('epicollect.strings.carbon_formats.ISO')),
                     'device_id' => '',
                     'platform' => 'WEB',
                     'title' => $title,
@@ -412,14 +412,14 @@ class EntryGenerator
     {
         $ext = '.';
         switch ($type) {
-            case config('ec5Strings.inputs_type.photo'):
+            case config('epicollect.strings.inputs_type.photo'):
                 $ext .= config('epicollect.strings.media_file_extension.jpg');
                 break;
-            case config('ec5Strings.inputs_type.audio'):
+            case config('epicollect.strings.inputs_type.audio'):
                 // Android is okay with .mp4
                 $ext .= config('epicollect.strings.media_file_extension.mp4');
                 break;
-            case config('ec5Strings.inputs_type.video'):
+            case config('epicollect.strings.inputs_type.video'):
                 $ext .= config('epicollect.strings.media_file_extension.mp4');
                 break;
         }

@@ -28,7 +28,7 @@ class RemoveProjectTest extends TestCase
             $project = factory(Project::class)->create([
                 'name' => 'EC5 Unit Test ' . $i,
                 'slug' => 'ec5-unit-test-' . $i,
-                'created_by' => User::where('email', Config::get('testing.SUPER_ADMIN_EMAIL'))->first()['id']
+                'created_by' => User::where('email', config('testing.SUPER_ADMIN_EMAIL'))->first()['id']
             ]);
 
             //add fake stats

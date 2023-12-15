@@ -93,7 +93,7 @@
 @stop
 
 @section('scripts')
-    <script src="{{ asset('/js/projects/projects.js').'?'.Config::get('app.release') }}"></script>
+    <script src="{{ asset('/js/projects/projects.js').'?'.config('app.release') }}"></script>
     <script>
 
         $(document).ready(function () {

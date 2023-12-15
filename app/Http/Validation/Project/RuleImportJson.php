@@ -14,7 +14,7 @@ class RuleImportJson extends ValidationBase
 
     function __construct()
     {
-        $projectJsonIdSize = config('ec5Limits.project.id.size');
+        $projectJsonIdSize = config('epicollect.limits.project.id.size');
         $this->rules['data.id'] = 'required|size:' . $projectJsonIdSize;
 
         $this->messages['data.required'] = 'ec5_269';

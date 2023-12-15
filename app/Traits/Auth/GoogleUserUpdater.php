@@ -19,12 +19,12 @@ trait GoogleUserUpdater
         ]);
 
         //update username and last name only when they are still placeholders
-        if ($user->name === config('ec5Strings.user_placeholder.apple_first_name')) {
+        if ($user->name === config('epicollect.mappings.user_placeholder.apple_first_name')) {
             $user->name = $googleUserFirstName;
             $user->last_name = $googleUserLastName;
             $user->save();
         }
-        if ($user->name === config('ec5Strings.user_placeholder.passwordless_first_name')) {
+        if ($user->name === config('epicollect.mappings.user_placeholder.passwordless_first_name')) {
             $user->name = $googleUserFirstName;
             $user->last_name = $googleUserLastName;
             $user->save();

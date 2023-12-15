@@ -136,7 +136,7 @@ class UserAuthTest extends TestCase
         $userProvider = factory(UserProvider::class)->create([
             'user_id' => $user->id,
             'email' => $user->email,
-            'provider' => config('ec5Strings.providers.local')
+            'provider' => config('epicollect.strings.providers.local')
         ]);
 
         //  $this->actingAs($user);

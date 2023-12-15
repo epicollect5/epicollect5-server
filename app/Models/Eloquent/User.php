@@ -29,31 +29,31 @@ class User extends Model implements
 
     public function isAdmin(): bool
     {
-        return $this->server_role === config('ec5Strings.server_roles.admin');
+        return $this->server_role === config('epicollect.strings.server_roles.admin');
     }
 
     public function isSuperAdmin(): bool
     {
-        return $this->server_role === config('ec5Strings.server_roles.superadmin');
+        return $this->server_role === config('epicollect.strings.server_roles.superadmin');
     }
 
     public function isActive(): bool
     {
-        return $this->state === config('ec5Strings.user_state.active');
+        return $this->state === config('epicollect.strings.user_state.active');
     }
 
     public function isUnverified(): bool
     {
-        return $this->state === config('ec5Strings.user_state.unverified');
+        return $this->state === config('epicollect.strings.user_state.unverified');
     }
 
     public function isLocalAndUnverified(): bool
     {
-        $localProvider = config('ec5Strings.providers.local');
+        $localProvider = config('epicollect.strings.providers.local');
         $userProvider = UserProvider::where('email', $this->email)->where('provider', $localProvider)->first();
 
         if ($userProvider) {
-            if ($this->state === config('ec5Strings.user_state.unverified')) {
+            if ($this->state === config('epicollect.strings.user_state.unverified')) {
                 return true;
             }
         }

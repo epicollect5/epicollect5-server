@@ -28,8 +28,8 @@ class DebugEmailSending extends Mailable
     public function build()
     {
         return $this
-            ->from(Config::get('mail.from.address'),
-                Config::get('mail.from.name'))
+            ->from(config('mail.from.address'),
+                config('mail.from.name'))
             ->subject('This is a test email using Mailgun')
             ->view('emails.debug_email_sending');
     }

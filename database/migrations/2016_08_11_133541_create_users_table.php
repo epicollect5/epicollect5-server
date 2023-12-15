@@ -32,10 +32,10 @@ class CreateUsersTable extends Migration
         // Insert super admin user
         DB::table('users')->insert(
             array(
-                'name' => Config::get('ec5Setup.super_admin_user.first_name'),
-                'last_name' => Config::get('ec5Setup.super_admin_user.last_name'),
-                'email' => Config::get('ec5Setup.super_admin_user.email'),
-                'password' => bcrypt(Config::get('ec5Setup.super_admin_user.password')),
+                'name' => config('epicollect.setup.super_admin_user.first_name'),
+                'last_name' => config('epicollect.setup.super_admin_user.last_name'),
+                'email' => config('epicollect.setup.super_admin_user.email'),
+                'password' => bcrypt(config('epicollect.setup.super_admin_user.password')),
                 'server_role' => 'superadmin',
                 'state' => 'active'
             )

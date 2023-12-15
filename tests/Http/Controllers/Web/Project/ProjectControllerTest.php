@@ -27,7 +27,7 @@ class ProjectControllerTest extends TestCase
         $project = factory(Project::class)->create(['created_by' => $user->id]);
 
         //assign the user to that project with the CREATOR role
-        $role = Config::get('ec5Strings.project_roles.creator');
+        $role = config('epicollect.strings.project_roles.creator');
         $projectRole = factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
@@ -61,7 +61,7 @@ class ProjectControllerTest extends TestCase
         $project = factory(Project::class)->create(['created_by' => $user->id]);
 
         //assign the user to that project with the CREATOR role
-        $role = Config::get('ec5Strings.project_roles.creator');
+        $role = config('epicollect.strings.project_roles.creator');
         $projectRole = factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
@@ -92,14 +92,14 @@ class ProjectControllerTest extends TestCase
     {
         //create mock user
         $user = factory(User::class)->create(
-            ['server_role' => Config::get('ec5Strings.server_roles.superadmin')]
+            ['server_role' => config('epicollect.strings.server_roles.superadmin')]
         );
 
         //create a fake project with that user
         $project = factory(Project::class)->create(['created_by' => $user->id]);
 
         //assign the user to that project with the CREATOR role
-        $role = Config::get('ec5Strings.project_roles.creator');
+        $role = config('epicollect.strings.project_roles.creator');
         $projectRole = factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
@@ -130,14 +130,14 @@ class ProjectControllerTest extends TestCase
     {
         //create mock user
         $user = factory(User::class)->create(
-            ['server_role' => Config::get('ec5Strings.server_roles.admin')]
+            ['server_role' => config('epicollect.strings.server_roles.admin')]
         );
 
         //create a fake project with that user
         $project = factory(Project::class)->create(['created_by' => $user->id]);
 
         //assign the user to that project with the CREATOR role
-        $role = Config::get('ec5Strings.project_roles.creator');
+        $role = config('epicollect.strings.project_roles.creator');
         $projectRole = factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
@@ -173,7 +173,7 @@ class ProjectControllerTest extends TestCase
         $project = factory(Project::class)->create(['created_by' => $user->id]);
 
         //assign the user to that project with the CREATOR role
-        $role = Config::get('ec5Strings.project_roles.creator');
+        $role = config('epicollect.strings.project_roles.creator');
         $projectRole = factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
@@ -207,7 +207,7 @@ class ProjectControllerTest extends TestCase
         $project = factory(Project::class)->create(['created_by' => $user->id]);
 
         //assign the user to that project with the CREATOR role
-        $role = Config::get('ec5Strings.project_roles.creator');
+        $role = config('epicollect.strings.project_roles.creator');
         $projectRole = factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
@@ -231,11 +231,13 @@ class ProjectControllerTest extends TestCase
             ->get(Route('formbuilder', ['project_slug' => $project->slug]))
             ->assertStatus(200);
 
-        $this->assertEquals($project->name, $response->original['projectName']); // Check the data passed to the view
-        $this->assertEquals('project.formbuilder', $response->original->getName());
-        // Assert that the view has the expected data, in this case, 'projectName' set to $this->requestedProject->name
-        $response->assertViewHas('projectName', $project->name);
 
+        // Assert that the 'requestAttributes' variable exists in the view data
+        $this->assertEquals(
+            $project->name,
+            $this->app['view']->getShared()['requestAttributes']->requestedProject->name
+        ); // Check the data passed to the view
+        $this->assertEquals('project.formbuilder', $response->original->getName());
     }
 
     public function test_formbuilder_page_renders_correctly_manager()
@@ -251,7 +253,7 @@ class ProjectControllerTest extends TestCase
             [
                 'user_id' => $user->id,
                 'project_id' => $project->id,
-                'role' => config('ec5Strings.project_roles.manager')
+                'role' => config('epicollect.strings.project_roles.manager')
             ]);
 
         //set up project stats and project structures (to make R&A middleware work, to be removed)
@@ -271,10 +273,12 @@ class ProjectControllerTest extends TestCase
             ->get(Route('formbuilder', ['project_slug' => $project->slug]))
             ->assertStatus(200);
 
-        $this->assertEquals($project->name, $response->original['projectName']); // Check the data passed to the view
+        // Assert that the 'requestAttributes' variable exists in the view data
+        $this->assertEquals(
+            $project->name,
+            $this->app['view']->getShared()['requestAttributes']->requestedProject->name
+        ); // Check the data passed to the view
         $this->assertEquals('project.formbuilder', $response->original->getName());
-        // Assert that the view has the expected data, in this case, 'projectName' set to $this->requestedProject->name
-        $response->assertViewHas('projectName', $project->name);
 
     }
 
@@ -291,7 +295,7 @@ class ProjectControllerTest extends TestCase
             [
                 'user_id' => $user->id,
                 'project_id' => $project->id,
-                'role' => config('ec5Strings.project_roles.curator')
+                'role' => config('epicollect.strings.project_roles.curator')
             ]);
 
         //set up project stats and project structures (to make R&A middleware work, to be removed)
@@ -345,7 +349,7 @@ class ProjectControllerTest extends TestCase
             [
                 'user_id' => $user->id,
                 'project_id' => $project->id,
-                'role' => config('ec5Strings.project_roles.collector')
+                'role' => config('epicollect.strings.project_roles.collector')
             ]);
 
         //set up project stats and project structures (to make R&A middleware work, to be removed)
@@ -399,7 +403,7 @@ class ProjectControllerTest extends TestCase
             [
                 'user_id' => $user->id,
                 'project_id' => $project->id,
-                'role' => config('ec5Strings.project_roles.viewer')
+                'role' => config('epicollect.strings.project_roles.viewer')
             ]);
 
         //set up project stats and project structures (to make R&A middleware work, to be removed)
@@ -450,7 +454,7 @@ class ProjectControllerTest extends TestCase
             [
                 'user_id' => $user->id,
                 'project_id' => $project->id,
-                'role' => config('ec5Strings.project_roles.creator')
+                'role' => config('epicollect.strings.project_roles.creator')
             ]);
 
         //set up project stats and project structures (to make R&A middleware work, to be removed)

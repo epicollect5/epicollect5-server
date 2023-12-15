@@ -383,7 +383,7 @@ class SearchToolsController extends Controller
         $start = Carbon::now()->getTimestamp();
         $table = 'storage_stats_remote';
         $thresholdInt = (int)$threshold;
-        $costXGB = floatval(Config::get('ec5Setup.cost_x_gb'));
+        $costXGB = floatval(config('epicollect.setup.cost_x_gb'));
 
         $projectsOver = DB::table($table)
             ->where('entries', '>', $thresholdInt)

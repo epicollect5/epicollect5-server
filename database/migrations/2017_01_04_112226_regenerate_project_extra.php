@@ -25,8 +25,8 @@ class RegenerateProjectExtra extends Migration
         DB::beginTransaction();
         $output = new ConsoleOutput();
 
-        $projects = DB::table(Config::get('ec5Tables.projects'))
-            ->leftJoin(Config::get('ec5Tables.project_structures'), 'projects.id', '=', 'project_structures.project_id')
+        $projects = DB::table(config('epicollect.tables.projects'))
+            ->leftJoin(config('epicollect.tables.project_structures'), 'projects.id', '=', 'project_structures.project_id')
             ->select('projects.*', 'project_structures.project_definition')->get();
 
         foreach ($projects as $project) {
@@ -48,7 +48,7 @@ class RegenerateProjectExtra extends Migration
             }
 
             $output->writeln('<info>' . 'Updating project extra for project ' . $project->id . PHP_EOL . '</info>');
-            DB::table(Config::get('ec5Tables.project_structures'))->where('project_id', $project->id)->update(
+            DB::table(config('epicollect.tables.project_structures'))->where('project_id', $project->id)->update(
                 [
                     'project_extra' => $projectModel->getProjectExtra()->getJsonData()
                 ]

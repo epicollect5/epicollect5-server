@@ -21,7 +21,7 @@ class ProjectDefinition extends ProjectModelBase
     public function create(array $data)
     {
         // Retrieve project definition template
-        $projectDefinitionStructure = Config::get('ec5ProjectStructures.project_definition');
+        $projectDefinitionStructure = config('epicollect.structures.project_definition');
 
         // Replace key values from $data into the $projectStructure
         $this->data = Arrays::merge($projectDefinitionStructure, $data);

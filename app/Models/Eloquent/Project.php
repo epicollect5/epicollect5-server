@@ -40,8 +40,8 @@ class Project extends Model
         $publicAccess = config('epicollect.strings.project_access.public');
         $listedVisibility = config('epicollect.strings.project_visibility.listed');
         $projectsPerPage = config('epicollect.limits.projects_per_page');
-        $sortBy = config('epicollect.strings.search_projects_defaults.sort_by');
-        $sortOrder = config('epicollect.strings.search_projects_defaults.sort_order');
+        $sortBy = config('epicollect.mappings.search_projects_defaults.sort_by');
+        $sortOrder = config('epicollect.mappings.search_projects_defaults.sort_order');
 
         // Base query
         $query = DB::table($this->getTable())->join($this->projectStatsTable, 'projects.id', '=', $this->projectStatsTable . '.project_id')

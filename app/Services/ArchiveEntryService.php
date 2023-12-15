@@ -17,7 +17,7 @@ class ArchiveEntryService
     public function archiveHierarchyEntry(Project $project, $entryStructure): bool
     {
         $entryUuid = $entryStructure->getEntryUuid();
-        $table = config('epicollect.strings.database_tables.entries');
+        $table = config('epicollect.tables.entries');
         try {
             DB::beginTransaction();
             $entryModel = new Entry();
@@ -84,7 +84,7 @@ class ArchiveEntryService
      */
     public function archiveBranchEntry(Project $project, $branchEntryUuid, $entryStructure, bool $reuseExistingTransaction = false): bool
     {
-        $table = config('epicollect.strings.database_tables.branch_entries');
+        $table = config('epicollect.tables.branch_entries');
         // If we don't want to keep open the transaction for further processing
         // when deleting hierarchy entry, we have a transaction
         // when deleting only a branch, we do not

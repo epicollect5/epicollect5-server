@@ -17,12 +17,12 @@ class CreateProjectLogoAvatar
 
     public function __construct()
     {
-        $this->width = config('ec5Media.project_avatar.width');
-        $this->height = config('ec5Media.project_avatar.height');
-        $this->quality = config('ec5Media.project_avatar.quality');
-        $this->filename = config('ec5Media.project_avatar.filename');
-        $this->drivers = config('ec5Media.project_avatar.driver');
-        $this->fontSize = config('ec5Media.project_avatar.font_size');
+        $this->width = config('epicollect.media.project_avatar.width');
+        $this->height = config('epicollect.media.project_avatar.height');
+        $this->quality = config('epicollect.media.project_avatar.quality');
+        $this->filename = config('epicollect.media.project_avatar.filename');
+        $this->drivers = config('epicollect.media.project_avatar.driver');
+        $this->fontSize = config('epicollect.media.project_avatar.font_size');
     }
 
 
@@ -56,7 +56,7 @@ class CreateProjectLogoAvatar
 
             return true;
         } catch (Exception $e) {
-            \Log::error('Error creating project avatar',  ['exception' => $e]);
+            \Log::error('Error creating project avatar', ['exception' => $e]);
             return false;
         }
     }

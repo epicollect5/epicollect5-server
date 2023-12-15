@@ -40,7 +40,7 @@ class PasswordlessController extends AuthController
 
     public function sendCode(Request $request, RulePasswordlessWeb $validator, RuleRecaptcha $captchaValidator)
     {
-        $tokenExpiresAt = Config::get('auth.passwordless_token_expire', 300);
+        $tokenExpiresAt = config('auth.passwordless_token_expire', 300);
         $params = $request->all();
 
         //validate request
@@ -51,7 +51,7 @@ class PasswordlessController extends AuthController
         }
 
         //imp: skip captcha only when testing
-        if (!App::environment('testing')) {
+        if (!(App::environment() === 'testing')) {
             //parse recaptcha response for any errors
             $recaptchaResponse = $params['g-recaptcha-response'];
             $recaptchaErrors = $this->getAnyRecaptchaErrors($recaptchaResponse);
@@ -74,7 +74,7 @@ class PasswordlessController extends AuthController
             //add token to db
             $userPasswordless = new UserPasswordlessWeb();
             $userPasswordless->email = $email;
-            $userPasswordless->token = bcrypt($code, ['rounds' => Config::get('auth.bcrypt_rounds')]);
+            $userPasswordless->token = bcrypt($code, ['rounds' => config('auth.bcrypt_rounds')]);
             $userPasswordless->expires_at = Carbon::now()->addSeconds($tokenExpiresAt)->toDateTimeString();
             $userPasswordless->save();
 
@@ -119,12 +119,12 @@ class PasswordlessController extends AuthController
     //try to authenticate user by checking provided numeric OTP
     public function authenticateWithCode(Request $request, RulePasswordlessApiLogin $validator)
     {
-        $providerPasswordless = config('ec5Strings.providers.passwordless');
+        $providerPasswordless = config('epicollect.strings.providers.passwordless');
         $isPasswordlessEnabled = in_array($providerPasswordless, $this->authMethods, true);
         //is passwordless auth enabled in production?
-        if (!App::environment('testing')) {
+        if (!(App::environment() === 'testing')) {
             if (!$isPasswordlessEnabled) {
-                // Auth method not allowed
+                // Auth method is not allowed
                 \Log::error('Passwordless auth not enabled');
                 return redirect()->route('login')->withErrors($validator->errors());
             }
@@ -198,7 +198,7 @@ class PasswordlessController extends AuthController
          * If the user is unverified, set is as verified and add the passwordless provider
          *
          */
-        if ($user->state === Config::get('ec5Strings.user_state.unverified')) {
+        if ($user->state === config('epicollect.strings.user_state.unverified')) {
             if (!UserService::updateUnverifiedPasswordlessUser($user)) {
                 //database error, user might retry
                 return view('auth.verification_passwordless', [
@@ -219,7 +219,7 @@ class PasswordlessController extends AuthController
         /**
          * User was found and active, does this user have a passwordless provider?
          */
-        if ($user->state === Config::get('ec5Strings.user_state.active')) {
+        if ($user->state === config('epicollect.strings.user_state.active')) {
 
             $userProvider = UserProvider::where('email', $email)->where('provider', $this->passwordlessProviderLabel)->first();
 
@@ -234,7 +234,7 @@ class PasswordlessController extends AuthController
                 $userProvider = new UserProvider();
                 $userProvider->email = $email;
                 $userProvider->user_id = $user->id;
-                $userProvider->provider = Config::get('ec5Strings.providers.passwordless');
+                $userProvider->provider = config('epicollect.strings.providers.passwordless');
                 $userProvider->save();
             }
         }
@@ -245,7 +245,7 @@ class PasswordlessController extends AuthController
 
     private function decodeToken($token)
     {
-        $jwtConfig = Config::get('auth.jwt-passwordless');
+        $jwtConfig = config('auth.jwt-passwordless');
         $secretKey = $jwtConfig['secret_key'];
         $decoded = null;
 

@@ -11,9 +11,12 @@ use ec5\Models\Eloquent\BranchEntryArchive;
 use ec5\Models\Eloquent\ProjectRole;
 use ec5\Models\Eloquent\User;
 use ec5\Models\Eloquent\UserProvider;
+use Exception;
+use File;
 use Illuminate\Support\Facades\DB;
 use Log;
 use PDOException;
+use Storage;
 
 trait Archiver
 {
@@ -45,7 +48,7 @@ trait Archiver
             $project->logo_url = '';
             $project->access = config('epicollect.strings.project_access.private');
             $project->visibility = config('epicollect.strings.project_visibility.hidden');
-            $project->category = config('epicollect.strings.project_categories_icons.general');
+            $project->category = config('epicollect.mappings.categories_icons.general');
             $project->can_bulk_upload = config('epicollect.strings.can_bulk_upload.nobody');
 
 
@@ -63,7 +66,7 @@ trait Archiver
         }
     }
 
-    public function archiveEntries($projectId): bool
+    public function archiveEntries($projectId, $projectRef): bool
     {
         try {
             //move entries
@@ -94,15 +97,27 @@ trait Archiver
             Entry::where('project_id', $projectId)->delete();
             BranchEntry::where('project_id', $projectId)->delete();
 
+            //remove all the entries media folders
+            $drivers = config('epicollect.media.entries_deletable');
+
+            foreach ($drivers as $driver) {
+                // Get disk, path prefix and all directories for this driver
+                $disk = Storage::disk($driver);
+                $pathPrefix = $disk->getDriver()->getAdapter()->getPathPrefix();
+                // \Log::info('delete path ->' . $pathPrefix . $projectRef);
+                // Note: need to use File facade here, as Storage doesn't delete
+                File::deleteDirectory($pathPrefix . $projectRef);
+            }
             return true;
-        } catch (\Exception $e) {
-            \Log::error('Error soft deleting project entries', ['exception' => $e->getMessage()]);
+        } catch (Exception $e) {
+            Log::error(__METHOD__ . ' failed.', [
+                'exception' => $e->getMessage()
+            ]);
             return false;
         }
     }
 
     /**
-     * @throws \Exception
      */
     public function archiveUser($email, $userId): bool
     {
@@ -144,8 +159,8 @@ trait Archiver
                 DB::rollBack();
                 return false;
             }
-        } catch (PDOException $e) {
-            Log::error('Error archiveUser()', ['exception' => $e->getMessage()]);
+        } catch (Exception $e) {
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             DB::rollBack();
             return false;
         }

@@ -11,7 +11,7 @@
             <div class="col-md-8 col-md-offset-2">
                 <div class="panel panel-default">
                     <div class="panel-body">
-                        <span class="hidden gcaptcha">{{Config::get('auth.google.recaptcha_site_key')}}</span>
+                        <span class="hidden gcaptcha">{{config('auth.google.recaptcha_site_key')}}</span>
                         <form id="page-signup__form" class="form-horizontal" role="form" method="POST"
                               action="{{ route('signup-post') }}"
                               autocomplete="off"
@@ -116,7 +116,7 @@
 @endsection
 
 @section('scripts')
-    <script src="https://www.google.com/recaptcha/api.js?render={{Config::get('auth.google.recaptcha_site_key')}}">
+    <script src="https://www.google.com/recaptcha/api.js?render={{config('auth.google.recaptcha_site_key')}}">
     </script>
-    <script type="text/javascript" src="{{ asset('js/users/users.js').'?'.Config::get('app.release') }}"></script>
+    <script type="text/javascript" src="{{ asset('js/users/users.js').'?'.config('app.release') }}"></script>
 @stop

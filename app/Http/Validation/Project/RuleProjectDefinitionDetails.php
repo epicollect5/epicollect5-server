@@ -28,10 +28,10 @@ class RuleProjectDefinitionDetails extends ValidationBase
     public function __construct()
     {
         //set up error messages
-        $projectSmallDescMinLength = Config::get('ec5Limits.project.small_desc.min');
-        $projectSmallDescMaxLength = Config::get('ec5Limits.project.small_desc.max');
-        $projectDescriptionMinLength = Config::get('ec5Limits.project.description.min');
-        $projectDescriptionMaxLength = Config::get('ec5Limits.project.description.max');
+        $projectSmallDescMinLength = config('epicollect.limits.project.small_desc.min');
+        $projectSmallDescMaxLength = config('epicollect.limits.project.small_desc.max');
+        $projectDescriptionMinLength = config('epicollect.limits.project.description.min');
+        $projectDescriptionMaxLength = config('epicollect.limits.project.description.max');
 
         $this->messages['description.between'] = trans('status_codes.ec5_393', [
             'min' => $projectDescriptionMinLength,

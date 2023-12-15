@@ -37,8 +37,8 @@ class RuleLocationInput extends RuleInputBase
         if (count($answer) > 0) {
             // Check we have no extra keys
             if (count(array_merge(
-                    array_diff(array_keys($answer), Config::get('ec5Enums.entry_location_keys')),
-                    array_diff(Config::get('ec5Enums.entry_location_keys'), array_keys($answer))
+                    array_diff(array_keys($answer), array_keys(config('epicollect.strings.entry_location_keys'))),
+                    array_diff(array_keys(config('epicollect.strings.entry_location_keys')), array_keys($answer))
                 )) > 0
             ) {
                 $this->errors[$inputDetails['ref']] = ['ec5_30'];

@@ -305,11 +305,11 @@ class RuleFileEntry extends EntryValidationBase
                 // Check if it's landscape
                 if ($width > $height) {
                     // Set landscape dimensions
-                    $dimensions = Config::get('ec5Media.entry_original_landscape');
+                    $dimensions = config('epicollect.media.entry_original_landscape');
                 } else {
                     // Otherwise it's portrait (or square)
                     // Set portrait dimensions
-                    $dimensions = Config::get('ec5Media.entry_original_portrait');
+                    $dimensions = config('epicollect.media.entry_original_portrait');
                 }
 
                 // If dimensions are already as desired, no need to resize
@@ -343,7 +343,7 @@ class RuleFileEntry extends EntryValidationBase
                     $entryStructure->getFile(),
                     $fileName,
                     'entry_thumb',
-                    Config::get('ec5Media.entry_thumb')
+                    config('epicollect.media.entry_thumb')
                 );
 
                 // Check if any errors creating/saving thumb
@@ -403,11 +403,11 @@ class RuleFileEntry extends EntryValidationBase
                 // Check if it's landscape
                 if ($width > $height) {
                     // Set landscape dimensions
-                    $dimensions = Config::get('ec5Media.entry_original_landscape');
+                    $dimensions = config('epicollect.media.entry_original_landscape');
                 } else {
                     // Otherwise it's portrait (or square)
                     // Set portrait dimensions
-                    $dimensions = Config::get('ec5Media.entry_original_portrait');
+                    $dimensions = config('epicollect.media.entry_original_portrait');
                 }
 
                 // If dimensions are already as desired, no need to resize
@@ -441,7 +441,7 @@ class RuleFileEntry extends EntryValidationBase
                     $entryStructure->getFile(),
                     $fileName,
                     'orphan_entry_thumb',
-                    Config::get('ec5Media.entry_thumb')
+                    config('epicollect.media.entry_thumb')
                 );
 
                 // Check if any errors creating/saving thumb

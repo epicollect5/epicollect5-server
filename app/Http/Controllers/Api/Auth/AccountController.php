@@ -37,7 +37,7 @@ class AccountController extends Controller
     {
         //get user email
         $email = Auth::user()->email;
-        $creatorRole = Config('ec5Strings.project_roles.creator');
+        $creatorRole = Config('epicollect.strings.project_roles.creator');
         //get route name
         $routeName = request()->route()->getName();
         //find any projects the user has a role
@@ -134,7 +134,7 @@ class AccountController extends Controller
                 //get slug (skip already archived projects)
                 $projectSlug = Project::where('id', $projectId)
                     ->where('created_by', $userId)
-                    ->where('status', '<>', Config::get('ec5Strings.project_status.archived'))
+                    ->where('status', '<>', config('epicollect.strings.project_status.archived'))
                     ->value('slug');
 
                 //if any of the projects is featured, throw error

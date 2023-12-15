@@ -34,7 +34,7 @@ class UserPasswordResetMail extends Mailable
 
         //to show how long the link will last
         $this->expireAt = Carbon::now()
-            ->subSeconds(Config::get('auth.jwt-forgot.expire'))
+            ->subSeconds(config('auth.jwt-forgot.expire'))
             ->diffForHumans(Carbon::now(), true);
     }
 
@@ -45,7 +45,7 @@ class UserPasswordResetMail extends Mailable
      */
     public function build()
     {
-        return $this->from(Config::get('mail.from.address'), Config::get('mail.from.name'))
+        return $this->from(config('mail.from.address'), config('mail.from.name'))
             ->subject(trans('site.reset_password') . ' ' . $this->name)
             ->view('emails.user_reset_password');
     }

@@ -8,7 +8,8 @@
                 <h4 class="modal-title">{{trans('site.confirm')}}</h4>
             </div>
             <form class="hidden" id="ec5-form-project-app-delete" method="POST"
-                  action="{{ url('myprojects/' . $project->slug . '/app-delete') }}" accept-charset="UTF-8">
+                  action="{{ url('myprojects/' . $requestAttributes->requestedProject->slug . '/app-delete') }}"
+                  accept-charset="UTF-8">
 
                 {!! csrf_field() !!}
 
@@ -26,7 +27,8 @@
                 </div>
             </form>
             <form class="hidden" id="ec5-form-project-app-revoke" method="POST"
-                  action="{{ url('myprojects/' . $project->slug . '/app-revoke') }}" accept-charset="UTF-8">
+                  action="{{ url('myprojects/' . $requestAttributes->requestedProject->slug . '/app-revoke') }}"
+                  accept-charset="UTF-8">
 
                 {!! csrf_field() !!}
 

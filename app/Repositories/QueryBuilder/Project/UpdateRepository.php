@@ -28,8 +28,8 @@ class UpdateRepository extends Base
 
         // Insert project details get back insert_id
         // Check, rollback if error
-        $doUpdate = $this->updateById(Config::get('ec5Tables.projects'), $project->getId(), $projectDetails);
-        $this->LG[] = "update project struct" .  $project->getId()  . "returned  $doUpdate";
+        $doUpdate = $this->updateById(config('epicollect.tables.projects'), $project->getId(), $projectDetails);
+        $this->LG[] = "update project struct" . $project->getId() . "returned  $doUpdate";
 
         if ($this->hasErrors()) {
             $this->doRollBack();
@@ -121,7 +121,7 @@ class UpdateRepository extends Base
         // Set updated_at field?
         if ($setUpdatedAt) $data['updated_at'] = date('Y-m-d H:i:s');
 
-        $this->updateById(Config::get('ec5Tables.project_structures'), $project->getProjectStructureId(), $data);
+        $this->updateById(config('epicollect.tables.project_structures'), $project->getProjectStructureId(), $data);
 
         if ($this->hasErrors()) {
             return false;

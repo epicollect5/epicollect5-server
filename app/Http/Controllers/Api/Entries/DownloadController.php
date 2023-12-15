@@ -10,21 +10,19 @@ use ec5\Http\Validation\Entries\Search\RuleQueryString;
 use ec5\Http\Validation\Entries\Download\RuleDownload;
 use ec5\Repositories\QueryBuilder\Entry\Search\BranchEntryRepository;
 use ec5\Repositories\QueryBuilder\Entry\Search\EntryRepository;
-use ec5\Http\Validation\Entries\Upload\RuleDownloadTemplate;
-use ec5\Http\Validation\Entries\Upload\RuleUploadHeaders;
 use ec5\Services\DataMappingService;
 use ec5\Services\DownloadEntriesService;
 use Illuminate\Http\Request;
-use ec5\Models\Eloquent\ProjectStructure;
 use Auth;
-use Illuminate\Support\Facades\Response;
 use Storage;
 use Cookie;
-use Illuminate\Support\Str;
 use ec5\Libraries\Utilities\Common;
+use ec5\Traits\Requests\RequestAttributes;
 
 class DownloadController extends EntrySearchControllerBase
 {
+    use RequestAttributes;
+
     /*
     |--------------------------------------------------------------------------
     | Download Controller
@@ -75,7 +73,7 @@ class DownloadController extends EntrySearchControllerBase
     {
         $user = Auth::user();
         $params = $this->getRequestParams($request, config('epicollect.limits.entries_table.per_page_download'));
-        $cookieName = config('epicollect.strings.cookies.download-entries');
+        $cookieName = config('epicollect.mappings.cookies.download-entries');
 
         if ($user === null) {
             return $this->apiResponse->errorResponse(400, ['download-entries' => ['ec5_86']]);
@@ -103,7 +101,7 @@ class DownloadController extends EntrySearchControllerBase
 
     private function sendArchive($filepath, $filename, $timestamp = null)
     {
-        $cookieName = config('epicollect.strings.cookies.download-entries');
+        $cookieName = config('epicollect.mappings.cookies.download-entries');
         //"If set to 0, or omitted, the cookie will expire at the end of the session (when the browser closes)."
         $mediaCookie = Cookie::make($cookieName, $timestamp, 0, null, null, false, false);
         Cookie::queue($mediaCookie);
@@ -123,10 +121,10 @@ class DownloadController extends EntrySearchControllerBase
     private function createArchive(string $projectDir, array $params, $timestamp)
     {
         $downloadEntriesService = new DownloadEntriesService(new DataMappingService());
-        if (!$downloadEntriesService->createArchive($this->requestedProject, $projectDir, $params)) {
+        if (!$downloadEntriesService->createArchive($this->requestedProject(), $projectDir, $params)) {
             return $this->apiResponse->errorResponse(400, ['download-entries' => ['ec5_83']]);
         }
-        $zipName = $this->requestedProject->slug . '-' . $params['format'] . '.zip';
+        $zipName = $this->requestedProject()->slug . '-' . $params['format'] . '.zip';
         return $this->sendArchive($projectDir . '/' . $zipName, $zipName, $timestamp);
     }
 
@@ -135,7 +133,7 @@ class DownloadController extends EntrySearchControllerBase
         // Setup storage
         $storage = Storage::disk('entries_zip');
         $storagePrefix = $storage->getDriver()->getAdapter()->getPathPrefix();
-        $projectDir = $storagePrefix . $this->requestedProject->ref;
+        $projectDir = $storagePrefix . $this->requestedProject()->ref;
         //append user ID to handle concurrency -> MUST be logged in to download!
         return $projectDir . '/' . $user->id;
     }

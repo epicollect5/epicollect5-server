@@ -28,8 +28,8 @@ class UserAccountDeletionConfirmation extends Mailable
     public function build()
     {
         return $this->from(
-            Config::get('mail.from.address'),
-            Config::get('mail.from.name'))
+            config('mail.from.address'),
+            config('mail.from.name'))
             ->subject('Account Deletion Confirmation')
             ->view('emails.account_deletion_confirmation');
     }

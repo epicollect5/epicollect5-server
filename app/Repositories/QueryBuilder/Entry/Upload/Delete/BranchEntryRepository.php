@@ -12,7 +12,7 @@ class BranchEntryRepository extends DeleteRepository
      */
     public function __construct()
     {
-        $table = Config::get('ec5Tables.branch_entries');
+        $table = config('epicollect.tables.branch_entries');
         $isBranchEntry = true;
         parent::__construct($table, $isBranchEntry);
     }

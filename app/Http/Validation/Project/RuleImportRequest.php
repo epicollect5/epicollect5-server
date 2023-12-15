@@ -15,8 +15,8 @@ class RuleImportRequest extends ValidationBase
 
     public function __construct()
     {
-        $projectNameMinLength = Config::get('ec5Limits.project.name.min');
-        $projectNameMaxLength = Config::get('ec5Limits.project.name.max');
+        $projectNameMinLength = config('epicollect.limits.project.name.min');
+        $projectNameMaxLength = config('epicollect.limits.project.name.max');
         $this->messages = array_merge($this->messages, [
             'name.max' => 'ec5_350',
             'name.min' => 'ec5_349',

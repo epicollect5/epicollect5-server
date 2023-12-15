@@ -52,7 +52,7 @@ class ProjectDeleteControllerTest extends TestCase
         $project = factory(Project::class)->create(['created_by' => $user->id]);
 
         //assign the user to that project with the CREATOR role
-        $role = \Illuminate\Support\Facades\Config::get('ec5Strings.project_roles.creator');
+        $role = config('epicollect.strings.project_roles.creator');
         $projectRole = factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
@@ -80,7 +80,7 @@ class ProjectDeleteControllerTest extends TestCase
     public function test_delete_post_request_but_missing_project_name()
     {
         //creator
-        $role = Config::get('ec5Strings.project_roles.creator');
+        $role = config('epicollect.strings.project_roles.creator');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
 
@@ -153,7 +153,7 @@ class ProjectDeleteControllerTest extends TestCase
     public function test_delete_post_request_but_project_name_does_not_match()
     {
         //creator
-        $role = Config::get('ec5Strings.project_roles.creator');
+        $role = config('epicollect.strings.project_roles.creator');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
 
@@ -232,7 +232,7 @@ class ProjectDeleteControllerTest extends TestCase
     public function test_soft_delete()
     {
         //creator
-        $role = Config::get('ec5Strings.project_roles.creator');
+        $role = config('epicollect.strings.project_roles.creator');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
 
@@ -349,8 +349,8 @@ class ProjectDeleteControllerTest extends TestCase
     public function test_hard_delete()
     {
         //creator
-        $role = Config::get('ec5Strings.project_roles.creator');
-        $trashedStatus = Config::get('ec5Strings.project_status.trashed');
+        $role = config('epicollect.strings.project_roles.creator');
+        $trashedStatus = config('epicollect.strings.project_status.trashed');
 
         //get existing counts
         $projectsCount = Project::count();
@@ -447,7 +447,7 @@ class ProjectDeleteControllerTest extends TestCase
     public function test_delete_missing_permission_as_manager()
     {
         //manager
-        $role = Config::get('ec5Strings.project_roles.manager');
+        $role = config('epicollect.strings.project_roles.manager');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
         //create a fake user and save it to DB
@@ -534,7 +534,7 @@ class ProjectDeleteControllerTest extends TestCase
     public function test_delete_missing_permission_as_curator()
     {
         //curator
-        $role = Config::get('ec5Strings.project_roles.curator');
+        $role = config('epicollect.strings.project_roles.curator');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
         //create a fake user and save it to DB
@@ -618,7 +618,7 @@ class ProjectDeleteControllerTest extends TestCase
     public function test_delete_missing_permission_as_collector()
     {
         //collector
-        $role = Config::get('ec5Strings.project_roles.collector');
+        $role = config('epicollect.strings.project_roles.collector');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
         //create a fake user and save it to DB
@@ -702,7 +702,7 @@ class ProjectDeleteControllerTest extends TestCase
     public function test_delete_missing_permission_as_viewer()
     {
         //viewer
-        $role = Config::get('ec5Strings.project_roles.viewer');
+        $role = config('epicollect.strings.project_roles.viewer');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
         //create a fake user and save it to DB
@@ -785,7 +785,7 @@ class ProjectDeleteControllerTest extends TestCase
     public function test_delete_but_project_is_featured()
     {
         //CREATOR
-        $role = Config::get('ec5Strings.project_roles.creator');
+        $role = config('epicollect.strings.project_roles.creator');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
         //create a fake user and save it to DB
@@ -862,7 +862,7 @@ class ProjectDeleteControllerTest extends TestCase
     public function test_delete_with_exception()
     {
         //creator
-        $role = Config::get('ec5Strings.project_roles.creator');
+        $role = config('epicollect.strings.project_roles.creator');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
         //create a fake user and save it to DB

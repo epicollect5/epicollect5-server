@@ -30,14 +30,14 @@
 @endif
 
 {{--Add og: metatag on single project home page--}}
-@if(isset($project))
+@if(isset($requestAttributes->requestedProject))
     @if(Route::currentRouteName() === 'project-home')
-        <meta property="og:title" content="{{$project->name}}"/>
-        <meta property="og:description" content="{{$project->small_description}}"/>
+        <meta property="og:title" content="{{$requestAttributes->requestedProject->name}}"/>
+        <meta property="og:description" content="{{$requestAttributes->requestedProject->small_description}}"/>
         <meta property="og:type" content="article"/>
-        <meta property="og:image" content="@if($project->logo_url == '') {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
+        <meta property="og:image" content="@if($requestAttributes->requestedProject->logo_url == '') {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
               @else
-              {{ url('/api/internal/media/'.$project->slug . '?type=photo&name=logo.jpg&format=project_thumb') }}
+              {{ url('/api/internal/media/'.$requestAttributes->requestedProject->slug . '?type=photo&name=logo.jpg&format=project_thumb') }}
               @endif"/>
         <meta property="og:image:width" content="128"/>
         <meta property="og:image:height" content="128"/>
@@ -45,11 +45,11 @@
         {{--add twitter card metadata--}}
         <meta name="twitter:card" content="summary"/>
         <meta name="twitter:site" content="@EpiCollect"/>
-        <meta name="twitter:title" content="{{$project->name}}"/>
-        <meta name="twitter:description" content="{{$project->small_description}}"/>
-        <meta name="twitter:image" content="@if($project->logo_url == '') {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
+        <meta name="twitter:title" content="{{$requestAttributes->requestedProject->name}}"/>
+        <meta name="twitter:description" content="{{$requestAttributes->requestedProject->small_description}}"/>
+        <meta name="twitter:image" content="@if($requestAttributes->requestedProject->logo_url == '') {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
               @else
-              {{ url('/api/internal/media/'.$project->slug . '?type=photo&name=logo.jpg&format=project_thumb') }}
+              {{ url('/api/internal/media/'.$requestAttributes->requestedProject->slug . '?type=photo&name=logo.jpg&format=project_thumb') }}
               @endif"/>
 
         {{-- Share Links js--}}
@@ -65,16 +65,16 @@
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <link href='https://fonts.googleapis.com/css?family=Arimo' rel='stylesheet' type='text/css'>
 <link rel="manifest" href="{{ asset('/json/app-manifest.json') }}">
-<title>{{ Config::get('app.name') }} - @yield('title')</title>
+<title>{{ config('app.name') }} - @yield('title')</title>
 
 @include('favicon')
 
 <meta name="description" content="@yield('description')">
 <link rel="stylesheet" type="text/css" href="{{ asset('css/vendor-site.css') }}">
-<link rel="stylesheet" type="text/css" href="{{ asset('css/site.css').'?'.Config::get('app.release') }}">
+<link rel="stylesheet" type="text/css" href="{{ asset('css/site.css').'?'.config('app.release') }}">
 
-<script src="{{asset('/js/vendor-site.js').'?'.Config::get('app.release') }}"></script>
-<script src="{{asset('/js/site.js').'?'.Config::get('app.release') }}"></script>
+<script src="{{asset('/js/vendor-site.js').'?'.config('app.release') }}"></script>
+<script src="{{asset('/js/site.js').'?'.config('app.release') }}"></script>
 <script>
     window.EC5 = window.EC5 || {};
     window.EC5.SITE_URL = '{{url('')}}';
@@ -104,12 +104,12 @@
 
     <meta name="appleid-signin-scope" content="name email">
     @if(Route::currentRouteName() === 'login')
-        <meta name="appleid-signin-client-id" content="{{Config::get('auth.apple.login_client_id')}}">
-        <meta name="appleid-signin-redirect-uri" content="{{Config::get('auth.apple.login_redirect_uri')}}">
+        <meta name="appleid-signin-client-id" content="{{config('auth.apple.login_client_id')}}">
+        <meta name="appleid-signin-redirect-uri" content="{{config('auth.apple.login_redirect_uri')}}">
     @endif
     @if(Route::currentRouteName() === 'profile')
-        <meta name="appleid-signin-client-id" content="{{Config::get('auth.apple.connect_client_id')}}">
-        <meta name="appleid-signin-redirect-uri" content="{{Config::get('auth.apple.connect_redirect_uri')}}">
+        <meta name="appleid-signin-client-id" content="{{config('auth.apple.connect_client_id')}}">
+        <meta name="appleid-signin-redirect-uri" content="{{config('auth.apple.connect_redirect_uri')}}">
     @endif
     <meta name="appleid-signin-nonce" content="{{ csrf_token() }}">
 @endif
@@ -118,7 +118,7 @@
 <!-- End Cookie Consent plugin -->
 
 {{--Add analytics only for production site--}}
-@if(Config::get('app.env') == 'production')
+@if(config('app.env') == 'production')
     <script defer data-domain="five.epicollect.net" src="https://analytics.cgps.dev/js/plausible.js"></script>
 @endif
 

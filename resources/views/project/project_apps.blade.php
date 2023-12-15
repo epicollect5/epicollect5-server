@@ -27,5 +27,5 @@
 @include('modals/modal_app_delete')
 
 @section('scripts')
-    <script type="text/javascript" src="{{ asset('js/project/project.js').'?'.Config::get('app.release') }}"></script>
+    <script type="text/javascript" src="{{ asset('js/project/project.js').'?'.config('app.release') }}"></script>
 @stop

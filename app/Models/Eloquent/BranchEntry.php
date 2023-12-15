@@ -44,7 +44,7 @@ class BranchEntry extends Model
 
     public static function getBranchEntriesByBranchRef($projectId, $params, $columns = array('*')): Builder
     {
-        $q = DB::table(config('epicollect.strings.database_tables.branch_entries'))
+        $q = DB::table(config('epicollect.tables.branch_entries'))
             ->where('project_id', '=', $projectId)
             ->where('form_ref', '=', $params['form_ref'])
             ->where('owner_input_ref', '=', $params['branch_ref'])

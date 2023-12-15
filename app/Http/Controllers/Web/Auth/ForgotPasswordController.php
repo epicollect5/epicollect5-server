@@ -52,7 +52,7 @@ class ForgotPasswordController extends Controller
 
     public function sendResetEmail(Request $request, RuleForgot $validator, RuleRecaptcha $captchaValidator)
     {
-        $tokenExpiresAt = Config::get('auth.jwt-forgot.expire');
+        $tokenExpiresAt = config('auth.jwt-forgot.expire');
 
         //validate request
         $inputs = $request->all();
@@ -64,7 +64,7 @@ class ForgotPasswordController extends Controller
             return redirect()->back()->withErrors($validator->errors());
         }
 
-        if (!App::environment('testing')) {
+        if (!(App::environment() === 'testing')) {
             //parse recaptcha response for any errors
             $recaptchaResponse = $inputs['g-recaptcha-response'];
             $recaptchaErrors = $this->getAnyRecaptchaErrors($recaptchaResponse);
@@ -78,20 +78,20 @@ class ForgotPasswordController extends Controller
         //If anyone has a local account first and later adds a Google Account with the
         //same email, they are still local users who can login with both methods
         $user = User::where('email', $inputs['email'])
-            ->where('provider', Config::get('ec5Strings.providers.local'))
+            ->where('provider', config('epicollect.strings.providers.local'))
             ->first();
 
         //send actual email only if the user exists
         if ($user !== null) {
             //generate token jwt
-            $jwtConfig = Config::get('auth.jwt-forgot');
+            $jwtConfig = config('auth.jwt-forgot');
             try {
                 // Extract the key, from the config file.
                 $secretKey = $jwtConfig['secret_key'];
                 $expiryTime = time() + $jwtConfig['expire'];
 
                 $data = array(
-                    'iss' => Config::get('app.url'), // issuer
+                    'iss' => config('app.url'), // issuer
                     'iat' => time(), // issued at time
                     'jti' => (string)Uuid::generate(4), // unique token uuid v4
                     'exp' => $expiryTime, // expiry time

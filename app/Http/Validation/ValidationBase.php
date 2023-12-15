@@ -181,12 +181,12 @@ abstract class ValidationBase
             // Admins/Superadmins can use reserved words
             if (in_array(
                 Auth::user()->server_role,
-                [Config::get('ec5Strings.superadmin'), Config::get('ec5Strings.admin')]
+                [config('epicollect.strings.superadmin'), config('epicollect.strings.admin')]
             )) {
                 return true;
             }
 
-            foreach (Config::get('app.reserved_words') as $reservedName) {
+            foreach (config('app.reserved_words') as $reservedName) {
                 // If $reservedName is contained anywhere, return false
                 if (preg_match('/(' . $reservedName . ')/', $value)) {
                     return false;

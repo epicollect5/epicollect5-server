@@ -39,13 +39,13 @@ class VerifyGoogleUserExternalTest extends TestCase
     {
         $user = factory(User::class)->create();
         $email = $user->email;
-        $tokenExpiresAt = Config::get('testing.PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
+        $tokenExpiresAt = config('testing.PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
         $code = Generators::randomNumber(6, 1);
 
         factory(UserPasswordlessApi::class)
             ->create([
                 'email' => $email,
-                'code' => bcrypt($code, ['rounds' => Config::get('testing.BCRYPT_ROUNDS')]),
+                'code' => bcrypt($code, ['rounds' => config('testing.BCRYPT_ROUNDS')]),
                 'expires_at' => Carbon::now()->addSeconds($tokenExpiresAt)->toDateTimeString()
             ]);
 
@@ -72,14 +72,14 @@ class VerifyGoogleUserExternalTest extends TestCase
     {
         $user = factory(User::class)->create();
         $email = $user->email;
-        $tokenExpiresAt = Config::get('testing.PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
+        $tokenExpiresAt = config('testing.PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
         $code = Generators::randomNumber(6, 1);
 
         //add token to db
         factory(UserPasswordlessApi::class)
             ->create([
                 'email' => $email,
-                'code' => bcrypt($code, ['rounds' => Config::get('testing.BCRYPT_ROUNDS')]),
+                'code' => bcrypt($code, ['rounds' => config('testing.BCRYPT_ROUNDS')]),
                 'expires_at' => Carbon::now()->addSeconds($tokenExpiresAt)->toDateTimeString()
             ]);
 

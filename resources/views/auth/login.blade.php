@@ -100,6 +100,6 @@
 @stop
 
 @section('scripts')
-    <script src="https://www.google.com/recaptcha/api.js?render={{ Config::get('auth.google.recaptcha_site_key') }}"></script>
-    <script type="text/javascript" src="{{ asset('js/users/users.js') . '?' . Config::get('app.release') }}"></script>
+    <script src="https://www.google.com/recaptcha/api.js?render={{ config('auth.google.recaptcha_site_key') }}"></script>
+    <script type="text/javascript" src="{{ asset('js/users/users.js') . '?' . config('app.release') }}"></script>
 @stop

@@ -32,7 +32,7 @@ class ExceptionNotificationMail extends Mailable
      */
     public function build()
     {
-        return $this->from(Config::get('mail.from.address'), Config::get('mail.from.name'))
+        return $this->from(config('mail.from.address'), config('mail.from.name'))
             ->subject('Server Exception')
             ->view('emails.exception_notification');
     }

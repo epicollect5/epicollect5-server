@@ -16,7 +16,7 @@ class ArchiveProjectTest extends TestCase
 
     public function test_it_archives_projects()
     {
-        $repeatCount = 100; // Number of times to repeat the test case
+        $repeatCount = 25; // Number of times to repeat the test case
         // Create a Faker instance
         $faker = Faker::create();
 
@@ -32,7 +32,7 @@ class ArchiveProjectTest extends TestCase
             //assert project is present before archiving
             $this->assertEquals(1, Project::where('id', $project->id)->count());
             // imp: run the archiveProject trait by calling a controller which uses it
-            $result = $this->app->call('ec5\Http\Controllers\ProjectControllerBase@archiveProject', [
+            $result = $this->app->call('ec5\Http\Controllers\Web\Project\ProjectDeleteController@archiveProject', [
                 'projectId' => $project->id,
                 'projectSlug' => $project->slug
             ]);

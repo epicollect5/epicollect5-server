@@ -34,7 +34,7 @@ class UserAccountDeletionAdmin extends Mailable
      */
     public function build()
     {
-        return $this->from(Config::get('mail.from.address'), 'Epicollect5')
+        return $this->from(config('mail.from.address'), 'Epicollect5')
             ->subject('Account Deletion Request')
             ->view('emails.account_deletion_admin', ['email' => $this->email]);
     }

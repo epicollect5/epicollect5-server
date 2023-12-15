@@ -45,7 +45,7 @@ class CreateRepository extends Base
         }
 
         // Insert project details get back insert_id
-        $this->projectId = $this->insertReturnId(Config::get('ec5Tables.projects'), $projectDetails);
+        $this->projectId = $this->insertReturnId(config('epicollect.tables.projects'), $projectDetails);
         if (!$this->projectId) {
             $this->doRollBack();
             return $done;
@@ -54,9 +54,9 @@ class CreateRepository extends Base
         // Insert project role
         $projectRole['project_id'] = $this->projectId;
         $projectRole['user_id'] = $projectDetails['created_by'];
-        $projectRole['role'] = Config::get('ec5Permissions.projects.creator_role');
+        $projectRole['role'] = config('epicollect.permissions.projects.creator_role');
 
-        $projectRoleId = $this->insertReturnId(Config::get('ec5Tables.project_roles'), $projectRole);
+        $projectRoleId = $this->insertReturnId(config('epicollect.tables.project_roles'), $projectRole);
         if (!$projectRoleId) {
             $this->doRollBack();
             return $done;
@@ -66,7 +66,7 @@ class CreateRepository extends Base
         $statsData = $projectStats->getJsonData();
         $statsData['project_id'] = $this->projectId;
 
-        $projectStatId = $this->insertReturnId(Config::get('ec5Tables.project_stats'), $statsData);
+        $projectStatId = $this->insertReturnId(config('epicollect.tables.project_stats'), $statsData);
         if (!$projectStatId) {
             $this->doRollBack();
             return $done;
@@ -78,7 +78,7 @@ class CreateRepository extends Base
         $structureData['project_extra'] = $projectExtra->getJsonData();
         $structureData['project_mapping'] = $projectMapping->getJsonData();
 
-        $structureId = $this->insertReturnId(Config::get('ec5Tables.project_structures'), $structureData);
+        $structureId = $this->insertReturnId(config('epicollect.tables.project_structures'), $structureData);
         if (!$structureId) {
             $this->doRollBack();
             return $done;

@@ -47,15 +47,15 @@ class UserServiceTest extends TestCase
         $email = 'fake@email.com';
         $this->assertDatabaseMissing('users', [
             'email' => $email,
-            'name' => config('ec5Strings.user_placeholder.passwordless_first_name'),
+            'name' => config('epicollect.mappings.user_placeholder.passwordless_first_name'),
             'last_name' => '',
-            'state' => config('ec5Strings.user_state.active'),
-            'server_role' => config('ec5Strings.server_roles.basic')
+            'state' => config('epicollect.strings.user_state.active'),
+            'server_role' => config('epicollect.strings.server_roles.basic')
         ]);
 
         $this->assertDatabaseMissing('users_providers', [
             'email' => $email,
-            'provider' => config('ec5Strings.providers.passwordless')
+            'provider' => config('epicollect.strings.providers.passwordless')
         ]);
 
 
@@ -63,15 +63,15 @@ class UserServiceTest extends TestCase
 
         $this->assertDatabaseHas('users', [
             'email' => $email,
-            'name' => config('ec5Strings.user_placeholder.passwordless_first_name'),
+            'name' => config('epicollect.mappings.user_placeholder.passwordless_first_name'),
             'last_name' => '',
-            'state' => config('ec5Strings.user_state.active'),
-            'server_role' => config('ec5Strings.server_roles.basic')
+            'state' => config('epicollect.strings.user_state.active'),
+            'server_role' => config('epicollect.strings.server_roles.basic')
         ]);
 
         $this->assertDatabaseHas('users_providers', [
             'email' => $email,
-            'provider' => config('ec5Strings.providers.passwordless')
+            'provider' => config('epicollect.strings.providers.passwordless')
         ]);
     }
 
@@ -89,7 +89,7 @@ class UserServiceTest extends TestCase
                 'email' => $email,
                 'name' => '',
                 'last_name' => '',
-                'state' => config('ec5Strings.user_state.unverified')
+                'state' => config('epicollect.strings.user_state.unverified')
             ]
 
         );
@@ -98,8 +98,8 @@ class UserServiceTest extends TestCase
             'email' => $email,
             'name' => '',
             'last_name' => '',
-            'state' => config('ec5Strings.user_state.unverified'),
-            'server_role' => config('ec5Strings.server_roles.basic')
+            'state' => config('epicollect.strings.user_state.unverified'),
+            'server_role' => config('epicollect.strings.server_roles.basic')
         ]);
         $this->assertDatabaseMissing('users_providers', [
             'email' => $email,
@@ -110,16 +110,16 @@ class UserServiceTest extends TestCase
 
         $this->assertDatabaseHas('users', [
             'email' => $email,
-            'name' => config('ec5Strings.user_placeholder.passwordless_first_name'),
+            'name' => config('epicollect.mappings.user_placeholder.passwordless_first_name'),
             'last_name' => '',
-            'state' => config('ec5Strings.user_state.active'),
-            'server_role' => config('ec5Strings.server_roles.basic')
+            'state' => config('epicollect.strings.user_state.active'),
+            'server_role' => config('epicollect.strings.server_roles.basic')
         ]);
 
         $this->assertDatabaseHas('users_providers', [
             'email' => $email,
             'user_id' => $user->id,
-            'provider' => config('ec5Strings.providers.passwordless')
+            'provider' => config('epicollect.strings.providers.passwordless')
         ]);
     }
 
@@ -134,14 +134,14 @@ class UserServiceTest extends TestCase
             'email' => $this->googleUser->email,
             'name' => '',
             'last_name' => '',
-            'state' => config('ec5Strings.user_state.active'),
-            'server_role' => config('ec5Strings.server_roles.basic')
+            'state' => config('epicollect.strings.user_state.active'),
+            'server_role' => config('epicollect.strings.server_roles.basic')
         ]);
 
         $this->assertDatabaseHas('users_providers', [
             'email' => $this->googleUser->email,
             'user_id' => $user->id,
-            'provider' => config('ec5Strings.providers.google')
+            'provider' => config('epicollect.strings.providers.google')
         ]);
     }
 
@@ -153,14 +153,14 @@ class UserServiceTest extends TestCase
             'email' => $this->googleUser->email,
             'name' => $this->googleUser->user['given_name'],
             'last_name' => $this->googleUser->user['family_name'],
-            'state' => config('ec5Strings.user_state.active'),
-            'server_role' => config('ec5Strings.server_roles.basic')
+            'state' => config('epicollect.strings.user_state.active'),
+            'server_role' => config('epicollect.strings.server_roles.basic')
         ]);
 
         $this->assertDatabaseHas('users_providers', [
             'email' => $this->googleUser->email,
             'user_id' => $user->id,
-            'provider' => config('ec5Strings.providers.google')
+            'provider' => config('epicollect.strings.providers.google')
         ]);
     }
 
@@ -179,14 +179,14 @@ class UserServiceTest extends TestCase
             'email' => $email,
             'name' => $name,
             'last_name' => $lastName,
-            'state' => config('ec5Strings.user_state.active'),
-            'server_role' => config('ec5Strings.server_roles.basic')
+            'state' => config('epicollect.strings.user_state.active'),
+            'server_role' => config('epicollect.strings.server_roles.basic')
         ]);
 
         $this->assertDatabaseHas('users_providers', [
             'email' => $email,
             'user_id' => $user->id,
-            'provider' => config('ec5Strings.providers.apple')
+            'provider' => config('epicollect.strings.providers.apple')
         ]);
     }
 
@@ -203,8 +203,8 @@ class UserServiceTest extends TestCase
                 'email' => $this->googleUser->email,
                 'name' => '',
                 'last_name' => '',
-                'state' => config('ec5Strings.user_state.unverified'),
-                'server_role' => config('ec5Strings.server_roles.basic')
+                'state' => config('epicollect.strings.user_state.unverified'),
+                'server_role' => config('epicollect.strings.server_roles.basic')
             ]
 
         );
@@ -213,8 +213,8 @@ class UserServiceTest extends TestCase
             'email' => $this->googleUser->email,
             'name' => '',
             'last_name' => '',
-            'state' => config('ec5Strings.user_state.unverified'),
-            'server_role' => config('ec5Strings.server_roles.basic')
+            'state' => config('epicollect.strings.user_state.unverified'),
+            'server_role' => config('epicollect.strings.server_roles.basic')
         ]);
 
         $this->assertDatabaseMissing('users_providers', [
@@ -228,14 +228,14 @@ class UserServiceTest extends TestCase
             'email' => $this->googleUser->email,
             'name' => $this->googleUser->user['given_name'],
             'last_name' => $this->googleUser->user['family_name'],
-            'state' => config('ec5Strings.user_state.active'),
-            'server_role' => config('ec5Strings.server_roles.basic')
+            'state' => config('epicollect.strings.user_state.active'),
+            'server_role' => config('epicollect.strings.server_roles.basic')
         ]);
 
         $this->assertDatabaseHas('users_providers', [
             'email' => $this->googleUser->email,
             'user_id' => $user->id,
-            'provider' => config('ec5Strings.providers.google')
+            'provider' => config('epicollect.strings.providers.google')
         ]);
     }
 
@@ -248,8 +248,8 @@ class UserServiceTest extends TestCase
             'email' => $user->email,
             'name' => $user->name,
             'last_name' => $user->last_name,
-            'state' => config('ec5Strings.user_state.active'),
-            'server_role' => config('ec5Strings.server_roles.basic')
+            'state' => config('epicollect.strings.user_state.active'),
+            'server_role' => config('epicollect.strings.server_roles.basic')
         ]);
 
         $name = 'Apple name';
@@ -260,14 +260,14 @@ class UserServiceTest extends TestCase
             'email' => $user->email,
             'name' => $name,
             'last_name' => $lastName,
-            'state' => config('ec5Strings.user_state.active'),
-            'server_role' => config('ec5Strings.server_roles.basic')
+            'state' => config('epicollect.strings.user_state.active'),
+            'server_role' => config('epicollect.strings.server_roles.basic')
         ]);
 
         $this->assertDatabaseHas('users_providers', [
             'email' => $user->email,
             'user_id' => $user->id,
-            'provider' => config('ec5Strings.providers.apple')
+            'provider' => config('epicollect.strings.providers.apple')
         ]);
     }
 
@@ -287,7 +287,7 @@ class UserServiceTest extends TestCase
                 'email' => $email,
                 'name' => '',
                 'last_name' => '',
-                'state' => config('ec5Strings.user_state.unverified')
+                'state' => config('epicollect.strings.user_state.unverified')
             ]
         );
 
@@ -295,8 +295,8 @@ class UserServiceTest extends TestCase
             'email' => $email,
             'name' => '',
             'last_name' => '',
-            'state' => config('ec5Strings.user_state.unverified'),
-            'server_role' => config('ec5Strings.server_roles.basic')
+            'state' => config('epicollect.strings.user_state.unverified'),
+            'server_role' => config('epicollect.strings.server_roles.basic')
         ]);
 
         $this->assertDatabaseMissing('users_providers', [
@@ -316,14 +316,14 @@ class UserServiceTest extends TestCase
             'email' => $email,
             'name' => $name,
             'last_name' => $lastName,
-            'state' => config('ec5Strings.user_state.active'),
-            'server_role' => config('ec5Strings.server_roles.basic')
+            'state' => config('epicollect.strings.user_state.active'),
+            'server_role' => config('epicollect.strings.server_roles.basic')
         ]);
 
         $this->assertDatabaseHas('users_providers', [
             'email' => $email,
             'user_id' => $user->id,
-            'provider' => config('ec5Strings.providers.apple')
+            'provider' => config('epicollect.strings.providers.apple')
         ]);
     }
 

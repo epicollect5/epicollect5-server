@@ -53,7 +53,7 @@ class ApiThrottleRequests extends MiddlewareBase
             $this->limiter->hit($key, $decayMinutes);
         } catch (\Exception $e) {
             \Log::error('Rate limiter hit() exception', ['message' => $e->getMessage()]);
-            Mail::to(Config::get('ec5Setup.system.email'))->send(new ExceptionNotificationMail($e->getMessage()));
+            Mail::to(config('epicollect.setup.system.email'))->send(new ExceptionNotificationMail($e->getMessage()));
         }
 
         $response = $next($request);

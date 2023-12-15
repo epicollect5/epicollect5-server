@@ -18,9 +18,9 @@ class RuleProjectRole extends ValidationBase
     public function __construct()
     {
         // Add only valid 'provider' auth methods ie not 'local'
-        $authMethods = Config::get('auth.auth_methods');
-        $roles = Config::get('ec5Permissions.projects.roles.creator');
-        $invalidAuthMethod = array_search('local', Config::get('auth.auth_methods'));
+        $authMethods = config('auth.auth_methods');
+        $roles = config('epicollect.permissions.projects.roles.creator');
+        $invalidAuthMethod = array_search('local', config('auth.auth_methods'));
         if ($invalidAuthMethod !== false) {
             unset($authMethods[$invalidAuthMethod]);
         }
@@ -57,14 +57,14 @@ class RuleProjectRole extends ValidationBase
         }
 
         // $adminUser must have a valid role
-        if (!is_array(Config::get('ec5Permissions.projects.roles.' . $adminUserRole))) {
+        if (!is_array(config('epicollect.permissions.projects.roles.' . $adminUserRole))) {
             $this->errors['user'] = ['ec5_91'];
             return;
         }
 
         if ($newUserRole) {
             // $adminUser can only perform actions against certain roles, set in permissions config
-            if (!in_array($newUserRole, Config::get('ec5Permissions.projects.roles.' . $adminUserRole))) {
+            if (!in_array($newUserRole, config('epicollect.permissions.projects.roles.' . $adminUserRole))) {
                 $this->errors['user'] = ['ec5_91'];
                 return;
             }
@@ -73,7 +73,7 @@ class RuleProjectRole extends ValidationBase
         // If an existing role was passed in, check
         if ($existingUserRole) {
             // $requestedUser can only perform actions against certain roles, set in permissions config
-            if (!in_array($existingUserRole, Config::get('ec5Permissions.projects.roles.' . $adminUserRole))) {
+            if (!in_array($existingUserRole, config('epicollect.permissions.projects.roles.' . $adminUserRole))) {
                 $this->errors['user'] = ['ec5_91'];
                 return;
             }

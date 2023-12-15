@@ -37,7 +37,7 @@ class PasswordlessExternalTest extends TestCase
 
     public function testSendCode()
     {
-        $email = Config::get('testing.MANAGER_EMAIL');
+        $email = config('testing.MANAGER_EMAIL');
 
         //send a code to user for authentication
         Mail::fake();
@@ -60,14 +60,14 @@ class PasswordlessExternalTest extends TestCase
 
     public function testLogin()
     {
-        $email = Config::get('testing.MANAGER_EMAIL');
-        $tokenExpiresAt = Config::get('testing.PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
+        $email = config('testing.MANAGER_EMAIL');
+        $tokenExpiresAt = config('testing.PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
         $code = Generators::randomNumber(6, 1);
 
         factory(UserPasswordlessApi::class)
             ->create([
                 'email' => $email,
-                'code' => bcrypt($code, ['rounds' => Config::get('testing.BCRYPT_ROUNDS')]),
+                'code' => bcrypt($code, ['rounds' => config('testing.BCRYPT_ROUNDS')]),
                 'expires_at' => Carbon::now()->addSeconds($tokenExpiresAt)->toDateTimeString()
             ]);
 
@@ -94,15 +94,15 @@ class PasswordlessExternalTest extends TestCase
 
     public function testFailedLogin()
     {
-        $email = Config::get('testing.MANAGER_EMAIL');
-        $tokenExpiresAt = Config::get('testing.PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
+        $email = config('testing.MANAGER_EMAIL');
+        $tokenExpiresAt = config('testing.PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
         $code = Generators::randomNumber(6, 1);
 
         //add token to db
         factory(UserPasswordlessApi::class)
             ->create([
                 'email' => $email,
-                'code' => bcrypt($code, ['rounds' => Config::get('testing.BCRYPT_ROUNDS')]),
+                'code' => bcrypt($code, ['rounds' => config('testing.BCRYPT_ROUNDS')]),
                 'expires_at' => Carbon::now()->addSeconds($tokenExpiresAt)->toDateTimeString()
             ]);
 

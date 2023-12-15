@@ -30,7 +30,7 @@ class DownloadControllerTest extends TestCase
         $project = factory(Project::class)->create(
             [
                 'created_by' => $user->id,
-                'access' => config('ec5Strings.project_access.public')
+                'access' => config('epicollect.strings.project_access.public')
             ]
         );
 
@@ -86,7 +86,7 @@ class DownloadControllerTest extends TestCase
         $project = factory(Project::class)->create(
             [
                 'created_by' => $user->id,
-                'access' => config('ec5Strings.project_access.public')
+                'access' => config('epicollect.strings.project_access.public')
             ]
         );
 
@@ -109,9 +109,9 @@ class DownloadControllerTest extends TestCase
                 'total_entries' => 0
             ]
         );
-        $cookies = [config('epicollect.strings.cookies.download-entries') => Carbon::now()->timestamp];
+        $cookies = [config('epicollect.mappings.cookies.download-entries') => Carbon::now()->timestamp];
         $params = [
-            config('epicollect.strings.cookies.download-entries') => Carbon::now()->timestamp,
+            config('epicollect.mappings.cookies.download-entries') => Carbon::now()->timestamp,
             'format' => $format
         ];
         $response = $this->actingAs($user)->call('GET', 'api/internal/download-entries/' . $project->slug, $params, $cookies);
@@ -146,7 +146,7 @@ class DownloadControllerTest extends TestCase
         $project = factory(Project::class)->create(
             [
                 'created_by' => $user->id,
-                'access' => config('ec5Strings.project_access.private')
+                'access' => config('epicollect.strings.project_access.private')
             ]
         );
 
@@ -169,9 +169,9 @@ class DownloadControllerTest extends TestCase
                 'total_entries' => 0
             ]
         );
-        $cookies = [config('epicollect.strings.cookies.download-entries') => Carbon::now()->timestamp];
+        $cookies = [config('epicollect.mappings.cookies.download-entries') => Carbon::now()->timestamp];
         $params = [
-            config('epicollect.strings.cookies.download-entries') => Carbon::now()->timestamp,
+            config('epicollect.mappings.cookies.download-entries') => Carbon::now()->timestamp,
             'format' => $format
         ];
         $response = $this->actingAs($user)->call('GET', 'api/internal/download-entries/' . $project->slug, $params, $cookies);
@@ -206,7 +206,7 @@ class DownloadControllerTest extends TestCase
         $project = factory(Project::class)->create(
             [
                 'created_by' => $user->id,
-                'access' => config('ec5Strings.project_access.public')
+                'access' => config('epicollect.strings.project_access.public')
             ]
         );
 
@@ -229,9 +229,9 @@ class DownloadControllerTest extends TestCase
                 'total_entries' => 0
             ]
         );
-        $cookies = [config('epicollect.strings.cookies.download-entries') => Carbon::now()->timestamp];
+        $cookies = [config('epicollect.mappings.cookies.download-entries') => Carbon::now()->timestamp];
         $params = [
-            config('epicollect.strings.cookies.download-entries') => Carbon::now()->timestamp,
+            config('epicollect.mappings.cookies.download-entries') => Carbon::now()->timestamp,
             'format' => $format
         ];
         $response = $this->actingAs($user)->call('GET', 'api/internal/download-entries/' . $project->slug, $params, $cookies);
@@ -266,7 +266,7 @@ class DownloadControllerTest extends TestCase
         $project = factory(Project::class)->create(
             [
                 'created_by' => $user->id,
-                'access' => config('ec5Strings.project_access.private')
+                'access' => config('epicollect.strings.project_access.private')
             ]
         );
 
@@ -289,9 +289,9 @@ class DownloadControllerTest extends TestCase
                 'total_entries' => 0
             ]
         );
-        $cookies = [config('epicollect.strings.cookies.download-entries') => Carbon::now()->timestamp];
+        $cookies = [config('epicollect.mappings.cookies.download-entries') => Carbon::now()->timestamp];
         $params = [
-            config('epicollect.strings.cookies.download-entries') => Carbon::now()->timestamp,
+            config('epicollect.mappings.cookies.download-entries') => Carbon::now()->timestamp,
             'format' => $format
         ];
         $response = $this->actingAs($user)->call('GET', 'api/internal/download-entries/' . $project->slug, $params, $cookies);
@@ -341,7 +341,7 @@ class DownloadControllerTest extends TestCase
                 'name' => $projectDefinition['data']['project']['name'],
                 'slug' => $projectDefinition['data']['project']['slug'],
                 'created_by' => $user->id,
-                'access' => config('ec5Strings.project_access.private')
+                'access' => config('epicollect.strings.project_access.private')
             ]
         );
 
@@ -381,8 +381,8 @@ class DownloadControllerTest extends TestCase
             dd($response, json_encode($projectDefinition));
         }
 
-        $cookies = [config('epicollect.strings.cookies.download-entries') => Carbon::now()->timestamp];
-        $params = [config('epicollect.strings.cookies.download-entries') => Carbon::now()->timestamp,
+        $cookies = [config('epicollect.mappings.cookies.download-entries') => Carbon::now()->timestamp];
+        $params = [config('epicollect.mappings.cookies.download-entries') => Carbon::now()->timestamp,
             'format' => $format];
         $response = $this->actingAs($user)->call('GET', 'api/internal/download-entries/' . $project->slug, $params, $cookies);
 
@@ -431,7 +431,7 @@ class DownloadControllerTest extends TestCase
                 'name' => $projectDefinition['data']['project']['name'],
                 'slug' => $projectDefinition['data']['project']['slug'],
                 'created_by' => $user->id,
-                'access' => config('ec5Strings.project_access.private')
+                'access' => config('epicollect.strings.project_access.private')
             ]
         );
 
@@ -471,8 +471,8 @@ class DownloadControllerTest extends TestCase
             dd($response, json_encode($projectDefinition));
         }
 
-        $cookies = [config('epicollect.strings.cookies.download-entries') => Carbon::now()->timestamp];
-        $params = [config('epicollect.strings.cookies.download-entries') => Carbon::now()->timestamp,
+        $cookies = [config('epicollect.mappings.cookies.download-entries') => Carbon::now()->timestamp];
+        $params = [config('epicollect.mappings.cookies.download-entries') => Carbon::now()->timestamp,
             'format' => $format];
         $response = $this->actingAs($user)->call('GET', 'api/internal/download-entries/' . $project->slug, $params, $cookies);
 
@@ -506,7 +506,7 @@ class DownloadControllerTest extends TestCase
         $project = factory(Project::class)->create(
             [
                 'created_by' => $user->id,
-                'access' => config('ec5Strings.project_access.public')
+                'access' => config('epicollect.strings.project_access.public')
             ]
         );
 
@@ -529,9 +529,9 @@ class DownloadControllerTest extends TestCase
                 'total_entries' => 0
             ]
         );
-        $cookies = [config('epicollect.strings.cookies.download-entries') => Carbon::now()->timestamp];
+        $cookies = [config('epicollect.mappings.cookies.download-entries') => Carbon::now()->timestamp];
         $params = [
-            config('epicollect.strings.cookies.download-entries') => Carbon::now()->timestamp,
+            config('epicollect.mappings.cookies.download-entries') => Carbon::now()->timestamp,
             'format' => 'ciao',
             'map_index' => 0
         ];
@@ -539,7 +539,7 @@ class DownloadControllerTest extends TestCase
         $response->assertStatus(400);
 
         $params = [
-            config('epicollect.strings.cookies.download-entries') => Carbon::now()->timestamp,
+            config('epicollect.mappings.cookies.download-entries') => Carbon::now()->timestamp,
             'format' => 'gibberish',
             'map_index' => 0
         ];
@@ -547,7 +547,7 @@ class DownloadControllerTest extends TestCase
         $response->assertStatus(400);
 
         $params = [
-            config('epicollect.strings.cookies.download-entries') => Carbon::now()->timestamp,
+            config('epicollect.mappings.cookies.download-entries') => Carbon::now()->timestamp,
             'format' => 'csv',
             'map_index' => 'gibberish'
         ];
@@ -564,7 +564,7 @@ class DownloadControllerTest extends TestCase
         $project = factory(Project::class)->create(
             [
                 'created_by' => $user->id,
-                'access' => config('ec5Strings.project_access.public')
+                'access' => config('epicollect.strings.project_access.public')
             ]
         );
 
@@ -619,7 +619,7 @@ class DownloadControllerTest extends TestCase
         $project = factory(Project::class)->create(
             [
                 'created_by' => $user->id,
-                'access' => config('ec5Strings.project_access.public')
+                'access' => config('epicollect.strings.project_access.public')
             ]
         );
 
@@ -645,7 +645,7 @@ class DownloadControllerTest extends TestCase
         $response = $this
             ->actingAs($user)
             ->json('GET', 'api/internal/download-entries/' . $project->slug)
-            ->withCookie(config('epicollect.strings.cookies.download-entries'), 'gibberish');
+            ->withCookie(config('epicollect.mappings.cookies.download-entries'), 'gibberish');
 
 
         //for reasons unknown when using withCookie() we need to change approch to test the response

@@ -79,7 +79,7 @@ class LocalController extends AuthController
 
             if (Auth::attempt($credentials, $remember)) {
                 //check user logged in state
-                if (Auth::user()->state === Config::get('ec5Strings.user_state.unverified')) {
+                if (Auth::user()->state === config('epicollect.strings.user_state.unverified')) {
                     //verify user as credentials are correct
                     if (!$this->verifyLocalUser(Auth::user())) {
                         return redirect()->route('login')->withErrors(['ec5_389']);
@@ -109,7 +109,7 @@ class LocalController extends AuthController
     {
         try {
             $userModel = User::where('email', $user->email)->first();
-            $userModel->state = Config::get('ec5Strings.user_state.active');
+            $userModel->state = config('epicollect.strings.user_state.active');
             return $userModel->save();
         } catch (\Exception $e) {
             \Log::error('Error verifying local user', ['exception' => $e->getMessage()]);

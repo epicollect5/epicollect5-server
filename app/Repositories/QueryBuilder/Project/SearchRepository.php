@@ -14,8 +14,8 @@ class SearchRepository implements RepositoryInterface
 
     public function __construct()
     {
-        $this->projectsTable = Config::get('ec5Tables.projects');
-        $this->projectsStatsTable = Config::get('ec5Tables.project_stats');
+        $this->projectsTable = config('epicollect.tables.projects');
+        $this->projectsStatsTable = config('epicollect.tables.project_stats');
     }
 
     public function all($columns = array('*'))
@@ -65,7 +65,7 @@ class SearchRepository implements RepositoryInterface
         );
 
         $query = $query->leftJoin(
-            Config::get('ec5Tables.project_structures'),
+            config('epicollect.tables.project_structures'),
             'projects.id',
             '=',
             'project_structures.project_id'

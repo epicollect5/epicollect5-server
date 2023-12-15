@@ -29,8 +29,8 @@ class RuleInput extends ValidationBase
      */
     public function __construct()
     {
-        $this->rules['type'] = 'required|in:' . implode(',', Config::get('ec5Enums.inputs_type'));
-        $this->rules['datetime_format'] = 'nullable|in:' . implode(',', Config::get('ec5Enums.datetime_format'));
+        $this->rules['type'] = 'required|in:' . implode(',', array_keys(config('epicollect.strings.inputs_type')));
+        $this->rules['datetime_format'] = 'nullable|in:' . implode(',', array_keys(config('epicollect.strings.datetime_format')));
     }
 
     /**
@@ -59,15 +59,15 @@ class RuleInput extends ValidationBase
 
         // Set the question length limit
         switch ($inputType) {
-            case Config::get('ec5Strings.inputs_type.readme'):
+            case config('epicollect.strings.inputs_type.readme'):
                 // If we have a type 'readme', limit is higher
-                $questionLengthLimit = Config::get('ec5Limits.readme_question_limit');
+                $questionLengthLimit = config('epicollect.limits.readme_question_limit');
                 // Decode then strip the html tags
                 $question = strip_tags(html_entity_decode($this->data['question']));
                 break;
             default:
                 $question = $this->data['question'];
-                $questionLengthLimit = Config::get('ec5Limits.question_limit');
+                $questionLengthLimit = config('epicollect.limits.question_limit');
         }
 
         // Check the length
@@ -122,7 +122,7 @@ class RuleInput extends ValidationBase
             $this->addAdditionalError('question', $this->data['question']);
         }
 
-        if (count($this->data['possible_answers']) > Config::get('ec5Limits.possible_answers_limit')) {
+        if (count($this->data['possible_answers']) > config('epicollect.limits.possible_answers_limit')) {
             $this->addAdditionalError($this->data['ref'], 'ec5_340');
             $this->addAdditionalError('question', $this->data['question']);
         }
@@ -134,13 +134,13 @@ class RuleInput extends ValidationBase
             }
 
             //validate possible answers 'answer' length
-            if (mb_strlen($value['answer'], 'UTF-8') > Config::get('ec5Limits.possible_answers_length_limit')) {
+            if (mb_strlen($value['answer'], 'UTF-8') > config('epicollect.limits.possible_answers_length_limit')) {
                 $this->addAdditionalError($this->data['ref'], 'ec5_341');
                 $this->addAdditionalError('question', $this->data['question']);
             }
 
             //validate possible answer 'answer_ref' length
-            if (strlen($value['answer_ref']) !== Config::get('ec5Limits.possible_answer_ref_length_limit')) {
+            if (strlen($value['answer_ref']) !== config('epicollect.limits.possible_answer_ref_length_limit')) {
                 $this->addAdditionalError($this->data['ref'], 'ec5_355');
                 $this->addAdditionalError('question', $this->data['question']);
             }
@@ -165,7 +165,7 @@ class RuleInput extends ValidationBase
             $this->addAdditionalError('question', $this->data['question']);
         }
 
-        if (count($this->data['possible_answers']) > Config::get('ec5Limits.possible_answers_limit')) {
+        if (count($this->data['possible_answers']) > config('epicollect.limits.possible_answers_limit')) {
             $this->addAdditionalError($this->data['ref'], 'ec5_340');
             $this->addAdditionalError('question', $this->data['question']);
         }
@@ -177,13 +177,13 @@ class RuleInput extends ValidationBase
             }
 
             //validate possible answers length
-            if (mb_strlen($value['answer'], 'UTF-8') > Config::get('ec5Limits.possible_answers_length_limit')) {
+            if (mb_strlen($value['answer'], 'UTF-8') > config('epicollect.limits.possible_answers_length_limit')) {
                 $this->addAdditionalError($this->data['ref'], 'ec5_341');
                 $this->addAdditionalError('question', $this->data['question']);
             }
 
             //validate possible answer 'answer_ref' length
-            if (strlen($value['answer_ref']) !== Config::get('ec5Limits.possible_answer_ref_length_limit')) {
+            if (strlen($value['answer_ref']) !== config('epicollect.limits.possible_answer_ref_length_limit')) {
                 $this->addAdditionalError($this->data['ref'], 'ec5_355');
                 $this->addAdditionalError('question', $this->data['question']);
             }
@@ -209,7 +209,7 @@ class RuleInput extends ValidationBase
         }
 
         //too many possible answers? Bail out
-        if (count($this->data['possible_answers']) > Config::get('ec5Limits.possible_answers_limit')) {
+        if (count($this->data['possible_answers']) > config('epicollect.limits.possible_answers_limit')) {
             $this->addAdditionalError($this->data['ref'], 'ec5_340');
             $this->addAdditionalError('question', $this->data['question']);
             return false;
@@ -224,13 +224,13 @@ class RuleInput extends ValidationBase
             //validate possible answers length handling unicodes:
             // mb_strlen counts chars, ehile strlen counts bytes!
             //https://goo.gl/HDZdnU
-            if (mb_strlen($value['answer'], 'UTF-8') > Config::get('ec5Limits.possible_answers_length_limit')) {
+            if (mb_strlen($value['answer'], 'UTF-8') > config('epicollect.limits.possible_answers_length_limit')) {
                 $this->addAdditionalError($this->data['ref'], 'ec5_341');
                 $this->addAdditionalError('question', $this->data['question']);
             }
 
             //validate possible answer 'answer_ref' length
-            if (strlen($value['answer_ref']) !== Config::get('ec5Limits.possible_answer_ref_length_limit')) {
+            if (strlen($value['answer_ref']) !== config('epicollect.limits.possible_answer_ref_length_limit')) {
                 $this->addAdditionalError($this->data['ref'], 'ec5_355');
                 $this->addAdditionalError('question', $this->data['question']);
             }
@@ -254,7 +254,7 @@ class RuleInput extends ValidationBase
             $this->addAdditionalError('question', $this->data['question']);
         }
 
-        if (count($this->data['possible_answers']) > Config::get('ec5Limits.possible_answers_search_limit')) {
+        if (count($this->data['possible_answers']) > config('epicollect.limits.possible_answers_search_limit')) {
             $this->addAdditionalError($this->data['ref'], 'ec5_340');
             $this->addAdditionalError('question', $this->data['question']);
         }
@@ -267,13 +267,13 @@ class RuleInput extends ValidationBase
             }
 
             //validate possible answers length
-            if (mb_strlen($value['answer'], 'UTF-8') > Config::get('ec5Limits.possible_answers_length_limit')) {
+            if (mb_strlen($value['answer'], 'UTF-8') > config('epicollect.limits.possible_answers_length_limit')) {
                 $this->addAdditionalError($this->data['ref'], 'ec5_341');
                 $this->addAdditionalError('question', $this->data['question']);
             }
 
             //validate possible answer 'answer_ref' length
-            if (strlen($value['answer_ref']) !== Config::get('ec5Limits.possible_answer_ref_length_limit')) {
+            if (strlen($value['answer_ref']) !== config('epicollect.limits.possible_answer_ref_length_limit')) {
                 $this->addAdditionalError($this->data['ref'], 'ec5_355');
                 $this->addAdditionalError('question', $this->data['question']);
             }
@@ -296,7 +296,7 @@ class RuleInput extends ValidationBase
             $this->addAdditionalError('question', $this->data['question']);
         }
 
-        if (count($this->data['possible_answers']) > Config::get('ec5Limits.possible_answers_search_limit')) {
+        if (count($this->data['possible_answers']) > config('epicollect.limits.possible_answers_search_limit')) {
             $this->addAdditionalError($this->data['ref'], 'ec5_340');
             $this->addAdditionalError('question', $this->data['question']);
         }
@@ -308,13 +308,13 @@ class RuleInput extends ValidationBase
             }
 
             //validate possible answers length
-            if (mb_strlen($value['answer'], 'UTF-8') > Config::get('ec5Limits.possible_answers_length_limit')) {
+            if (mb_strlen($value['answer'], 'UTF-8') > config('epicollect.limits.possible_answers_length_limit')) {
                 $this->addAdditionalError($this->data['ref'], 'ec5_341');
                 $this->addAdditionalError('question', $this->data['question']);
             }
 
             //validate possible answer 'answer_ref' length
-            if (strlen($value['answer_ref']) !== Config::get('ec5Limits.possible_answer_ref_length_limit')) {
+            if (strlen($value['answer_ref']) !== config('epicollect.limits.possible_answer_ref_length_limit')) {
                 $this->addAdditionalError($this->data['ref'], 'ec5_355');
                 $this->addAdditionalError('question', $this->data['question']);
             }
@@ -372,22 +372,22 @@ class RuleInput extends ValidationBase
     private function checkJumps()
     {
         $jumps = $this->data['jumps'];
-        $jump_keys = Config::get('ec5Strings.jump_keys');
+        $jump_keys = array_keys(config('epicollect.strings.jump_keys'));
 
         // Loop jumps and check no values are empty
         foreach ($jumps as $jump) {
 
             // Check that certain types only have certain values for 'when' etc i.e. text input always has 'ALL'
             switch ($this->data['type']) {
-                case Config::get('ec5Strings.inputs_type.checkbox'):
-                case Config::get('ec5Strings.inputs_type.radio'):
-                case Config::get('ec5Strings.inputs_type.dropdown'):
-                case Config::get('ec5Strings.inputs_type.searchsingle'):
-                case Config::get('ec5Strings.inputs_type.searchmultiple'):
+                case config('epicollect.strings.inputs_type.checkbox'):
+                case config('epicollect.strings.inputs_type.radio'):
+                case config('epicollect.strings.inputs_type.dropdown'):
+                case config('epicollect.strings.inputs_type.searchsingle'):
+                case config('epicollect.strings.inputs_type.searchmultiple'):
                     // checkbox/radio/dropdown allowed all types of jumps
 
                     // If not 'ALL' or 'NO_ANSWER_GIVEN'
-                    if (($jump['when'] !== Config::get('ec5Strings.jumps.ALL') && $jump['when'] !== Config::get('ec5Strings.jumps.NO_ANSWER_GIVEN'))) {
+                    if (($jump['when'] !== config('epicollect.strings.jumps.ALL') && $jump['when'] !== config('epicollect.strings.jumps.NO_ANSWER_GIVEN'))) {
                         // Check answer ref is valid in the jump
                         $match = false;
                         // Search for a match
@@ -404,7 +404,7 @@ class RuleInput extends ValidationBase
 
                     break;
                 default:
-                    if ($jump['when'] !== Config::get('ec5Strings.jumps.ALL')) {
+                    if ($jump['when'] !== config('epicollect.strings.jumps.ALL')) {
                         $this->addAdditionalError($this->data['ref'], 'ec5_207');
                     }
             }
@@ -415,7 +415,7 @@ class RuleInput extends ValidationBase
             if (empty($jump['to']) ||
                 empty($jump['when']) ||
                 (empty($jump['answer_ref']) &&
-                    ($jump['when'] !== Config::get('ec5Strings.jumps.ALL') && $jump['when'] !== Config::get('ec5Strings.jumps.NO_ANSWER_GIVEN')))
+                    ($jump['when'] !== config('epicollect.strings.jumps.ALL') && $jump['when'] !== config('epicollect.strings.jumps.NO_ANSWER_GIVEN')))
             ) {
                 $this->addAdditionalError($this->data['ref'], 'ec5_207');
             }

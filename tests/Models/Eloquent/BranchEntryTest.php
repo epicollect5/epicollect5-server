@@ -28,7 +28,7 @@ class BranchEntryTest extends TestCase
         parent::setUp();
 
         $user = factory(User::class)->create();
-        $superadmin = User::where('email', config('ec5Setup.super_admin_user.email'))->first();
+        $superadmin = User::where('email', config('epicollect.setup.super_admin_user.email'))->first();
         $project = factory(Project::class)->create([
             'created_by' => $user->id
         ]);

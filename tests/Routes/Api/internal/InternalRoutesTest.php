@@ -38,12 +38,12 @@ class InternalRoutesTest extends TestCase
         // //create mock private project with that user
         // $project = factory(LegacyProject::class)->create([
         //     'created_by' => $user->id,
-        //     'access' => Config::get('ec5Strings.project_access.private')
+        //     'access' => config('epicollect.strings.project_access.private')
         // ]);
 
 
         // //assign the user to that project with the CREATOR role
-        // $role = Config::get('ec5Strings.project_roles.creator');
+        // $role = config('epicollect.strings.project_roles.creator');
         // $projectRole = factory(ProjectRole::class)->create([
         //     'user_id' => $user->id,
         //     'project_id' => $project->id,

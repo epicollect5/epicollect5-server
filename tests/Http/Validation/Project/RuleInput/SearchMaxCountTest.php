@@ -53,7 +53,7 @@ class SearchMaxCountTest extends InputTest
             'logo_url' => 'path-to-file',
             'description' => 'A long description here',
             'entries_limits' => [],
-            'category' => Config::get('ec5Enums.search_projects_defaults.category'),
+            'category' => config('epicollect.strings.project_categories.general'),
             'forms' => []
         ];
     }

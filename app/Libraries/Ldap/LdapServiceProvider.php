@@ -31,10 +31,9 @@ class LdapServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->singleton('ldap', function()
-        {
+        $this->app->singleton('ldap', function () {
             // Create new LDAP connection based on configuration files
-            $ldap = new LdapConnection($this->getLdapConfig());
+            $ldap = new LdapConnection(config('epicollect.setup.ldap'));
 
             return new LdapUserProvider($ldap);
         });
@@ -46,21 +45,9 @@ class LdapServiceProvider extends ServiceProvider
      *
      * @return array
      */
-    public function provides()
+    public function provides(): array
     {
         return ['ldap'];
-    }
-
-    /**
-     * @return array
-     */
-    private function getLdapConfig()
-    {
-        if( is_array($this->app['config']['ec5Ldap']) ){
-            return $this->app['config']['ec5Ldap'];
-        }
-
-        return [];
     }
 
 }

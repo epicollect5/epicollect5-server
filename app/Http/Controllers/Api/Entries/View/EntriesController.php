@@ -4,21 +4,14 @@ namespace ec5\Http\Controllers\Api\Entries\View;
 
 use ec5\Http\Controllers\Api\ApiRequest;
 use ec5\Http\Controllers\Api\ApiResponse;
-
-use Illuminate\Support\Collection;
-
 use ec5\Http\Validation\Entries\Upload\RuleAnswers;
 use ec5\Http\Validation\Entries\Search\RuleQueryString;
-
 use ec5\Models\ProjectData\DataMappingHelper;
 use ec5\Repositories\QueryBuilder\Entry\Search\BranchEntryRepository;
 use ec5\Repositories\QueryBuilder\Entry\Search\EntryRepository;
-
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Config;
-use Log;
 use Carbon\Carbon;
-
 
 class EntriesController extends EntrySearchControllerBase
 {
@@ -67,7 +60,7 @@ class EntriesController extends EntrySearchControllerBase
             $ruleAnswers
         );
 
-        $this->allowedSearchKeys = Config::get('ec5Enums.search_data_entries');
+        $this->allowedSearchKeys = array_keys(config('epicollect.strings.search_data_entries'));
         $this->dataMappingHelper = $dataMappingHelper;
     }
 
@@ -77,13 +70,13 @@ class EntriesController extends EntrySearchControllerBase
      */
     public function export(Request $request)
     {
-        $jsonPerPageLimit = Config::get('ec5Limits.entries_export_per_page_json');
-        $csvPerPageLimit = Config::get('ec5Limits.entries_export_per_page_csv');
+        $jsonPerPageLimit = config('epicollect.limits.entries_export_per_page_json');
+        $csvPerPageLimit = config('epicollect.limits.entries_export_per_page_csv');
 
         // Check the mapping is valid
-        $projectMapping = $this->requestedProject->getProjectMapping();
+        $projectMapping = $this->requestedProject()->getProjectMapping();
 
-        $options = $this->getRequestParams($request, Config::get('ec5Limits.entries_table.per_page'));
+        $options = $this->getRequestParams($request, config('epicollect.limits.entries_table.per_page'));
 
         // Validate the options and query string
         if (!$this->validateParams($options)) {
@@ -121,7 +114,7 @@ class EntriesController extends EntrySearchControllerBase
         }
         // Set the mapping
         $this->dataMappingHelper->initialiseMapping(
-            $this->requestedProject,
+            $this->requestedProject(),
             $options['format'],
             $options['branch_ref'] !== '' ? 'branch' : 'form',
             $options['form_ref'],
@@ -157,11 +150,11 @@ class EntriesController extends EntrySearchControllerBase
 
     /**
      * @param Request $request
-     * @return ApiResponse|\Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function show(Request $request)
     {
-        $options = $this->getRequestParams($request, Config::get('ec5Limits.entries_table.per_page'));
+        $options = $this->getRequestParams($request, config('epicollect.limits.entries_table.per_page'));
 
         // Validate the options and query string
         if (!$this->validateParams($options)) {
@@ -184,7 +177,7 @@ class EntriesController extends EntrySearchControllerBase
     private function getEntriesJSON(array $options, $map = false)
     {
         $columns = ['title', 'entry_data', 'branch_counts', 'child_counts', 'user_id', 'uploaded_at', 'created_at'];
-        $project = $this->requestedProject;
+        $project = $this->requestedProject();
         $query = $this->runQuery($options, $columns);
 
         //get newest and oldest dates of this subset (before pagination occurs)
@@ -229,7 +222,7 @@ class EntriesController extends EntrySearchControllerBase
                     ),
                     true
                 );
-                $projectMapping = $this->requestedProject->getProjectMapping();
+                $projectMapping = $this->requestedProject()->getProjectMapping();
                 $data['mapping'] = $projectMapping->getMapDetails($options['map_index']);
             } else {
                 $entry['attributes']['branch_counts'] = json_decode($row->branch_counts, true);
@@ -306,7 +299,7 @@ class EntriesController extends EntrySearchControllerBase
     private function getBranchEntriesJson(array $options, $map = false)
     {
         $columns = ['title', 'entry_data', 'user_id', 'uploaded_at'];
-        $project = $this->requestedProject;
+        $project = $this->requestedProject();
 
         $query = $this->runQueryBranch($options, $columns);
 
@@ -341,7 +334,7 @@ class EntriesController extends EntrySearchControllerBase
                     ),
                     true
                 );
-                $projectMapping = $this->requestedProject->getProjectMapping();
+                $projectMapping = $this->requestedProject()->getProjectMapping();
                 $data['mapping'] = $projectMapping->getMapDetails($options['map_index']);
             } else {
                 // Add the user id

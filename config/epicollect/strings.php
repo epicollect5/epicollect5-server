@@ -70,13 +70,6 @@ return [
         'branch_entry' => 'branch_entry',
         'file_entry' => 'file_entry'
     ],
-    'mapping_reserved_keys' => [
-        'entry_uuid' => 'ec5_uuid',
-        'parent_uuid' => 'ec5_parent_uuid',
-        'branch_owner_uuid' => 'ec5_branch_owner_uuid',
-        'branch_ref' => 'ec5_branch_ref',
-        'branch_uuid' => 'ec5_branch_uuid'
-    ],
     'mapping_ec5_keys' => [
         'ec5_uuid' => 'ec5_uuid',
         'ec5_parent_uuid' => 'ec5_parent_uuid',
@@ -91,9 +84,9 @@ return [
         'IS_NOT' => 'IS_NOT'
     ],
     'jump_keys' => [
-        'to',
-        'when',
-        'answer_ref'
+        'to' => 'to',
+        'when' => 'when',
+        'answer_ref' => 'answer_ref'
     ],
     'providers' => [
         'local' => 'local',
@@ -103,27 +96,14 @@ return [
         'passwordless' => 'passwordless',
         'apple' => 'apple'
     ],
-    'cookies' => [
-        'download-entries' => 'epicollect5-download-entries'
-    ],
     'can_bulk_upload' => [
         'nobody' => 'nobody',
         'members' => 'members',
         'everybody' => 'everybody'
     ],
-    'user_placeholder' => [
-        'apple_first_name' => 'Apple User',
-        'apple_last_name' => 'n/a',
-        'passwordless_first_name' => 'User',
-        'passwordless_last_name' => 'n/a'
-    ],
     'inputs_without_answers' => [
         'group' => 'group',
         'readme' => 'readme'
-    ],
-    'input_special_types' => [
-        'branch' => 'branch',
-        'group' => 'group'
     ],
     'edit_settings' => [
         'access' => 'access',
@@ -174,17 +154,6 @@ return [
         'title' => 'title',
         'filename' => 'filename'
     ],
-    'search_data_entries_defaults' => [
-        'sort_by' => 'created_at',
-        'sort_order' => 'DESC',
-        'format' => 'json',
-        'headers' => 'true'
-    ],
-    'search_projects_defaults' => [
-        'sort_by' => 'created_at',
-        'sort_order' => 'DESC',
-        'category' => 'general'
-    ],
     'download_data_entries' => [
         'map_index' => 'map_index',
         'format' => 'format',
@@ -192,7 +161,6 @@ return [
         'filter_to' => 'filter_to',
         'filter_by' => 'filter_by'
     ],
-    'download_data_entries_format_default' => 'csv',
     'date_formats' => [
         'dd/MM/YYYY' => 'dd/MM/YYYY',
         'MM/dd/YYYY' => 'MM/dd/YYYY',
@@ -208,28 +176,16 @@ return [
         'mm:ss' => 'mm:ss'
     ],
     'datetime_format' => [
-        'dd/MM/YYYY' => 'd/m/Y',
-        'MM/dd/YYYY' => 'm/d/Y',
-        'YYYY/MM/dd' => 'Y/m/d',
-        'MM/YYYY' => 'm/Y',
-        'dd/MM' => 'd/m',
-        'HH:mm:ss' => 'H:i:s',
-        'hh:mm:ss' => 'H:i:s',
-        'HH:mm' => 'H:i',
-        'hh:mm' => 'H:i',
-        'mm:ss' => 'i:s'
-    ],
-    'datetime_formats_php' => [
-        'dd/MM/YYYY' => 'd/m/Y',
-        'MM/dd/YYYY' => 'm/d/Y',
-        'YYYY/MM/dd' => 'Y/m/d',
-        'MM/YYYY' => 'm/Y',
-        'dd/MM' => 'd/m',
-        'HH:mm:ss' => 'H:i:s',
-        'hh:mm:ss' => 'H:i:s',
-        'HH:mm' => 'H:i',
-        'hh:mm' => 'H:i',
-        'mm:ss' => 'i:s'
+        'dd/MM/YYYY' => 'dd/MM/YYYY',
+        'MM/dd/YYYY' => 'MM/dd/YYYY',
+        'YYYY/MM/dd' => 'YYYY/MM/dd',
+        'MM/YYYY' => 'MM/YYYY',
+        'dd/MM' => 'dd/MM',
+        'HH:mm:ss' => 'HH:mm:ss',
+        'hh:mm:ss' => 'hh:mm:ss',
+        'HH:mm' => 'HH:mm',
+        'hh:mm' => 'hh:mm',
+        'mm:ss' => 'mm:ss',
     ],
     'project_categories' => [
         'general' => 'general',
@@ -240,21 +196,11 @@ return [
         'economics' => 'economics',
         'science' => 'science'
     ],
-    'project_categories_icons' => [
-        'general' => 'fa-globe',
-        'social' => 'fa-users',
-        'art' => 'fa-paint-brush',
-        'humanities' => 'fa-graduation-cap',
-        'biology' => 'fa-transgender-alt',
-        'economics' => 'fa-money',
-        'science' => 'fa-flask'
-    ],
     'entry_location_keys' => [
         'latitude' => 'latitude',
         'longitude' => 'longitude',
         'accuracy' => 'accuracy'
     ],
-    'web_platform' => 'WEB',
     'edit_mapping_actions' => [
         'create' => 'create',
         'update' => 'update',
@@ -333,18 +279,5 @@ return [
     'media_file_extension' => [
         'jpg' => 'jpg',
         'mp4' => 'mp4'
-    ],
-    'database_tables' => ['users' => 'users',
-        'projects' => 'projects',
-        'project_structures' => 'project_structures',
-        'project_stats' => 'project_stats',
-        'projects_featured' => 'projects_featured',
-        'project_mapping' => 'project_export_mapping',
-        'project_roles' => 'project_roles',
-        'entries' => 'entries',
-        'branch_entries' => 'branch_entries',
-        'oauth_client_projects' => 'oauth_client_projects',
-        'oauth_clients' => 'oauth_clients',
-        'oauth_access_tokens' => 'oauth_access_tokens'
     ]
 ];

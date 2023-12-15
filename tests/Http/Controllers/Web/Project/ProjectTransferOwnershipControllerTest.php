@@ -32,7 +32,7 @@ class ProjectTransferOwnershipControllerTest extends TestCase
         ]);
 
         //assign the user to that project with the CREATOR role
-        $role = Config::get('ec5Strings.project_roles.creator');
+        $role = config('epicollect.strings.project_roles.creator');
         $projectRole = factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,

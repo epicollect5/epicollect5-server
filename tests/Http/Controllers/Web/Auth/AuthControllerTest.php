@@ -32,7 +32,7 @@ class AuthControllerTest extends TestCase
         $user = factory(User::class)->create();
         $project = factory(Project::class)->create([
             'created_by' => $user->id,
-            'access' => config('ec5Strings.project_access.private')
+            'access' => config('epicollect.strings.project_access.private')
         ]);
 
         //check redirection from dataviewer
@@ -54,7 +54,7 @@ class AuthControllerTest extends TestCase
         $user = factory(User::class)->create();
         $project = factory(Project::class)->create([
             'created_by' => $user->id,
-            'access' => config('ec5Strings.project_access.private')
+            'access' => config('epicollect.strings.project_access.private')
         ]);
 
         //check redirection from dataviewer

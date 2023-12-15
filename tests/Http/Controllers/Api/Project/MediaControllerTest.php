@@ -18,7 +18,7 @@ class MediaControllerTest extends TestCase
     {
         //create project
         $project = factory(Project::class)->create(
-            ['access' => config('ec5Strings.project_access.public')]
+            ['access' => config('epicollect.strings.project_access.public')]
         );
 
         $response = $this->json('GET', 'api/internal/media/' . $project->slug)
@@ -58,7 +58,7 @@ class MediaControllerTest extends TestCase
     {
         //create project
         $project = factory(Project::class)->create(
-            ['access' => config('ec5Strings.project_access.public')]
+            ['access' => config('epicollect.strings.project_access.public')]
         );
 
         $response = $this->json('GET', 'api/internal/media/' . $project->slug . '?type=wrong&name=filename&format=entry_thumb')
@@ -89,7 +89,7 @@ class MediaControllerTest extends TestCase
     {
         //create project
         $project = factory(Project::class)->create(
-            ['access' => config('ec5Strings.project_access.public')]
+            ['access' => config('epicollect.strings.project_access.public')]
         );
 
         $response = $this->json('GET', 'api/internal/media/' . $project->slug . '?type=photo')
@@ -124,7 +124,7 @@ class MediaControllerTest extends TestCase
     {
         //create project
         $project = factory(Project::class)->create(
-            ['access' => config('ec5Strings.project_access.public')]
+            ['access' => config('epicollect.strings.project_access.public')]
         );
 
         $response = $this->json('GET', 'api/internal/media/' . $project->slug . '?type=photo&format=entry_original')
@@ -154,7 +154,7 @@ class MediaControllerTest extends TestCase
     {
         //create project
         $project = factory(Project::class)->create(
-            ['access' => config('ec5Strings.project_access.public')]
+            ['access' => config('epicollect.strings.project_access.public')]
         );
 
         $response = $this->json('GET', 'api/internal/media/' . $project->slug . '?type=photo&format=entry_thumb')
@@ -184,7 +184,7 @@ class MediaControllerTest extends TestCase
     {
         //create project
         $project = factory(Project::class)->create(
-            ['access' => config('ec5Strings.project_access.public')]
+            ['access' => config('epicollect.strings.project_access.public')]
         );
 
         $response = $this->json('GET', 'api/internal/media/' . $project->slug . '?type=audio')
@@ -219,7 +219,7 @@ class MediaControllerTest extends TestCase
     {
         //create project
         $project = factory(Project::class)->create(
-            ['access' => config('ec5Strings.project_access.public')]
+            ['access' => config('epicollect.strings.project_access.public')]
         );
 
         $response = $this->json('GET', 'api/internal/media/' . $project->slug . '?type=audio&name=ciao&format=audio')
@@ -249,7 +249,7 @@ class MediaControllerTest extends TestCase
     {
         //create project
         $project = factory(Project::class)->create(
-            ['access' => config('ec5Strings.project_access.public')]
+            ['access' => config('epicollect.strings.project_access.public')]
         );
 
         $response = $this->json('GET', 'api/internal/media/' . $project->slug . '?type=audio&name=ciao&format=video')
@@ -279,7 +279,7 @@ class MediaControllerTest extends TestCase
     {
         //create project
         $project = factory(Project::class)->create(
-            ['access' => config('ec5Strings.project_access.public')]
+            ['access' => config('epicollect.strings.project_access.public')]
         );
 
         $response = $this->json('GET', 'api/internal/media/' . $project->slug . '?type=video')
@@ -314,7 +314,7 @@ class MediaControllerTest extends TestCase
     {
         //create project
         $project = factory(Project::class)->create(
-            ['access' => config('ec5Strings.project_access.public')]
+            ['access' => config('epicollect.strings.project_access.public')]
         );
 
         $response = $this->get('api/internal/media/' . $project->slug . '?type=photo&name=ciao&format=entry_original')
@@ -339,7 +339,7 @@ class MediaControllerTest extends TestCase
     {
         //create project
         $project = factory(Project::class)->create(
-            ['access' => config('ec5Strings.project_access.public')]
+            ['access' => config('epicollect.strings.project_access.public')]
         );
 
         //create a fake entry
@@ -400,7 +400,7 @@ class MediaControllerTest extends TestCase
     {
         //create project
         $project = factory(Project::class)->create(
-            ['access' => config('ec5Strings.project_access.public')]
+            ['access' => config('epicollect.strings.project_access.public')]
         );
 
         //create a fake entry
@@ -462,7 +462,7 @@ class MediaControllerTest extends TestCase
     {
         //create project
         $project = factory(Project::class)->create(
-            ['access' => config('ec5Strings.project_access.public')]
+            ['access' => config('epicollect.strings.project_access.public')]
         );
 
         //create a fake entry
@@ -492,7 +492,7 @@ class MediaControllerTest extends TestCase
     {
         //create project
         $project = factory(Project::class)->create(
-            ['access' => config('ec5Strings.project_access.public')]
+            ['access' => config('epicollect.strings.project_access.public')]
         );
 
         //create a fake entry
@@ -523,7 +523,7 @@ class MediaControllerTest extends TestCase
     {
         //create project
         $project = factory(Project::class)->create(
-            ['access' => config('ec5Strings.project_access.public')]
+            ['access' => config('epicollect.strings.project_access.public')]
         );
 
         $response = $this->json('GET', 'api/internal/temp-media/' . $project->slug)
@@ -563,7 +563,7 @@ class MediaControllerTest extends TestCase
     {
         //create project
         $project = factory(Project::class)->create(
-            ['access' => config('ec5Strings.project_access.public')]
+            ['access' => config('epicollect.strings.project_access.public')]
         );
 
         $response = $this->json('GET', 'api/internal/temp-media/' . $project->slug . '?type=wrong&name=filename&format=entry_thumb')
@@ -594,7 +594,7 @@ class MediaControllerTest extends TestCase
     {
         //create project
         $project = factory(Project::class)->create(
-            ['access' => config('ec5Strings.project_access.public')]
+            ['access' => config('epicollect.strings.project_access.public')]
         );
 
         $response = $this->json('GET', 'api/internal/temp-media/' . $project->slug . '?type=photo')
@@ -629,7 +629,7 @@ class MediaControllerTest extends TestCase
     {
         //create project
         $project = factory(Project::class)->create(
-            ['access' => config('ec5Strings.project_access.public')]
+            ['access' => config('epicollect.strings.project_access.public')]
         );
 
         $response = $this->json('GET', 'api/internal/temp-media/' . $project->slug . '?type=photo&format=entry_original')
@@ -659,7 +659,7 @@ class MediaControllerTest extends TestCase
     {
         //create project
         $project = factory(Project::class)->create(
-            ['access' => config('ec5Strings.project_access.public')]
+            ['access' => config('epicollect.strings.project_access.public')]
         );
 
         $response = $this->json('GET', 'api/internal/temp-media/' . $project->slug . '?type=photo&format=entry_thumb')
@@ -689,7 +689,7 @@ class MediaControllerTest extends TestCase
     {
         //create project
         $project = factory(Project::class)->create(
-            ['access' => config('ec5Strings.project_access.public')]
+            ['access' => config('epicollect.strings.project_access.public')]
         );
 
         $response = $this->json('GET', 'api/internal/temp-media/' . $project->slug . '?type=audio')
@@ -724,7 +724,7 @@ class MediaControllerTest extends TestCase
     {
         //create project
         $project = factory(Project::class)->create(
-            ['access' => config('ec5Strings.project_access.public')]
+            ['access' => config('epicollect.strings.project_access.public')]
         );
 
         $response = $this->json('GET', 'api/internal/temp-media/' . $project->slug . '?type=audio&name=ciao&format=audio')
@@ -754,7 +754,7 @@ class MediaControllerTest extends TestCase
     {
         //create project
         $project = factory(Project::class)->create(
-            ['access' => config('ec5Strings.project_access.public')]
+            ['access' => config('epicollect.strings.project_access.public')]
         );
 
         $response = $this->json('GET', 'api/internal/temp-media/' . $project->slug . '?type=audio&name=ciao&format=video')
@@ -784,7 +784,7 @@ class MediaControllerTest extends TestCase
     {
         //create project
         $project = factory(Project::class)->create(
-            ['access' => config('ec5Strings.project_access.public')]
+            ['access' => config('epicollect.strings.project_access.public')]
         );
 
         $response = $this->json('GET', 'api/internal/temp-media/' . $project->slug . '?type=video')
@@ -819,7 +819,7 @@ class MediaControllerTest extends TestCase
     {
         //create project
         $project = factory(Project::class)->create(
-            ['access' => config('ec5Strings.project_access.public')]
+            ['access' => config('epicollect.strings.project_access.public')]
         );
 
         $response = $this->get('api/internal/temp-media/' . $project->slug . '?type=photo&name=ciao&format=entry_original')
@@ -844,7 +844,7 @@ class MediaControllerTest extends TestCase
     {
         //create project
         $project = factory(Project::class)->create(
-            ['access' => config('ec5Strings.project_access.public')]
+            ['access' => config('epicollect.strings.project_access.public')]
         );
 
         //create a fake entry
@@ -884,7 +884,7 @@ class MediaControllerTest extends TestCase
     {
         //create project
         $project = factory(Project::class)->create(
-            ['access' => config('ec5Strings.project_access.public')]
+            ['access' => config('epicollect.strings.project_access.public')]
         );
 
         //create a fake entry
@@ -926,7 +926,7 @@ class MediaControllerTest extends TestCase
     {
         //create project
         $project = factory(Project::class)->create(
-            ['access' => config('ec5Strings.project_access.public')]
+            ['access' => config('epicollect.strings.project_access.public')]
         );
 
         //create a fake entry
@@ -956,7 +956,7 @@ class MediaControllerTest extends TestCase
     {
         //create project
         $project = factory(Project::class)->create(
-            ['access' => config('ec5Strings.project_access.public')]
+            ['access' => config('epicollect.strings.project_access.public')]
         );
 
         //create a fake entry

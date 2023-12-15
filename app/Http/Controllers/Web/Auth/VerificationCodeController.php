@@ -43,7 +43,7 @@ class VerificationCodeController extends AuthController
             }
 
             //send verification code
-            $tokenExpiresAt = Config::get('auth.passwordless_token_expire', 300);
+            $tokenExpiresAt = config('auth.passwordless_token_expire', 300);
             $code = Generators::randomNumber(6, 1);
 
             try {
@@ -57,7 +57,7 @@ class VerificationCodeController extends AuthController
                 //add token to db
                 $userPasswordless = new UserPasswordlessApi();
                 $userPasswordless->email = $email;
-                $userPasswordless->code = bcrypt($code, ['rounds' => Config::get('auth.bcrypt_rounds')]);
+                $userPasswordless->code = bcrypt($code, ['rounds' => config('auth.bcrypt_rounds')]);
                 $userPasswordless->expires_at = Carbon::now()->addSeconds($tokenExpiresAt)->toDateTimeString();
                 $userPasswordless->save();
 

@@ -13,7 +13,7 @@ class EntryRepository extends SearchRepository
      */
     public function __construct()
     {
-        $table = Config::get('ec5Tables.entries');
+        $table = config('epicollect.tables.entries');
         $isBranchEntry = false;
         parent::__construct($table, $isBranchEntry);
     }

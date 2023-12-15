@@ -12,7 +12,7 @@ class AdminControllerTest extends TestCase
 
     public function test_projects_page_renders_correctly_for_admin()
     {
-        $user = User::where('email', config('ec5Setup.super_admin_user.email'))->first();
+        $user = User::where('email', config('epicollect.setup.super_admin_user.email'))->first();
         $response = $this->actingAs($user)->get(route('admin-projects')); // Replace with the actual route or URL to your view
         $response->assertStatus(200); // Ensure the response is successful
     }
@@ -34,7 +34,7 @@ class AdminControllerTest extends TestCase
 
     public function test_stats_page_renders_correctly_for_admin()
     {
-        $user = User::where('email', config('ec5Setup.super_admin_user.email'))->first();
+        $user = User::where('email', config('epicollect.setup.super_admin_user.email'))->first();
         $response = $this->actingAs($user)->get(route('admin-stats')); // Replace with the actual route or URL to your view
         $response->assertStatus(200); // Ensure the response is successful
     }
@@ -56,7 +56,7 @@ class AdminControllerTest extends TestCase
 
     public function test_users_page_renders_correctly_for_admin()
     {
-        $user = User::where('email', config('ec5Setup.super_admin_user.email'))->first();
+        $user = User::where('email', config('epicollect.setup.super_admin_user.email'))->first();
         $response = $this->actingAs($user)->get(route('admin-users')); // Replace with the actual route or URL to your view
         $response->assertStatus(200); // Ensure the response is successful
     }

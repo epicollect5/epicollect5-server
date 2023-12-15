@@ -137,16 +137,16 @@ abstract class SearchRepository
         }
 
         switch ($inputType) {
-            case  Config::get('ec5Strings.inputs_type.time'):
+            case  config('epicollect.strings.inputs_type.time'):
 
                 //for time inputs we compare only the time based on the format
                 //time answers are like "2011-10-05T14:48:00.000"
                 $timePart = substr($answer, 10, 10);
                 //time part is like "T14:48:00."
-                $formats = Config::get('ec5Enums.datetime_format');
+                $formats = config('epicollect.strings.datetime_format');
 
                 // if format is 'HH:mm',
-                if ($datetimeFormat ===  $formats[7]) {
+                if ($datetimeFormat === $formats[7]) {
                     $timePart = substr($timePart, 0, 7);
                     //time part is now like "T14:48:"
                 }
@@ -166,11 +166,11 @@ abstract class SearchRepository
                 $queryParams[] = strtolower('%' . $timePart . '%');
                 break;
 
-            case  Config::get('ec5Strings.inputs_type.date'):
+            case  config('epicollect.strings.inputs_type.date'):
 
                 $datePart = substr($answer, 0, 11);
                 //datePart is now 2011-10-05T
-                $formats = Config::get('ec5Enums.datetime_format');
+                $formats = config('epicollect.strings.datetime_format');
 
                 // if format is 'MM/YYYY',
                 if ($datetimeFormat === $formats[3]) {

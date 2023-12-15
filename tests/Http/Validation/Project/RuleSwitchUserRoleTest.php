@@ -26,7 +26,7 @@ class RuleSwitchUserRoleTest extends TestCase
 
     public function testParameters()
     {
-        $email = Config::get('testing.SUPER_ADMIN_EMAIL');
+        $email = config('testing.SUPER_ADMIN_EMAIL');
         $inputs = [
             'currentRole' => 'curator',
             'newRole' => 'collector',
@@ -63,7 +63,7 @@ class RuleSwitchUserRoleTest extends TestCase
         $inputs = [
             'currentRole' => 'curator',
             'newRole' => 'wow',
-            'email' => Config::get('testing.SUPER_ADMIN_EMAIL')
+            'email' => config('testing.SUPER_ADMIN_EMAIL')
         ];
 
         // Invalid newRole
@@ -85,17 +85,17 @@ class RuleSwitchUserRoleTest extends TestCase
 
     public function testSwitchRoles()
     {
-        $creatorRole = Config::get('ec5Permissions.projects.creator_role');
-        $managerRole = Config::get('ec5Permissions.projects.manager_role');
+        $creatorRole = config('epicollect.permissions.projects.creator_role');
+        $managerRole = config('epicollect.permissions.projects.manager_role');
 
         //create a fake user with creator email
         $creator = factory(User::class)->create([
-            'email' => Config::get('testing.CREATOR_EMAIL')
+            'email' => config('testing.CREATOR_EMAIL')
         ]);
 
         //create a fake user with manager email
         $manager = factory(User::class)->create([
-            'email' => Config::get('testing.MANAGER_EMAIL')
+            'email' => config('testing.MANAGER_EMAIL')
         ]);
 
         //create fake project with creator user
@@ -117,8 +117,8 @@ class RuleSwitchUserRoleTest extends TestCase
             'role' => $managerRole
         ]);
 
-        $this->assertDatabaseHas('users', ['email' => Config::get('testing.CREATOR_EMAIL')]);
-        $this->assertDatabaseHas('users', ['email' => Config::get('testing.MANAGER_EMAIL')]);
+        $this->assertDatabaseHas('users', ['email' => config('testing.CREATOR_EMAIL')]);
+        $this->assertDatabaseHas('users', ['email' => config('testing.MANAGER_EMAIL')]);
 
         $this->assertDatabaseHas('project_roles', [
             'user_id' => $manager->id,

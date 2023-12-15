@@ -25,11 +25,11 @@ class RuleMappingInput extends ValidationBase
     protected $uniqueMappedNames = [];
 
     /**
-     * @param $mapToName]
+     * @param $mapToName ]
      * @param $inputRef
      * @return bool
      */
-    public function checkAdditional($mapToName, $inputRef) : bool
+    public function checkAdditional($mapToName, $inputRef): bool
     {
         // Check the map to name is unique
         if (in_array($mapToName, $this->uniqueMappedNames)) {
@@ -38,7 +38,7 @@ class RuleMappingInput extends ValidationBase
         }
 
         //check map_to value is not a reserved value
-        $mapToReserved = Config::get('ec5Enums.map_to_reserved');
+        $mapToReserved = array_keys(config('epicollect.strings.map_to_reserved'));
         if (in_array($mapToName, $mapToReserved)) {
             $this->addAdditionalError($inputRef, 'ec5_227');
             return false;

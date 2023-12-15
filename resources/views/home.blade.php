@@ -74,7 +74,7 @@
                                 <img class="img-responsive img-circle" width="256" height="256"
                                      src="
                                                 {{-- If a private project, show lock --}}
-                                                     @if ($project->access == Config::get('ec5Strings.project_access.private')) {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
+                                                     @if ($project->access == config('epicollect.strings.project_access.private')) {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
                             @elseif($project->logo_url == '')
                                 {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
                             @else
@@ -132,7 +132,7 @@
                                     <img class="img-responsive img-circle" width="128" height="128"
                                          src="
                                                 {{-- If a private project, show lock --}}
-                                                       @if ($project->access == Config::get('ec5Strings.project_access.private')) {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
+                                                       @if ($project->access == config('epicollect.strings.project_access.private')) {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
                                 @elseif($project->logo_url == '')
                                     {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
                                 @else

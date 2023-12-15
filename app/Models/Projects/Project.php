@@ -25,7 +25,6 @@ use ec5\Models\Projects\Exceptions\ProjectNameMissingException;
 
 class Project
 {
-
     /**
      * @var ProjectDefinition
      */
@@ -134,7 +133,7 @@ class Project
         $data['ref'] = $projectRef;
         $data['status'] = 'active';
         $data['visibility'] = 'hidden';
-        $data['category'] = Config::get('ec5Enums.search_projects_defaults.category');
+        $data['category'] = config('epicollect.strings.project_categories.general');
         // Set required form data
         $data['forms'][0]['name'] = $data['form_name'];
         $data['forms'][0]['slug'] = Str::slug($data['form_name'], '-');
@@ -218,7 +217,7 @@ class Project
         $oldProjectRef = $this->ref;
         $newProjectRef = str_replace('-', '', Uuid::generate(4));
         // Cloned project will be set to 'active'
-        $input['status'] = Config::get('ec5Strings.project_status.active');
+        $input['status'] = config('epicollect.strings.project_status.active');
         // Update the Project class properties
         $this->addProjectDetails($input);
         // Nullify the id, created_at, updated_at and structure_id as new ones will need to be created
@@ -308,7 +307,7 @@ class Project
     public function updateProjectDetails($data)
     {
         // Detail keys that are allowed to be updated
-        $updateOnly = array_keys(Config::get('ec5ProjectStructures.updatable_project_details'));
+        $updateOnly = array_keys(config('epicollect.structures.updatable_project_details'));
         // Remove unwanted keys from the $data
         foreach ($data as $key => $value) {
             if (!in_array($key, $updateOnly)) {
@@ -442,7 +441,7 @@ class Project
      */
     public function isPrivate()
     {
-        return $this->access == Config::get('ec5Strings.project_access.private');
+        return $this->access == config('epicollect.strings.project_access.private');
     }
 
     /**
@@ -450,12 +449,16 @@ class Project
      */
     public function isPublic()
     {
-        return $this->access == Config::get('ec5Strings.project_access.public');
+        return $this->access == config('epicollect.strings.project_access.public');
     }
 
     public function canBulkUpload()
     {
-
         return $this->can_bulk_upload;
+    }
+
+    public function hasInputs()
+    {
+
     }
 }

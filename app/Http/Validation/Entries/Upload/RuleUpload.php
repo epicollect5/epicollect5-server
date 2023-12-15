@@ -140,11 +140,11 @@ class RuleUpload extends ValidationBase
         // Set the entry type specific validator to use
         switch ($data['type']) {
 
-            case Config::get('ec5Strings.entry_types.branch_entry'):
+            case config('epicollect.strings.entry_types.branch_entry'):
                 $validator = $this->branchEntryValidator;
                 break;
 
-            case Config::get('ec5Strings.entry_types.file_entry'):
+            case config('epicollect.strings.entry_types.file_entry'):
                 $validator = $this->fileValidator;
                 break;
         }

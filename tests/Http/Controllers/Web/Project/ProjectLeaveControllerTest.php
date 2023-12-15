@@ -42,7 +42,7 @@ class ProjectLeaveControllerTest extends TestCase
         $projectRole = factory(ProjectRole::class)->create([
             'user_id' => $creator->id,
             'project_id' => $project->id,
-            'role' => Config::get('ec5Strings.project_roles.creator')
+            'role' => config('epicollect.strings.project_roles.creator')
         ]);
 
         //set up project stats and project structures (to make R&A middleware work, to be removed)
@@ -85,7 +85,7 @@ class ProjectLeaveControllerTest extends TestCase
         //create a fake project with that user
         $project = factory(Project::class)->create(['created_by' => $creator->id]);
         //assign the user to that project with the manager role
-        $role = \Illuminate\Support\Facades\Config::get('ec5Strings.project_roles.manager');
+        $role = config('epicollect.strings.project_roles.manager');
         $projectRole = factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
@@ -116,7 +116,7 @@ class ProjectLeaveControllerTest extends TestCase
         //create a fake project with that user
         $project = factory(Project::class)->create(['created_by' => $creator->id]);
         //assign the user to that project with the curator role
-        $role = \Illuminate\Support\Facades\Config::get('ec5Strings.project_roles.curator');
+        $role = config('epicollect.strings.project_roles.curator');
         $projectRole = factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
@@ -147,7 +147,7 @@ class ProjectLeaveControllerTest extends TestCase
         //create a fake project with that user
         $project = factory(Project::class)->create(['created_by' => $creator->id]);
         //assign the user to that project with the collector role
-        $role = \Illuminate\Support\Facades\Config::get('ec5Strings.project_roles.collector');
+        $role = config('epicollect.strings.project_roles.collector');
         $projectRole = factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
@@ -178,7 +178,7 @@ class ProjectLeaveControllerTest extends TestCase
         //create a fake project with that user
         $project = factory(Project::class)->create(['created_by' => $creator->id]);
         //assign the user to that project with the viewer role
-        $role = \Illuminate\Support\Facades\Config::get('ec5Strings.project_roles.viewer');
+        $role = config('epicollect.strings.project_roles.viewer');
         $projectRole = factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
@@ -204,7 +204,7 @@ class ProjectLeaveControllerTest extends TestCase
     public function test_leave_post_request_but_project_name_missing()
     {
         //creator
-        $role = Config::get('ec5Strings.project_roles.creator');
+        $role = config('epicollect.strings.project_roles.creator');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
 
@@ -272,7 +272,7 @@ class ProjectLeaveControllerTest extends TestCase
     public function test_leave_post_request_but_project_name_does_not_match()
     {
         //creator
-        $role = Config::get('ec5Strings.project_roles.creator');
+        $role = config('epicollect.strings.project_roles.creator');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
 
@@ -340,7 +340,7 @@ class ProjectLeaveControllerTest extends TestCase
     public function test_leave_missing_permission_as_creator()
     {
         //creator
-        $role = Config::get('ec5Strings.project_roles.creator');
+        $role = config('epicollect.strings.project_roles.creator');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
         //create a fake user and save it to DB
@@ -411,7 +411,7 @@ class ProjectLeaveControllerTest extends TestCase
     public function test_leave_performed_as_manager()
     {
         //creator
-        $role = Config::get('ec5Strings.project_roles.manager');
+        $role = config('epicollect.strings.project_roles.manager');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
         //create a fake user and save it to DB
@@ -485,7 +485,7 @@ class ProjectLeaveControllerTest extends TestCase
     public function test_leave_performed_as_curator()
     {
         //creator
-        $role = Config::get('ec5Strings.project_roles.curator');
+        $role = config('epicollect.strings.project_roles.curator');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
         //create a fake user and save it to DB
@@ -559,7 +559,7 @@ class ProjectLeaveControllerTest extends TestCase
     public function test_leave_performed_as_collector()
     {
         //creator
-        $role = Config::get('ec5Strings.project_roles.collector');
+        $role = config('epicollect.strings.project_roles.collector');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
         //create a fake user and save it to DB
@@ -633,7 +633,7 @@ class ProjectLeaveControllerTest extends TestCase
     public function test_leave_performed_as_viewer()
     {
         //creator
-        $role = Config::get('ec5Strings.project_roles.viewer');
+        $role = config('epicollect.strings.project_roles.viewer');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
         //create a fake user and save it to DB
@@ -707,7 +707,7 @@ class ProjectLeaveControllerTest extends TestCase
     public function test_leave_with_exception()
     {
         //creator
-        $role = Config::get('ec5Strings.project_roles.creator');
+        $role = config('epicollect.strings.project_roles.creator');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
         //create a fake user and save it to DB

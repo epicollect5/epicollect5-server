@@ -298,7 +298,7 @@ class RuleAnswers extends ValidationBase
     private function addAnswerToEntry(EntryStructure $entryStructure, $input, $answerData)
     {
         // Filter out types which don't need an answer
-        if (!in_array($input['type'], Config::get('ec5Enums.inputs_without_answers'))) {
+        if (!in_array($input['type'], array_keys(config('epicollect.strings.inputs_without_answers')))) {
             // Add validated answer to the entry structure
             $entryStructure->addValidatedAnswer(
                 $this->inputRef,

@@ -224,13 +224,13 @@ class EntryStructure
         $entry = [];
 
         // Filter out the required values from the uploaded entry, for the data
-        foreach (array_keys(Config::get('ec5ProjectStructures.entry_data')) as $key) {
+        foreach (array_keys(config('epicollect.structures.entry_data')) as $key) {
             $entry[$key] = $this->data[$key] ?? '';
         }
 
         // Filter out the required values from the uploaded entry, for the entry
-        foreach (array_keys(Config::get('ec5ProjectStructures.entry')) as $key) {
-            if (!in_array($key, Config::get('ec5Enums.exclude_from_entry_data'))) {
+        foreach (array_keys(config('epicollect.structures.entry')) as $key) {
+            if (!in_array($key, array_keys(config('epicollect.strings.exclude_from_entry_data')))) {
                 $entry[$this->getEntryType()][$key] = $this->getEntry()[$key] ?? '';
             }
         }
@@ -474,8 +474,8 @@ class EntryStructure
             return true;
         }
 
-        // Is the device id (non empty) the same (for non web platforms)?
-        if ($this->getPlatform() != Config::get('ec5Enums.web_platform') &&
+        // Is the device id (non-empty) the same (for non web platforms)?
+        if ($this->getPlatform() != config('epicollect.mappings.web_platform') &&
             !empty($this->getDeviceId()) &&
             Hash::check($this->getDeviceId(), $dbEntry->device_id)) {
 

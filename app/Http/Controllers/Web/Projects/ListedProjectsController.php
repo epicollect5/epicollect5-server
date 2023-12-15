@@ -24,7 +24,7 @@ class ListedProjectsController extends Controller
         // If category is invalid, default
         $this->ruleCategories->validate($data);
         if ($this->ruleCategories->hasErrors()) {
-            $category = Config::get('ec5Enums.search_projects_defaults.category');
+            $category = config('epicollect.strings.project_categories.general');
         }
 
         $projects = $this->projectModel->publicAndListed($category,

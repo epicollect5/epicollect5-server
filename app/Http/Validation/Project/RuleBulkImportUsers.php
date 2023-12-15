@@ -15,8 +15,8 @@ class RuleBulkImportUsers extends ValidationBase
 
     public function __construct()
     {
-        $emailsLimitMax = config('ec5Limits.emails_limit_max');
-        $roles = Config::get('ec5Permissions.projects.roles.creator');
+        $emailsLimitMax = config('epicollect.limits.emails_limit_max');
+        $roles = config('epicollect.permissions.projects.roles.creator');
 
         $this->messages['required'] = 'ec5_21';
         $this->messages['emails.min'] = 'ec5_347';
@@ -52,14 +52,14 @@ class RuleBulkImportUsers extends ValidationBase
         }
 
         // $adminUser must have a valid role
-        if (!is_array(Config::get('ec5Permissions.projects.roles.' . $adminUserRole))) {
+        if (!is_array(config('epicollect.permissions.projects.roles.' . $adminUserRole))) {
             $this->errors['user'] = ['ec5_91'];
             return;
         }
 
         if ($newUserRole) {
             // $adminUser can only perform actions against certain roles, set in permissions config
-            if (!in_array($newUserRole, Config::get('ec5Permissions.projects.roles.' . $adminUserRole))) {
+            if (!in_array($newUserRole, config('epicollect.permissions.projects.roles.' . $adminUserRole))) {
                 $this->errors['user'] = ['ec5_91'];
                 return;
             }
@@ -68,7 +68,7 @@ class RuleBulkImportUsers extends ValidationBase
         // If an existing role was passed in, check
         if ($existingUserRole) {
             // $requestedUser can only perform actions against certain roles, set in permissions config
-            if (!in_array($existingUserRole, Config::get('ec5Permissions.projects.roles.' . $adminUserRole))) {
+            if (!in_array($existingUserRole, config('epicollect.permissions.projects.roles.' . $adminUserRole))) {
                 $this->errors['user'] = ['ec5_91'];
                 return;
             }

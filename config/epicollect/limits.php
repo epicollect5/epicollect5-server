@@ -8,7 +8,11 @@ return [
             'min' => 3,
             'max' => 50
         ],
-
+        'form' => [
+            'name' => [
+                'max' => 50
+            ],
+        ],
         'small_desc' => [
             'min' => 15,
             'max' => 100
@@ -67,6 +71,8 @@ return [
     'question_limit' => 255,
     'readme_question_limit' => 1000,
     'form_name_maxlength' => 50,
+
+
     // IMP: Limit for number of rows at a time to chunk when downloading data
     // IMP: Ec5 Download Test project (103000 entries) consumes ~140MB memory at 50000 per chunk
     // IMP: with 1000, memory peak is at 20MB

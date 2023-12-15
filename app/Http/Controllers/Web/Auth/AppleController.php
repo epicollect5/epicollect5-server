@@ -73,8 +73,8 @@ class AppleController extends AuthController
                 } catch (Exception $e) {
                     Log::error('Apple user object exception', ['exception' => $e->getMessage()]);
                     //if no user name found, default to Apple User
-                    $appleUserFirstName = config('ec5Strings.user_placeholder.apple_first_name');
-                    $appleUserLastName = config('ec5Strings.user_placeholder.apple_last_name');
+                    $appleUserFirstName = config('epicollect.mappings.user_placeholder.apple_first_name');
+                    $appleUserLastName = config('epicollect.mappings.user_placeholder.apple_last_name');
                 }
 
                 if (!$user) {
@@ -88,7 +88,7 @@ class AppleController extends AuthController
                 }
 
                 //if the user is disabled, kick him out
-                if ($user->state === Config::get('ec5Strings.user_state.disabled')) {
+                if ($user->state === config('epicollect.strings.user_state.disabled')) {
                     return redirect()->route('login')->withErrors(['ec5_212']);
                 }
                 /**
@@ -101,20 +101,20 @@ class AppleController extends AuthController
                  *
                  * the user gets verified via Apple
                  */
-                if ($user->state === Config::get('ec5Strings.user_state.unverified')) {
+                if ($user->state === config('epicollect.strings.user_state.unverified')) {
                     if (!UserService::updateAppleUser($appleUserFirstName, $appleUserLastName, $email, true)) {
 
                         return redirect()->route('login')->withErrors(['ec5_45']);
                     }
 
                     //set user as active since it was verified correctly
-                    $user->state = Config::get('ec5Strings.user_state.active');
+                    $user->state = config('epicollect.strings.user_state.active');
                 }
 
                 /**
                  * User was found and active, does this user have an Apple provider?
                  */
-                if ($user->state === Config::get('ec5Strings.user_state.active')) {
+                if ($user->state === config('epicollect.strings.user_state.active')) {
 
                     $userProviders = UserProvider::where('email', $email)
                         ->pluck('provider')->toArray();
@@ -123,8 +123,8 @@ class AppleController extends AuthController
                     if (in_array($this->localProviderLabel, $userProviders)) {
                         switch ($user->server_role) {
 
-                            case Config::get('ec5Strings.server_roles.superadmin'):
-                            case Config::get('ec5Strings.server_roles.admin'):
+                            case config('epicollect.strings.server_roles.superadmin'):
+                            case config('epicollect.strings.server_roles.admin'):
                                 return redirect()->route('login-admin')->withErrors(['ec5_384']);
                                 break;
                             default:
@@ -253,12 +253,12 @@ class AppleController extends AuthController
             $appleUserLastName = $appleUser['familyName'];
 
             //update user name and last name only when they are still placeholders
-            if ($user->name === config('ec5Strings.user_placeholder.apple_first_name')) {
+            if ($user->name === config('epicollect.mappings.user_placeholder.apple_first_name')) {
                 $user->name = $appleUserFirstName;
                 $user->last_name = $appleUserLastName;
                 $user->save();
             }
-            if ($user->name === config('ec5Strings.user_placeholder.passwordless_first_name')) {
+            if ($user->name === config('epicollect.mappings.user_placeholder.passwordless_first_name')) {
                 $user->name = $appleUserFirstName;
                 $user->last_name = $appleUserLastName;
                 $user->save();

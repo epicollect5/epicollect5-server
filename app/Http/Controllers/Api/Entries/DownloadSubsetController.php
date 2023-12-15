@@ -56,12 +56,12 @@ class DownloadSubsetController extends EntrySearchControllerBase
     public function subset(Request $request, RuleDownloadSubset $ruleDownloadSubset)
     {
         // Check the mapping is valid
-        $projectMapping = $this->requestedProject->getProjectMapping();
+        $projectMapping = $this->requestedProject()->getProjectMapping();
         $params = $this->getRequestParams($request, config('epicollect.limits.entries_table.per_page'));
 
         //Get raw query params, $this->getRequestParams is doing some filtering
         $rawParams = $request->all();
-        $cookieName = config('epicollect.strings.cookies.download-entries');
+        $cookieName = config('epicollect.mappings.cookies.download-entries');
 
         // Validate the options and query string
         if (!$this->validateParams($params)) {
@@ -90,7 +90,7 @@ class DownloadSubsetController extends EntrySearchControllerBase
         }
 
         $this->dataMappingService->init(
-            $this->requestedProject,
+            $this->requestedProject(),
             $params['format'],
             $params['branch_ref'] !== '' ? 'branch' : 'form',
             $params['form_ref'],
@@ -102,7 +102,7 @@ class DownloadSubsetController extends EntrySearchControllerBase
             $columns = ['uuid', 'title', 'entry_data', 'user_id', 'uploaded_at'];
             // Get the query for these branch entries
             $query = BranchEntry::getBranchEntriesByBranchRef(
-                $this->requestedProject->getId(),
+                $this->requestedProject()->getId(),
                 $params,
                 $columns
             );
@@ -110,7 +110,7 @@ class DownloadSubsetController extends EntrySearchControllerBase
             //hierarchy
             $columns = ['title', 'entry_data', 'branch_counts', 'child_counts', 'user_id', 'uploaded_at'];
             // Get the query for these entries
-            $query = Entry::getEntriesByForm($this->requestedProject->getId(), $params, $columns);
+            $query = Entry::getEntriesByForm($this->requestedProject()->getId(), $params, $columns);
         }
 
         $filepath = $this->createSubsetArchive($query, $filename);
@@ -129,7 +129,7 @@ class DownloadSubsetController extends EntrySearchControllerBase
     private function createSubsetArchive($query, $filename): string
     {
         $exportChunk = config('epicollect.limits.entries_export_chunk');
-        $projectRef = $this->requestedProject->ref;
+        $projectRef = $this->requestedProject()->ref;
         //generate unique temp file name to cover concurrent users per project
         $csvFilename = Uuid::uuid4()->toString() . '.csv';
         $zipFilename = Uuid::uuid4()->toString() . '.zip';

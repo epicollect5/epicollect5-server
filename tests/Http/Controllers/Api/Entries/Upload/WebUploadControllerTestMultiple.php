@@ -25,6 +25,11 @@ use Illuminate\Foundation\Testing\DatabaseTransactions;
    be aware __construct() are called only the first time,
    so it might have some false positives or not detect
    some errors
+
+   imp: project stats are not updated per each upload
+   since that is expensive, we update them when the
+   project home page is requested, or the dataviewer
+
 */
 
 class WebUploadControllerTestMultiple extends TestCase
@@ -48,7 +53,7 @@ class WebUploadControllerTestMultiple extends TestCase
                 'name' => array_get($projectDefinition, 'data.project.name'),
                 'slug' => array_get($projectDefinition, 'data.project.slug'),
                 'ref' => array_get($projectDefinition, 'data.project.ref'),
-                'access' => config('ec5Strings.project_access.private')
+                'access' => config('epicollect.strings.project_access.private')
             ]
         );
         //add role
@@ -124,6 +129,8 @@ class WebUploadControllerTestMultiple extends TestCase
                         ]
                     ]
                 );
+            $this->assertCount(0, Entry::where('project_id', $this->project->id)->value('child_counts'));
+            $this->assertCount(0, Entry::where('project_id', $this->project->id)->value('branch_counts'));
             $this->assertCount(1, Entry::where('project_id', $this->project->id)->get());
         } catch (Exception $e) {
             //dd($e->getMessage(), $response, json_encode($entry), json_encode($projectDefinition));

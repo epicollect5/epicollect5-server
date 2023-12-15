@@ -35,7 +35,7 @@ class DeleteRepository extends Base
         $this->startTransaction();
 
         // Remove project
-        if (!$this->deleteById(Config::get('ec5Tables.projects'), $projectId)) {
+        if (!$this->deleteById(config('epicollect.tables.projects'), $projectId)) {
             // Rollback
             $this->doRollBack();
             // Set errors
@@ -50,8 +50,8 @@ class DeleteRepository extends Base
 
     public function deleteEntries($projectId)
     {
-        $entriesTableName = Config::get('ec5Tables.entries');
-        $branchEntriesTableName = Config::get('ec5Tables.branch_entries');
+        $entriesTableName = config('epicollect.tables.entries');
+        $branchEntriesTableName = config('epicollect.tables.branch_entries');
         $this->startTransaction();
 
         try {
@@ -90,14 +90,14 @@ class DeleteRepository extends Base
     public function deleteProjectMedia($projectRef)
     {
         // List all the drivers we want to delete files from for this project
-        $drivers = Config::get('ec5Media.project_deletable');
+        $drivers = config('epicollect.media.project_deletable');
         $this->deleteMedia($projectRef, $drivers);
     }
 
     public function deleteEntriesMedia($projectRef)
     {
         // List all the drivers we want to delete files from for the entries
-        $drivers = Config::get('ec5Media.entries_deletable');
+        $drivers = config('epicollect.media.entries_deletable');
         $this->deleteMedia($projectRef, $drivers);
     }
 

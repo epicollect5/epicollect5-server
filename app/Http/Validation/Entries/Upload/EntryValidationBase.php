@@ -69,7 +69,7 @@ abstract class EntryValidationBase extends ValidationBase
             $inputType = $projectExtra->getInputDetail($inputRef, 'type');
 
             // If the input type requires an answer
-            if (!in_array($inputType, Config::get('ec5Enums.inputs_without_answers'))) {
+            if (!in_array($inputType, array_keys(config('epicollect.strings.inputs_without_answers')))) {
                 // Check the answer data exists for this input
                 if (!isset($entryAnswers[$inputRef])) {
                     // If it doesn't, there we have a missing input answer in the upload
@@ -85,14 +85,14 @@ abstract class EntryValidationBase extends ValidationBase
             }
 
             // If input type is a group, validate each group answer
-            if ($inputType === Config::get('ec5Strings.inputs_type.group')) {
+            if ($inputType === config('epicollect.strings.inputs_type.group')) {
 
                 $groupInputs = $projectExtra->getGroupInputs($entryStructure->getFormRef(), $inputRef);
                 // Loop each group input from the extra structure and validate each answer
                 foreach ($groupInputs as $groupInputRef) {
 
                     $groupInputType = $projectExtra->getInputDetail($groupInputRef, 'type');
-                    if (!in_array($groupInputType, Config::get('ec5Enums.inputs_without_answers'))) {
+                    if (!in_array($groupInputType, array_keys(config('epicollect.strings.inputs_without_answers')))) {
 
                         // Check the answer data exists for this input
                         if (!isset($entryAnswers[$groupInputRef])) {

@@ -36,10 +36,10 @@ class RuleSearchMultipleInputTest extends TestCase
         //This is what happens when you get a crucial part of an application done by a moron.
         $this->entryStructure = new EntryStructure();
 
-        $entryData = Config::get('ec5ProjectStructures.entry_data');
+        $entryData = config('epicollect.structures.entry_data');
         $entryData['id'] = 'xxx';
         $entryData['type'] = 'entry';
-        $entryData[Config::get('ec5Strings.entry_types.entry')] = [
+        $entryData[config('epicollect.strings.entry_types.entry')] = [
             'type' => 'entry',
             'name' => 'xxx',
             'input_ref' => 'xxx'

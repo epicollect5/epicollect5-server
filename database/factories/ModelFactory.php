@@ -78,7 +78,7 @@ $factory->define(ProjectRole::class, function (Faker\Generator $faker) {
 
 $factory->define(Project::class, function (Faker\Generator $faker) {
 
-    $ec5Limits = Config::get('ec5Limits');
+    $ec5Limits = config('epicollect.limits');
     $nameMin = $ec5Limits['project']['name']['min'];
     $nameMax = $ec5Limits['project']['name']['max'];
     $smallDescMin = (int)$ec5Limits['project']['small_desc']['min'];
@@ -102,7 +102,7 @@ $factory->define(Project::class, function (Faker\Generator $faker) {
 
 $factory->define(LegacyProject::class, function (Faker\Generator $faker) {
 
-    $ec5Limits = Config::get('ec5Limits');
+    $ec5Limits = config('epicollect.limits');
     $nameMin = $ec5Limits['project']['name']['min'];
     $nameMax = $ec5Limits['project']['name']['max'];
     $smallDescMin = (int)$ec5Limits['project']['small_desc']['min'];

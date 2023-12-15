@@ -34,8 +34,8 @@ class ImportMethodTest extends TestCase
 
         $this->validator = new RuleImportRequest();
 
-        $this->projectNameMaxLength = config('ec5Limits.project.name.max');
-        $this->access = config('ec5Enums.projects_access');
+        $this->projectNameMaxLength = config('epicollect.limits.project.name.max');
+        $this->access = array_keys(config('epicollect.strings.projects_access'));
 
         //to have a user logged in as superadmin
         $user = User::find(1);

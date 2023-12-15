@@ -16,6 +16,7 @@ use ec5\Models\Eloquent\ProjectStructure;
 use Cookie;
 use Illuminate\Support\Str;
 use ec5\Libraries\Utilities\Common;
+use ec5\Traits\Requests\RequestAttributes;
 
 class DownloadTemplateController extends EntrySearchControllerBase
 {
@@ -26,6 +27,8 @@ class DownloadTemplateController extends EntrySearchControllerBase
     |
     | This controller handles the downloading of bulk uploads template files or headers
     */
+
+    use RequestAttributes;
 
     protected $allowedSearchKeys;
 
@@ -64,15 +67,15 @@ class DownloadTemplateController extends EntrySearchControllerBase
 
     public function sendTemplateFileCSV(Request $request, RuleDownloadTemplate $ruleUploadTemplate)
     {
-        $projectId = $this->requestedProject->getId();
-        $projectSlug = $this->requestedProject->slug;
+        $projectId = $this->requestedProject()->getId();
+        $projectSlug = $this->requestedProject()->slug;
         $projectStructure = ProjectStructure::where('project_id', $projectId)->first();
         $projectMappings = json_decode($projectStructure->project_mapping, true);
         $projectDefinition = json_decode($projectStructure->project_definition, true);
         $params = $request->all();
         $locationType = config('epicollect.strings.inputs_type.location');
         $groupType = config('epicollect.strings.inputs_type.group');
-        $cookieName = config('epicollect.strings.cookies.download-entries');
+        $cookieName = config('epicollect.mappings.cookies.download-entries');
 
         //todo validation request
         $ruleUploadTemplate->validate($params);
@@ -158,7 +161,7 @@ class DownloadTemplateController extends EntrySearchControllerBase
 
     public function sendTemplateResponseJSON(Request $request, RuleUploadHeaders $ruleUploadHeaders)
     {
-        $projectId = $this->requestedProject->getId();
+        $projectId = $this->requestedProject()->getId();
         $projectStructure = ProjectStructure::where('project_id', $projectId)->first();
         $projectMappings = json_decode($projectStructure->project_mapping, true);
         $projectDefinition = json_decode($projectStructure->project_definition, true);

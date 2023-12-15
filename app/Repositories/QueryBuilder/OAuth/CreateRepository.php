@@ -20,7 +20,7 @@ class CreateRepository extends Base
         $this->startTransaction();
 
         // Insert project details get back insert_id
-        $oauthProjectClientId = $this->insertReturnId(Config::get('ec5Tables.oauth_client_projects'), [
+        $oauthProjectClientId = $this->insertReturnId(config('epicollect.tables.oauth_client_projects'), [
             'project_id' => $projectId,
             'client_id' => $clientId
         ]);

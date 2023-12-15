@@ -42,8 +42,8 @@ class RulePermissionsBase extends ValidationBase
      */
     public function userCanPerformAction($adminUser, $user)
     {
-        if (!is_array(Config::get('ec5Permissions.server.roles.' . $adminUser->server_role)) ||
-            !in_array($user->server_role, Config::get('ec5Permissions.server.roles.' . $adminUser->server_role))) {
+        if (!is_array(config('epicollect.permissions.server.roles.' . $adminUser->server_role)) ||
+            !in_array($user->server_role, config('epicollect.permissions.server.roles.' . $adminUser->server_role))) {
             $this->errors['user'] = ['ec5_91'];
             return;
         }

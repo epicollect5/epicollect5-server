@@ -5,7 +5,8 @@
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
                             aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="myModalLabel"><strong>{{ $project->name }}</strong> project created!
+                <h4 class="modal-title" id="myModalLabel">
+                    <strong>{{ $requestAttributes->requestedProject->name }}</strong> project created!
                 </h4>
             </div>
             <div class="modal-body">
@@ -27,7 +28,8 @@
                 <button type="button" class="btn btn-default" data-dismiss="modal">No thanks, I'll do it later
                 </button>
                 <a class="btn btn-default btn-action"
-                   href="{{ url('myprojects') . '/' . $project->slug . '/formbuilder' }}" role="button">Ok, open
+                   href="{{ url('myprojects') . '/' . $requestAttributes->requestedProject->slug . '/formbuilder' }}"
+                   role="button">Ok, open
                     formbuilder now</a>
             </div>
         </div>

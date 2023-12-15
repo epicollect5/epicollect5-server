@@ -42,7 +42,7 @@ class ProjectDeleteEntriesControllerTest extends TestCase
         $project = factory(Project::class)->create(['created_by' => $user->id]);
 
         //assign the user to that project with the CREATOR role
-        $role = Config::get('ec5Strings.project_roles.creator');
+        $role = config('epicollect.strings.project_roles.creator');
         $projectRole = factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
@@ -71,7 +71,7 @@ class ProjectDeleteEntriesControllerTest extends TestCase
     public function test_soft_delete()
     {
         //creator
-        $role = Config::get('ec5Strings.project_roles.creator');
+        $role = config('epicollect.strings.project_roles.creator');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
 
@@ -150,7 +150,7 @@ class ProjectDeleteEntriesControllerTest extends TestCase
     public function test_soft_delete_when_role_is_manager()
     {
         //manager
-        $role = Config::get('ec5Strings.project_roles.manager');
+        $role = config('epicollect.strings.project_roles.manager');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
         //create a fake user and save it to DB
@@ -208,7 +208,7 @@ class ProjectDeleteEntriesControllerTest extends TestCase
     public function test_soft_delete_but_project_name_is_missing()
     {
         //creator
-        $role = Config::get('ec5Strings.project_roles.creator');
+        $role = config('epicollect.strings.project_roles.creator');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
         //create a fake user and save it to DB
@@ -279,7 +279,7 @@ class ProjectDeleteEntriesControllerTest extends TestCase
     public function test_soft_delete_but_project_name_is_wrong()
     {
         //creator
-        $role = Config::get('ec5Strings.project_roles.creator');
+        $role = config('epicollect.strings.project_roles.creator');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
         //create a fake user and save it to DB
@@ -337,7 +337,7 @@ class ProjectDeleteEntriesControllerTest extends TestCase
     public function test_soft_delete_but_role_is_curator()
     {
         //creator
-        $role = Config::get('ec5Strings.project_roles.curator');
+        $role = config('epicollect.strings.project_roles.curator');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
         //create a fake user and save it to DB
@@ -395,7 +395,7 @@ class ProjectDeleteEntriesControllerTest extends TestCase
     public function test_soft_delete_but_role_is_collector()
     {
         //collector
-        $role = Config::get('ec5Strings.project_roles.collector');
+        $role = config('epicollect.strings.project_roles.collector');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
         //create a fake user and save it to DB
@@ -453,7 +453,7 @@ class ProjectDeleteEntriesControllerTest extends TestCase
     public function test_soft_delete_but_role_is_viewer()
     {
         //viewer
-        $role = Config::get('ec5Strings.project_roles.viewer');
+        $role = config('epicollect.strings.project_roles.viewer');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
         //create a fake user and save it to DB
@@ -511,7 +511,7 @@ class ProjectDeleteEntriesControllerTest extends TestCase
     public function test_project_stats_is_updated()
     {
         //creator
-        $role = Config::get('ec5Strings.project_roles.creator');
+        $role = config('epicollect.strings.project_roles.creator');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
 
@@ -582,7 +582,8 @@ class ProjectDeleteEntriesControllerTest extends TestCase
         $response->assertSessionHas('message', 'ec5_122');
 
         //assert stats are updated
-        $this->assertEquals(0, ProjectStats::where('project_id', $project->id)->value('total_entries'));
+        $this->assertEquals(0, ProjectStats::where('project_id', $project->id)
+            ->value('total_entries'));
         $this->assertDatabaseHas('project_stats', [
             'project_id' => $project->id,
             'form_counts->0' => null, // This ensures the first element of the array is null, meaning the array is empty

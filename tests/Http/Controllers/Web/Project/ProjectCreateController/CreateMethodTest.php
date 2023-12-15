@@ -6,7 +6,6 @@ use ec5\Http\Validation\Project\RuleCreateRequest;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Models\Eloquent\BranchEntry;
 use ec5\Models\Eloquent\Entry;
-use ec5\Models\Eloquent\EntryArchive;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectRole;
 use ec5\Models\Eloquent\ProjectStats;
@@ -36,8 +35,8 @@ class CreateMethodTest extends TestCase
 
         $this->validator = new RuleCreateRequest();
 
-        $this->projectNameMaxLength = config('ec5Limits.project.name.max');
-        $this->access = config('ec5Enums.projects_access');
+        $this->projectNameMaxLength = config('epicollect.limits.project.name.max');
+        $this->access = array_keys(config('epicollect.strings.projects_access'));
 
         //to have a user logged in as superadmin
         $user = User::find(1);
@@ -56,7 +55,6 @@ class CreateMethodTest extends TestCase
 
     public function reset()
     {
-
         $this->request = [
             'name' => 'Test Project 000001',
             'slug' => 'test-project-000001',

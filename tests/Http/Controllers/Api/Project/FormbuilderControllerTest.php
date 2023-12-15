@@ -40,7 +40,7 @@ class FormbuilderControllerTest extends TestCase
                 'name' => array_get($projectDefinition, 'data.project.name'),
                 'slug' => array_get($projectDefinition, 'data.project.slug'),
                 'ref' => array_get($projectDefinition, 'data.project.ref'),
-                'access' => config('ec5Strings.project_access.private')
+                'access' => config('epicollect.strings.project_access.private')
             ]
         );
         //add role

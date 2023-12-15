@@ -17,14 +17,13 @@ class RuleCreateRequest extends ValidationBase
     public function __construct()
     {
         //set up error messages
-        $projectNameMinLength = Config::get('ec5Limits.project.name.min');
-        $projectSmallDescMinLength = Config::get('ec5Limits.project.small_desc.min');
-        $projectSmallDescMaxLength = Config::get('ec5Limits.project.small_desc.max');
-        $projectNameMaxLength = Config::get('ec5Limits.project.name.max');
-        $formNameMaxLenght = Config::get('ec5Limits.form_name_limit');
+        $projectNameMinLength = config('epicollect.limits.project.name.min');
+        $projectSmallDescMinLength = config('epicollect.limits.project.small_desc.min');
+        $projectSmallDescMaxLength = config('epicollect.limits.project.small_desc.max');
+        $projectNameMaxLength = config('epicollect.limits.project.name.max');
+        $formNameMaxLength = config('epicollect.limits.project.form.name.max');
 
-        $this->rules['form_name'] = 'required|alpha_num_under_spaces|min:1|max:' . $formNameMaxLenght;
-
+        $this->rules['form_name'] = 'required|alpha_num_under_spaces|min:1|max:' . $formNameMaxLength;
         $this->messages['name.min'] = trans('status_codes.ec5_349', ['min' => $projectNameMinLength]);
         $this->messages['name.max'] = trans('status_codes.ec5_350', ['max' => $projectNameMaxLength]);
         $this->messages['small_description.min'] = trans('status_codes.ec5_351', ['min' => $projectSmallDescMinLength]);

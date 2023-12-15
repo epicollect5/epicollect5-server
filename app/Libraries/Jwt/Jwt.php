@@ -61,7 +61,7 @@ class Jwt
         $token = null;
 
         // get auth jwt config settings
-        $jwtConfig = Config::get('auth.jwt');
+        $jwtConfig = config('auth.jwt');
 
         try {
             // Extract the key, from the config file.
@@ -72,7 +72,7 @@ class Jwt
             $data = array(
                 'iat' => time(), // issued at time
                 'jti' => uniqid(),//$apiToken, // unique token id
-                'iss' => Config::get('app.url'), // issuer
+                'iss' => config('app.url'), // issuer
                 'exp' => $expiryTime, // expiry time
                 'sub' => $apiToken, // subject i.e. user token
             );
@@ -99,7 +99,7 @@ class Jwt
         $token = null;
 
         // get auth jwt config settings
-        $jwtConfig = Config::get('auth.jwt-passwordless');
+        $jwtConfig = config('auth.jwt-passwordless');
 
         try {
             // Extract the key, from the config file.
@@ -110,7 +110,7 @@ class Jwt
             $data = array(
                 'iat' => time(), // issued at time
                 'jti' => uniqid(),//$apiToken, // unique token id
-                'iss' => Config::get('app.url'), // issuer
+                'iss' => config('app.url'), // issuer
                 'exp' => $expiryTime, // expiry time
                 'sub' => $apiToken, // subject i.e. user token
             );
@@ -149,7 +149,7 @@ class Jwt
          */
 
         // Get auth jwt config settings
-        $jwtConfig = Config::get('auth.jwt');
+        $jwtConfig = config('auth.jwt');
 
         $secretKey = $jwtConfig['secret_key'];
 
@@ -180,7 +180,7 @@ class Jwt
      * @param int $id
      * @return string
      */
-    public function generateApiToken(int $id) : string
+    public function generateApiToken(int $id): string
     {
         // Generate unique id
         $apiToken = uniqid($id . '-');
