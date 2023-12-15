@@ -7,7 +7,6 @@ use ec5\Traits\Requests\RequestAttributes;
 use Illuminate\Http\Request;
 use ec5\Repositories\QueryBuilder\Project\DeleteRepository;
 use Illuminate\Support\Facades\DB;
-use ec5\Traits\Project\ProjectBundle;
 use ec5\Traits\Eloquent\Archiver;
 
 class ProjectDeleteEntriesController

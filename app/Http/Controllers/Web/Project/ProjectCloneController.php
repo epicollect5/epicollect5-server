@@ -11,11 +11,11 @@ use ec5\Repositories\QueryBuilder\Project\UpdateRepository as UpdateRep;
 use ec5\Models\Images\CreateProjectLogoAvatar;
 use Illuminate\Support\Str;
 use Redirect;
-use ec5\Traits\Project\ProjectBundle;
+use ec5\Traits\Requests\RequestAttributes;
 
 class ProjectCloneController
 {
-    use ProjectBundle;
+    use RequestAttributes;
 
     protected $project;
     protected $updateRep;
@@ -29,11 +29,11 @@ class ProjectCloneController
     public function show()
     {
         if (!$this->requestedProjectRole()->canEditProject()) {
-            $errors = ['ec5_91'];
-            return view('errors.gen_error')->withErrors(['errors' => $errors]);
+            return view('errors.gen_error')->withErrors(['errors' => ['ec5_91']]);
         }
 
-        $vars = $this->defaultProjectDetailsParams('clone', 'details-edit');
+        $vars['includeTemplate'] = 'clone';
+        $vars['showPanel'] = 'details-edit';
         $vars['action'] = 'clone';
 
         return view('project.project_details', $vars);
@@ -49,8 +49,7 @@ class ProjectCloneController
     public function store(Request $request, Validator $validator, CreateProject $createProject, CreateProjectRole $createProjectRole)
     {
         if (!$this->requestedProjectRole()->canEditProject()) {
-            $errors = ['ec5_91'];
-            return view('errors.gen_error')->withErrors(['errors' => $errors]);
+            return view('errors.gen_error')->withErrors(['errors' => ['ec5_91']]);
         }
 
         $oldProjectId = $this->requestedProject()->getId();

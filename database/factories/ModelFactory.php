@@ -83,7 +83,8 @@ $factory->define(Project::class, function (Faker\Generator $faker) {
     $nameMax = $ec5Limits['project']['name']['max'];
     $smallDescMin = (int)$ec5Limits['project']['small_desc']['min'];
     $smallDescMax = (int)$ec5Limits['project']['small_desc']['max'];
-    $name = $faker->regexify('[A-Za-z_]{' . $nameMin . ',' . $nameMax . '}');
+    //$name = Generators::projectRef();//to be unique
+    $name = $faker->unique()->regexify('[A-Za-z0-9]{10}');
 
     return [
         'name' => $name,
