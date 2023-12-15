@@ -9,16 +9,16 @@ use ec5\Http\Controllers\Api\ApiResponse;
 use ec5\Http\Controllers\Api\ProjectApiControllerBase;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Request;
-
 use ec5\Http\Validation\Entries\Search\RuleQueryString;
 use ec5\Http\Validation\Entries\Upload\RuleAnswers;
-
 use ec5\Repositories\QueryBuilder\Entry\Search\BranchEntryRepository;
 use ec5\Repositories\QueryBuilder\Entry\Search\EntryRepository;
-use Config;
+use ec5\Traits\Requests\RequestAttributes;
 
 abstract class EntrySearchControllerBase extends ProjectApiControllerBase
 {
+    use RequestAttributes;
+
     protected $entryRepository;
     protected $branchEntryRepository;
     protected $ruleQueryString;
@@ -67,8 +67,8 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
         }
 
         // Defaults for sort by and sort order
-        $params['sort_by'] = !empty($params['sort_by']) ? $params['sort_by'] : Config::get('ec5Enums.search_data_entries_defaults.sort_by');
-        $params['sort_order'] = !empty($params['sort_order']) ? $params['sort_order'] : Config::get('ec5Enums.search_data_entries_defaults.sort_order');
+        $params['sort_by'] = !empty($params['sort_by']) ? $params['sort_by'] : config('epicollect.mappings.search_data_entries_defaults.sort_by');
+        $params['sort_order'] = !empty($params['sort_order']) ? $params['sort_order'] : config('epicollect.mappings.search_data_entries_defaults.sort_order');
 
         // Set defaults
         if (empty($params['per_page'])) {
@@ -81,26 +81,26 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
         // Check user project role
         // Collectors can only view their own data in private projects
         if (
-            $this->requestedProject->isPrivate()
-            && $this->requestedProjectRole->isCollector()
+            $this->requestedProject()->isPrivate()
+            && $this->requestedProjectRole()->isCollector()
         ) {
-            $params['user_id'] = $this->requestedProjectRole->getUser()->id;
+            $params['user_id'] = $this->requestedProjectRole()->getUser()->id;
         }
 
         // Set default form_ref (first form), if not supplied
         if (empty($params['form_ref'])) {
-            $params['form_ref'] = $this->requestedProject->getProjectDefinition()->getFirstFormRef();
+            $params['form_ref'] = $this->requestedProject()->getProjectDefinition()->getFirstFormRef();
         }
 
         //if no map_index provide, return default map (check of empty string, as 0 is a valid map index)
         if ($params['map_index'] === '') {
-            $params['map_index'] = $this->requestedProject->getProjectMapping()->getDefaultMapIndex();
+            $params['map_index'] = $this->requestedProject()->getProjectMapping()->getDefaultMapIndex();
         }
 
         // Format of the data i.e., json, csv
-        $params['format'] = !empty($params['format']) ? $params['format'] : Config::get('ec5Enums.search_data_entries_defaults.format');
+        $params['format'] = !empty($params['format']) ? $params['format'] : config('epicollect.mappings.search_data_entries_defaults.format');
         // Whether to include headers for csv
-        $params['headers'] = !empty($params['headers']) ? $params['headers'] : Config::get('ec5Enums.search_data_entries_defaults.headers');
+        $params['headers'] = !empty($params['headers']) ? $params['headers'] : config('epicollect.mappings.search_data_entries_defaults.headers');
 
         return $params;
     }
@@ -119,7 +119,7 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
             return false;
         }
         // Do additional checks
-        $this->ruleQueryString->additionalChecks($this->requestedProject, $params);
+        $this->ruleQueryString->additionalChecks($this->requestedProject(), $params);
         if ($this->ruleQueryString->hasErrors()) {
             $this->validateErrors = $this->ruleQueryString->errors();
             return false;
@@ -132,7 +132,7 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
         }
 
         // Otherwise, check if valid value i.e., date is date min max etc.
-        //$inputType = $this->requestedProject->getProjectExtra()->getInputDetail($inputRef, 'type');
+        //$inputType =$this->requestedProject()->getProjectExtra()->getInputDetail($inputRef, 'type');
         $value = $params['search'];
         //$value2 = $params['search_two'];
 
@@ -149,8 +149,8 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
      */
     protected function validateValue(string $inputRef, string $value): bool
     {
-        $input = $this->requestedProject->getProjectExtra()->getInputData($inputRef);
-        $this->ruleAnswers->validateAnswer($input, $value, $this->requestedProject);
+        $input = $this->requestedProject()->getProjectExtra()->getInputData($inputRef);
+        $this->ruleAnswers->validateAnswer($input, $value, $this->requestedProject());
         if ($this->ruleAnswers->hasErrors()) {
             $this->validateErrors = $this->ruleAnswers->errors();
             return false;
@@ -172,7 +172,7 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
         // Single Entry
         if (!empty($params['uuid'])) {
             $query = $this->entryRepository->getEntry(
-                $this->requestedProject->getId(),
+                $this->requestedProject()->getId(),
                 $params,
                 $columns
             );
@@ -180,14 +180,14 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
             if (!empty($params['parent_uuid'])) {
                 // Child Entries
                 $query = $this->entryRepository->getChildEntriesForParent(
-                    $this->requestedProject->getId(),
+                    $this->requestedProject()->getId(),
                     $params,
                     $columns
                 );
             } else {
                 // All Form Entries
                 $query = $this->entryRepository->getEntries(
-                    $this->requestedProject->getId(),
+                    $this->requestedProject()->getId(),
                     $params,
                     $columns
                 );
@@ -209,7 +209,7 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
         // Single Branch Entry
         if (!empty($params['uuid'])) {
             $query = $this->branchEntryRepository->getEntry(
-                $this->requestedProject->getId(),
+                $this->requestedProject()->getId(),
                 $params,
                 $columns
             );
@@ -217,14 +217,14 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
             if (!empty($params['branch_owner_uuid'])) {
                 // Branch Entries for Branch Ref and Branch Owner
                 $query = $this->branchEntryRepository->getBranchEntriesForBranchRefAndOwner(
-                    $this->requestedProject->getId(),
+                    $this->requestedProject()->getId(),
                     $params,
                     $columns
                 );
             } else {
                 // All Branch Entries for Branch Ref
                 $query = $this->branchEntryRepository->getBranchEntriesForBranchRef(
-                    $this->requestedProject->getId(),
+                    $this->requestedProject()->getId(),
                     $params,
                     $columns
                 );
