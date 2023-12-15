@@ -2,34 +2,28 @@
 
 namespace ec5\Repositories\QueryBuilder\Entry\Upload\Create;
 
+use ec5\Models\Eloquent\Counters\BranchEntryCounter;
+use ec5\Models\Eloquent\Counters\EntryCounter;
 use ec5\Models\Projects\Project;
 use ec5\Models\Entries\EntryStructure;
-
-use ec5\Repositories\QueryBuilder\Stats\Entry\StatsRepository;
 use ec5\Repositories\QueryBuilder\Base;
-
 use Exception;
 use Config;
 
 abstract class CreateRepository extends Base
 {
     protected $table;
-    protected $statsRepository;
     protected $isBranchEntry;
-    protected $isBulkUpload = false;
-
 
     /**
      * CreateRepository constructor.
      * @param $table
-     * @param StatsRepository $statsRepository
      * @param $isBranchEntry
      */
-    public function __construct($table, StatsRepository $statsRepository, $isBranchEntry)
+    public function __construct($table, $isBranchEntry)
     {
         $this->table = $table;
         $this->isBranchEntry = $isBranchEntry;
-        $this->statsRepository = $statsRepository;
 
         parent::__construct();
     }
@@ -39,15 +33,16 @@ abstract class CreateRepository extends Base
      *
      * @param Project $project
      * @param EntryStructure $entryStructure
+     * @param bool $isBulkUpload
      * @return bool
      */
-    public function create(Project $project, EntryStructure $entryStructure, $isBulkUpload = false)
+    public function create(Project $project, EntryStructure $entryStructure, $isBulkUpload = false): bool
     {
         // Start the transaction
         $this->startTransaction();
 
         $done = $this->tryEntryCreate($project, $entryStructure, $isBulkUpload);
-        // Add entry content and answers to database
+        // Add entry content and answers to the database
         if (!$done) {
             // Rollback if any errors
             $this->doRollBack();
@@ -62,17 +57,15 @@ abstract class CreateRepository extends Base
      * @param bool $isBulkUpload
      * @return bool
      */
-    private function tryEntryCreate(Project $project, EntryStructure $entryStructure, $isBulkUpload = false)
+    private function tryEntryCreate(Project $project, EntryStructure $entryStructure, $isBulkUpload = false): bool
     {
         $done = false;
         $entry = [];
-        $mediaTypes = Config::get('ec5Enums.media_input_types');
+        $mediaTypes = array_keys(config('epicollect.strings.media_input_types'));
 
         try {
-
             // Get the validated entry data
             $entryData = $entryStructure->getValidatedEntry();
-
             // Do we have an edit here
             $existingEntry = $entryStructure->getExisting();
 
@@ -214,11 +207,13 @@ abstract class CreateRepository extends Base
      * @param EntryStructure $entryStructure
      * @return bool
      */
-    protected function updateStats(Project $project, EntryStructure $entryStructure)
+    protected function updateStats(Project $project, EntryStructure $entryStructure): bool
     {
         // Skip update project stats counts (project_stats table)
         //imp: this was expensive to be done per each entry!
-        // if (!$this->statsRepository->updateProjectEntryStats($project)) {
+
+        // $projectStats = new ProjectStats();
+        // if (!$projectStats->updateProjectStats($project)) {
         //     $this->errors['entry_create'] = ['ec5_94'];
         //     return false;
         // }
@@ -226,7 +221,8 @@ abstract class CreateRepository extends Base
         // Update additional stats in entries table (child_counts, branch_counts)
         //imp: can still be done per each entry since most of the projects do not have child forms or branches
         //imp: also branches are stored in a separate table, counts will be faster
-        if (!$this->statsRepository->updateAdditionalStats($project, $entryStructure)) {
+        $entryCounter = $this->isBranchEntry ? new BranchEntryCounter() : new EntryCounter();
+        if (!$entryCounter->updateCounters($project, $entryStructure)) {
             $this->errors['entry_create'] = ['ec5_94'];
             return false;
         }

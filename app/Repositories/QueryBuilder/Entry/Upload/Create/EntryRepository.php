@@ -2,24 +2,16 @@
 
 namespace ec5\Repositories\QueryBuilder\Entry\Upload\Create;
 
-use ec5\Repositories\QueryBuilder\Stats\Entry\EntryRepository as StatsRepository;
-
 use ec5\Models\Entries\EntryStructure;
-
-use Config;
 
 class EntryRepository extends CreateRepository
 {
-    /**
-     * EntryCreateRepository constructor.
-     * @param StatsRepository $statsRepository
-     */
-    public function __construct(StatsRepository $statsRepository)
+    public function __construct()
     {
-        $table = Config::get('ec5Tables.entries');
+        $table = config('epicollect.tables.entries');
         $isBranchEntry = false;
 
-        parent::__construct($table, $statsRepository, $isBranchEntry);
+        parent::__construct($table, $isBranchEntry);
     }
 
     /**
@@ -27,7 +19,7 @@ class EntryRepository extends CreateRepository
      * @param $entry
      * @return int
      */
-    protected function insertNewEntry(EntryStructure $entryStructure, $entry)
+    protected function insertNewEntry(EntryStructure $entryStructure, $entry): int
     {
         // Add additional keys/values for entries
         $entry['parent_uuid'] = $entryStructure->getParentUuid();
@@ -35,5 +27,4 @@ class EntryRepository extends CreateRepository
 
         return parent::insertNewEntry($entryStructure, $entry);
     }
-
 }

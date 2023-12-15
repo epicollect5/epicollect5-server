@@ -6,20 +6,16 @@ namespace ec5\Http\Controllers\Api\Entries\Upload;
 
 use ec5\Http\Controllers\Api\ProjectApiControllerBase;
 use ec5\Http\Validation\Entries\Upload\RuleUpload as UploadValidator;
-
+use ec5\Models\Eloquent\Counters\BranchEntryCounter;
+use ec5\Models\Eloquent\Counters\EntryCounter;
 use ec5\Repositories\QueryBuilder\Entry\Upload\Create\BranchEntryRepository as BranchEntryCreateRepository;
 use ec5\Repositories\QueryBuilder\Entry\Upload\Create\EntryRepository as EntryCreateRepository;
-use ec5\Repositories\QueryBuilder\Stats\Entry\StatsRepository as EntryStatsRepository;
-
 use ec5\Http\Controllers\Api\ApiResponse;
 use ec5\Http\Controllers\Api\ApiRequest;
-
 use ec5\Models\Entries\EntryStructure;
-
 use Illuminate\Http\Request;
-use Config;
 use Log;
-
+use ec5\Traits\Requests\RequestAttributes;
 
 class UploadControllerBase extends ProjectApiControllerBase
 {
@@ -32,6 +28,8 @@ class UploadControllerBase extends ProjectApiControllerBase
     |
     */
 
+    use RequestAttributes;
+
     /**
      * @var EntryCreateRepository Object $entryCreateRepository
      */
@@ -41,12 +39,6 @@ class UploadControllerBase extends ProjectApiControllerBase
      * @var BranchEntryCreateRepository Object $branchEntryCreateRepository
      */
     protected $branchEntryCreateRepository;
-
-    /**
-     * @var EntryStatsRepository
-     */
-    protected $entryStatsRepository;
-
     /**
      * @var EntryStructure $entryStructure
      */
@@ -61,7 +53,6 @@ class UploadControllerBase extends ProjectApiControllerBase
      * @param EntryStructure $entryStructure
      * @param EntryCreateRepository $entryCreateRepository
      * @param BranchEntryCreateRepository $branchEntryCreateRepository
-     * @param EntryStatsRepository $entryStatsRepository
      */
     public function __construct(
         Request                     $request,
@@ -69,14 +60,12 @@ class UploadControllerBase extends ProjectApiControllerBase
         ApiResponse                 $apiResponse,
         EntryStructure              $entryStructure,
         EntryCreateRepository       $entryCreateRepository,
-        BranchEntryCreateRepository $branchEntryCreateRepository,
-        EntryStatsRepository        $entryStatsRepository
+        BranchEntryCreateRepository $branchEntryCreateRepository
     )
     {
         $this->entryCreateRepository = $entryCreateRepository;
         $this->branchEntryCreateRepository = $branchEntryCreateRepository;
         $this->entryStructure = $entryStructure;
-        $this->entryStatsRepository = $entryStatsRepository;
 
         parent::__construct($request, $apiRequest, $apiResponse);
     }
@@ -96,15 +85,12 @@ class UploadControllerBase extends ProjectApiControllerBase
 
         /* API REQUEST VALIDATION */
         if (!$this->isValidApiRequest()) {
-
             Log::error('Upload API Request Error: ', [
                 'error' => $this->apiRequest->errors(),
                 'data' => $data
             ]);
-
             return false;
         }
-
 
         /* UPLOAD VALIDATION */
         if (!$this->isValidUpload($uploadValidator)) {
@@ -124,7 +110,7 @@ class UploadControllerBase extends ProjectApiControllerBase
         /* BUILD ENTRY STRUCTURE */
         $this->buildEntryStructure();
 
-        // Check project version this entry was created with
+        // Check the project version this entry was created with
         if (!$this->isValidProjectVersion()) {
             return false;
         }
@@ -176,7 +162,7 @@ class UploadControllerBase extends ProjectApiControllerBase
     {
         $data = $this->apiRequest->getData();
         // Do additional checks
-        $uploadValidator->additionalChecks($data, $this->requestedProject, $this->entryStructure);
+        $uploadValidator->additionalChecks($data, $this->requestedProject(), $this->entryStructure);
         if ($uploadValidator->hasErrors()) {
             $this->errors = $uploadValidator->errors();
             return false;
@@ -195,7 +181,7 @@ class UploadControllerBase extends ProjectApiControllerBase
         }
 
         // If the entry is not an edit, proceed
-        $projectDefinition = $this->requestedProject->getProjectDefinition();
+        $projectDefinition = $this->requestedProject()->getProjectDefinition();
 
         // Branch or Form?
         if ($this->entryStructure->isBranch()) {
@@ -212,15 +198,17 @@ class UploadControllerBase extends ProjectApiControllerBase
 
         // Check the entries limit has not been reached for the form or branch
         if ($this->entryStructure->isBranch()) {
-            $currentEntriesCount = $this->entryStatsRepository->getBranchEntryCounts(
-                $this->requestedProject->getId(),
+            $entryCounter = new BranchEntryCounter();
+            $currentEntriesCount = $entryCounter->getBranchEntryCounts(
+                $this->requestedProject()->getId(),
                 $this->entryStructure->getFormRef(),
                 $this->entryStructure->getOwnerInputRef(),
                 $this->entryStructure->getOwnerUuid()
             );
         } else {
-            $currentEntriesCount = $this->entryStatsRepository->getFormEntryCounts(
-                $this->requestedProject->getId(),
+            $entryCounter = new EntryCounter();
+            $currentEntriesCount = $entryCounter->getFormEntryCounts(
+                $this->requestedProject()->getId(),
                 $this->entryStructure->getFormRef(),
                 $this->entryStructure->getParentUuid()
             );
@@ -252,7 +240,7 @@ class UploadControllerBase extends ProjectApiControllerBase
             }
 
             // If we received no errors, continue to insert answers and entry
-            if (!$repository->create($this->requestedProject, $this->entryStructure, $this->isBulkUpload)) {
+            if (!$repository->create($this->requestedProject(), $this->entryStructure, $this->isBulkUpload)) {
                 $this->errors = $repository->errors();
                 return false;
             }
@@ -267,20 +255,20 @@ class UploadControllerBase extends ProjectApiControllerBase
     {
         $data = $this->apiRequest->getData();
         // Get the user from the middleware request
-        $user = $this->requestedProjectRole->getUser();
+        $user = $this->requestedProjectRole()->getUser();
 
         // Initialise entry structure based on posted data
         $this->entryStructure->createStructure($data);
         // Add user id (0 if null) to entry structure
         $this->entryStructure->setUserId(!empty($user) ? $user->id : 0);
         // Add project id to entry structure
-        $this->entryStructure->setProjectId($this->requestedProject->getId());
+        $this->entryStructure->setProjectId($this->requestedProject()->getId());
         // Add project role to entry structure
-        $this->entryStructure->setProjectRole($this->requestedProjectRole);
+        $this->entryStructure->setProjectRole($this->requestedProjectRole());
 
         // If there is a file in the request, load into the entry structure
-        if ($this->request->hasFile('name')) {
-            $this->entryStructure->setFile($this->request->file('name'));
+        if (request()->hasFile('name')) {
+            $this->entryStructure->setFile(request()->file('name'));
         }
     }
 
@@ -302,7 +290,7 @@ class UploadControllerBase extends ProjectApiControllerBase
      */
     protected function isValidProjectVersion()
     {
-        if ($this->requestedProject->getProjectStats()->getProjectStructureLastUpdated() != $this->entryStructure->getProjectVersion()) {
+        if ($this->requestedProject()->getProjectStats()->getProjectStructureLastUpdated() != $this->entryStructure->getProjectVersion()) {
             $this->errors = ['upload-controller' => ['ec5_201']];
             return false;
         }
@@ -314,7 +302,7 @@ class UploadControllerBase extends ProjectApiControllerBase
      */
     protected function hasValidProjectStatus()
     {
-        if ($this->requestedProject->status != Config::get('ec5Strings.project_status.active')) {
+        if ($this->requestedProject()->status != config('epicollect.strings.project_status.active')) {
             $this->errors = ['upload-controller' => ['ec5_202']];
             return false;
         }
@@ -327,14 +315,13 @@ class UploadControllerBase extends ProjectApiControllerBase
     protected function userHasPermissions()
     {
         // Check user is permitted to upload if project is private
-        if ($this->requestedProject->isPrivate() && !$this->requestedProjectRole->canUpload()) {
+        if ($this->requestedProject()->isPrivate() && !$this->requestedProjectRole()->canUpload()) {
 
-
-            //is someone posting via the POST API?
-            // We check the route name, if it gets here it means it went through the auth
+            //Is someone posting via the POST API?
+            // We check the route name, if it gets here it means it went through the auth,
             //so we add the entry without assigning any user to it.
             //This type of entry will be editable only CREATOR/MANAGER/CURATOR
-            if ($this->request->route()->getName() === 'private-import') {
+            if (request()->route()->getName() === 'private-import') {
                 return true;
             }
 

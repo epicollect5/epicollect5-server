@@ -5,18 +5,12 @@ namespace ec5\Http\Controllers\Api\Entries\Upload;
 
 
 use ec5\Http\Validation\Entries\Upload\RuleFileEntry as FileValidator;
-use ec5\Repositories\QueryBuilder\Stats\Entry\StatsRepository as EntryStatsRepository;
-
 use ec5\Repositories\QueryBuilder\Entry\Upload\Create\EntryRepository as EntryCreateRepository;
 use ec5\Repositories\QueryBuilder\Entry\Upload\Create\BranchEntryRepository as BranchEntryCreateRepository;
-
 use ec5\Http\Controllers\Api\ApiResponse;
 use ec5\Http\Controllers\Api\ApiRequest;
-
 use ec5\Models\Entries\EntryStructure;
-
 use Illuminate\Http\Request;
-
 use Storage;
 
 class TempFileController extends UploadControllerBase
@@ -36,7 +30,6 @@ class TempFileController extends UploadControllerBase
      * @param EntryCreateRepository $entryCreateRepository
      * @param BranchEntryCreateRepository $branchEntryCreateRepository
      * @param FileValidator $fileValidator
-     * @param EntryStatsRepository $entryStatsRepository
      */
     public function __construct(
         Request                     $request,
@@ -45,13 +38,12 @@ class TempFileController extends UploadControllerBase
         EntryStructure              $entryStructure,
         EntryCreateRepository       $entryCreateRepository,
         BranchEntryCreateRepository $branchEntryCreateRepository,
-        FileValidator               $fileValidator,
-        EntryStatsRepository        $entryStatsRepository
+        FileValidator               $fileValidator
     )
     {
         $this->fileValidator = $fileValidator;
         parent::__construct($request, $apiRequest, $apiResponse, $entryStructure, $entryCreateRepository,
-            $branchEntryCreateRepository, $entryStatsRepository);
+            $branchEntryCreateRepository);
     }
 
     /**
@@ -76,7 +68,7 @@ class TempFileController extends UploadControllerBase
 
         /* BUILD ENTRY STRUCTURE */
         $this->buildEntryStructure();
-        $file = $this->request->file('file');
+        $file = request()->file('file');
         if (!$file) {
             return $this->apiResponse->errorResponse(400, ['temp file upload' => ['ec5_116']]);
         }
@@ -84,7 +76,7 @@ class TempFileController extends UploadControllerBase
 
         /* VALIDATE */
 
-        if (!$this->fileValidator->fileInputExists($this->requestedProject, $this->entryStructure)) {
+        if (!$this->fileValidator->fileInputExists($this->requestedProject(), $this->entryStructure)) {
             return $this->apiResponse->errorResponse(400, $this->fileValidator->errors());
         }
         // Validate web media file
@@ -93,7 +85,7 @@ class TempFileController extends UploadControllerBase
         }
 
         /* STORE FILE */
-        $projectRef = $this->requestedProject->ref;
+        $projectRef = $this->requestedProject()->ref;
 
         // Get the entry data
         $fileEntry = $this->entryStructure->getEntry();

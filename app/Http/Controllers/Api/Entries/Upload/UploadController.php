@@ -3,19 +3,14 @@
 namespace ec5\Http\Controllers\Api\Entries\Upload;
 
 use ec5\Http\Validation\Entries\Upload\RuleUpload as UploadValidator;
-
 use ec5\Repositories\QueryBuilder\Entry\Upload\Create\BranchEntryRepository as BranchEntryCreateRepository;
 use ec5\Repositories\QueryBuilder\Entry\Upload\Create\EntryRepository as EntryCreateRepository;
-use ec5\Repositories\QueryBuilder\Stats\Entry\StatsRepository as EntryStatsRepository;
-
 use ec5\Models\Entries\EntryStructure;
-
 use ec5\Http\Controllers\Api\ApiResponse;
 use ec5\Http\Controllers\Api\ApiRequest;
-
 use Illuminate\Http\Request;
-use Config;
 use App;
+use ec5\Traits\Requests\RequestAttributes;
 
 class UploadController extends UploadControllerBase
 {
@@ -28,6 +23,8 @@ class UploadController extends UploadControllerBase
     |
     */
 
+    use RequestAttributes;
+
     /**
      * UploadController constructor.
      * @param Request $request
@@ -36,7 +33,6 @@ class UploadController extends UploadControllerBase
      * @param EntryStructure $entryStructure
      * @param EntryCreateRepository $entryCreateRepository
      * @param BranchEntryCreateRepository $branchEntryCreateRepository
-     * @param EntryStatsRepository $entryStatsRepository
      */
     public function __construct(
         Request                     $request,
@@ -44,8 +40,7 @@ class UploadController extends UploadControllerBase
         ApiResponse                 $apiResponse,
         EntryStructure              $entryStructure,
         EntryCreateRepository       $entryCreateRepository,
-        BranchEntryCreateRepository $branchEntryCreateRepository,
-        EntryStatsRepository        $entryStatsRepository
+        BranchEntryCreateRepository $branchEntryCreateRepository
     )
     {
         parent::__construct(
@@ -54,8 +49,7 @@ class UploadController extends UploadControllerBase
             $apiResponse,
             $entryStructure,
             $entryCreateRepository,
-            $branchEntryCreateRepository,
-            $entryStatsRepository
+            $branchEntryCreateRepository
         );
     }
 
@@ -90,11 +84,11 @@ class UploadController extends UploadControllerBase
 
     public function import(UploadValidator $uploadValidator)
     {
-        $publicAccess = Config::get('ec5Strings.project_access.public');
+        $publicAccess = config('epicollect.strings.project_access.public');
 
         //If the project is public do not accept the request
-        //Requests gets here when a projecy is public as the permission api middlweare let them through
-        if ($this->requestedProject->access === $publicAccess) {
+        //Requests gets here when a project is public as the permission api middleware let them through
+        if ($this->requestedProject()->access === $publicAccess) {
             return $this->apiResponse->errorResponse(400, ['errors' => ['ec5_256']]);
         }
 

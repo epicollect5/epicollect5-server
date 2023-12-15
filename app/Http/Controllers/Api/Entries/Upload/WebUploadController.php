@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace ec5\Http\Controllers\Api\Entries\Upload;
 
+use Exception;
+use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use ec5\Http\Validation\Entries\Upload\RuleUpload;
 use ec5\Http\Validation\Entries\Upload\RuleFileEntry as FileValidator;
-use ec5\Repositories\QueryBuilder\Stats\Entry\StatsRepository as EntryStatsRepository;
 use ec5\Repositories\QueryBuilder\Entry\Upload\Create\EntryRepository as EntryCreateRepository;
 use ec5\Repositories\QueryBuilder\Entry\Upload\Create\BranchEntryRepository as BranchEntryCreateRepository;
 use ec5\Http\Controllers\Api\ApiResponse;
@@ -45,7 +46,6 @@ class WebUploadController extends UploadControllerBase
      * @param EntryCreateRepository $entryCreateRepository
      * @param BranchEntryCreateRepository $branchEntryCreateRepository
      * @param FileValidator $fileValidator
-     * @param EntryStatsRepository $entryStatsRepository
      */
     public function __construct(
         Request                     $request,
@@ -54,8 +54,7 @@ class WebUploadController extends UploadControllerBase
         EntryStructure              $entryStructure,
         EntryCreateRepository       $entryCreateRepository,
         BranchEntryCreateRepository $branchEntryCreateRepository,
-        FileValidator               $fileValidator,
-        EntryStatsRepository        $entryStatsRepository
+        FileValidator               $fileValidator
     )
     {
         $this->fileValidator = $fileValidator;
@@ -65,13 +64,12 @@ class WebUploadController extends UploadControllerBase
             $apiResponse,
             $entryStructure,
             $entryCreateRepository,
-            $branchEntryCreateRepository,
-            $entryStatsRepository
+            $branchEntryCreateRepository
         );
     }
 
     /**
-     * @return bool|\Illuminate\Http\JsonResponse
+     *
      */
     public function store(RuleUpload $ruleUpload)
     {
@@ -151,7 +149,6 @@ class WebUploadController extends UploadControllerBase
 
     /**
      * @param RuleUpload $ruleUpload
-     * @return bool|\Illuminate\Http\JsonResponse
      *
      * Let's call the web upload controller @store method
      * We do this because the @storeBulk endpoint goes through
@@ -166,7 +163,7 @@ class WebUploadController extends UploadControllerBase
     /**
      * @param $rootFolder
      * @param $input
-     * @return bool|\Illuminate\Http\JsonResponse
+     * @return bool|JsonResponse
      */
     private function moveFile($rootFolder, $input)
     {
@@ -191,7 +188,7 @@ class WebUploadController extends UploadControllerBase
                 mime_content_type($filePath),
                 filesize($filePath)
             );
-        } catch (\ErrorException $e) {
+        } catch (Exception $e) {
             // File doesn't exist
             return $this->apiResponse->errorResponse(400, ['web upload' => [
                 'ec5_231'
