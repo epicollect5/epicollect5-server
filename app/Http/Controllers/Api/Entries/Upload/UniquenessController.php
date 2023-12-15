@@ -9,6 +9,7 @@ use ec5\Http\Validation\Entries\Upload\RuleUniqueness as UniquenessValidator;
 
 use ec5\Repositories\QueryBuilder\Entry\Upload\Search\EntryRepository as EntrySearchRepository;
 use ec5\Repositories\QueryBuilder\Entry\Upload\Search\BranchEntryRepository as BranchEntrySearchRepository;
+use Log;
 
 class UniquenessController extends UploadControllerBase
 {
@@ -53,7 +54,7 @@ class UniquenessController extends UploadControllerBase
         $answer = $data['answer'];
 
         //get project definition
-        $projectExtra = $this->requestedProject->getProjectExtra();
+        $projectExtra = $this->requestedProject()->getProjectExtra();
 
         // Get form ref
         $form = $projectExtra->getFormDetails($formRef);
@@ -67,10 +68,10 @@ class UniquenessController extends UploadControllerBase
             return $this->apiResponse->errorResponse(400, ['upload-controller' => ['ec5_84']]);
         }
 
-        // Get uniqueness type
+        // Get the uniqueness type
         $uniquenessType = $input['uniqueness'];
         if (!$uniquenessType) {
-            \Log::error('Uniqueness not set!', $this->requestedProject, $input);
+            Log::error('Uniqueness not set!', $this->requestedProject(), $input);
             return $this->apiResponse->errorResponse(400, ['upload-controller' => ['ec5_22']]);
         }
 

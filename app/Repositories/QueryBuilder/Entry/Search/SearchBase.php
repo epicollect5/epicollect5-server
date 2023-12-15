@@ -11,8 +11,6 @@ abstract class SearchBase
 
     protected $errors;
 
-    protected $input_special_types = array();
-
     protected $table = '';
 
     /**

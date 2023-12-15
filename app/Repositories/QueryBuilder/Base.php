@@ -9,12 +9,9 @@ class Base
 {
 
     protected $errors = [];
-    protected $input_special_types = array();
 
     public function __construct()
     {
-        DB::connection()->enableQueryLog();
-        $this->input_special_types = Config::get('ec5Enums.input_special_types');
     }
 
     /**

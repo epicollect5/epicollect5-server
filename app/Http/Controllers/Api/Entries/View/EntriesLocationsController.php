@@ -12,6 +12,7 @@ use ec5\Http\Validation\Entries\Search\RuleQueryStringMapData;
 use ec5\Repositories\QueryBuilder\Entry\Search\BranchEntryRepository;
 use ec5\Repositories\QueryBuilder\Entry\Search\EntryRepository;
 
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Config;
 
@@ -43,14 +44,14 @@ class EntriesLocationsController extends EntrySearchControllerBase
         parent::__construct($request, $apiRequest, $apiResponse, $entryRepository,
             $branchEntryRepository, $ruleQueryString, $ruleAnswers);
 
-        $this->allowedSearchKeys = Config::get('ec5Enums.search_data_entries');
+        $this->allowedSearchKeys = array_keys(config('epicollect.strings.search_data_entries'));
     }
 
     /**
      * @param Request $request
      * @param RuleQueryStringMapData $ruleQueryStringMapData
-     * @return ApiResponse|\Illuminate\Http\JsonResponse
      *
+     * @return JsonResponse
      * @SWG\Get(
      *   path="/api/entries-locations/{project_slug}",
      *   summary="Get map locations for entries for a project",
@@ -145,13 +146,12 @@ class EntriesLocationsController extends EntrySearchControllerBase
      *   @SWG\Response(response=400, description="not acceptable"),
      *   @SWG\Response(response=500, description="internal server error")
      * )
-     *
      */
     public function show(Request $request, RuleQueryStringMapData $ruleQueryStringMapData)
     {
         $columns = ['geo_json_data'];
 
-        $options = $this->getRequestParams($request, Config::get('ec5Limits.entries_map.per_page'));
+        $options = $this->getRequestParams($request, config('epicollect.limits.entries_map.per_page'));
 
         // Validate the options
         $ruleQueryStringMapData->validate($options);
@@ -159,13 +159,13 @@ class EntriesLocationsController extends EntrySearchControllerBase
             return $this->apiResponse->errorResponse(400, $ruleQueryStringMapData->errors());
         }
         // Do additional checks
-        $ruleQueryStringMapData->additionalChecks($this->requestedProject, $options);
+        $ruleQueryStringMapData->additionalChecks($this->requestedProject(), $options);
         if ($ruleQueryStringMapData->hasErrors()) {
             return $this->apiResponse->errorResponse(400, $ruleQueryStringMapData->errors());
         }
 
         $repository = (isset($options['branch_ref']) && !empty($options['branch_ref'])) ? $this->branchEntryRepository : $this->entryRepository;
-        $project = $this->requestedProject;
+        $project = $this->requestedProject();
 
         $entryData = $repository->getMapData($project->getId(), $options, $columns)->paginate($options['per_page']);
 
