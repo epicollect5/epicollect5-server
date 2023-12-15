@@ -2,38 +2,22 @@
 
 namespace ec5\Http\Controllers\Web\Project;
 
-use ec5\Http\Controllers\ProjectControllerBase;
-use Illuminate\Http\Request;
-use Redirect;
-use Config;
+use ec5\Traits\Requests\RequestAttributes;
 
-class ProjectApiController extends ProjectControllerBase
+class ProjectApiController
 {
-    /**
-     * ProjectAppsController constructor.
-     * @param Request $request
-     */
-    public function __construct(Request $request)
-    {
-        parent::__construct($request);
-    }
+    use RequestAttributes;
 
     /**
-     * @param Request $request
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View|\Illuminate\Contracts\View\Factory|\Illuminate\Http\JsonResponse|\Illuminate\View\View
      */
-    public function show(Request $request)
+    public function show()
     {
-        if (!$this->requestedProjectRole->canEditProject()) {
-            $errors = ['ec5_91'];
-            return view('errors.gen_error')->withErrors(['errors' => $errors]);
+        if (!$this->requestedProjectRole()->canEditProject()) {
+            return view('errors.gen_error')->withErrors(['errors' => ['ec5_91']]);
         }
-
-        $params = $this->defaultProjectDetailsParams('api', 'details-edit');
-        $params['action'] = 'api';
-
-        return view('project.project_details', $params);
-
+        return view('project.project_details', [
+            'action' => 'api',
+            'includeTemplate' => 'api'
+        ]);
     }
-
 }

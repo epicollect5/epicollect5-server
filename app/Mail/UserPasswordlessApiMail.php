@@ -29,7 +29,7 @@ class UserPasswordlessApiMail extends Mailable
 
         //to show how long the link will last
         $this->expireAt = Carbon::now()
-            ->subSeconds(Config::get('auth.passwordless_token_expire', 300))
+            ->subSeconds(config('auth.passwordless_token_expire', 300))
             ->diffForHumans(Carbon::now(), true);
     }
 
@@ -40,7 +40,7 @@ class UserPasswordlessApiMail extends Mailable
      */
     public function build()
     {
-        return $this->from(Config::get('mail.from.address'), Config::get('mail.from.name'))
+        return $this->from(config('mail.from.address'), config('mail.from.name'))
             ->subject(trans('site.login_passwordless'))
             ->view('emails.user_passwordless_api');
     }

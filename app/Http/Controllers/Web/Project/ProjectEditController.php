@@ -2,24 +2,23 @@
 
 namespace ec5\Http\Controllers\Web\Project;
 
-use ec5\Http\Controllers\ProjectControllerBase;
-use Illuminate\Http\Request;
-
 use ec5\Http\Controllers\Api\ApiResponse;
-
 use ec5\Http\Validation\Project\RuleProjectDefinitionDetails;
 use ec5\Http\Validation\Project\RuleSettings;
-
 use ec5\Repositories\QueryBuilder\Project\UpdateRepository as UpdateRep;
 use ec5\Repositories\QueryBuilder\Project\SearchRepository as Search;
 use ec5\Models\Images\UploadImage;
-
-use Config;
-use Uuid;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Foundation\Application;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 use Redirect;
+use ec5\Traits\Requests\RequestAttributes;
 
-class ProjectEditController extends ProjectControllerBase
+class ProjectEditController
 {
+    use RequestAttributes;
 
     protected $action = '';
     protected $allowedSettingActions = [];
@@ -33,29 +32,27 @@ class ProjectEditController extends ProjectControllerBase
     /**
      * ProjectEditController constructor.
      *
-     * @param Request $request
      * @param ApiResponse $apiResponse
      * @param RuleSettings $ruleSettings
      * @param RuleProjectDefinitionDetails $ruleProjectDefinitionDetails
      * @param UpdateRep $updateRep
      * @param Search $search
      */
-    public function __construct(Request                      $request,
-                                ApiResponse                  $apiResponse,
-                                RuleSettings                 $ruleSettings,
-                                RuleProjectDefinitionDetails $ruleProjectDefinitionDetails,
-                                UpdateRep                    $updateRep,
-                                Search                       $search)
+    public function __construct(
+        ApiResponse                  $apiResponse,
+        RuleSettings                 $ruleSettings,
+        RuleProjectDefinitionDetails $ruleProjectDefinitionDetails,
+        UpdateRep                    $updateRep,
+        Search                       $search)
     {
 
-        parent::__construct($request);
 
         $this->apiResponse = $apiResponse;
         $this->ruleProjectDefinitionDetails = $ruleProjectDefinitionDetails;
         $this->ruleSettings = $ruleSettings;
         $this->updateRep = $updateRep;
         $this->search = $search;
-        $this->allowedSettingActions = config('ec5Enums.edit_settings');
+        $this->allowedSettingActions = array_keys(config('epicollect.strings.edit_settings'));
 
     }
 
@@ -64,7 +61,7 @@ class ProjectEditController extends ProjectControllerBase
      *
      * @param $slug
      * @param $action
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function settings($slug, $action)
     {
@@ -74,7 +71,7 @@ class ProjectEditController extends ProjectControllerBase
             return $this->apiResponse->errorResponse(400, ['errors' => ['ec5_91']]);
         }
 
-        if (!$this->requestedProjectRole->canEditProject()) {
+        if (!$this->requestedProjectRole()->canEditProject()) {
             return $this->apiResponse->errorResponse(404, ['errors' => ['ec5_91']]);
         }
 
@@ -95,8 +92,8 @@ class ProjectEditController extends ProjectControllerBase
 
         if ($done) {
             $out = [];
-            foreach ($this->allowedSettingActions as $key => $value) {
-                $out[$value] = $this->requestedProject->$value;
+            foreach ($this->allowedSettingActions as $value) {
+                $out[$value] = $this->requestedProject()->$value;
             }
             $this->apiResponse->body = $out;
             return $this->apiResponse->toJsonResponse(200);
@@ -106,25 +103,16 @@ class ProjectEditController extends ProjectControllerBase
     }
 
     /**
-     * Handle all details Edit requests
-     *
-     * @param string $slug project -> slug
-     * @return \Illuminate\Http\Response
-     */
-    /**
      * @param $slug
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View|ProjectEditController|\Illuminate\Http\RedirectResponse
+     * @return Factory|Application|RedirectResponse|View
      */
     public function details($slug)
     {
-
         $updateProjectStructuresTable = false;
-
         $errors = ['message' => 'ec5_45'];
-
         $this->action = last($this->request->segments());
 
-        if (!$this->requestedProjectRole->canEditProject()) {
+        if (!$this->requestedProjectRole()->canEditProject()) {
             return view('errors.gen_error')->withErrors(['errors' => 'ec5_91']);
         }
 
@@ -160,7 +148,7 @@ class ProjectEditController extends ProjectControllerBase
                 return $this->helperView(['message' => 'ec5_83']);
             }
 
-            $tempInput['logo_url'] = $this->requestedProject->ref;
+            $tempInput['logo_url'] = $this->requestedProject()->ref;
 
             // We want to trigger an update on the project_structures table,
             // to signal to the app that this project has been updated
@@ -178,9 +166,7 @@ class ProjectEditController extends ProjectControllerBase
         if ($this->updateRep->hasErrors()) {
             $errors = $this->updateRep->errors();
         }
-
         return $this->helperView($errors);
-
     }
 
     /**
@@ -191,8 +177,7 @@ class ProjectEditController extends ProjectControllerBase
      */
     private function saveLogos($driver)
     {
-        return UploadImage::saveImage($this->requestedProject->ref, $this->request->file('logo_url'), 'logo.jpg', $driver, config('ec5Media.' . $driver));
-
+        return UploadImage::saveImage($this->requestedProject()->ref, $this->request->file('logo_url'), 'logo.jpg', $driver, config('epicollect.media.' . $driver));
     }
 
     /**
@@ -204,10 +189,10 @@ class ProjectEditController extends ProjectControllerBase
     private function statusInput($input): array
     {
         $statuses = [
-            config('ec5Strings.project_status.trashed'),
-            config('ec5Strings.project_status.locked'),
+            config('epicollect.strings.project_status.trashed'),
+            config('epicollect.strings.project_status.locked'),
         ];
-        $input['status'] = in_array($input['status'], $statuses) ? $input['status'] : config('ec5Strings.project_status.active');
+        $input['status'] = in_array($input['status'], $statuses) ? $input['status'] : config('epicollect.strings.project_status.active');
 
         return $input;
     }
@@ -222,10 +207,10 @@ class ProjectEditController extends ProjectControllerBase
     private function doUpdate($input, $updateProjectStructuresTable = false)
     {
         // Update the Definition and Extra data
-        $this->requestedProject->updateProjectDetails($input);
+        $this->requestedProject()->updateProjectDetails($input);
 
         // Update in the database
-        return $this->updateRep->updateProject($this->requestedProject, $input, $updateProjectStructuresTable);
+        return $this->updateRep->updateProject($this->requestedProject(), $input, $updateProjectStructuresTable);
     }
 
     /**
@@ -233,19 +218,13 @@ class ProjectEditController extends ProjectControllerBase
      *
      * @param array $withErrors
      * @param array $withMessage
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\RedirectResponse
      */
     private function helperView($withErrors = [], $withMessage = [])
     {
-
-        $params = $this->defaultProjectDetailsParams('view', 'details-view');
-        $params['action'] = $this->action;
-
         if (count($withErrors) > 0) {
             return Redirect::back()->withErrors($withErrors);
         } else {
             return Redirect::back()->with($withMessage);
         }
     }
-
 }

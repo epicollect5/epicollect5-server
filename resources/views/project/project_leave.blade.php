@@ -14,20 +14,21 @@
                 <div id="" class="panel panel-default ">
 
                     <div class="panel-body">
-                        <a href="{{url('project/' . $project->slug . '/data')}}">
+                        <a href="{{url('project/' . $requestAttributes->requestedProject->slug . '/data')}}">
                             <img class="project-home__logo img-responsive img-circle" width="256" height="256"
-                                 alt="Project logo" src="@if($project->logo_url == '') {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
+                                 alt="Project logo" src="@if($requestAttributes->requestedProject->logo_url == '') {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
                                  @else
-                                 {{ url('/api/internal/media/'.$project->slug . '?type=photo&name=logo.jpg&format=project_thumb') }}
+                                 {{ url('/api/internal/media/'.$requestAttributes->requestedProject->slug . '?type=photo&name=logo.jpg&format=project_thumb') }}
                                  @endif">
                         </a>
                     </div>
 
                     <div class="panel-body text-center">
                         <h3 class="margin-bottom-xs margin-top-xs"
-                            data-project-name="{{$project->name}}">{{ trans('site.confirm_leave_project', ['projectName' => $project->name]) }}</h3>
+                            data-project-name="{{$requestAttributes->requestedProject->name}}">{{ trans('site.confirm_leave_project', ['projectName' => $requestAttributes->requestedProject->name]) }}</h3>
 
-                        <form action="{{ url('myprojects') . '/' . $project->slug . '/leave' }}" class="leave-project"
+                        <form action="{{ url('myprojects') . '/' . $requestAttributes->requestedProject->slug . '/leave' }}"
+                              class="leave-project"
                               method="POST">
 
                             {{ csrf_field() }}
@@ -53,5 +54,5 @@
 @stop
 
 @section('scripts')
-    <script type="text/javascript" src="{{ asset('js/project/project.js').'?'.Config::get('app.release') }}"></script>
+    <script type="text/javascript" src="{{ asset('js/project/project.js').'?'.config('app.release') }}"></script>
 @stop

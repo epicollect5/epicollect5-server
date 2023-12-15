@@ -6,12 +6,16 @@
 
             <div class="pull-right">
                 @if (
-                    $requestedProjectRole->getUser()->isSuperAdmin() ||
-                        $requestedProjectRole->getUser()->isAdmin() ||
-                        $requestedProjectRole->canDeleteEntries())
-                    <a data-setting-type="status" data-value="deletion" class="btn btn-danger btn-sm entries-deletion"
-                        href="{{ url('myprojects') . '/' . $project->slug . '/delete-entries' }}">
-                        {{ trans('site.delete') }}</a>
+                    $requestAttributes->requestedProjectRole->getUser()->isSuperAdmin() ||
+                    $requestAttributes->requestedProjectRole->getUser()->isAdmin() ||
+                    $requestAttributes->requestedProjectRole->canDeleteEntries())
+                    <a data-setting-type="status"
+                       data-value="deletion"
+                       class="btn btn-danger btn-sm entries-deletion"
+                       href="{{ url('myprojects') . '/' . $requestAttributes->requestedProject->slug . '/delete-entries' }}"
+                    >
+                        {{ trans('site.delete') }}
+                    </a>
                 @endif
             </div>
 

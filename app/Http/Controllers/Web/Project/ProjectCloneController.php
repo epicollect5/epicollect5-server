@@ -2,40 +2,33 @@
 
 namespace ec5\Http\Controllers\Web\Project;
 
-use ec5\Http\Controllers\ProjectControllerBase;
 use Illuminate\Http\Request;
 use ec5\Models\Projects\Project;
-
 use ec5\Http\Validation\Project\RuleName as Validator;
 use ec5\Repositories\QueryBuilder\Project\CreateRepository as CreateProject;
 use ec5\Repositories\QueryBuilder\ProjectRole\CreateRepository as CreateProjectRole;
 use ec5\Repositories\QueryBuilder\Project\UpdateRepository as UpdateRep;
 use ec5\Models\Images\CreateProjectLogoAvatar;
-
-
 use Illuminate\Support\Str;
-use Uuid;
 use Redirect;
+use ec5\Traits\Project\ProjectBundle;
 
-class ProjectCloneController extends ProjectControllerBase
+class ProjectCloneController
 {
+    use ProjectBundle;
+
     protected $project;
     protected $updateRep;
 
-    public function __construct(Request $request, Project $project, UpdateRep $updateRep)
+    public function __construct(Project $project, UpdateRep $updateRep)
     {
-        parent::__construct($request);
-
         $this->project = $project;
         $this->updateRep = $updateRep;
     }
 
-    /**
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View|\Illuminate\Contracts\View\Factory|\Illuminate\View\View
-     */
     public function show()
     {
-        if (!$this->requestedProjectRole->canEditProject()) {
+        if (!$this->requestedProjectRole()->canEditProject()) {
             $errors = ['ec5_91'];
             return view('errors.gen_error')->withErrors(['errors' => $errors]);
         }
@@ -44,7 +37,6 @@ class ProjectCloneController extends ProjectControllerBase
         $vars['action'] = 'clone';
 
         return view('project.project_details', $vars);
-
     }
 
     /**
@@ -56,30 +48,29 @@ class ProjectCloneController extends ProjectControllerBase
      */
     public function store(Request $request, Validator $validator, CreateProject $createProject, CreateProjectRole $createProjectRole)
     {
-
-        if (!$this->requestedProjectRole->canEditProject()) {
+        if (!$this->requestedProjectRole()->canEditProject()) {
             $errors = ['ec5_91'];
             return view('errors.gen_error')->withErrors(['errors' => $errors]);
         }
 
-        $oldProjectId = $this->requestedProject->getId();
+        $oldProjectId = $this->requestedProject()->getId();
 
         // Get input
-        $input = $request->all();
+        $params = $request->all();
 
-        $cloneUsers = isset($input['clone-users']) && $input['clone-users'] == 'y' ? true : false;
-        $input['slug'] = Str::slug($request->input('name'), '-');
+        $cloneUsers = isset($params['clone-users']) && $params['clone-users'] == 'y' ? true : false;
+        $params['slug'] = Str::slug($request->input('name'), '-');
 
         // Run validation
-        $validator->validate($input, true);
+        $validator->validate($params, true);
         if ($validator->hasErrors()) {
             $request->flash();
             return redirect()->back()->withErrors($validator->errors());
         }
 
         // Clone into $this->requestedProject
-        $clonedProject = clone($this->requestedProject);
-        $clonedProject->cloneProject($input);
+        $clonedProject = clone($this->requestedProject());
+        $clonedProject->cloneProject($params);
 
         // Try and create, else return DB errors
         $projectId = $createProject->create($clonedProject);
@@ -100,21 +91,18 @@ class ProjectCloneController extends ProjectControllerBase
 
         //create project logo avatar
         if ($projectId > 0) {
-
             //set the newly generated project ID in the model in memory
             $this->project->setId($projectId);
-
             //generate project logo avatar(s)
             $avatarCreator = new CreateProjectLogoAvatar();
             $wasCreated = $avatarCreator->generate($clonedProject->ref, $clonedProject->name);
 
             if ($wasCreated) {
-
-                unset($input);
+                unset($params);
                 //update logo_url as we are creating an avatar placeholder
-                $input['logo_url'] = $clonedProject->ref;
+                $params['logo_url'] = $clonedProject->ref;
 
-                if ($this->doUpdate($input)) {
+                if ($this->doUpdate($params)) {
                     return Redirect::to('myprojects')->with('message', 'ec5_200');
                 } else {
                     // Return db update errors
@@ -135,17 +123,15 @@ class ProjectCloneController extends ProjectControllerBase
     /**
      * Update the project in db
      *
-     * @param $input
+     * @param $params
      * @param bool $updateProjectStructuresTable
      * @return bool
      */
-    private function doUpdate($input)
+    private function doUpdate($params)
     {
         // Update the Definition and Extra data
-        $this->project->updateProjectDetails($input);
-
+        $this->project->updateProjectDetails($params);
         // Update in the database
-        return $this->updateRep->updateProject($this->project, $input, false);
+        return $this->updateRep->updateProject($this->project, $params, false);
     }
-
 }

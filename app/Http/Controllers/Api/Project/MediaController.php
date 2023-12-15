@@ -4,7 +4,6 @@ namespace ec5\Http\Controllers\Api\Project;
 
 use ec5\Http\Validation\Media\RuleMedia;
 use ec5\Http\Controllers\Api\ApiResponse;
-use ec5\Http\Controllers\ProjectControllerBase;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,9 +13,11 @@ use Response;
 use Storage;
 use Log;
 use ec5\Libraries\Utilities\MediaStreaming;
+use ec5\Traits\Requests\RequestAttributes;
 
-class MediaController extends ProjectControllerBase
+class MediaController
 {
+
     /*
     |--------------------------------------------------------------------------
     | Media Controller
@@ -25,6 +26,8 @@ class MediaController extends ProjectControllerBase
     | This controller serves media files
     |
     */
+
+    use RequestAttributes;
 
     /**
      * @param Request $request
@@ -72,11 +75,11 @@ class MediaController extends ProjectControllerBase
             // Attempt to retrieve media
             try {
                 // Use the provided 'format' as the driver
-                $file = Storage::disk($format)->get($this->requestedProject->ref . '/' . $params['name']);
+                $file = Storage::disk($format)->get($this->requestedProject()->ref . '/' . $params['name']);
                 //get storage real path
                 $filepath = Storage::disk($format)->getAdapter()->getPathPrefix();
                 //get file real path
-                $filepath = $filepath . $this->requestedProject->ref . '/' . $params['name'];
+                $filepath = $filepath . $this->requestedProject()->ref . '/' . $params['name'];
                 //stream only audio and video
                 if ($inputType !== config('epicollect.strings.inputs_type.photo')) {
                     //serve as 206  partial response
@@ -149,13 +152,13 @@ class MediaController extends ProjectControllerBase
             // Attempt to retrieve media
             try {
                 // Use the provided 'format' as the driver
-                $file = Storage::disk('temp')->get($inputType . '/' . $this->requestedProject->ref . '/' . $params['name']);
+                $file = Storage::disk('temp')->get($inputType . '/' . $this->requestedProject()->ref . '/' . $params['name']);
                 //get storage real path
                 $filepath = Storage::disk('temp')->getAdapter()->getPathPrefix();
                 //get file real path
-                $filepath = $filepath . $inputType . '/' . $this->requestedProject->ref . '/' . $params['name'];
+                $filepath = $filepath . $inputType . '/' . $this->requestedProject()->ref . '/' . $params['name'];
                 //stream only audio and video (not in unit tests!)
-                if ($inputType !== config('epicollect.strings.inputs_type.photo') && !App::environment('testing')) {
+                if ($inputType !== config('epicollect.strings.inputs_type.photo') && !(App::environment() === 'testing')) {
                     //in tests, just return a 200 response as there are issue with headers()
                     //todo: re-assess after updating laravel and phpunit
                     $stream = new MediaStreaming($filepath, $inputType);

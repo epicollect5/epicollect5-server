@@ -1,3 +1,7 @@
+@php
+    $projectExtra = $requestAttributes->requestedProject->getProjectExtra();
+    $projectStats = $requestAttributes->requestedProject->getProjectStats();
+@endphp
 <div role="tabpanel" class="tab-pane fade in active" id="limits">
     <div class="panel panel-default">
         <div class="panel-body">

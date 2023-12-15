@@ -2,31 +2,32 @@
 
 namespace ec5\Http\Controllers\Web\Project;
 
-use ec5\Http\Controllers\ProjectControllerBase;
 use ec5\Repositories\QueryBuilder\Project\SearchRepository as ProjectSearch;
 use ec5\Models\Eloquent\User;
 use ec5\Repositories\QueryBuilder\ProjectRole\SearchRepository as ProjectRoleSearch;
 use ec5\Repositories\QueryBuilder\ProjectRole\CreateRepository as ProjectRoleCreate;
 use ec5\Repositories\QueryBuilder\ProjectRole\DeleteRepository as ProjectRoleDelete;
 use ec5\Models\Eloquent\ProjectRole;
-
 use ec5\Http\Validation\Project\RuleProjectRole as Validator;
-
 use ec5\Http\Controllers\Api\ApiResponse;
-
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Foundation\Application;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Http\Request;
-use Config;
+use ec5\Traits\Requests\RequestAttributes;
+use Illuminate\View\View;
+use Throwable;
 
-class ManageUsersController extends ProjectControllerBase
+class ManageUsersController
 {
+    use RequestAttributes;
+
     protected $projectRoleSearch;
-
     protected $projectRoleCreate;
-
     protected $projectRoleDelete;
-
     protected $projectSearch;
 
     /**
@@ -36,14 +37,12 @@ class ManageUsersController extends ProjectControllerBase
      * @param ProjectRoleCreate $projectRoleCreate
      * @param ProjectRoleDelete $projectRoleDelete
      * @param ProjectSearch $projectSearch
-     * @param Request $request
      */
     public function __construct(
         ProjectRoleSearch $projectRoleSearch,
         ProjectRoleCreate $projectRoleCreate,
         ProjectRoleDelete $projectRoleDelete,
-        ProjectSearch     $projectSearch,
-        Request           $request
+        ProjectSearch     $projectSearch
     )
     {
 
@@ -51,24 +50,24 @@ class ManageUsersController extends ProjectControllerBase
         $this->projectRoleCreate = $projectRoleCreate;
         $this->projectRoleDelete = $projectRoleDelete;
         $this->projectSearch = $projectSearch;
-
-        parent::__construct($request);
     }
 
     /**
      * @param Request $request
+     * @return Factory|Application|JsonResponse|RedirectResponse|View
+     * @throws Throwable
      */
     public function index(Request $request)
     {
         // Only managers (and creators) have access
-        if (!$this->requestedProjectRole->isManager()) {
+        if (!$this->requestedProjectRole()->isManager()) {
             return Redirect::back()->withErrors(['ec5_91']);
         }
 
         // Get request data
         $params = $request->all();
         // Set per page limit
-        $perPage = Config::get('ec5Limits.users_per_page');
+        $perPage = config('epicollect.limits.users_per_page');
         // Set search/roles/current page option defaults
         $search = !empty($params['search']) ? $params['search'] : '';
         $currentPage = 1;
@@ -84,25 +83,25 @@ class ManageUsersController extends ProjectControllerBase
         }
 
         if (empty($options['roles'])) {
-            $options['roles'] = array_keys(Config::get('ec5Permissions.projects.roles'));
+            $options['roles'] = array_keys(config('epicollect.permissions.projects.roles'));
         }
 
         // Set project id in options
-        $options['project_id'] = $this->requestedProject->getId();
+        $options['project_id'] = $this->requestedProject()->getId();
 
         // Get paginated project users, based on per page, specified roles, current page and search term
         $users = $this->projectRoleSearch->paginate($perPage, $currentPage, $search, $options);
 
         //CREATOR role can transfer ownership
-        $canTransferOwnership = $this->requestedProjectRole->isCreator();
+        $canTransferOwnership = $this->requestedProjectRole()->isCreator();
 
         //superadmin can transfer ownership
-        if ($this->requestedProjectRole->getUser()->isSuperAdmin()) {
+        if ($this->requestedProjectRole()->getUser()->isSuperAdmin()) {
             $canTransferOwnership = true;
         }
 
         //admin can transfer ownership
-        if ($this->requestedProjectRole->getUser()->isAdmin()) {
+        if ($this->requestedProjectRole()->getUser()->isAdmin()) {
             $canTransferOwnership = true;
         }
 
@@ -115,9 +114,9 @@ class ManageUsersController extends ProjectControllerBase
             return response()->json(view(
                 'project.project_users',
                 [
-                    'project' => $this->requestedProject,
+                    'project' => $this->requestedProject(),
                     'projectUsers' => $projectUsers,
-                    'requestedProjectRole' => $this->requestedProjectRole,
+                    'requestedProjectRole' => $this->requestedProjectRole(),
                     'canTransferOwnership' => $canTransferOwnership,
                     'key' => $options['roles'][0]
                 ]
@@ -125,26 +124,26 @@ class ManageUsersController extends ProjectControllerBase
                 ->render());
         }
 
-        // Return only valid 'provider' auth methods ie not 'local'
-        $authMethods = Config::get('auth.auth_methods');
-        $invalidAuthMethod = array_search('local', Config::get('auth.auth_methods'));
+        // Return only valid 'provider' auth methods i.e., not 'local'
+        $authMethods = config('auth.auth_methods');
+        $invalidAuthMethod = array_search('local', config('auth.auth_methods'));
         if ($invalidAuthMethod !== false) {
             unset($authMethods[$invalidAuthMethod]);
         }
 
         $projectRole = new ProjectRole();
-        $countByRole = $projectRole->getCountByRole($this->requestedProject->getId());
-        $countOverall = $projectRole->getCountOverlall($this->requestedProject->getId());
+        $countByRole = $projectRole->getCountByRole($this->requestedProject()->getId());
+        $countOverall = $projectRole->getCountOverlall($this->requestedProject()->getId());
 
         return view(
             'project.project_details',
             [
                 'includeTemplate' => 'manage-users',
-                'project' => $this->requestedProject,
+                'project' => $this->requestedProject(),
                 'users' => $users,
                 'countOverall' => $countOverall->total,
                 'countByRole' => $countByRole,
-                'requestedProjectRole' => $this->requestedProjectRole,
+                'requestedProjectRole' => $this->requestedProjectRole(),
                 'canTransferOwnership' => $canTransferOwnership,
                 'authMethods' => $authMethods
             ]
@@ -159,13 +158,14 @@ class ManageUsersController extends ProjectControllerBase
      * @param Request $request
      * @param ApiResponse $apiResponse
      * @param Validator $validator
+     * @return JsonResponse|RedirectResponse
      */
     public function addUserRole(Request $request, ApiResponse $apiResponse, Validator $validator)
     {
         $requestedUser = $request->attributes->get('requestedUser');
 
         // Only creators and managers have access
-        if (!$this->requestedProjectRole->isManager()) {
+        if (!$this->requestedProjectRole()->isManager()) {
             // If ajax, return error json
             if ($request->ajax()) {
                 return $apiResponse->errorResponse(404, ['manage-users' => ['ec5_91']]);
@@ -190,21 +190,21 @@ class ManageUsersController extends ProjectControllerBase
         // Retrieve the user whose role is to be added
         $user = User::where('email', '=', $params['email'])->first();
         if (!$user) {
-            // If no user, add a placeholder user to the system
+            // If no user, add a placeholder user to the system,
             //other fields will be filled in when the user logs in
             $user = new User();
             $user->email = $params['email'];
             $user->save();
         }
-        // Attempt to get their existing role, if they have one
-        $userProjectRole = $this->projectRoleSearch->getRole($user, $this->requestedProject->getId());
+        // Attempt to get their existing role if they have one
+        $userProjectRole = $this->projectRoleSearch->getRole($user, $this->requestedProject()->getId());
 
         // Additional checks on the user against the user performing the action,
         // using the new role passed in and user's existing role, if available
         $validator->additionalChecks(
             $requestedUser,
             $user,
-            $this->requestedProjectRole->getRole(),
+            $this->requestedProjectRole()->getRole(),
             $params['role'],
             $userProjectRole->getRole()
         );
@@ -213,7 +213,7 @@ class ManageUsersController extends ProjectControllerBase
             if ($request->ajax()) {
 
                 //managers cannot add/switch other manager(s)
-                if ($this->requestedProjectRole->getRole() === 'manager' && $userProjectRole->getRole() === 'manager') {
+                if ($this->requestedProjectRole()->getRole() === 'manager' && $userProjectRole->getRole() === 'manager') {
                     return $apiResponse->errorResponse(400, [
                         'manage-users' => ['ec5_344']
                     ]);
@@ -225,7 +225,7 @@ class ManageUsersController extends ProjectControllerBase
         }
 
         // Create the project role for this user
-        $this->projectRoleCreate->create($user->id, $this->requestedProject->getId(), $params['role']);
+        $this->projectRoleCreate->create($user->id, $this->requestedProject()->getId(), $params['role']);
 
         // If ajax, return success json
         if ($request->ajax()) {
@@ -246,13 +246,14 @@ class ManageUsersController extends ProjectControllerBase
      * @param Request $request
      * @param ApiResponse $apiResponse
      * @param Validator $validator
+     * @return JsonResponse|RedirectResponse
      */
     public function removeUserRole(Request $request, ApiResponse $apiResponse, Validator $validator)
     {
         $requestedUser = $request->attributes->get('requestedUser');
 
         // Only managers and up have access
-        if (!$this->requestedProjectRole->isManager()) {
+        if (!$this->requestedProjectRole()->isManager()) {
 
             // If ajax, return error json
             if ($request->ajax()) {
@@ -273,12 +274,12 @@ class ManageUsersController extends ProjectControllerBase
             return Redirect::back()->withErrors(['ec5_90']);
         }
         // Get their existing role
-        $userProjectRole = $this->projectRoleSearch->getRole($user, $this->requestedProject->getId());
+        $userProjectRole = $this->projectRoleSearch->getRole($user, $this->requestedProject()->getId());
         // Additional checks on the user and their existing role
         $validator->additionalChecks(
             $requestedUser,
             $user,
-            $this->requestedProjectRole->getRole(),
+            $this->requestedProjectRole()->getRole(),
             null,
             $userProjectRole->getRole()
         );
@@ -290,7 +291,7 @@ class ManageUsersController extends ProjectControllerBase
         }
 
         // Remove the project role for this user
-        $this->projectRoleDelete->delete($user->id, $this->requestedProject->getId());
+        $this->projectRoleDelete->delete($user->id, $this->requestedProject()->getId());
 
         // If ajax, return success json
         if ($request->ajax()) {

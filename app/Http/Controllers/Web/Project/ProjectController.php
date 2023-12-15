@@ -2,78 +2,67 @@
 
 namespace ec5\Http\Controllers\Web\Project;
 
-use ec5\Http\Controllers\ProjectControllerBase;
+use ec5\Models\Eloquent\Project;
+use ec5\Models\Eloquent\ProjectStats;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use ec5\Traits\Eloquent\StatsRefresher;
+use ec5\Traits\Requests\RequestAttributes;
 
-use Config;
-use Uuid;
-
-class ProjectController extends ProjectControllerBase
+class ProjectController
 {
-    /**
-     * @var array
-     */
-    protected $errors = [];
-
-    /**
-     * ProjectController constructor.
-     * @param Request $request
-     */
-    public function __construct(Request $request)
-    {
-        parent::__construct($request);
-    }
+    use StatsRefresher, RequestAttributes;
 
     /**
      * Show Project home page
-     *
-     * @return $this|\Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
     public function show()
     {
-        $vars = $this->defaultProjectDetailsParams('', '', true);
+        $this->refreshProjectStats($this->requestedProject());
+        $vars = [];
         $canShowSocialMediaShareBtns = false;
-        $PUBLIC = Config::get('ec5Strings.project_access.public');
-        $LISTED = Config::get('ec5Strings.project_visibility.listed');
+        $public = config('epicollect.strings.project_access.public');
+        $listed = config('epicollect.strings.project_visibility.listed');
 
-        if ($vars['project']->access === $PUBLIC && $vars['project']->visibility === $LISTED) {
+        if ($this->requestedProject()->access === $public && $this->requestedProject()->visibility === $listed) {
             $canShowSocialMediaShareBtns = true;
         }
         $vars['canShowSocialMediaShareBtns'] = $canShowSocialMediaShareBtns;
 
         // If the project is trashed, redirect to error page
-        if ($this->requestedProject->status == Config::get('ec5Strings.project_status.trashed')) {
+        if ($this->requestedProject()->status == config('epicollect.strings.project_status.trashed')) {
             return view('errors.gen_error')->withErrors(['view' => 'ec5_202']);
         }
 
-        //HACK FOR COG-UK: stop users not logged in
-        if ($this->requestedProject->ref === '293a6f6a46ea438d8940e102acb008e4') {
-            if (!$this->requestedProjectRole->canEditData()) {
-                return view('errors.gen_error')->withErrors(['errors' => ['ec5_91']]);
-            }
+        //get latest entry timestamp
+        $projectStats = ProjectStats::where('project_id', $this->requestedProject()->getId())->first();
+        $vars['mostRecentEntryTimestamp'] = $projectStats->getMostRecentEntryTimestamp();
+
+        if (auth()->user()->server_role == config('epicollect.strings.server_roles.superadmin')) {
+            $creatorEmail = Project::creatorEmail($this->requestedProject()->getId());
+            $vars['creatorEmail'] = $creatorEmail;
         }
-        //END HACK
-
-
         return view('project.project_home', $vars);
     }
 
     /**
      * Show a Project details
-     *
-     * @return $this|\Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
     public function details()
     {
-        if (!$this->requestedProjectRole->canEditProject()) {
+        if (!$this->requestedProjectRole()->canEditProject()) {
             return view('errors.gen_error')->withErrors(['errors' => ['ec5_91']]);
         }
 
-        // IncludeTemplate, showPanel
-        $vars = $this->defaultProjectDetailsParams('view', 'details-view');
+        $creatorEmail = '';
+        if (auth()->user()->server_role == config('epicollect.strings.server_roles.superadmin')) {
+            $creatorEmail = Project::creatorEmail($this->requestedProject()->getId());
+        }
 
-        return view('project.project_details', $vars);
+        return view('project.project_details', [
+            'includeTemplate' => 'view',
+            'showPanel' => 'details-view',
+            'creatorEmail' => $creatorEmail
+        ]);
     }
 
     /**
@@ -81,11 +70,12 @@ class ProjectController extends ProjectControllerBase
      */
     public function downloadProjectDefinition()
     {
+        //todo: we have an attachment macro?
         return new JsonResponse(
-            ['data' => $this->requestedProject->getProjectDefinition()->getData()],
+            ['data' => $this->requestedProject()->getProjectDefinition()->getData()],
             200,
             [
-                'Content-disposition' => 'attachment; filename=' . $this->requestedProject->slug . '.json',
+                'Content-disposition' => 'attachment; filename=' . $this->requestedProject()->slug . '.json',
                 'Content-type' => 'text/plain'
             ]
         );
@@ -96,23 +86,20 @@ class ProjectController extends ProjectControllerBase
      */
     public function formbuilder()
     {
-        if (!$this->requestedProjectRole->canEditProject()) {
-            $errors = ['ec5_91'];
-            return view('errors.gen_error')->withErrors(['errors' => $errors]);
+        if (!$this->requestedProjectRole()->canEditProject()) {
+            return view('errors.gen_error')->withErrors(['errors' => ['ec5_91']]);
         }
-        return view(
-            'project.formbuilder',
-            ['projectName' => $this->requestedProject->name]
-        );
+        return view('project.formbuilder');
     }
 
     /*
      * Show dataviewer page
      */
-    public function dataviewer(Request $request, $slug)
+    public function dataviewer()
     {
+        $this->refreshProjectStats($this->requestedProject());
         return view('project.dataviewer', [
-            'project' => $this->requestedProject
+            'project' => $this->requestedProject()
         ]);
     }
 }

@@ -7,23 +7,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link href='https://fonts.googleapis.com/css?family=Arimo' rel='stylesheet' type='text/css'>
-    @if(Config::get('app.env') == 'production')
+    @if(config('app.env') == 'production')
         <script defer data-domain="five.epicollect.net" src="https://analytics.cgps.dev/js/plausible.js"></script>
     @endif
 
-    <title>Epicollect5 - {{ $projectName }} - Formbuilder</title>
+    <title>Epicollect5 - {{ $requestAttributes->requestedProject->name }} - Formbuilder</title>
 
-    <meta id="formbuilder-version" data-version="{{ Config::get('app.release') }}">
+    <meta id="formbuilder-version" data-version="{{ config('app.release') }}">
 
     @include('favicon')
 
     <link rel="stylesheet" type="text/css"
-          href="{{ asset('formbuilder/css/vendor-formbuilder.css') . '?v=' . Config::get('app.release') }}">
+          href="{{ asset('formbuilder/css/vendor-formbuilder.css') . '?v=' . config('app.release') }}">
     <link rel="stylesheet" type="text/css"
-          href="{{ asset('formbuilder/css/formbuilder.css') . '?v=' . Config::get('app.release') }}">
+          href="{{ asset('formbuilder/css/formbuilder.css') . '?v=' . config('app.release') }}">
 
-    <script src="{{ asset('/js/vendor-site.js') . '?v=' . Config::get('app.release') }}"></script>
-    <script src="{{ asset('/js/site.js') . '?v=' . Config::get('app.release') }}"></script>
+    <script src="{{ asset('/js/vendor-site.js') . '?v=' . config('app.release') }}"></script>
+    <script src="{{ asset('/js/site.js') . '?v=' . config('app.release') }}"></script>
     <script>
         window.EC5 = window.EC5 || {};
         window.EC5.SITE_URL = '{{ url('') }}';
@@ -310,8 +310,8 @@
 
 
 </footer>
-<script src="{{ asset('formbuilder/js/vendor-formbuilder.js') . '?v=' . Config::get('app.release') }}"></script>
-<script src="{{ asset('formbuilder/js/formbuilder.js') . '?v=' . Config::get('app.release') }}"></script>
+<script src="{{ asset('formbuilder/js/vendor-formbuilder.js') . '?v=' . config('app.release') }}"></script>
+<script src="{{ asset('formbuilder/js/formbuilder.js') . '?v=' . config('app.release') }}"></script>
 
 
 </body>

@@ -2,7 +2,6 @@
 
 namespace ec5\Http\Controllers\Api\Project;
 
-use ec5\Http\Controllers\ProjectControllerBase;
 use ec5\Repositories\QueryBuilder\ProjectRole\SearchRepository as ProjectRoleSearch;
 use ec5\Repositories\QueryBuilder\ProjectRole\CreateRepository as ProjectRoleCreate;
 use ec5\Http\Validation\Project\RuleSwitchUserRole;
@@ -11,9 +10,12 @@ use ec5\Models\Eloquent\ProjectRole;
 use ec5\Models\Eloquent\User;
 use Illuminate\Http\Request;
 use ec5\Http\Controllers\Api\ApiResponse;
+use ec5\Traits\Requests\RequestAttributes;
 
-class UserController extends ProjectControllerBase
+class UserController
 {
+    use RequestAttributes;
+
     /**
      * @var ProjectRoleSearch object
      */
@@ -22,14 +24,11 @@ class UserController extends ProjectControllerBase
 
     public function __construct(
         ProjectRoleSearch $projectRoleSearch,
-        ProjectRoleCreate $projectRoleCreate,
-        Request           $request
+        ProjectRoleCreate $projectRoleCreate
     )
     {
         $this->projectRoleSearch = $projectRoleSearch;
         $this->projectRoleCreate = $projectRoleCreate;
-
-        parent::__construct($request);
     }
 
     /**
@@ -38,7 +37,7 @@ class UserController extends ProjectControllerBase
     public function all()
     {
         //todo bail out if not manager and up?
-        $users = $this->projectRoleSearch->users($this->requestedProject->getId());
+        $users = $this->projectRoleSearch->users($this->requestedProject()->getId());
         $jsonUsers = [];
 
         foreach ($users as $user) {
@@ -59,7 +58,7 @@ class UserController extends ProjectControllerBase
     public function removeByRole(Request $request, ApiResponse $apiResponse)
     {
         // Only managers and up have access
-        if (!$this->requestedProjectRole->canRemoveUsers()) {
+        if (!$this->requestedProjectRole()->canRemoveUsers()) {
             //return error json
             return $apiResponse->errorResponse(404, ['manage-users' => ['ec5_91']]);
         }
@@ -68,13 +67,13 @@ class UserController extends ProjectControllerBase
 
         //validate 'role'
         //todo use a 'role' validation rule?
-        if (!in_array($role, config('ec5Enums.project_roles'), true)) {
+        if (!in_array($role, array_keys(config('epicollect.strings.project_roles')), true)) {
             //return error json
             return $apiResponse->errorResponse(404, ['manage-users' => ['ec5_91']]);
         }
 
         //creator roles cannot be removed!
-        if ($role === config('ec5Strings.project_roles.creator')) {
+        if ($role === config('epicollect.strings.project_roles.creator')) {
             //return error json
             return $apiResponse->errorResponse(404, ['manage-users' => ['ec5_91']]);
         }
@@ -82,15 +81,15 @@ class UserController extends ProjectControllerBase
         $projectRole = new ProjectRole();
 
         //get project id
-        $projectId = $this->requestedProject->getId();
+        $projectId = $this->requestedProject()->getId();
 
-        //get current logged in user id (if a manager, cannot remove other managers)
+        //get current logged-in user id (if a manager, cannot remove other managers)
         //curator and collector cannot access this feature
-        $user = $this->requestedProjectRole->getUser();
-        $userRole = $this->requestedProjectRole->getRole();
+        $user = $this->requestedProjectRole()->getUser();
+        $userRole = $this->requestedProjectRole()->getRole();
 
-        if ($userRole === config('ec5Strings.project_roles.manager')) {
-            if ($role === config('ec5Strings.project_roles.manager')) {
+        if ($userRole === config('epicollect.strings.project_roles.manager')) {
+            if ($role === config('epicollect.strings.project_roles.manager')) {
                 //a manager cannot remove other managers, bail out
                 return $apiResponse->errorResponse(404, ['manage-users' => ['ec5_91']]);
             }
@@ -114,7 +113,7 @@ class UserController extends ProjectControllerBase
     )
     {
         // Only managers and up have access
-        if (!$this->requestedProjectRole->canSwitchUserRole()) {
+        if (!$this->requestedProjectRole()->canSwitchUserRole()) {
             //return error json
             return $apiResponse->errorResponse(404, ['manage-users' => ['ec5_91']]);
         }
@@ -131,7 +130,7 @@ class UserController extends ProjectControllerBase
         $userToSwitchCurrentRole = $inputs['currentRole'];
         $userToSwitchNewRole = $inputs['newRole'];
         $email = $inputs['email'];
-        $projectId = $this->requestedProject->getId();
+        $projectId = $this->requestedProject()->getId();
 
         $projectRole = new ProjectRole();
 
@@ -142,7 +141,7 @@ class UserController extends ProjectControllerBase
         $requestedUser = $request->attributes->get('requestedUser');
 
         //check if the user is trying to change its own role, not possible
-        $ruleSwitchUserRole->additionalChecks($requestedUser, $userToSwitch, $this->requestedProjectRole->getRole(), $userToSwitchNewRole, $userToSwitchCurrentRole);
+        $ruleSwitchUserRole->additionalChecks($requestedUser, $userToSwitch, $this->requestedProjectRole()->getRole(), $userToSwitchNewRole, $userToSwitchCurrentRole);
         if ($ruleSwitchUserRole->hasErrors()) {
             return $apiResponse->errorResponse(400, $ruleSwitchUserRole->errors());
         }
@@ -161,12 +160,10 @@ class UserController extends ProjectControllerBase
     public function addUsersBulk(Request $request, ApiResponse $apiResponse, RuleBulkImportUsers $validator)
     {
         $requestedUser = $request->attributes->get('requestedUser');
-        $provider = config('ec5Strings.providers.google');
-        $managerRole = config('ec5Strings.project_roles.manager');
         $validationErrors = [];
 
         // Only creators and managers have access
-        if (!$this->requestedProjectRole->canAddUsers()) {
+        if (!$this->requestedProjectRole()->canAddUsers()) {
             return $apiResponse->errorResponse(404, ['manage-users' => ['ec5_91']]);
         }
 
@@ -192,11 +189,11 @@ class UserController extends ProjectControllerBase
                 $user->save();
             }
             // Attempt to get their existing role, if they have one
-            $userProjectRole = $this->projectRoleSearch->getRole($user, $this->requestedProject->getId());
+            $userProjectRole = $this->projectRoleSearch->getRole($user, $this->requestedProject()->getId());
 
             // Additional checks on the user against the user performing the action,
             // using the new role passed in and user's existing role, if available
-            $validator->additionalChecks($requestedUser, $user, $this->requestedProjectRole->getRole(), $newRole,
+            $validator->additionalChecks($requestedUser, $user, $this->requestedProjectRole()->getRole(), $newRole,
                 $userProjectRole->getRole());
             if ($validator->hasErrors()) {
                 $validationErrors[] = $validator->errors();
@@ -205,7 +202,7 @@ class UserController extends ProjectControllerBase
             //Got here without any errors? Add user role then ;)
             if (!$validator->hasErrors()) {
                 // Create the project role for this user
-                $this->projectRoleCreate->create($user->id, $this->requestedProject->getId(), $newRole);
+                $this->projectRoleCreate->create($user->id, $this->requestedProject()->getId(), $newRole);
             }
         }
 

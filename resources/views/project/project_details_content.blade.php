@@ -4,11 +4,12 @@
 @endif
 
 
-@if (!$hasInputs)
+@if (sizeof($requestAttributes->requestedProject->getProjectDefinition()->getData()['project']['forms'][0]['inputs']) === 0)
     <div class="warning-well warning__project-not-ready">
         <strong>This project is not ready for data collection! You will have to
-            <a href="{{ url('myprojects') . '/' . $project->slug . '/formbuilder' }}">add some questions to your
-                form(s)</a>
+            <a href="{{ url('myprojects') . '/' . $requestAttributes->requestedProject->slug . '/formbuilder' }}">
+                add some questions to your form(s)
+            </a>
         </strong>
     </div>
 @endif
@@ -19,7 +20,7 @@
              class="panel panel-default project-details-panel @if ($showPanel != 'details-view') ec5-hide-block @endif ">
             <div class="panel-heading">
                 <h4>{{ trans('site.project_details') }}</h4>
-                @if ($requestedProjectRole->canEditProject())
+                @if ($requestAttributes->requestedProjectRole->canEditProject())
                     <button class="btn btn-default btn-action btn-sm pull-right project-details__edit">
                         <i class="material-icons">&#xE254;</i>
                     </button>
@@ -29,9 +30,9 @@
                 <div class="details-view__logo-wrapper">
                     <img class="img-responsive img-thumbnail img-circle pull-left" width="128" height="128"
                          alt="Project logo"
-                         src=" @if ($project->logo_url == '') {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
+                         src=" @if ($requestAttributes->requestedProject->logo_url == '') {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
                 @else
-                    {{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb') }} @endif">
+                    {{ url('/api/internal/media/' . $requestAttributes->requestedProject->slug . '?type=photo&name=logo.jpg&format=project_thumb') }} @endif">
                 </div>
 
                 <div class="details-view__project-details">
@@ -39,25 +40,25 @@
                         <i class="material-icons">
                             &#xE0C9;
                         </i>&nbsp;
-                        {{ $project->small_description }}
+                        {{ $requestAttributes->requestedProject->small_description }}
                     </h5>
                     <h5 class="details-view__project-details__created-at">
                         <i class="material-icons">
                             &#xE878;
                         </i>&nbsp;Created on
-                        {{ \Carbon\Carbon::parse($project->created_at)->setTimezone('UTC')->format('l d M Y, H:i') }}
+                        {{ \Carbon\Carbon::parse($requestAttributes->requestedProject->created_at)->setTimezone('UTC')->format('l d M Y, H:i') }}
                         UTC
                     </h5>
                 </div>
 
                 <div class="clearfix"></div>
-                @if ($project->description === '')
+                @if ($requestAttributes->requestedProject->description === '')
                     <p class="text-center">
                         {{ trans('site.no_desc_yet') }}
                     </p>
                 @else
                     <p class="details-view__project-details__description">
-                        {!! nl2br(e($project->description)) !!}
+                        {!! nl2br(e($requestAttributes->requestedProject->description)) !!}
                     </p>
                 @endif
             </div>
@@ -73,16 +74,26 @@
             </div>
             <div class="panel-body">
 
-                <form method="POST" action="{{ url('/myprojects/' . $project->slug . '/details') }}"
+                <form method="POST"
+                      action="{{ url('/myprojects/' . $requestAttributes->requestedProject->slug . '/details') }}"
                       enctype="multipart/form-data" accept-charset="UTF-8">
                     {{ csrf_field() }}
                     <div class="form-group @if ($errors->has('small_description')) has-error @endif">
                         <label class="control-label">{{ trans('site.small_desc') }}</label>
                         <input required type="text" class="form-control" name="small_description"
                                placeholder="{{ trans('site.small_desc_placeholder') }}" minlength="15" maxlength="100"
-                               value="@if (old('small_description')) {{ old('small_description') }}@else{{ $project->small_description }} @endif">
+                               value="@if (old('small_description')) {{ old('small_description') }}@else{{ $requestAttributes->requestedProject->small_description }} @endif">
 
-                        <small><em>{{$smallDescriptionSpecs}}</em></small>
+                        <small>
+                            <em>
+                                {{
+                                config('epicollect.limits.project.small_desc.min') .
+                                ' to '.
+                                config('epicollect.limits.project.small_desc.max') .
+                                ' chars'
+                                }}
+                            </em>
+                        </small>
                     </div>
 
                     <div class="form-group file-upload-input">
@@ -115,9 +126,18 @@
                                     rows="5"
                                     minlength="3"
                                     maxlength="3000"
-                            >{{ trim($project->description) }}</textarea>
+                            >{{ trim($requestAttributes->requestedProject->description) }}</textarea>
                         @endif
-                        <small><em>{{$descriptionSpecs}}</em></small>
+                        <small>
+                            <em>
+                                {{
+                                config('epicollect.limits.project.description.min') .
+                                 ' to ' .
+                                 config('epicollect.limits.project.description.max') .
+                                 ' chars'
+                                }}
+                            </em>
+                        </small>
                     </div>
 
                     <div class="form-group">
@@ -131,7 +151,7 @@
     </div><!-- end col -->
 
 
-    @if ($requestedProjectRole->canEditProject())
+    @if ($requestAttributes->requestedProjectRole->canEditProject())
         <div class="col-sm-12 col-md-12 col-lg-5 equal-height">
             <div class="panel panel-default">
                 <div class="panel-heading">
@@ -148,7 +168,7 @@
                                 <td>
 
                                     <div class="btn-group">
-                                        @foreach (Config::get('ec5Enums.projects_access') as $p)
+                                        @foreach (array_keys(config('epicollect.strings.projects_access')) as $p)
                                             <div data-setting-type="access" data-value="{{ $p }}"
                                                  class="btn btn-default btn-sm settings-access
                                              btn-settings-submit">
@@ -179,12 +199,12 @@
                                             {{ trans('site.restore') }}</div>
 
                                         @if (
-                                            $requestedProjectRole->getUser()->isSuperAdmin() ||
-                                                $requestedProjectRole->getUser()->isAdmin() ||
-                                                $requestedProjectRole->canDeleteProject())
+                                            $requestAttributes->requestedProjectRole->getUser()->isSuperAdmin() ||
+                                                $requestAttributes->requestedProjectRole->getUser()->isAdmin() ||
+                                                $requestAttributes->requestedProjectRole->canDeleteProject())
                                             <a data-setting-type="status" data-value="delete"
                                                class="btn btn-danger btn-sm settings-status"
-                                               href="{{ url('myprojects') . '/' . $project->slug . '/delete' }}">
+                                               href="{{ url('myprojects') . '/' . $requestAttributes->requestedProject->slug . '/delete' }}">
                                                 {{ trans('site.delete') }}</a>
                                         @endif
 
@@ -209,7 +229,7 @@
                                 <td>
 
                                     <div class="btn-group">
-                                        @foreach (Config::get('ec5Enums.projects_visibility') as $p)
+                                        @foreach (array_keys(config('epicollect.strings.projects_visibility')) as $p)
                                             <div data-setting-type="visibility" data-value="{{ $p }}"
                                                  class="btn btn-default btn-sm settings-visibility
                                              btn-settings-submit">
@@ -225,9 +245,9 @@
                                     <div class="btn-group">
                                         <select id="project-category" class="form-control"
                                                 aria-labelledby="listProjectCategories">
-                                            @foreach (Config::get('ec5Enums.project_categories') as $cat)
+                                            @foreach (array_keys(config('epicollect.strings.project_categories')) as $cat)
                                                 <option value="{{ $cat }}"
-                                                        @if ($project->category == $cat) selected @endif>
+                                                        @if ($requestAttributes->requestedProject->category == $cat) selected @endif>
                                                     {{ trans('site.project_categories.' . $cat) }}</option>
                                             @endforeach
                                         </select>
@@ -264,7 +284,7 @@
 </div>
 
 
-@if (Auth::check() && Auth::user()->server_role == 'superadmin')
+@if (auth()->check() && auth()->user()->server_role == 'superadmin')
     <div class="row">
         <div class="col-sm-12 col-md-12 col-lg-12">
             <div class="panel panel-default">
@@ -272,39 +292,21 @@
                     <span>{{ trans('site.admin') }}</span>
                 </div>
                 <div class="panel-body">
-                    <ul class="nav nav-tabs" role="tablist">
-                        <li class="active" role="presentation">
-                            <a href="#project-details" aria-controls="project-details" role="tab"
-                               data-toggle="tab">{{ trans('site.details') }}</a>
-                        </li>
-                        <li role="presentation">
-                            <a href="#json-view" aria-controls="json-view" role="tab"
-                               data-toggle="tab">{{ trans('site.project_definition') }}</a>
-                        </li>
-                        <li role="presentation">
-                            <a href="#jsonextra-view" aria-controls="jsonextra-view" role="tab"
-                               data-toggle="tab">{{ trans('site.project_extra') }}</a>
-                        </li>
-
-                    </ul>
-                    <div class="tab-content">
-
-                        <div role="tabpanel" class="tab-pane active" id="project-details">
-                            <p>Project Id : {{ $project->getId() }}</p>
-                            <p>Project Ref : {{ $project->ref }}</p>
-                            <p>Created By : {{ $project->creatorEmail }}</p>
-                            <p>Updated at : {{ $project->getUpdatedAt() }}</p>
-                        </div>
-
-                        <div role="tabpanel" class="tab-pane" id="json-view">
-                            <pre style="background:#fff;">{{ $projectDefinitionPrettyPrint }}</pre>
-                        </div>
-
-                        <div role="tabpanel" class="tab-pane" id="jsonextra-view">
-                            <pre style="background:#fff;">{{ $projectExtraPrettyPrint }}</pre>
-                        </div>
-
-                    </div><!-- end tabcontent -->
+                    <div>
+                        <p>Project Id : {{ $requestAttributes->requestedProject->getId() }}</p>
+                        <p>Project Ref : {{ $requestAttributes->requestedProject->ref }}</p>
+                        <p>Created By : {{ $creatorEmail }}</p>
+                        <p>Updated at : {{ $requestAttributes->requestedProject->getUpdatedAt() }}</p>
+                    </div>
+                    <p>
+                        <strong>
+                            <a href="{{config('app.url')}}/api/internal/project/{{$requestAttributes->requestedProject->slug}}"
+                               target="_blank"
+                            >
+                                View JSON
+                            </a>
+                        </strong>
+                    </p>
                 </div>
             </div>
         </div>
@@ -313,15 +315,15 @@
 
 {{-- js variables --}}
 <div class="js-project-details hidden"
-     data-js-status="{{ $project->status }}"
-     data-js-access="{{ $project->access }}"
-     data-js-visibility="{{ $project->visibility }}"
-     data-js-logo_url="{{ $project->logo_url }}"
-     data-js-category="{{ $project->category }}"
-     data-js-slug="{{ $project->slug }}">
+     data-js-status="{{ $requestAttributes->requestedProject->status }}"
+     data-js-access="{{ $requestAttributes->requestedProject->access }}"
+     data-js-visibility="{{ $requestAttributes->requestedProject->visibility }}"
+     data-js-logo_url="{{ $requestAttributes->requestedProject->logo_url }}"
+     data-js-category="{{ $requestAttributes->requestedProject->category }}"
+     data-js-slug="{{ $requestAttributes->requestedProject->slug }}">
 </div>
 
 @section('scripts')
     <script type="text/javascript"
-            src="{{ asset('js/project/project.js') . '?' . Config::get('app.release') }}"></script>
+            src="{{ asset('js/project/project.js') . '?' . config('app.release') }}"></script>
 @stop

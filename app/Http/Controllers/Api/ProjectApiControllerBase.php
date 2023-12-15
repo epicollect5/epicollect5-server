@@ -2,10 +2,9 @@
 
 namespace ec5\Http\Controllers\Api;
 
-use ec5\Http\Controllers\ProjectControllerBase;
 use Illuminate\Http\Request;
 
-class ProjectApiControllerBase extends ProjectControllerBase
+class ProjectApiControllerBase
 {
 
     protected $apiRequest;
@@ -27,8 +26,5 @@ class ProjectApiControllerBase extends ProjectControllerBase
     {
         $this->apiRequest = $apiRequest;
         $this->apiResponse = $apiResponse;
-
-        parent::__construct($request);
     }
-
 }

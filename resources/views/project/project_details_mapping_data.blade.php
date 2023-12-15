@@ -7,14 +7,14 @@
         <!-- Nav tabs -->
         {{-- Get list of mappings and set it as tabs --}}
         @include('project.mapping_data.tabs_navbar', [
-            'project' => $project,
+            'project' => $requestAttributes->requestedProject,
         ])
 
         {{-- Tab panes --}}
         @include('project.mapping_data.tab_panel', [
-            'mappings' => $project->getProjectMapping()->getData(),
-            'forms' => $project->getProjectExtra()->getForms(),
-            'projectExtra' => $project->getProjectExtra()->getData(),
+            'mappings' => $requestAttributes->requestedProject->getProjectMapping()->getData(),
+            'forms' => $requestAttributes->requestedProject->getProjectExtra()->getForms(),
+            'projectExtra' => $requestAttributes->requestedProject->getProjectExtra()->getData(),
         ])
         <!-- Modal Mapping Data-->
         @include('project.mapping_data.modal')
@@ -61,5 +61,5 @@
 
 @section('scripts')
     <script type="text/javascript"
-            src="{{ asset('js/project/project.js') . '?' . Config::get('app.release') }}"></script>
+            src="{{ asset('js/project/project.js') . '?' . config('app.release') }}"></script>
 @stop

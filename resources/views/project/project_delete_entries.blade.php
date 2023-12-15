@@ -10,20 +10,20 @@
                 <div id="" class="panel panel-default ">
 
                     <div class="panel-body">
-                        <a href="{{ url('project/' . $project->slug . '/data') }}">
+                        <a href="{{ url('project/' . $requestAttributes->requestedProject->slug . '/data') }}">
                             <img class="project-home__logo img-responsive img-circle" width="256" height="256"
                                  alt="Project logo"
-                                 src="@if ($project->logo_url == '') {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
+                                 src="@if ($requestAttributes->requestedProject->logo_url == '') {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
                                  @else
-                                 {{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb') }} @endif">
+                                 {{ url('/api/internal/media/' . $requestAttributes->requestedProject->slug . '?type=photo&name=logo.jpg&format=project_thumb') }} @endif">
                         </a>
                     </div>
 
                     <div class="panel-body text-center">
-                        <h2 class="project-name">{{ $project->name }}</h2>
-                        <p class="warning-well">{!! trans('site.confirm_deletion_entries', ['entriesTotal' => $projectStats->getTotalEntries()]) !!}</p>
+                        <h2 class="project-name">{{ $requestAttributes->requestedProject->name }}</h2>
+                        <p class="warning-well">{!! trans('site.confirm_deletion_entries', ['totalEntries' => $totalEntries]) !!}</p>
 
-                        <form action="{{ url('myprojects') . '/' . $project->slug . '/delete-entries' }}"
+                        <form action="{{ url('myprojects') . '/' . $requestAttributes->requestedProject->slug . '/delete-entries' }}"
                               class="delete-entries" method="POST">
 
                             {{ csrf_field() }}
@@ -35,7 +35,7 @@
                                        placeholder="{{ trans('site.project_name') }}" required>
                             </div>
                             <a class="btn btn-sm btn-action pull-left"
-                               href="{{ url('myprojects') . '/' . $project->slug }}">{{ trans('site.cancel') }}</a>
+                               href="{{ url('myprojects') . '/' . $requestAttributes->requestedProject->slug }}">{{ trans('site.cancel') }}</a>
                             <div class="form-group">
                                 <input required type="submit"
                                        class="btn btn-danger btn-sm pull-right submit-delete-entries" disabled
@@ -55,5 +55,5 @@
 
 @section('scripts')
     <script type="text/javascript"
-            src="{{ asset('js/project/project.js') . '?' . Config::get('app.release') }}"></script>
+            src="{{ asset('js/project/project.js') . '?' . config('app.release') }}"></script>
 @stop

@@ -1,10 +1,10 @@
-<div class="panel panel-default page-manage-users" data-project-slug="{{ $project->slug }}">
+<div class="panel panel-default page-manage-users" data-project-slug="{{ $requestAttributes->requestedProject->slug }}">
 
     <div class="panel-heading">
         <span>{{ trans('site.manage_users') }}
             <span class="badge count-overall">{{ $countOverall }}</span>
         </span>
-        @if ($requestedProjectRole->canAddUsers())
+        @if ($requestAttributes->requestedProjectRole->canAddUsers())
             <div class="btn-group pull-right" role="group">
                 <button class="btn btn-action btn-sm" data-toggle="modal" data-target="#ec5ModalExistingUser">
                     <i class="material-icons">account_circle</i>
@@ -100,7 +100,7 @@
                                                         Clear
                                                         Search
                                                     </button>
-                                                    @if (!($key === 'manager' && $requestedProjectRole->getRole() === 'manager'))
+                                                    @if (!($key === 'manager' && $requestAttributes->requestedProjectRole->getRole() === 'manager'))
                                                         <div class="btn-group" role="group">
                                                             <button type="button"
                                                                     class="btn btn-sm btn-default dropdown-toggle"
@@ -108,7 +108,7 @@
                                                                     aria-expanded="false">
                                                                 <span class="caret"></span>
                                                             </button>
-                                                            @if ($requestedProjectRole->canRemoveUsers())
+                                                            @if ($requestAttributes->requestedProjectRole->canRemoveUsers())
                                                                 <ul class="dropdown-menu dropdown-menu-right">
                                                                     <li
                                                                             class="dropdown-header text-center text-warning">
@@ -173,14 +173,14 @@
                     <div class="form-group">
                         <label for="role">{{ trans('site.role') }}</label>
                         <select name="role" class="form-control" required>
-                            @if (is_array(Config::get('ec5Permissions.projects.roles.' . $requestedProjectRole->getRole())))
+                            @if (is_array(config('epicollect.permissions.projects.roles.' . $requestAttributes->requestedProjectRole->getRole())))
                                 {{-- If we have a creator/admin/superadmin, they get creator priviledges --}}
-                                @if ($requestedProjectRole->isCreator())
-                                    @foreach (Config::get('ec5Permissions.projects.roles.creator') as $role)
+                                @if ($requestAttributes->requestedProjectRole->isCreator())
+                                    @foreach (config('epicollect.permissions.projects.roles.creator') as $role)
                                         <option value="{{ $role }}">{{ ucfirst($role) }}</option>
                                     @endforeach
                                 @else
-                                    @foreach (Config::get('ec5Permissions.projects.roles.' . $requestedProjectRole->getRole()) as $role)
+                                    @foreach (config('epicollect.permissions.projects.roles.' . $requestAttributes->requestedProjectRole->getRole()) as $role)
                                         <option value="{{ $role }}">{{ ucfirst($role) }}</option>
                                     @endforeach
                                 @endif
@@ -237,7 +237,7 @@
                     <div class="form-group users__pick-role">
                         <p><strong>Select user role</strong></p>
                         {{-- Only CREATOR role can add managers --}}
-                        @if ($requestedProjectRole->getRole() === 'creator')
+                        @if ($requestAttributes->requestedProjectRole->getRole() === 'creator')
                             <div class="radio">
                                 <label>
                                     <input type="radio" name="userRoleOptions" id="manager" value="manager">
@@ -301,7 +301,7 @@
                     <hr/>
                     <div class="form-group users__pick-role">
                         <p><strong>Select new role</strong></p>
-                        @if ($requestedProjectRole->getRole() === 'creator')
+                        @if ($requestAttributes->requestedProjectRole->getRole() === 'creator')
                             <div class="radio role-manager">
                                 <label>
                                     <input type="radio" name="userRoleOptions" id="manager" value="manager">
@@ -344,5 +344,5 @@
 
 @section('scripts')
     <script type="text/javascript"
-            src="{{ asset('js/project/project.js') . '?' . Config::get('app.release') }}"></script>
+            src="{{ asset('js/project/project.js') . '?' . config('app.release') }}"></script>
 @stop

@@ -2,7 +2,6 @@
 
 namespace ec5\Http\Controllers\Api\Project;
 
-use ec5\Http\Controllers\ProjectControllerBase;
 use Exception;
 use Illuminate\Http\Request;
 use ec5\Http\Validation\Project\RuleProjectDefinition;
@@ -11,9 +10,12 @@ use ec5\Http\Controllers\Api\ApiResponse as ApiResponse;
 use ec5\Libraries\Utilities\Arrays;
 use ec5\Libraries\Utilities\Strings;
 use Log;
+use ec5\Traits\Requests\RequestAttributes;
 
-class FormBuilderController extends ProjectControllerBase
+class FormBuilderController
 {
+    use RequestAttributes;
+
     protected $projectUpdate;
     protected $request;
     protected $apiResponse;
@@ -30,8 +32,6 @@ class FormBuilderController extends ProjectControllerBase
         $this->apiResponse = $apiResponse;
         $this->projectUpdate = $projectUpdate;
         $this->ruleProjectDefinition = $ruleProjectDefinition;
-
-        parent::__construct($request);
     }
 
     public function store()
@@ -54,7 +54,7 @@ class FormBuilderController extends ProjectControllerBase
         $projectDefinition = $requestContent['data'];
 
         //do we have permissions to edit the project?
-        if (!$this->requestedProjectRole->canEditProject()) {
+        if (!$this->requestedProjectRole()->canEditProject()) {
             return $this->apiResponse->errorResponse('422', ['Validation' => ['ec5_91']]);
         }
 
@@ -84,24 +84,24 @@ class FormBuilderController extends ProjectControllerBase
         //***********************************************************
 
         // Add Project Definition
-        $this->requestedProject->addProjectDefinition($projectDefinition);
+        $this->requestedProject()->addProjectDefinition($projectDefinition);
 
         // Validate and generate Project Extra from Project Definition
-        $this->ruleProjectDefinition->validate($this->requestedProject);
+        $this->ruleProjectDefinition->validate($this->requestedProject());
 
         // Check for any errors so far
         if ($this->ruleProjectDefinition->hasErrors()) {
             return $this->apiResponse->errorResponse('422', $this->ruleProjectDefinition->errors());
         }
         // Update Project Mappings
-        $this->requestedProject->updateProjectMappings();
+        $this->requestedProject()->updateProjectMappings();
 
         // Set updated_at field to true
-        $tryAction = $this->projectUpdate->updateProjectStructure($this->requestedProject, true);
+        $tryAction = $this->projectUpdate->updateProjectStructure($this->requestedProject(), true);
 
         if ($tryAction) {
             // Return the Project Definition data in the response
-            $this->apiResponse->setData($this->requestedProject->getProjectDefinition()->getData());
+            $this->apiResponse->setData($this->requestedProject()->getProjectDefinition()->getData());
             return $this->apiResponse->toJsonResponse('200', $options = 0);
         }
 

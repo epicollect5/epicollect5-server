@@ -2,27 +2,22 @@
 
 namespace ec5\Http\Controllers\Web\Project;
 
-use ec5\Http\Controllers\ProjectControllerBase;
 use ec5\Models\Eloquent\ProjectRole;
 use ec5\Models\Eloquent\Project;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use ec5\Traits\Requests\RequestAttributes;
 
-class ProjectLeaveController extends ProjectControllerBase
+class ProjectLeaveController
 {
-
-    public function __construct(Request $request)
-    {
-        parent::__construct($request);
-    }
+    use RequestAttributes;
 
     public function show()
     {
-        if (!$this->requestedProjectRole->canLeaveProject()) {
+        if (!$this->requestedProjectRole()->canLeaveProject()) {
             return view('errors.gen_error')->withErrors(['errors' => ['ec5_91']]);
         }
-        $vars = $this->defaultProjectDetailsParams('', '', true);
-        return view('project.project_leave', $vars);
+        return view('project.project_leave');
     }
 
     public function leave(Request $request)
@@ -30,25 +25,25 @@ class ProjectLeaveController extends ProjectControllerBase
         $payload = $request->all();
         //if missing project name, bail out
         if (empty($payload['project-name'])) {
-            return redirect('myprojects/' . $this->requestedProject->slug . '/leave')->withErrors(['ec5_103']);
+            return redirect('myprojects/' . $this->requestedProject()->slug . '/leave')->withErrors(['ec5_103']);
         }
-        $projectId = $this->requestedProject->getId();
+        $projectId = $this->requestedProject()->getId();
         $projectName = Project::where('id', $projectId)->first()->name;
 
         //if the project name does not match, bail out
         if ($projectName !== $payload['project-name']) {
-            return redirect('myprojects/' . $this->requestedProject->slug . '/leave')->withErrors(['ec5_21']);
+            return redirect('myprojects/' . $this->requestedProject()->slug . '/leave')->withErrors(['ec5_21']);
         }
 
         //no permission to leave, bail out
-        if (!$this->requestedProjectRole->canLeaveProject()) {
-            return redirect('myprojects/' . $this->requestedProject->slug . '/leave')->withErrors(['ec5_91']);
+        if (!$this->requestedProjectRole()->canLeaveProject()) {
+            return redirect('myprojects/' . $this->requestedProject()->slug . '/leave')->withErrors(['ec5_91']);
         }
         try {
             DB::beginTransaction();
             $role = ProjectRole::where('user_id', auth()->user()->id)
                 ->where('project_id', $projectId)
-                ->where('role', $this->requestedProjectRole->getRole());
+                ->where('role', $this->requestedProjectRole()->getRole());
             $role->delete();
             DB::commit();
             //redirect to user projects
@@ -56,7 +51,7 @@ class ProjectLeaveController extends ProjectControllerBase
         } catch (\Exception $e) {
             \Log::error('leave() project failure', ['exception' => $e->getMessage()]);
             DB::rollBack();
-            return redirect('myprojects/' . $this->requestedProject->slug . '/leave')->withErrors(['ec5_104']);
+            return redirect('myprojects/' . $this->requestedProject()->slug . '/leave')->withErrors(['ec5_104']);
         }
     }
 }

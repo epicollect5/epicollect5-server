@@ -2,59 +2,54 @@
 
 namespace ec5\Http\Controllers\Web\Project;
 
-use ec5\Http\Controllers\ProjectControllerBase;
 use ec5\Models\Eloquent\ProjectStats;
 use ec5\Models\Eloquent\Project;
 use Illuminate\Http\Request;
-use ec5\Repositories\QueryBuilder\Project\DeleteRepository as DeleteProject;
 use Illuminate\Support\Facades\DB;
 use ec5\Models\Eloquent\Entry;
 use ec5\Models\Eloquent\ProjectFeatured;
 use Illuminate\Support\Facades\Config;
 use Log;
+use ec5\Traits\Requests\RequestAttributes;
+use ec5\Traits\Eloquent\Archiver;
+use ec5\Traits\Eloquent\StatsRefresher;
 
-class ProjectDeleteController extends ProjectControllerBase
+class ProjectDeleteController
 {
-    protected $errors = [];
-
-    public function __construct(Request $request)
-    {
-        parent::__construct($request);
-    }
+    use RequestAttributes, Archiver, StatsRefresher;
 
     public function show()
     {
-        if (!$this->requestedProjectRole->canDeleteProject()) {
-            $errors = ['ec5_91'];
-            return view('errors.gen_error')->withErrors(['errors' => $errors]);
+        if (!$this->requestedProjectRole()->canDeleteProject()) {
+            return view('errors.gen_error')->withErrors(['errors' => ['ec5_91']]);
         }
-        $vars = $this->defaultProjectDetailsParams('', '', true);
-        return view('project.project_delete', $vars);
+        $this->refreshProjectStats($this->requestedProject());
+        return view('project.project_delete');
     }
 
     public function delete(Request $request)
     {
         $payload = $request->all();
-        $projectSlug = $this->requestedProject->slug;
+        $projectSlug = $this->requestedProject()->slug;
 
         //if missing project name, bail out
         if (empty($payload['project-name'])) {
-            return redirect('myprojects/' . $this->requestedProject->slug . '/delete')->withErrors(['ec5_103']);
+            return redirect('myprojects/' . $this->requestedProject()->slug . '/delete')->withErrors(['ec5_103']);
         }
-        $projectId = $this->requestedProject->getId();
+        $projectId = $this->requestedProject()->getId();
         $projectName = Project::where('id', $projectId)->first()->name;
 
         //if the project name does not match, bail out
         if ($projectName !== $payload['project-name']) {
-            return redirect('myprojects/' . $this->requestedProject->slug . '/delete')->withErrors(['ec5_21']);
+            return redirect('myprojects/' . $this->requestedProject()->slug . '/delete')->withErrors(['ec5_21']);
         }
         //no permission to delete, bail out
-        if (!$this->requestedProjectRole->canDeleteProject()) {
-            return redirect('myprojects/' . $this->requestedProject->slug . '/delete')->withErrors(['ec5_91']);
+        if (!$this->requestedProjectRole()->canDeleteProject()) {
+            return redirect('myprojects/' . $this->requestedProject()->slug . '/delete')->withErrors(['ec5_91']);
         }
         // Check if this project is featured, cannot be deleted
         if (ProjectFeatured::where('project_id', $projectId)->exists()) {
-            return redirect('myprojects/' . $this->requestedProject->slug . '/delete')->withErrors(['ec5_221']);
+            return redirect('myprojects/' . $this->requestedProject()->slug . '/delete')->withErrors(['ec5_221']);
         }
 
         $projectStat = ProjectStats::where('project_id', $projectId)->first();
@@ -62,14 +57,14 @@ class ProjectDeleteController extends ProjectControllerBase
             if ($this->hardDelete($projectId, $projectSlug)) {
                 return redirect('myprojects')->with('message', 'ec5_114');
             } else {
-                return redirect('myprojects/' . $this->requestedProject->slug . '/delete')
+                return redirect('myprojects/' . $this->requestedProject()->slug . '/delete')
                     ->withErrors(['ec5_104']);
             }
         } else {
             if ($this->softDelete($projectId, $projectSlug)) {
                 return redirect('myprojects')->with('message', 'ec5_114');
             } else {
-                return redirect('myprojects/' . $this->requestedProject->slug . '/delete')
+                return redirect('myprojects/' . $this->requestedProject()->slug . '/delete')
                     ->withErrors(['ec5_104']);
             }
         }
@@ -108,7 +103,7 @@ class ProjectDeleteController extends ProjectControllerBase
         try {
             DB::beginTransaction();
             //project must have trashed status
-            $trashedStatus = Config::get('ec5Strings.project_status.trashed');
+            $trashedStatus = config('epicollect.strings.project_status.trashed');
             $project = Project::where('id', $projectId)
                 ->where('slug', $projectSlug)
                 ->where('status', $trashedStatus);

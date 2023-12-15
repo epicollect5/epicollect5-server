@@ -20,7 +20,7 @@
 
                     <div class="panel-body text-center">
 
-                        <form action="{{ url('myprojects') . '/' . $project->slug . '/transfer-ownership' }}"
+                        <form action="{{ url('myprojects') . '/' . $requestAttributes->requestedProject->slug . '/transfer-ownership' }}"
                               class="transfer-ownership"
                               method="POST">
 
@@ -64,9 +64,9 @@
 
                             <p>You,
                                 @if(!empty($projectCreator->name))
-                                    {{ $projectCreator->name . ' ' . $projectCreator->last_name }}
+                                    <strong>{{ $projectCreator->name . ' ' . $projectCreator->last_name }}</strong>
                                 @else
-                                    <i>{{$projectCreator->email}}</i>
+                                    <strong><i>{{$projectCreator->email}}</i></strong>
                                 @endif
                                 , will become a Manager of this project.
                             </p>
@@ -76,7 +76,7 @@
                             <p class="warning-well">This action cannot be undone! Please proceed with caution</p>
 
                             <a class="btn btn-sm btn-default pull-left"
-                               href="{{ url('myprojects') . '/' . $project->slug.'/manage-users' }}">{{ trans('site.cancel') }}</a>
+                               href="{{ url('myprojects') . '/' . $requestAttributes->requestedProject->slug.'/manage-users' }}">{{ trans('site.cancel') }}</a>
                             <div class="form-group">
                                 <input required type="submit"
                                        class="btn btn-action btn-sm pull-right submit-transfer-ownership" disabled

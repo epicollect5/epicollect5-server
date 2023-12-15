@@ -61,7 +61,7 @@
 
         {{--loop inputs in order--}}
         @foreach($projectExtra['forms'][$form['details']['ref']]['inputs'] as $index => $inputRef)
-            @if ($projectExtra['inputs'][$inputRef]['data']['type'] == Config::get('ec5Strings.inputs_type.branch'))
+            @if ($projectExtra['inputs'][$inputRef]['data']['type'] == config('epicollect.strings.inputs_type.branch'))
                 <tr>
                     <th>branch</th>
                     <th>{{$projectExtra['inputs'][$inputRef]['data']['question']}}</th>

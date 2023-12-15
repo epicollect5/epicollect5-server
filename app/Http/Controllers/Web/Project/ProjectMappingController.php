@@ -2,30 +2,32 @@
 
 namespace ec5\Http\Controllers\Web\Project;
 
-use ec5\Http\Controllers\ProjectControllerBase;
 use ec5\Http\Controllers\Api\ApiResponse;
 
 use ec5\Http\Validation\Project\Mapping\RuleMappingCreate as MappingCreateValidator;
 use ec5\Http\Validation\Project\Mapping\RuleMappingDelete as MappingDeleteValidator;
 use ec5\Http\Validation\Project\Mapping\RuleMappingUpdate as MappingUpdateValidator;
 use ec5\Http\Validation\Project\Mapping\RuleMappingStructure as MappingStructureValidator;
-
 use ec5\Repositories\QueryBuilder\Project\UpdateRepository as ProjectUpdate;
+use ec5\Traits\Requests\RequestAttributes;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Foundation\Application;
+use Illuminate\Http\JsonResponse;
+use Illuminate\View\View;
 
-class ProjectMappingController extends ProjectControllerBase
+class ProjectMappingController
 {
 
-    /**
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View|\Illuminate\Contracts\View\Factory|\Illuminate\View\View
-     */
+    use RequestAttributes;
+
     public function show()
     {
-        if (!$this->requestedProjectRole->canEditProject()) {
+        if (!$this->requestedProjectRole()->canEditProject()) {
             return view('errors.gen_error')->withErrors(['errors' => 'ec5_91']);
         }
 
-        $vars = $this->defaultProjectDetailsParams('mapping', '');
-        $vars['mappingJson'] = $this->requestedProject->getProjectMapping()->getData();
+        $vars['includeTemplate'] = 'mapping';
+        $vars['mappingJson'] = $this->requestedProject()->getProjectMapping()->getData();
 
         return view('project.project_details', $vars);
     }
@@ -34,17 +36,16 @@ class ProjectMappingController extends ProjectControllerBase
      * @param ApiResponse $apiResponse
      * @param ProjectUpdate $projectUpdate
      * @param MappingCreateValidator $mappingCreateValidator
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View|\Illuminate\Http\JsonResponse
+     * @return Factory|Application|JsonResponse|View
      */
     public function store(ApiResponse $apiResponse, ProjectUpdate $projectUpdate, MappingCreateValidator $mappingCreateValidator)
     {
-
-        if (!$this->requestedProjectRole->canEditProject()) {
+        if (!$this->requestedProjectRole()->canEditProject()) {
             return view('errors.gen_error')->withErrors(['errors' => 'ec5_91']);
         }
 
-        $projectMapping = $this->requestedProject->getProjectMapping();
-        $input = $this->request->all();
+        $projectMapping = $this->requestedProject()->getProjectMapping();
+        $input = request()->all();
 
         // Validate
         $mappingCreateValidator->validate($input);
@@ -60,7 +61,7 @@ class ProjectMappingController extends ProjectControllerBase
         // Create the new custom map
         $projectMapping->createCustomMap($input);
         // Attempt to insert into the database
-        $tryUpdate = $projectUpdate->updateProjectStructure($this->requestedProject);
+        $tryUpdate = $projectUpdate->updateProjectStructure($this->requestedProject());
         if ($tryUpdate) {
 
             $apiResponse->setData([
@@ -80,16 +81,16 @@ class ProjectMappingController extends ProjectControllerBase
      * @param ApiResponse $apiResponse
      * @param ProjectUpdate $projectUpdate
      * @param MappingDeleteValidator $mappingDeleteValidator
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View|\Illuminate\Http\JsonResponse
+     * @return Factory|Application|JsonResponse|View
      */
     public function delete(ApiResponse $apiResponse, ProjectUpdate $projectUpdate, MappingDeleteValidator $mappingDeleteValidator)
     {
-        if (!$this->requestedProjectRole->canEditProject()) {
+        if (!$this->requestedProjectRole()->canEditProject()) {
             return view('errors.gen_error')->withErrors(['errors' => 'ec5_91']);
         }
 
-        $projectMapping = $this->requestedProject->getProjectMapping();
-        $input = $this->request->all();
+        $projectMapping = $this->requestedProject()->getProjectMapping();
+        $input = request()->all();
 
         // Validate
         $mappingDeleteValidator->validate($input);
@@ -105,7 +106,7 @@ class ProjectMappingController extends ProjectControllerBase
         // Delete the map
         $projectMapping->deleteMap($input['map_index']);
         // Attempt to insert into the database
-        $tryUpdate = $projectUpdate->updateProjectStructure($this->requestedProject);
+        $tryUpdate = $projectUpdate->updateProjectStructure($this->requestedProject());
         if ($tryUpdate) {
             $apiResponse->setData([
                 'mapping' => $projectMapping->getData()
@@ -124,21 +125,21 @@ class ProjectMappingController extends ProjectControllerBase
      * @param ProjectUpdate $projectUpdate
      * @param MappingStructureValidator $mappingStructureValidator
      * @param MappingUpdateValidator $mappingUpdateValidator
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View|\Illuminate\Http\JsonResponse
+     * @return Factory|Application|JsonResponse|View
      */
     public function update(
-        ApiResponse $apiResponse,
-        ProjectUpdate $projectUpdate,
+        ApiResponse               $apiResponse,
+        ProjectUpdate             $projectUpdate,
         MappingStructureValidator $mappingStructureValidator,
-        MappingUpdateValidator $mappingUpdateValidator
+        MappingUpdateValidator    $mappingUpdateValidator
     )
     {
-        if (!$this->requestedProjectRole->canEditProject()) {
+        if (!$this->requestedProjectRole()->canEditProject()) {
             return view('errors.gen_error')->withErrors(['errors' => 'ec5_91']);
         }
 
-        $projectMapping = $this->requestedProject->getProjectMapping();
-        $input = $this->request->all();
+        $projectMapping = $this->requestedProject()->getProjectMapping();
+        $input = request()->all();
 
         // Validate
         $mappingUpdateValidator->validate($input);
@@ -170,7 +171,7 @@ class ProjectMappingController extends ProjectControllerBase
                     return $apiResponse->errorResponse(422, $mappingStructureValidator->errors());
                 }
                 // Check additional (validate the mapping structure)
-                $mappingStructureValidator->additionalChecks($this->requestedProject, $input['mapping']);
+                $mappingStructureValidator->additionalChecks($this->requestedProject(), $input['mapping']);
                 if ($mappingStructureValidator->hasErrors()) {
                     return $apiResponse->errorResponse(422, $mappingStructureValidator->errors());
                 }
@@ -181,7 +182,7 @@ class ProjectMappingController extends ProjectControllerBase
         }
 
         // Attempt to insert into the database
-        $tryUpdate = $projectUpdate->updateProjectStructure($this->requestedProject);
+        $tryUpdate = $projectUpdate->updateProjectStructure($this->requestedProject());
         if ($tryUpdate) {
 
             $apiResponse->setData([

@@ -5,7 +5,6 @@ namespace ec5\Http\Controllers\Web\Admin\Tools;
 use Auth;
 use Carbon\Carbon;
 use Config;
-use ec5\Http\Controllers\ProjectControllerBase;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Libraries\Utilities\GpointConverter;
 use ec5\Mail\DebugEmailSending;
@@ -19,17 +18,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Storage;
 
-class PHPToolsController extends ProjectControllerBase
+class PHPToolsController
 {
     use ProjectsStats;
 
     protected $project;
     protected $updateRep;
 
-    public function __construct(Request $request, LegacyProject $project, UpdateRep $updateRep)
+    public function __construct(LegacyProject $project, UpdateRep $updateRep)
     {
-        parent::__construct($request);
-
         $this->project = $project;
         $this->updateRep = $updateRep;
     }
@@ -71,7 +68,7 @@ class PHPToolsController extends ProjectControllerBase
 
     public function avatarPalette()
     {
-        return view('admin.avatar_palette', ['colors' => Config::get('laravolt.avatar.backgrounds')]);
+        return view('admin.avatar_palette', ['colors' => config('laravolt.avatar.backgrounds')]);
     }
 
     public function createProjectAvatar($ref = 'b8a4ac0a586b46dd8ad41ecf9eff39a7')
@@ -122,7 +119,7 @@ class PHPToolsController extends ProjectControllerBase
     {
         //send test email to verify it is all working
         try {
-            Mail::to(Config::get('ec5Setup.super_admin_user.email'))->send(new DebugEmailSending());
+            Mail::to(config('epicollect.setup.super_admin_user.email'))->send(new DebugEmailSending());
             return 'Mail sent.';
         } catch (Exception $e) {
             return 'Failed -> ' . $e->getMessage();
@@ -137,7 +134,7 @@ class PHPToolsController extends ProjectControllerBase
         $url = route('login-reset', $token);
 
         $expireAt = Carbon::now()
-            ->subSeconds(Config::get('auth.jwt-forgot.expire'))
+            ->subSeconds(config('auth.jwt-forgot.expire'))
             ->diffForHumans(Carbon::now(), true);
 
         //        return view('emails.user_registration', [

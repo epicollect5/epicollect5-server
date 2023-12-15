@@ -2,35 +2,26 @@
 
 namespace ec5\Http\Controllers\Web\Project;
 
-use ec5\Http\Controllers\ProjectControllerBase;
-
 use ec5\Libraries\Utilities\Generators;
 use ec5\Models\Projects\Exceptions\ProjectImportException;
 use ec5\Models\Projects\Exceptions\ProjectNameMissingException;
 use ec5\Models\Projects\Project;
 use Illuminate\Http\Request;
-
 use ec5\Http\Validation\Project\RuleCreateRequest as CreateRequestValidator;
 use ec5\Http\Validation\Project\RuleImportRequest as ImportRequestValidator;
-
 use ec5\Http\Validation\Project\RuleImportJson as ImportJsonValidator;
 use ec5\Http\Validation\Project\RuleProjectDefinition as ProjectDefinitionValidator;
-
 use ec5\Repositories\QueryBuilder\Project\CreateRepository as CreateProject;
 use ec5\Repositories\QueryBuilder\Project\DeleteRepository as DeleteProject;
 use ec5\Repositories\QueryBuilder\Project\UpdateRepository as UpdateRep;
-
 use ec5\Models\Images\CreateProjectLogoAvatar;
-
 use Illuminate\Support\Str;
-use Webpatser\Uuid\Uuid;
 use Redirect;
 use File;
 use Session;
 
-class ProjectCreateController extends ProjectControllerBase
+class ProjectCreateController
 {
-
     const CREATE = 'create';
     const IMPORT = 'import';
 
@@ -46,21 +37,18 @@ class ProjectCreateController extends ProjectControllerBase
 
     /**
      * ProjectCreateController constructor.
-     * @param Request $request
      * @param Project $project
      * @param UpdateRep $updateRep
+     * @param DeleteProject $deleteProject
      */
-    public function __construct(Request $request, Project $project, UpdateRep $updateRep, DeleteProject $deleteProject)
+    public function __construct(Project $project, UpdateRep $updateRep, DeleteProject $deleteProject)
     {
-        parent::__construct($request);
-
         $this->project = $project;
         $this->updateRep = $updateRep;
         $this->deleteProject = $deleteProject;
     }
 
     /**
-     * @param Request $request
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
     public function show()
@@ -294,14 +282,12 @@ class ProjectCreateController extends ProjectControllerBase
      * Update the project in db
      *
      * @param $input
-     * @param bool $updateProjectStructuresTable
      * @return bool
      */
     private function doUpdate($input)
     {
         // Update the Definition and Extra data
         $this->project->updateProjectDetails($input);
-
         // Update in the database
         return $this->updateRep->updateProject($this->project, $input, false);
     }

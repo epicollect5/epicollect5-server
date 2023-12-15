@@ -13,6 +13,8 @@ use Illuminate\Http\Request;
 use Closure;
 use Config;
 use Auth;
+use stdClass;
+use View;
 
 abstract class ProjectPermissionsBase extends MiddlewareBase
 {
@@ -88,6 +90,14 @@ abstract class ProjectPermissionsBase extends MiddlewareBase
         $this->request->attributes->add(['requestedUser' => $this->requestedUser]);
         $this->request->attributes->add(['requestedProjectRole' => $this->requestedProjectRole]);
 
+        //make attributes available to all views
+        $requestAttributes = new stdClass();
+        $requestAttributes->requestedProjectRole = $this->requestedProjectRole;
+        $requestAttributes->requestedProject = $this->requestedProject;
+        $requestAttributes->requestedUser = $this->requestedUser;
+
+        View::share('requestAttributes', $requestAttributes);
+
         return $next($this->request);
     }
 
@@ -153,7 +163,7 @@ abstract class ProjectPermissionsBase extends MiddlewareBase
             !$this->requestedProjectRole->getRole() && $this->requestedUser &&
             ($this->requestedUser->isAdmin() || $this->requestedUser->isSuperAdmin())
         ) {
-            $this->requestedProjectRole->setRole($this->requestedUser, $this->requestedProject->getId(), Config::get('ec5Permissions.projects.creator_role'));
+            $this->requestedProjectRole->setRole($this->requestedUser, $this->requestedProject->getId(), config('epicollect.permissions.projects.creator_role'));
         }
     }
 }

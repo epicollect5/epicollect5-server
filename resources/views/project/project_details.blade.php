@@ -7,11 +7,11 @@
         <div class="warning-well visible-xs-block">This section is best viewed on a larger screen</div>
 
         <div class="row">
-            <h1 class="page-title">{{ $project->name }} <br/>
+            <h1 class="page-title">{{ $requestAttributes->requestedProject->name }} <br/>
                 <small class="project-homepage-url">
                     {{ trans('site.project_home_page') }}:
                     <a target="_blank"
-                       href="{{ url('project') . '/' . $project->slug }}">{{ url('project') . '/' . $project->slug }}</a>
+                       href="{{ url('project') . '/' . $requestAttributes->requestedProject->slug }}">{{ url('project') . '/' . $requestAttributes->requestedProject->slug }}</a>
                     <i class="material-icons copy-btn" data-toggle="tooltip" data-placement="top" title="Copied!"
                        data-trigger="manual">
                         content_copy

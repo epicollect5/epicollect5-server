@@ -3,47 +3,49 @@
 namespace ec5\Http\Controllers\Api\Project;
 
 use ec5\Http\Controllers\Api\ApiResponse as ApiResponse;
-use ec5\Http\Controllers\ProjectControllerBase;
 use ec5\Http\Validation\Project\RuleName;
-use ec5\Models\Eloquent\ProjectStructure;
+use ec5\Models\Eloquent\ProjectStats;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use ec5\Http\Validation\Entries\Upload\RuleCanBulkUpload;
 use ec5\Models\Eloquent\Project;
-use ec5\Repositories\QueryBuilder\Project\SearchRepository as ProjectSearch;
-use ec5\Repositories\QueryBuilder\Stats\Entry\StatsRepository as EntryStatsRepository;
 use Exception;
 use Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
+use Log;
+use ec5\Traits\Requests\RequestAttributes;
 
-class ProjectController extends ProjectControllerBase
+class ProjectController
 {
+
+    use RequestAttributes;
+
     /**
      * @param ApiResponse $apiResponse
-     * @param EntryStatsRepository $entryStatsRepository
+     * @param ProjectStats $projectStats
      * @return JsonResponse
      */
-    public function show(ApiResponse $apiResponse, EntryStatsRepository $entryStatsRepository)
+    public function show(ApiResponse $apiResponse, ProjectStats $projectStats)
     {
-        $data = $this->requestedProject->getProjectDefinition()->getData();
+        $data = $this->requestedProject()->getProjectDefinition()->getData();
 
         //HACK:, we needed to expose the creation date of a project at a later stage, and this was the laziest way ;)
-        $data['project']['created_at'] = $this->requestedProject->getCreatedAt();
+        $data['project']['created_at'] = $this->requestedProject()->getCreatedAt();
 
         //HACK:, we needed to expose the can_bulk_upload property of a project at a later stage, and this was the laziest way ;)
-        $data['project']['can_bulk_upload'] = $this->requestedProject->getCanBulkUpload();
+        $data['project']['can_bulk_upload'] = $this->requestedProject()->getCanBulkUpload();
 
         //HACK:, we needed to expose the project homepage property of a project at a later stage, and this was the laziest way ;)
-        $homepage = config('app.url') . '/project/' . $this->requestedProject->slug;
+        $homepage = config('app.url') . '/project/' . $this->requestedProject()->slug;
         $data['project']['homepage'] = $homepage;
 
 
-        $projectExtra = $this->requestedProject->getProjectExtra()->getData();
+        $projectExtra = $this->requestedProject()->getProjectExtra()->getData();
 
         // Update the project stats counts
         //todo: (a try catch need in case it does not work?)
-        $entryStatsRepository->updateProjectEntryStats($this->requestedProject);
+        $projectStats->updateProjectStats($this->requestedProject()->getId());
 
         $userName = '';
         $userAvatar = '';
@@ -52,12 +54,12 @@ class ProjectController extends ProjectControllerBase
             $userAvatar = Auth::user()->avatar;
             //passwordless and apple auth do not get avatar, set placeholder
             if (empty($userAvatar)) {
-                $userAvatar = Config::get('app.url') . '/images/avatar-placeholder.png';
+                $userAvatar = config('app.url') . '/images/avatar-placeholder.png';
             }
         } catch (Exception $e) {
             //
             $userName = 'User';
-            $userAvatar = Config::get('app.url') . '/images/avatar-placeholder.png';
+            $userAvatar = config('app.url') . '/images/avatar-placeholder.png';
         }
 
         $apiResponse->setMeta([
@@ -65,12 +67,12 @@ class ProjectController extends ProjectControllerBase
             'project_user' => [
                 'name' => $userName,
                 'avatar' => $userAvatar,
-                'role' => $this->requestedProjectRole->getRole(),
-                'id' => $this->requestedProjectRole->getUser()->id ?? null,
+                'role' => $this->requestedProjectRole()->getRole(),
+                'id' => $this->requestedProjectRole()->getUser()->id ?? null,
             ],
-            'project_mapping' => $this->requestedProject->getProjectMapping()->getData(),
-            'project_stats' => array_merge($this->requestedProject->getProjectStats()->getData(), [
-                'structure_last_updated' => $this->requestedProject->getProjectStats()->getProjectStructureLastUpdated()
+            'project_mapping' => $this->requestedProject()->getProjectMapping()->getData(),
+            'project_stats' => array_merge($this->requestedProject()->getProjectStats()->getData(), [
+                'structure_last_updated' => $this->requestedProject()->getProjectStats()->getProjectStructureLastUpdated()
             ])
         ]);
         $apiResponse->setData($data);
@@ -80,29 +82,30 @@ class ProjectController extends ProjectControllerBase
 
     /**
      * @param ApiResponse $apiResponse
-     * @return \Illuminate\Http\JsonResponse
+     * @param ProjectStats $projectStats
+     * @return JsonResponse
      */
-    public function export(ApiResponse $apiResponse, EntryStatsRepository $entryStatsRepository)
+    public function export(ApiResponse $apiResponse, ProjectStats $projectStats)
     {
-        $data = $this->requestedProject->getProjectDefinition()->getData();
+        $data = $this->requestedProject()->getProjectDefinition()->getData();
         //todo HACK!!!, we needed to expose the creation date of a project at a later stage and this was the laziest way ;)
-        $data['project']['created_at'] = $this->requestedProject->getCreatedAt();
+        $data['project']['created_at'] = $this->requestedProject()->getCreatedAt();
 
         //todo HACK!!!, we needed to expose the project homepage property of a project at a later stage and this was the laziest way ;)
-        $homepage = config('app.url') . '/project/' . $this->requestedProject->slug;
+        $homepage = config('app.url') . '/project/' . $this->requestedProject()->slug;
         $data['project']['homepage'] = $homepage;
 
         $apiResponse->setData($data);
 
         //todo: update project stats (a try catch need in case it does not work?)
         // Update the project stats counts
-        $entryStatsRepository->updateProjectEntryStats($this->requestedProject);
-        \Log::info('ProjectController export() calls updateProjectEntryStats()');
+        $projectStats->updateProjectStats($this->requestedProject()->getId());
+        Log::info('ProjectController export() calls updateProjectEntryStats()');
 
         $apiResponse->setMeta([
-            'project_mapping' => $this->requestedProject->getProjectMapping()->getData(),
-            'project_stats' => array_merge($this->requestedProject->getProjectStats()->getData(), [
-                'structure_last_updated' => $this->requestedProject->getProjectStats()->getProjectStructureLastUpdated()
+            'project_mapping' => $this->requestedProject()->getProjectMapping()->getData(),
+            'project_stats' => array_merge($this->requestedProject()->getProjectStats()->getData(), [
+                'structure_last_updated' => $this->requestedProject()->getProjectStats()->getProjectStructureLastUpdated()
             ])
         ]);
 
@@ -170,7 +173,7 @@ class ProjectController extends ProjectControllerBase
 
     public function updateCanBulkUpload(Request $request, ApiResponse $apiResponse, RuleCanBulkUpload $ruleCanBulkUpload)
     {
-        if (!$this->requestedProjectRole->canEditProject()) {
+        if (!$this->requestedProjectRole()->canEditProject()) {
             $errors = ['ec5_91'];
             return $apiResponse->errorResponse(400, ['errors' => $errors]);
         }
@@ -186,7 +189,7 @@ class ProjectController extends ProjectControllerBase
 
         $canBulkUpload = $params['can_bulk_upload'];
         try {
-            $project = Project::find($this->requestedProject->getId());
+            $project = Project::find($this->requestedProject()->getId());
             $project->can_bulk_upload = $canBulkUpload;
             $project->save();
         } catch (\Exception $e) {

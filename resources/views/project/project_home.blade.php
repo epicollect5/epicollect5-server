@@ -1,6 +1,6 @@
 @extends('app')
-@section('title', $project->name)
-@section('description', $project->description)
+@section('title', $requestAttributes->requestedProject->name)
+@section('description', $requestAttributes->requestedProject->description)
 @section('page-name', Route::getCurrentRoute()->uri())
 @section('content')
 
@@ -12,12 +12,13 @@
 
                 <div id="" class="panel panel-default ">
                     <div class="panel-body">
-                        <a href="{{url('project/' . $project->slug . '/data')}}" class="project-home__logo-wrapper">
+                        <a href="{{url('project/' . $requestAttributes->requestedProject->slug . '/data')}}"
+                           class="project-home__logo-wrapper">
                             <img class="project-home__logo img-responsive img-circle" width="256" height="256"
                                  alt="Project logo"
-                                 src="@if($project->logo_url == '') {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
+                                 src="@if($requestAttributes->requestedProject->logo_url == '') {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
                                  @else
-                                 {{ url('/api/internal/media/'.$project->slug . '?type=photo&name=logo.jpg&format=project_thumb') }}
+                                 {{ url('/api/internal/media/'.$requestAttributes->requestedProject->slug . '?type=photo&name=logo.jpg&format=project_thumb') }}
                                  @endif">
 
                             <div class="loader"></div>
@@ -25,14 +26,14 @@
                     </div>
 
                     <div class="panel-body project-home__project-name">
-                        <h1 class="text-center">{{$project->name}}</h1>
+                        <h1 class="text-center">{{$requestAttributes->requestedProject->name}}</h1>
                     </div>
 
                     <div class="panel-body project-home__small-description">
-                        <h2 class="well">{{$project->small_description}}</h2>
+                        <h2 class="well">{{$requestAttributes->requestedProject->small_description}}</h2>
                     </div>
 
-                    @if($requestedProjectRole->canEditProject())
+                    @if($requestAttributes->requestedProjectRole->canEditProject())
                         @include('project.project_home.action_row_edit')
                     @else
                         @include('project.project_home.action_row_view')
@@ -40,10 +41,10 @@
 
                     <div class="panel-body project-home__project-description">
 
-                        @if(!$project->description)
+                        @if(!$requestAttributes->requestedProject->description)
                             <p class="well text-center">{{trans('site.no_desc_yet')}}</p>
                         @else
-                            <p class="well">{!! nl2br(e($project->description)) !!}</p>
+                            <p class="well">{!! nl2br(e($requestAttributes->requestedProject->description)) !!}</p>
                         @endif
                     </div>
 
