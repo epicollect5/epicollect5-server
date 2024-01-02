@@ -81,7 +81,7 @@ class WebUploadController extends UploadControllerBase
         //default response code for new entry
         $responseCode = 'ec5_237';
         $data = $this->apiRequest->getData();
-        $projectId = $this->requestedProject->getId();
+        $projectId = $this->requestedProject()->getId();
 
         //was an entry or branch entry upload?
         $uuid = $data['id'];
@@ -102,7 +102,7 @@ class WebUploadController extends UploadControllerBase
         }
 
         /* MOVE FILES */
-        $projectExtra = $this->requestedProject->getProjectExtra();
+        $projectExtra = $this->requestedProject()->getProjectExtra();
         $formRef = $this->entryStructure->getFormRef();
 
         if (!$this->entryStructure->isBranch()) {
@@ -173,7 +173,7 @@ class WebUploadController extends UploadControllerBase
         }
 
         $fileName = $this->entryStructure->getValidatedAnswer($input['ref'])['answer'];
-        $filePath = $rootFolder . $input['type'] . '/' . $this->requestedProject->ref . '/' . $fileName;
+        $filePath = $rootFolder . $input['type'] . '/' . $this->requestedProject()->ref . '/' . $fileName;
 
         // If the answer is empty
         // Or if we don't have a file for this input in the temp folder
@@ -212,7 +212,7 @@ class WebUploadController extends UploadControllerBase
 
         // Move file
         // Note: the file has already been validated on initial upload to temp folder
-        $this->fileValidator->moveFile($this->requestedProject, $entryStructure);
+        $this->fileValidator->moveFile($this->requestedProject(), $entryStructure);
         if ($this->fileValidator->hasErrors()) {
             $this->errors = $this->fileValidator->errors();
             return false;
