@@ -2,7 +2,7 @@
 
 namespace ec5\Http\Middleware;
 
-class ProjectPermissionsBulkUpload extends ProjectPermissionsBase
+class ProjectPermissionsBulkUpload extends RequestAttributesMiddleware
 {
     //Check if the user can bulk upload to this project
     public function hasPermission(): bool

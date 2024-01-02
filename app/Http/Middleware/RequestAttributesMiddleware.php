@@ -4,20 +4,19 @@ namespace ec5\Http\Middleware;
 
 use ec5\Repositories\QueryBuilder\ProjectRole\SearchRepository as ProjectRoleSearch;
 use ec5\Repositories\QueryBuilder\Project\SearchRepository;
-
 use ec5\Models\Projects\Project;
-use ec5\Models\ProjectRoles\ProjectRole;
 use ec5\Http\Controllers\Api\ApiResponse as ApiResponse;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Closure;
-use Config;
-use Auth;
 use stdClass;
 use View;
+use ec5\Traits\Middleware\MiddlewareTools;
 
-abstract class ProjectPermissionsBase extends MiddlewareBase
+abstract class RequestAttributesMiddleware
 {
+    use MiddlewareTools;
+
     protected $request;
     protected $search;
     protected $projectRoleSearch;
@@ -29,7 +28,7 @@ abstract class ProjectPermissionsBase extends MiddlewareBase
 
     /*
     |--------------------------------------------------------------------------
-    | ProjectPermissionsBase Middleware
+    | RequestAttributesMiddleware Middleware
     |--------------------------------------------------------------------------
     |
     | This middleware handles project requests.
@@ -50,16 +49,11 @@ abstract class ProjectPermissionsBase extends MiddlewareBase
         $this->projectRoleSearch = $projectRoleSearch;
         $this->requestedProject = $requestedProject;
         $this->request = $request;
-
-        parent::__construct($apiResponse);
+        $this->apiResponse = $apiResponse;
     }
 
     /**
      * Handle an incoming request.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param \Closure $next
-     * @return mixed
      */
     public function handle(Request $request, Closure $next)
     {
@@ -95,7 +89,6 @@ abstract class ProjectPermissionsBase extends MiddlewareBase
         $requestAttributes->requestedProjectRole = $this->requestedProjectRole;
         $requestAttributes->requestedProject = $this->requestedProject;
         $requestAttributes->requestedUser = $this->requestedUser;
-
         View::share('requestAttributes', $requestAttributes);
 
         return $next($this->request);
@@ -114,11 +107,6 @@ abstract class ProjectPermissionsBase extends MiddlewareBase
      */
     public abstract function hasPermission();
 
-    // HELPER METHODS //
-
-    /**
-     * @param $request
-     */
     private function setRequestedProject(Request $request)
     {
         $slug = $request->route()->parameter('project_slug');
@@ -126,10 +114,8 @@ abstract class ProjectPermissionsBase extends MiddlewareBase
         $slug = Str::slug($slug, '-');
 
         if ($slug !== '') {
-
             // Retrieve project (legacy way,  R&A fiasco)
             $project = $this->search->find($slug, $columns = array('*'));
-
             if ($project) {
                 // Initialise the main Project model
                 $this->requestedProject->init($project);
@@ -141,9 +127,6 @@ abstract class ProjectPermissionsBase extends MiddlewareBase
         $this->requestedProject = null;
     }
 
-    /**
-     * @param $request
-     */
     protected function setRequestedUser(Request $request)
     {
         // Grab user from the request

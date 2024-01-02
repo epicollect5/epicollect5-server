@@ -4,7 +4,7 @@ namespace ec5\Http\Middleware;
 
 use Config;
 
-class ProjectPermissionsViewerRole extends ProjectPermissionsBase
+class ProjectPermissionsViewerRole extends RequestAttributesMiddleware
 {
 
     /*

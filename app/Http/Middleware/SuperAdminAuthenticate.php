@@ -2,11 +2,15 @@
 
 namespace ec5\Http\Middleware;
 
+use ec5\Http\Controllers\Api\ApiResponse;
 use Illuminate\Support\Facades\Auth;
 use Closure;
+use ec5\Traits\Middleware\MiddlewareTools;
 
-class SuperAdminAuthenticate extends MiddlewareBase
+class SuperAdminAuthenticate
 {
+    use MiddlewareTools;
+
     /*
     |--------------------------------------------------------------------------
     | SuperAdminAuthenticate
@@ -18,18 +22,14 @@ class SuperAdminAuthenticate extends MiddlewareBase
 
     /**
      * Handle an incoming request.
-     *
-     * @param  \Illuminate\Http\Request $request
-     * @param  \Closure $next
-     * @param  string|null $guard
-     * @return mixed
      */
     public function handle($request, Closure $next, $guard = null)
     {
         if (Auth::guard($guard)->guest()) {
             if ($this->isJsonRequest($request)) {
                 $errors = ['auth' => ['ec5_219']];
-                return $this->apiResponse->errorResponse(404, $errors);
+                $apiResponse = new ApiResponse();
+                return $apiResponse->errorResponse(404, $errors);
             } else {
                 return redirect()->guest('login');
             }

@@ -17,7 +17,7 @@ use ec5\Http\Controllers\Api\ApiResponse as ApiResponse;
 use Illuminate\Http\Request;
 use Config;
 
-class ProjectPermissionsApi extends ProjectPermissionsBase
+class ProjectPermissionsApi extends RequestAttributesMiddleware
 {
 
     /*

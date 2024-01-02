@@ -2,7 +2,7 @@
 
 namespace ec5\Http\Middleware;
 
-class ProjectPermissions extends ProjectPermissionsBase
+class ProjectPermissions extends RequestAttributesMiddleware
 {
 
     /*

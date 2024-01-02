@@ -4,9 +4,13 @@ namespace ec5\Http\Middleware;
 
 use Illuminate\Support\Facades\Auth;
 use Closure;
+use ec5\Traits\Middleware\MiddlewareTools;
 
-class BasicAuthenticate extends MiddlewareBase
+class BasicAuthenticate
 {
+
+    use MiddlewareTools;
+
     /*
     |--------------------------------------------------------------------------
     | BasicAuthenticate
@@ -19,8 +23,8 @@ class BasicAuthenticate extends MiddlewareBase
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
+     * @param \Illuminate\Http\Request $request
+     * @param \Closure $next
      * @param null $guard
      * @return mixed
      */

@@ -2,7 +2,7 @@
 
 namespace ec5\Http\Middleware;
 
-class ProjectPermissionsRequiredRole extends ProjectPermissionsBase
+class ProjectPermissionsRequiredRole extends RequestAttributesMiddleware
 {
 
     /*

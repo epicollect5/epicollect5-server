@@ -4,44 +4,35 @@ namespace ec5\Http\Middleware;
 
 use Closure;
 use Carbon\Carbon;
-use ec5\Http\Controllers\Api\ApiResponse;
 use ec5\Mail\ExceptionNotificationMail;
+use Exception;
 use Illuminate\Cache\RateLimiter;
-use Illuminate\Support\Facades\Config;
+use Log;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Mail;
+use ec5\Traits\Middleware\MiddlewareTools;
 
-class ApiThrottleRequests extends MiddlewareBase
+class ApiThrottleRequests
 {
+    use MiddlewareTools;
+
     /**
      * The rate limiter instance.
-     *
-     * @var \Illuminate\Cache\RateLimiter
      */
     protected $limiter;
 
     /**
      * ApiThrottleRequests constructor.
-     * @param RateLimiter $limiter
-     * @param ApiResponse $apiResponse
      */
-    public function __construct(RateLimiter $limiter, ApiResponse $apiResponse)
+    public function __construct(RateLimiter $limiter)
     {
         $this->limiter = $limiter;
-
-        parent::__construct($apiResponse);
     }
 
     /**
      * Handle an incoming request.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param \Closure $next
-     * @param int $maxAttempts
-     * @param float|int $decayMinutes
-     * @return mixed
      */
-    public function handle($request, Closure $next, $maxAttempts = 60, $decayMinutes = 1)
+    public function handle($request, Closure $next, $maxAttempts = 60, $decayMinutes = 1): Response
     {
         $key = $this->resolveRequestSignature($request);
 
@@ -51,8 +42,8 @@ class ApiThrottleRequests extends MiddlewareBase
 
         try {
             $this->limiter->hit($key, $decayMinutes);
-        } catch (\Exception $e) {
-            \Log::error('Rate limiter hit() exception', ['message' => $e->getMessage()]);
+        } catch (Exception $e) {
+            Log::error('Rate limiter hit() exception', ['message' => $e->getMessage()]);
             Mail::to(config('epicollect.setup.system.email'))->send(new ExceptionNotificationMail($e->getMessage()));
         }
 
@@ -67,11 +58,8 @@ class ApiThrottleRequests extends MiddlewareBase
 
     /**
      * Resolve request signature.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return string
      */
-    protected function resolveRequestSignature($request)
+    protected function resolveRequestSignature($request): string
     {
         return $request->fingerprint();
     }
@@ -82,13 +70,11 @@ class ApiThrottleRequests extends MiddlewareBase
      * @param $request
      * @param $key
      * @param $maxAttempts
-     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse|Response
+     * @return Response
      */
-    protected function buildResponse($request, $key, $maxAttempts)
+    protected function buildResponse($request, $key, $maxAttempts): Response
     {
-
         $response = $this->errorResponse($request, 'ec5_255', 429);
-
         $retryAfter = $this->limiter->availableIn($key);
 
         return $this->addHeaders(
@@ -101,14 +87,8 @@ class ApiThrottleRequests extends MiddlewareBase
 
     /**
      * Add the limit header information to the given response.
-     *
-     * @param \Symfony\Component\HttpFoundation\Response $response
-     * @param int $maxAttempts
-     * @param int $remainingAttempts
-     * @param int|null $retryAfter
-     * @return \Symfony\Component\HttpFoundation\Response
      */
-    protected function addHeaders(Response $response, $maxAttempts, $remainingAttempts, $retryAfter = null)
+    protected function addHeaders(Response $response, $maxAttempts, $remainingAttempts, $retryAfter = null): Response
     {
         $headers = [
             'X-RateLimit-Limit' => $maxAttempts,
@@ -127,18 +107,12 @@ class ApiThrottleRequests extends MiddlewareBase
 
     /**
      * Calculate the number of remaining attempts.
-     *
-     * @param string $key
-     * @param int $maxAttempts
-     * @param int|null $retryAfter
-     * @return int
      */
-    protected function calculateRemainingAttempts($key, $maxAttempts, $retryAfter = null)
+    protected function calculateRemainingAttempts($key, $maxAttempts, $retryAfter = null): int
     {
         if (!is_null($retryAfter)) {
             return 0;
         }
-
         return $this->limiter->retriesLeft($key, $maxAttempts);
     }
 }
