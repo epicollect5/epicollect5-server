@@ -32,7 +32,7 @@ use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 */
 
-class WebUploadControllerTestMultiple extends TestCase
+class WebUploadControllerMultipleTest extends TestCase
 {
     use DatabaseTransactions;
 
@@ -129,8 +129,8 @@ class WebUploadControllerTestMultiple extends TestCase
                         ]
                     ]
                 );
-            $this->assertCount(0, Entry::where('project_id', $this->project->id)->value('child_counts'));
-            $this->assertCount(0, Entry::where('project_id', $this->project->id)->value('branch_counts'));
+            $this->assertEquals(0, Entry::where('project_id', $this->project->id)->value('child_counts'));
+            $this->assertEquals(0, Entry::where('project_id', $this->project->id)->value('branch_counts'));
             $this->assertCount(1, Entry::where('project_id', $this->project->id)->get());
         } catch (Exception $e) {
             //dd($e->getMessage(), $response, json_encode($entry), json_encode($projectDefinition));

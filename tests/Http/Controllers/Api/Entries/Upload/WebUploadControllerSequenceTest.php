@@ -22,7 +22,7 @@ use Tests\TestCase;
    therefore, we use concatenation of @depends
  */
 
-class WebUploadControllerTestSequence extends TestCase
+class WebUploadControllerSequenceTest extends TestCase
 {
     public function setUp()
     {
@@ -121,6 +121,7 @@ class WebUploadControllerTestSequence extends TestCase
      */
     public function test_it_should_upload_a_top_hierarchy_entry($params)
     {
+        $response = [];
         try {
             $user = $params['user'];
             $projectDefinition = $params['projectDefinition'];
@@ -131,8 +132,8 @@ class WebUploadControllerTestSequence extends TestCase
             //generate a fake entry for the top parent form
             $entry = $entryGenerator->createParentEntry($formRef);
             //perform a web upload
-            $response = $this->actingAs($user)->post('api/internal/web-upload/' . $project->slug, $entry);
-            $response->assertStatus(200)
+            $response[] = $this->actingAs($user)->post('api/internal/web-upload/' . $project->slug, $entry);
+            $response[0]->assertStatus(200)
                 ->assertExactJson([
                         "data" => [
                             "code" => "ec5_237",
@@ -157,7 +158,7 @@ class WebUploadControllerTestSequence extends TestCase
                 'project' => $project
             ]);
             //dd($e->getMessage(), $response, json_encode($entry), json_encode($projectDefinition));
-            dd($e->getMessage());
+            dd($e->getMessage(), $response[0]->getContent());
         }
     }
 
@@ -166,6 +167,7 @@ class WebUploadControllerTestSequence extends TestCase
      */
     public function test_it_should_upload_a_child_entry_level_1($params)
     {
+        $response = [];
         try {
             $entry = $params['entry'];
             $user = $params['user'];
@@ -183,9 +185,9 @@ class WebUploadControllerTestSequence extends TestCase
             );
 
             //post the child entry
-            $response = $this->actingAs($user)->post('api/internal/web-upload/' . $project->slug, $childEntry1);
+            $response[] = $this->actingAs($user)->post('api/internal/web-upload/' . $project->slug, $childEntry1);
 
-            $response->assertStatus(200)
+            $response[0]->assertStatus(200)
                 ->assertExactJson([
                         "data" => [
                             "code" => "ec5_237",
@@ -212,7 +214,7 @@ class WebUploadControllerTestSequence extends TestCase
                 'user' => $user,
                 'project' => $project
             ]);
-            dd($e->getMessage());
+            dd($e->getMessage(), $response[0]);
             //dd($e->getMessage(), $response, json_encode($entry), json_encode($projectDefinition));
         }
     }
