@@ -164,7 +164,7 @@ class EntryGenerator
                 ];
                 break;
             case 'date':
-                $formatDate = config('epicollect.strings.carbon_formats.fake_date');
+                $formatDate = config('epicollect.mappings.carbon_formats.fake_date');
                 // Generate a random DateTime within this decade using Faker
                 $randomDateTime = $this->faker->dateTimeThisDecade->format('Y-m-d H:i:s');
                 // Convert the generated string to Carbon
@@ -177,7 +177,7 @@ class EntryGenerator
                 ];
                 break;
             case 'time':
-                $formatTime = config('epicollect.strings.carbon_formats.fake_time');
+                $formatTime = config('epicollect.mappings.carbon_formats.fake_time');
                 // Generate a random DateTime within this decade using Faker
                 $randomDateTime = $this->faker->dateTimeThisDecade->format('Y-m-d H:i:s');
                 // Convert the generated string to Carbon
@@ -270,7 +270,7 @@ class EntryGenerator
                 ],
                 'entry' => [
                     'entry_uuid' => $uuid,
-                    'created_at' => Carbon::now()->format(config('epicollect.strings.carbon_formats.ISO')),
+                    'created_at' => Carbon::now()->format(config('epicollect.mappings.carbon_formats.ISO')),
                     'device_id' => '',
                     'platform' => 'WEB',
                     'title' => $title,
@@ -338,7 +338,7 @@ class EntryGenerator
                 ],
                 'entry' => [
                     'entry_uuid' => $uuid,
-                    'created_at' => Carbon::now()->format(config('epicollect.strings.carbon_formats.ISO')),
+                    'created_at' => Carbon::now()->format(config('epicollect.mappings.carbon_formats.ISO')),
                     'device_id' => '',
                     'platform' => 'WEB',
                     'title' => $title,
@@ -396,7 +396,7 @@ class EntryGenerator
                 ],
                 'branch_entry' => [
                     'entry_uuid' => $uuid,
-                    'created_at' => Carbon::now()->format(config('epicollect.strings.carbon_formats.ISO')),
+                    'created_at' => Carbon::now()->format(config('epicollect.mappings.carbon_formats.ISO')),
                     'device_id' => '',
                     'platform' => 'WEB',
                     'title' => $title,
