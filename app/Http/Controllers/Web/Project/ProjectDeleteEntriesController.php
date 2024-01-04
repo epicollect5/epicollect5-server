@@ -124,7 +124,7 @@ class ProjectDeleteEntriesController
         try {
             DB::beginTransaction();
 
-            if (!$this->archiveEntries($this->requestedProject()->getId(), $this->requestedProject()->ref)) {
+            if (!$this->archiveEntries($this->requestedProject()->getId())) {
                 DB::rollBack();
                 return redirect('myprojects/' . $this->requestedProject()->slug . '/manage-entries')->withErrors(['ec5_104']);
             } else {

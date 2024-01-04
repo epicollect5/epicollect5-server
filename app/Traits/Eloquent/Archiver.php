@@ -66,13 +66,12 @@ trait Archiver
         }
     }
 
-    public function archiveEntries($projectId, $projectRef): bool
+    public function archiveEntries($projectId): bool
     {
         try {
             //move entries
             Entry::where('project_id', $projectId)->chunk(100, function ($rowsToMove) {
                 foreach ($rowsToMove as $row) {
-                    //todo: check the id AUTO_INCREMENT...
                     $rowToArchive = $row->replicate();
                     // make into an array for mass assign.
                     $rowToArchive = $rowToArchive->toArray();
@@ -84,7 +83,6 @@ trait Archiver
             //move branch entries as well
             BranchEntry::where('project_id', $projectId)->chunk(100, function ($rowsToMove) {
                 foreach ($rowsToMove as $row) {
-                    //todo: check the id AUTO_INCREMENT...
                     $rowToArchive = $row->replicate();
                     // make into array for mass assign. 
                     $rowToArchive = $rowToArchive->toArray();
@@ -94,20 +92,18 @@ trait Archiver
             });
 
             // All rows have been successfully moved, so you can proceed with deleting the original rows
-            Entry::where('project_id', $projectId)->delete();
-            BranchEntry::where('project_id', $projectId)->delete();
+            Entry::where('project_id', $projectId)->chunk(100, function ($rows) {
+                foreach ($rows as $row) {
+                    $row->delete();
+                }
+            });
 
-            //remove all the entries media folders
-            $drivers = config('epicollect.media.entries_deletable');
+            BranchEntry::where('project_id', $projectId)->chunk(100, function ($rows) {
+                foreach ($rows as $row) {
+                    $row->delete();
+                }
+            });
 
-            foreach ($drivers as $driver) {
-                // Get disk, path prefix and all directories for this driver
-                $disk = Storage::disk($driver);
-                $pathPrefix = $disk->getDriver()->getAdapter()->getPathPrefix();
-                // \Log::info('delete path ->' . $pathPrefix . $projectRef);
-                // Note: need to use File facade here, as Storage doesn't delete
-                File::deleteDirectory($pathPrefix . $projectRef);
-            }
             return true;
         } catch (Exception $e) {
             Log::error(__METHOD__ . ' failed.', [
@@ -117,8 +113,6 @@ trait Archiver
         }
     }
 
-    /**
-     */
     public function archiveUser($email, $userId): bool
     {
         try {

@@ -16,10 +16,7 @@ class ArchiveEntriesTest extends TestCase
 {
     use DatabaseTransactions;
 
-    /**
-     * @test
-     */
-    public function it_archives_entries_and_updates_stats()
+    public function test_it_archives_entries_and_updates_stats()
     {
         $repeatCount = 10; // Number of times to repeat the test case
 

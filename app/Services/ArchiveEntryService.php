@@ -2,7 +2,7 @@
 
 namespace ec5\Services;
 
-use DB;
+use  DB;
 use ec5\Models\Eloquent\BranchEntry;
 use ec5\Models\Eloquent\Counters\BranchEntryCounter;
 use ec5\Models\Eloquent\Counters\EntryCounter;
