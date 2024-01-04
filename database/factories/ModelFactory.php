@@ -25,7 +25,6 @@ use ec5\Models\Eloquent\ProjectRole;
 use ec5\Models\Eloquent\ProjectFeatured;
 use ec5\Models\Eloquent\ProjectStats;
 use Illuminate\Support\Str;
-use Webpatser\Uuid\Uuid;
 
 /** @var \Illuminate\Database\Eloquent\Factory $factory */
 

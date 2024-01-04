@@ -7,10 +7,7 @@ use ec5\Http\Validation\Auth\RuleForgot;
 use ec5\Http\Validation\Auth\RuleRecaptcha;
 use ec5\Mail\UserPasswordResetMail;
 use Illuminate\Http\Request;
-use GuzzleHttp\Exception\GuzzleException;
-use GuzzleHttp\Client;
 use ec5\Models\Eloquent\User;
-use Config;
 use Exception;
 use Firebase\JWT\JWT as FirebaseJwt;
 use Illuminate\Support\Facades\App;
@@ -20,8 +17,8 @@ use Carbon\Carbon;
 use DB;
 use Log;
 use PDOException;
-use Webpatser\Uuid\Uuid;
 use ec5\Traits\Auth\ReCaptchaValidation;
+use Ramsey\Uuid\Uuid;
 
 class ForgotPasswordController extends Controller
 {
@@ -93,7 +90,7 @@ class ForgotPasswordController extends Controller
                 $data = array(
                     'iss' => config('app.url'), // issuer
                     'iat' => time(), // issued at time
-                    'jti' => (string)Uuid::generate(4), // unique token uuid v4
+                    'jti' => Uuid::uuid4()->toString(), // unique token uuid v4
                     'exp' => $expiryTime, // expiry time
                     'sub' => $user->id, // subject i.e. user id
                 );

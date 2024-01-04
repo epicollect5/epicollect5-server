@@ -2,14 +2,12 @@
 
 namespace ec5\Models\Projects;
 
-use Carbon\Carbon;
 use ec5\Http\Validation\Project\RuleProjectDefinition;
 use ec5\Models\Projects\Exceptions\ProjectImportException;
+use Ramsey\Uuid\Uuid;
 use ReflectionClass;
 use ReflectionProperty;
 use Illuminate\Support\Str;
-use Config;
-use Webpatser\Uuid\Uuid;
 use ec5\Models\Projects\Exceptions\ProjectNameMissingException;
 
 /*
@@ -215,7 +213,7 @@ class Project
     public function cloneProject($input)
     {
         $oldProjectRef = $this->ref;
-        $newProjectRef = str_replace('-', '', Uuid::generate(4));
+        $newProjectRef = str_replace('-', '', Uuid::uuid4()->toString());
         // Cloned project will be set to 'active'
         $input['status'] = config('epicollect.strings.project_status.active');
         // Update the Project class properties

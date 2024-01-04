@@ -2,7 +2,6 @@
 
 namespace Tests\Http\Validation\Project\RuleInput;
 
-use Config;
 use ec5\Http\Validation\Project\RuleForm;
 use ec5\Http\Validation\Project\RuleInput;
 use ec5\Http\Validation\Project\RuleProjectDefinition;
@@ -13,7 +12,7 @@ use ec5\Models\Projects\ProjectExtra;
 use ec5\Models\Projects\ProjectMapping;
 use ec5\Models\Projects\ProjectStats;
 use Illuminate\Support\Str;
-use Webpatser\Uuid\Uuid;
+use Ramsey\Uuid\Uuid;
 
 class SearchMaxCountTest extends InputTest
 {
@@ -39,7 +38,7 @@ class SearchMaxCountTest extends InputTest
 
     private function getProjectMock()
     {
-        $projectRef = str_replace('-', '', Uuid::generate(4));
+        $projectRef = str_replace('-', '', Uuid::uuid4()->toString());
         $projectName = 'Test search inputs limit';
 
         return [

@@ -11,9 +11,9 @@ namespace ec5\Http\Controllers\Web\Admin\Tools;
 
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\Entry;
-use Webpatser\Uuid\Uuid;
 use DB;
 use Carbon\Carbon;
+use Ramsey\Uuid\Uuid;
 
 use Illuminate\Http\Request;
 
@@ -64,7 +64,7 @@ class DBToolsController
 
         foreach ($sourceEntries as $sourceEntry) {
 
-            $destinationEntryUuid = Uuid::generate(4);
+            $destinationEntryUuid = Uuid::uuid4()->toString();
 
             $destinationEntry = new Entry();
             $destinationEntry->project_id = $destinationProjectId;
@@ -144,6 +144,7 @@ class DBToolsController
         return $size[0]->gb_size;
         //dd((float)number_format($size[0]->gb_size, 2));
     }
+
     public function getUsersToday()
     {
 

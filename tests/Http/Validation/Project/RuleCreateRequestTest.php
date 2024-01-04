@@ -5,9 +5,9 @@ namespace Tests\Http\Validation\Project;
 use ec5\Http\Validation\Project\RuleCreateRequest;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\User;
+use Ramsey\Uuid\Uuid;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Webpatser\Uuid\Uuid;
 
 class RuleCreateRequestTest extends TestCase
 {
@@ -302,7 +302,7 @@ class RuleCreateRequestTest extends TestCase
     {
         $user = factory(User::class)->create();
         $this->actingAs($user);
-        $testProjectName = str_replace('-', '', Uuid::generate(4));
+        $testProjectName = str_replace('-', '', Uuid::uuid4()->toString());
         $data = [
             'name' => $testProjectName,
             'slug' => $testProjectName,
@@ -324,7 +324,7 @@ class RuleCreateRequestTest extends TestCase
     {
         $user = factory(User::class)->create();
         $this->actingAs($user);
-        $testProjectName = str_replace('-', '', Uuid::generate(4));
+        $testProjectName = str_replace('-', '', Uuid::uuid4()->toString());
         $data = [
             'name' => $testProjectName,
             'slug' => $testProjectName,
@@ -346,7 +346,7 @@ class RuleCreateRequestTest extends TestCase
     {
         $user = factory(User::class)->create();
         $this->actingAs($user);
-        $testProjectName = str_replace('-', '', Uuid::generate(4));
+        $testProjectName = str_replace('-', '', Uuid::uuid4()->toString());
         $data = [
             'name' => $testProjectName,
             'slug' => $testProjectName,
@@ -368,7 +368,7 @@ class RuleCreateRequestTest extends TestCase
     {
         $user = factory(User::class)->create();
         $this->actingAs($user);
-        $testProjectName = str_replace('-', '', Uuid::generate(4));
+        $testProjectName = str_replace('-', '', Uuid::uuid4()->toString());
         $data = [
             'name' => $testProjectName,
             'slug' => $testProjectName,
@@ -390,7 +390,7 @@ class RuleCreateRequestTest extends TestCase
     {
         $user = factory(User::class)->create();
         $this->actingAs($user);
-        $testProjectName = str_replace('-', '', Uuid::generate(4));
+        $testProjectName = str_replace('-', '', Uuid::uuid4()->toString());
         $data = [
             'name' => $testProjectName,
             'slug' => $testProjectName,
@@ -412,7 +412,7 @@ class RuleCreateRequestTest extends TestCase
     {
         $user = factory(User::class)->create();
         $this->actingAs($user);
-        $testProjectName = str_replace('-', '', Uuid::generate(4));
+        $testProjectName = str_replace('-', '', Uuid::uuid4()->toString());
         $data = [
             'name' => $testProjectName,
             'slug' => $testProjectName,
@@ -434,7 +434,7 @@ class RuleCreateRequestTest extends TestCase
     {
         $user = factory(User::class)->create();
         $this->actingAs($user);
-        $testProjectName = str_replace('-', '', Uuid::generate(4));
+        $testProjectName = str_replace('-', '', Uuid::uuid4()->toString());
         $data = [
             'name' => $testProjectName,
             'slug' => $testProjectName,

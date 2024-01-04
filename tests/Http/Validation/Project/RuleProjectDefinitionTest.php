@@ -14,7 +14,7 @@ use ec5\Models\Projects\ProjectMapping;
 use ec5\Models\Projects\ProjectStats;
 use Illuminate\Support\Str;
 use Tests\TestCase;
-use Webpatser\Uuid\Uuid;
+use Ramsey\Uuid\Uuid;
 
 class RuleProjectDefinitionTest extends TestCase
 {
@@ -40,7 +40,7 @@ class RuleProjectDefinitionTest extends TestCase
 
     private function getProjectMock(): array
     {
-        $projectRef = str_replace('-', '', Uuid::generate(4));
+        $projectRef = str_replace('-', '', Uuid::uuid4()->toString());
         $projectName = 'Test inputs limit';
 
         return [

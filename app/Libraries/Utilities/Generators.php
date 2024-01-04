@@ -2,7 +2,7 @@
 
 namespace ec5\Libraries\Utilities;
 
-use Webpatser\Uuid\Uuid;
+use Ramsey\Uuid\Uuid;
 
 class Generators
 {
@@ -32,7 +32,7 @@ class Generators
 
     public static function projectRef(): string
     {
-        return str_replace('-', '', Uuid::generate(4));
+        return str_replace('-', '', Uuid::uuid4()->toString());
     }
 
     public static function archivedUserEmail(): string
