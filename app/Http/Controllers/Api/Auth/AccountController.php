@@ -48,6 +48,7 @@ class AccountController extends Controller
         if ($routeName === 'internalAccountDelete') {
             if (sizeof($userProjectRoles) === 0) {
                 //user is not a member of any projects so remove it directly
+                //(user ID for entries added to public projects is never considered)
                 if ($this->removeUser($email, $userId)) {
                     $this->logoutUser();
                     return $this->sendResponseSuccess($email);
@@ -55,6 +56,12 @@ class AccountController extends Controller
                     return $this->sendResponseError();
                 }
             } else {
+
+                //imp: we archive the user instead of removing it because
+                //it could have added entries to private projects
+                //and due to an old mysql bug, a new user could get an existing ID
+                //edge case but better safe than sorry
+
                 //user has roles in projects, but if no CREATOR role found, remove it
                 $projectsWithCreatorRoles = [];
                 foreach ($userProjectRoles as $userProjectRole) {
@@ -84,7 +91,6 @@ class AccountController extends Controller
         }
         //request from the mobile app?
         if ($routeName === 'externalAccountDelete') {
-            //imp:this is a request from the mobile app, needs api response
             if (sizeof($userProjectRoles) === 0) {
                 //user is not a member of any projects so just remove
                 if ($this->removeUser($email, $userId)) {

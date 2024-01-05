@@ -219,7 +219,7 @@ class RuleImportRequestTest extends TestCase
         factory(Project::class)->create([
             'name' => 'A duplicated name',
             'slug' => 'a-duplicated-slug',
-            'status' => 'archived'
+            'status' => config('epicollect.strings.project_status.archived')
         ]);
         $user = factory(User::class)->create();
         $this->actingAs($user);
