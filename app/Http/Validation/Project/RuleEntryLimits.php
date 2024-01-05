@@ -11,7 +11,7 @@ class RuleEntryLimits extends ValidationBase
 {
     protected $rules = [
         'limit' => 'required|integer',
-        'limitTo' => 'required|integer|max:50000',
+        'limitTo' => 'required|integer|min:0|max:50000',
         'formRef' => 'required',
         'branchRef' => 'present'
     ];
