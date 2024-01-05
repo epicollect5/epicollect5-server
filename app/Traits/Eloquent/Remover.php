@@ -2,14 +2,11 @@
 
 namespace ec5\Traits\Eloquent;
 
+use ec5\Models\Eloquent\Entries\BranchEntry;
+use ec5\Models\Eloquent\Entries\Entry;
 use ec5\Models\Eloquent\Project;
-use ec5\Models\Eloquent\Entry;
-use ec5\Models\Eloquent\EntryArchive;
-use ec5\Models\Eloquent\BranchEntry;
-use ec5\Models\Eloquent\BranchEntryArchive;
 use Exception;
 use File;
-use Illuminate\Support\Facades\Config;
 use Log;
 use Storage;
 
@@ -21,9 +18,7 @@ trait Remover
             $project = Project::where('id', $projectId)
                 ->where('slug', $projectSlug)
                 ->first();
-
             $project->delete();
-
             return true;
         } catch (\Exception $e) {
             \Log::error('Error removeProject()', ['exception' => $e->getMessage()]);
@@ -34,9 +29,19 @@ trait Remover
     public function removeEntries($projectId, $projectRef): bool
     {
         try {
-            //remove all entries amnd branch entries
-            Entry::where('project_id', $projectId)->delete();
-            BranchEntry::where('project_id', $projectId)->delete();
+            // Delete records from the Entry model in chunks
+            Entry::where('project_id', $projectId)->chunk(250, function ($entries) {
+                foreach ($entries as $entry) {
+                    $entry->delete();
+                }
+            });
+
+            // Delete records from the BranchEntry model in chunks
+            BranchEntry::where('project_id', $projectId)->chunk(250, function ($branchEntries) {
+                foreach ($branchEntries as $branchEntry) {
+                    $branchEntry->delete();
+                }
+            });
 
             //remove all the entries media folders
             $drivers = config('epicollect.media.entries_deletable');

@@ -1,6 +1,6 @@
 <?php
 
-namespace ec5\Models\Eloquent;
+namespace ec5\Models\Eloquent\Entries;
 
 use Illuminate\Database\Eloquent\Model;
 

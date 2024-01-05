@@ -2,26 +2,26 @@
 
 namespace ec5\Http\Controllers\Api\Entries;
 
+use Cookie;
 use ec5\Http\Controllers\Api\ApiRequest;
 use ec5\Http\Controllers\Api\ApiResponse;
 use ec5\Http\Controllers\Api\Entries\View\EntrySearchControllerBase;
-use ec5\Http\Validation\Entries\Upload\RuleAnswers;
-use ec5\Http\Validation\Entries\Search\RuleQueryString;
 use ec5\Http\Validation\Entries\Download\RuleDownloadSubset;
+use ec5\Http\Validation\Entries\Search\RuleQueryString;
+use ec5\Http\Validation\Entries\Upload\RuleAnswers;
 use ec5\Libraries\Utilities\Common;
-use ec5\Models\Eloquent\BranchEntry;
-use ec5\Models\Eloquent\Entry;
+use ec5\Models\Eloquent\Entries\BranchEntry;
+use ec5\Models\Eloquent\Entries\Entry;
 use ec5\Repositories\QueryBuilder\Entry\Search\BranchEntryRepository;
 use ec5\Repositories\QueryBuilder\Entry\Search\EntryRepository;
 use ec5\Services\DataMappingService;
 use Exception;
 use Illuminate\Http\Request;
-use Log;
-use ZipArchive;
-use Storage;
-use Cookie;
 use League\Csv\Writer;
+use Log;
 use Ramsey\Uuid\Uuid;
+use Storage;
+use ZipArchive;
 
 class DownloadSubsetController extends EntrySearchControllerBase
 {

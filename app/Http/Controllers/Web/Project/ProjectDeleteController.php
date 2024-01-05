@@ -2,17 +2,16 @@
 
 namespace ec5\Http\Controllers\Web\Project;
 
-use ec5\Models\Eloquent\ProjectStats;
+use ec5\Models\Eloquent\Entries\Entry;
 use ec5\Models\Eloquent\Project;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use ec5\Models\Eloquent\Entry;
 use ec5\Models\Eloquent\ProjectFeatured;
-use Illuminate\Support\Facades\Config;
-use Log;
-use ec5\Traits\Requests\RequestAttributes;
+use ec5\Models\Eloquent\ProjectStats;
 use ec5\Traits\Eloquent\Archiver;
 use ec5\Traits\Eloquent\StatsRefresher;
+use ec5\Traits\Requests\RequestAttributes;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Log;
 
 class ProjectDeleteController
 {

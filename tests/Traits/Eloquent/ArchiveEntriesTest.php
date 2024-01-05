@@ -2,15 +2,14 @@
 
 namespace Tests\Traits\Eloquent;
 
-use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Illuminate\Support\Facades\Config;
-use Tests\TestCase;
+use ec5\Models\Eloquent\Entries\BranchEntry;
+use ec5\Models\Eloquent\Entries\BranchEntryArchive;
+use ec5\Models\Eloquent\Entries\Entry;
+use ec5\Models\Eloquent\Entries\EntryArchive;
 use ec5\Models\Eloquent\Project;
-use ec5\Models\Eloquent\Entry;
-use ec5\Models\Eloquent\BranchEntry;
-use ec5\Models\Eloquent\EntryArchive;
-use ec5\Models\Eloquent\BranchEntryArchive;
 use ec5\Models\Eloquent\User;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Tests\TestCase;
 
 class ArchiveEntriesTest extends TestCase
 {

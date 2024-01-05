@@ -3,20 +3,17 @@
 namespace ec5\Traits\Eloquent;
 
 use ec5\Libraries\Utilities\Generators;
+use ec5\Models\Eloquent\Entries\BranchEntry;
+use ec5\Models\Eloquent\Entries\BranchEntryArchive;
+use ec5\Models\Eloquent\Entries\Entry;
+use ec5\Models\Eloquent\Entries\EntryArchive;
 use ec5\Models\Eloquent\Project;
-use ec5\Models\Eloquent\Entry;
-use ec5\Models\Eloquent\EntryArchive;
-use ec5\Models\Eloquent\BranchEntry;
-use ec5\Models\Eloquent\BranchEntryArchive;
 use ec5\Models\Eloquent\ProjectRole;
 use ec5\Models\Eloquent\User;
 use ec5\Models\Eloquent\UserProvider;
 use Exception;
-use File;
 use Illuminate\Support\Facades\DB;
 use Log;
-use PDOException;
-use Storage;
 
 trait Archiver
 {
@@ -38,7 +35,7 @@ trait Archiver
                 ->first();
 
             $project->status = config('epicollect.strings.project_status.archived');
-            //set name and slug to a unique string to avoid duplicates with new projects
+            //set name and slug to a unique string (we use a project ref) to avoid duplicates with new projects
             $ref = Generators::projectRef();
             $project->name = $ref;
             $project->slug = $ref;
@@ -69,6 +66,7 @@ trait Archiver
     public function archiveEntries($projectId): bool
     {
         try {
+            DB::beginTransaction();
             //move entries
             Entry::where('project_id', $projectId)->chunk(100, function ($rowsToMove) {
                 foreach ($rowsToMove as $row) {
@@ -104,11 +102,13 @@ trait Archiver
                 }
             });
 
+            DB::commit();
             return true;
         } catch (Exception $e) {
             Log::error(__METHOD__ . ' failed.', [
                 'exception' => $e->getMessage()
             ]);
+            DB::rollBack();
             return false;
         }
     }

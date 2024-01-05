@@ -4,7 +4,6 @@ namespace ec5\Traits\Auth;
 
 use ec5\Libraries\JwtApple\JWT as JWTApple;
 use ec5\Libraries\JwtApple\JWK as JWKApple;
-use Illuminate\Support\Facades\Config;
 use Log;
 use Exception;
 

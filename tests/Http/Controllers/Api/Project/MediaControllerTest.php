@@ -2,12 +2,12 @@
 
 namespace Http\Controllers\Api\Project;
 
-use ec5\Models\Eloquent\Entry;
+use ec5\Models\Eloquent\Entries\Entry;
 use ec5\Models\Eloquent\Project;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Storage;
 use Image;
 use Tests\TestCase;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 class MediaControllerTest extends TestCase
 {

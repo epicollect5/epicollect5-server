@@ -1,11 +1,11 @@
 <?php
 
-namespace ec5\Models\Eloquent;
+namespace ec5\Models\Eloquent\Entries;
 
 use DB;
+use ec5\Traits\Eloquent\Entries;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
-use ec5\Traits\Eloquent\Entries;
 
 class BranchEntry extends Model
 {

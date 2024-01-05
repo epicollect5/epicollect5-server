@@ -5,12 +5,12 @@ namespace ec5\Http\Controllers\Api\Entries;
 use ec5\Http\Controllers\Api\ApiResponse;
 use ec5\Http\Controllers\Controller;
 use ec5\Http\Validation\Entries\Archive\RuleArchive;
-use ec5\Models\Eloquent\BranchEntry;
-use ec5\Models\Eloquent\Entry;
+use ec5\Models\Eloquent\Entries\BranchEntry;
+use ec5\Models\Eloquent\Entries\Entry;
 use ec5\Models\Entries\EntryStructure;
-use Illuminate\Http\JsonResponse;
-use ec5\Traits\Requests\RequestAttributes;
 use ec5\Services\ArchiveEntryService;
+use ec5\Traits\Requests\RequestAttributes;
+use Illuminate\Http\JsonResponse;
 
 class ArchiveController extends Controller
 {

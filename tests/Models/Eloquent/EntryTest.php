@@ -4,11 +4,11 @@ namespace Tests\Models\Eloquent;
 
 use Carbon\Carbon;
 use ec5\Libraries\Utilities\Generators;
-use ec5\Models\Eloquent\Entry;
+use ec5\Models\Eloquent\Entries\Entry;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\User;
-use Tests\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Tests\TestCase;
 
 class EntryTest extends TestCase
 {

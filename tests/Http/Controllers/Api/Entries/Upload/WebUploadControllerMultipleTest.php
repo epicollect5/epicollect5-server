@@ -2,19 +2,18 @@
 
 namespace Tests\Http\Controllers\Api\Entries\Upload;
 
-use ec5\Models\Eloquent\BranchEntry;
-use ec5\Models\Eloquent\Entry;
+use ec5\Models\Eloquent\Entries\BranchEntry;
+use ec5\Models\Eloquent\Entries\Entry;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectRole;
 use ec5\Models\Eloquent\ProjectStats;
 use ec5\Models\Eloquent\ProjectStructure;
 use ec5\Models\Eloquent\User;
 use Exception;
-use Faker\Factory as Faker;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\Generators\EntryGenerator;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 
 /* This class does not follow optimal testing practices

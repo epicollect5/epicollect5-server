@@ -45,11 +45,12 @@ class ArchiveUserTest extends TestCase
             // Create a fake user
             $user = factory(User::class)->create();
 
-            //add google provider for that user
+            //add a random provider for that user
+            $provider = array_rand(config('epicollect.strings.providers'));
             factory(UserProvider::class)->create([
                 'user_id' => $user->id,
                 'email' => $user->email,
-                'provider' => config('epicollect.strings.providers.google')
+                'provider' => $provider
             ]);
 
             //assert user is present before archiving
@@ -71,7 +72,7 @@ class ArchiveUserTest extends TestCase
 
             //assert provider is removed
             $this->assertEquals(0, UserProvider::where('email', $user->email)
-                ->where('provider', config('epicollect.strings.providers.google'))
+                ->where('provider', $provider)
                 ->count());
         }
     }

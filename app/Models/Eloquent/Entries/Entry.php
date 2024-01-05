@@ -1,10 +1,10 @@
 <?php
 
-namespace ec5\Models\Eloquent;
+namespace ec5\Models\Eloquent\Entries;
 
 use DB;
-use Illuminate\Database\Eloquent\Model;
 use ec5\Traits\Eloquent\Entries;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
 
 class Entry extends Model

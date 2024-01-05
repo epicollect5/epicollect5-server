@@ -3,20 +3,19 @@
 namespace Tests\Http\Controllers\Api\AccountController;
 
 
-use Config;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Mail\UserAccountDeletionConfirmation;
-use ec5\Models\Eloquent\BranchEntry;
-use ec5\Models\Eloquent\BranchEntryArchive;
-use ec5\Models\Eloquent\Entry;
-use ec5\Models\Eloquent\EntryArchive;
+use ec5\Models\Eloquent\Entries\BranchEntry;
+use ec5\Models\Eloquent\Entries\BranchEntryArchive;
+use ec5\Models\Eloquent\Entries\Entry;
+use ec5\Models\Eloquent\Entries\EntryArchive;
 use ec5\Models\Eloquent\OAuthClientProjects;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectRole;
 use ec5\Models\Eloquent\ProjectStats;
 use ec5\Models\Eloquent\ProjectStructure;
-use ec5\Models\Eloquent\UserProvider;
 use ec5\Models\Eloquent\User;
+use ec5\Models\Eloquent\UserProvider;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;

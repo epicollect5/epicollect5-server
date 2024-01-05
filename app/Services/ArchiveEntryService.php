@@ -2,11 +2,11 @@
 
 namespace ec5\Services;
 
-use  DB;
-use ec5\Models\Eloquent\BranchEntry;
+use DB;
 use ec5\Models\Eloquent\Counters\BranchEntryCounter;
 use ec5\Models\Eloquent\Counters\EntryCounter;
-use ec5\Models\Eloquent\Entry;
+use ec5\Models\Eloquent\Entries\BranchEntry;
+use ec5\Models\Eloquent\Entries\Entry;
 use ec5\Models\Eloquent\ProjectStats;
 use ec5\Models\Projects\Project;
 use Exception;

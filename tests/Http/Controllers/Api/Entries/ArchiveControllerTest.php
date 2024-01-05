@@ -2,21 +2,21 @@
 
 namespace Tests\Http\Controllers\Api\Entries;
 
-use ec5\Models\Eloquent\BranchEntry;
-use ec5\Models\Eloquent\BranchEntryArchive;
-use ec5\Models\Eloquent\Entry;
-use ec5\Models\Eloquent\EntryArchive;
+use ec5\Models\Eloquent\Entries\BranchEntry;
+use ec5\Models\Eloquent\Entries\BranchEntryArchive;
+use ec5\Models\Eloquent\Entries\Entry;
+use ec5\Models\Eloquent\Entries\EntryArchive;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectRole;
 use ec5\Models\Eloquent\ProjectStats;
 use ec5\Models\Eloquent\ProjectStructure;
 use ec5\Models\Eloquent\User;
 use Exception;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Ramsey\Uuid\Uuid;
 use Tests\Generators\EntryGenerator;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Ramsey\Uuid\Uuid;
 
 //todo: need to test archiving at any level (5 forms), also branches
 class ArchiveControllerTest extends TestCase

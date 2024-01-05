@@ -360,7 +360,6 @@ class DownloadControllerTest extends TestCase
                 'total_entries' => 0]
         );
 
-
         // Convert data array to JSON
         $jsonData = json_encode($projectDefinition);
         // Gzip Compression

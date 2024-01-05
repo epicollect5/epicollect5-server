@@ -36,7 +36,7 @@ class AppleController extends AuthController
     {
         $nonce = session('nonce');
         $appleUser = null;
-        //
+
         //check if local logins are enabled
         $isLocalAuthEnabled = in_array($this->localProviderLabel, $this->authMethods, true);
 

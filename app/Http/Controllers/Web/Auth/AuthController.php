@@ -86,9 +86,6 @@ class AuthController extends Controller
 
     /**
      * Log the user out of the application.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
      */
     public function logout(Request $request)
     {

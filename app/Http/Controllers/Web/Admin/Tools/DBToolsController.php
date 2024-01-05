@@ -9,13 +9,12 @@
 
 namespace ec5\Http\Controllers\Web\Admin\Tools;
 
-use ec5\Models\Eloquent\Project;
-use ec5\Models\Eloquent\Entry;
-use DB;
 use Carbon\Carbon;
-use Ramsey\Uuid\Uuid;
-
+use DB;
+use ec5\Models\Eloquent\Entries\Entry;
+use ec5\Models\Eloquent\Project;
 use Illuminate\Http\Request;
+use Ramsey\Uuid\Uuid;
 
 
 class DBToolsController

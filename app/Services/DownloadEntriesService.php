@@ -3,8 +3,8 @@
 namespace ec5\Services;
 
 use ec5\Libraries\Utilities\Common;
-use ec5\Models\Eloquent\BranchEntry;
-use ec5\Models\Eloquent\Entry;
+use ec5\Models\Eloquent\Entries\BranchEntry;
+use ec5\Models\Eloquent\Entries\Entry;
 use ec5\Models\Projects\Project;
 use Exception;
 use File;
