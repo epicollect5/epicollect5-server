@@ -27,6 +27,8 @@ $(document).ready(function () {
     limitsFormUpdateBtn.on('click', function () {
         //clear any toasts
         window.EC5.toast.clear();
+        //show overlay
+        window.EC5.overlay.fadeIn();
         //clear any error
         limitsForm.find('.input__set-limit').each(function () {
             var currentCheckbox = $(this);
@@ -58,6 +60,7 @@ $(document).ready(function () {
         if (isFormValid) {
             limitsForm.submit();
         } else {
+            window.EC5.overlay.fadeOut();
             window.EC5.toast.showError('Required fields missing!');
         }
     });
@@ -84,6 +87,8 @@ $(document).ready(function () {
                     }
                 }
             }
+        }).always(function () {
+            window.EC5.overlay.fadeOut();
         });
     });
 
