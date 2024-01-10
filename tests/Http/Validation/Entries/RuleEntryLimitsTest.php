@@ -20,19 +20,19 @@ class RuleEntryLimitsTest extends TestCase
         $this->ruleEntryLimits = new ruleEntryLimits();
         $this->payload = [
             '546c94324ee043b0a1d56c2fefd6c7cc_6569e390cd7ee' => [
-                'limit' => '1',
+                'setLimit' => 'true',
                 'limitTo' => '20',
                 'formRef' => '546c94324ee043b0a1d56c2fefd6c7cc_6569e390cd7ee',
                 'branchRef' => ''
             ],
             '546c94324ee043b0a1d56c2fefd6c7cc_6569e390cd7ee_656f585d4b01c' => [
-                'limit' => '1',
+                'setLimit' => 'true',
                 'limitTo' => '20',
                 'formRef' => '546c94324ee043b0a1d56c2fefd6c7cc_6569e390cd7ee',
                 'branchRef' => '546c94324ee043b0a1d56c2fefd6c7cc_6569e390cd7ee_656f585d4b01c'
             ],
             '546c94324ee043b0a1d56c2fefd6c7cc_656f48ab6c924' => [
-                'limit' => '1',
+                'setLimit' => 'true',
                 'limitTo' => '20',
                 'formRef' => '546c94324ee043b0a1d56c2fefd6c7cc_656f48ab6c924',
                 'branchRef' => ''
@@ -54,11 +54,11 @@ class RuleEntryLimitsTest extends TestCase
         $this->assertFalse($this->ruleEntryLimits->hasErrors());
     }
 
-    public function test_should_fail_limit_not_integer()
+    public function test_should_fail_limit_not_true_or_false()
     {
         $payload = [
             '546c94324ee043b0a1d56c2fefd6c7cc_6569e390cd7ee' => [
-                'limit' => '?',
+                'setLimit' => '?',
                 'limitTo' => '20',
                 'formRef' => '546c94324ee043b0a1d56c2fefd6c7cc_6569e390cd7ee',
                 'branchRef' => ''
@@ -71,7 +71,7 @@ class RuleEntryLimitsTest extends TestCase
         $this->assertTrue($this->ruleEntryLimits->hasErrors());
         $this->assertEquals(
             [
-                'limit' => ['ec5_27']
+                'setLimit' => ['The selected set limit is invalid.']
             ],
             $this->ruleEntryLimits->errors
         );
@@ -81,7 +81,7 @@ class RuleEntryLimitsTest extends TestCase
     {
         $payload = [
             '546c94324ee043b0a1d56c2fefd6c7cc_6569e390cd7ee' => [
-                'limit' => '5',
+                'setLimit' => 'true',
                 'limitTo' => 'P',
                 'formRef' => '546c94324ee043b0a1d56c2fefd6c7cc_6569e390cd7ee',
                 'branchRef' => ''
@@ -104,7 +104,7 @@ class RuleEntryLimitsTest extends TestCase
     {
         $payload = [
             '546c94324ee043b0a1d56c2fefd6c7cc_6569e390cd7ee' => [
-                'limit' => '5',
+                'setLimit' => 'true',
                 'limitTo' => '100000',
                 'formRef' => '546c94324ee043b0a1d56c2fefd6c7cc_6569e390cd7ee',
                 'branchRef' => ''
@@ -127,7 +127,7 @@ class RuleEntryLimitsTest extends TestCase
     {
         $payload = [
             '546c94324ee043b0a1d56c2fefd6c7cc_6569e390cd7ee' => [
-                'limit' => '5',
+                'setLimit' => 'true',
                 'limitTo' => '-9',
                 'formRef' => '546c94324ee043b0a1d56c2fefd6c7cc_6569e390cd7ee',
                 'branchRef' => ''
@@ -150,7 +150,7 @@ class RuleEntryLimitsTest extends TestCase
     {
         $payload = [
             '546c94324ee043b0a1d56c2fefd6c7cc_6569e390cd7ee' => [
-                'limit' => '5',
+                'setLimit' => 'true',
                 'limitTo' => '7',
                 'formRef' => null,
                 'branchRef' => ''
@@ -173,7 +173,7 @@ class RuleEntryLimitsTest extends TestCase
     {
         $payload = [
             '546c94324ee043b0a1d56c2fefd6c7cc_6569e390cd7ee' => [
-                'limit' => '5',
+                'setLimit' => 'true',
                 'limitTo' => '7',
                 'formRef' => '546c94324ee043b0a1d56c2fefd6c7cc_6569e390cd7ee',
             ]

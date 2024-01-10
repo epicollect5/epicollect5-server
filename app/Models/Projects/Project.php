@@ -418,18 +418,16 @@ class Project
         return $this->can_bulk_upload;
     }
 
-    /**
-     * @param $data
-     */
-    public function setEntriesLimits($data)
+
+    public function setEntriesLimits($entriesLimits)
     {
         $this->projectExtra->clearEntriesLimits();
         $this->projectDefinition->clearEntriesLimits();
-        foreach ($data as $ref => $limitData) {
+        foreach ($entriesLimits as $ref => $params) {
             // If a limit is set
-            if ($limitData['limit']) {
-                $this->projectExtra->setEntriesLimit($ref, $limitData['limitTo']);
-                $this->projectDefinition->setEntriesLimit($ref, $limitData['limitTo']);
+            if ($params['setLimit']) {
+                $this->projectExtra->setEntriesLimit($ref, $params['limitTo']);
+                $this->projectDefinition->setEntriesLimit($ref, $params['limitTo']);
             }
         }
     }

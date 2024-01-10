@@ -10,7 +10,7 @@ use ec5\Models\Projects\Project;
 class RuleEntryLimits extends ValidationBase
 {
     protected $rules = [
-        'limit' => 'required|integer',
+        'setLimit' => 'required|in:true,false',//as it comes as a string in the post request
         'limitTo' => 'required|integer|min:0|max:50000',
         'formRef' => 'required',
         'branchRef' => 'present'

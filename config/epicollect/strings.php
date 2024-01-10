@@ -259,11 +259,9 @@ return [
     'projects_status_all' => [
         'active' => 'active',
         'trashed' => 'trashed',
-        'trash' => 'trash',
         'restore' => 'restore',
         'delete' => 'delete',
         'locked' => 'locked',
-        'lock' => 'lock',
         'unlock' => 'unlock',
         'archived' => 'archived'
     ],

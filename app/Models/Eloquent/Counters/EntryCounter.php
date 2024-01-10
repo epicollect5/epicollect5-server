@@ -6,8 +6,6 @@ use ec5\Models\Entries\EntryStructure;
 use ec5\Models\Projects\Project;
 use Illuminate\Database\Eloquent\Model;
 use DB;
-use ec5\Traits\Eloquent\Entries;
-use Illuminate\Database\Query\Builder;
 
 class EntryCounter extends Model
 {
@@ -136,7 +134,7 @@ class EntryCounter extends Model
             ->where('form_ref', '=', $formRef)
             ->groupBy('parent_uuid')
             ->get();
-
-        return $counts->max('entries_counts');
+        
+        return $counts->isEmpty() ? 0 : $counts->max('entries_counts');
     }
 }

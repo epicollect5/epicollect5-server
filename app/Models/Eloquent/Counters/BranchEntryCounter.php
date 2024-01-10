@@ -133,6 +133,6 @@ class BranchEntryCounter extends Model
             ->groupBy('owner_uuid')
             ->get();
 
-        return $counts->max('branch_entries_counts');
+        return $counts->isEmpty() ? 0 : $counts->max('branch_entries_counts');
     }
 }

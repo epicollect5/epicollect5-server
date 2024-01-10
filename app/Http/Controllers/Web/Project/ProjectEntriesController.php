@@ -3,6 +3,7 @@
 namespace ec5\Http\Controllers\Web\Project;
 
 use ec5\Http\Controllers\Api\ApiResponse;
+use ec5\Models\Eloquent\ProjectStructure;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\JsonResponse;
@@ -69,7 +70,8 @@ class ProjectEntriesController
         if (count($payload) > 0) {
             foreach ($payload as $ref => $data) {
                 // If no limit set, remove and skip
-                if (!isset($data['limit']) || $data['limit'] != 1) {
+                if (!isset($data['setLimit']) ||
+                    !(bool)$data['setLimit']) {
                     unset($payload[$ref]);
                     continue;
                 }
@@ -98,20 +100,18 @@ class ProjectEntriesController
         // Add to project definitions
         $this->requestedProject()->setEntriesLimits($payload);
 
-        // Update in db
-        if (!$this->updateRepository->updateProjectStructure($this->requestedProject(), true)) {
+        //update project structure
+        if (!ProjectStructure::updateStructures($this->requestedProject(), true)) {
             if ($request->ajax()) {
-                return $apiResponse->errorResponse(400, ['manage-entries' => 'ec5_45']);
+                return $apiResponse->errorResponse(400, ['manage-entries' => ['ec5_45']]);
             }
-            return Redirect::back()->withErrors($ruleEntryLimits->errors());
+            return Redirect::back()->withErrors(['errors' => ['ec5_45']]);
         }
 
-        // If ajax, return success 200 code
+        //success
         if ($request->ajax()) {
             return $apiResponse->toJsonResponse(200);
         }
-
-        // Success
         return Redirect::back()->with('message', 'ec5_200');
     }
 }
