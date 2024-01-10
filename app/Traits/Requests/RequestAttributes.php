@@ -2,20 +2,36 @@
 
 namespace ec5\Traits\Requests;
 
+use ec5\Models\Eloquent\User;
+use ec5\Models\ProjectRoles\ProjectRole;
+use ec5\Models\Projects\Project;
+
 trait RequestAttributes
 {
-    protected function requestedUser()
+    protected function requestedUser(): User
     {
-        return request()->attributes->get('requestedUser');
+        /**
+         * @var User $user
+         */
+        $user = request()->attributes->get('requestedUser');
+        return $user;
     }
 
-    protected function requestedProject()
+    protected function requestedProject(): Project
     {
-        return request()->attributes->get('requestedProject');
+        /**
+         * @var Project $requestedProject
+         */
+        $requestedProject = request()->attributes->get('requestedProject');
+        return $requestedProject;
     }
 
-    protected function requestedProjectRole()
+    protected function requestedProjectRole(): ProjectRole
     {
-        return request()->attributes->get('requestedProjectRole');
+        /**
+         * @var ProjectRole $projectRole
+         */
+        $projectRole = request()->attributes->get('requestedProjectRole');
+        return $projectRole;
     }
 }
