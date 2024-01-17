@@ -31,7 +31,7 @@ class RuleMappingInput extends ValidationBase
      */
     public function checkAdditional($mapToName, $inputRef): bool
     {
-        // Check the map to name is unique
+        // Check the map_to value is unique
         if (in_array($mapToName, $this->uniqueMappedNames)) {
             $this->addAdditionalError($inputRef, 'ec5_234');
             return false;
@@ -44,7 +44,7 @@ class RuleMappingInput extends ValidationBase
             return false;
         }
 
-        // Add this name to the unique list of names
+        // Add this value to the unique list of mapTos
         $this->uniqueMappedNames[] = $mapToName;
 
         return true;
@@ -59,5 +59,4 @@ class RuleMappingInput extends ValidationBase
     {
         $this->uniqueMappedNames = [];
     }
-
 }

@@ -20,20 +20,17 @@ class RuleMappingCreate extends ValidationBase
      */
     public function additionalChecks(ProjectMapping $projectMapping, $newMapDetails)
     {
-
-        // Check we haven't reached the allowed number of maps
-        if ($projectMapping->getMapCount() == config('epicollect.limits.project_mappings.allowed_maps')) {
+        // Check we haven't reached the max count of maps
+        if ($projectMapping->getMapCount() == config('epicollect.limits.project_mappings.max_count')) {
             $this->addAdditionalError('mapping', 'ec5_229');
             return;
         }
-
-        // Check this map name is unique
-        foreach ($projectMapping->getData() as $mappingIndex => $mapping) {
-            if ($mapping['name'] == $newMapDetails['name']) {
+        // Check this map name is unique (case-insensitive)
+        foreach ($projectMapping->getData() as $mapping) {
+            if (strcasecmp($mapping['name'], $newMapDetails['name']) === 0) {
                 $this->addAdditionalError('mapping', 'ec5_228');
                 return;
             }
         }
-
     }
 }

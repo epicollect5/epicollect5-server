@@ -162,8 +162,8 @@
   "ec5_226": "Failed. Please contact support.",
   "ec5_227": "Reserved Word, cannot use anything with ec5_ ",
   "ec5_228": "Mapping name already exists.",
-  "ec5_229": "Sorry, you have reached the number of allowed maps.",
-  "ec5_230": "This map doesn't exist.",
+  "ec5_229": "Sorry, you have reached the max number of allowed maps.",
+  "ec5_230": "Map doesn't exist.",
   "ec5_231": "File does not exist.",
   "ec5_232": "File is currently being written to.",
   "ec5_233": "Mapped question invalid.",
@@ -328,5 +328,7 @@
   "ec5_393": "Project description must be between :min to :max chars long",
   "ec5_394": "Project small description must be between :min to :max chars long",
   "ec5_395": "Are you sure you want to leave this project?",
-  "ec5_396": "Project left."
+  "ec5_396": "Project left.",
+  "ec5_397": "Only one single answer is allowed",
+  "ec5_398": "Photo, audio, and video questions cannot have possible answers"
 }

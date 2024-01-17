@@ -34,7 +34,6 @@ class RuleMappingDelete extends ValidationBase
         if (isset($newMapDetails['map_index'])) {
             if (!in_array($newMapDetails['map_index'], array_keys($projectMapping->getData()))) {
                 $this->addAdditionalError('mapping', 'ec5_230');
-                return;
             }
         }
     }

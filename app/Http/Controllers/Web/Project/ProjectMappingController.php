@@ -1,19 +1,15 @@
-<?php
+<?php /** @noinspection DuplicatedCode */
 
 namespace ec5\Http\Controllers\Web\Project;
 
 use ec5\Http\Controllers\Api\ApiResponse;
 
-use ec5\Http\Validation\Project\Mapping\RuleMappingCreate as MappingCreateValidator;
-use ec5\Http\Validation\Project\Mapping\RuleMappingDelete as MappingDeleteValidator;
-use ec5\Http\Validation\Project\Mapping\RuleMappingUpdate as MappingUpdateValidator;
-use ec5\Http\Validation\Project\Mapping\RuleMappingStructure as MappingStructureValidator;
-use ec5\Repositories\QueryBuilder\Project\UpdateRepository as ProjectUpdate;
+use ec5\Http\Validation\Project\Mapping\RuleMappingCreate;
+use ec5\Http\Validation\Project\Mapping\RuleMappingDelete;
+use ec5\Http\Validation\Project\Mapping\RuleMappingUpdate;
+use ec5\Http\Validation\Project\Mapping\RuleMappingStructure;
+use ec5\Models\Eloquent\ProjectStructure;
 use ec5\Traits\Requests\RequestAttributes;
-use Illuminate\Contracts\View\Factory;
-use Illuminate\Foundation\Application;
-use Illuminate\Http\JsonResponse;
-use Illuminate\View\View;
 
 class ProjectMappingController
 {
@@ -32,106 +28,81 @@ class ProjectMappingController
         return view('project.project_details', $vars);
     }
 
-    /**
-     * @param ApiResponse $apiResponse
-     * @param ProjectUpdate $projectUpdate
-     * @param MappingCreateValidator $mappingCreateValidator
-     * @return Factory|Application|JsonResponse|View
-     */
-    public function store(ApiResponse $apiResponse, ProjectUpdate $projectUpdate, MappingCreateValidator $mappingCreateValidator)
+    public function store(ApiResponse $apiResponse, RuleMappingCreate $ruleMappingCreate)
     {
         if (!$this->requestedProjectRole()->canEditProject()) {
             return view('errors.gen_error')->withErrors(['errors' => 'ec5_91']);
         }
 
         $projectMapping = $this->requestedProject()->getProjectMapping();
-        $input = request()->all();
+        $payload = request()->all();
 
         // Validate
-        $mappingCreateValidator->validate($input);
-        if ($mappingCreateValidator->hasErrors()) {
-            return $apiResponse->errorResponse(422, $mappingCreateValidator->errors());
+        $ruleMappingCreate->validate($payload);
+        if ($ruleMappingCreate->hasErrors()) {
+            return $apiResponse->errorResponse(422, $ruleMappingCreate->errors());
         }
         // Check for additional
-        $mappingCreateValidator->additionalChecks($projectMapping, $input);
-        if ($mappingCreateValidator->hasErrors()) {
-            return $apiResponse->errorResponse(422, $mappingCreateValidator->errors());
+        $ruleMappingCreate->additionalChecks($projectMapping, $payload);
+        if ($ruleMappingCreate->hasErrors()) {
+            return $apiResponse->errorResponse(422, $ruleMappingCreate->errors());
         }
 
         // Create the new custom map
-        $projectMapping->createCustomMap($input);
-        // Attempt to insert into the database
-        $tryUpdate = $projectUpdate->updateProjectStructure($this->requestedProject());
-        if ($tryUpdate) {
+        $projectMapping->createCustomMap($payload);
 
-            $apiResponse->setData([
-                'map_index' => $projectMapping->getLastMapIndex(),
-                'mapping' => $projectMapping->getData()
-            ]);
-
-            return $apiResponse->toJsonResponse('200', $options = 0);
+        if (!ProjectStructure::updateStructures($this->requestedProject())) {
+            // DB insert error
+            return $apiResponse->errorResponse(400, ['errors' => ['ec5_116']]);
         }
 
-        // DB insert error
-        return $apiResponse->errorResponse(400, ['errors' => ['ec5_116']]);
+        $apiResponse->setData([
+            'map_index' => $projectMapping->getLastMapIndex(),
+            'mapping' => $projectMapping->getData()
+        ]);
 
+        return $apiResponse->toJsonResponse('200', $options = 0);
     }
 
-    /**
-     * @param ApiResponse $apiResponse
-     * @param ProjectUpdate $projectUpdate
-     * @param MappingDeleteValidator $mappingDeleteValidator
-     * @return Factory|Application|JsonResponse|View
-     */
-    public function delete(ApiResponse $apiResponse, ProjectUpdate $projectUpdate, MappingDeleteValidator $mappingDeleteValidator)
+    public function delete(ApiResponse $apiResponse, RuleMappingDelete $ruleMappingDelete)
     {
         if (!$this->requestedProjectRole()->canEditProject()) {
             return view('errors.gen_error')->withErrors(['errors' => 'ec5_91']);
         }
 
         $projectMapping = $this->requestedProject()->getProjectMapping();
-        $input = request()->all();
+        $payload = request()->all();
 
         // Validate
-        $mappingDeleteValidator->validate($input);
-        if ($mappingDeleteValidator->hasErrors()) {
-            return $apiResponse->errorResponse(422, $mappingDeleteValidator->errors());
+        $ruleMappingDelete->validate($payload);
+        if ($ruleMappingDelete->hasErrors()) {
+            return $apiResponse->errorResponse(422, $ruleMappingDelete->errors());
         }
         // Check for additional
-        $mappingDeleteValidator->additionalChecks($projectMapping, $input);
-        if ($mappingDeleteValidator->hasErrors()) {
-            return $apiResponse->errorResponse(422, $mappingDeleteValidator->errors());
+        $ruleMappingDelete->additionalChecks($projectMapping, $payload);
+        if ($ruleMappingDelete->hasErrors()) {
+            return $apiResponse->errorResponse(422, $ruleMappingDelete->errors());
         }
 
         // Delete the map
-        $projectMapping->deleteMap($input['map_index']);
-        // Attempt to insert into the database
-        $tryUpdate = $projectUpdate->updateProjectStructure($this->requestedProject());
-        if ($tryUpdate) {
-            $apiResponse->setData([
-                'mapping' => $projectMapping->getData()
-            ]);
+        $projectMapping->deleteMapping($payload['map_index']);
 
-            return $apiResponse->toJsonResponse('200', $options = 0);
+        if (!ProjectStructure::updateStructures($this->requestedProject())) {
+            return $apiResponse->errorResponse(400, ['errors' => ['ec5_116']]);
         }
 
-        // DB insert error
-        return $apiResponse->errorResponse(400, ['errors' => ['ec5_116']]);
-
+        $apiResponse->setData([
+            'mapping' => $projectMapping->getData()
+        ]);
+        return $apiResponse->toJsonResponse('200', $options = 0);
     }
 
     /**
-     * @param ApiResponse $apiResponse
-     * @param ProjectUpdate $projectUpdate
-     * @param MappingStructureValidator $mappingStructureValidator
-     * @param MappingUpdateValidator $mappingUpdateValidator
-     * @return Factory|Application|JsonResponse|View
      */
     public function update(
-        ApiResponse               $apiResponse,
-        ProjectUpdate             $projectUpdate,
-        MappingStructureValidator $mappingStructureValidator,
-        MappingUpdateValidator    $mappingUpdateValidator
+        ApiResponse          $apiResponse,
+        RuleMappingStructure $ruleMappingStructure,
+        RuleMappingUpdate    $ruleMappingUpdate
     )
     {
         if (!$this->requestedProjectRole()->canEditProject()) {
@@ -139,61 +110,53 @@ class ProjectMappingController
         }
 
         $projectMapping = $this->requestedProject()->getProjectMapping();
-        $input = request()->all();
-
+        $payload = request()->all();
         // Validate
-        $mappingUpdateValidator->validate($input);
-
-        if ($mappingUpdateValidator->hasErrors()) {
-            return $apiResponse->errorResponse(422, $mappingUpdateValidator->errors());
+        $ruleMappingUpdate->validate($payload);
+        if ($ruleMappingUpdate->hasErrors()) {
+            return $apiResponse->errorResponse(422, $ruleMappingUpdate->errors());
         }
         // Check for additional
-        $mappingUpdateValidator->additionalChecks($projectMapping, $input);
-        if ($mappingUpdateValidator->hasErrors()) {
-            return $apiResponse->errorResponse(422, $mappingUpdateValidator->errors());
+        $ruleMappingUpdate->additionalChecks($projectMapping, $payload);
+        if ($ruleMappingUpdate->hasErrors()) {
+            return $apiResponse->errorResponse(422, $ruleMappingUpdate->errors());
         }
 
         // Determine the edit action
-        switch ($input['action']) {
+        switch ($payload['action']) {
             case 'make-default':
                 // Make this map default
-                $projectMapping->setDefault($input['map_index']);
+                $projectMapping->setDefault($payload['map_index']);
                 break;
             case 'rename':
                 // Rename this map
-                $projectMapping->renameMap($input['map_index'], $input['name']);
+                $projectMapping->renameMap($payload['map_index'], $payload['name']);
                 break;
             case 'update':
 
                 // Validate
-                $mappingStructureValidator->validate($input['mapping']);
-                if ($mappingStructureValidator->hasErrors()) {
-                    return $apiResponse->errorResponse(422, $mappingStructureValidator->errors());
+                $ruleMappingStructure->validate($payload['mapping']);
+                if ($ruleMappingStructure->hasErrors()) {
+                    return $apiResponse->errorResponse(422, $ruleMappingStructure->errors());
                 }
                 // Check additional (validate the mapping structure)
-                $mappingStructureValidator->additionalChecks($this->requestedProject(), $input['mapping']);
-                if ($mappingStructureValidator->hasErrors()) {
-                    return $apiResponse->errorResponse(422, $mappingStructureValidator->errors());
+                $ruleMappingStructure->additionalChecks($this->requestedProject(), $payload['mapping']);
+                if ($ruleMappingStructure->hasErrors()) {
+                    return $apiResponse->errorResponse(422, $ruleMappingStructure->errors());
                 }
 
                 // Update the entire map
-                $projectMapping->updateMap($input['map_index'], $input['mapping']);
+                $projectMapping->updateMap($payload['map_index'], $payload['mapping']);
                 break;
         }
 
-        // Attempt to insert into the database
-        $tryUpdate = $projectUpdate->updateProjectStructure($this->requestedProject());
-        if ($tryUpdate) {
-
-            $apiResponse->setData([
-                'mapping' => $projectMapping->getData()
-            ]);
-
-            return $apiResponse->toJsonResponse('200', $options = 0);
+        if (!ProjectStructure::updateStructures($this->requestedProject())) {
+            return $apiResponse->errorResponse(400, ['errors' => ['ec5_116']]);
         }
 
-        // DB insert error
-        return $apiResponse->errorResponse(400, ['errors' => ['ec5_116']]);
+        $apiResponse->setData([
+            'mapping' => $projectMapping->getData()
+        ]);
+        return $apiResponse->toJsonResponse('200', $options = 0);
     }
-
 }

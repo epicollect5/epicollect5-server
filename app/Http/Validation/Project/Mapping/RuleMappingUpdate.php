@@ -22,7 +22,6 @@ class RuleMappingUpdate extends ValidationBase
      */
     public function additionalChecks(ProjectMapping $projectMapping, $newMapDetails)
     {
-
         // Cant rename or update the default mapping (map_index 0)
         if (($this->data['action'] === 'rename' || $this->data['action'] === 'update') && $newMapDetails['map_index'] == 0) {
             $this->addAdditionalError('mapping', 'ec5_91');
@@ -47,6 +46,5 @@ class RuleMappingUpdate extends ValidationBase
                 }
             }
         }
-
     }
 }

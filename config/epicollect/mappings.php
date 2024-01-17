@@ -55,4 +55,5 @@ return [
         'fake_date' => 'Y-m-d\T00:00:00.000\Z',
         'fake_time' => '1970-01-01\TH:i:s.000\Z'
     ],
+    'default_mapping_name' => 'EC5_AUTO'
 ];
