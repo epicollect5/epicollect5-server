@@ -2,14 +2,15 @@
 
 namespace Tests\Http\Controllers\Api\Project;
 
+use Carbon\Carbon;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectRole;
 use ec5\Models\Eloquent\ProjectStats;
 use ec5\Models\Eloquent\ProjectStructure;
 use ec5\Models\Eloquent\User;
-use Illuminate\Support\Arr;
-use Tests\Generators\EntryGenerator;
+use Illuminate\Support\Str;
+use League\Csv\Exception;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -91,12 +92,6 @@ class FormbuilderControllerTest extends TestCase
         }
 
         $this->assertSame(json_decode($response->getContent(), true), $this->projectDefinition);
-
-//        $projectMapping = ProjectStructure::where('project_id', $this->project->id)->value('project_mapping');
-//
-//        $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
-        //  dd(json_encode(EntryGenerator::create($this->projectDefinition, $formRef)));
-
     }
 
     /* This method does not follow optimal testing practices
@@ -495,4 +490,222 @@ class FormbuilderControllerTest extends TestCase
                 ]
             );
     }
+
+    public function test_it_should_update_structures_by_removing_questions()
+    {
+        $beforeInputs = $this->projectDefinition['data']['project']['forms'][0]['inputs'];
+
+        //remove some inputs
+        $afterInputs = array_slice($beforeInputs, 0, -3);
+
+        $this->projectDefinition['data']['project']['forms'][0]['inputs'] = $afterInputs;
+
+        // Convert data array to JSON
+        $jsonData = json_encode($this->projectDefinition);
+        // Gzip Compression
+        $gzippedData = gzencode($jsonData); // '9' is the compression level (0-9, where 9 is highest)
+        // Base64 Encoding
+        $base64EncodedData = base64_encode($gzippedData);
+
+        //see https://github.com/laravel/framework/issues/46455
+        $response = $this->actingAs($this->user)
+            ->call('POST', 'api/internal/formbuilder/' . $this->project->slug,
+                [],
+                [],
+                [],
+                [], $base64EncodedData);
+
+        try {
+            $response->assertStatus(200);
+        } catch (\Exception $exception) {
+            dd($response, json_encode($this->projectDefinition));
+        }
+
+        $this->assertSame(json_decode($response->getContent(), true), $this->projectDefinition);
+
+        $updatedStructures = ProjectStructure::where('project_id', $this->project->id)->first();
+
+        $updatedProjectDefinition = json_decode($updatedStructures->project_definition, true);
+        $updatedProjectExtra = json_decode($updatedStructures->project_extra, true);
+
+        //todo: need to assert project extra but first we need to create the class that generates it
+
+
+        $this->assertEquals($updatedProjectDefinition['project']['forms'][0]['inputs'], $afterInputs);
+    }
+
+    public function test_it_should_update_structures_updated_at()
+    {
+        $beforeUpdatedAt = ProjectStructure::where('project_id', $this->project->id)->pluck('updated_at')->first();
+        sleep(5);
+
+        // Convert data array to JSON
+        $jsonData = json_encode($this->projectDefinition);
+        // Gzip Compression
+        $gzippedData = gzencode($jsonData); // '9' is the compression level (0-9, where 9 is highest)
+        // Base64 Encoding
+        $base64EncodedData = base64_encode($gzippedData);
+
+        //see https://github.com/laravel/framework/issues/46455
+        $response = $this->actingAs($this->user)
+            ->call('POST', 'api/internal/formbuilder/' . $this->project->slug,
+                [],
+                [],
+                [],
+                [], $base64EncodedData);
+
+        try {
+            $response->assertStatus(200);
+        } catch (\Exception $exception) {
+            dd($response, json_encode($this->projectDefinition));
+        }
+
+        $this->assertSame(json_decode($response->getContent(), true), $this->projectDefinition);
+        //assert updated_at changed
+        $afterUpdatedAt = ProjectStructure::where('project_id', $this->project->id)->pluck('updated_at')->first();
+        $this->assertLessThan(
+            Carbon::parse($afterUpdatedAt, 'UTC'),
+            Carbon::parse($beforeUpdatedAt, 'UTC')
+        );
+
+        //assert structure last updated in the api response
+        $response = [];
+        try {
+            $response[] = $this->json('GET', 'api/internal/project/' . $this->project->slug)
+                ->assertStatus(200)
+                ->assertJsonStructure([
+                    'meta' => [
+                        'project_extra' => [],
+                        'project_user' => [],
+                        'project_mapping' => [],
+                        'project_stats' => []
+                    ],
+                    'data' => config('testing.JSON_STRUCTURES_WITH_WILDCARD.project_definition')
+                ]);
+            $jsonResponse = json_decode($response[0]->getContent(), true);
+            $this->assertEquals(
+                $afterUpdatedAt->toDateTimeString(),
+                $jsonResponse['meta']['project_stats']['structure_last_updated']
+            );
+
+        } catch (Exception $e) {
+            dd($e->getMessage(), $response[0]->getContent());
+        }
+
+        //assert version
+        $response = [];
+        try {
+            $response[] = $this->json('GET', 'api/project-version/' . $this->project->slug)
+                ->assertStatus(200);
+
+            $jsonResponse = json_decode($response[0]->getContent(), true);
+            $this->assertEquals(
+                $afterUpdatedAt->toDateTimeString(),
+                $jsonResponse['data']['attributes']['structure_last_updated']
+            );
+            $this->assertEquals(
+                (string)strtotime($afterUpdatedAt),
+                $jsonResponse['data']['attributes']['version']
+            );
+        } catch (Exception $e) {
+            dd($e->getMessage(), $response[0]->getContent());
+        }
+    }
+
+    public function test_it_should_update_structures_by_adding_questions()
+    {
+        $beforeInputs = $this->projectDefinition['data']['project']['forms'][0]['inputs'];
+        $formRef = $this->projectDefinition['data']['project']['forms'][0]['ref'];
+
+        $additionalInputs = [
+            ProjectDefinitionGenerator::createSimpleInput($formRef),
+            ProjectDefinitionGenerator::createMediaInput($formRef)
+        ];
+
+        $afterInputs = array_merge($beforeInputs, $additionalInputs);
+
+        $this->projectDefinition['data']['project']['forms'][0]['inputs'] = $afterInputs;
+
+        // Convert data array to JSON
+        $jsonData = json_encode($this->projectDefinition);
+        // Gzip Compression
+        $gzippedData = gzencode($jsonData); // '9' is the compression level (0-9, where 9 is highest)
+        // Base64 Encoding
+        $base64EncodedData = base64_encode($gzippedData);
+
+        //see https://github.com/laravel/framework/issues/46455
+        $response = $this->actingAs($this->user)
+            ->call('POST', 'api/internal/formbuilder/' . $this->project->slug,
+                [],
+                [],
+                [],
+                [], $base64EncodedData);
+
+        try {
+            $response->assertStatus(200);
+        } catch (\Exception $exception) {
+            dd($response, json_encode($this->projectDefinition));
+        }
+
+        $this->assertSame(json_decode($response->getContent(), true), $this->projectDefinition);
+
+        $updatedStructures = ProjectStructure::where('project_id', $this->project->id)->first();
+
+        $updatedProjectDefinition = json_decode($updatedStructures->project_definition, true);
+        $updatedProjectExtra = json_decode($updatedStructures->project_extra, true);
+        //todo: need to assert project extra but first we need to create the class that generates it
+
+        $this->assertEquals($updatedProjectDefinition['project']['forms'][0]['inputs'], $afterInputs);
+    }
+
+    public function test_it_should_update_structures_by_adding_child_form()
+    {
+        $projectRef = $this->projectDefinition['data']['project']['ref'];
+        $childFormRef = Generators::formRef($projectRef);
+
+        $formName = 'Form 2';
+        $form = [
+            "ref" => $childFormRef,
+            "name" => $formName,
+            "slug" => Str::slug($formName),
+            "type" => "hierarchy",
+            "inputs" => [ProjectDefinitionGenerator::createSimpleInput($childFormRef),
+                ProjectDefinitionGenerator::createMediaInput($childFormRef)]
+        ];
+
+        $this->projectDefinition['data']['project']['forms'][1] = $form;
+
+
+        // Convert data array to JSON
+        $jsonData = json_encode($this->projectDefinition);
+        // Gzip Compression
+        $gzippedData = gzencode($jsonData); // '9' is the compression level (0-9, where 9 is highest)
+        // Base64 Encoding
+        $base64EncodedData = base64_encode($gzippedData);
+
+        //see https://github.com/laravel/framework/issues/46455
+        $response = $this->actingAs($this->user)
+            ->call('POST', 'api/internal/formbuilder/' . $this->project->slug,
+                [],
+                [],
+                [],
+                [], $base64EncodedData);
+
+        try {
+            $response->assertStatus(200);
+        } catch (\Exception $exception) {
+            dd($response, json_encode($this->projectDefinition));
+        }
+
+        $this->assertSame(json_decode($response->getContent(), true), $this->projectDefinition);
+
+        $updatedStructures = ProjectStructure::where('project_id', $this->project->id)->first();
+
+        $updatedProjectDefinition = json_decode($updatedStructures->project_definition, true);
+        $updatedProjectExtra = json_decode($updatedStructures->project_extra, true);
+        //todo: need to assert project extra but first we need to create the class that generates it
+
+        $this->assertEquals($updatedProjectDefinition['project']['forms'][1], $form);
+    }
+
 }

@@ -2,6 +2,7 @@
 
 namespace ec5\Http\Controllers\Api\Project;
 
+use ec5\Models\Eloquent\ProjectStructure;
 use Exception;
 use Illuminate\Http\Request;
 use ec5\Http\Validation\Project\RuleProjectDefinition;
@@ -95,16 +96,12 @@ class FormBuilderController
         }
         // Update Project Mappings
         $this->requestedProject()->updateProjectMappings();
-
-        // Set updated_at field to true
-        $tryAction = $this->projectUpdate->updateProjectStructure($this->requestedProject(), true);
-
-        if ($tryAction) {
-            // Return the Project Definition data in the response
-            $this->apiResponse->setData($this->requestedProject()->getProjectDefinition()->getData());
-            return $this->apiResponse->toJsonResponse('200', $options = 0);
+        // Update structures, set updated_at field to true
+        if (!ProjectStructure::updateStructures($this->requestedProject(), true)) {
+            return $this->apiResponse->errorResponse('422', ['DB' => ['ec5_116']]);
         }
-
-        return $this->apiResponse->errorResponse('422', ['DB' => ['ec5_116']]);
+        // Return the Project Definition data in the response
+        $this->apiResponse->setData($this->requestedProject()->getProjectDefinition()->getData());
+        return $this->apiResponse->toJsonResponse('200', $options = 0);
     }
 }
