@@ -4,11 +4,9 @@ namespace ec5\Repositories\QueryBuilder\Project;
 
 use ec5\Models\Projects\Project;
 use ec5\Repositories\QueryBuilder\Base;
-use Config;
 
 class UpdateRepository extends Base
 {
-
     /**
      * @param Project $project
      * @param array $projectDetails
@@ -29,7 +27,6 @@ class UpdateRepository extends Base
         // Insert project details get back insert_id
         // Check, rollback if error
         $doUpdate = $this->updateById(config('epicollect.tables.projects'), $project->getId(), $projectDetails);
-        $this->LG[] = "update project struct" . $project->getId() . "returned  $doUpdate";
 
         if ($this->hasErrors()) {
             $this->doRollBack();
@@ -38,7 +35,6 @@ class UpdateRepository extends Base
 
         $doUpdate = $this->dbUpdateStructure($project, $setUpdatedAt);
 
-        $this->LG[] = "insert project struct" . $project->getId() . "returned  $doUpdate";
         if (!$doUpdate) {
             $this->doRollBack();
             return $done;
@@ -49,60 +45,6 @@ class UpdateRepository extends Base
         $done = true;
         return $done;
     }
-
-    /**
-     * @param Project $project
-     * @param $setUpdatedAt
-     * @return bool
-     */
-    public function updateProjectStructure(Project $project, $setUpdatedAt = false)
-    {
-
-        $done = false;
-
-        $this->startTransaction();
-
-        // Insert project details get back insert_id
-        // Check, rollback if error
-        $doUpdate = $this->dbUpdateStructure($project, $setUpdatedAt);
-        $this->LG[] = 'insert project structure' . $project->getProjectStructureId() . 'returned $doUpdate';
-        if (!$doUpdate) {
-            $this->doRollBack();
-            return $done;
-        }
-
-        // All good
-        $this->doCommit();
-        $done = true;
-        return $done;
-    }
-
-//    /**
-//     * @param Project $project
-//     * @param $setUpdatedAt
-//     * @return bool
-//     */
-//    public function updateCustomMapping(Project $project, $setUpdatedAt = false)
-//    {
-//
-//        $done = false;
-//
-//        $this->startTransaction();
-//
-//        // Insert project details get back insert_id
-//        // Check, rollback if error
-//        $doUpdate = $this->dbUpdateStructure($project, $setUpdatedAt);
-//        $this->LG[] = 'insert project structure' . $project->getProjectStructureId() . 'returned $doUpdate';
-//        if (!$doUpdate) {
-//            $this->doRollBack();
-//            return $done;
-//        }
-//
-//        // All good
-//        $this->doCommit();
-//        $done = true;
-//        return $done;
-//    }
 
     /**
      * @param Project $project
