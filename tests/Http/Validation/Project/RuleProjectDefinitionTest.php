@@ -15,9 +15,12 @@ use ec5\Models\Projects\ProjectStats;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 use Ramsey\Uuid\Uuid;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 class RuleProjectDefinitionTest extends TestCase
 {
+    use DatabaseTransactions;
+
     protected $validator;
     protected $project;
     protected $ruleProjectExtraDetails;
