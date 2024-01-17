@@ -3,7 +3,6 @@
 namespace ec5\Http\Validation\Project;
 
 use ec5\Http\Validation\ValidationBase;
-use Config;
 
 class RuleInput extends ValidationBase
 {
@@ -76,9 +75,22 @@ class RuleInput extends ValidationBase
             return;
         }
 
+        //imp: this method call is dynamic
         $methodName = 'additionalRule' . ucfirst($inputType);
         if (method_exists($this, $methodName)) {
-            $this->$methodName();
+            /** @see additionalRulePhoto() */
+            /** @see additionalRuleAudio() */
+            /** @see additionalRuleVideo() */
+            /** @see additionalRuleDate() */
+            /** @see additionalRuleTime() */
+            /** @see additionalRuleRadio() */
+            /** @see additionalRuleDropdown() */
+            /** @see additionalRuleCheckbox() */
+            /** @see additionalRuleSearchsingle() */
+            /** @see additionalRuleSearchMultiple() */
+            /** @see additionalRuleInteger() */
+            /** @see additionalRuleDecimal() */
+            call_user_func([$this, $methodName]);
         }
 
         // Check jumps
@@ -87,288 +99,83 @@ class RuleInput extends ValidationBase
 
     }
 
-    private function nullArrays($input)
+    private function additionalRulePhoto()
     {
+        $this->validateMediaType();
+    }
 
+    private function additionalRuleAudio()
+    {
+        $this->validateMediaType();
+    }
+
+    private function additionalRuleVideo()
+    {
+        $this->validateMediaType();
     }
 
     /**
      */
     private function additionalRuleDate()
     {
-        if ($this->data['datetime_format'] == '') {
-            $this->addAdditionalError($this->data['ref'], 'ec5_79');
-            $this->addAdditionalError('question', $this->data['question']);
-        }
+        $this->validateDateTimeFormat();
     }
 
-    /**
-     */
     private function additionalRuleTime()
     {
-        if ($this->data['datetime_format'] == '') {
-            $this->addAdditionalError($this->data['ref'], 'ec5_79');
-            $this->addAdditionalError('question', $this->data['question']);
-        }
+        $this->validateDateTimeFormat();
     }
 
-    /**
-     */
     private function additionalRuleDropdown()
     {
-        // todo check length of possible answer, limit
-        if (count($this->data['possible_answers']) == 0) {
-            $this->addAdditionalError($this->data['ref'], 'ec5_338');
-            $this->addAdditionalError('question', $this->data['question']);
-        }
-
-        if (count($this->data['possible_answers']) > config('epicollect.limits.possible_answers_limit')) {
-            $this->addAdditionalError($this->data['ref'], 'ec5_340');
-            $this->addAdditionalError('question', $this->data['question']);
-        }
-
-        $match = false;
-        foreach ($this->data['possible_answers'] as $key => $value) {
-            if ($value['answer_ref'] == $this->data['default']) {
-                $match = true;
-            }
-
-            //validate possible answers 'answer' length
-            if (mb_strlen($value['answer'], 'UTF-8') > config('epicollect.limits.possible_answers_length_limit')) {
-                $this->addAdditionalError($this->data['ref'], 'ec5_341');
-                $this->addAdditionalError('question', $this->data['question']);
-            }
-
-            //validate possible answer 'answer_ref' length
-            if (strlen($value['answer_ref']) !== config('epicollect.limits.possible_answer_ref_length_limit')) {
-                $this->addAdditionalError($this->data['ref'], 'ec5_355');
-                $this->addAdditionalError('question', $this->data['question']);
-            }
-
-        }
-
-        // Check default answer is valid (empty or one of the possible answers)
-        if ($this->data['default'] !== '' && !$match) {
-            $this->addAdditionalError($this->data['ref'], 'ec5_339');
-            $this->addAdditionalError('question', $this->data['question']);
-        }
+        $this->validatePossibleAnswersCount('ec5_338');
+        $this->validatePossibleAnswers();
     }
 
-    /**
-     */
     private function additionalRuleRadio()
     {
-
-        // todo check length of possible answer, limit
-        if (count($this->data['possible_answers']) == 0) {
-            $this->addAdditionalError($this->data['ref'], 'ec5_337');
-            $this->addAdditionalError('question', $this->data['question']);
-        }
-
-        if (count($this->data['possible_answers']) > config('epicollect.limits.possible_answers_limit')) {
-            $this->addAdditionalError($this->data['ref'], 'ec5_340');
-            $this->addAdditionalError('question', $this->data['question']);
-        }
-
-        $match = false;
-        foreach ($this->data['possible_answers'] as $key => $value) {
-            if ($value['answer_ref'] == $this->data['default']) {
-                $match = true;
-            }
-
-            //validate possible answers length
-            if (mb_strlen($value['answer'], 'UTF-8') > config('epicollect.limits.possible_answers_length_limit')) {
-                $this->addAdditionalError($this->data['ref'], 'ec5_341');
-                $this->addAdditionalError('question', $this->data['question']);
-            }
-
-            //validate possible answer 'answer_ref' length
-            if (strlen($value['answer_ref']) !== config('epicollect.limits.possible_answer_ref_length_limit')) {
-                $this->addAdditionalError($this->data['ref'], 'ec5_355');
-                $this->addAdditionalError('question', $this->data['question']);
-            }
-        }
-
-        // Check default answer is valid (empty or one of the possible answers)
-        if ($this->data['default'] !== '' && !$match) {
-            $this->addAdditionalError($this->data['ref'], 'ec5_339');
-            $this->addAdditionalError('question', $this->data['question']);
-        }
-
+        $this->validatePossibleAnswersCount('ec5_337');
+        $this->validatePossibleAnswers();
     }
 
-    /**
-     */
     private function additionalRuleCheckbox()
     {
-        //no possible answers? bail out
-        if (count($this->data['possible_answers']) == 0) {
-            $this->addAdditionalError($this->data['ref'], 'ec5_336');
-            $this->addAdditionalError('question', $this->data['question']);
-            return false;
-        }
-
-        //too many possible answers? Bail out
-        if (count($this->data['possible_answers']) > config('epicollect.limits.possible_answers_limit')) {
-            $this->addAdditionalError($this->data['ref'], 'ec5_340');
-            $this->addAdditionalError('question', $this->data['question']);
-            return false;
-        }
-
-        $match = false;
-        foreach ($this->data['possible_answers'] as $key => $value) {
-            if ($value['answer_ref'] == $this->data['default']) {
-                $match = true;
-            }
-
-            //validate possible answers length handling unicodes:
-            // mb_strlen counts chars, ehile strlen counts bytes!
-            //https://goo.gl/HDZdnU
-            if (mb_strlen($value['answer'], 'UTF-8') > config('epicollect.limits.possible_answers_length_limit')) {
-                $this->addAdditionalError($this->data['ref'], 'ec5_341');
-                $this->addAdditionalError('question', $this->data['question']);
-            }
-
-            //validate possible answer 'answer_ref' length
-            if (strlen($value['answer_ref']) !== config('epicollect.limits.possible_answer_ref_length_limit')) {
-                $this->addAdditionalError($this->data['ref'], 'ec5_355');
-                $this->addAdditionalError('question', $this->data['question']);
-            }
-        }
-
-
-        // Check default answer is valid (empty or one of the possible answers)
-        if ($this->data['default'] !== '' && !$match) {
-            $this->addAdditionalError($this->data['ref'], 'ec5_339');
-            $this->addAdditionalError('question', $this->data['question']);
-        }
+        $this->validatePossibleAnswersCount('ec5_336');
+        $this->validatePossibleAnswers();
     }
 
-    /**
-     */
     private function additionalRuleSearchsingle()
     {
-        // todo check length of possible answer search, limit
-        if (count($this->data['possible_answers']) == 0) {
-            $this->addAdditionalError($this->data['ref'], 'ec5_342');
-            $this->addAdditionalError('question', $this->data['question']);
-        }
-
-        if (count($this->data['possible_answers']) > config('epicollect.limits.possible_answers_search_limit')) {
-            $this->addAdditionalError($this->data['ref'], 'ec5_340');
-            $this->addAdditionalError('question', $this->data['question']);
-        }
-
-        $match = false;
-
-        foreach ($this->data['possible_answers'] as $key => $value) {
-            if ($value['answer_ref'] == $this->data['default']) {
-                $match = true;
-            }
-
-            //validate possible answers length
-            if (mb_strlen($value['answer'], 'UTF-8') > config('epicollect.limits.possible_answers_length_limit')) {
-                $this->addAdditionalError($this->data['ref'], 'ec5_341');
-                $this->addAdditionalError('question', $this->data['question']);
-            }
-
-            //validate possible answer 'answer_ref' length
-            if (strlen($value['answer_ref']) !== config('epicollect.limits.possible_answer_ref_length_limit')) {
-                $this->addAdditionalError($this->data['ref'], 'ec5_355');
-                $this->addAdditionalError('question', $this->data['question']);
-            }
-        }
-
-        // Check default answer is valid (empty or one of the possible answers)
-        if ($this->data['default'] !== '' && !$match) {
-            $this->addAdditionalError($this->data['ref'], 'ec5_339');
-            $this->addAdditionalError('question', $this->data['question']);
-        }
+        $this->validateSearchType();
     }
 
-    /**
-     */
     private function additionalRuleSearchmultiple()
     {
-        // todo check length of possible answer search, limit
-        if (count($this->data['possible_answers']) == 0) {
-            $this->addAdditionalError($this->data['ref'], 'ec5_342');
-            $this->addAdditionalError('question', $this->data['question']);
-        }
-
-        if (count($this->data['possible_answers']) > config('epicollect.limits.possible_answers_search_limit')) {
-            $this->addAdditionalError($this->data['ref'], 'ec5_340');
-            $this->addAdditionalError('question', $this->data['question']);
-        }
-
-        $match = false;
-        foreach ($this->data['possible_answers'] as $key => $value) {
-            if ($value['answer_ref'] == $this->data['default']) {
-                $match = true;
-            }
-
-            //validate possible answers length
-            if (mb_strlen($value['answer'], 'UTF-8') > config('epicollect.limits.possible_answers_length_limit')) {
-                $this->addAdditionalError($this->data['ref'], 'ec5_341');
-                $this->addAdditionalError('question', $this->data['question']);
-            }
-
-            //validate possible answer 'answer_ref' length
-            if (strlen($value['answer_ref']) !== config('epicollect.limits.possible_answer_ref_length_limit')) {
-                $this->addAdditionalError($this->data['ref'], 'ec5_355');
-                $this->addAdditionalError('question', $this->data['question']);
-            }
-        }
-
-        // Check default answer is valid (empty or one of the possible answers)
-        if ($this->data['default'] !== '' && !$match) {
-            $this->addAdditionalError($this->data['ref'], 'ec5_339');
-            $this->addAdditionalError('question', $this->data['question']);
-        }
+        $this->validateSearchType();
     }
 
-    /**
-     */
     private function additionalRuleInteger()
     {
-
         // Check default answer is valid, ie empty string, string zero or an integer
         if ($this->data['default'] !== '' && $this->data['default'] !== '0' && filter_var($this->data['default'],
                 FILTER_VALIDATE_INT) === false
         ) {
             $this->addAdditionalError($this->data['ref'], 'ec5_339');
         }
-
         // If not empty default, min and max
-        if ($this->data['default'] !== '' && $this->data['min'] !== '' && $this->data['max'] !== '') {
-            // Check min/max according to default
-            if ($this->data['default'] > $this->data['max'] || $this->data['default'] < $this->data['min']) {
-                $this->addAdditionalError($this->data['ref'], 'ec5_28');
-            }
-        }
+        $this->ifNotEmptyDefaultMinAndMax();
     }
 
-    /**
-     */
     private function additionalRuleDecimal()
     {
         // Check default answer is valid, ie empty string or a number (int or decimal)
         if ($this->data['default'] !== '' && !is_numeric($this->data['default'])) {
             $this->addAdditionalError($this->data['ref'], 'ec5_339');
         }
-
         // If not empty default, min and max
-        if ($this->data['default'] !== '' && $this->data['min'] !== '' && $this->data['max'] !== '') {
-            // Check min/max according to default
-            if ($this->data['default'] > $this->data['max'] || $this->data['default'] < $this->data['min']) {
-                $this->addAdditionalError($this->data['ref'], 'ec5_28');
-            }
-        }
-
+        $this->ifNotEmptyDefaultMinAndMax();
     }
 
-    /**
-     */
     private function checkJumps()
     {
         $jumps = $this->data['jumps'];
@@ -428,6 +235,90 @@ class RuleInput extends ValidationBase
                 }
             }
 
+        }
+    }
+
+    private function ifNotEmptyDefaultMinAndMax(): void
+    {
+        if ($this->data['default'] !== '' && $this->data['min'] !== '' && $this->data['max'] !== '') {
+            // Check min/max according to default
+            if ($this->data['default'] > $this->data['max'] || $this->data['default'] < $this->data['min']) {
+                $this->addAdditionalError($this->data['ref'], 'ec5_28');
+            }
+        }
+    }
+
+    private function validateSearchType(): void
+    {
+        if (count($this->data['possible_answers']) == 0) {
+            $this->addAdditionalError($this->data['ref'], 'ec5_342');
+            $this->addAdditionalError('question', $this->data['question']);
+        }
+
+        if (count($this->data['possible_answers']) > config('epicollect.limits.possible_answers_search_limit')) {
+            $this->addAdditionalError($this->data['ref'], 'ec5_340');
+            $this->addAdditionalError('question', $this->data['question']);
+        }
+
+        $this->validatePossibleAnswers();
+    }
+
+    private function validatePossibleAnswersCount($code)
+    {
+
+        if (count($this->data['possible_answers']) == 0) {
+            $this->addAdditionalError($this->data['ref'], $code);
+            $this->addAdditionalError('question', $this->data['question']);
+        }
+
+        if (count($this->data['possible_answers']) > config('epicollect.limits.possible_answers_limit')) {
+            $this->addAdditionalError($this->data['ref'], 'ec5_340');
+            $this->addAdditionalError('question', $this->data['question']);
+        }
+    }
+
+    private function validatePossibleAnswers()
+    {
+        $match = false;
+
+        foreach ($this->data['possible_answers'] as $key => $value) {
+            if ($value['answer_ref'] == $this->data['default']) {
+                $match = true;
+            }
+
+            //validate possible answers length
+            if (mb_strlen($value['answer'], 'UTF-8') > config('epicollect.limits.possible_answers_length_limit')) {
+                $this->addAdditionalError($this->data['ref'], 'ec5_341');
+                $this->addAdditionalError('question', $this->data['question']);
+            }
+
+            //validate possible answer 'answer_ref' length
+            if (strlen($value['answer_ref']) !== config('epicollect.limits.possible_answer_ref_length_limit')) {
+                $this->addAdditionalError($this->data['ref'], 'ec5_355');
+                $this->addAdditionalError('question', $this->data['question']);
+            }
+        }
+
+        // Check default answer is valid (empty or one of the possible answers)
+        if ($this->data['default'] !== '' && !$match) {
+            $this->addAdditionalError($this->data['ref'], 'ec5_339');
+            $this->addAdditionalError('question', $this->data['question']);
+        }
+    }
+
+    private function validateMediaType()
+    {
+        if (count($this->data['possible_answers']) > 0) {
+            $this->addAdditionalError($this->data['ref'], 'ec5_398');
+            $this->addAdditionalError('question', $this->data['question']);
+        }
+    }
+
+    private function validateDateTimeFormat()
+    {
+        if ($this->data['datetime_format'] == '') {
+            $this->addAdditionalError($this->data['ref'], 'ec5_79');
+            $this->addAdditionalError('question', $this->data['question']);
         }
     }
 }
