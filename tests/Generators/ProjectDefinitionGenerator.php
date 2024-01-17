@@ -443,7 +443,7 @@ class ProjectDefinitionGenerator
             "uniqueness" => "none",
             "is_required" => false,
             "datetime_format" => null,
-            "possible_answers" => self::createPossibleAnswers(rand(1, 50)),
+            "possible_answers" => [],
             "set_to_current_datetime" => false
         ];
     }
@@ -522,6 +522,7 @@ class ProjectDefinitionGenerator
         return ['min' => $min, 'max' => $max];
     }
 
+    //use strings to avoid rounding issues when doing JSON <> string conversions
     private static function generateRandomMinMaxDecimal(): array
     {
         $min = rand(PHP_INT_MIN, PHP_INT_MAX - 1) / mt_getrandmax();
@@ -533,7 +534,7 @@ class ProjectDefinitionGenerator
             $min = $temp;
         }
 
-        return ['min' => $min, 'max' => $max];
+        return ['min' => (string)$min, 'max' => (string)$max];
     }
 
     private static function getRandomRegex(): string
