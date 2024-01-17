@@ -475,4 +475,57 @@ class ProjectControllerTest extends TestCase
             ->assertStatus(200);
     }
 
+    public function test_api_export_project()
+    {
+        //create mock user
+        $user = factory(User::class)->create();
+        //create a fake project with that user
+        $project = factory(Project::class)->create(['created_by' => $user->id]);
+        //assign the user to that project with the CREATOR role
+        $role = config('epicollect.strings.project_roles.creator');
+        $projectRole = factory(ProjectRole::class)->create([
+            'user_id' => $user->id,
+            'project_id' => $project->id,
+            'role' => $role
+        ]);
+
+        //set up project stats and project structures (to make R&A middleware work, to be removed)
+        //because they are using a repository with joins
+        factory(ProjectStats::class)->create(
+            [
+                'project_id' => $project->id,
+                'total_entries' => 0
+            ]
+        );
+        factory(ProjectStructure::class)->create(
+            ['project_id' => $project->id]
+        );
+
+        $response = [];
+        try {
+            $response[] = $this->actingAs($user)->get('api/export/project/' . $project->slug);
+            $response[0]->assertStatus(200);
+
+            //assert project definition
+            $json = ProjectStructure::where('project_id', $project->id)->value('project_definition');
+            $projectDefinition = json_decode($json, true);
+            $projectResponse = json_decode($response[0]->getContent(), true)['data'];
+
+            //add any extra key added by the controller
+            $projectDefinition['project']['created_at'] = $project->created_at;
+            $homepage = config('app.url') . '/project/' . $project->slug;
+            $projectDefinition['project']['homepage'] = $homepage;
+            //compare
+            $this->assertEquals($projectDefinition, $projectResponse);
+        } catch (\Exception $e) {
+            if (!$response) {
+                dd($e->getMessage());
+            }
+            if ($response[0]->baseResponse->exception === null) {
+                dd($e->getMessage(), $response[0]);
+            } else {
+                dd($e->getMessage(), $response[0]->baseResponse->exception->getMessage());
+            }
+        }
+    }
 }
