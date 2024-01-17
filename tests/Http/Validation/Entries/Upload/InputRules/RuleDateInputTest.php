@@ -2,10 +2,8 @@
 
 namespace Tests\Http\Validation\Entries\Upload\InputRules;
 
-use Config;
 use ec5\Http\Validation\Entries\Upload\InputRules\RuleDateInput;
 use ec5\Models\Entries\EntryStructure;
-use Tests\Answers\Inputs\RuleDecimalInput;
 use Tests\TestCase;
 
 class RuleDateInputTest extends TestCase
@@ -15,15 +13,9 @@ class RuleDateInputTest extends TestCase
      * @var \ec5\Models\Projects\Project
      */
     protected $project;
-    /**
-     * @var RuleDecimalInput
-     */
     protected $validator;
-
     protected $entryStructure;
-
     protected $inputDetails;
-
     protected $type;
 
     public function setUp()

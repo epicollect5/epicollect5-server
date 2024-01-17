@@ -11,7 +11,7 @@ namespace ec5\Libraries\Utilities;
 class DateFormatConverter
 {
 
-    public static function mySQLToISO($mysqlDate)
+    public static function mySQLToISO($mysqlDate): string
     {
         //datetime format in PHP https://www.php.net/manual/en/function.date.php
         return (new \DateTime($mysqlDate))->format('Y-m-d\TH:i:s.000') . 'Z';

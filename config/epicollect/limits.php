@@ -64,7 +64,7 @@ return [
     'projects_per_page' => 8,
     'admin_projects_per_page' => 25,
     'project_mappings' => [
-        'allowed_maps' => 4, // (auto mapping and 3 customs)
+        'max_count' => 4, // (auto mapping and 3 customs)
         'map_key_length' => 20,
         'map_key_length_pa' => 150
     ],

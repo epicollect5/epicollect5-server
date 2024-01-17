@@ -10,7 +10,12 @@ use Illuminate\Database\Eloquent\Model;
 use Log;
 
 /**
- * @mixin Eloquent
+ * @property int $id
+ * @property int $project_id
+ * @property int $total_entries
+ * @property mixed form_counts
+ * @property mixed branch_counts
+ * @property string $updated_at
  */
 class ProjectStats extends Model
 {

@@ -289,7 +289,7 @@ $factory->define(ProjectStructure::class, function (Faker\Generator $faker, $par
             ]
         ]),
         'project_mapping' => json_encode([[
-            'name' => 'EC5_AUTO',
+            'name' => config('epicollect.mappings.default_mapping_name'),
             'forms' => [
                 $formRef => [
                     $inputRef => [

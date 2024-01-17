@@ -45,8 +45,6 @@ class RuleCheckboxInputTest extends TestCase
             'input_ref' => 'xxx'
         ];
 
-        //fwrite(STDOUT, print_r($entryData) . "\n");
-
         $this->entryStructure->createStructure($entryData);
     }
 
