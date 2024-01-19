@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Http\Controllers\Web\Project\ProjectCreateController;
+namespace Tests\Http\Controllers\Web\Project;
 
 use ec5\Http\Validation\Project\RuleCreateRequest;
 use ec5\Libraries\Utilities\Generators;
@@ -11,14 +11,15 @@ use ec5\Models\Eloquent\ProjectRole;
 use ec5\Models\Eloquent\ProjectStats;
 use ec5\Models\Eloquent\ProjectStructure;
 use ec5\Models\Eloquent\User;
+use ec5\Traits\Assertions;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
-class CreateMethodTest extends TestCase
+class ProjectCreateControllerTest extends TestCase
 {
-    use DatabaseTransactions;
+    use DatabaseTransactions, Assertions;
 
     const DRIVER = 'web';
 
@@ -61,6 +62,14 @@ class CreateMethodTest extends TestCase
             'small_description' => 'Just a test project to test the validation of the project request',
             'access' => $this->access[array_rand($this->access)]
         ];
+    }
+
+    public function test_create_page_renders_correctly()
+    {
+        //create a fake user and save it to DB
+        $user = factory(User::class)->create();
+        $response = $this->actingAs($user, self::DRIVER)->get(route('my-projects-create')); // Replace with the actual route or URL to your view
+        $response->assertStatus(200); // Ensure the response is successful
     }
 
     public function test_name()
@@ -170,24 +179,64 @@ class CreateMethodTest extends TestCase
             ->assertSessionHas('tab', 'create');
         //Check if the project is created
         $this->assertDatabaseHas('projects', ['slug' => $projectSlug]);
-        $projectId = Project::where('slug', $projectSlug)->where('status', 'active')->first()->id;
-        $this->assertEquals(1, Project::where('id', $projectId)->count());
+        $project = Project::where('slug', $projectSlug)->where('status', 'active')->first();
+        $this->assertEquals(1, Project::where('id', $project->id)->count());
 
         //check project stats
-        $this->assertDatabaseHas('project_stats', ['project_id' => $projectId]);
+        $this->assertDatabaseHas('project_stats', ['project_id' => $project->id]);
         //check total_entries is 0
-        $this->assertEquals(1, ProjectStats::where('project_id', $projectId)->count());
-        $totalEntries = ProjectStats::where('project_id', $projectId)->first()->total_entries;
+        $this->assertEquals(1, ProjectStats::where('project_id', $project->id)->count());
+        $totalEntries = ProjectStats::where('project_id', $project->id)->first()->total_entries;
         $this->assertEquals(0, $totalEntries);
 
         //check roles (only creator must exist)
-        $this->assertEquals(1, ProjectRole::where('project_id', $projectId)->count());
-        $role = ProjectRole::where('project_id', $projectId)->first()->role;
+        $this->assertEquals(1, ProjectRole::where('project_id', $project->id)->count());
+        $role = ProjectRole::where('project_id', $project->id)->first()->role;
         $this->assertEquals('creator', $role);
 
         //check there are no entries or branch entries for the new project
-        $this->assertEquals(0, Entry::where('project_id', $projectId)->count());
-        $this->assertEquals(0, BranchEntry::where('project_id', $projectId)->count());
+        $this->assertEquals(0, Entry::where('project_id', $project->id)->count());
+        $this->assertEquals(0, BranchEntry::where('project_id', $project->id)->count());
+
+        //check structures
+        $this->assertEquals(1, ProjectStructure::where('project_id', $project->id)->count());
+        $projectStructure = ProjectStructure::where('project_id', $project->id)->first();
+
+        //assert project definition
+        $projectDefinition = json_decode($projectStructure->project_definition, true);
+        $structure = config('epicollect.structures.project_definition');
+        $structure['id'] = $project->ref;
+        $structure['project']['ref'] = $project->ref;
+        $structure['project']['name'] = $project->name;
+        $structure['project']['slug'] = $project->slug;
+        //add missing properties added at run time
+        $projectDefinition['project']['homepage'] = 'localhost';
+        $projectDefinition['project']['created_at'] = 'now';
+        $projectDefinition['project']['can_bulk_upload'] = 'nobody';
+        $this->assertProjectDefinition($projectDefinition);
+
+        //assert ProjectExtra: todo: will be removed in the future, so do not do it
+
+        //assert mapping
+        $projectMapping = json_decode($projectStructure->project_mapping, true);
+        $formRef = $projectDefinition['project']['forms'][0]['ref'];
+        $structure = [
+            [
+                'name' => config('epicollect.mappings.default_mapping_name'),
+                'forms' => [
+                    $formRef => []
+                ],
+                'map_index' => 0,
+                'is_default' => true
+            ]
+        ];
+        $this->assertEquals($structure, $projectMapping);
+
+        //assert project stats
+        $projectStats = ProjectStats::where('project_id', $project->id)->first();
+        $this->assertEquals(0, $projectStats->total_entries);
+        $this->assertEquals([], json_decode($projectStats->form_counts, true));
+        $this->assertEquals([], json_decode($projectStats->branch_counts, true));
     }
 
     public function test_project_name_should_not_have_extra_spaces()

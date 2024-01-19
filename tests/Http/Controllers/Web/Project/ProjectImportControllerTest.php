@@ -1,21 +1,21 @@
 <?php
 
-namespace Tests\Http\Controllers\Web\Project\ProjectCreateController;
+namespace Tests\Http\Controllers\Web\Project;
 
 use ec5\Http\Validation\Project\RuleImportRequest;
+use ec5\Libraries\Utilities\Common;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Libraries\Utilities\Strings;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectStructure;
 use ec5\Models\Eloquent\User;
+use Faker\Factory as Faker;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Http\UploadedFile;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Faker\Factory as Faker;
 
-class ImportMethodTest extends TestCase
+class ProjectImportControllerTest extends TestCase
 {
     use DatabaseTransactions;
 
@@ -172,8 +172,53 @@ class ImportMethodTest extends TestCase
         $this->assertDatabaseHas('projects', ['slug' => $projectSlug]);
         //check name is sanitised with extra spaces removed
         $this->assertDatabaseHas('projects', ['name' => 'Multiple Spaces between words']);
-        //check original name with extra spaces was not saved
+        //check the original name with extra spaces was not saved
         $this->assertDatabaseMissing('projects', ['name' => $projectName]);
+    }
+
+    public function test_project_is_imported_correctly()
+    {
+        //create a fake user and save it to DB
+        $user = factory(User::class)->create();
+        $projectName = Generators::projectRef();
+        $projectSlug = str_slug($projectName);
+        $projectDefinition = (ProjectDefinitionGenerator::createProject(1));
+        $projectDefinition['data']['project']['name'] = $projectName;
+        $projectDefinition['data']['project']['slug'] = $projectSlug;
+        // Create a temporary file with that structure content
+        $fileContent = json_encode($projectDefinition);
+        $tempFile = tempnam(sys_get_temp_dir(), 'fakefile');
+        file_put_contents($tempFile, $fileContent);
+        // Create a fake UploadedFile instance from the temporary file
+        $fakeFile = UploadedFile::fake()->create('fakefile.json', 512, 'application/json');
+        copy($tempFile, $fakeFile->getRealPath());
+
+        $response = $this->actingAs($user, self::DRIVER)
+            ->post('myprojects/import', [
+                'name' => $projectName,
+                'file' => $fakeFile
+            ]);
+        unlink($tempFile);
+
+        //Check if the redirect is successful
+        $response->assertRedirect('myprojects/' . $projectSlug)
+            ->assertSessionHas('projectCreated', true)
+            ->assertSessionHas('tab', 'import');
+        //Check if the project is created
+        $this->assertDatabaseHas('projects', ['slug' => $projectSlug]);
+        //check name is sanitized with extra spaces removed
+        $this->assertDatabaseHas('projects', ['name' => $projectName]);
+
+        //check project definition structure matches (with ref replaced)
+        $projectImported = Project::where('name', $projectName)->first();
+        $projectStructureImported = ProjectStructure::where('project_id', $projectImported->id)->first();
+        $projectDefinitionImported = json_decode($projectStructureImported->project_definition, true);
+        $projectDefinitionExpected = Common::replaceRefInStructure(
+            $projectDefinition['data']['project']['ref'],
+            $projectImported->ref,
+            $projectDefinition
+        );
+        $this->assertEquals($projectDefinitionExpected['data'], $projectDefinitionImported);
     }
 
     public function test_file()
