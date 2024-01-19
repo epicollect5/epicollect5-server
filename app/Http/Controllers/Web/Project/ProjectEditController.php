@@ -8,6 +8,7 @@ use ec5\Http\Validation\Project\RuleProjectDefinitionDetails;
 use ec5\Http\Validation\Project\RuleSettings;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectStructure;
+use ec5\Repositories\QueryBuilder\Project\UpdateRepository as UpdateRep;
 use ec5\Repositories\QueryBuilder\Project\SearchRepository as Search;
 use ec5\Models\Images\UploadImage;
 use Exception;
@@ -32,6 +33,7 @@ class ProjectEditController
     protected $search;
     protected $ruleProjectDefinitionDetails;
     protected $ruleSettings;
+    protected $updateRep;
 
     /**
      * ProjectEditController constructor.
@@ -39,12 +41,14 @@ class ProjectEditController
      * @param ApiResponse $apiResponse
      * @param RuleSettings $ruleSettings
      * @param RuleProjectDefinitionDetails $ruleProjectDefinitionDetails
+     * @param UpdateRep $updateRep
      * @param Search $search
      */
     public function __construct(
         ApiResponse                  $apiResponse,
         RuleSettings                 $ruleSettings,
         RuleProjectDefinitionDetails $ruleProjectDefinitionDetails,
+        UpdateRep                    $updateRep,
         Search                       $search)
     {
 
@@ -52,6 +56,7 @@ class ProjectEditController
         $this->apiResponse = $apiResponse;
         $this->ruleProjectDefinitionDetails = $ruleProjectDefinitionDetails;
         $this->ruleSettings = $ruleSettings;
+        $this->updateRep = $updateRep;
         $this->search = $search;
         $this->allowedSettingActions = array_keys(config('epicollect.strings.edit_settings'));
 
@@ -66,7 +71,7 @@ class ProjectEditController
      */
     public function settings($slug, $action)
     {
-        $this->slug = $slug; //only used for routing imp: do not remove
+        $this->slug = $slug; //only used for routing
 
         if (!request()->route('action') || !in_array($action, $this->allowedSettingActions)) {
             return $this->apiResponse->errorResponse(400, ['errors' => ['ec5_29']]);
@@ -117,79 +122,88 @@ class ProjectEditController
     }
 
     /**
-     * @param $slug //imp: used for routing segment, DO NOT remove
+     * @param $slug
      * @return Factory|Application|RedirectResponse|View
      */
     public function details($slug)
     {
-        $this->slug = $slug; //only used for routing imp:do not remove
-        $updateStructures = false;
+        $updateProjectStructuresTable = false;
+        $errors = ['message' => 'ec5_45'];
         $this->action = last(request()->segments());
-
 
         if (!$this->requestedProjectRole()->canEditProject()) {
             return view('errors.gen_error')->withErrors(['errors' => 'ec5_91']);
         }
 
-        $payload = request()->all();
-        unset($payload['_token']);
+        $input = request()->all();
+        unset($input['_token']);
 
         // If we have an image, validate the dimensions
         if (request()->file('logo_url')) {
             // Get the image width/height
             list($width, $height) = getimagesize(request()->file('logo_url')->getRealPath());
-            // Add to be validated
-            $payload['logo_width'] = $width;
-            $payload['logo_height'] = $height;
+            // Add to input array to be validated
+            $input['logo_width'] = $width;
+            $input['logo_height'] = $height;
         }
 
-        $this->ruleProjectDefinitionDetails->validate($payload, $check_keys = false);
+        $this->ruleProjectDefinitionDetails->validate($input, $check_keys = false);
         if ($this->ruleProjectDefinitionDetails->hasErrors()) {
-            return Redirect::back()->withErrors(
-                $this->ruleProjectDefinitionDetails->errors()
-            );
+            return $this->helperView($this->ruleProjectDefinitionDetails->errors());
         }
 
-        $params = [
-            'small_description' => $payload['small_description'],
-            'description' => $payload['description']
-        ];
+        $tempInput['small_description'] = $input['small_description'];
+        $tempInput['description'] = $input['description'];
 
         if (request()->file('logo_url')) {
+
             // NOTE: store larger thumb first, then smaller mobile logo
             // As request file gets overwritten with each resize and it's better to shrink than to enlarge
             if (!$this->saveLogos('project_thumb')) {
-                return Redirect::back()->withErrors(['message' => 'ec5_83']);
+                return $this->helperView(['message' => 'ec5_83']);
             }
+
             if (!$this->saveLogos('project_mobile_logo')) {
-                return Redirect::back()->withErrors(['message' => 'ec5_83']);
+                return $this->helperView(['message' => 'ec5_83']);
             }
-            $params['logo_url'] = $this->requestedProject()->ref;
+
+            $tempInput['logo_url'] = $this->requestedProject()->ref;
+
             // We want to trigger an update on the project_structures table,
             // to signal to the app that this project has been updated
-            $updateStructures = true;
+            $updateProjectStructuresTable = true;
+
+        }
+        $input = $tempInput;
+
+        $updated = $this->doUpdate($input, $updateProjectStructuresTable);
+
+        if ($updated) {
+            return $this->helperView([], ['message' => 'ec5_123']);
         }
 
-        // Update the Definition and Extra data
-        $this->requestedProject()->updateProjectDetails($params);
-        // Update in the database
-        if (Project::updateAllTables($this->requestedProject(), $params, $updateStructures)) {
-            return Redirect::back()->with(['message' => 'ec5_123']);
-        } else {
-            return Redirect::back()->withErrors(['errors' => ['ec5_104']]);
+        if ($this->updateRep->hasErrors()) {
+            $errors = $this->updateRep->errors();
         }
+        return $this->helperView($errors);
     }
 
     /**
      * Try and store project logos
+     *
+     * @param
+     * @return boolean
      */
-    private function saveLogos($driver): bool
+    private function saveLogos($driver)
     {
         return UploadImage::saveImage($this->requestedProject()->ref, request()->file('logo_url'), 'logo.jpg', $driver, config('epicollect.media.' . $driver));
     }
 
     /**
      * Which status depending on params
+     *
+     * @param $params
+     * @return array
      */
     private function whichStatus($params): array
     {
@@ -197,9 +211,35 @@ class ProjectEditController
             config('epicollect.strings.project_status.trashed'),
             config('epicollect.strings.project_status.locked'),
         ];
-
         $params['status'] = in_array($params['status'], $statuses) ? $params['status'] : config('epicollect.strings.project_status.active');
 
         return $params;
+    }
+
+    /**
+     * Update the project in db
+     */
+    private function doUpdate($input, $updateProjectStructuresTable = false)
+    {
+        // Update the Definition and Extra data
+        $this->requestedProject()->updateProjectDetails($input);
+
+        // Update in the database
+        return $this->updateRep->updateProject($this->requestedProject(), $input, $updateProjectStructuresTable);
+    }
+
+    /**
+     * Helper output view
+     *
+     * @param array $withErrors
+     * @param array $withMessage
+     */
+    private function helperView($withErrors = [], $withMessage = [])
+    {
+        if (count($withErrors) > 0) {
+            return Redirect::back()->withErrors($withErrors);
+        } else {
+            return Redirect::back()->with($withMessage);
+        }
     }
 }
