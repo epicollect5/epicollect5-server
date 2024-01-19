@@ -111,4 +111,12 @@ class Common
         }
         return $csvHeaders;
     }
+
+    public static function replaceRefInStructure($existingRef, $newRef, $json)
+    {
+        $jsonAsStringSource = json_encode($json);
+        // Replace the old ref with the new ref in the data
+        $jsonAsStringDestination = str_replace($existingRef, $newRef, $jsonAsStringSource);
+        return json_decode($jsonAsStringDestination, true);
+    }
 }

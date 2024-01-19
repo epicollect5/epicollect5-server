@@ -3,10 +3,15 @@
 namespace Tests\Libraries\Utilities;
 
 use ec5\Libraries\Utilities\Common;
+use ec5\Libraries\Utilities\Generators;
+use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
+use ec5\Traits\Assertions;
 
 class CommonTest extends TestCase
 {
+    use Assertions;
+
     public function setUp()
     {
         parent::setUp();
@@ -78,5 +83,20 @@ class CommonTest extends TestCase
         foreach ($validTimestamps as $timestamp) {
             $this->assertTrue(Common::isValidTimestamp($timestamp));
         }
+    }
+
+    public function test_replace_ref_in_structure()
+    {
+        $projectDefinition = ProjectDefinitionGenerator::createProject(1);
+        $newRef = Generators::projectRef();
+        $existingRef = $projectDefinition['data']['project']['ref'];
+
+        $result = Common::replaceRefInStructure($existingRef, $newRef, $projectDefinition);
+        // Assert that the result is an array
+        $this->assertIsArray($result);
+        // Perform additional assertions
+        // For example, you can check if the old ref is replaced with the new ref
+        $this->assertNotContains($existingRef, json_encode($result));
+        $this->assertContains($newRef, json_encode($result));
     }
 }

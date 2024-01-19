@@ -3,6 +3,7 @@
 namespace ec5\Models\Projects;
 
 use ec5\Http\Validation\Project\RuleProjectDefinition;
+use ec5\Libraries\Utilities\Common;
 use ec5\Models\Projects\Exceptions\ProjectImportException;
 use Ramsey\Uuid\Uuid;
 use ReflectionClass;
@@ -137,6 +138,7 @@ class Project
         $data['forms'][0]['slug'] = Str::slug($data['form_name'], '-');
         $data['forms'][0]['type'] = 'hierarchy';
         $data['forms'][0]['ref'] = $formRef;
+
         // Add the Project details
         $this->addProjectDetails($data);
         // Create new JSON Project Definition
@@ -187,8 +189,8 @@ class Project
         $projectDefinitionData['project']['logo_url'] = '';
         $projectDefinitionData['id'] = $projectRef;
         // Swap the old project ref with the new one
-        $oldProjectRef = $projectDefinitionData['project']['ref'];
-        $projectDefinitionDataString = str_replace($oldProjectRef, $projectRef, json_encode($projectDefinitionData));
+        $existingProjectRef = $projectDefinitionData['project']['ref'];
+        $projectDefinitionDataString = str_replace($existingProjectRef, $projectRef, json_encode($projectDefinitionData));
         // Decode back to array
         $projectDefinitionData = json_decode($projectDefinitionDataString, true);
         $this->addProjectDetails(array_merge($projectDefinitionData['project'], ['created_by' => $createdBy]));
@@ -200,24 +202,21 @@ class Project
             throw new ProjectImportException;
         }
         // Create new JSON Project Mapping
-        //$this->projectMapping->create([]);
         $this->projectMapping->autoGenerateMap($this->projectExtra);
         // No need to initialise the Project Stats, as they will be empty
     }
 
     /**
-     * Clone from existing data
-     *
-     * @param $input
+     * Clone from existing structure
      */
-    public function cloneProject($input)
+    public function cloneProject($params)
     {
-        $oldProjectRef = $this->ref;
+        $existingProjectRef = $this->ref;
         $newProjectRef = str_replace('-', '', Uuid::uuid4()->toString());
         // Cloned project will be set to 'active'
-        $input['status'] = config('epicollect.strings.project_status.active');
+        $params['status'] = config('epicollect.strings.project_status.active');
         // Update the Project class properties
-        $this->addProjectDetails($input);
+        $this->addProjectDetails($params);
         // Nullify the id, created_at, updated_at and structure_id as new ones will need to be created
         $this->id = null;
         $this->created_at = null;
@@ -225,14 +224,36 @@ class Project
         $this->structure_id = null;
         // Add new ref
         $this->ref = $newProjectRef;
+
         // Update the Project Definition
-        $this->projectDefinition->updateProjectDetails($input);
-        $this->projectDefinition->updateRef($oldProjectRef, $newProjectRef);
+        $this->projectDefinition->updateProjectDetails($params);
+        $this->projectDefinition->setData(
+            Common::replaceRefInStructure(
+                $existingProjectRef,
+                $newProjectRef,
+                $this->projectDefinition->getData()
+            )
+        );
+
         // Update the Project Extra
-        $this->projectExtra->updateProjectDetails($input);
-        $this->projectExtra->updateRef($oldProjectRef, $newProjectRef);
+        $this->projectExtra->updateProjectDetails($params);
+        $this->projectExtra->setData(
+            Common::replaceRefInStructure(
+                $existingProjectRef,
+                $newProjectRef,
+                $this->projectExtra->getData()
+            )
+        );
+
         // Update the Project Mapping
-        $this->projectMapping->updateRef($oldProjectRef, $newProjectRef);
+        $this->projectMapping->setData(
+            Common::replaceRefInStructure(
+                $existingProjectRef,
+                $newProjectRef,
+                $this->projectMapping->getData()
+            )
+        );
+
         // Update the Project Stats (to empty)
         $this->projectStats->init([]);
     }
