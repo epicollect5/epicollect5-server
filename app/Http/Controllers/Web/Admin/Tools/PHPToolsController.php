@@ -4,17 +4,14 @@ namespace ec5\Http\Controllers\Web\Admin\Tools;
 
 use Auth;
 use Carbon\Carbon;
-use Config;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Libraries\Utilities\GpointConverter;
 use ec5\Mail\DebugEmailSending;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Images\CreateProjectLogoAvatar;
 use ec5\Models\Projects\Project as LegacyProject;
-use ec5\Repositories\QueryBuilder\Project\UpdateRepository as UpdateRep;
 use ec5\Traits\Eloquent\System\ProjectsStats;
 use Exception;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Storage;
 
@@ -23,12 +20,10 @@ class PHPToolsController
     use ProjectsStats;
 
     protected $project;
-    protected $updateRep;
 
-    public function __construct(LegacyProject $project, UpdateRep $updateRep)
+    public function __construct(LegacyProject $project)
     {
         $this->project = $project;
-        $this->updateRep = $updateRep;
     }
 
     //bust opcache on command
@@ -106,13 +101,13 @@ class PHPToolsController
         return 'Project "' . $name . '" already has a logo';
     }
 
-    private function doUpdate($input)
+    private function doUpdate($params)
     {
         // Update the Definition and Extra data
-        $this->project->updateProjectDetails($input);
+        $this->project->updateProjectDetails($params);
 
         // Update in the database
-        return $this->updateRep->updateProject($this->project, $input, false);
+        return Project::updateAllTables($this->project, $params, false);
     }
 
     public function sendEmail()
@@ -154,11 +149,12 @@ class PHPToolsController
     public function hash()
     {
         dd(bcrypt('my-password', ['rounds' => 12]));
-        dd('test', bcrypt('test', ['rounds' => 12]), bcrypt('test', ['rounds' => 12]), bcrypt('test', ['rounds' => 12]));
+        // dd('test', bcrypt('test', ['rounds' => 12]), bcrypt('test', ['rounds' => 12]), bcrypt('test', ['rounds' => 12]));
     }
 
     public function codes($howMany = 1)
     {
+        $codes = [];
         for ($i = 0; $i < $howMany; $i++) {
             $codes[] = Generators::randomNumber(6, 1);
         }

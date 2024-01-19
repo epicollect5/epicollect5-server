@@ -6,7 +6,6 @@ use ec5\Models\Eloquent\ProjectStructure;
 use Exception;
 use Illuminate\Http\Request;
 use ec5\Http\Validation\Project\RuleProjectDefinition;
-use ec5\Repositories\QueryBuilder\Project\UpdateRepository as ProjectUpdate;
 use ec5\Http\Controllers\Api\ApiResponse as ApiResponse;
 use ec5\Libraries\Utilities\Arrays;
 use ec5\Libraries\Utilities\Strings;
@@ -17,21 +16,18 @@ class FormBuilderController
 {
     use RequestAttributes;
 
-    protected $projectUpdate;
     protected $request;
     protected $apiResponse;
     protected $ruleProjectDefinition;
 
     public function __construct(
         Request               $request,
-        ProjectUpdate         $projectUpdate,
         RuleProjectDefinition $ruleProjectDefinition,
         ApiResponse           $apiResponse
     )
     {
         $this->request = $request;
         $this->apiResponse = $apiResponse;
-        $this->projectUpdate = $projectUpdate;
         $this->ruleProjectDefinition = $ruleProjectDefinition;
     }
 

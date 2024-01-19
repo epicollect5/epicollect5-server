@@ -11,7 +11,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 use ec5\Http\Validation\Project\RuleEntryLimits;
-use ec5\Repositories\QueryBuilder\Project\UpdateRepository as UpdateRepository;
 use Illuminate\View\View;
 use Redirect;
 use ec5\Traits\Requests\RequestAttributes;
@@ -20,17 +19,6 @@ use ec5\Traits\Eloquent\StatsRefresher;
 class ProjectEntriesController
 {
     use RequestAttributes, StatsRefresher;
-
-    /**
-     * @var UpdateRepository
-     */
-    protected $updateRepository;
-
-    public function __construct(UpdateRepository $updateRepository)
-    {
-        $this->updateRepository = $updateRepository;
-
-    }
 
     public function show()
     {
