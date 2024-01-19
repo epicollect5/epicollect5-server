@@ -2,9 +2,11 @@
 
 namespace ec5\Models\Eloquent;
 
+use Exception;
 use Illuminate\Database\Eloquent\Model;
+use ec5\Models\Projects\Project as LegacyProject;
 use DB;
-use Config;
+use Log;
 
 class Project extends Model
 {
@@ -175,5 +177,27 @@ class Project extends Model
             ->orderBy('updated_at', 'desc')
             ->take(50)
             ->get();
+    }
+
+    public static function updateAllTables(LegacyProject $project, $params, $setUpdatedAt = false): bool
+    {
+        try {
+            DB::beginTransaction();
+            //update project table
+            $didProjectUpdate = self::where('id', $project->getId())->update($params);
+            //update project_structures table
+            $didStructureUpdate = ProjectStructure::updateStructures($project, $setUpdatedAt);
+
+            if ($didProjectUpdate && $didStructureUpdate) {
+                DB::commit();
+                return true;
+            } else {
+                throw new Exception('Could not update project tables');
+            }
+        } catch (Exception $e) {
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
+            DB::rollBack();
+            return false;
+        }
     }
 }
