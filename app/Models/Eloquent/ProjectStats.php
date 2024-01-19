@@ -3,8 +3,6 @@
 namespace ec5\Models\Eloquent;
 
 use DB;
-use ec5\Models\Projects\Project;
-use Eloquent;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Log;
@@ -13,19 +11,15 @@ use Log;
  * @property int $id
  * @property int $project_id
  * @property int $total_entries
- * @property mixed form_counts
- * @property mixed branch_counts
+ * @property mixed $form_counts
+ * @property mixed $branch_counts
  * @property string $updated_at
  */
 class ProjectStats extends Model
 {
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
     protected $table = 'project_stats';
     public $timestamps = false;
+    public $guarded = [];
 
     public function getMostRecentEntryTimestamp(): string
     {
@@ -78,7 +72,6 @@ class ProjectStats extends Model
 
     /* Update the total entries and
        form counts
-     *
      */
     public function updateEntryCounters($projectId)
     {
@@ -118,7 +111,7 @@ class ProjectStats extends Model
     }
 
     /*
-     * Upodate the branch counts
+     * Update the branch counts
      */
     public function updateBranchEntryCounters($projectId)
     {

@@ -2,7 +2,8 @@
 
 use ec5\Repositories\QueryBuilder\Base;
 
-class CreateRepository extends Base {
+class CreateRepository extends Base
+{
 
     /**
      * @var SearchRepository $searchRepository
@@ -52,7 +53,7 @@ class CreateRepository extends Base {
         $done = $this->deleteRepository->delete($userId, $projectId);
 
         // If delete failed, return
-        if (! $done ) {
+        if (!$done) {
             return $done;
         }
 
@@ -64,7 +65,7 @@ class CreateRepository extends Base {
         // Attempt to insert
         $projectRoleId = $this->insertReturnId('project_roles', $data);
 
-        if( ! $projectRoleId ){
+        if (!$projectRoleId) {
             // Rollback
             $this->doRollBack();
             return $done;
@@ -86,18 +87,15 @@ class CreateRepository extends Base {
      */
     public function cloneProjectRoles($projectIdFrom, $projectIdTo)
     {
-
         $projectRoles = $this->searchRepository->findAllBy('project_id', '=', $projectIdFrom);
 
         foreach ($projectRoles as $projectRole) {
             // Try and insert
-            if(!$this->tryProjectRoleCreate($projectRole->user_id, $projectIdTo, $projectRole->role)) {
+            if (!$this->tryProjectRoleCreate($projectRole->user_id, $projectIdTo, $projectRole->role)) {
                 return false;
             }
         }
-
         return true;
-
     }
 
 }

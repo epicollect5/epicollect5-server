@@ -97,7 +97,6 @@ trait Assertions
 
     public function assertProjectDefinition($projectDefinition)
     {
-
         $this->assertArrayHasExactKeys(
             $projectDefinition,
             config('testing.JSON_STRUCTURES_KEYS.project_definition.root')
@@ -168,6 +167,5 @@ trait Assertions
                 }
             }
         }
-
     }
 }

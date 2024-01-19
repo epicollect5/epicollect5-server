@@ -13,6 +13,7 @@ class ProjectRole extends Model
      * @var string
      */
     protected $table = 'project_roles';
+    protected $fillable = ['project_id', 'user_id', 'role'];
 
     public $timestamps = false;
 
@@ -36,7 +37,7 @@ class ProjectRole extends Model
 
             return $affectedRows;
         } catch (\Exception $e) {
-            \Log::error('Exception removing users by role in bulk',  [
+            \Log::error('Exception removing users by role in bulk', [
                 'projectId' => $projectId,
                 'exception' => $e
             ]);
@@ -56,7 +57,7 @@ class ProjectRole extends Model
 
             return $affectedRows;
         } catch (\Exception $e) {
-            \Log::error('Exception switching user role',  [
+            \Log::error('Exception switching user role', [
                 'projectId' => $projectId,
                 'exception' => $e
             ]);
@@ -75,6 +76,7 @@ class ProjectRole extends Model
             ->keyBy('role')
             ->toArray();
     }
+
     public function getCountOverlall($projectId)
     {
         return DB::table($this->table)

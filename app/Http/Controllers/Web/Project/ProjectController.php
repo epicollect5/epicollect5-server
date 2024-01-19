@@ -10,11 +10,9 @@ use ec5\Traits\Requests\RequestAttributes;
 
 class ProjectController
 {
+
     use StatsRefresher, RequestAttributes;
 
-    /**
-     * Show Project home page
-     */
     public function show()
     {
         $this->refreshProjectStats($this->requestedProject());
@@ -33,6 +31,10 @@ class ProjectController
             return view('errors.gen_error')->withErrors(['view' => 'ec5_202']);
         }
 
+
+        /**
+         * @var $projectStats ProjectStats
+         */
         //get latest entry timestamp
         $projectStats = ProjectStats::where('project_id', $this->requestedProject()->getId())->first();
         $vars['mostRecentEntryTimestamp'] = $projectStats->getMostRecentEntryTimestamp();

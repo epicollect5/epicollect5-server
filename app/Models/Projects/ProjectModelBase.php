@@ -46,23 +46,15 @@ abstract class ProjectModelBase
         return $this->data;
     }
 
+    public function setData($data)
+    {
+        $this->data = $data;
+    }
+
     public function getJsonData()
     {
         return json_encode($this->data);
     }
 
     abstract function updateProjectDetails(array $data);
-
-    /**
-     * @param $oldProjectRef
-     */
-    public function updateRef($oldProjectRef, $newProjectRef)
-    {
-        // JSON encode the data
-        $jsonData = json_encode($this->data);
-        // Replace the old ref with the new ref in the data
-        $jsonData = str_replace($oldProjectRef, $newProjectRef, $jsonData);
-        // Replace 'this' data
-        $this->data = json_decode($jsonData, true);
-    }
 }
