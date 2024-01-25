@@ -3,9 +3,6 @@
 @section('title', trans('site.project_details'))
 @section('content')
 
-    @include('toasts/success')
-    @include('toasts/error')
-
     <div class="container-fluid page-project-details">
         <div class="warning-well visible-xs-block">This section is best viewed on a larger screen</div>
 
