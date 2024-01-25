@@ -4,7 +4,7 @@
         <span>{{ trans('site.manage_users') }}
             <span class="badge count-overall">{{ $countOverall }}</span>
         </span>
-        @if ($requestAttributes->requestedProjectRole->canAddUsers())
+        @if ($requestAttributes->requestedProjectRole->canManageUsers())
             <div class="btn-group pull-right" role="group">
                 <button class="btn btn-action btn-sm" data-toggle="modal" data-target="#ec5ModalExistingUser">
                     <i class="material-icons">account_circle</i>
@@ -108,7 +108,7 @@
                                                                     aria-expanded="false">
                                                                 <span class="caret"></span>
                                                             </button>
-                                                            @if ($requestAttributes->requestedProjectRole->canRemoveUsers())
+                                                            @if ($requestAttributes->requestedProjectRole->canManageUsers())
                                                                 <ul class="dropdown-menu dropdown-menu-right">
                                                                     <li
                                                                             class="dropdown-header text-center text-warning">
