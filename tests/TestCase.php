@@ -2,6 +2,8 @@
 
 namespace Tests;
 
+use Exception;
+
 class TestCase extends \Illuminate\Foundation\Testing\TestCase
 {
     /**
@@ -25,13 +27,17 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
         return $app;
     }
 
-    public function logTestError($e, $response)
+    public function logTestError(Exception $e, $response)
     {
         echo "\e[0;31m" . $e->getMessage() . "\e[0m" . PHP_EOL;
-        $jsonResponse = $response[0]->baseResponse->exception === null
-            ? json_encode(['response' => $response[0]])
-            : json_encode(['exception' => $response[0]->baseResponse->exception->getMessage()]);
+        if (sizeof($response) > 0) {
+            $jsonResponse = $response[0]->baseResponse->exception === null
+                ? json_encode(['response' => $response[0]])
+                : json_encode(['exception' => $response[0]->baseResponse->exception->getMessage()]);
 
-        echo "\e[1;34m" . $jsonResponse . "\e[0m" . PHP_EOL;
+            echo "\e[1;34m" . $jsonResponse . "\e[0m" . PHP_EOL;
+        } else {
+            echo "\e[1;34m" . $e->getTraceAsString() . "\e[0m" . PHP_EOL;
+        }
     }
 }

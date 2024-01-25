@@ -102,7 +102,7 @@ class Project
         ]);
         // Add all the project data object properties to this class
         $this->addProjectDetails(get_object_vars($data));
-        // Lastly initialise the protected class properties
+        // Lastly, initialize the protected class properties
         // Set timestamps
         $this->created_at = $data->created_at ?? null;
         $this->updated_at = $data->updated_at ?? null;
