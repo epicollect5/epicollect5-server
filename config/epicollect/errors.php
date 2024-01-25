@@ -278,7 +278,7 @@ return [
     "ec5_341" => "Possible answer too long found!",
     "ec5_342" => "Missing possible answers for SEARCH question!",
     "ec5_343" => "All :role users removed from project.",
-    "ec5_344" => "Cannot switch manager role",
+    "ec5_344" => "You can only manage users with a lower role",
     "ec5_345" => "Users with :role role added!",
     "ec5_346" => "Email addresses limit excedeed: :limit",
     "ec5_347" => "No email address found",
