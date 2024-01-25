@@ -110,7 +110,7 @@ class ProjectImportController
                 $projectDefinitionData,
                 $projectDefinitionValidator
             );
-        } catch (ProjectImportException $e) {
+        } catch (Exception $e) {
             $request->flash();
             return Redirect::to('myprojects/create')
                 ->withErrors($projectDefinitionValidator->errors())

@@ -5,12 +5,12 @@ namespace ec5\Models\Projects;
 use ec5\DTO\ProjectStatsDTO;
 use ec5\Http\Validation\Project\RuleProjectDefinition;
 use ec5\Libraries\Utilities\Common;
-use ec5\Models\Projects\Exceptions\ProjectImportException;
-use ec5\Models\Projects\Exceptions\ProjectNameMissingException;
+use Exception;
 use Illuminate\Support\Str;
 use Ramsey\Uuid\Uuid;
 use ReflectionClass;
 use ReflectionProperty;
+use stdClass;
 
 /*
 |--------------------------------------------------------------------------
@@ -85,10 +85,8 @@ class Project
     /**
      * Initialise from existing data
      * $data is an object
-     *
-     * @param \stdClass $data
      */
-    public function init(\stdClass $data)
+    public function init(stdClass $data)
     {
         $this->addProjectDefinition($data->project_definition ?? []);
         $this->addProjectExtra($data->project_extra ?? []);
@@ -119,13 +117,13 @@ class Project
      *
      * @param $projectRef
      * @param $data
-     * @throws ProjectNameMissingException
+     * @throws Exception
      */
     public function create($projectRef, $data)
     {
         // Check we have the required project and form name data set
         if (!isset($data['name']) || !isset($data['form_name'])) {
-            throw new ProjectNameMissingException;
+            throw new Exception(config('status_codes.ec5_224'));
         }
         // Create project and first form refs
         $formRef = $projectRef . '_' . uniqid();
@@ -174,7 +172,7 @@ class Project
      * @param $createdBy
      * @param $projectDefinitionData
      * @param RuleProjectDefinition $projectDefinitionValidator
-     * @throws ProjectImportException
+     * @throws Exception
      */
     public function import(
         $projectRef,
@@ -200,7 +198,7 @@ class Project
         // Validate the Project Definition and create the Project Extra data
         $projectDefinitionValidator->validate($this);
         if ($projectDefinitionValidator->hasErrors()) {
-            throw new ProjectImportException;
+            throw new Exception(config('status_codes.ec5_225'));
         }
         // Create new JSON Project Mapping
         $this->projectMapping->autoGenerateMap($this->projectExtra);

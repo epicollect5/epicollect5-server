@@ -3,8 +3,8 @@
 namespace ec5\Http\Controllers\Web\Project;
 
 use ec5\Libraries\Utilities\Generators;
-use ec5\Models\Projects\Exceptions\ProjectNameMissingException;
 use ec5\Models\Projects\Project as LegacyProject;
+use Exception;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\RedirectResponse;
@@ -69,37 +69,37 @@ class ProjectCreateController
         // todo: send active 'tab' with the response if there are errors (to go back to correct tab)
 
         // Get all the form post data
-        $input = $request->all();
-        $input['slug'] = Str::slug($input['name'], '-');
+        $payload = $request->all();
+        $payload['slug'] = Str::slug($payload['name'], '-');
 
         // Run validation (before trimming)
-        $ruleCreateRequest->validate($input, true);
+        $ruleCreateRequest->validate($payload, true);
 
         //trim metadata strings
-        $input['name'] = trim($input['name']);
-        $input['form_name'] = trim($input['form_name']);
-        $input['small_description'] = trim($input['small_description']);
+        $payload['name'] = trim($payload['name']);
+        $payload['form_name'] = trim($payload['form_name']);
+        $payload['small_description'] = trim($payload['small_description']);
 
         //remove extra spaces between words (if any)
-        $input['name'] = preg_replace('/\s+/', ' ', $input['name']);
-        $input['form_name'] = preg_replace('/\s+/', ' ', $input['form_name']);
-        $input['small_description'] = preg_replace('/\s+/', ' ', $input['small_description']);
+        $payload['name'] = preg_replace('/\s+/', ' ', $payload['name']);
+        $payload['form_name'] = preg_replace('/\s+/', ' ', $payload['form_name']);
+        $payload['small_description'] = preg_replace('/\s+/', ' ', $payload['small_description']);
 
         // Run validation (after trimming)
-        $ruleCreateRequest->validate($input, true);
+        $ruleCreateRequest->validate($payload, true);
         if ($ruleCreateRequest->hasErrors()) {
             $request->flash();
             return view('project.project_create')
                 ->withErrors($ruleCreateRequest->errors())->with(['tab' => $this->type]);
         }
 
-        $input['created_by'] = $request->user()->id;
+        $payload['created_by'] = $request->user()->id;
         // Generate new project ref
         $newProjectRef = Generators::projectRef();
         try {
             // Create everything for this project
-            $this->project->create($newProjectRef, $input);
-        } catch (ProjectNameMissingException $e) {
+            $this->project->create($newProjectRef, $payload);
+        } catch (Exception $e) {
             $request->flash();
             return Redirect::to('myprojects/create')
                 ->withErrors(['db' => ['ec5_224']])
