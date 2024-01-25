@@ -42,9 +42,8 @@ class EntryCounter extends Model
     public function updateEntryCounts(Project $project, EntryStructure $entryStructure)
     {
         //are there any child forms or branches?
-        $projectDefinition = $project->getProjectStats()->toArray();
-        $formCounts = $projectDefinition['form_counts'];
-        $branches = $projectDefinition['branch_counts'];
+        $formCounts = $project->getProjectStats()->form_counts;
+        $branches = $project->getProjectStats()->branch_counts;
         $childCounts = 0;
         $branchCounts = 0;
 
