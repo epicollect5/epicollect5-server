@@ -2,7 +2,7 @@
 
 namespace Tests\Http\Validation\Project;
 
-use Config;
+use ec5\DTO\ProjectStatsDTO;
 use ec5\Http\Validation\Project\RuleForm;
 use ec5\Http\Validation\Project\RuleInput;
 use ec5\Http\Validation\Project\RuleProjectDefinition;
@@ -11,11 +11,10 @@ use ec5\Models\Projects\Project;
 use ec5\Models\Projects\ProjectDefinition;
 use ec5\Models\Projects\ProjectExtra;
 use ec5\Models\Projects\ProjectMapping;
-use ec5\Models\Projects\ProjectStats;
-use Illuminate\Support\Str;
-use Tests\TestCase;
-use Ramsey\Uuid\Uuid;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Str;
+use Ramsey\Uuid\Uuid;
+use Tests\TestCase;
 
 class RuleProjectDefinitionTest extends TestCase
 {
@@ -114,7 +113,7 @@ class RuleProjectDefinitionTest extends TestCase
         $this->ruleInput = new RuleInput();
         $this->projectExtra = new ProjectExtra();
         $this->projectMapping = new ProjectMapping();
-        $this->projectStats = new ProjectStats();
+        $this->projectStats = new ProjectStatsDTO();
         $this->projectDefinition = new ProjectDefinition();
 
         $this->validator = new RuleProjectDefinition(

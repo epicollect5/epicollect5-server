@@ -42,7 +42,7 @@ class EntryCounter extends Model
     public function updateEntryCounts(Project $project, EntryStructure $entryStructure)
     {
         //are there any child forms or branches?
-        $projectDefinition = $project->getProjectStats()->getData();
+        $projectDefinition = $project->getProjectStats()->toArray();
         $formCounts = $projectDefinition['form_counts'];
         $branches = $projectDefinition['branch_counts'];
         $childCounts = 0;
@@ -134,7 +134,7 @@ class EntryCounter extends Model
             ->where('form_ref', '=', $formRef)
             ->groupBy('parent_uuid')
             ->get();
-        
+
         return $counts->isEmpty() ? 0 : $counts->max('entries_counts');
     }
 }

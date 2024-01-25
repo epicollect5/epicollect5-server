@@ -126,7 +126,7 @@ class ManageUsersControllerTest extends TestCase
         ]);
 
         //Try to add the same user. It will just be updated
-        $randomRole = config('epicollect.permissions.projects.roles.creator');
+        $randomRole = $this->faker->randomElement(config('epicollect.permissions.projects.roles.creator'));
         $payload = [
             'email' => $manager->email,
             'role' => $randomRole

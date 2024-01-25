@@ -61,7 +61,7 @@ class ProjectService
             }
 
             // Insert project stats
-            $statsData = $projectStats->getJsonData();
+            $statsData = $projectStats->toJsonEncoded();
             $statsData['project_id'] = $projectStored->id;
 
             // Insert project details get back insert_id

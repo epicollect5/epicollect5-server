@@ -2,14 +2,15 @@
 
 namespace ec5\Models\Projects;
 
+use ec5\DTO\ProjectStatsDTO;
 use ec5\Http\Validation\Project\RuleProjectDefinition;
 use ec5\Libraries\Utilities\Common;
 use ec5\Models\Projects\Exceptions\ProjectImportException;
+use ec5\Models\Projects\Exceptions\ProjectNameMissingException;
+use Illuminate\Support\Str;
 use Ramsey\Uuid\Uuid;
 use ReflectionClass;
 use ReflectionProperty;
-use Illuminate\Support\Str;
-use ec5\Models\Projects\Exceptions\ProjectNameMissingException;
 
 /*
 |--------------------------------------------------------------------------
@@ -37,7 +38,7 @@ class Project
      */
     protected $projectMapping;
     /**
-     * @var ProjectStats
+     * @var ProjectStatsDTO
      */
     protected $projectStats;
     // Null ids
@@ -66,13 +67,13 @@ class Project
      * @param ProjectDefinition $projectDefinition
      * @param ProjectExtra $projectExtra
      * @param ProjectMapping $projectMapping
-     * @param ProjectStats $projectStats
+     * @param ProjectStatsDTO $projectStats
      */
     public function __construct(
         ProjectDefinition $projectDefinition,
         ProjectExtra      $projectExtra,
         ProjectMapping    $projectMapping,
-        ProjectStats      $projectStats
+        ProjectStatsDTO   $projectStats
     )
     {
         $this->projectDefinition = $projectDefinition;
@@ -394,9 +395,9 @@ class Project
 
 
     /**
-     * @return ProjectStats
+     * @return ProjectStatsDTO
      */
-    public function getProjectStats(): ProjectStats
+    public function getProjectStats(): ProjectStatsDTO
     {
         return $this->projectStats;
     }

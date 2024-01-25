@@ -1,6 +1,9 @@
 @php
     $projectSlug = $requestAttributes->requestedProject->slug;
     $projectExtra = $requestAttributes->requestedProject->getProjectExtra();
+    /**
+     * @var $projectStats \ec5\DTO\ProjectStatsDTO
+     */
     $projectStats = $requestAttributes->requestedProject->getProjectStats();
 @endphp
 <div class="panel-body project-home__project-view-btn">
@@ -8,7 +11,7 @@
         <div class="col-xs-12 col-sm-12 col-md-6 project-home__stats">
             <i class="fa fa-database fa-2x fa-fw" aria-hidden="true"></i>
             <br/>
-            {{ Common::roundNumber($projectStats->getTotalEntries(), 1) }}
+            {{ Common::roundNumber($projectStats->total_entries, 1) }}
             Entries
         </div>
         <div class="col-xs-12 col-sm-12 col-md-6 project-home__stats">

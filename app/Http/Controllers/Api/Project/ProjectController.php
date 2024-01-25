@@ -71,8 +71,8 @@ class ProjectController
                 'id' => $this->requestedProjectRole()->getUser()->id ?? null,
             ],
             'project_mapping' => $this->requestedProject()->getProjectMapping()->getData(),
-            'project_stats' => array_merge($this->requestedProject()->getProjectStats()->getData(), [
-                'structure_last_updated' => $this->requestedProject()->getProjectStats()->getProjectStructureLastUpdated()
+            'project_stats' => array_merge($this->requestedProject()->getProjectStats()->toArray(), [
+                'structure_last_updated' => $this->requestedProject()->getProjectStats()->structure_last_updated
             ])
         ]);
         $apiResponse->setData($data);
@@ -104,8 +104,8 @@ class ProjectController
 
         $apiResponse->setMeta([
             'project_mapping' => $this->requestedProject()->getProjectMapping()->getData(),
-            'project_stats' => array_merge($this->requestedProject()->getProjectStats()->getData(), [
-                'structure_last_updated' => $this->requestedProject()->getProjectStats()->getProjectStructureLastUpdated()
+            'project_stats' => array_merge($this->requestedProject()->getProjectStats()->toArray(), [
+                'structure_last_updated' => $this->requestedProject()->getProjectStats()->structure_last_updated
             ])
         ]);
 

@@ -290,7 +290,7 @@ class UploadControllerBase extends ProjectApiControllerBase
      */
     protected function isValidProjectVersion()
     {
-        if ($this->requestedProject()->getProjectStats()->getProjectStructureLastUpdated() != $this->entryStructure->getProjectVersion()) {
+        if ($this->requestedProject()->getProjectStats()->structure_last_updated != $this->entryStructure->getProjectVersion()) {
             $this->errors = ['upload-controller' => ['ec5_201']];
             return false;
         }
