@@ -185,11 +185,7 @@ class ProjectMappingControllerTest extends TestCase
                 $params['is_default']
             );
         } catch (Exception $e) {
-            if ($response[0]->baseResponse->exception === null) {
-                dd($e->getMessage(), $response[0]);
-            } else {
-                dd($e->getMessage(), $response[0]->baseResponse->exception->getMessage());
-            }
+            $this->logTestError($e, $response);
         }
     }
 
@@ -314,11 +310,7 @@ class ProjectMappingControllerTest extends TestCase
                 $jsonResponse['data']['mapping'][1]['forms']
             );
         } catch (Exception $e) {
-            if ($response[0]->baseResponse->exception === null) {
-                dd($e->getMessage(), $response[0]);
-            } else {
-                dd($e->getMessage(), $response[0]->baseResponse->exception->getMessage());
-            }
+            $this->logTestError($e, $response);
         }
     }
 
@@ -395,11 +387,7 @@ class ProjectMappingControllerTest extends TestCase
                 $projectMappings[1]['is_default']
             );
         } catch (Exception $e) {
-            if ($response[0]->baseResponse->exception === null) {
-                dd($e->getMessage(), $response[0]);
-            } else {
-                dd($e->getMessage(), $response[0]->baseResponse->exception->getMessage());
-            }
+            $this->logTestError($e, $response);
         }
     }
 
@@ -475,11 +463,7 @@ class ProjectMappingControllerTest extends TestCase
                 $projectMappings[1]['is_default']
             );
         } catch (Exception $e) {
-            if ($response[0]->baseResponse->exception === null) {
-                dd($e->getMessage(), $response[0]);
-            } else {
-                dd($e->getMessage(), $response[0]->baseResponse->exception->getMessage());
-            }
+            $this->logTestError($e, $response);
         }
     }
 
@@ -544,11 +528,7 @@ class ProjectMappingControllerTest extends TestCase
                 $jsonResponse['data']['mapping']
             );
         } catch (Exception $e) {
-            if ($response[0]->baseResponse->exception === null) {
-                dd($e->getMessage(), $response[0]);
-            } else {
-                dd($e->getMessage(), $response[0]->baseResponse->exception->getMessage());
-            }
+            $this->logTestError($e, $response);
         }
     }
 
@@ -624,11 +604,7 @@ class ProjectMappingControllerTest extends TestCase
                     ]
                 ]);
         } catch (Exception $e) {
-            if ($response[0]->baseResponse->exception === null) {
-                dd($e->getMessage(), $response[0]);
-            } else {
-                dd($e->getMessage(), $response[0]->baseResponse->exception->getMessage());
-            }
+            $this->logTestError($e, $response);
         }
     }
 
@@ -701,11 +677,7 @@ class ProjectMappingControllerTest extends TestCase
                     ]
                 ]);
         } catch (Exception $e) {
-            if ($response[0]->baseResponse->exception === null) {
-                dd($e->getMessage(), $response[0]);
-            } else {
-                dd($e->getMessage(), $response[0]->baseResponse->exception->getMessage());
-            }
+            $this->logTestError($e, $response);
         }
     }
 
@@ -748,11 +720,7 @@ class ProjectMappingControllerTest extends TestCase
                     ]
                 ]);
         } catch (Exception $e) {
-            if ($response[0]->baseResponse->exception === null) {
-                dd($e->getMessage(), $response[0]);
-            } else {
-                dd($e->getMessage(), $response[0]->baseResponse->exception->getMessage());
-            }
+            $this->logTestError($e, $response);
         }
     }
 
@@ -822,11 +790,7 @@ class ProjectMappingControllerTest extends TestCase
                     ]
                 ]);
         } catch (Exception $e) {
-            if ($response[0]->baseResponse->exception === null) {
-                dd($e->getMessage(), $response[0]);
-            } else {
-                dd($e->getMessage(), $response[0]->baseResponse->exception->getMessage());
-            }
+            $this->logTestError($e, $response);
         }
     }
 }

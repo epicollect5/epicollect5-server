@@ -5,13 +5,14 @@ namespace ec5\Models\Eloquent;
 use Illuminate\Database\Eloquent\Model;
 use DB;
 
+/**
+ * @property int $id
+ * @property int $project_id
+ * @property int $user_id
+ * @property string $role
+ */
 class ProjectRole extends Model
 {
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
     protected $table = 'project_roles';
     protected $fillable = ['project_id', 'user_id', 'role'];
 
@@ -46,7 +47,7 @@ class ProjectRole extends Model
         }
     }
 
-    public function switchUserRole($projectId, $user, $currentRole, $newRole)
+    public function switchUserRole($projectId, $user, $currentRole, $newRole): int
     {
         try {
             $affectedRows = DB::table($this->table)
@@ -66,7 +67,7 @@ class ProjectRole extends Model
         }
     }
 
-    public function getCountByRole($projectId)
+    public function getCountByRole($projectId): array
     {
         return DB::table($this->table)
             ->selectRaw('role, count(*) as total')
@@ -77,12 +78,25 @@ class ProjectRole extends Model
             ->toArray();
     }
 
-    public function getCountOverlall($projectId)
+    public function getCountOverall($projectId)
     {
         return DB::table($this->table)
             ->selectRaw('count(*) as total')
             ->where('project_id', '=', $projectId)
             ->get()
             ->first();
+    }
+
+    public static function getAllProjectMembers($projectId): array
+    {
+        // Get all users belonging to this project
+        $projectRoles = DB::table(config('epicollect.tables.project_roles'))
+            ->where('project_id', $projectId)->get();
+        $users = [];
+        foreach ($projectRoles as $index => $projectRole) {
+            $users[$index] = User::where('id', $projectRole->user_id)->first();
+            $users[$index]['role'] = $projectRole->role;
+        }
+        return $users;
     }
 }

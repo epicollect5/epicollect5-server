@@ -521,11 +521,7 @@ class ProjectControllerTest extends TestCase
             if (!$response) {
                 dd($e->getMessage());
             }
-            if ($response[0]->baseResponse->exception === null) {
-                dd($e->getMessage(), $response[0]);
-            } else {
-                dd($e->getMessage(), $response[0]->baseResponse->exception->getMessage());
-            }
+            $this->logTestError($e, $response);
         }
     }
 }

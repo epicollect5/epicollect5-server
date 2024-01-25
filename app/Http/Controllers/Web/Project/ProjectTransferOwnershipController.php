@@ -3,8 +3,8 @@
 namespace ec5\Http\Controllers\Web\Project;
 
 use ec5\Models\Eloquent\Project;
+use ec5\Services\ProjectService;
 use Illuminate\Http\Request;
-use ec5\Repositories\QueryBuilder\ProjectRole\SearchRepository as ProjectRoleSearch;
 use ec5\Http\Validation\Project\RuleTransferOwnership as TransferValidator;
 use Auth;
 use ec5\Traits\Requests\RequestAttributes;
@@ -18,24 +18,7 @@ class ProjectTransferOwnershipController
      */
     protected $errors = [];
 
-    /**
-     * @var ProjectRoleSearch object
-     */
-    protected $projectRoleSearch;
-
-    /**
-     * ProjectController constructor.
-     * @param Request $request
-     */
-    public function __construct(ProjectRoleSearch $projectRoleSearch, Request $request)
-    {
-        $this->projectRoleSearch = $projectRoleSearch;
-    }
-
-    /**
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View|\Illuminate\Contracts\View\Factory|\Illuminate\View\View
-     */
-    public function show()
+    public function show(ProjectService $projectService)
     {
         $options['roles'] = ['manager', 'creator'];
         // Set project id in options
@@ -48,38 +31,38 @@ class ProjectTransferOwnershipController
 
         // Get paginated project users, based on per page, specified roles, current page and search term
         //here we assume there are never more than 1000 managers for a project.
-        $users = $this->projectRoleSearch->paginate(1000, 1, '', $options);
+        $projectMembers = $projectService->getProjectMembersPaginated(1000, '', $options);
         //need to grab "manager" key as repository returns grouped by roles
-        $vars['projectManagers'] = $users['manager'];
-        $vars['projectCreator'] = $users['creator'][0];
+        $vars['projectManagers'] = $projectMembers['manager'];
+        $vars['projectCreator'] = $projectMembers['creator'][0];
 
         return view('project.project_transfer_ownership', $vars);
 
     }
 
-    public function transfer(Request $request, TransferValidator $tranferValidator)
+    public function transfer(Request $request, TransferValidator $transferValidator)
     {
-        //if the current logged in user is not a creator for the project, abort
+        //if the current logged-in user is not a creator for the project, abort
         if (!$this->requestedProjectRole()->isCreator()) {
             return redirect()->back()->withErrors(['errors' => ['ec5_91']]);
         }
 
         //check manager value is valid
         $input['manager'] = $request->manager;
-        $tranferValidator->validate($input);
+        $transferValidator->validate($input);
 
-        if ($tranferValidator->hasErrors()) {
-            return redirect()->back()->withErrors($tranferValidator->errors());
+        if ($transferValidator->hasErrors()) {
+            return redirect()->back()->withErrors($transferValidator->errors());
         }
 
-        //this is the current logged in user as he is the only one whio has got access to this feature
+        //this is the current logged-in user as he is the only one who has got access to this feature
         $creatorId = Auth::user()->id;
         $managerId = $input['manager'];
         $projectId = $this->requestedProject()->getId();
         $project = new Project();
 
         if ($project->transferOwnership($projectId, $creatorId, $managerId)) {
-            //redirect back with success message (to manage user page)
+            //redirect back with the success message (to manage user page)
             return redirect()
                 ->route('manage-users', ['project_slug' => $this->requestedProject()->slug])
                 ->with('message', 'ec5_331');

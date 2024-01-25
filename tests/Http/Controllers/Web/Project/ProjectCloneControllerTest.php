@@ -188,7 +188,7 @@ class ProjectCloneControllerTest extends TestCase
             config('epicollect.strings.project_roles.viewer')
         ];
 
-        $usersCount = rand(5, 10);
+        $usersCount = rand(1, 10);
         $projectMembers = [];
         for ($i = 0; $i < $usersCount; $i++) {
             $user = factory(User::class)->create();

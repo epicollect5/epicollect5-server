@@ -8,7 +8,6 @@ use ec5\Http\Validation\Project\RuleProjectDefinitionDetails;
 use ec5\Http\Validation\Project\RuleSettings;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectStructure;
-use ec5\Repositories\QueryBuilder\Project\SearchRepository as Search;
 use ec5\Models\Images\UploadImage;
 use Exception;
 use Illuminate\Contracts\View\Factory;
@@ -39,20 +38,17 @@ class ProjectEditController
      * @param ApiResponse $apiResponse
      * @param RuleSettings $ruleSettings
      * @param RuleProjectDefinitionDetails $ruleProjectDefinitionDetails
-     * @param Search $search
      */
     public function __construct(
         ApiResponse                  $apiResponse,
         RuleSettings                 $ruleSettings,
-        RuleProjectDefinitionDetails $ruleProjectDefinitionDetails,
-        Search                       $search)
+        RuleProjectDefinitionDetails $ruleProjectDefinitionDetails)
     {
 
 
         $this->apiResponse = $apiResponse;
         $this->ruleProjectDefinitionDetails = $ruleProjectDefinitionDetails;
         $this->ruleSettings = $ruleSettings;
-        $this->search = $search;
         $this->allowedSettingActions = array_keys(config('epicollect.strings.edit_settings'));
 
     }
@@ -143,7 +139,7 @@ class ProjectEditController
             $payload['logo_height'] = $height;
         }
 
-        $this->ruleProjectDefinitionDetails->validate($payload, $check_keys = false);
+        $this->ruleProjectDefinitionDetails->validate($payload, false);
         if ($this->ruleProjectDefinitionDetails->hasErrors()) {
             return Redirect::back()->withErrors(
                 $this->ruleProjectDefinitionDetails->errors()
@@ -157,7 +153,7 @@ class ProjectEditController
 
         if (request()->file('logo_url')) {
             // NOTE: store larger thumb first, then smaller mobile logo
-            // As request file gets overwritten with each resize and it's better to shrink than to enlarge
+            // As request file gets overwritten with each resize, and it's better to shrink than to enlarge
             if (!$this->saveLogos('project_thumb')) {
                 return Redirect::back()->withErrors(['message' => 'ec5_83']);
             }

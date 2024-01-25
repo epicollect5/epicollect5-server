@@ -2,34 +2,19 @@
 
 namespace ec5\Http\Controllers\Api\Project;
 
-use ec5\Repositories\QueryBuilder\ProjectRole\SearchRepository as ProjectRoleSearch;
-use ec5\Repositories\QueryBuilder\ProjectRole\CreateRepository as ProjectRoleCreate;
 use ec5\Http\Validation\Project\RuleSwitchUserRole;
 use ec5\Http\Validation\Project\RuleBulkImportUsers;
 use ec5\Models\Eloquent\ProjectRole;
 use ec5\Models\Eloquent\User;
+use ec5\Services\ProjectService;
 use Illuminate\Http\Request;
 use ec5\Http\Controllers\Api\ApiResponse;
 use ec5\Traits\Requests\RequestAttributes;
+use Illuminate\Support\Facades\Redirect;
 
 class UserController
 {
     use RequestAttributes;
-
-    /**
-     * @var ProjectRoleSearch object
-     */
-    protected $projectRoleSearch;
-    protected $projectRoleCreate;
-
-    public function __construct(
-        ProjectRoleSearch $projectRoleSearch,
-        ProjectRoleCreate $projectRoleCreate
-    )
-    {
-        $this->projectRoleSearch = $projectRoleSearch;
-        $this->projectRoleCreate = $projectRoleCreate;
-    }
 
     /**
      * return a json object with all the users belonging to a project by role
@@ -37,7 +22,7 @@ class UserController
     public function all()
     {
         //todo bail out if not manager and up?
-        $users = $this->projectRoleSearch->users($this->requestedProject()->getId());
+        $users = ProjectRole::getAllProjectMembers($this->requestedProject()->getId());
         $jsonUsers = [];
 
         foreach ($users as $user) {
@@ -48,7 +33,6 @@ class UserController
                 'role' => $user->role
             ];
         }
-
         return response()->apiResponse($jsonUsers);
     }
 
@@ -58,7 +42,7 @@ class UserController
     public function removeByRole(Request $request, ApiResponse $apiResponse)
     {
         // Only managers and up have access
-        if (!$this->requestedProjectRole()->canRemoveUsers()) {
+        if (!$this->requestedProjectRole()->canManageUsers()) {
             //return error json
             return $apiResponse->errorResponse(404, ['manage-users' => ['ec5_91']]);
         }
@@ -113,7 +97,7 @@ class UserController
     )
     {
         // Only managers and up have access
-        if (!$this->requestedProjectRole()->canSwitchUserRole()) {
+        if (!$this->requestedProjectRole()->canManageUsers()) {
             //return error json
             return $apiResponse->errorResponse(404, ['manage-users' => ['ec5_91']]);
         }
@@ -157,63 +141,67 @@ class UserController
         }
     }
 
-    public function addUsersBulk(Request $request, ApiResponse $apiResponse, RuleBulkImportUsers $validator)
+    public function addUsersBulk(Request $request, ApiResponse $apiResponse, RuleBulkImportUsers $ruleBulkImportUsers, ProjectService $projectService)
     {
         $requestedUser = $request->attributes->get('requestedUser');
         $validationErrors = [];
 
         // Only creators and managers have access
-        if (!$this->requestedProjectRole()->canAddUsers()) {
+        if (!$this->requestedProjectRole()->canManageUsers()) {
             return $apiResponse->errorResponse(404, ['manage-users' => ['ec5_91']]);
         }
 
         // Retrieve post data
-        $data = $request->all();
+        $payload = $request->all();
 
         // Validate the inputs
-        $validator->validate($data);
-        if ($validator->hasErrors()) {
+        $ruleBulkImportUsers->validate($payload);
+        if ($ruleBulkImportUsers->hasErrors()) {
             //kick user out if anything is invalid, teach him a lesson.
-            return $apiResponse->errorResponse(404, $validator->errors());
+            return $apiResponse->errorResponse(404, $ruleBulkImportUsers->errors());
         }
 
-        $emails = $data['emails'];
-        $newRole = $data['role'];
+        $emails = $payload['emails'];
+        $newRole = $payload['role'];
 
         foreach ($emails as $email) {
             // Retrieve the user whose role is to be added
-            $user = User::where('email', '=', $email)->first();
-            if (!$user) {
-                $user = new User();
-                $user->email = $email;
-                $user->save();
+            $userToAdd = User::where('email', '=', $email)->first();
+            if (!$userToAdd) {
+                $userToAdd = new User();
+                $userToAdd->email = $email;
+                $userToAdd->save();
             }
-            // Attempt to get their existing role, if they have one
-            $userProjectRole = $this->projectRoleSearch->getRole($user, $this->requestedProject()->getId());
+            // Attempt to get their existing role if they have one
+            $userProjectRole = $projectService->getRole($userToAdd, $this->requestedProject()->getId());
 
             // Additional checks on the user against the user performing the action,
             // using the new role passed in and user's existing role, if available
-            $validator->additionalChecks($requestedUser, $user, $this->requestedProjectRole()->getRole(), $newRole,
+            $ruleBulkImportUsers->additionalChecks($requestedUser, $userToAdd, $this->requestedProjectRole()->getRole(), $newRole,
                 $userProjectRole->getRole());
-            if ($validator->hasErrors()) {
-                $validationErrors[] = $validator->errors();
+            if ($ruleBulkImportUsers->hasErrors()) {
+                $validationErrors[] = $ruleBulkImportUsers->errors();
             }
 
-            //Got here without any errors? Add user role then ;)
-            if (!$validator->hasErrors()) {
-                // Create the project role for this user
-                $this->projectRoleCreate->create($user->id, $this->requestedProject()->getId(), $newRole);
+            //Got here without any errors? Add the user role then ;)
+            if (!$ruleBulkImportUsers->hasErrors()) {
+                if (!$projectService->addOrUpdateUserRole(
+                    $userToAdd->id,
+                    $this->requestedProjectRole(),
+                    $payload['role']
+                )) {
+                    $validationErrors[] = ['db' => ['ec5_104']];
+                }
             }
         }
-
         //were there any errors?
         if (sizeof($validationErrors) === 0) {
             // Send http status code 200, ok!
             $apiResponse->setData(['message' => trans('status_codes.ec5_345', ['role' => $newRole])]);
             return $apiResponse->toJsonResponse(200);
         } else {
-            //warn user about errors (managers roles which cannot be switched)
-            return $apiResponse->errorResponse(400, ['manage-users' => ['ec5_344']]);
+            //warn user about errors (manager roles which cannot be switched)
+            return $apiResponse->errorResponse(400, $validationErrors);
         }
     }
 }

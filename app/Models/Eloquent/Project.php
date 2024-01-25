@@ -14,6 +14,38 @@ class Project extends Model
     protected $projectStatsTable = 'project_stats';
     protected $fillable = ['slug'];
 
+    public static function findBySlug($slug)
+    {
+        $query = DB::table(config('epicollect.tables.projects'));
+        $query = $query->leftJoin(
+            config('epicollect.tables.project_stats'),
+            'projects.id',
+            '=',
+            'project_stats.project_id'
+        );
+
+        $query = $query->leftJoin(
+            config('epicollect.tables.project_structures'),
+            'projects.id',
+            '=',
+            'project_structures.project_id'
+        );
+
+        $query = $query->where('projects.slug', $slug);
+        $query = $query->where('status', '<>', 'archived'); // Skip rows where status is 'archived'
+
+        $query = $query->select(
+            'projects.*',
+            'project_stats.id AS stats_id',
+            'project_stats.*',
+            'project_structures.*',
+            'project_structures.updated_at as structure_last_updated',
+            'project_structures.id as structure_id'
+        );
+
+        return $query->first();
+    }
+
     public function myProjects($perPage, $userId, $params)
     {
         return DB::table($this->getTable())
@@ -200,4 +232,5 @@ class Project extends Model
             return false;
         }
     }
+
 }

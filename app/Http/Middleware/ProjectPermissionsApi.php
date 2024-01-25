@@ -2,12 +2,9 @@
 
 namespace ec5\Http\Middleware;
 
-use Illuminate\Auth\AuthenticationException;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Symfony\Bridge\PsrHttpMessage\Factory\DiactorosFactory;
-use ec5\Repositories\QueryBuilder\ProjectRole\SearchRepository as ProjectRoleSearch;
 use ec5\Repositories\QueryBuilder\OAuth\SearchRepository as OAuthProjectClientSearch;
-use ec5\Repositories\QueryBuilder\Project\SearchRepository;
 use League\OAuth2\Server\ResourceServer;
 
 use ec5\Models\Projects\Project;
@@ -15,7 +12,6 @@ use ec5\Models\Projects\Project;
 use ec5\Http\Controllers\Api\ApiResponse as ApiResponse;
 
 use Illuminate\Http\Request;
-use Config;
 
 class ProjectPermissionsApi extends RequestAttributesMiddleware
 {
@@ -46,16 +42,12 @@ class ProjectPermissionsApi extends RequestAttributesMiddleware
      *
      * @param ResourceServer $server
      * @param Request $request
-     * @param SearchRepository $search
-     * @param ProjectRoleSearch $projectRoleSearch
      * @param ApiResponse $apiResponse
      * @param Project $requestedProject
      * @param OAuthProjectClientSearch $oAuthProjectClientSearch
      */
     public function __construct(ResourceServer           $server,
                                 Request                  $request,
-                                SearchRepository         $search,
-                                ProjectRoleSearch        $projectRoleSearch,
                                 ApiResponse              $apiResponse,
                                 Project                  $requestedProject,
                                 OAuthProjectClientSearch $oAuthProjectClientSearch)
@@ -63,7 +55,7 @@ class ProjectPermissionsApi extends RequestAttributesMiddleware
         $this->server = $server;
         $this->oAuthProjectClientSearch = $oAuthProjectClientSearch;
 
-        parent::__construct($request, $search, $projectRoleSearch, $apiResponse, $requestedProject);
+        parent::__construct($request, $apiResponse, $requestedProject);
     }
 
     /**
@@ -71,11 +63,7 @@ class ProjectPermissionsApi extends RequestAttributesMiddleware
      *
      * @return bool
      */
-    /**
-     * @return bool
-     * @throws AuthenticationException
-     */
-    public function hasPermission()
+    public function hasPermission(): bool
     {
 
         // Only need to check for a permission if the project is private

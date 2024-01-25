@@ -1,15 +1,14 @@
-<?php
+<?php /** @noinspection DuplicatedCode */
 
 namespace ec5\Http\Controllers\Web\Project;
 
-use ec5\Repositories\QueryBuilder\Project\SearchRepository as ProjectSearch;
 use ec5\Models\Eloquent\User;
-use ec5\Repositories\QueryBuilder\ProjectRole\SearchRepository as ProjectRoleSearch;
-use ec5\Repositories\QueryBuilder\ProjectRole\CreateRepository as ProjectRoleCreate;
-use ec5\Repositories\QueryBuilder\ProjectRole\DeleteRepository as ProjectRoleDelete;
 use ec5\Models\Eloquent\ProjectRole;
-use ec5\Http\Validation\Project\RuleProjectRole as Validator;
+use ec5\Http\Validation\Project\RuleProjectRole;
+use ec5\Http\Validation\Project\RuleEmail;
 use ec5\Http\Controllers\Api\ApiResponse;
+use ec5\Services\ProjectService;
+use Exception;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\JsonResponse;
@@ -19,48 +18,23 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Http\Request;
 use ec5\Traits\Requests\RequestAttributes;
 use Illuminate\View\View;
+use Log;
 use Throwable;
 
 class ManageUsersController
 {
     use RequestAttributes;
 
-    protected $projectRoleSearch;
-    protected $projectRoleCreate;
-    protected $projectRoleDelete;
-    protected $projectSearch;
-
-    /**
-     * Create a new manage project controller instance.
-     *
-     * @param ProjectRoleSearch $projectRoleSearch
-     * @param ProjectRoleCreate $projectRoleCreate
-     * @param ProjectRoleDelete $projectRoleDelete
-     * @param ProjectSearch $projectSearch
-     */
-    public function __construct(
-        ProjectRoleSearch $projectRoleSearch,
-        ProjectRoleCreate $projectRoleCreate,
-        ProjectRoleDelete $projectRoleDelete,
-        ProjectSearch     $projectSearch
-    )
-    {
-
-        $this->projectRoleSearch = $projectRoleSearch;
-        $this->projectRoleCreate = $projectRoleCreate;
-        $this->projectRoleDelete = $projectRoleDelete;
-        $this->projectSearch = $projectSearch;
-    }
-
     /**
      * @param Request $request
+     * @param ProjectService $projectService
      * @return Factory|Application|JsonResponse|RedirectResponse|View
      * @throws Throwable
      */
-    public function index(Request $request)
+    public function index(Request $request, ProjectService $projectService)
     {
         // Only managers (and creators) have access
-        if (!$this->requestedProjectRole()->isManager()) {
+        if (!$this->requestedProjectRole()->canManageUsers()) {
             return Redirect::back()->withErrors(['ec5_91']);
         }
 
@@ -70,14 +44,12 @@ class ManageUsersController
         $perPage = config('epicollect.limits.users_per_page');
         // Set search/roles/current page option defaults
         $search = !empty($params['search']) ? $params['search'] : '';
-        $currentPage = 1;
         $roles = ['page-manager' => 'manager', 'page-curator' => 'curator', 'page-collector' => 'collector', 'page-viewer' => 'viewer'];
         $options = ['roles' => []];
 
         foreach ($roles as $paramKey => $role) {
             if (!empty($params[$paramKey])) {
                 $options['roles'] = [$role];
-                $currentPage = $params[$paramKey];
                 break;
             }
         }
@@ -90,7 +62,7 @@ class ManageUsersController
         $options['project_id'] = $this->requestedProject()->getId();
 
         // Get paginated project users, based on per page, specified roles, current page and search term
-        $users = $this->projectRoleSearch->paginate($perPage, $currentPage, $search, $options);
+        $projectMembers = $projectService->getProjectMembersPaginated($perPage, $search, $options);
 
         //CREATOR role can transfer ownership
         $canTransferOwnership = $this->requestedProjectRole()->isCreator();
@@ -109,7 +81,7 @@ class ManageUsersController
         if ($request->ajax()) {
             // For ajax, we only want to return one rendered view
             // and one set of users for the specified role
-            $projectUsers = $users[$options['roles'][0]];
+            $projectUsers = $projectMembers[$options['roles'][0]];
 
             return response()->json(view(
                 'project.project_users',
@@ -133,14 +105,14 @@ class ManageUsersController
 
         $projectRole = new ProjectRole();
         $countByRole = $projectRole->getCountByRole($this->requestedProject()->getId());
-        $countOverall = $projectRole->getCountOverlall($this->requestedProject()->getId());
+        $countOverall = $projectRole->getCountOverall($this->requestedProject()->getId());
 
         return view(
             'project.project_details',
             [
                 'includeTemplate' => 'manage-users',
                 'project' => $this->requestedProject(),
-                'users' => $users,
+                'users' => $projectMembers,
                 'countOverall' => $countOverall->total,
                 'countByRole' => $countByRole,
                 'requestedProjectRole' => $this->requestedProjectRole(),
@@ -157,15 +129,14 @@ class ManageUsersController
      *
      * @param Request $request
      * @param ApiResponse $apiResponse
-     * @param Validator $validator
+     * @param RuleProjectRole $ruleProjectRole
+     * @param ProjectService $projectService
      * @return JsonResponse|RedirectResponse
      */
-    public function addUserRole(Request $request, ApiResponse $apiResponse, Validator $validator)
+    public function addUserRole(Request $request, ApiResponse $apiResponse, RuleProjectRole $ruleProjectRole, ProjectService $projectService)
     {
-        $requestedUser = $request->attributes->get('requestedUser');
-
         // Only creators and managers have access
-        if (!$this->requestedProjectRole()->isManager()) {
+        if (!$this->requestedProjectRole()->canManageUsers()) {
             // If ajax, return error json
             if ($request->ajax()) {
                 return $apiResponse->errorResponse(404, ['manage-users' => ['ec5_91']]);
@@ -173,59 +144,58 @@ class ManageUsersController
             return Redirect::back()->withErrors(['ec5_91']);
         }
 
-        // Retrieve post data
-        $params = $request->all();
-
-
-        // Validate the input
-        $validator->validate($params);
-        if ($validator->hasErrors()) {
+        $payload = $request->all();
+        $ruleProjectRole->validate($payload);
+        if ($ruleProjectRole->hasErrors()) {
             // If ajax, return error json
             if ($request->ajax()) {
-                return $apiResponse->errorResponse(400, $validator->errors());
+                return $apiResponse->errorResponse(400, $ruleProjectRole->errors());
             }
-            return Redirect::back()->withErrors($validator->errors());
+            return Redirect::back()->withErrors($ruleProjectRole->errors());
         }
 
         // Retrieve the user whose role is to be added
-        $user = User::where('email', '=', $params['email'])->first();
-        if (!$user) {
+        $userToAdd = User::where('email', '=', $payload['email'])->first();
+        if (!$userToAdd) {
             // If no user, add a placeholder user to the system,
             //other fields will be filled in when the user logs in
-            $user = new User();
-            $user->email = $params['email'];
-            $user->save();
+            $userToAdd = new User();
+            $userToAdd->email = $payload['email'];
+            $userToAdd->save();
         }
+
         // Attempt to get their existing role if they have one
-        $userProjectRole = $this->projectRoleSearch->getRole($user, $this->requestedProject()->getId());
+        $userToAddProjectRole = $projectService->getRole($userToAdd, $this->requestedProject()->getId());
 
         // Additional checks on the user against the user performing the action,
         // using the new role passed in and user's existing role, if available
-        $validator->additionalChecks(
-            $requestedUser,
-            $user,
+        $ruleProjectRole->additionalChecks(
+            $this->requestedUser(),
+            $userToAdd,
             $this->requestedProjectRole()->getRole(),
-            $params['role'],
-            $userProjectRole->getRole()
+            $payload['role'],
+            $userToAddProjectRole->getRole()
         );
-        if ($validator->hasErrors()) {
+        if ($ruleProjectRole->hasErrors()) {
             // If ajax, return error json
             if ($request->ajax()) {
-
-                //managers cannot add/switch other manager(s)
-                if ($this->requestedProjectRole()->getRole() === 'manager' && $userProjectRole->getRole() === 'manager') {
-                    return $apiResponse->errorResponse(400, [
-                        'manage-users' => ['ec5_344']
-                    ]);
-                }
-
-                return $apiResponse->errorResponse(400, $validator->errors());
+                return $apiResponse->errorResponse(400, $ruleProjectRole->errors());
             }
-            return Redirect::back()->withErrors($validator->errors());
+            return Redirect::back()->withErrors($ruleProjectRole->errors());
         }
 
-        // Create the project role for this user
-        $this->projectRoleCreate->create($user->id, $this->requestedProject()->getId(), $params['role']);
+
+        if (!$projectService->addOrUpdateUserRole(
+            $userToAdd->id,
+            $this->requestedProject()->getId(),
+            $payload['role']
+        )) {
+            // If ajax, return error json
+            if ($request->ajax()) {
+                return $apiResponse->errorResponse(400, ['db' => ['ec5_104']]);
+            }
+            return Redirect::back()->withErrors(['db' => ['ec5_104']]);
+        }
 
         // If ajax, return success json
         if ($request->ajax()) {
@@ -233,9 +203,8 @@ class ManageUsersController
             $apiResponse->setData(['message' => trans('status_codes.ec5_88')]);
             return $apiResponse->toJsonResponse(200);
         }
-
         // Redirect back to admin page with hash value
-        return Redirect::to(URL::previous() . '#' . $params['role'])->with('message', 'ec5_88');
+        return Redirect::to(URL::previous() . '#' . $payload['role'])->with('message', 'ec5_88');
     }
 
     /**
@@ -245,16 +214,14 @@ class ManageUsersController
      *
      * @param Request $request
      * @param ApiResponse $apiResponse
-     * @param Validator $validator
+     * @param RuleProjectRole $ruleProjectRole
+     * @param ProjectService $projectService
      * @return JsonResponse|RedirectResponse
      */
-    public function removeUserRole(Request $request, ApiResponse $apiResponse, Validator $validator)
+    public function removeUserRole(Request $request, ApiResponse $apiResponse, RuleProjectRole $ruleProjectRole, RuleEmail $ruleEmail, ProjectService $projectService)
     {
-        $requestedUser = $request->attributes->get('requestedUser');
-
         // Only managers and up have access
-        if (!$this->requestedProjectRole()->isManager()) {
-
+        if (!$this->requestedProjectRole()->canManageUsers()) {
             // If ajax, return error json
             if ($request->ajax()) {
                 return $apiResponse->errorResponse(404, ['manage-users' => ['ec5_91']]);
@@ -263,10 +230,18 @@ class ManageUsersController
         }
 
         // Retrieve post data
-        $params = $request->all();
+        $payload = $request->all();
+        $ruleEmail->validate($payload);
+        if ($ruleEmail->hasErrors()) {
+            // If ajax, return error json
+            if ($request->ajax()) {
+                return $apiResponse->errorResponse(400, $ruleEmail->errors());
+            }
+            return Redirect::back()->withErrors($ruleEmail->errors());
+        }
 
         // Retrieve the user whose role is to be removed
-        $user = User::where('email', '=', $params['email'])->first();
+        $user = User::where('email', '=', $payload['email'])->first();
         if (!$user) {
             if ($request->ajax()) {
                 return $apiResponse->errorResponse(400, ['manage-users' => ['ec5_90']]);
@@ -274,24 +249,34 @@ class ManageUsersController
             return Redirect::back()->withErrors(['ec5_90']);
         }
         // Get their existing role
-        $userProjectRole = $this->projectRoleSearch->getRole($user, $this->requestedProject()->getId());
+        $userProjectRole = $projectService->getRole($user, $this->requestedProject()->getId());
         // Additional checks on the user and their existing role
-        $validator->additionalChecks(
-            $requestedUser,
+        $ruleProjectRole->additionalChecks(
+            $this->requestedUser(),
             $user,
             $this->requestedProjectRole()->getRole(),
             null,
             $userProjectRole->getRole()
         );
-        if ($validator->hasErrors()) {
+        if ($ruleProjectRole->hasErrors()) {
             if ($request->ajax()) {
-                return $apiResponse->errorResponse(400, $validator->errors());
+                return $apiResponse->errorResponse(400, $ruleProjectRole->errors());
             }
-            return Redirect::back()->withErrors($validator->errors());
+            return Redirect::back()->withErrors($ruleProjectRole->errors());
         }
 
-        // Remove the project role for this user
-        $this->projectRoleDelete->delete($user->id, $this->requestedProject()->getId());
+        try {
+            // Remove the project role for this user
+            ProjectRole::where('user_id', $user->id)
+                ->where('project_id', $this->requestedProject()->getId())
+                ->delete();
+        } catch (Exception $e) {
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
+            if ($request->ajax()) {
+                return $apiResponse->errorResponse(400, ['manage-user' => ['ec5_104']]);
+            }
+            return redirect()->back()->withErrors(['manage-user' => ['ec5_104']]);
+        }
 
         // If ajax, return success json
         if ($request->ajax()) {

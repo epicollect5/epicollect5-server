@@ -2,13 +2,12 @@
 
 namespace ec5\Http\Controllers\Web\Admin;
 
-use ec5\Repositories\QueryBuilder\ProjectRole\SearchRepository as ProjectRoleSearch;
 use ec5\Http\Controllers\Controller;
+use ec5\Services\ProjectService;
 use ec5\Services\UserService;
 use Illuminate\Http\Request;
 use ec5\Models\Eloquent\User;
 use ec5\Models\Eloquent\Project;
-use Config;
 
 class AdminController extends Controller
 {
@@ -18,19 +17,16 @@ class AdminController extends Controller
     |--------------------------------------------------------------------------
     */
     protected $projectModel;
-    protected $projectRoleSearch;
 
     /**
      * Create a new admin controller instance.
      * Restricted to admin and superadmin users
      */
     public function __construct(
-        Project           $projectModel,
-        ProjectRoleSearch $projectRoleSearch
+        Project $projectModel
     )
     {
         $this->projectModel = $projectModel;
-        $this->projectRoleSearch = $projectRoleSearch;
     }
 
     /**
@@ -68,7 +64,7 @@ class AdminController extends Controller
         return view('admin.admin', $params);
     }
 
-    public function showProjects(Request $request)
+    public function showProjects(Request $request, ProjectService $projectService)
     {
         $adminUser = $request->user();
         $view = 'admin.tables.projects';
@@ -84,7 +80,7 @@ class AdminController extends Controller
         // Append the creator user's User object and current user's ProjectRole object
         foreach ($projects as $project) {
             $project->user = User::where('id', '=', $project->created_by)->first();
-            $project->my_role = $this->projectRoleSearch->getRole($adminUser, $project->project_id)->getRole();
+            $project->my_role = $projectService->getRole($adminUser, $project->project_id)->getRole();
         }
 
         $projects->appends($options);
@@ -103,7 +99,7 @@ class AdminController extends Controller
         return view('admin.admin', $params);
     }
 
-    public function showStats(Request $request)
+    public function showStats()
     {
         $action = 'stats';
         // Return stats view with relevant params

@@ -8,9 +8,7 @@ use Illuminate\Contracts\View\Factory;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use ec5\Models\Projects\Project as LegacyProject;
 use ec5\Http\Validation\Project\RuleName;
-use ec5\Repositories\QueryBuilder\ProjectRole\CreateRepository as CreateProjectRole;
 use ec5\Models\Images\CreateProjectLogoAvatar;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -36,12 +34,14 @@ class ProjectCloneController
 
     /**
      * @param Request $request
-     * @param LegacyProject $project
      * @param RuleName $ruleName
-     * @param CreateProjectRole $createProjectRole
+     * @param ProjectService $projectService
      * @return Factory|Application|RedirectResponse|View
      */
-    public function store(Request $request, LegacyProject $project, RuleName $ruleName, ProjectService $projectService, CreateProjectRole $createProjectRole)
+    public function store(Request        $request,
+                          RuleName       $ruleName,
+                          ProjectService $projectService
+    )
     {
         if (!$this->requestedProjectRole()->canEditProject()) {
             return view('errors.gen_error')->withErrors(['errors' => ['ec5_91']]);
@@ -71,10 +71,10 @@ class ProjectCloneController
 
         // Try and clone users
         if ($cloneUsers) {
-            $tryCloneUsers = $createProjectRole->cloneProjectRoles($sourceProjectId, $clonedProjectId);
-            if (!$tryCloneUsers) {
+            $areRolesCloned = $projectService->cloneProjectRoles($sourceProjectId, $clonedProjectId);
+            if (!$areRolesCloned) {
                 // Cloning users failed
-                return Redirect::back()->withErrors(['db' => $createProjectRole->errors()]);
+                return Redirect::back()->withErrors(['db' => ['ec5_104']]);
             }
         }
 

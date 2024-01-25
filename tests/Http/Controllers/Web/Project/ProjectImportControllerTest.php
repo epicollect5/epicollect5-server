@@ -12,6 +12,7 @@ use ec5\Models\Eloquent\User;
 use Faker\Factory as Faker;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Str;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 
@@ -181,7 +182,7 @@ class ProjectImportControllerTest extends TestCase
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
         $projectName = Generators::projectRef();
-        $projectSlug = str_slug($projectName);
+        $projectSlug = Str::slug($projectName);
         $projectDefinition = (ProjectDefinitionGenerator::createProject(1));
         $projectDefinition['data']['project']['name'] = $projectName;
         $projectDefinition['data']['project']['slug'] = $projectSlug;
