@@ -2,16 +2,17 @@
 
 namespace ec5\Http\Middleware;
 
-use ec5\Repositories\QueryBuilder\ProjectRole\SearchRepository as ProjectRoleSearch;
-use ec5\Repositories\QueryBuilder\Project\SearchRepository;
-use ec5\Models\Projects\Project;
-use ec5\Http\Controllers\Api\ApiResponse as ApiResponse;
-use Illuminate\Support\Str;
-use Illuminate\Http\Request;
 use Closure;
+use ec5\DTO\ProjectRoleDTO;
+use ec5\Http\Controllers\Api\ApiResponse as ApiResponse;
+use ec5\Models\Eloquent\Project;
+use ec5\Models\Projects\Project as LegacyProject;
+use ec5\Services\ProjectService;
+use ec5\Traits\Middleware\MiddlewareTools;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use stdClass;
 use View;
-use ec5\Traits\Middleware\MiddlewareTools;
 
 abstract class RequestAttributesMiddleware
 {
@@ -19,11 +20,13 @@ abstract class RequestAttributesMiddleware
 
     protected $request;
     protected $search;
-    protected $projectRoleSearch;
     protected $apiResponse;
     protected $error;
     protected $requestedProject;
     protected $requestedUser;
+    /**
+     * @var ProjectRoleDTO
+     */
     protected $requestedProjectRole;
 
     /*
@@ -38,15 +41,11 @@ abstract class RequestAttributesMiddleware
     /**
      * ProjectPermissionsBase constructor.
      * @param Request $request
-     * @param SearchRepository $search
-     * @param ProjectRoleSearch $projectRoleSearch
      * @param ApiResponse $apiResponse
-     * @param Project $requestedProject
+     * @param LegacyProject $requestedProject
      */
-    public function __construct(Request $request, SearchRepository $search, ProjectRoleSearch $projectRoleSearch, ApiResponse $apiResponse, Project $requestedProject)
+    public function __construct(Request $request, ApiResponse $apiResponse, LegacyProject $requestedProject)
     {
-        $this->search = $search;
-        $this->projectRoleSearch = $projectRoleSearch;
         $this->requestedProject = $requestedProject;
         $this->request = $request;
         $this->apiResponse = $apiResponse;
@@ -110,21 +109,17 @@ abstract class RequestAttributesMiddleware
     private function setRequestedProject(Request $request)
     {
         $slug = $request->route()->parameter('project_slug');
-
         $slug = Str::slug($slug, '-');
 
-        if ($slug !== '') {
-            // Retrieve project (legacy way,  R&A fiasco)
-            $project = $this->search->find($slug, $columns = array('*'));
-            if ($project) {
-                // Initialise the main Project model
-                $this->requestedProject->init($project);
-                return;
-            }
+        if (empty($slug)) {
+            $this->requestedProject = null;
         }
 
-        // Otherwise requestedProject set as null
-        $this->requestedProject = null;
+        $project = Project::findBySlug($slug);
+        if ($project) {
+            // Initialise the main Project model
+            $this->requestedProject->init($project);
+        }
     }
 
     protected function setRequestedUser(Request $request)
@@ -138,9 +133,9 @@ abstract class RequestAttributesMiddleware
      */
     protected function setRequestedProjectRole()
     {
+        $projectService = new ProjectService();
         // Retrieve user role
-        $this->requestedProjectRole = $this->projectRoleSearch->getRole($this->requestedUser, $this->requestedProject->getId());
-
+        $this->requestedProjectRole = $projectService->getRole($this->requestedUser, $this->requestedProject->getId());
         // If no role is found, but the user is an admin/super admin, add creator role
         if (
             !$this->requestedProjectRole->getRole() && $this->requestedUser &&

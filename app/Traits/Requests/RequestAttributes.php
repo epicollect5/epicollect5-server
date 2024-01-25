@@ -2,8 +2,8 @@
 
 namespace ec5\Traits\Requests;
 
+use ec5\DTO\ProjectRoleDTO;
 use ec5\Models\Eloquent\User;
-use ec5\Models\ProjectRoles\ProjectRole;
 use ec5\Models\Projects\Project;
 
 trait RequestAttributes
@@ -26,10 +26,10 @@ trait RequestAttributes
         return $requestedProject;
     }
 
-    protected function requestedProjectRole(): ProjectRole
+    protected function requestedProjectRole(): ProjectRoleDTO
     {
         /**
-         * @var ProjectRole $projectRole
+         * @var ProjectRoleDTO $projectRole
          */
         $projectRole = request()->attributes->get('requestedProjectRole');
         return $projectRole;

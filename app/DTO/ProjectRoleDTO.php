@@ -1,8 +1,8 @@
 <?php
 
-namespace ec5\Models\ProjectRoles;
+namespace ec5\DTO;
 
-class ProjectRole
+class ProjectRoleDTO
 {
     protected $user;
     protected $role;
@@ -28,37 +28,32 @@ class ProjectRole
 
     public function isCreator(): bool
     {
-        return $this->role === 'creator';
+        return $this->role === config('epicollect.strings.project_roles.creator');
     }
 
     public function isManager(): bool
     {
-        if ($this->role == 'manager' || $this->isCreator()) {
-            return true;
-        }
-
-        return false;
-
+        return $this->role === config('epicollect.strings.project_roles.manager');
     }
 
     public function isCurator(): bool
     {
-        return $this->role === 'curator';
+        return $this->role === config('epicollect.strings.project_roles.curator');
     }
 
     public function isCollector(): bool
     {
-        return $this->role === 'collector';
+        return $this->role === config('epicollect.strings.project_roles.collector');
     }
 
     public function isViewer(): bool
     {
-        return $this->role === 'viewer';
+        return $this->role === config('epicollect.strings.project_roles.viewer');
     }
 
     public function canEditData(): bool
     {
-        return ($this->isManager() || $this->isCurator());
+        return $this->isCreator() || $this->isManager() || $this->isCurator();
     }
 
     /**
@@ -67,12 +62,12 @@ class ProjectRole
      */
     public function canDeleteEntries(): bool
     {
-        return $this->isManager() || $this->isCreator();
+        return $this->isCreator() || $this->isManager();
     }
 
     public function canDeleteEntry($entry): bool
     {
-        if ($this->isManager() || $this->isCurator() ||
+        if ($this->isCreator() || $this->isManager() || $this->isCurator() ||
             ($this->user && $this->user->id == $entry->user_id)) {
             return true;
         }
@@ -81,7 +76,7 @@ class ProjectRole
 
     public function canUpload(): bool
     {
-        if ($this->isManager() || $this->isCurator() || $this->isCollector()) {
+        if ($this->isCreator() || $this->isManager() || $this->isCurator() || $this->isCollector()) {
             return true;
         }
         return false;
@@ -97,7 +92,7 @@ class ProjectRole
 
     public function canEditProject(): bool
     {
-        return $this->isManager() || $this->isCreator();
+        return $this->isCreator() || $this->isManager();
     }
 
     public function canDeleteProject(): bool
@@ -105,42 +100,19 @@ class ProjectRole
         return $this->isCreator();
     }
 
-    public function canViewProject(): bool
-    {
-        if ($this->isManager() || $this->isCurator() || $this->isCollector() || $this->isViewer()) {
-            return true;
-        }
-        return false;
-    }
-
-    //creator cannot leave a project
+    //creator(s) cannot leave a project
     public function canLeaveProject(): bool
     {
         return (!$this->isCreator());
     }
 
-    public function canAddUsers(): bool
+    public function canManageUsers(): bool
     {
-        return $this->isManager();
-    }
-
-    public function canRemoveUsers(): bool
-    {
-        return $this->isManager();
-    }
-
-    public function canSwitchUserRole(): bool
-    {
-        return $this->isManager();
+        return $this->isCreator() || $this->isManager();
     }
 
     public function getUser()
     {
         return $this->user;
-    }
-
-    public function getProjectId(): int
-    {
-        return $this->projectId;
     }
 }

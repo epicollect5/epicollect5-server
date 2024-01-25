@@ -2,10 +2,9 @@
 
 namespace ec5\Models\Entries;
 
-use Symfony\Component\HttpFoundation\File\UploadedFile;
-use ec5\Models\ProjectRoles\ProjectRole;
-use Config;
+use ec5\DTO\ProjectRoleDTO;
 use Hash;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class EntryStructure
 {
@@ -35,7 +34,7 @@ class EntryStructure
     protected $projectId = 0;
 
     /**
-     * @var ProjectRole|null
+     * @var ProjectRoleDTO|null
      */
     protected $projectRole = null;
 
@@ -112,9 +111,9 @@ class EntryStructure
     }
 
     /**
-     * @param ProjectRole $projectRole
+     * @param ProjectRoleDTO $projectRole
      */
-    public function setProjectRole(ProjectRole $projectRole)
+    public function setProjectRole(ProjectRoleDTO $projectRole)
     {
         $this->projectRole = $projectRole;
     }
