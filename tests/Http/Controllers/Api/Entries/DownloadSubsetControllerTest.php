@@ -10,6 +10,7 @@ use ec5\Models\Eloquent\ProjectRole;
 use ec5\Models\Eloquent\ProjectStats;
 use ec5\Models\Eloquent\ProjectStructure;
 use ec5\Models\Eloquent\User;
+use Exception;
 use Illuminate\Support\Str;
 use Storage;
 use Tests\Generators\ProjectDefinitionGenerator;
@@ -58,10 +59,29 @@ class DownloadSubsetControllerTest extends TestCase
         $queryString .= '&' . $cookieName . '=test';
         $response = [];
         try {
-            $response[] = $this->get('api/internal/download-entries-subset/' . $project->slug . $queryString);
-            $response[0]->assertStatus(302);
-        } catch (\Exception $e) {
-            dd($e->getMessage(), $response[0]);
+            $response[] = $this->json('GET', 'api/internal/download-entries-subset/' . $project->slug . $queryString);
+            $response[0]->assertStatus(404);
+            $response[0]->assertJsonStructure([
+                "errors" => [
+                    [
+                        "code",
+                        "title",
+                        "source",
+                    ]
+                ]
+            ]);
+
+            $response[0]->assertExactJson([
+                "errors" => [
+                    [
+                        "code" => "ec5_77",
+                        "title" => "This project is private. Please log in.",
+                        "source" => "middleware"
+                    ]
+                ]
+            ]);
+        } catch (Exception $e) {
+            $this->logTestError($e, $response);
         }
     }
 

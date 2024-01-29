@@ -40,7 +40,7 @@
 
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-danger" data-dismiss="modal">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">
                         {{trans('site.cancel')}}
                     </button>
                     <button class="btn btn-default btn-action"

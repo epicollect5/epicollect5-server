@@ -4,7 +4,7 @@ namespace Tests\Http\Controllers\Web\Project;
 
 use ec5\Models\Eloquent\Entries\BranchEntry;
 use ec5\Models\Eloquent\Entries\Entry;
-use ec5\Models\Eloquent\OAuthClientProjects;
+use ec5\Models\Eloquent\OAuthClientProject;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectRole;
 use ec5\Models\Eloquent\ProjectStats;
@@ -252,7 +252,7 @@ class ProjectLeaveControllerTest extends TestCase
         factory(ProjectStructure::class)->create(
             ['project_id' => $project->id]
         );
-        factory(OAuthClientProjects::class)->create(
+        factory(OAuthClientProject::class)->create(
             ['project_id' => $project->id]
         );
 
@@ -320,7 +320,7 @@ class ProjectLeaveControllerTest extends TestCase
         factory(ProjectStructure::class)->create(
             ['project_id' => $project->id]
         );
-        factory(OAuthClientProjects::class)->create(
+        factory(OAuthClientProject::class)->create(
             ['project_id' => $project->id]
         );
 

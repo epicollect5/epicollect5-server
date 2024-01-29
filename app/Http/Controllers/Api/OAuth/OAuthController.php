@@ -3,6 +3,7 @@
 namespace ec5\Http\Controllers\Api\OAuth;
 
 use ec5\Http\Controllers\Api\ApiResponse;
+use ec5\Models\Eloquent\OAuthAccessToken;
 use Illuminate\Http\JsonResponse;
 use Laravel\Passport\Http\Controllers\HandlesOAuthErrors;
 use Laravel\Passport\TokenRepository;
@@ -14,7 +15,6 @@ use Psr\Http\Message\ServerRequestInterface;
 use League\OAuth2\Server\AuthorizationServer;
 use Exception;
 use League\OAuth2\Server\Exception\OAuthServerException;
-use ec5\Repositories\QueryBuilder\OAuth\DeleteRepository as OAuthProjectClientDelete;
 
 class OAuthController
 {
@@ -42,31 +42,21 @@ class OAuthController
     protected $jwt;
 
     /**
-     * @var OAuthProjectClientDelete
-     */
-    protected $oAuthProjectClientDelete;
-
-    /**
      * OAuthController constructor
      *
      * @param AuthorizationServer $server
      * @param TokenRepository $tokens
      * @param JwtParser $jwt
-     * @param OAuthProjectClientDelete $oauthProjectClientDelete
      */
     public function __construct(
-        AuthorizationServer      $server,
-        TokenRepository          $tokens,
-        JwtParser                $jwt,
-        OAuthProjectClientDelete $oauthProjectClientDelete
+        AuthorizationServer $server,
+        TokenRepository     $tokens,
+        JwtParser           $jwt
     )
     {
         $this->jwt = $jwt;
         $this->server = $server;
         $this->tokens = $tokens;
-
-        $this->oAuthProjectClientDelete = $oauthProjectClientDelete;
-
     }
 
     /**
@@ -78,17 +68,15 @@ class OAuthController
      */
     public function issueToken(ServerRequestInterface $request, ApiResponse $apiResponse)
     {
-
         // Default error code
         $errors['token issue'] = ['ec5_254'];
 
         try {
-            $input = $request->getParsedBody();
+            $payload = $request->getParsedBody();
             // Revoke all current access tokens for this client
-            if (!empty($input['client_id'])) {
-                $this->oAuthProjectClientDelete->revokeTokens($input['client_id']);
+            if (!empty($payload['client_id'])) {
+                OAuthAccessToken::where('client_id', $payload['client_id'])->delete();
             }
-
             // return a new access token
             return $this->server->respondToAccessTokenRequest($request, new Psr7Response);
         } catch (OAuthServerException $e) {
@@ -111,6 +99,5 @@ class OAuthController
         }
 
         return $apiResponse->errorResponse(400, $errors);
-
     }
 }

@@ -4,18 +4,14 @@ namespace ec5\Http\Middleware;
 
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Symfony\Bridge\PsrHttpMessage\Factory\DiactorosFactory;
-use ec5\Repositories\QueryBuilder\OAuth\SearchRepository as OAuthProjectClientSearch;
 use League\OAuth2\Server\ResourceServer;
-
 use ec5\Models\Projects\Project;
-
+use ec5\Models\Eloquent\OAuthClientProject;
 use ec5\Http\Controllers\Api\ApiResponse as ApiResponse;
-
 use Illuminate\Http\Request;
 
 class ProjectPermissionsApi extends RequestAttributesMiddleware
 {
-
     /*
     |--------------------------------------------------------------------------
     | ProjectPermissionsApi Middleware
@@ -33,27 +29,20 @@ class ProjectPermissionsApi extends RequestAttributesMiddleware
     private $server;
 
     /**
-     * @var OAuthProjectClientSearch
-     */
-    protected $oAuthProjectClientSearch;
-
-    /**
      * ProjectPermissionsApi constructor
      *
      * @param ResourceServer $server
      * @param Request $request
      * @param ApiResponse $apiResponse
      * @param Project $requestedProject
-     * @param OAuthProjectClientSearch $oAuthProjectClientSearch
      */
-    public function __construct(ResourceServer           $server,
-                                Request                  $request,
-                                ApiResponse              $apiResponse,
-                                Project                  $requestedProject,
-                                OAuthProjectClientSearch $oAuthProjectClientSearch)
+    public function __construct(ResourceServer $server,
+                                Request        $request,
+                                ApiResponse    $apiResponse,
+                                Project        $requestedProject
+    )
     {
         $this->server = $server;
-        $this->oAuthProjectClientSearch = $oAuthProjectClientSearch;
 
         parent::__construct($request, $apiResponse, $requestedProject);
     }
@@ -65,10 +54,8 @@ class ProjectPermissionsApi extends RequestAttributesMiddleware
      */
     public function hasPermission(): bool
     {
-
         // Only need to check for a permission if the project is private
         if ($this->requestedProject->access == config('epicollect.strings.project_access.private')) {
-
             // Taken from TokenGuard:
             // First, we will convert the Symfony request to a PSR-7 implementation which will
             // be compatible with the base OAuth2 library. The Symfony bridge can perform a
@@ -95,14 +82,13 @@ class ProjectPermissionsApi extends RequestAttributesMiddleware
             // Get the client id
             $clientId = $psr->getAttribute('oauth_client_id');
             // Check the project the client is trying to access matches the authorized project
-            if (!$this->oAuthProjectClientSearch->exists($clientId, $this->requestedProject->getId())) {
+            $doesClientExist = OAuthClientProject::doesExist($clientId, $this->requestedProject->getId());
+            if (!$doesClientExist) {
                 // Unauthorized error
                 $this->error = 'ec5_257';
                 return false;
             }
         }
-
         return true;
     }
-
 }

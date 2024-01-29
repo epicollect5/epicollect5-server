@@ -192,7 +192,7 @@ class ProjectEntriesControllerTest extends TestCase
             $projectDefinition = json_decode($projectStructure->project_definition, true);
             $this->assertEquals($projectDefinition['project']['entries_limits'], $this->entriesLimits);
         } catch (Exception $e) {
-            dd($e->getMessage(), $response[0]);
+            $this->logTestError($e, $response);
         }
     }
 
@@ -242,7 +242,7 @@ class ProjectEntriesControllerTest extends TestCase
             $projectDefinition = json_decode($projectStructure->project_definition, true);
             $this->assertEquals($projectDefinition['project']['entries_limits'], $this->entriesLimits);
         } catch (Exception $e) {
-            dd($e->getMessage(), $response[0]);
+            $this->logTestError($e, $response);
         }
     }
 
@@ -293,7 +293,7 @@ class ProjectEntriesControllerTest extends TestCase
             $projectDefinition = json_decode($projectStructure->project_definition, true);
             $this->assertEquals($projectDefinition['project']['entries_limits'], $this->entriesLimits);
         } catch (Exception $e) {
-            dd($e->getMessage(), $response[0]);
+            $this->logTestError($e, $response);
         }
     }
 
@@ -325,7 +325,7 @@ class ProjectEntriesControllerTest extends TestCase
             $projectDefinition = json_decode($projectStructure->project_definition, true);
             $this->assertEquals($projectDefinition['project']['entries_limits'], []);
         } catch (Exception $e) {
-            dd($e->getMessage(), $response[0]);
+            $this->logTestError($e, $response);
         }
     }
 }

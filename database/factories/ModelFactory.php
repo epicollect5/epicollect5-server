@@ -15,6 +15,8 @@ use Carbon\Carbon;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Models\Eloquent\Entries\BranchEntry;
 use ec5\Models\Eloquent\Entries\Entry;
+use ec5\Models\Eloquent\OAuthAccessToken;
+use ec5\Models\Eloquent\OAuthClientProject;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectFeatured;
 use ec5\Models\Eloquent\ProjectRole;
@@ -363,8 +365,15 @@ $factory->define(ProjectFeatured::class, function (Faker\Generator $faker) {
     ];
 });
 
-$factory->define(\ec5\Models\Eloquent\OAuthClientProjects::class, function (Faker\Generator $faker) {
+$factory->define(OAuthClientProject::class, function (Faker\Generator $faker, $params) {
     return [
-        'project_id' => null,
+        'project_id' => $params['project_id'],
+        'client_id' => $faker->randomNumber(3)
+    ];
+});
+
+$factory->define(OAuthAccessToken::class, function (Faker\Generator $faker, $params) {
+    return [
+        'client_id' => $params['client_id']
     ];
 });

@@ -135,7 +135,7 @@ class DownloadTemplateControllerTest extends TestCase
             $response[0]->assertRedirect(Route('home'));
 
         } catch (Exception $e) {
-            dd($e->getMessage(), $response[0]);
+            $this->logTestError($e, $response);
         }
     }
 
@@ -414,7 +414,7 @@ class DownloadTemplateControllerTest extends TestCase
             $JSONResponse = json_decode($response[0]->getContent(), true);
             $this->assertJSONHeadersBranch($JSONResponse['data']['headers'], $mapIndex, $form, $branchRef, $branchIndex);
         } catch (Exception $e) {
-            dd($e->getMessage(), $response[0]);
+            $this->logTestError($e, $response);
         }
     }
 

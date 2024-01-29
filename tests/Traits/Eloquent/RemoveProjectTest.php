@@ -2,7 +2,7 @@
 
 namespace Tests\Traits\Eloquent;
 
-use ec5\Models\Eloquent\OAuthClientProjects;
+use ec5\Models\Eloquent\OAuthClientProject;
 use ec5\Models\Eloquent\ProjectStats;
 use ec5\Models\Eloquent\ProjectStructure;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -42,7 +42,7 @@ class RemoveProjectTest extends TestCase
             );
 
             //fake app
-            factory(OAuthClientProjects::class)->create(
+            factory(OAuthClientProject::class)->create(
                 ['project_id' => $project->id]
             );
 
@@ -65,7 +65,7 @@ class RemoveProjectTest extends TestCase
             $this->assertEquals(0, ProjectStructure::where('project_id', $project->id)
                 ->count());
             //assert app clients are dropped
-            $this->assertEquals(0, OAuthClientProjects::where('project_id', $project->id)
+            $this->assertEquals(0, OAuthClientProject::where('project_id', $project->id)
                 ->count());
         }
     }

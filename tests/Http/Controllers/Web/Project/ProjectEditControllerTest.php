@@ -91,11 +91,7 @@ class ProjectEditControllerTest extends TestCase
                 $this->assertEquals($accessValue, $projectExtra['project']['details']['access']);
 
             } catch (Exception $e) {
-                if ($response[0]->baseResponse->exception === null) {
-                    dd($e->getMessage(), $response[0]);
-                } else {
-                    dd($e->getMessage(), $response[0]->baseResponse->exception->getMessage());
-                }
+                $this->logTestError($e, $response);
             }
         }
     }
@@ -125,11 +121,7 @@ class ProjectEditControllerTest extends TestCase
                 $this->assertEquals($statusValue, $projectExtra['project']['details']['status']);
 
             } catch (Exception $e) {
-                if ($response[0]->baseResponse->exception === null) {
-                    dd($e->getMessage(), $response[0]);
-                } else {
-                    dd($e->getMessage(), $response[0]->baseResponse->exception->getMessage());
-                }
+                $this->logTestError($e, $response);
             }
         }
     }
@@ -160,11 +152,7 @@ class ProjectEditControllerTest extends TestCase
                 //assert project extra
                 $this->assertEquals($visibilityValue, $projectExtra['project']['details']['visibility']);
             } catch (Exception $e) {
-                if ($response[0]->baseResponse->exception === null) {
-                    dd($e->getMessage(), $response[0]);
-                } else {
-                    dd($e->getMessage(), $response[0]->baseResponse->exception->getMessage());
-                }
+                $this->logTestError($e, $response);
             }
         }
     }
@@ -194,11 +182,7 @@ class ProjectEditControllerTest extends TestCase
                 //assert project extra
                 $this->assertEquals($category, $projectExtra['project']['details']['category']);
             } catch (Exception $e) {
-                if ($response[0]->baseResponse->exception === null) {
-                    dd($e->getMessage(), $response[0]);
-                } else {
-                    dd($e->getMessage(), $response[0]->baseResponse->exception->getMessage());
-                }
+                $this->logTestError($e, $response);
             }
         }
     }

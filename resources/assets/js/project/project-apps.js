@@ -83,13 +83,16 @@ $(document).ready(function () {
 
         // Get action url
         var url = $(this).attr('action');
-
+        window.EC5.overlay.fadeIn();
         window.EC5.projectApps.post(url, formData, function () {
             // Disable create app button
             $('#create-app').prop('disabled', true);
             // Close modal
             $('#modal-create-app').modal('hide');
             window.EC5.toast.showSuccess('New App added.');
+            setTimeout(function () {
+                window.EC5.overlay.fadeOut();
+            }, 500);
         });
 
     });
@@ -106,7 +109,6 @@ $(document).ready(function () {
         $('#ec5-form-project-app-delete').removeClass('hidden');
         // Get the current project client app id
         window.EC5.projectApps.currentClientId = $(this).data('clientId');
-
     });
 
     projectAppList.on('click', '#revoke-app', function (e) {
@@ -130,18 +132,21 @@ $(document).ready(function () {
 
         // Retrieve form data
         var formData = {
-            clientId: window.EC5.projectApps.currentClientId
+            client_id: window.EC5.projectApps.currentClientId
         };
 
         // Get action url
         var url = $(this).attr('action');
-
+        window.EC5.overlay.fadeIn();
         window.EC5.projectApps.post(url, formData, function () {
             // Enable create app button
             $('#create-app').prop('disabled', false);
             // Close modal
             $('#modal-app-delete').modal('hide');
             window.EC5.toast.showSuccess('App deleted.');
+            setTimeout(function () {
+                window.EC5.overlay.fadeOut();
+            }, 500);
         });
 
     });
@@ -155,17 +160,19 @@ $(document).ready(function () {
 
         // Retrieve form data
         var formData = {
-            clientId: window.EC5.projectApps.currentClientId
+            client_id: window.EC5.projectApps.currentClientId
         };
 
         // Get action url
         var url = $(this).attr('action');
-
+        window.EC5.overlay.fadeIn();
         window.EC5.projectApps.post(url, formData, function () {
             // Close modal
             $('#modal-app-delete').modal('hide');
             window.EC5.toast.showSuccess('Access Token revoked.');
+            setTimeout(function () {
+                window.EC5.overlay.fadeOut();
+            }, 500);
         });
-
     });
 });

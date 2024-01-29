@@ -5,7 +5,7 @@ namespace Tests\Http\Controllers\Web\Project;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Models\Eloquent\Entries\BranchEntry;
 use ec5\Models\Eloquent\Entries\Entry;
-use ec5\Models\Eloquent\OAuthClientProjects;
+use ec5\Models\Eloquent\OAuthClientProject;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectFeatured;
 use ec5\Models\Eloquent\ProjectRole;
@@ -133,7 +133,7 @@ class ProjectDeleteControllerTest extends TestCase
         factory(ProjectStructure::class)->create(
             ['project_id' => $project->id]
         );
-        factory(OAuthClientProjects::class)->create(
+        factory(OAuthClientProject::class)->create(
             ['project_id' => $project->id]
         );
 
@@ -211,7 +211,7 @@ class ProjectDeleteControllerTest extends TestCase
         factory(ProjectStructure::class)->create(
             ['project_id' => $project->id]
         );
-        factory(OAuthClientProjects::class)->create(
+        factory(OAuthClientProject::class)->create(
             ['project_id' => $project->id]
         );
 
@@ -290,7 +290,7 @@ class ProjectDeleteControllerTest extends TestCase
         factory(ProjectStructure::class)->create(
             ['project_id' => $project->id]
         );
-        factory(OAuthClientProjects::class)->create(
+        factory(OAuthClientProject::class)->create(
             ['project_id' => $project->id]
         );
 
@@ -325,7 +325,7 @@ class ProjectDeleteControllerTest extends TestCase
             ->count());
 
         //assert app clients are NOT dropped
-        $this->assertGreaterThan(0, OAuthClientProjects::where('project_id', $project->id)
+        $this->assertGreaterThan(0, OAuthClientProject::where('project_id', $project->id)
             ->count());
 
         //assert roles are NOT dropped
@@ -399,7 +399,7 @@ class ProjectDeleteControllerTest extends TestCase
             ['project_id' => $project->id]
         );
 
-        factory(OAuthClientProjects::class)->create(
+        factory(OAuthClientProject::class)->create(
             ['project_id' => $project->id]
         );
 
@@ -423,7 +423,7 @@ class ProjectDeleteControllerTest extends TestCase
             ->count());
 
         //assert app clients are dropped
-        $this->assertEquals(0, OAuthClientProjects::where('project_id', $project->id)
+        $this->assertEquals(0, OAuthClientProject::where('project_id', $project->id)
             ->count());
 
         //assert roles are dropped

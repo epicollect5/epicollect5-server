@@ -330,7 +330,7 @@ class WebUploadControllerLimitsTest extends TestCase
                 );
 
         } catch (Exception $e) {
-            dd($e->getMessage(), $response[0]);
+            $this->logTestError($e, $response);
         }
     }
 
@@ -371,7 +371,7 @@ class WebUploadControllerLimitsTest extends TestCase
                 );
 
         } catch (Exception $e) {
-            dd($e->getMessage(), $response[0]);
+            $this->logTestError($e, $response);
         }
     }
 
@@ -412,7 +412,7 @@ class WebUploadControllerLimitsTest extends TestCase
                 );
 
         } catch (Exception $e) {
-            dd($e->getMessage(), $response[0]);
+            $this->logTestError($e, $response);
         }
     }
 
@@ -453,7 +453,7 @@ class WebUploadControllerLimitsTest extends TestCase
                 );
 
         } catch (Exception $e) {
-            dd($e->getMessage(), $response[0]);
+            $this->logTestError($e, $response);
         }
     }
 
@@ -494,7 +494,7 @@ class WebUploadControllerLimitsTest extends TestCase
                 );
 
         } catch (Exception $e) {
-            dd($e->getMessage(), $response[0]);
+            $this->logTestError($e, $response);
         }
     }
 }

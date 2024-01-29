@@ -155,7 +155,7 @@ class ArchiveControllerTest extends TestCase
                     ->value('total_entries'));
 
         } catch (Exception $e) {
-            dd($e->getMessage(), $response[0]);
+            $this->logTestError($e, $response);
         }
     }
 
@@ -219,7 +219,7 @@ class ArchiveControllerTest extends TestCase
                 ->value('form_counts'), true);
             $this->assertEquals([], $formCounts);
         } catch (Exception $e) {
-            dd($e->getMessage(), $response[0]);
+            $this->logTestError($e, $response);
         }
     }
 
@@ -328,7 +328,7 @@ class ArchiveControllerTest extends TestCase
             //also check parent entry child count was updated
             $this->assertEquals(0, Entry::where('uuid', $entry->uuid)->value('child_counts'));
         } catch (Exception $e) {
-            dd($e->getMessage(), $response[0]);
+            $this->logTestError($e, $response);
         }
     }
 
@@ -450,7 +450,7 @@ class ArchiveControllerTest extends TestCase
             $this->assertEquals([], $formCounts);
 
         } catch (Exception $e) {
-            dd($e->getMessage(), $response[0]);
+            $this->logTestError($e, $response);
         }
     }
 
@@ -539,7 +539,7 @@ class ArchiveControllerTest extends TestCase
             }
 
         } catch (Exception $e) {
-            dd($e->getMessage(), $response[0]);
+            $this->logTestError($e, $response);
         }
     }
 
@@ -631,7 +631,7 @@ class ArchiveControllerTest extends TestCase
             $this->assertEquals($branchCounts, json_decode($branchCountsResult, true));
 
         } catch (Exception $e) {
-            dd($e->getMessage(), $response[0]);
+            $this->logTestError($e, $response);
         }
     }
 

@@ -9,7 +9,7 @@ use ec5\Models\Eloquent\Entries\BranchEntry;
 use ec5\Models\Eloquent\Entries\BranchEntryArchive;
 use ec5\Models\Eloquent\Entries\Entry;
 use ec5\Models\Eloquent\Entries\EntryArchive;
-use ec5\Models\Eloquent\OAuthClientProjects;
+use ec5\Models\Eloquent\OAuthClientProject;
 use ec5\Models\Eloquent\Project;
 use ec5\Models\Eloquent\ProjectRole;
 use ec5\Models\Eloquent\ProjectStats;
@@ -244,7 +244,7 @@ class AccountDeletionExternalTest extends TestCase
         );
 
         //fake app
-        factory(OAuthClientProjects::class)->create(
+        factory(OAuthClientProject::class)->create(
             ['project_id' => $project->id]
         );
 
@@ -298,7 +298,7 @@ class AccountDeletionExternalTest extends TestCase
         $this->assertEquals(0, ProjectStructure::where('project_id', $project->id)
             ->count());
         //assert app clients are dropped
-        $this->assertEquals(0, OAuthClientProjects::where('project_id', $project->id)
+        $this->assertEquals(0, OAuthClientProject::where('project_id', $project->id)
             ->count());
         //assert roles are dropped
         $this->assertEquals(0, ProjectRole::where('project_id', $project->id)->count());

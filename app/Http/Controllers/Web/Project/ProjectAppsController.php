@@ -1,8 +1,10 @@
-<?php
+<?php /** @noinspection DuplicatedCode */
 
 namespace ec5\Http\Controllers\Web\Project;
 
 use ec5\Http\Controllers\Api\ApiResponse;
+use ec5\Models\Eloquent\OAuthAccessToken;
+use ec5\Models\Eloquent\OAuthClientProject;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\JsonResponse;
@@ -11,10 +13,7 @@ use Illuminate\View\View;
 use Laravel\Passport\ClientRepository;
 use Illuminate\Http\Request;
 use Redirect;
-use ec5\Repositories\QueryBuilder\OAuth\SearchRepository as OAuthProjectClientSearch;
-use ec5\Repositories\QueryBuilder\OAuth\CreateRepository as OAuthProjectClientCreate;
-use ec5\Repositories\QueryBuilder\OAuth\DeleteRepository as OAuthProjectClientDelete;
-use ec5\Http\Validation\Project\RuleProjectApp as ProjectAppValidator;
+use ec5\Http\Validation\Project\RuleProjectApp;
 use ec5\Traits\Requests\RequestAttributes;
 use Throwable;
 
@@ -28,40 +27,13 @@ class ProjectAppsController
     protected $clients;
 
     /**
-     * @var OAuthProjectClientSearch
-     */
-    protected $oAuthProjectClientSearch;
-
-    /**
-     * @var OAuthProjectClientCreate
-     */
-    protected $oAuthProjectClientCreate;
-
-    /**
-     * @var OAuthProjectClientDelete
-     */
-    protected $oAuthProjectClientDelete;
-
-    /**
      * ProjectAppsController constructor
      *
      * @param ClientRepository $clients
-     * @param OAuthProjectClientSearch $oauthProjectClientSearch
-     * @param OAuthProjectClientCreate $oauthProjectClientCreate
-     * @param OAuthProjectClientDelete $oauthProjectClientDelete
      */
-    public function __construct(
-        ClientRepository         $clients,
-        OAuthProjectClientSearch $oauthProjectClientSearch,
-        OAuthProjectClientCreate $oauthProjectClientCreate,
-        OAuthProjectClientDelete $oauthProjectClientDelete
-    )
+    public function __construct(ClientRepository $clients)
     {
         $this->clients = $clients;
-        $this->oAuthProjectClientSearch = $oauthProjectClientSearch;
-        $this->oAuthProjectClientCreate = $oauthProjectClientCreate;
-        $this->oAuthProjectClientDelete = $oauthProjectClientDelete;
-
     }
 
     /**
@@ -76,15 +48,7 @@ class ProjectAppsController
         }
         $vars['includeTemplate'] = 'apps';
         $vars['action'] = 'apps';
-        $vars['apps'] = $this->oAuthProjectClientSearch->projectApps(
-            $this->requestedProject()->getId(),
-            [
-                'oauth_clients.name',
-                'oauth_clients.id',
-                'oauth_clients.secret',
-                'oauth_clients.created_at'
-            ]);
-
+        $vars['apps'] = OAuthClientProject::getApps($this->requestedProject()->getId());
         // If ajax, return rendered html from $ajaxView
         if ($request->ajax()) {
             return response()->json(view('project.developers.apps_table', $vars)->render());
@@ -96,48 +60,49 @@ class ProjectAppsController
      * Create a new client app
      *
      * @param Request $request
-     * @param ProjectAppValidator $projectAppValidator
+     * @param RuleProjectApp $ruleProjectApp
      * @param ApiResponse $apiResponse
      * @return Factory|Application|JsonResponse|RedirectResponse|View
      */
-    public function store(Request $request, ProjectAppValidator $projectAppValidator, ApiResponse $apiResponse)
+    public function store(Request $request, RuleProjectApp $ruleProjectApp, ApiResponse $apiResponse)
     {
         if (!$this->requestedProjectRole()->canEditProject()) {
-            $errors = ['ec5_91'];
             if ($request->ajax()) {
-                return $apiResponse->errorResponse(400, ['errors' => $errors]);
+                return $apiResponse->errorResponse(400, ['errors' => ['ec5_91']]);
             }
-            return view('errors.gen_error')->withErrors(['errors' => $errors]);
+            return view('errors.gen_error')->withErrors(['errors' => ['ec5_91']]);
         }
 
         // Get request data
-        $input = $request->all();
+        $payload = $request->all();
         // unset the csrf token
-        unset($input['_token']);
+        unset($payload['_token']);
 
         // Add the project id to validate
-        $input['project_id'] = $this->requestedProject()->getId();
+        $payload['project_id'] = $this->requestedProject()->getId();
         // Validate
-        $projectAppValidator->validate($input);
-        if ($projectAppValidator->hasErrors()) {
+        $ruleProjectApp->validate($payload);
+        if ($ruleProjectApp->hasErrors()) {
             if ($request->ajax()) {
-                return $apiResponse->errorResponse(400, $projectAppValidator->errors());
+                return $apiResponse->errorResponse(400, $ruleProjectApp->errors());
             }
-            return Redirect::back()->withErrors($projectAppValidator->errors());
+            return Redirect::back()->withErrors($ruleProjectApp->errors());
         }
 
         // Make the client
         $client = $this->clients->create(
-            $request->user()->getKey(), $input['application_name'], ''
+            $request->user()->getKey(), $payload['application_name'], ''
         )->makeVisible('secret');
 
-        // Add to the project_clients table
-        if (!$this->oAuthProjectClientCreate->createOauthProjectClient($this->requestedProject()->getId(), $client->id)) {
-            $errors = ['ec5_91'];
+        // Add to the client_projects table
+        $clientProject = new OAuthClientProject();
+        $clientProject->client_id = $client->id;
+        $clientProject->project_id = $this->requestedProject()->getId();
+        if (!$clientProject->save()) {
             if ($request->ajax()) {
-                return $apiResponse->errorResponse(400, ['errors' => $errors]);
+                return $apiResponse->errorResponse(400, ['errors' => ['ec5_91']]);
             }
-            return Redirect::back()->withErrors(['errors' => $errors]);
+            return Redirect::back()->withErrors(['errors' => ['ec5_91']]);
         }
 
         if ($request->ajax()) {
@@ -157,23 +122,23 @@ class ProjectAppsController
     public function delete(Request $request, ApiResponse $apiResponse)
     {
         if (!$this->requestedProjectRole()->canEditProject()) {
-            $errors = ['ec5_91'];
             if ($request->ajax()) {
-                return $apiResponse->errorResponse(400, ['errors' => $errors]);
+                return $apiResponse->errorResponse(400, ['errors' => ['ec5_91']]);
             }
-            return view('errors.gen_error')->withErrors(['errors' => $errors]);
+            return view('errors.gen_error')->withErrors(['errors' => ['ec5_91']]);
         }
-
         // Get request data
-        $input = $request->all();
+        $payload = $request->all();
         // Get the client id
-        if (empty($input['clientId'])) {
+        if (empty($payload['client_id'])) {
             return view('errors.gen_error')->withErrors(['errors' => ['ec5_264']]);
         }
         // Delete the app
-        $this->oAuthProjectClientDelete->delete($this->requestedProject()->getId(), $input['clientId']);
+        if (!OAuthClientProject::removeApp($this->requestedProject()->getId(), $payload['client_id'])) {
+            return view('errors.gen_error')->withErrors(['errors' => ['ec5_240']]);
+        }
         // Success
-        return Redirect::back()->with('message', 'ec5_259');
+        return Redirect::back()->with('message', 'ec5_399');
     }
 
     /**
@@ -192,13 +157,13 @@ class ProjectAppsController
             return view('errors.gen_error')->withErrors(['errors' => ['ec5_91']]);
         }
         // Get request data
-        $input = $request->all();
+        $payload = $request->all();
         // Get the client id
-        if (empty($input['clientId'])) {
+        if (empty($payload['client_id'])) {
             return view('errors.gen_error')->withErrors(['errors' => ['ec5_264']]);
         }
         // Revoke all access tokens
-        $this->oAuthProjectClientDelete->revokeTokens($input['clientId']);
+        OAuthAccessToken::where('client_id', $payload['client_id'])->delete();
         // Success
         return Redirect::back()->with('message', 'ec5_259');
     }
