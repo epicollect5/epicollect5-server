@@ -237,6 +237,9 @@ class ProjectCreateControllerTest extends TestCase
         $this->assertEquals(0, $projectStats->total_entries);
         $this->assertEquals([], json_decode($projectStats->form_counts, true));
         $this->assertEquals([], json_decode($projectStats->branch_counts, true));
+
+        //assert avatar is created
+        $this->assertAvatarCreated($project);
     }
 
     public function test_project_name_should_not_have_extra_spaces()
@@ -261,12 +264,16 @@ class ProjectCreateControllerTest extends TestCase
             ->assertSessionHas('tab', 'create');
         //Check if the project is created
         $this->assertDatabaseHas('projects', ['slug' => $projectSlug]);
-        $projectId = Project::where('slug', $projectSlug)->where('status', 'active')->first()->id;
-        $this->assertEquals(1, Project::where('id', $projectId)->count());
+        $project = Project::where('slug', $projectSlug)->where('status', 'active')->first();
+
+        $this->assertEquals(1, Project::where('id', $project->id)->count());
         //check name is sanitized with extra spaces removed
         $this->assertDatabaseHas('projects', ['name' => 'Multiple Spaces between words']);
         //check the original name with extra spaces was not saved
         $this->assertDatabaseMissing('projects', ['name' => $projectName]);
+
+        //assert avatar is created
+        $this->assertAvatarCreated($project);
     }
 
     public function test_form_name_should_not_have_extra_spaces()
@@ -308,6 +315,8 @@ class ProjectCreateControllerTest extends TestCase
         $formName = $projectDefinition->project->forms[0]->name;
         $this->assertEquals('Form One', $formName);
 
+        //assert avatar is created
+        $this->assertAvatarCreated($project);
     }
 
     public function test_small_description_should_not_have_extra_spaces()
@@ -344,6 +353,8 @@ class ProjectCreateControllerTest extends TestCase
         $smallDesc = $projectDefinition->project->small_description;
         $this->assertEquals('Just a test project to test the removal of multiple spaces', $smallDesc);
 
+        //assert avatar is created
+        $this->assertAvatarCreated($project);
     }
 
     public function test_small_description()

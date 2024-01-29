@@ -176,6 +176,9 @@ class ProjectCloneControllerTest extends TestCase
         );
         $this->assertEquals($originalProjectMapping, $this->projectMapping);
 
+        //assert avatar is created
+        $this->assertAvatarCreated($clonedProject);
+
     }
 
     public function test_project_is_cloned_with_users()
@@ -272,5 +275,10 @@ class ProjectCloneControllerTest extends TestCase
             $clonedProjectMapping
         );
         $this->assertEquals($originalProjectMapping, $this->projectMapping);
+
+        //assert avatar is created
+        $this->assertAvatarCreated($clonedProject);
+
+        dd($clonedProject->ref);
     }
 }
