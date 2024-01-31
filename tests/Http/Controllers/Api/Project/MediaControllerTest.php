@@ -1,28 +1,90 @@
 <?php
 
-namespace Http\Controllers\Api\Project;
+namespace Tests\Http\Controllers\Api\Project;
 
-use ec5\Models\Eloquent\Entries\Entry;
-use ec5\Models\Eloquent\Project;
+use ec5\Models\Entries\Entry;
+use ec5\Models\Project\Project;
+use ec5\Models\Project\ProjectRole;
+use ec5\Models\Project\ProjectStats;
+use ec5\Models\Project\ProjectStructure;
+use ec5\Models\User\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Storage;
 use Image;
+use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 
 class MediaControllerTest extends TestCase
 {
+    private $user;
+    private $project;
+
     use DatabaseTransactions;
+
+    public function setUp()
+    {
+        parent::setUp();
+
+        //create fake user for testing
+        $user = factory(User::class)->create();
+        //create a project with custom project definition
+        $projectDefinition = ProjectDefinitionGenerator::createProject(1);
+        $project = factory(Project::class)->create(
+            [
+                'created_by' => $user->id,
+                'name' => array_get($projectDefinition, 'data.project.name'),
+                'slug' => array_get($projectDefinition, 'data.project.slug'),
+                'ref' => array_get($projectDefinition, 'data.project.ref'),
+                'access' => config('epicollect.strings.project_access.public')
+            ]
+        );
+        //add role
+        factory(ProjectRole::class)->create([
+            'user_id' => $user->id,
+            'project_id' => $project->id,
+            'role' => config('epicollect.strings.project_roles.creator')
+        ]);
+
+        //create basic project definition
+        factory(ProjectStructure::class)->create(
+            [
+                'project_id' => $project->id,
+                'project_definition' => json_encode($projectDefinition['data'])
+            ]
+        );
+        factory(ProjectStats::class)->create(
+            [
+                'project_id' => $project->id,
+                'total_entries' => 0
+            ]
+        );
+
+        $this->user = $user;
+        $this->project = $project;
+    }
+
+    public function test_should_give_private_project_error()
+    {
+        $this->project->access = config('epicollect.strings.project_access.private');
+        $this->project->save();
+        $response = $this->json('GET', 'api/internal/media/' . $this->project->slug);
+        $response->assertStatus(404)
+            ->assertExactJson([
+                "errors" => [
+                    [
+                        "code" => "ec5_77",
+                        "title" => "This project is private. Please log in.",
+                        "source" => "middleware"
+                    ]
+                ]
+            ]);
+    }
 
     //assert getMedia
     public function test_missing_params_in_request()
     {
-        //create project
-        $project = factory(Project::class)->create(
-            ['access' => config('epicollect.strings.project_access.public')]
-        );
-
-        $response = $this->json('GET', 'api/internal/media/' . $project->slug)
-            ->assertStatus(400)
+        $response = $this->json('GET', 'api/internal/media/' . $this->project->slug);
+        $response->assertStatus(400)
             ->assertJsonStructure([
                 'errors' => [
                     '*' => [
@@ -56,12 +118,7 @@ class MediaControllerTest extends TestCase
 
     public function test_wrong_type_in_request()
     {
-        //create project
-        $project = factory(Project::class)->create(
-            ['access' => config('epicollect.strings.project_access.public')]
-        );
-
-        $response = $this->json('GET', 'api/internal/media/' . $project->slug . '?type=wrong&name=filename&format=entry_thumb')
+        $response = $this->json('GET', 'api/internal/media/' . $this->project->slug . '?type=wrong&name=filename&format=entry_thumb')
             ->assertStatus(400)
             ->assertJsonStructure([
                 'errors' => [
@@ -87,12 +144,7 @@ class MediaControllerTest extends TestCase
 
     public function test_missing_params_in_photo_request()
     {
-        //create project
-        $project = factory(Project::class)->create(
-            ['access' => config('epicollect.strings.project_access.public')]
-        );
-
-        $response = $this->json('GET', 'api/internal/media/' . $project->slug . '?type=photo')
+        $response = $this->json('GET', 'api/internal/media/' . $this->project->slug . '?type=photo')
             ->assertStatus(400)
             ->assertJsonStructure([
                 'errors' => [
@@ -122,12 +174,7 @@ class MediaControllerTest extends TestCase
 
     public function test_missing_name_in_photo_entry_original_request()
     {
-        //create project
-        $project = factory(Project::class)->create(
-            ['access' => config('epicollect.strings.project_access.public')]
-        );
-
-        $response = $this->json('GET', 'api/internal/media/' . $project->slug . '?type=photo&format=entry_original')
+        $response = $this->json('GET', 'api/internal/media/' . $this->project->slug . '?type=photo&format=entry_original')
             ->assertStatus(400)
             ->assertJsonStructure([
                 'errors' => [
@@ -152,12 +199,7 @@ class MediaControllerTest extends TestCase
 
     public function test_missing_name_in_photo_entry_thumb_request()
     {
-        //create project
-        $project = factory(Project::class)->create(
-            ['access' => config('epicollect.strings.project_access.public')]
-        );
-
-        $response = $this->json('GET', 'api/internal/media/' . $project->slug . '?type=photo&format=entry_thumb')
+        $response = $this->json('GET', 'api/internal/media/' . $this->project->slug . '?type=photo&format=entry_thumb')
             ->assertStatus(400)
             ->assertJsonStructure([
                 'errors' => [
@@ -182,12 +224,7 @@ class MediaControllerTest extends TestCase
 
     public function test_missing_params_in_audio_request()
     {
-        //create project
-        $project = factory(Project::class)->create(
-            ['access' => config('epicollect.strings.project_access.public')]
-        );
-
-        $response = $this->json('GET', 'api/internal/media/' . $project->slug . '?type=audio')
+        $response = $this->json('GET', 'api/internal/media/' . $this->project->slug . '?type=audio')
             ->assertStatus(400)
             ->assertJsonStructure([
                 'errors' => [
@@ -217,12 +254,7 @@ class MediaControllerTest extends TestCase
 
     public function test_audio_file_not_found()
     {
-        //create project
-        $project = factory(Project::class)->create(
-            ['access' => config('epicollect.strings.project_access.public')]
-        );
-
-        $response = $this->json('GET', 'api/internal/media/' . $project->slug . '?type=audio&name=ciao&format=audio')
+        $response = $this->json('GET', 'api/internal/media/' . $this->project->slug . '?type=audio&name=ciao&format=audio')
             ->assertStatus(404)
             ->assertJsonStructure([
                 'errors' => [
@@ -247,12 +279,7 @@ class MediaControllerTest extends TestCase
 
     public function test_video_file_not_found()
     {
-        //create project
-        $project = factory(Project::class)->create(
-            ['access' => config('epicollect.strings.project_access.public')]
-        );
-
-        $response = $this->json('GET', 'api/internal/media/' . $project->slug . '?type=audio&name=ciao&format=video')
+        $response = $this->json('GET', 'api/internal/media/' . $this->project->slug . '?type=audio&name=ciao&format=video')
             ->assertStatus(404)
             ->assertJsonStructure([
                 'errors' => [
@@ -277,12 +304,7 @@ class MediaControllerTest extends TestCase
 
     public function test_missing_params_in_video_request()
     {
-        //create project
-        $project = factory(Project::class)->create(
-            ['access' => config('epicollect.strings.project_access.public')]
-        );
-
-        $response = $this->json('GET', 'api/internal/media/' . $project->slug . '?type=video')
+        $response = $this->json('GET', 'api/internal/media/' . $this->project->slug . '?type=video')
             ->assertStatus(400)
             ->assertJsonStructure([
                 'errors' => [
@@ -312,12 +334,7 @@ class MediaControllerTest extends TestCase
 
     public function test_photo_placeholder_is_returned()
     {
-        //create project
-        $project = factory(Project::class)->create(
-            ['access' => config('epicollect.strings.project_access.public')]
-        );
-
-        $response = $this->get('api/internal/media/' . $project->slug . '?type=photo&name=ciao&format=entry_original')
+        $response = $this->get('api/internal/media/' . $this->project->slug . '?type=photo&name=ciao&format=entry_original')
             ->assertStatus(200);
 
         // Get the image content from the response
@@ -337,15 +354,10 @@ class MediaControllerTest extends TestCase
 
     public function test_photo_file_is_returned_landscape()
     {
-        //create project
-        $project = factory(Project::class)->create(
-            ['access' => config('epicollect.strings.project_access.public')]
-        );
-
         //create a fake entry
         $entry = factory(Entry::class)->create([
-            'project_id' => $project->id,
-            'form_ref' => $project->ref . '_' . uniqid()
+            'project_id' => $this->project->id,
+            'form_ref' => $this->project->ref . '_' . uniqid()
         ]);
 
         //create a fake photo for the entry
@@ -355,18 +367,18 @@ class MediaControllerTest extends TestCase
 
         // Encode the image as JPEG or other formats
         $imageData = (string)$image->encode('jpg');
-        Storage::disk('entry_original')->put($project->ref . '/' . $entry->uuid . '.jpg', $imageData);
+        Storage::disk('entry_original')->put($this->project->ref . '/' . $entry->uuid . '.jpg', $imageData);
 
         $thumbWidth = config('epicollect.media.entry_thumb')[0];
         $thumbHeight = config('epicollect.media.entry_thumb')[1];
         $thumb = Image::canvas($thumbWidth, $thumbHeight, '#ffffff'); // Width, height, and background color
         // Encode the image as JPEG or other formats
         $thumbData = (string)$thumb->encode('jpg');
-        Storage::disk('entry_thumb')->put($project->ref . '/' . $entry->uuid . '.jpg', $thumbData);
+        Storage::disk('entry_thumb')->put($this->project->ref . '/' . $entry->uuid . '.jpg', $thumbData);
 
         //entry_original
         $queryString = '?type=photo&name=' . $entry->uuid . '.jpg&format=entry_original';
-        $response = $this->json('GET', 'api/internal/media/' . $project->slug . $queryString)
+        $response = $this->json('GET', 'api/internal/media/' . $this->project->slug . $queryString)
             ->assertStatus(200);
         $response->assertHeader('Content-Type', config('epicollect.media.content_type.photo'));
 
@@ -380,7 +392,7 @@ class MediaControllerTest extends TestCase
 
         //entry_thumb
         $queryString = '?type=photo&name=' . $entry->uuid . '.jpg&format=entry_thumb';
-        $response = $this->json('GET', 'api/internal/media/' . $project->slug . $queryString)
+        $response = $this->json('GET', 'api/internal/media/' . $this->project->slug . $queryString)
             ->assertStatus(200);
         $response->assertHeader('Content-Type', config('epicollect.media.content_type.photo'));
 
@@ -392,21 +404,16 @@ class MediaControllerTest extends TestCase
         $this->assertEquals($entryThumb->height(), config('epicollect.media.entry_thumb')[1]);
 
         //delete fake files
-        Storage::disk('entry_original')->deleteDirectory($project->ref);
-        Storage::disk('entry_thumb')->deleteDirectory($project->ref);
+        Storage::disk('entry_original')->deleteDirectory($this->project->ref);
+        Storage::disk('entry_thumb')->deleteDirectory($this->project->ref);
     }
 
     public function test_photo_file_is_returned_portrait()
     {
-        //create project
-        $project = factory(Project::class)->create(
-            ['access' => config('epicollect.strings.project_access.public')]
-        );
-
         //create a fake entry
         $entry = factory(Entry::class)->create([
-            'project_id' => $project->id,
-            'form_ref' => $project->ref . '_' . uniqid()
+            'project_id' => $this->project->id,
+            'form_ref' => $this->project->ref . '_' . uniqid()
         ]);
 
         //create a fake photo for the entry
@@ -416,18 +423,18 @@ class MediaControllerTest extends TestCase
 
         // Encode the image as JPEG or other formats
         $imageData = (string)$image->encode('jpg');
-        Storage::disk('entry_original')->put($project->ref . '/' . $entry->uuid . '.jpg', $imageData);
+        Storage::disk('entry_original')->put($this->project->ref . '/' . $entry->uuid . '.jpg', $imageData);
 
         $thumbWidth = config('epicollect.media.entry_thumb')[0];
         $thumbHeight = config('epicollect.media.entry_thumb')[1];
         $thumb = Image::canvas($thumbWidth, $thumbHeight, '#ffffff'); // Width, height, and background color
         // Encode the image as JPEG or other formats
         $thumbData = (string)$thumb->encode('jpg');
-        Storage::disk('entry_thumb')->put($project->ref . '/' . $entry->uuid . '.jpg', $thumbData);
+        Storage::disk('entry_thumb')->put($this->project->ref . '/' . $entry->uuid . '.jpg', $thumbData);
 
         //entry_original
         $queryString = '?type=photo&name=' . $entry->uuid . '.jpg&format=entry_original';
-        $response = $this->json('GET', 'api/internal/media/' . $project->slug . $queryString)
+        $response = $this->json('GET', 'api/internal/media/' . $this->project->slug . $queryString)
             ->assertStatus(200);
         $response->assertHeader('Content-Type', config('epicollect.media.content_type.photo'));
 
@@ -441,7 +448,7 @@ class MediaControllerTest extends TestCase
 
         //entry_thumb
         $queryString = '?type=photo&name=' . $entry->uuid . '.jpg&format=entry_thumb';
-        $response = $this->json('GET', 'api/internal/media/' . $project->slug . $queryString)
+        $response = $this->json('GET', 'api/internal/media/' . $this->project->slug . $queryString)
             ->assertStatus(200);
         $response->assertHeader('Content-Type', config('epicollect.media.content_type.photo'));
 
@@ -453,31 +460,25 @@ class MediaControllerTest extends TestCase
         $this->assertEquals($entryThumb->height(), config('epicollect.media.entry_thumb')[1]);
 
         //delete fake files
-        Storage::disk('entry_original')->deleteDirectory($project->ref);
-        Storage::disk('entry_thumb')->deleteDirectory($project->ref);
+        Storage::disk('entry_original')->deleteDirectory($this->project->ref);
+        Storage::disk('entry_thumb')->deleteDirectory($this->project->ref);
     }
-
 
     public function test_audio_file_is_returned_using_streamed_response()
     {
-        //create project
-        $project = factory(Project::class)->create(
-            ['access' => config('epicollect.strings.project_access.public')]
-        );
-
         //create a fake entry
         $entry = factory(Entry::class)->create([
-            'project_id' => $project->id,
-            'form_ref' => $project->ref . '_' . uniqid()
+            'project_id' => $this->project->id,
+            'form_ref' => $this->project->ref . '_' . uniqid()
         ]);
 
         //create a fake photo for the entry
-        Storage::disk('audio')->put($project->ref . '/' . $entry->uuid . '.mp4', '');
+        Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '.mp4', '');
 
         //audio in streaming (206 partial, not sure how to test it in PHPUnit)
         $queryString = '?type=audio&name=' . $entry->uuid . '.mp4&format=audio';
 
-        $response = $this->get('api/internal/media/' . $project->slug . $queryString);
+        $response = $this->get('api/internal/media/' . $this->project->slug . $queryString);
         //this is needed to close the streaming response
         //https://stackoverflow.com/questions/38400305/phpunit-help-needed-about-risky-tests
         ob_start();
@@ -485,29 +486,24 @@ class MediaControllerTest extends TestCase
         $response->assertStatus(200);//
         $response->assertHeader('Content-Type', config('epicollect.media.content_type.audio'));
         //delete fake files
-        Storage::disk('audio')->deleteDirectory($project->ref);
+        Storage::disk('audio')->deleteDirectory($this->project->ref);
     }
 
     public function test_video_file_is_returned_using_streamed_response()
     {
-        //create project
-        $project = factory(Project::class)->create(
-            ['access' => config('epicollect.strings.project_access.public')]
-        );
-
         //create a fake entry
         $entry = factory(Entry::class)->create([
-            'project_id' => $project->id,
-            'form_ref' => $project->ref . '_' . uniqid()
+            'project_id' => $this->project->id,
+            'form_ref' => $this->project->ref . '_' . uniqid()
         ]);
 
         //create a fake photo for the entry
-        Storage::disk('video')->put($project->ref . '/' . $entry->uuid . '.mp4', '');
+        Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '.mp4', '');
 
         //audio in streaming (206 partial, not sure how to test it in PHPUnit)
         $queryString = '?type=video&name=' . $entry->uuid . '.mp4&format=video';
 
-        $response = $this->get('api/internal/media/' . $project->slug . $queryString);
+        $response = $this->get('api/internal/media/' . $this->project->slug . $queryString);
         //this is needed to close the streaming response
         //https://stackoverflow.com/questions/38400305/phpunit-help-needed-about-risky-tests
         ob_start();
@@ -515,18 +511,13 @@ class MediaControllerTest extends TestCase
         $response->assertStatus(200);//
         $response->assertHeader('Content-Type', config('epicollect.media.content_type.video'));
         //delete fake files
-        Storage::disk('audio')->deleteDirectory($project->ref);
+        Storage::disk('audio')->deleteDirectory($this->project->ref);
     }
 
     //assert getTempMedia method
     public function test_missing_params_in_request_temp()
     {
-        //create project
-        $project = factory(Project::class)->create(
-            ['access' => config('epicollect.strings.project_access.public')]
-        );
-
-        $response = $this->json('GET', 'api/internal/temp-media/' . $project->slug)
+        $response = $this->json('GET', 'api/internal/temp-media/' . $this->project->slug)
             ->assertStatus(400)
             ->assertJsonStructure([
                 'errors' => [
@@ -561,12 +552,7 @@ class MediaControllerTest extends TestCase
 
     public function test_wrong_type_in_request_temp()
     {
-        //create project
-        $project = factory(Project::class)->create(
-            ['access' => config('epicollect.strings.project_access.public')]
-        );
-
-        $response = $this->json('GET', 'api/internal/temp-media/' . $project->slug . '?type=wrong&name=filename&format=entry_thumb')
+        $response = $this->json('GET', 'api/internal/temp-media/' . $this->project->slug . '?type=wrong&name=filename&format=entry_thumb')
             ->assertStatus(400)
             ->assertJsonStructure([
                 'errors' => [
@@ -592,12 +578,7 @@ class MediaControllerTest extends TestCase
 
     public function test_missing_params_in_photo_request_temp()
     {
-        //create project
-        $project = factory(Project::class)->create(
-            ['access' => config('epicollect.strings.project_access.public')]
-        );
-
-        $response = $this->json('GET', 'api/internal/temp-media/' . $project->slug . '?type=photo')
+        $response = $this->json('GET', 'api/internal/temp-media/' . $this->project->slug . '?type=photo')
             ->assertStatus(400)
             ->assertJsonStructure([
                 'errors' => [
@@ -627,12 +608,7 @@ class MediaControllerTest extends TestCase
 
     public function test_missing_name_in_photo_entry_original_request_temp()
     {
-        //create project
-        $project = factory(Project::class)->create(
-            ['access' => config('epicollect.strings.project_access.public')]
-        );
-
-        $response = $this->json('GET', 'api/internal/temp-media/' . $project->slug . '?type=photo&format=entry_original')
+        $response = $this->json('GET', 'api/internal/temp-media/' . $this->project->slug . '?type=photo&format=entry_original')
             ->assertStatus(400)
             ->assertJsonStructure([
                 'errors' => [
@@ -657,12 +633,7 @@ class MediaControllerTest extends TestCase
 
     public function test_missing_name_in_photo_entry_thumb_request_temp()
     {
-        //create project
-        $project = factory(Project::class)->create(
-            ['access' => config('epicollect.strings.project_access.public')]
-        );
-
-        $response = $this->json('GET', 'api/internal/temp-media/' . $project->slug . '?type=photo&format=entry_thumb')
+        $response = $this->json('GET', 'api/internal/temp-media/' . $this->project->slug . '?type=photo&format=entry_thumb')
             ->assertStatus(400)
             ->assertJsonStructure([
                 'errors' => [
@@ -687,12 +658,7 @@ class MediaControllerTest extends TestCase
 
     public function test_missing_params_in_audio_request_temp()
     {
-        //create project
-        $project = factory(Project::class)->create(
-            ['access' => config('epicollect.strings.project_access.public')]
-        );
-
-        $response = $this->json('GET', 'api/internal/temp-media/' . $project->slug . '?type=audio')
+        $response = $this->json('GET', 'api/internal/temp-media/' . $this->project->slug . '?type=audio')
             ->assertStatus(400)
             ->assertJsonStructure([
                 'errors' => [
@@ -722,12 +688,7 @@ class MediaControllerTest extends TestCase
 
     public function test_audio_file_not_found_temp()
     {
-        //create project
-        $project = factory(Project::class)->create(
-            ['access' => config('epicollect.strings.project_access.public')]
-        );
-
-        $response = $this->json('GET', 'api/internal/temp-media/' . $project->slug . '?type=audio&name=ciao&format=audio')
+        $response = $this->json('GET', 'api/internal/temp-media/' . $this->project->slug . '?type=audio&name=ciao&format=audio')
             ->assertStatus(404)
             ->assertJsonStructure([
                 'errors' => [
@@ -752,12 +713,7 @@ class MediaControllerTest extends TestCase
 
     public function test_video_file_not_found_temp()
     {
-        //create project
-        $project = factory(Project::class)->create(
-            ['access' => config('epicollect.strings.project_access.public')]
-        );
-
-        $response = $this->json('GET', 'api/internal/temp-media/' . $project->slug . '?type=audio&name=ciao&format=video')
+        $response = $this->json('GET', 'api/internal/temp-media/' . $this->project->slug . '?type=audio&name=ciao&format=video')
             ->assertStatus(404)
             ->assertJsonStructure([
                 'errors' => [
@@ -782,12 +738,7 @@ class MediaControllerTest extends TestCase
 
     public function test_missing_params_in_video_request_temp()
     {
-        //create project
-        $project = factory(Project::class)->create(
-            ['access' => config('epicollect.strings.project_access.public')]
-        );
-
-        $response = $this->json('GET', 'api/internal/temp-media/' . $project->slug . '?type=video')
+        $response = $this->json('GET', 'api/internal/temp-media/' . $this->project->slug . '?type=video')
             ->assertStatus(400)
             ->assertJsonStructure([
                 'errors' => [
@@ -817,12 +768,7 @@ class MediaControllerTest extends TestCase
 
     public function test_photo_placeholder_is_returned_temp()
     {
-        //create project
-        $project = factory(Project::class)->create(
-            ['access' => config('epicollect.strings.project_access.public')]
-        );
-
-        $response = $this->get('api/internal/temp-media/' . $project->slug . '?type=photo&name=ciao&format=entry_original')
+        $response = $this->get('api/internal/temp-media/' . $this->project->slug . '?type=photo&name=ciao&format=entry_original')
             ->assertStatus(200);
 
         // Get the image content from the response
@@ -842,15 +788,10 @@ class MediaControllerTest extends TestCase
 
     public function test_photo_file_is_returned_landscape_temp()
     {
-        //create project
-        $project = factory(Project::class)->create(
-            ['access' => config('epicollect.strings.project_access.public')]
-        );
-
         //create a fake entry
         $entry = factory(Entry::class)->create([
-            'project_id' => $project->id,
-            'form_ref' => $project->ref . '_' . uniqid()
+            'project_id' => $this->project->id,
+            'form_ref' => $this->project->ref . '_' . uniqid()
         ]);
 
         //create a fake photo for the entry
@@ -860,11 +801,11 @@ class MediaControllerTest extends TestCase
 
         // Encode the image as JPEG or other formats
         $imageData = (string)$image->encode('jpg');
-        Storage::disk('temp')->put('photo/' . $project->ref . '/' . $entry->uuid . '.jpg', $imageData);
+        Storage::disk('temp')->put('photo/' . $this->project->ref . '/' . $entry->uuid . '.jpg', $imageData);
 
         //entry_original
         $queryString = '?type=photo&name=' . $entry->uuid . '.jpg&format=entry_original';
-        $response = $this->json('GET', 'api/internal/temp-media/' . $project->slug . $queryString)
+        $response = $this->json('GET', 'api/internal/temp-media/' . $this->project->slug . $queryString)
             ->assertStatus(200);
         $response->assertHeader('Content-Type', config('epicollect.media.content_type.photo'));
 
@@ -877,7 +818,7 @@ class MediaControllerTest extends TestCase
         $this->assertEquals($entryOriginal->height(), config('epicollect.media.entry_original_landscape')[1]);
 
         //delete fake files
-        Storage::disk('temp')->deleteDirectory('photo/' . $project->ref);
+        Storage::disk('temp')->deleteDirectory('photo/' . $this->project->ref);
     }
 
     public function test_photo_file_is_returned_portrait_temp()
@@ -889,8 +830,8 @@ class MediaControllerTest extends TestCase
 
         //create a fake entry
         $entry = factory(Entry::class)->create([
-            'project_id' => $project->id,
-            'form_ref' => $project->ref . '_' . uniqid()
+            'project_id' => $this->project->id,
+            'form_ref' => $this->project->ref . '_' . uniqid()
         ]);
 
         //create a fake photo for the entry
@@ -900,12 +841,12 @@ class MediaControllerTest extends TestCase
 
         // Encode the image as JPEG or other formats
         $imageData = (string)$image->encode('jpg');
-        Storage::disk('temp')->put('photo/' . $project->ref . '/' . $entry->uuid . '.jpg', $imageData);
+        Storage::disk('temp')->put('photo/' . $this->project->ref . '/' . $entry->uuid . '.jpg', $imageData);
 
 
         //entry_original
         $queryString = '?type=photo&name=' . $entry->uuid . '.jpg&format=entry_original';
-        $response = $this->json('GET', 'api/internal/temp-media/' . $project->slug . $queryString)
+        $response = $this->json('GET', 'api/internal/temp-media/' . $this->project->slug . $queryString)
             ->assertStatus(200);
         $response->assertHeader('Content-Type', config('epicollect.media.content_type.photo'));
 
@@ -919,29 +860,24 @@ class MediaControllerTest extends TestCase
 
 
         //delete fake files
-        Storage::disk('temp')->deleteDirectory('photo/' . $project->ref);
+        Storage::disk('temp')->deleteDirectory('photo/' . $this->project->ref);
     }
 
     public function test_audio_file_is_returned_using_streamed_response_temp()
     {
-        //create project
-        $project = factory(Project::class)->create(
-            ['access' => config('epicollect.strings.project_access.public')]
-        );
-
         //create a fake entry
         $entry = factory(Entry::class)->create([
-            'project_id' => $project->id,
-            'form_ref' => $project->ref . '_' . uniqid()
+            'project_id' => $this->project->id,
+            'form_ref' => $this->project->ref . '_' . uniqid()
         ]);
 
         //create a fake photo for the entry
-        Storage::disk('temp')->put('audio/' . $project->ref . '/' . $entry->uuid . '.mp4', '');
+        Storage::disk('temp')->put('audio/' . $this->project->ref . '/' . $entry->uuid . '.mp4', '');
 
         //audio in streaming (206 partial, not sure how to test it in PHPUnit)
         $queryString = '?type=audio&name=' . $entry->uuid . '.mp4&format=audio';
 
-        $response = $this->get('api/internal/temp-media/' . $project->slug . $queryString);
+        $response = $this->get('api/internal/temp-media/' . $this->project->slug . $queryString);
         //this is needed to close the streaming response (when testing it)
         //https://stackoverflow.com/questions/38400305/phpunit-help-needed-about-risky-tests
         //  ob_start();
@@ -949,29 +885,24 @@ class MediaControllerTest extends TestCase
         $response->assertStatus(200);//
         $response->assertHeader('Content-Type', config('epicollect.media.content_type.audio'));
         //delete fake files
-        Storage::disk('temp')->deleteDirectory('audio/' . $project->ref);
+        Storage::disk('temp')->deleteDirectory('audio/' . $this->project->ref);
     }
 
     public function test_video_file_is_returned_using_streamed_response_temp()
     {
-        //create project
-        $project = factory(Project::class)->create(
-            ['access' => config('epicollect.strings.project_access.public')]
-        );
-
         //create a fake entry
         $entry = factory(Entry::class)->create([
-            'project_id' => $project->id,
-            'form_ref' => $project->ref . '_' . uniqid()
+            'project_id' => $this->project->id,
+            'form_ref' => $this->project->ref . '_' . uniqid()
         ]);
 
         //create a fake photo for the entry
-        Storage::disk('temp')->put('video/' . $project->ref . '/' . $entry->uuid . '.mp4', '');
+        Storage::disk('temp')->put('video/' . $this->project->ref . '/' . $entry->uuid . '.mp4', '');
 
         //audio in streaming (206 partial, not sure how to test it in PHPUnit)
         $queryString = '?type=video&name=' . $entry->uuid . '.mp4&format=video';
 
-        $response = $this->get('api/internal/temp-media/' . $project->slug . $queryString);
+        $response = $this->get('api/internal/temp-media/' . $this->project->slug . $queryString);
         //this is needed to close the streaming response (when testing it)
         //https://stackoverflow.com/questions/38400305/phpunit-help-needed-about-risky-tests
         //  ob_start();
@@ -979,7 +910,7 @@ class MediaControllerTest extends TestCase
         $response->assertStatus(200);//
         $response->assertHeader('Content-Type', config('epicollect.media.content_type.video'));
         //delete fake files
-        Storage::disk('temp')->deleteDirectory('video/' . $project->ref);
+        Storage::disk('temp')->deleteDirectory('video/' . $this->project->ref);
     }
 
 }

@@ -3,55 +3,78 @@
 namespace Tests\Http\Controllers\Api\Project;
 
 use ec5\Libraries\Utilities\Generators;
-use ec5\Models\Eloquent\Project;
-use ec5\Models\Eloquent\ProjectRole;
-use ec5\Models\Eloquent\ProjectStats;
-use ec5\Models\Eloquent\ProjectStructure;
-use ec5\Models\Eloquent\User;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Str;
+use ec5\Models\Project\Project;
+use ec5\Models\Project\ProjectRole;
+use ec5\Models\Project\ProjectStats;
+use ec5\Models\Project\ProjectStructure;
+use ec5\Models\User\User;
+use ec5\Traits\Assertions;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use League\Csv\Exception;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
-use ec5\Traits\Assertions;
-
 
 class ProjectControllerTest extends TestCase
 {
     use DatabaseTransactions, Assertions;
 
+    private $user;
+    private $project;
+    private $projectStructure;
     const DRIVER = 'web';
 
     public function setup()
     {
         parent::setUp();
+
+        //create fake user for testing
+        $user = factory(User::class)->create();
+        //create a project with custom project definition
+        $projectDefinition = ProjectDefinitionGenerator::createProject(1);
+        $project = factory(Project::class)->create(
+            [
+                'created_by' => $user->id,
+                'name' => array_get($projectDefinition, 'data.project.name'),
+                'slug' => array_get($projectDefinition, 'data.project.slug'),
+                'ref' => array_get($projectDefinition, 'data.project.ref'),
+                'access' => config('epicollect.strings.project_access.private')
+            ]
+        );
+        //add role
+        factory(ProjectRole::class)->create([
+            'user_id' => $user->id,
+            'project_id' => $project->id,
+            'role' => config('epicollect.strings.project_roles.creator')
+        ]);
+
+        //create basic project definition
+        $projectStructure = factory(ProjectStructure::class)->create(
+            [
+                'project_id' => $project->id,
+                'project_definition' => json_encode($projectDefinition['data'])
+            ]
+        );
+        factory(ProjectStats::class)->create(
+            [
+                'project_id' => $project->id,
+                'total_entries' => 0
+            ]
+        );
+
+        $this->user = $user;
+        $this->project = $project;
+        $this->projectStructure = $projectStructure;
     }
 
     public function test_project_exists()
     {
-        //create fake user
-        $user = factory(User::class)->create(
-            ['email' => config('testing.UNIT_TEST_RANDOM_EMAIL')]
-        );
-
-        //create a fake project (use ref for name and slug to avoid uniqueness issues)
-        $ref = Generators::projectRef();
-        $project = factory(Project::class)->create([
-            'name' => $ref,
-            'slug' => $ref,
-            'ref' => $ref,
-            'access' => 'public',
-            'created_by' => $user->id
-        ]);
-
-        $response = $this->actingAs($user, self::DRIVER)
-            ->json('GET', 'api/internal/exists/' . $project->slug)
+        $response = $this->actingAs($this->user, self::DRIVER)
+            ->json('GET', 'api/internal/exists/' . $this->project->slug)
             ->assertStatus(200)
             ->assertExactJson([
                 'data' => [
                     'type' => 'exists',
-                    'id' => $project->slug,
+                    'id' => $this->project->slug,
                     'exists' => true
                 ]
             ])
@@ -68,22 +91,7 @@ class ProjectControllerTest extends TestCase
 
     public function test_project_exists_but_not_logged_in()
     {
-        //create fake user
-        $user = factory(User::class)->create(
-            ['email' => config('testing.UNIT_TEST_RANDOM_EMAIL')]
-        );
-
-        //create a fake project (use ref for name and slug to avoid uniqueness issues)
-        $ref = Generators::projectRef();
-        $project = factory(Project::class)->create([
-            'name' => $ref,
-            'slug' => $ref,
-            'ref' => $ref,
-            'access' => 'public',
-            'created_by' => $user->id
-        ]);
-
-        $response = $this->json('GET', 'api/internal/exists/' . $project->slug)
+        $response = $this->json('GET', 'api/internal/exists/' . $this->project->slug)
             ->assertStatus(404)
             ->assertExactJson([
                 'errors' => [
@@ -109,16 +117,8 @@ class ProjectControllerTest extends TestCase
 
     public function test_project_does_not_exists()
     {
-        //create fake user
-        $user = factory(User::class)->create(
-            ['email' => config('testing.UNIT_TEST_RANDOM_EMAIL')]
-        );
-
-        //do not create a project
         $ref = Generators::projectRef();
-
-
-        $response = $this->actingAs($user, self::DRIVER)
+        $response = $this->actingAs($this->user, self::DRIVER)
             ->json('GET', 'api/internal/exists/' . $ref)
             ->assertStatus(200)
             ->assertExactJson([
@@ -141,33 +141,18 @@ class ProjectControllerTest extends TestCase
 
     public function test_search_should_find_single_project()
     {
-        //create fake user
-        $user = factory(User::class)->create(
-            ['email' => config('testing.UNIT_TEST_RANDOM_EMAIL')]
-        );
-
-        //create a fake project (use ref for name and slug to avoid uniqueness issues)
-        $ref = Generators::projectRef();
-        $project = factory(Project::class)->create([
-            'name' => $ref,
-            'slug' => $ref,
-            'ref' => $ref,
-            'access' => 'public',
-            'created_by' => $user->id
-        ]);
-
-        $response = $this->json('GET', 'api/projects/' . $project->name)
+        $response = $this->json('GET', 'api/projects/' . $this->project->name)
             ->assertStatus(200)
             ->assertExactJson([
                 'data' => [
                     [
                         'type' => 'project',
-                        'id' => $ref,
+                        'id' => $this->project->ref,
                         'project' => [
-                            'name' => $ref,
-                            'slug' => $ref,
-                            'access' => 'public',
-                            'ref' => $ref
+                            'name' => $this->project->name,
+                            'slug' => $this->project->slug,
+                            'access' => $this->project->access,
+                            'ref' => $this->project->ref
                         ]
                     ]
                 ]
@@ -188,11 +173,6 @@ class ProjectControllerTest extends TestCase
 
     public function test_search_should_find_more_projects()
     {
-        //create fake user
-        $user = factory(User::class)->create(
-            ['email' => config('testing.UNIT_TEST_RANDOM_EMAIL')]
-        );
-
         $numOfProjects = 20;
         $needle = 'EC5 Unit ';
         //create fake projects (use 'EC5 Unit' to avoid uniqueness issues)
@@ -201,7 +181,7 @@ class ProjectControllerTest extends TestCase
                 'name' => 'EC5 Unit Tests ' . $i,
                 'slug' => 'ec5-unit-tests' . $i,
                 'access' => 'public',
-                'created_by' => $user->id
+                'created_by' => $this->user->id
             ]);
         }
 
@@ -228,11 +208,6 @@ class ProjectControllerTest extends TestCase
 
     public function test_search_should_skip_archived_projects()
     {
-        //create fake user
-        $user = factory(User::class)->create(
-            ['email' => config('testing.UNIT_TEST_RANDOM_EMAIL')]
-        );
-
         $numOfProjects = 20;
         $needle = 'EC5 Unit ';
         //create fake projects (use 'EC5 Unit' to avoid uniqueness issues)
@@ -242,7 +217,7 @@ class ProjectControllerTest extends TestCase
                 'slug' => 'ec5-unit-tests' . $i,
                 'access' => 'public',
                 'status' => 'archived',
-                'created_by' => $user->id
+                'created_by' => $this->user->id
             ]);
         }
 
@@ -257,11 +232,6 @@ class ProjectControllerTest extends TestCase
 
     public function test_search_should_skip_trashed_projects()
     {
-        //create fake user
-        $user = factory(User::class)->create(
-            ['email' => config('testing.UNIT_TEST_RANDOM_EMAIL')]
-        );
-
         $numOfProjects = 20;
         $needle = 'EC5 Unit ';
         //create fake projects (use 'EC5 Unit' to avoid uniqueness issues)
@@ -271,7 +241,7 @@ class ProjectControllerTest extends TestCase
                 'slug' => 'ec5-unit-tests' . $i,
                 'access' => 'public',
                 'status' => 'trashed',
-                'created_by' => $user->id
+                'created_by' => $this->user->id
             ]);
         }
 
@@ -286,21 +256,6 @@ class ProjectControllerTest extends TestCase
 
     public function test_search_should_return_empty_collection_if_no_name_passed()
     {
-        //create fake user
-        $user = factory(User::class)->create(
-            ['email' => config('testing.UNIT_TEST_RANDOM_EMAIL')]
-        );
-
-        //create a fake project (use ref for name and slug to avoid uniqueness issues)
-        $ref = Generators::projectRef();
-        $project = factory(Project::class)->create([
-            'name' => $ref,
-            'slug' => $ref,
-            'ref' => $ref,
-            'access' => 'public',
-            'created_by' => $user->id
-        ]);
-
         $response = $this->json('GET', 'api/projects/')
             ->assertStatus(200)
             ->assertExactJson([
@@ -313,34 +268,15 @@ class ProjectControllerTest extends TestCase
 
     public function test_should_get_project_version()
     {
-        //create fake user
-        $user = factory(User::class)->create(
-            ['email' => config('testing.UNIT_TEST_RANDOM_EMAIL')]
-        );
-
-        //create a fake project (use ref for name and slug to avoid uniqueness issues)
-        $ref = Generators::projectRef();
-        $project = factory(Project::class)->create([
-            'name' => $ref,
-            'slug' => $ref,
-            'ref' => $ref,
-            'access' => 'public',
-            'created_by' => $user->id
-        ]);
-
-        $projectStructure = factory(ProjectStructure::class)->create(
-            ['project_id' => $project->id]
-        );
-
-        $response = $this->json('GET', 'api/project-version/' . $project->slug)
+        $response = $this->json('GET', 'api/project-version/' . $this->project->slug)
             ->assertStatus(200)
             ->assertExactJson([
                 'data' => [
                     'type' => 'project-version',
-                    'id' => $project->slug,
+                    'id' => $this->project->slug,
                     'attributes' => [
-                        'structure_last_updated' => $projectStructure->updated_at->toDateTimeString(),
-                        'version' => (string)$projectStructure->updated_at->timestamp
+                        'structure_last_updated' => $this->projectStructure->updated_at->toDateTimeString(),
+                        'version' => (string)$this->projectStructure->updated_at->timestamp
                     ]
                 ]
             ])
@@ -386,42 +322,15 @@ class ProjectControllerTest extends TestCase
         $this->assertKeysNotEmpty($responseError);
     }
 
-    public function test_should_return_project_definition_as_json()
+    public function test_should_return_public_project_definition_as_json()
     {
-        $user = factory(User::class)->create();
-        // 2- create mock project with that user
-        $project = factory(Project::class)->create(['created_by' => $user->id]);
-
-        //assign the user to that project with the CREATOR role
-        $projectRole = factory(ProjectRole::class)->create([
-            'user_id' => $user->id,
-            'project_id' => $project->id,
-            'role' => config('epicollect.strings.project_roles.creator')
-        ]);
-
-        //add fake stats
-        factory(ProjectStats::class)->create([
-            'project_id' => $project->id,
-            'total_entries' => 0
-        ]);
-
-        //create fake structure, and rename to match the existing project
-        $projectDefinition = ProjectDefinitionGenerator::createProject(1);
-        $projectDefinition['data']['project']['name'] = $project->name;
-        $projectDefinition['data']['project']['slug'] = Str::slug($project->name);
-
-        factory(ProjectStructure::class)->create(
-            [
-                'project_id' => $project->id,
-                //pass the "data" content as the controller tested will add it under "data" again
-                'project_definition' => json_encode($projectDefinition['data'])
-            ]
-        );
+        $this->project->access = config('epicollect.strings.project_access.public');
+        $this->project->save();
 
         $response = [];
         try {
-            $response[] = $this->json('GET', 'api/internal/project/' . $project->slug)
-                ->assertStatus(200)
+            $response[] = $this->json('GET', 'api/internal/project/' . $this->project->slug);
+            $response[0]->assertStatus(200)
                 ->assertJsonStructure([
                     'meta' => [
                         'project_extra' => [],
@@ -434,7 +343,7 @@ class ProjectControllerTest extends TestCase
             $jsonResponse = json_decode($response[0]->getContent(), true);
             $this->assertProjectResponse($jsonResponse);
         } catch (Exception $e) {
-            dd($e->getMessage(), $response[0]->getContent());
+            $this->logTestError($e, $response);
         }
     }
 
@@ -466,38 +375,9 @@ class ProjectControllerTest extends TestCase
     public function test_should_update_bulk_upload_status()
     {
         $canBulkUploadStatuses = config('epicollect.strings.can_bulk_upload');
-
-        $user = factory(User::class)->create(
-            ['email' => config('testing.UNIT_TEST_RANDOM_EMAIL')]
-        );
-        //create a fake project (use ref for name and slug to avoid uniqueness issues)
-        $ref = Generators::projectRef();
-        $project = factory(Project::class)->create([
-            'name' => $ref,
-            'slug' => $ref,
-            'ref' => $ref,
-            'access' => 'private',
-            'created_by' => $user->id
-        ]);
-        //assign the user to that project with the CREATOR role
-        $projectRole = factory(ProjectRole::class)->create([
-            'user_id' => $user->id,
-            'project_id' => $project->id,
-            'role' => config('epicollect.strings.project_roles.creator')
-        ]);
-
-        //add fake stats
-        factory(ProjectStats::class)->create([
-            'project_id' => $project->id,
-            'total_entries' => 0
-        ]);
-        factory(ProjectStructure::class)->create(
-            ['project_id' => $project->id]
-        );
-
         $desiredStatus = $canBulkUploadStatuses[array_rand($canBulkUploadStatuses)];
-        $response = $this->actingAs($user)
-            ->json('POST', 'api/internal/can-bulk-upload/' . $project->slug,
+        $response = $this->actingAs($this->user)
+            ->json('POST', 'api/internal/can-bulk-upload/' . $this->project->slug,
                 ['can_bulk_upload' => $desiredStatus]
             )->assertStatus(200)
             ->assertExactJson([
@@ -506,7 +386,7 @@ class ProjectControllerTest extends TestCase
                 ]
             ]);
 
-        $storedProject = Project::where('id', $project->id)->first();
+        $storedProject = Project::where('id', $this->project->id)->first();
         $responseData = ($response->json())['data'];
         $this->assertKeysNotEmpty($responseData);
         $this->assertEquals($storedProject->can_bulk_upload, $desiredStatus);

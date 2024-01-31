@@ -748,66 +748,6 @@ class ProjectLeaveControllerTest extends TestCase
         factory(ProjectStructure::class)->create(
             ['project_id' => $project->id]
         );
-
-        // Create an instance of the controller
-//        $controller = new ProjectDeleteController(new Request());
-//
-//        // Create a partial mock with only the archiveProject method mocked
-//        $controllerMock = Mockery::mock($controller)->makePartial();
-//
-//        //Mock only the archiveProject method
-//        $controllerMock->shouldReceive('archiveProject')
-//            ->with($project->id, $project->slug)
-//            ->once()
-//            ->andReturn(false);
-
-        // Use the mocked instance to hit the real controller method
-        //todo: get back to this after the refactoring using DTO instead of middleware
-        // $response = $controllerMock->softDelete($project->id, $project->slug);
-
-        // Mock the middleware behavior
-//        $legacyProject = new LegacyProject(
-//            new ProjectDefinition(),
-//            new ProjectExtra(),
-//            new ProjectMapping(),
-//            new ProjectStats()
-//        );
-//        $legacyProjectRole = new LegacyProjectRole();
-//        $legacyProjectRole->setRole(new LegacyUser(), $project->id, $role);
-//
-//        // Retrieve project (legacy way,  R&A fiasco)
-//        $search = new SearchRepository();
-//        $currentProject = $search->find($project->slug, $columns = array('*'));
-//        $legacyProject->init($currentProject);
-//
-//        $request = $this->app['request'];
-//        // Set attributes as if the middleware has run
-//        $request->attributes->add(['requestedProject' => $legacyProject]);
-//        //$this->request->attributes->add(['requestedUser' => $this->requestedUser]);
-//        $request->attributes->add(['requestedProjectRole' => $legacyProjectRole]);
-//
-//
-//        //$controller->requestedProject = $legacyProject;
-//        //$controller->requestedProjectRole = $legacyProjectRole;
-////
-////        // Create a partial mock with only the archiveProject method mocked
-//        $controllerMock = Mockery::mock(new ProjectControllerBase($request))->makePartial();
-//
-////        //Mock only the archiveProject method
-//        $controllerMock->shouldReceive('archiveProject')
-//            ->with($project->id, $project->slug)
-//            ->andReturn(false);
-//
-//        // Use the mocked instance to hit the real controller method
-//        // Create an instance of the controller
-//        $controller = new ProjectDeleteController($request);
-//        $response = $controller->softDelete();
-//
-//        dd($response->status());
-
-        // $response->assertRedirect('myprojects/' . $project->slug);
-        // $this->assertEquals('ec5_104', session('errors')->getBag('default')->first());
-
     }
 }
 

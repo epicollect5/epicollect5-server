@@ -3,13 +3,14 @@
 namespace Tests\Http\Controllers\Api\Entries;
 
 use ec5\Libraries\Utilities\Common;
-use ec5\Models\Eloquent\Entries\BranchEntry;
-use ec5\Models\Eloquent\Entries\Entry;
-use ec5\Models\Eloquent\Project;
-use ec5\Models\Eloquent\ProjectRole;
-use ec5\Models\Eloquent\ProjectStats;
-use ec5\Models\Eloquent\ProjectStructure;
-use ec5\Models\Eloquent\User;
+use ec5\Libraries\Utilities\Generators;
+use ec5\Models\Entries\BranchEntry;
+use ec5\Models\Entries\Entry;
+use ec5\Models\Project\Project;
+use ec5\Models\Project\ProjectRole;
+use ec5\Models\Project\ProjectStats;
+use ec5\Models\Project\ProjectStructure;
+use ec5\Models\User\User;
 use ec5\Traits\Assertions;
 use Exception;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -90,7 +91,7 @@ class DownloadTemplateControllerTest extends TestCase
             $this->project = $project;
             $this->projectDefinition = $projectDefinition;
         } catch (Exception $e) {
-            dd($e->getMessage(), $response[0]->getContent());
+            $this->logTestError($e, $response);
         }
     }
 
@@ -127,16 +128,30 @@ class DownloadTemplateControllerTest extends TestCase
         );
 
         $queryString = '?map_index=0&form_index=0&branch_ref=&format=json';
-
         $response = [];
-        try {
-            $response[] = $this->get('api/internal/upload-headers/' . $project->slug . $queryString);
-            $response[0]->assertStatus(302);
-            $response[0]->assertRedirect(Route('home'));
+        $response[] = $this->get('api/internal/upload-headers/' . $project->slug . $queryString);
+        $response[0]->assertStatus(404);
 
-        } catch (Exception $e) {
-            $this->logTestError($e, $response);
-        }
+        $response[0]->assertJsonStructure([
+            'errors' => [
+                '*' => [
+                    'code',
+                    'title',
+                    'source'
+                ]
+            ]
+        ]);
+
+        //imp: cannot use exactJson due to escaping the <br/>
+        $response[0]->assertJsonFragment([
+            "errors" => [
+                [
+                    "code" => "ec5_78",
+                    "source" => "middleware",
+                    "title" => "This project is private. <br/> You need permission to access it."
+                ]
+            ]
+        ]);
     }
 
     public function test_should_send_template_response_json_if_public_project()
@@ -185,6 +200,53 @@ class DownloadTemplateControllerTest extends TestCase
                     ]
                 ]
             );
+    }
+
+    public function test_should_catch_project_does_not_exist()
+    {
+        //create user
+        $user = factory(User::class)->create();
+        //create project
+        $project = factory(Project::class)->create(
+            [
+                'created_by' => $user->id,
+                'access' => config('epicollect.strings.project_access.public')
+            ]
+        );
+
+        //assign role
+        factory(ProjectRole::class)->create([
+            'user_id' => $user->id,
+            'project_id' => $project->id,
+            'role' => config('epicollect.strings.project_roles.creator')
+        ]);
+
+        factory(ProjectStructure::class)->create(
+            [
+                'project_id' => $project->id
+            ]
+        );
+
+        factory(ProjectStats::class)->create(
+            [
+                'project_id' => $project->id,
+                'total_entries' => 0
+            ]
+        );
+
+        $wrongSlug = Generators::projectRef();
+        $queryString = '?map_index=0&form_index=0&branch_ref=&format=json';
+        $response = $this->get('api/internal/upload-headers/' . $wrongSlug . $queryString)
+            ->assertStatus(404);
+        $response->assertExactJson([
+            "errors" => [
+                [
+                    "code" => "ec5_11",
+                    "title" => "Project does not exist.",
+                    "source" => "middleware"
+                ]
+            ]
+        ]);
     }
 
     public function test_should_send_template_response_json_if_private_project()
