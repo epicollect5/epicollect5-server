@@ -3,7 +3,7 @@
 namespace ec5\Models\Project;
 
 use DB;
-use ec5\DTO\ProjectDTO as LegacyProject;
+use ec5\DTO\ProjectDTO;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Log;
@@ -212,7 +212,7 @@ class Project extends Model
             ->get();
     }
 
-    public static function updateAllTables(LegacyProject $project, $params, $setUpdatedAt = false): bool
+    public static function updateAllTables(ProjectDTO $project, $params, $setUpdatedAt = false): bool
     {
         try {
             DB::beginTransaction();

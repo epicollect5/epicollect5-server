@@ -3,7 +3,7 @@
 namespace ec5\Http\Middleware;
 
 use Closure;
-use ec5\DTO\ProjectDTO as LegacyProject;
+use ec5\DTO\ProjectDTO;
 use ec5\DTO\ProjectRoleDTO;
 use ec5\Http\Controllers\Api\ApiResponse as ApiResponse;
 use ec5\Models\Project\Project;
@@ -42,9 +42,9 @@ abstract class RequestAttributesMiddleware
      * ProjectPermissionsBase constructor.
      * @param Request $request
      * @param ApiResponse $apiResponse
-     * @param LegacyProject $requestedProject
+     * @param ProjectDTO $requestedProject
      */
-    public function __construct(Request $request, ApiResponse $apiResponse, LegacyProject $requestedProject)
+    public function __construct(Request $request, ApiResponse $apiResponse, ProjectDTO $requestedProject)
     {
         $this->requestedProject = $requestedProject;
         $this->request = $request;

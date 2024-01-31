@@ -4,7 +4,7 @@ namespace ec5\Http\Controllers\Web\Admin\Tools;
 
 use Auth;
 use Carbon\Carbon;
-use ec5\DTO\ProjectDTO as LegacyProject;
+use ec5\DTO\ProjectDTO;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Libraries\Utilities\GpointConverter;
 use ec5\Mail\DebugEmailSending;
@@ -21,7 +21,7 @@ class PHPToolsController
 
     protected $project;
 
-    public function __construct(LegacyProject $project)
+    public function __construct(ProjectDTO $project)
     {
         $this->project = $project;
     }

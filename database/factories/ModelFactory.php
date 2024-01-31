@@ -12,7 +12,7 @@
 */
 
 use Carbon\Carbon;
-use ec5\DTO\ProjectDTO as LegacyProject;
+use ec5\DTO\ProjectDTO;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
@@ -102,7 +102,7 @@ $factory->define(Project::class, function (Faker\Generator $faker) {
     ];
 });
 
-$factory->define(LegacyProject::class, function (Faker\Generator $faker) {
+$factory->define(ProjectDTO::class, function (Faker\Generator $faker) {
 
     $ec5Limits = config('epicollect.limits');
     $nameMin = $ec5Limits['project']['name']['min'];

@@ -2,7 +2,7 @@
 
 namespace ec5\Http\Controllers\Web\Project;
 
-use ec5\DTO\ProjectDTO as LegacyProject;
+use ec5\DTO\ProjectDTO;
 use ec5\Http\Validation\Project\RuleCreateRequest;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Services\ProjectService;
@@ -32,9 +32,9 @@ class ProjectCreateController
     protected $errors = [];
 
     /**
-     * @param LegacyProject $project
+     * @param ProjectDTO $project
      */
-    public function __construct(LegacyProject $project)
+    public function __construct(ProjectDTO $project)
     {
         $this->project = $project;
     }

@@ -3,8 +3,8 @@
 namespace ec5\Services;
 
 use DB;
-use ec5\DTO\ProjectDTO as LegacyProject;
-use ec5\DTO\ProjectRoleDTO as LegacyProjectRole;
+use ec5\DTO\ProjectDTO;
+use ec5\DTO\ProjectRoleDTO;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
@@ -15,7 +15,7 @@ use Log;
 
 class ProjectService
 {
-    public function storeProject(LegacyProject $project)
+    public function storeProject(ProjectDTO $project)
     {
         try {
             DB::beginTransaction();
@@ -140,11 +140,11 @@ class ProjectService
      *
      * @param User|null $user
      * @param $projectId
-     * @return LegacyProjectRole
+     * @return ProjectRoleDTO
      */
-    public function getRole($user = null, $projectId): LegacyProjectRole
+    public function getRole($user = null, $projectId): ProjectRoleDTO
     {
-        $projectRoleUser = new LegacyProjectRole();
+        $projectRoleUser = new ProjectRoleDTO();
         $role = null;
         // If we have a valid user
         if ($user && $user->id) {

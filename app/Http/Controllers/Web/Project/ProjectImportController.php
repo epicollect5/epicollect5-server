@@ -2,12 +2,11 @@
 
 namespace ec5\Http\Controllers\Web\Project;
 
-use ec5\DTO\ProjectDTO as LegacyProject;
+use ec5\DTO\ProjectDTO;
 use ec5\Http\Validation\Project\RuleImportJson as ImportJsonValidator;
 use ec5\Http\Validation\Project\RuleImportRequest as ImportRequestValidator;
 use ec5\Http\Validation\Project\RuleProjectDefinition as ProjectDefinitionValidator;
 use ec5\Libraries\Utilities\Generators;
-use ec5\Models\Projects\Exceptions\ProjectImportException;
 use ec5\Services\ProjectService;
 use ec5\Traits\Project\ProjectTools;
 use Exception;
@@ -32,9 +31,9 @@ class ProjectImportController
 
     /**
      * ProjectCreateController constructor.
-     * @param LegacyProject $project
+     * @param ProjectDTO $project
      */
-    public function __construct(LegacyProject $project)
+    public function __construct(ProjectDTO $project)
     {
         $this->project = $project;
     }
