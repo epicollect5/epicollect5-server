@@ -8,7 +8,7 @@ class CheckboxTest extends InputTest
 {
 
     /**
-     * @var \ec5\Models\Projects\Project
+     * @var \ec5\DTO\ProjectDTO
      */
     protected $project;
     /**
@@ -28,7 +28,7 @@ class CheckboxTest extends InputTest
         // This method will automatically be called prior to any of your test cases
         parent::setUp();
         $this->validator = new RuleInput();
-        $this->project = \Mockery::mock('\ec5\Models\Projects\Project');
+        $this->project = \Mockery::mock('\ec5\DTO\ProjectDTO');
         $this->type = 'checkbox';
         $this->reset();
     }

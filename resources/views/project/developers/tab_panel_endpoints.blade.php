@@ -1,3 +1,9 @@
+@php
+    /**
+     *   @var \ec5\DTO\ProjectMappingDTO $projectMapping
+     */
+@endphp
+
 <div>
     @if($requestAttributes->requestedProject->access === 'private')
         <div class="warning-well">Endpoints are not accessible by a browser for <strong>private</strong> projects</div>

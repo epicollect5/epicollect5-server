@@ -3,14 +3,14 @@
 namespace ec5\Traits\Eloquent;
 
 use ec5\Libraries\Utilities\Generators;
-use ec5\Models\Eloquent\Entries\BranchEntry;
-use ec5\Models\Eloquent\Entries\BranchEntryArchive;
-use ec5\Models\Eloquent\Entries\Entry;
-use ec5\Models\Eloquent\Entries\EntryArchive;
-use ec5\Models\Eloquent\Project;
-use ec5\Models\Eloquent\ProjectRole;
-use ec5\Models\Eloquent\User;
-use ec5\Models\Eloquent\UserProvider;
+use ec5\Models\Entries\BranchEntry;
+use ec5\Models\Entries\BranchEntryArchive;
+use ec5\Models\Entries\Entry;
+use ec5\Models\Entries\EntryArchive;
+use ec5\Models\Project\Project;
+use ec5\Models\Project\ProjectRole;
+use ec5\Models\User\User;
+use ec5\Models\User\UserProvider;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Log;

@@ -2,10 +2,10 @@
 
 namespace ec5\Http\Validation\Project;
 
+use ec5\DTO\ProjectDTO;
 use ec5\Http\Validation\ValidationBase;
-use ec5\Models\Eloquent\Counters\BranchEntryCounter;
-use ec5\Models\Eloquent\Counters\EntryCounter;
-use ec5\Models\Projects\Project;
+use ec5\Models\Counters\BranchEntryCounter;
+use ec5\Models\Counters\EntryCounter;
 
 class RuleEntryLimits extends ValidationBase
 {
@@ -24,11 +24,11 @@ class RuleEntryLimits extends ValidationBase
 
 
     /**
-     * @param Project $project
+     * @param ProjectDTO $project
      * @param $ref
      * @param $data
      */
-    public function additionalChecks(Project $project, $ref, $data)
+    public function additionalChecks(ProjectDTO $project, $ref, $data)
     {
         $projectExtra = $project->getProjectExtra();
         $isBranch = false;

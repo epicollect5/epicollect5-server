@@ -3,9 +3,8 @@
 namespace Tests\Http\Validation\Project;
 
 use ec5\Http\Validation\Project\RuleSettings;
-use ec5\Models\Eloquent\Project;
-use Tests\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Tests\TestCase;
 
 class RuleSettingsTest extends TestCase
 {

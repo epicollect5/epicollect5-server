@@ -2,8 +2,8 @@
 
 namespace ec5\Http\Validation\Project\Mapping;
 
+use ec5\DTO\ProjectMappingDTO;
 use ec5\Http\Validation\ValidationBase;
-use ec5\Models\Projects\ProjectMapping;
 
 class RuleMappingUpdate extends ValidationBase
 {
@@ -17,10 +17,10 @@ class RuleMappingUpdate extends ValidationBase
     ];
 
     /**
-     * @param ProjectMapping $projectMapping
+     * @param ProjectMappingDTO $projectMapping
      * @param $newMapDetails
      */
-    public function additionalChecks(ProjectMapping $projectMapping, $newMapDetails)
+    public function additionalChecks(ProjectMappingDTO $projectMapping, $newMapDetails)
     {
         // Cant rename or update the default mapping (map_index 0)
         if (($this->data['action'] === 'rename' || $this->data['action'] === 'update') && $newMapDetails['map_index'] == 0) {

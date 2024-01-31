@@ -2,10 +2,10 @@
 
 namespace ec5\Http\Controllers\Web\Project;
 
-use ec5\Models\Eloquent\Entries\Entry;
-use ec5\Models\Eloquent\Project;
-use ec5\Models\Eloquent\ProjectFeatured;
-use ec5\Models\Eloquent\ProjectStats;
+use ec5\Models\Entries\Entry;
+use ec5\Models\Project\Project;
+use ec5\Models\Project\ProjectFeatured;
+use ec5\Models\Project\ProjectStats;
 use ec5\Traits\Eloquent\Archiver;
 use ec5\Traits\Eloquent\StatsRefresher;
 use ec5\Traits\Requests\RequestAttributes;

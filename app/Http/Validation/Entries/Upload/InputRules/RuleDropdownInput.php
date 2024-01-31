@@ -2,8 +2,8 @@
 
 namespace ec5\Http\Validation\Entries\Upload\InputRules;
 
-use ec5\Models\Projects\Project;
-use ec5\Models\Entries\EntryStructure;
+use ec5\DTO\EntryStructureDTO;
+use ec5\DTO\ProjectDTO;
 use ec5\Libraries\Utilities\Common;
 
 class RuleDropdownInput extends RuleInputBase
@@ -11,9 +11,9 @@ class RuleDropdownInput extends RuleInputBase
     /**
      * @param $inputDetails
      * @param string|array $answer
-     * @param Project $project
+     * @param ProjectDTO $project
      */
-    public function setRules($inputDetails, $answer, Project $project)
+    public function setRules($inputDetails, $answer, ProjectDTO $project)
     {
         // Validate against possible answers
         $possibles = Common::getPossibleAnswers($inputDetails);
@@ -27,18 +27,17 @@ class RuleDropdownInput extends RuleInputBase
     /**
      * @param $inputDetails
      * @param $answer
-     * @param Project $project
-     * @param EntryStructure $entryStructure
+     * @param ProjectDTO $project
+     * @param EntryStructureDTO $entryStructure
      * @return mixed
      */
-    public function additionalChecks($inputDetails, $answer, Project $project, EntryStructure $entryStructure)
+    public function additionalChecks($inputDetails, $answer, ProjectDTO $project, EntryStructureDTO $entryStructure)
     {
         if (!empty($answer)) {
             // Add possible answer to entry structure
             try {
                 $entryStructure->addPossibleAnswer($answer);
-            }
-            catch (\Exception $e) {
+            } catch (\Exception $e) {
                 \Log::error('Dropdown: possible answer value is invalid', ['answer' => $answer]);
                 $this->errors[$inputDetails['ref']] = ['ec5_25'];
             }

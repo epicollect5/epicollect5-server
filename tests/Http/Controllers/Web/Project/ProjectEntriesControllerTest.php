@@ -2,20 +2,19 @@
 
 namespace Tests\Http\Controllers\Web\Project;
 
-use ec5\Models\Eloquent\Entries\BranchEntry;
-use ec5\Models\Eloquent\Entries\Entry;
-use ec5\Models\Eloquent\Project;
-use ec5\Models\Eloquent\ProjectRole;
-use ec5\Models\Eloquent\ProjectStats;
-use ec5\Models\Eloquent\ProjectStructure;
-use ec5\Models\Eloquent\User;
+use ec5\Models\Entries\BranchEntry;
+use ec5\Models\Entries\Entry;
+use ec5\Models\Project\Project;
+use ec5\Models\Project\ProjectRole;
+use ec5\Models\Project\ProjectStats;
+use ec5\Models\Project\ProjectStructure;
+use ec5\Models\User\User;
 use Exception;
 use Faker\Factory as Faker;
-use Ramsey\Uuid\Uuid;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\Generators\EntryGenerator;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 class ProjectEntriesControllerTest extends TestCase
 {

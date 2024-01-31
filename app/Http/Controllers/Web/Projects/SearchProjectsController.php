@@ -3,8 +3,8 @@
 namespace ec5\Http\Controllers\Web\Projects;
 
 use ec5\Http\Controllers\Controller;
-use ec5\Models\Eloquent\Project;
 use ec5\Http\Validation\Project\RuleSearch;
+use ec5\Models\Project\Project;
 use Illuminate\Http\Request;
 
 class SearchProjectsController extends Controller

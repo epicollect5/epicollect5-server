@@ -3,10 +3,10 @@
 namespace ec5\Http\Middleware;
 
 use Closure;
+use ec5\DTO\ProjectDTO as LegacyProject;
 use ec5\DTO\ProjectRoleDTO;
 use ec5\Http\Controllers\Api\ApiResponse as ApiResponse;
-use ec5\Models\Eloquent\Project;
-use ec5\Models\Projects\Project as LegacyProject;
+use ec5\Models\Project\Project;
 use ec5\Services\ProjectService;
 use ec5\Traits\Middleware\MiddlewareTools;
 use Illuminate\Http\Request;
@@ -60,12 +60,16 @@ abstract class RequestAttributesMiddleware
         $this->request = $request;
 
         // Set the project
-        $this->setRequestedProject($this->request);
+        $slug = $request->route()->parameter('project_slug');
+        $slug = Str::slug($slug, '-');
+        if (empty($slug)) {
+            return $this->errorResponse($this->request, 'ec5_21', 404);
+        }
+        $this->setRequestedProject($slug);
 
-        // Check the project
-        if ($this->requestedProject == null) {
-            $this->error = 'ec5_11';
-            return $this->errorResponse($this->request, $this->error, 404);
+        // Check the project exists
+        if ($this->requestedProject->getId() === null) {
+            return $this->errorResponse($this->request, 'ec5_11', 404);
         }
 
         // Set the user
@@ -106,15 +110,8 @@ abstract class RequestAttributesMiddleware
      */
     public abstract function hasPermission();
 
-    private function setRequestedProject(Request $request)
+    private function setRequestedProject($slug)
     {
-        $slug = $request->route()->parameter('project_slug');
-        $slug = Str::slug($slug, '-');
-
-        if (empty($slug)) {
-            $this->requestedProject = null;
-        }
-
         $project = Project::findBySlug($slug);
         if ($project) {
             // Initialise the main Project model

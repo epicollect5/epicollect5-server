@@ -3,11 +3,11 @@
 namespace Tests\Http\Validation\Project;
 
 use ec5\Http\Validation\Project\RuleCreateRequest;
-use ec5\Models\Eloquent\Project;
-use ec5\Models\Eloquent\User;
+use ec5\Models\Project\Project;
+use ec5\Models\User\User;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Ramsey\Uuid\Uuid;
 use Tests\TestCase;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 class RuleCreateRequestTest extends TestCase
 {

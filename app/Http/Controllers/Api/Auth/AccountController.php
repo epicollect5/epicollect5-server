@@ -2,22 +2,21 @@
 
 namespace ec5\Http\Controllers\Api\Auth;
 
-use Exception;
-use Log;
 use ec5\Http\Controllers\Api\ApiResponse;
 use ec5\Http\Controllers\Controller;
 use ec5\Mail\UserAccountDeletionConfirmation;
-use ec5\Models\Eloquent\ProjectFeatured;
-use ec5\Models\Eloquent\ProjectStats;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
-use ec5\Models\Eloquent\ProjectRole;
-use ec5\Models\Eloquent\Project;
-use ec5\Models\Eloquent\User;
+use ec5\Models\Project\Project;
+use ec5\Models\Project\ProjectFeatured;
+use ec5\Models\Project\ProjectRole;
+use ec5\Models\Project\ProjectStats;
+use ec5\Models\User\User;
 use ec5\Traits\Eloquent\Archiver;
 use ec5\Traits\Eloquent\Remover;
+use Exception;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Log;
 
 class AccountController extends Controller
 {

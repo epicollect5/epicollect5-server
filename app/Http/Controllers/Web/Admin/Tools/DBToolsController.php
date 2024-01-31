@@ -11,8 +11,8 @@ namespace ec5\Http\Controllers\Web\Admin\Tools;
 
 use Carbon\Carbon;
 use DB;
-use ec5\Models\Eloquent\Entries\Entry;
-use ec5\Models\Eloquent\Project;
+use ec5\Models\Entries\Entry;
+use ec5\Models\Project\Project;
 use Illuminate\Http\Request;
 use Ramsey\Uuid\Uuid;
 

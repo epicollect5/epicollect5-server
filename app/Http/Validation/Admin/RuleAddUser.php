@@ -3,7 +3,7 @@
 namespace ec5\Http\Validation\Admin;
 
 use ec5\Http\Validation\ValidationBase;
-use ec5\Models\Eloquent\UserProvider;
+use ec5\Models\User\UserProvider;
 
 
 class RuleAddUser extends ValidationBase

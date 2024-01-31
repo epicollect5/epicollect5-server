@@ -2,9 +2,9 @@
 
 namespace ec5\Http\Validation\Entries\Archive;
 
+use ec5\DTO\EntryStructureDTO;
+use ec5\DTO\ProjectDTO;
 use ec5\Http\Validation\ValidationBase;
-use ec5\Models\Entries\EntryStructure;
-use ec5\Models\Projects\Project;
 
 class RuleArchive extends ValidationBase
 {
@@ -31,10 +31,10 @@ class RuleArchive extends ValidationBase
     ];
 
     /**
-     * @param Project $project
-     * @param EntryStructure $entryStructure
+     * @param ProjectDTO $project
+     * @param EntryStructureDTO $entryStructure
      */
-    public function additionalChecks(Project $project, EntryStructure $entryStructure)
+    public function additionalChecks(ProjectDTO $project, EntryStructureDTO $entryStructure)
     {
         //todo: use Project, not Extra
         $projectExtra = $project->getProjectExtra();

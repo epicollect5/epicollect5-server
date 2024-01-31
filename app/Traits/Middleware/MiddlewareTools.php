@@ -2,10 +2,10 @@
 
 namespace ec5\Traits\Middleware;
 
-use ec5\Http\Controllers\Api\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Response;
 
 trait MiddlewareTools
 {
@@ -17,10 +17,9 @@ trait MiddlewareTools
      */
     public function errorResponse(Request $request, $errorCode, $httpStatusCode)
     {
-        $apiResponse = new ApiResponse();
         $errors = ['middleware' => [$errorCode]];
         if ($this->isJsonRequest($request)) {
-            return $apiResponse->errorResponse($httpStatusCode, $errors);
+            return Response::apiErrorCode($httpStatusCode, $errors);
         }
         // Log in error
         if ($errorCode == 'ec5_77' || $errorCode == 'ec5_70') {

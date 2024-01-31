@@ -2,13 +2,12 @@
 
 namespace Tests\Traits\Eloquent;
 
+use ec5\Models\Project\Project;
+use ec5\Models\User\User;
+use Faker\Factory as Faker;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Str;
 use Tests\TestCase;
-use ec5\Models\Eloquent\Project;
-use ec5\Models\Eloquent\User;
-use Faker\Factory as Faker;
-use Illuminate\Support\Facades\Config;
 
 class ArchiveProjectTest extends TestCase
 {

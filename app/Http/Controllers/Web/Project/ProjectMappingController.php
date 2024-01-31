@@ -3,12 +3,11 @@
 namespace ec5\Http\Controllers\Web\Project;
 
 use ec5\Http\Controllers\Api\ApiResponse;
-
 use ec5\Http\Validation\Project\Mapping\RuleMappingCreate;
 use ec5\Http\Validation\Project\Mapping\RuleMappingDelete;
-use ec5\Http\Validation\Project\Mapping\RuleMappingUpdate;
 use ec5\Http\Validation\Project\Mapping\RuleMappingStructure;
-use ec5\Models\Eloquent\ProjectStructure;
+use ec5\Http\Validation\Project\Mapping\RuleMappingUpdate;
+use ec5\Models\Project\ProjectStructure;
 use ec5\Traits\Requests\RequestAttributes;
 
 class ProjectMappingController

@@ -2,11 +2,10 @@
 
 namespace ec5\Libraries\Jwt;
 
+use ec5\Models\User\User;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
-
-use Illuminate\Contracts\Hashing\Hasher as HasherContract;
 use Illuminate\Contracts\Auth\UserProvider;
-use ec5\Models\Eloquent\User;
+use Illuminate\Contracts\Hashing\Hasher as HasherContract;
 use Illuminate\Support\Str;
 
 class JwtUserProvider implements UserProvider

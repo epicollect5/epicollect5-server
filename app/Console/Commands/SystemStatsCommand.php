@@ -2,11 +2,11 @@
 
 namespace ec5\Console\Commands;
 
-use ec5\Models\Eloquent\System\BranchEntriesTotals;
-use ec5\Models\Eloquent\System\EntriesTotals;
-use ec5\Models\Eloquent\System\ProjectsTotals;
-use ec5\Models\Eloquent\System\SystemStats as SystemStatsModel;
-use ec5\Models\Eloquent\System\UsersTotals;
+use ec5\Models\System\BranchEntriesTotals;
+use ec5\Models\System\EntriesTotals;
+use ec5\Models\System\ProjectsTotals;
+use ec5\Models\System\SystemStats as SystemStatsModel;
+use ec5\Models\System\UsersTotals;
 use Illuminate\Console\Command;
 
 class SystemStatsCommand extends Command

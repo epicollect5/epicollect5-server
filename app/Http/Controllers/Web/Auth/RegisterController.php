@@ -2,10 +2,10 @@
 
 namespace ec5\Http\Controllers\Web\Auth;
 
-use ec5\Models\Eloquent\User;
 use ec5\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Validator;
+use ec5\Models\User\User;
 use Illuminate\Foundation\Auth\RegistersUsers;
+use Illuminate\Support\Facades\Validator;
 
 class RegisterController extends Controller
 {

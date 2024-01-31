@@ -3,11 +3,11 @@
 namespace ec5\Http\Controllers\Web\Admin;
 
 use ec5\Http\Controllers\Controller;
+use ec5\Models\Project\Project;
+use ec5\Models\User\User;
 use ec5\Services\ProjectService;
 use ec5\Services\UserService;
 use Illuminate\Http\Request;
-use ec5\Models\Eloquent\User;
-use ec5\Models\Eloquent\Project;
 
 class AdminController extends Controller
 {

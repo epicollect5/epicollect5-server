@@ -2,9 +2,8 @@
 
 namespace ec5\Http\Validation\Project\Mapping;
 
+use ec5\DTO\ProjectMappingDTO;
 use ec5\Http\Validation\ValidationBase;
-use Config;
-use ec5\Models\Projects\ProjectMapping;
 
 class RuleMappingCreate extends ValidationBase
 {
@@ -15,10 +14,10 @@ class RuleMappingCreate extends ValidationBase
     ];
 
     /**
-     * @param ProjectMapping $projectMapping
+     * @param ProjectMappingDTO $projectMapping
      * @param $newMapDetails
      */
-    public function additionalChecks(ProjectMapping $projectMapping, $newMapDetails)
+    public function additionalChecks(ProjectMappingDTO $projectMapping, $newMapDetails)
     {
         // Check we haven't reached the max count of maps
         if ($projectMapping->getMapCount() == config('epicollect.limits.project_mappings.max_count')) {

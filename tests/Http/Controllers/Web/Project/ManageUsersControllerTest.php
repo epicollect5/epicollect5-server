@@ -2,16 +2,16 @@
 
 namespace Tests\Http\Controllers\Web\Project;
 
-use ec5\Models\Eloquent\Project;
-use ec5\Models\Eloquent\ProjectRole;
-use ec5\Models\Eloquent\ProjectStats;
-use ec5\Models\Eloquent\ProjectStructure;
-use ec5\Models\Eloquent\User;
+use ec5\Models\Project\Project;
+use ec5\Models\Project\ProjectRole;
+use ec5\Models\Project\ProjectStats;
+use ec5\Models\Project\ProjectStructure;
+use ec5\Models\User\User;
 use Exception;
 use Faker\Factory as Faker;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 
 class ManageUsersControllerTest extends TestCase

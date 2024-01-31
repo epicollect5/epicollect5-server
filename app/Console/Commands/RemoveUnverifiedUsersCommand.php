@@ -2,16 +2,14 @@
 
 namespace ec5\Console\Commands;
 
-use Illuminate\Console\Command;
-
-use ec5\Models\Eloquent\User;
-use ec5\Models\Eloquent\UserVerify;
-use Config;
-use Exception;
-use PDOException;
-use Log;
 use Carbon\Carbon;
 use DB;
+use ec5\Models\User\User;
+use ec5\Models\User\UserVerify;
+use Exception;
+use Illuminate\Console\Command;
+use Log;
+use PDOException;
 
 class RemoveUnverifiedUsersCommand extends Command
 {

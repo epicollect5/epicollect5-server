@@ -2,24 +2,23 @@
 
 namespace ec5\Http\Controllers\Web\Auth;
 
-use ec5\Models\Eloquent\UserVerify;
-use Illuminate\Http\Request;
-use ec5\Http\Controllers\Controller;
-use ec5\Http\Validation\Auth\RuleSignup;
-use ec5\Http\Validation\Auth\RuleRecaptcha;
-use ec5\Models\Eloquent\User;
-use Config;
-use Illuminate\Support\Facades\App;
-use PDOException;
-use Exception;
-use Log;
-use Mail;
-use ec5\Mail\UserAccountActivationMail;
-use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Auth;
 use Carbon\Carbon;
 use DB;
+use ec5\Http\Controllers\Controller;
+use ec5\Http\Validation\Auth\RuleRecaptcha;
+use ec5\Http\Validation\Auth\RuleSignup;
+use ec5\Mail\UserAccountActivationMail;
+use ec5\Models\User\User;
+use ec5\Models\User\UserVerify;
 use ec5\Traits\Auth\ReCaptchaValidation;
+use Exception;
+use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
+use Log;
+use Mail;
+use PDOException;
 
 
 class SignUpController extends Controller

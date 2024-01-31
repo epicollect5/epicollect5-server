@@ -2,12 +2,12 @@
 
 namespace ec5\Http\Controllers\Web\Project;
 
-use ec5\Models\Eloquent\Project;
-use ec5\Services\ProjectService;
-use Illuminate\Http\Request;
-use ec5\Http\Validation\Project\RuleTransferOwnership as TransferValidator;
 use Auth;
+use ec5\Http\Validation\Project\RuleTransferOwnership as TransferValidator;
+use ec5\Models\Project\Project;
+use ec5\Services\ProjectService;
 use ec5\Traits\Requests\RequestAttributes;
+use Illuminate\Http\Request;
 
 class ProjectTransferOwnershipController
 {

@@ -4,10 +4,11 @@ namespace ec5\Http\Controllers\Web;
 
 use ec5\Http\Controllers\Controller;
 use ec5\Libraries\Utilities\Common;
-use ec5\Models\Eloquent\Project;
-use ec5\Models\Eloquent\System\SystemStats;
+use ec5\Models\Project\Project;
+use ec5\Models\System\SystemStats;
 use Exception;
 use Illuminate\Http\Request;
+use Log;
 
 class HomeController extends Controller
 {
@@ -33,16 +34,8 @@ class HomeController extends Controller
      * @param Request $request
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
-    public function index(Request $request)
+    public function index()
     {
-        $columns = [
-            'projects.name',
-            'projects.slug',
-            'projects.logo_url',
-            'projects.access',
-            'projects.small_description',
-        ];
-
         try {
             //get all featured projects (ordered by updated timestamp)
             $allFeaturedProjects = $this->projectModel->featured();
@@ -51,7 +44,7 @@ class HomeController extends Controller
             //second row with 4 projects
             $projectsSecondRow = $allFeaturedProjects->splice(0, 4);
         } catch (Exception $e) {
-            \Log::error('Failed to get featured projects, maybe brand new instance?');
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             $projectsFirstRow = [];
             $projectsSecondRow = [];
         }
@@ -71,9 +64,7 @@ class HomeController extends Controller
             $totalBranchEntries = $branchEntriesStats->public + $branchEntriesStats->private;
             $totalAllEntries = Common::roundNumber($totalEntries + $totalBranchEntries, 0);
         } catch (Exception $e) {
-            \Log::error('Failed to get system stats, maybe brand new instance?', [
-                'exception' => $e->getMessage()
-            ]);
+            Log::error('Failed to get system stats, maybe brand new instance?', ['exception' => $e->getMessage()]);
             $users = 0;
             $totalProjects = 0;
             $totalAllEntries = 0;

@@ -2,14 +2,12 @@
 
 namespace ec5\Http\Controllers\Web\Auth;
 
-use Illuminate\Support\Str;
+use Auth;
 use ec5\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
-use ec5\Models\Eloquent\UserProvider;
 use Illuminate\Http\Request;
-use Config;
+use Illuminate\Support\Str;
 use View;
-use Auth;
 
 class AuthController extends Controller
 {

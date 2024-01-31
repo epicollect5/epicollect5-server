@@ -2,20 +2,20 @@
 
 namespace ec5\Http\Controllers\Web\Project;
 
+use ec5\DTO\ProjectDTO as LegacyProject;
+use ec5\Http\Validation\Project\RuleCreateRequest;
 use ec5\Libraries\Utilities\Generators;
-use ec5\Models\Projects\Project as LegacyProject;
+use ec5\Services\ProjectService;
+use ec5\Traits\Project\ProjectTools;
 use Exception;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use ec5\Http\Validation\Project\RuleCreateRequest;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Redirect;
 use Session;
-use ec5\Traits\Project\ProjectTools;
-use ec5\Services\ProjectService;
 
 class ProjectCreateController
 {

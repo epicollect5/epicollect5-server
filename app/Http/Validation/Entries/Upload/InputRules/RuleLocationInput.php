@@ -2,10 +2,8 @@
 
 namespace ec5\Http\Validation\Entries\Upload\InputRules;
 
-use ec5\Models\Projects\Project;
-use ec5\Models\Entries\EntryStructure;
-use Config;
-use Log;
+use ec5\DTO\EntryStructureDTO;
+use ec5\DTO\ProjectDTO;
 
 class RuleLocationInput extends RuleInputBase
 {
@@ -13,9 +11,9 @@ class RuleLocationInput extends RuleInputBase
     /**
      * @param $inputDetails
      * @param string|array $answer
-     * @param Project $project
+     * @param ProjectDTO $project
      */
-    public function setRules($inputDetails, $answer, Project $project)
+    public function setRules($inputDetails, $answer, ProjectDTO $project)
     {
         // Set rules based on the input details
         // Source will be the input ref
@@ -28,11 +26,11 @@ class RuleLocationInput extends RuleInputBase
     /**
      * @param $inputDetails
      * @param $answer
-     * @param Project $project
-     * @param EntryStructure $entryStructure
+     * @param ProjectDTO $project
+     * @param EntryStructureDTO $entryStructure
      * @return mixed
      */
-    public function additionalChecks($inputDetails, $answer, Project $project, EntryStructure $entryStructure)
+    public function additionalChecks($inputDetails, $answer, ProjectDTO $project, EntryStructureDTO $entryStructure)
     {
         if (count($answer) > 0) {
             // Check we have no extra keys
@@ -88,11 +86,11 @@ class RuleLocationInput extends RuleInputBase
 
     /**
      * Add the geo json object to the entry structure
-     * @param EntryStructure $entryStructure
+     * @param EntryStructureDTO $entryStructure
      * @param $inputDetails
      * @param $entryLocation
      */
-    private function createGeoJson(EntryStructure $entryStructure, $inputDetails, $entryLocation)
+    private function createGeoJson(EntryStructureDTO $entryStructure, $inputDetails, $entryLocation)
     {
 
         $geoJson = [];

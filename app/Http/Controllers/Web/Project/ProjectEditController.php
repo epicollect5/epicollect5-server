@@ -6,9 +6,10 @@ use DB;
 use ec5\Http\Controllers\Api\ApiResponse;
 use ec5\Http\Validation\Project\RuleProjectDefinitionDetails;
 use ec5\Http\Validation\Project\RuleSettings;
-use ec5\Models\Eloquent\Project;
-use ec5\Models\Eloquent\ProjectStructure;
-use ec5\Models\Images\UploadImage;
+use ec5\Models\Project\Project;
+use ec5\Models\Project\ProjectStructure;
+use ec5\Services\UploadImageService;
+use ec5\Traits\Requests\RequestAttributes;
 use Exception;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Foundation\Application;
@@ -17,7 +18,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use Log;
 use Redirect;
-use ec5\Traits\Requests\RequestAttributes;
 
 class ProjectEditController
 {
@@ -181,7 +181,7 @@ class ProjectEditController
      */
     private function saveLogos($driver): bool
     {
-        return UploadImage::saveImage($this->requestedProject()->ref, request()->file('logo_url'), 'logo.jpg', $driver, config('epicollect.media.' . $driver));
+        return UploadImageService::saveImage($this->requestedProject()->ref, request()->file('logo_url'), 'logo.jpg', $driver, config('epicollect.media.' . $driver));
     }
 
     /**

@@ -2,8 +2,8 @@
 
 namespace ec5\Http\Validation\Entries\Upload\InputRules;
 
-use ec5\Models\Entries\EntryStructure;
-use ec5\Models\Projects\Project;
+use ec5\DTO\EntryStructureDTO;
+use ec5\DTO\ProjectDTO;
 use ec5\Libraries\Utilities\Common;
 use Illuminate\Support\Str;
 
@@ -13,9 +13,9 @@ class RuleSearchMultipleInput extends RuleInputBase
     /**
      * @param $inputDetails
      * @param string|array $answer
-     * @param Project $project
+     * @param ProjectDTO $project
      */
-    public function setRules($inputDetails, $answer, Project $project)
+    public function setRules($inputDetails, $answer, ProjectDTO $project)
     {
         // Set rules based on the input details
         // Source will be the input ref
@@ -26,16 +26,15 @@ class RuleSearchMultipleInput extends RuleInputBase
     /**
      * @param $inputDetails
      * @param $answer
-     * @param Project $project
-     * @param EntryStructure $entryStructure
+     * @param ProjectDTO $project
+     * @param EntryStructureDTO $entryStructure
      * @return mixed
      */
-    public function additionalChecks($inputDetails, $answer, Project $project, EntryStructure $entryStructure)
+    public function additionalChecks($inputDetails, $answer, ProjectDTO $project, EntryStructureDTO $entryStructure)
     {
         if (!empty($answer) && count($answer) > 0) {
 
-            if(!is_array($answer))
-            {
+            if (!is_array($answer)) {
                 $this->errors[$inputDetails['ref']] = ['ec5_25'];
                 return $answer;
             }
@@ -58,7 +57,7 @@ class RuleSearchMultipleInput extends RuleInputBase
 
             //uploading duplicate refs? (bul upload)
             $hasDuplicates = count($answer) > count(array_unique($answer));
-            if($hasDuplicates) {
+            if ($hasDuplicates) {
                 $this->errors[$inputDetails['ref']] = ['ec5_25'];
             }
 
@@ -75,7 +74,7 @@ class RuleSearchMultipleInput extends RuleInputBase
                 foreach ($answer as $answerRef) {
 
                     //any null anwer refs? Coming from bulk upload
-                    if($answerRef === null) {
+                    if ($answerRef === null) {
                         $this->errors[$inputDetails['ref']] = ['ec5_25'];
                         break;
                     }

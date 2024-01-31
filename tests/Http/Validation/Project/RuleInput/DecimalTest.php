@@ -3,13 +3,12 @@
 namespace Tests\Http\Validation\Project\RuleInput;
 
 use ec5\Http\Validation\Project\RuleInput;
-use Tests\Http\Validation\Project\RuleInput\GeneralTest;
 
 class DecimalTest extends GeneralTest
 {
 
     /**
-     * @var \ec5\Models\Projects\Project
+     * @var \ec5\DTO\ProjectDTO
      */
     protected $project;
     /**

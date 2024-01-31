@@ -2,11 +2,10 @@
 
 namespace Tests\Http\Validation\Project;
 
-use Config;
 use ec5\Http\Validation\Project\RuleSwitchUserRole;
-use ec5\Models\Eloquent\Project;
-use ec5\Models\Eloquent\ProjectRole;
-use ec5\Models\Eloquent\User;
+use ec5\Models\Project\Project;
+use ec5\Models\Project\ProjectRole;
+use ec5\Models\User\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 

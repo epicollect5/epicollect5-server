@@ -3,9 +3,8 @@
 namespace ec5\Http\Controllers\Web\Projects;
 
 use ec5\Http\Controllers\Controller;
-use ec5\Models\Eloquent\Project;
 use ec5\Http\Validation\Project\RuleCategories;
-use Config;
+use ec5\Models\Project\Project;
 
 class ListedProjectsController extends Controller
 {

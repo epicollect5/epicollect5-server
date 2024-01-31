@@ -2,22 +2,22 @@
 
 namespace ec5\Http\Controllers\Web\Auth;
 
+use Carbon\Carbon;
+use DB;
 use ec5\Http\Controllers\Controller;
 use ec5\Http\Validation\Auth\RuleForgot;
 use ec5\Http\Validation\Auth\RuleRecaptcha;
 use ec5\Mail\UserPasswordResetMail;
-use Illuminate\Http\Request;
-use ec5\Models\Eloquent\User;
+use ec5\Models\User\User;
+use ec5\Models\User\UserResetPassword;
+use ec5\Traits\Auth\ReCaptchaValidation;
 use Exception;
 use Firebase\JWT\JWT as FirebaseJwt;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
-use Mail;
-use ec5\Models\Eloquent\UserResetPassword;
-use Carbon\Carbon;
-use DB;
 use Log;
+use Mail;
 use PDOException;
-use ec5\Traits\Auth\ReCaptchaValidation;
 use Ramsey\Uuid\Uuid;
 
 class ForgotPasswordController extends Controller

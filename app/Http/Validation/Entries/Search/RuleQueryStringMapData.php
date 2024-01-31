@@ -2,7 +2,7 @@
 
 namespace ec5\Http\Validation\Entries\Search;
 
-use ec5\Models\Projects\Project;
+use ec5\DTO\ProjectDTO;
 use ec5\Http\Validation\ValidationBase;
 
 
@@ -20,10 +20,10 @@ class RuleQueryStringMapData extends ValidationBase
     ];
 
     /**
-     * @param Project $project
+     * @param ProjectDTO $project
      * @param $options
      */
-    public function additionalChecks(Project $project, $options)
+    public function additionalChecks(ProjectDTO $project, $options)
     {
 
         $projectExtra = $project->getProjectExtra();

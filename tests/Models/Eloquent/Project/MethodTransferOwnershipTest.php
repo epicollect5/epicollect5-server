@@ -2,12 +2,11 @@
 
 namespace Tests\Models\Eloquent\Project;
 
-use Tests\TestCase;
-use ec5\Models\Eloquent\Project;
-use ec5\Models\Eloquent\ProjectRole;
-use ec5\Models\Eloquent\User;
-use Config;
+use ec5\Models\Project\Project;
+use ec5\Models\Project\ProjectRole;
+use ec5\Models\User\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Tests\TestCase;
 
 class MethodTransferOwnershipTest extends TestCase
 {

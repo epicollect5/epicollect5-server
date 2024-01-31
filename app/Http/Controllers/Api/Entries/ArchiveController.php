@@ -2,12 +2,12 @@
 
 namespace ec5\Http\Controllers\Api\Entries;
 
+use ec5\DTO\EntryStructureDTO;
 use ec5\Http\Controllers\Api\ApiResponse;
 use ec5\Http\Controllers\Controller;
 use ec5\Http\Validation\Entries\Archive\RuleArchive;
-use ec5\Models\Eloquent\Entries\BranchEntry;
-use ec5\Models\Eloquent\Entries\Entry;
-use ec5\Models\Entries\EntryStructure;
+use ec5\Models\Entries\BranchEntry;
+use ec5\Models\Entries\Entry;
 use ec5\Services\ArchiveEntryService;
 use ec5\Traits\Requests\RequestAttributes;
 use Illuminate\Http\JsonResponse;
@@ -45,7 +45,7 @@ class ArchiveController extends Controller
      *
      * @return JsonResponse
      */
-    public function index(RuleArchive $ruleArchive, EntryStructure $entryStructure, ArchiveEntryService $archiveEntryService)
+    public function index(RuleArchive $ruleArchive, EntryStructureDTO $entryStructure, ArchiveEntryService $archiveEntryService)
     {
         // Validate the $data
         $data = request()->get('data');

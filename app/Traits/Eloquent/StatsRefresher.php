@@ -2,8 +2,8 @@
 
 namespace ec5\Traits\Eloquent;
 
-use ec5\Models\Eloquent\Project;
-use ec5\Models\Eloquent\ProjectStats;
+use ec5\Models\Project\Project;
+use ec5\Models\Project\ProjectStats;
 
 trait StatsRefresher
 {

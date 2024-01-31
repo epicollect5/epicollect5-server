@@ -9,7 +9,7 @@ class RuleDecimalInputTest extends TestCase
 {
 
     /**
-     * @var \ec5\Models\Projects\Project
+     * @var \ec5\DTO\ProjectDTO
      */
     protected $project;
     /**
@@ -31,7 +31,7 @@ class RuleDecimalInputTest extends TestCase
 
         $this->reset();
 
-        $this->project = \Mockery::mock('\ec5\Models\Projects\Project');
+        $this->project = \Mockery::mock('\ec5\DTO\ProjectDTO');
     }
 
     /**

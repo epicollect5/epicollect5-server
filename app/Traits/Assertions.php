@@ -7,7 +7,6 @@ use PHPUnit\Framework\Assert;
 
 trait Assertions
 {
-
     protected function assertJsonResponseHasKeys($jsonResponse, array $expectedKeys)
     {
         foreach ($expectedKeys as $key) {
@@ -71,14 +70,10 @@ trait Assertions
             $jsonResponse['meta']['project_extra'],
             config('testing.JSON_STRUCTURES_KEYS.project_extra.root')
         );
-
-        //todo: project_extra nested arrays
-
         $this->assertArrayHasExactKeys(
             $jsonResponse['meta']['project_stats'],
             config('testing.JSON_STRUCTURES_KEYS.project_stats')
         );
-
         $this->assertArrayHasExactKeys(
             $jsonResponse['meta']['project_user'],
             config('testing.JSON_STRUCTURES_KEYS.project_user')
@@ -92,7 +87,28 @@ trait Assertions
         }
 
         $this->assertProjectDefinition($jsonResponse['data']);
+        $this->assertKeysNotEmpty($jsonResponse, 1);
+    }
 
+    public function assertProjectExportResponse($jsonResponse)
+    {
+        $this->assertIsArrayNotEmpty($jsonResponse['meta']['project_mapping']);
+        $this->assertIsArrayNotEmpty($jsonResponse['meta']['project_stats']);
+        $this->assertIsArrayNotEmpty($jsonResponse['data']);
+
+        $this->assertArrayHasExactKeys(
+            $jsonResponse['meta']['project_stats'],
+            config('testing.JSON_STRUCTURES_KEYS.project_stats')
+        );
+
+        foreach ($jsonResponse['meta']['project_mapping'] as $mapping) {
+            $this->assertArrayHasExactKeys(
+                $mapping,
+                config('testing.JSON_STRUCTURES_KEYS.project_mapping')
+            );
+        }
+
+        $this->assertProjectDefinition($jsonResponse['data']);
         $this->assertKeysNotEmpty($jsonResponse, 1);
     }
 

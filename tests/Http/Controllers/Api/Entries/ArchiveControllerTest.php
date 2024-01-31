@@ -2,15 +2,15 @@
 
 namespace Tests\Http\Controllers\Api\Entries;
 
-use ec5\Models\Eloquent\Entries\BranchEntry;
-use ec5\Models\Eloquent\Entries\BranchEntryArchive;
-use ec5\Models\Eloquent\Entries\Entry;
-use ec5\Models\Eloquent\Entries\EntryArchive;
-use ec5\Models\Eloquent\Project;
-use ec5\Models\Eloquent\ProjectRole;
-use ec5\Models\Eloquent\ProjectStats;
-use ec5\Models\Eloquent\ProjectStructure;
-use ec5\Models\Eloquent\User;
+use ec5\Models\Entries\BranchEntry;
+use ec5\Models\Entries\BranchEntryArchive;
+use ec5\Models\Entries\Entry;
+use ec5\Models\Entries\EntryArchive;
+use ec5\Models\Project\Project;
+use ec5\Models\Project\ProjectRole;
+use ec5\Models\Project\ProjectStats;
+use ec5\Models\Project\ProjectStructure;
+use ec5\Models\User\User;
 use Exception;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Ramsey\Uuid\Uuid;
@@ -90,7 +90,7 @@ class ArchiveControllerTest extends TestCase
             $this->projectDefinition = $projectDefinition;
             $this->entryGenerator = $entryGenerator;
         } catch (Exception $e) {
-            dd($e->getMessage(), $response[0]->getContent());
+            $this->logTestError($e, $response);
         }
     }
 

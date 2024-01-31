@@ -2,7 +2,7 @@
 
 namespace Tests\Http\Controllers\Web\Projects;
 
-use ec5\Models\Eloquent\User;
+use ec5\Models\User\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 

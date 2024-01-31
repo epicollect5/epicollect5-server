@@ -12,20 +12,20 @@
 */
 
 use Carbon\Carbon;
+use ec5\DTO\ProjectDTO as LegacyProject;
 use ec5\Libraries\Utilities\Generators;
-use ec5\Models\Eloquent\Entries\BranchEntry;
-use ec5\Models\Eloquent\Entries\Entry;
-use ec5\Models\Eloquent\OAuthAccessToken;
-use ec5\Models\Eloquent\OAuthClientProject;
-use ec5\Models\Eloquent\Project;
-use ec5\Models\Eloquent\ProjectFeatured;
-use ec5\Models\Eloquent\ProjectRole;
-use ec5\Models\Eloquent\ProjectStats;
-use ec5\Models\Eloquent\ProjectStructure;
-use ec5\Models\Eloquent\User;
-use ec5\Models\Eloquent\UserPasswordlessApi;
-use ec5\Models\Eloquent\UserPasswordlessWeb;
-use ec5\Models\Projects\Project as LegacyProject;
+use ec5\Models\Entries\BranchEntry;
+use ec5\Models\Entries\Entry;
+use ec5\Models\OAuth\OAuthAccessToken;
+use ec5\Models\OAuth\OAuthClientProject;
+use ec5\Models\Project\Project;
+use ec5\Models\Project\ProjectFeatured;
+use ec5\Models\Project\ProjectRole;
+use ec5\Models\Project\ProjectStats;
+use ec5\Models\Project\ProjectStructure;
+use ec5\Models\User\User;
+use ec5\Models\User\UserPasswordlessApi;
+use ec5\Models\User\UserPasswordlessWeb;
 use Illuminate\Support\Str;
 
 /** @var \Illuminate\Database\Eloquent\Factory $factory */
@@ -45,7 +45,7 @@ $factory->define(User::class, function (Faker\Generator $faker) {
     ];
 });
 
-$factory->define(ec5\Models\Eloquent\UserProvider::class, function (Faker\Generator $faker, $params) {
+$factory->define(\ec5\Models\User\UserProvider::class, function (Faker\Generator $faker, $params) {
     return [
         'user_id' => $params['user_id'],
         'email' => $params['email'],

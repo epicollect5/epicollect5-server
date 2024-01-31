@@ -2,19 +2,18 @@
 
 namespace ec5\Http\Controllers\Api\Project;
 
+use Auth;
 use ec5\Http\Controllers\Api\ApiResponse as ApiResponse;
+use ec5\Http\Validation\Entries\Upload\RuleCanBulkUpload;
 use ec5\Http\Validation\Project\RuleName;
-use ec5\Models\Eloquent\ProjectStats;
+use ec5\Models\Project\Project;
+use ec5\Models\Project\ProjectStats;
+use ec5\Traits\Requests\RequestAttributes;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use ec5\Http\Validation\Entries\Upload\RuleCanBulkUpload;
-use ec5\Models\Eloquent\Project;
-use Exception;
-use Auth;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 use Log;
-use ec5\Traits\Requests\RequestAttributes;
 
 class ProjectController
 {

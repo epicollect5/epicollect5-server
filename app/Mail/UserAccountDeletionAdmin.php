@@ -2,14 +2,9 @@
 
 namespace ec5\Mail;
 
-use ec5\Models\Eloquent\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Carbon\CarbonInterval;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Config;
 
 class UserAccountDeletionAdmin extends Mailable
 {

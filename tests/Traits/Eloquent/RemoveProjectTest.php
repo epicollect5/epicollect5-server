@@ -2,15 +2,13 @@
 
 namespace Tests\Traits\Eloquent;
 
-use ec5\Models\Eloquent\OAuthClientProject;
-use ec5\Models\Eloquent\ProjectStats;
-use ec5\Models\Eloquent\ProjectStructure;
+use ec5\Models\OAuth\OAuthClientProject;
+use ec5\Models\Project\Project;
+use ec5\Models\Project\ProjectStats;
+use ec5\Models\Project\ProjectStructure;
+use ec5\Models\User\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Illuminate\Support\Facades\Config;
 use Tests\TestCase;
-use ec5\Models\Eloquent\Project;
-use ec5\Models\Eloquent\User;
-use Faker\Factory as Faker;
 
 class RemoveProjectTest extends TestCase
 {

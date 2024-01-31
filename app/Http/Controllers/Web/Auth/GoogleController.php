@@ -2,19 +2,18 @@
 
 namespace ec5\Http\Controllers\Web\Auth;
 
-use ec5\Models\Eloquent\User;
-use ec5\Services\UserService;
-use Illuminate\Http\Request;
-use ec5\Models\Eloquent\UserProvider;
-use Laravel\Socialite\Two\InvalidStateException;
-use Exception;
-use Laravel\Socialite\Facades\Socialite;
-use Config;
 use Auth;
-use Log;
 use ec5\Http\Validation\Auth\RulePasswordlessApiLogin;
-use ec5\Models\Eloquent\UserPasswordlessApi;
+use ec5\Models\User\User;
+use ec5\Models\User\UserPasswordlessApi;
+use ec5\Models\User\UserProvider;
+use ec5\Services\UserService;
 use ec5\Traits\Auth\GoogleUserUpdater;
+use Exception;
+use Illuminate\Http\Request;
+use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\Two\InvalidStateException;
+use Log;
 
 class GoogleController extends AuthController
 {

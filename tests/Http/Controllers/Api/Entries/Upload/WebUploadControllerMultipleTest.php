@@ -2,13 +2,13 @@
 
 namespace Tests\Http\Controllers\Api\Entries\Upload;
 
-use ec5\Models\Eloquent\Entries\BranchEntry;
-use ec5\Models\Eloquent\Entries\Entry;
-use ec5\Models\Eloquent\Project;
-use ec5\Models\Eloquent\ProjectRole;
-use ec5\Models\Eloquent\ProjectStats;
-use ec5\Models\Eloquent\ProjectStructure;
-use ec5\Models\Eloquent\User;
+use ec5\Models\Entries\BranchEntry;
+use ec5\Models\Entries\Entry;
+use ec5\Models\Project\Project;
+use ec5\Models\Project\ProjectRole;
+use ec5\Models\Project\ProjectStats;
+use ec5\Models\Project\ProjectStructure;
+use ec5\Models\User\User;
 use Exception;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\Generators\EntryGenerator;
@@ -106,7 +106,7 @@ class WebUploadControllerMultipleTest extends TestCase
             $this->projectDefinition = $projectDefinition;
             $this->entryGenerator = $entryGenerator;
         } catch (Exception $e) {
-            dd($e->getMessage(), $response[0]->getContent());
+            $this->logTestError($e, $response);
         }
     }
 
@@ -133,7 +133,7 @@ class WebUploadControllerMultipleTest extends TestCase
             $this->assertCount(1, Entry::where('project_id', $this->project->id)->get());
         } catch (Exception $e) {
             //dd($e->getMessage(), $response, json_encode($entry), json_encode($projectDefinition));
-            dd($e->getMessage(), $response[0]->getContent());
+            $this->logTestError($e, $response);
         }
     }
 

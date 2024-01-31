@@ -3,13 +3,12 @@
 namespace Tests\Http\Validation\Project\RuleInput;
 
 use ec5\Http\Validation\Project\RuleInput;
-use Tests\Http\Validation\Project\RuleInput\InputTest;
 
 class SearchSingleTest extends InputTest
 {
 
     /**
-     * @var \ec5\Models\Projects\Project
+     * @var \ec5\DTO\ProjectDTO
      */
     protected $project;
     /**

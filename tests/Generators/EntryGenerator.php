@@ -3,10 +3,9 @@
 namespace Tests\Generators;
 
 use Carbon\Carbon;
-use ec5\Models\Eloquent\Project;
+use ec5\Models\Project\Project;
 use Faker\Factory as Faker;
 use Illuminate\Support\Str;
-use InvalidArgumentException;
 use Ramsey\Uuid\Uuid;
 
 class EntryGenerator
@@ -29,8 +28,6 @@ class EntryGenerator
 
     private function createAnswer($input, $uuid): array
     {
-        $answer = '';
-
         switch ($input['type']) {
             case 'text':
             case 'textarea':

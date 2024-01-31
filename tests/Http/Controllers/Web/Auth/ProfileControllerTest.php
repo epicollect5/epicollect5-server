@@ -2,11 +2,10 @@
 
 namespace Tests\Http\Controllers\Web\Auth;
 
-use ec5\Models\Eloquent\User;
-use ec5\Models\Eloquent\UserProvider;
-use Tests\TestCase;
-
+use ec5\Models\User\User;
+use ec5\Models\User\UserProvider;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Tests\TestCase;
 
 class ProfileControllerTest extends TestCase
 {

@@ -2,15 +2,15 @@
 
 namespace ec5\Http\Controllers\Api\Project;
 
-use ec5\Models\Eloquent\ProjectStructure;
-use Exception;
-use Illuminate\Http\Request;
-use ec5\Http\Validation\Project\RuleProjectDefinition;
 use ec5\Http\Controllers\Api\ApiResponse as ApiResponse;
+use ec5\Http\Validation\Project\RuleProjectDefinition;
 use ec5\Libraries\Utilities\Arrays;
 use ec5\Libraries\Utilities\Strings;
-use Log;
+use ec5\Models\Project\ProjectStructure;
 use ec5\Traits\Requests\RequestAttributes;
+use Exception;
+use Illuminate\Http\Request;
+use Log;
 
 class FormBuilderController
 {

@@ -2,11 +2,11 @@
 
 namespace ec5\Http\Controllers\Web\Project;
 
-use ec5\Models\Eloquent\ProjectStats;
+use ec5\Models\Project\ProjectStats;
+use ec5\Traits\Eloquent\Archiver;
 use ec5\Traits\Requests\RequestAttributes;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use ec5\Traits\Eloquent\Archiver;
 
 class ProjectDeleteEntriesController
 {

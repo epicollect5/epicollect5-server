@@ -8,7 +8,7 @@ use Tests\TestCase;
 abstract class InputTest extends TestCase
 {
     /**
-     * @var \ec5\Models\Projects\Project
+     * @var \ec5\DTO\ProjectDTO
      */
     protected $project;
     /**
@@ -32,7 +32,7 @@ abstract class InputTest extends TestCase
         // This method will automatically be called prior to any of your test cases
         parent::setUp();
         $this->validator = new RuleInput();
-        $this->project = \Mockery::mock('\ec5\Models\Projects\Project');
+        $this->project = \Mockery::mock('\ec5\DTO\ProjectDTO');
     }
 
     /**

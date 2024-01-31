@@ -2,19 +2,15 @@
 
 namespace ec5\Http\Controllers\Web\Auth;
 
-use ec5\Http\Controllers\Controller;
-use ec5\Models\Eloquent\UserProvider;
-use ec5\Models\Eloquent\UserResetPassword;
-use ec5\Models\Eloquent\User;
-use ec5\Http\Validation\Auth\RuleReset;
-use Illuminate\Http\Request;
-use Firebase\JWT\JWT as FirebaseJWT;
-use PDOException;
-use Exception;
-use Config;
-use Log;
-use DB;
 use Auth;
+use DB;
+use ec5\Http\Controllers\Controller;
+use ec5\Http\Validation\Auth\RuleReset;
+use ec5\Models\User\UserProvider;
+use Exception;
+use Illuminate\Http\Request;
+use Log;
+use PDOException;
 
 class ResetPasswordController extends Controller
 {

@@ -2,10 +2,10 @@
 
 namespace ec5\Services;
 
+use ec5\DTO\ProjectDTO;
 use ec5\Libraries\Utilities\Common;
-use ec5\Models\Eloquent\Entries\BranchEntry;
-use ec5\Models\Eloquent\Entries\Entry;
-use ec5\Models\Projects\Project;
+use ec5\Models\Entries\BranchEntry;
+use ec5\Models\Entries\Entry;
 use Exception;
 use File;
 use Illuminate\Database\Query\Builder;
@@ -28,7 +28,7 @@ class DownloadEntriesService
     /**
      * Try and create all files
      */
-    public function createArchive(Project $project, $projectDir, $params): bool
+    public function createArchive(ProjectDTO $project, $projectDir, $params): bool
     {
         // Set default sort order
         $params['entry_col'] = 'created_at';

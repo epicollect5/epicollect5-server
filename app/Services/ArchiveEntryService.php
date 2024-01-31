@@ -3,18 +3,18 @@
 namespace ec5\Services;
 
 use DB;
-use ec5\Models\Eloquent\Counters\BranchEntryCounter;
-use ec5\Models\Eloquent\Counters\EntryCounter;
-use ec5\Models\Eloquent\Entries\BranchEntry;
-use ec5\Models\Eloquent\Entries\Entry;
-use ec5\Models\Eloquent\ProjectStats;
-use ec5\Models\Projects\Project;
+use ec5\DTO\ProjectDTO;
+use ec5\Models\Counters\BranchEntryCounter;
+use ec5\Models\Counters\EntryCounter;
+use ec5\Models\Entries\BranchEntry;
+use ec5\Models\Entries\Entry;
+use ec5\Models\Project\ProjectStats;
 use Exception;
 use Log;
 
 class ArchiveEntryService
 {
-    public function archiveHierarchyEntry(Project $project, $entryStructure): bool
+    public function archiveHierarchyEntry(ProjectDTO $project, $entryStructure): bool
     {
         $entryUuid = $entryStructure->getEntryUuid();
         $table = config('epicollect.tables.entries');
@@ -82,7 +82,7 @@ class ArchiveEntryService
      * @param bool $reuseExistingTransaction
      * @return bool
      */
-    public function archiveBranchEntry(Project $project, $branchEntryUuid, $entryStructure, bool $reuseExistingTransaction = false): bool
+    public function archiveBranchEntry(ProjectDTO $project, $branchEntryUuid, $entryStructure, bool $reuseExistingTransaction = false): bool
     {
         $table = config('epicollect.tables.branch_entries');
         // If we don't want to keep open the transaction for further processing

@@ -6,9 +6,8 @@ namespace Tests\Routes\Api\external;
 use Carbon\Carbon;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Mail\UserPasswordlessApiMail;
-use ec5\Models\Eloquent\UserPasswordlessApi;
+use ec5\Models\User\UserPasswordlessApi;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 

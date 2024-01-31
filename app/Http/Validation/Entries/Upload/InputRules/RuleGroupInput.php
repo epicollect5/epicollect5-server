@@ -2,7 +2,7 @@
 
 namespace ec5\Http\Validation\Entries\Upload\InputRules;
 
-use ec5\Models\Projects\Project;
+use ec5\DTO\ProjectDTO;
 
 class RuleGroupInput extends RuleInputBase
 {
@@ -10,9 +10,9 @@ class RuleGroupInput extends RuleInputBase
     /**
      * @param $inputDetails
      * @param string|array $answer
-     * @param Project $project
+     * @param ProjectDTO $project
      */
-    public function setRules($inputDetails, $answer, Project $project)
+    public function setRules($inputDetails, $answer, ProjectDTO $project)
     {
         // Set rules based on the input details
         // Source will be the input ref

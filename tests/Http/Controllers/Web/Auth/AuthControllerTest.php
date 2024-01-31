@@ -2,8 +2,8 @@
 
 namespace Tests\Http\Controllers\Web\Auth;
 
-use ec5\Models\Eloquent\Project;
-use ec5\Models\Eloquent\User;
+use ec5\Models\Project\Project;
+use ec5\Models\User\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 

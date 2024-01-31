@@ -3,10 +3,10 @@
 namespace Tests\Http\Validation\Project;
 
 use ec5\Http\Validation\Project\RuleImportRequest;
-use ec5\Models\Eloquent\Project;
-use ec5\Models\Eloquent\User;
-use Tests\TestCase;
+use ec5\Models\Project\Project;
+use ec5\Models\User\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Tests\TestCase;
 
 class RuleImportRequestTest extends TestCase
 {

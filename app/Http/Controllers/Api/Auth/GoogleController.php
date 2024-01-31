@@ -2,19 +2,18 @@
 
 namespace ec5\Http\Controllers\Api\Auth;
 
-use ec5\Http\Controllers\Api\ApiResponse;
-use ec5\Models\Eloquent\UserPasswordlessApi;
-use ec5\Http\Validation\Auth\RulePasswordlessApiLogin;
-use ec5\Models\Eloquent\User;
-use ec5\Libraries\Jwt\JwtUserProvider;
-use ec5\Models\Eloquent\UserProvider;
-use ec5\Services\UserService;
-use Illuminate\Http\Request;
-use Exception;
-use Laravel\Socialite\Facades\Socialite;
-use Config;
 use Auth;
+use ec5\Http\Controllers\Api\ApiResponse;
+use ec5\Http\Validation\Auth\RulePasswordlessApiLogin;
+use ec5\Libraries\Jwt\JwtUserProvider;
+use ec5\Models\User\User;
+use ec5\Models\User\UserPasswordlessApi;
+use ec5\Models\User\UserProvider;
+use ec5\Services\UserService;
 use ec5\Traits\Auth\GoogleUserUpdater;
+use Exception;
+use Illuminate\Http\Request;
+use Laravel\Socialite\Facades\Socialite;
 use Log;
 
 class GoogleController extends AuthController

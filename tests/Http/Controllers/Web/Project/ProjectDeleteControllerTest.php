@@ -3,16 +3,16 @@
 namespace Tests\Http\Controllers\Web\Project;
 
 use ec5\Libraries\Utilities\Generators;
-use ec5\Models\Eloquent\Entries\BranchEntry;
-use ec5\Models\Eloquent\Entries\Entry;
-use ec5\Models\Eloquent\OAuthClientProject;
-use ec5\Models\Eloquent\Project;
-use ec5\Models\Eloquent\ProjectFeatured;
-use ec5\Models\Eloquent\ProjectRole;
-use ec5\Models\Eloquent\ProjectStats;
-use ec5\Models\Eloquent\ProjectStructure;
-use ec5\Models\Eloquent\User;
-use ec5\Models\Eloquent\UserProvider;
+use ec5\Models\Entries\BranchEntry;
+use ec5\Models\Entries\Entry;
+use ec5\Models\OAuth\OAuthClientProject;
+use ec5\Models\Project\Project;
+use ec5\Models\Project\ProjectFeatured;
+use ec5\Models\Project\ProjectRole;
+use ec5\Models\Project\ProjectStats;
+use ec5\Models\Project\ProjectStructure;
+use ec5\Models\User\User;
+use ec5\Models\User\UserProvider;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Str;
 use Mockery;

@@ -2,12 +2,12 @@
 
 namespace Tests\Traits\Eloquent;
 
-use ec5\Models\Eloquent\Project;
-use ec5\Models\Eloquent\ProjectRole;
-use ec5\Models\Eloquent\UserProvider;
+use ec5\Models\Project\Project;
+use ec5\Models\Project\ProjectRole;
+use ec5\Models\User\User;
+use ec5\Models\User\UserProvider;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
-use ec5\Models\Eloquent\User;
 
 class ArchiveUserTest extends TestCase
 {

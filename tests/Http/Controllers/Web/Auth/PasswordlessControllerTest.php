@@ -5,13 +5,11 @@ namespace Tests\Http\Controllers\Web\Auth;
 use Carbon\Carbon;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Mail\UserPasswordlessApiMail;
-use ec5\Mail\UserPasswordlessWebMail;
-use ec5\Models\Eloquent\UserPasswordlessWeb;
+use ec5\Models\User\UserPasswordlessWeb;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 class PasswordlessControllerTest extends TestCase
 {

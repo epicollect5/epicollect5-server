@@ -2,11 +2,10 @@
 
 namespace Tests\Models\Eloquent;
 
-use ec5\Models\Eloquent\User;
-use ec5\Models\Eloquent\UserProvider;
-use Tests\TestCase;
+use ec5\Models\User\User;
+use ec5\Models\User\UserProvider;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Faker\Factory as Faker;
+use Tests\TestCase;
 
 class UserTest extends TestCase
 {

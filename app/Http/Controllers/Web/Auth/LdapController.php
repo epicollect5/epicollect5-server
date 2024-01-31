@@ -2,15 +2,11 @@
 
 namespace ec5\Http\Controllers\Web\Auth;
 
-use ec5\Services\UserService;
-use Illuminate\Foundation\Auth\AuthenticatesUsers;
-use ec5\Models\Eloquent\User;
-use ec5\Models\Eloquent\UserProvider;
-use Illuminate\Http\Request;
-use Config;
 use Auth;
+use ec5\Models\User\User;
+use ec5\Services\UserService;
+use Illuminate\Http\Request;
 use Ldap;
-use Log;
 
 
 class LdapController extends AuthController

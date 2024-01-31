@@ -3,18 +3,18 @@
 namespace ec5\Http\Controllers\Api\OAuth;
 
 use ec5\Http\Controllers\Api\ApiResponse;
-use ec5\Models\Eloquent\OAuthAccessToken;
+use ec5\Models\OAuth\OAuthAccessToken;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Laravel\Passport\Http\Controllers\HandlesOAuthErrors;
 use Laravel\Passport\TokenRepository;
 use Lcobucci\JWT\Parser as JwtParser;
+use League\OAuth2\Server\AuthorizationServer;
+use League\OAuth2\Server\Exception\OAuthServerException;
 use Log;
 use Psr\Http\Message\ResponseInterface;
-use Zend\Diactoros\Response as Psr7Response;
 use Psr\Http\Message\ServerRequestInterface;
-use League\OAuth2\Server\AuthorizationServer;
-use Exception;
-use League\OAuth2\Server\Exception\OAuthServerException;
+use Zend\Diactoros\Response as Psr7Response;
 
 class OAuthController
 {

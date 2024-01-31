@@ -3,19 +3,17 @@
 namespace Tests\Http\Controllers\Api\Entries;
 
 use Carbon\Carbon;
-use ec5\Libraries\Utilities\Common;
-use ec5\Libraries\Utilities\Generators;
-use ec5\Models\Eloquent\Project;
-use ec5\Models\Eloquent\ProjectRole;
-use ec5\Models\Eloquent\ProjectStats;
-use ec5\Models\Eloquent\ProjectStructure;
-use ec5\Models\Eloquent\User;
+use ec5\Models\Project\Project;
+use ec5\Models\Project\ProjectRole;
+use ec5\Models\Project\ProjectStats;
+use ec5\Models\Project\ProjectStructure;
+use ec5\Models\User\User;
+use ec5\Traits\Assertions;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Str;
 use Storage;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
-use ec5\Traits\Assertions;
 use ZipArchive;
 
 class DownloadControllerTest extends TestCase

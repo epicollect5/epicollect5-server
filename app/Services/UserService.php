@@ -4,8 +4,8 @@ namespace ec5\Services;
 
 use DB;
 use ec5\Libraries\Ldap\LdapUser;
-use ec5\Models\Eloquent\User;
-use ec5\Models\Eloquent\UserProvider;
+use ec5\Models\User\User;
+use ec5\Models\User\UserProvider;
 use Exception;
 use Log;
 

@@ -5,7 +5,7 @@ namespace ec5\Http\Controllers\Web\Admin;
 use ec5\Http\Controllers\Api\ApiResponse;
 use ec5\Http\Controllers\Controller;
 use ec5\Http\Validation\Admin\RuleProjectRole as ProjectRoleValidator;
-use ec5\Models\Eloquent\ProjectRole;
+use ec5\Models\Project\ProjectRole;
 use Exception;
 use Illuminate\Http\Request;
 use Log;

@@ -2,21 +2,21 @@
 
 namespace ec5\Http\Controllers\Web\Project;
 
-use ec5\Models\Eloquent\User;
-use ec5\Models\Eloquent\ProjectRole;
-use ec5\Http\Validation\Project\RuleProjectRole;
-use ec5\Http\Validation\Project\RuleEmail;
 use ec5\Http\Controllers\Api\ApiResponse;
+use ec5\Http\Validation\Project\RuleEmail;
+use ec5\Http\Validation\Project\RuleProjectRole;
+use ec5\Models\Project\ProjectRole;
+use ec5\Models\User\User;
 use ec5\Services\ProjectService;
+use ec5\Traits\Requests\RequestAttributes;
 use Exception;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\URL;
-use Illuminate\Http\Request;
-use ec5\Traits\Requests\RequestAttributes;
 use Illuminate\View\View;
 use Log;
 use Throwable;

@@ -4,13 +4,11 @@ namespace ec5\Http\Controllers\Web\Admin;
 
 use ec5\Http\Controllers\Api\ApiResponse;
 use ec5\Http\Controllers\Controller;
-use ec5\Http\Validation\Auth\RuleReset as RulePassword;
 use ec5\Http\Validation\Admin\RuleAddUser as AddUserValidator;
-use ec5\Models\Eloquent\User;
-use ec5\Models\Eloquent\UserProvider;
-use ec5\Services\UserService;
+use ec5\Http\Validation\Auth\RuleReset as RulePassword;
+use ec5\Models\User\User;
+use ec5\Models\User\UserProvider;
 use Illuminate\Http\Request;
-use Config;
 
 class AdminUsersController extends Controller
 {

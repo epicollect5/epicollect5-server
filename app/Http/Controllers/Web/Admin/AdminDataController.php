@@ -4,7 +4,7 @@ namespace ec5\Http\Controllers\Web\Admin;
 
 use ec5\Http\Controllers\Api\ApiResponse;
 use ec5\Http\Controllers\Controller;
-use ec5\Models\Eloquent\System\SystemStats;
+use ec5\Models\System\SystemStats;
 
 
 class AdminDataController extends Controller

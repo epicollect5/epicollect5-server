@@ -7,7 +7,7 @@ use ec5\Http\Validation\Project\RuleInput;
 class VideoTest extends InputTest
 {
     /**
-     * @var \ec5\Models\Projects\Project
+     * @var \ec5\DTO\ProjectDTO
      */
     protected $project;
     /**

@@ -8,7 +8,7 @@ class IntegerTest extends GeneralTest
 {
 
     /**
-     * @var \ec5\Models\Projects\Project
+     * @var \ec5\DTO\ProjectDTO
      */
     protected $project;
     /**

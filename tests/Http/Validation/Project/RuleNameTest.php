@@ -3,9 +3,9 @@
 namespace Tests\Http\Validation\Project;
 
 use ec5\Http\Validation\Project\RuleName;
-use ec5\Models\Eloquent\Project;
-use Tests\TestCase;
+use ec5\Models\Project\Project;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Tests\TestCase;
 
 class RuleNameTest extends TestCase
 {

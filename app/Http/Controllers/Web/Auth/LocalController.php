@@ -3,12 +3,11 @@
 namespace ec5\Http\Controllers\Web\Auth;
 
 
-use ec5\Http\Validation\Auth\RuleLogin as LoginValidator;
-use ec5\Models\Eloquent\User;
-use ec5\Models\Eloquent\UserProvider;
-use Illuminate\Http\Request;
-use Config;
 use Auth;
+use ec5\Http\Validation\Auth\RuleLogin as LoginValidator;
+use ec5\Models\User\User;
+use ec5\Models\User\UserProvider;
+use Illuminate\Http\Request;
 
 class LocalController extends AuthController
 {

@@ -3,9 +3,9 @@
 namespace ec5\Services;
 
 use Carbon\Carbon;
+use ec5\DTO\ProjectDTO;
 use ec5\Libraries\Utilities\GpointConverter;
-use ec5\Models\Eloquent\User;
-use ec5\Models\Projects\Project;
+use ec5\Models\User\User;
 use Exception;
 
 class DataMappingService
@@ -29,7 +29,7 @@ class DataMappingService
         // todo: implementations for writing to file - csvFileWriter and jsonFileWriter
     }
 
-    public function init(Project $project, $format, $type, $formRef, $branchRef, $mapIndex)
+    public function init(ProjectDTO $project, $format, $type, $formRef, $branchRef, $mapIndex)
     {
         $this->project = $project;
         $this->forms = $project->getProjectDefinition()->getData()['project']['forms'];

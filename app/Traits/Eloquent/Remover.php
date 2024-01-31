@@ -2,9 +2,9 @@
 
 namespace ec5\Traits\Eloquent;
 
-use ec5\Models\Eloquent\Entries\BranchEntry;
-use ec5\Models\Eloquent\Entries\Entry;
-use ec5\Models\Eloquent\Project;
+use ec5\Models\Entries\BranchEntry;
+use ec5\Models\Entries\Entry;
+use ec5\Models\Project\Project;
 use Exception;
 use File;
 use Log;

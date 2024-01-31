@@ -3,18 +3,18 @@
 namespace ec5\Http\Controllers\Web\Project;
 
 use ec5\Http\Controllers\Api\ApiResponse;
-use ec5\Models\Eloquent\OAuthAccessToken;
-use ec5\Models\Eloquent\OAuthClientProject;
+use ec5\Http\Validation\Project\RuleProjectApp;
+use ec5\Models\OAuth\OAuthAccessToken;
+use ec5\Models\OAuth\OAuthClientProject;
+use ec5\Traits\Requests\RequestAttributes;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Laravel\Passport\ClientRepository;
-use Illuminate\Http\Request;
 use Redirect;
-use ec5\Http\Validation\Project\RuleProjectApp;
-use ec5\Traits\Requests\RequestAttributes;
 use Throwable;
 
 class ProjectAppsController

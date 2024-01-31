@@ -2,25 +2,24 @@
 
 namespace ec5\Http\Controllers\Api\Auth;
 
-use ec5\Http\Validation\Auth\RulePasswordlessApiCode;
-use ec5\Http\Validation\Auth\RulePasswordlessApiLogin;
-use ec5\Mail\UserPasswordlessApiMail;
-use ec5\Models\Eloquent\User;
-use ec5\Services\UserService;
-use Illuminate\Http\Request;
-use Config;
-use Exception;
-use Mail;
-use ec5\Models\Eloquent\UserPasswordlessApi;
+use Auth;
 use Carbon\Carbon;
 use DB;
-use Log;
-use PDOException;
-use Auth;
-use ec5\Libraries\Utilities\Generators;
 use ec5\Http\Controllers\Api\ApiResponse;
-use ec5\Models\Eloquent\UserProvider;
+use ec5\Http\Validation\Auth\RulePasswordlessApiCode;
+use ec5\Http\Validation\Auth\RulePasswordlessApiLogin;
 use ec5\Libraries\Jwt\JwtUserProvider;
+use ec5\Libraries\Utilities\Generators;
+use ec5\Mail\UserPasswordlessApiMail;
+use ec5\Models\User\User;
+use ec5\Models\User\UserPasswordlessApi;
+use ec5\Models\User\UserProvider;
+use ec5\Services\UserService;
+use Exception;
+use Illuminate\Http\Request;
+use Log;
+use Mail;
+use PDOException;
 
 class PasswordlessController extends AuthController
 {

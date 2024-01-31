@@ -2,10 +2,9 @@
 
 namespace ec5\Http\Controllers\Web\Projects;
 
-use Illuminate\Http\Request;
 use ec5\Http\Controllers\Controller;
-use ec5\Models\Eloquent\Project;
-use Config;
+use ec5\Models\Project\Project;
+use Illuminate\Http\Request;
 
 class MyProjectsController extends Controller
 {

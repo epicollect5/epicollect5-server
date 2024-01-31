@@ -1,14 +1,14 @@
 <?php
 
+use ec5\DTO\ProjectDefinitionDTO;
+use ec5\DTO\ProjectDTO;
+use ec5\DTO\ProjectExtraDTO;
+use ec5\DTO\ProjectMappingDTO;
 use ec5\DTO\ProjectStatsDTO;
 use ec5\Http\Validation\Project\RuleForm as FormValidator;
 use ec5\Http\Validation\Project\RuleInput as InputValidator;
 use ec5\Http\Validation\Project\RuleProjectDefinition as ProjectDefinitionValidator;
 use ec5\Http\Validation\Project\RuleProjectExtraDetails as ProjectExtraDetailsValidator;
-use ec5\Models\Projects\Project;
-use ec5\Models\Projects\ProjectDefinition;
-use ec5\Models\Projects\ProjectExtra;
-use ec5\Models\Projects\ProjectMapping;
 use Illuminate\Database\Migrations\Migration;
 use Symfony\Component\Console\Output\ConsoleOutput;
 
@@ -32,8 +32,8 @@ class RegenerateProjectExtra extends Migration
         foreach ($projects as $project) {
 
             // Need to instantiate models like this because we can't use the service container for dependency injection in a migration...
-            $projectModel = new Project(new ProjectDefinition, new ProjectExtra, new ProjectMapping, new ProjectStatsDTO);
-            $projectDefinitionValidator = new ProjectDefinitionValidator(new ProjectExtraDetailsValidator, new FormValidator, new InputValidator, new ProjectExtra, new ProjectDefinition);
+            $projectModel = new ProjectDTO(new ProjectDefinitionDTO, new ProjectExtraDTO, new ProjectMappingDTO, new ProjectStatsDTO);
+            $projectDefinitionValidator = new ProjectDefinitionValidator(new ProjectExtraDetailsValidator, new FormValidator, new InputValidator, new ProjectExtraDTO, new ProjectDefinitionDTO);
 
             // Initialise with the project and the project_definition
             $projectModel->init($project);

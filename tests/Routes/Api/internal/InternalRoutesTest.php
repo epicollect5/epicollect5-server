@@ -2,9 +2,8 @@
 
 namespace Tests\Routes\Api\internal;
 
-use ec5\Models\Eloquent\Project;
-use ec5\Models\Eloquent\ProjectStructure;
-use ec5\Models\ProjectRole;
+use ec5\Models\Project\Project;
+use ec5\Models\Project\ProjectStructure;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 

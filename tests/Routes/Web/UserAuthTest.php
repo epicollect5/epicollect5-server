@@ -2,8 +2,8 @@
 
 namespace Tests\Routes\Web;
 
-use ec5\Models\Eloquent\UserProvider;
-use ec5\Models\Eloquent\User;
+use ec5\Models\User\User;
+use ec5\Models\User\UserProvider;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Laravel\Socialite\Facades\Socialite;
 use Mockery;

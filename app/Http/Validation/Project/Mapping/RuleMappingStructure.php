@@ -2,9 +2,9 @@
 
 namespace ec5\Http\Validation\Project\Mapping;
 
+use ec5\DTO\ProjectDTO;
+use ec5\DTO\ProjectExtraDTO;
 use ec5\Http\Validation\ValidationBase;
-use ec5\Models\Projects\Project;
-use ec5\Models\Projects\ProjectExtra;
 
 class RuleMappingStructure extends ValidationBase
 {
@@ -25,11 +25,11 @@ class RuleMappingStructure extends ValidationBase
     }
 
     /**
-     * @param Project $project
+     * @param ProjectDTO $project
      * @param $mapping
      * @return bool
      */
-    public function additionalChecks(Project $project, $mapping): bool
+    public function additionalChecks(ProjectDTO $project, $mapping): bool
     {
         $projectExtra = $project->getProjectExtra();
         // Loop forms and get the auto-generated map for each
@@ -51,11 +51,11 @@ class RuleMappingStructure extends ValidationBase
     /**
      * Check a form mapping
      *
-     * @param ProjectExtra $projectExtra
+     * @param ProjectExtraDTO $projectExtra
      * @param $formRef
      * @return bool
      */
-    private function isFormValid(ProjectExtra $projectExtra, $formRef): bool
+    private function isFormValid(ProjectExtraDTO $projectExtra, $formRef): bool
     {
         // Check the form ref exists
         if (count($projectExtra->getFormDetails($formRef)) == 0) {
@@ -68,12 +68,12 @@ class RuleMappingStructure extends ValidationBase
     /**
      * Check all inputs
      *
-     * @param ProjectExtra $projectExtra
+     * @param ProjectExtraDTO $projectExtra
      * @param $formRef
      * @param $mappedInputs
      * @return bool
      */
-    public function areInputsValid(ProjectExtra $projectExtra, $formRef, $mappedInputs): bool
+    public function areInputsValid(ProjectExtraDTO $projectExtra, $formRef, $mappedInputs): bool
     {
         $excludedTypes = array_keys(config('epicollect.strings.exclude_from_mapping'));
 
@@ -104,13 +104,13 @@ class RuleMappingStructure extends ValidationBase
     /**
      * Check an input mapping
      *
-     * @param ProjectExtra $projectExtra
+     * @param ProjectExtraDTO $projectExtra
      * @param $formRef
      * @param $mappedInput
      * @param $inputData
      * @return bool
      */
-    private function checkInput(ProjectExtra $projectExtra, $formRef, $mappedInput, $inputData): bool
+    private function checkInput(ProjectExtraDTO $projectExtra, $formRef, $mappedInput, $inputData): bool
     {
         // Check each input mapping against the mapping input validator
         $this->ruleMappingInput->validate($mappedInput);
@@ -146,12 +146,12 @@ class RuleMappingStructure extends ValidationBase
     }
 
     /**
-     * @param ProjectExtra $projectExtra
+     * @param ProjectExtraDTO $projectExtra
      * @param $inputRef
      * @param $mappedPossibleAnswers
      * @return bool
      */
-    public function checkPossibleAnswers(ProjectExtra $projectExtra, $inputRef, $mappedPossibleAnswers): bool
+    public function checkPossibleAnswers(ProjectExtraDTO $projectExtra, $inputRef, $mappedPossibleAnswers): bool
     {
         foreach ($mappedPossibleAnswers as $answerRef => $possibleAnswerMapping) {
             // Check possible answer answerRef exists

@@ -2,64 +2,40 @@
 
 namespace ec5\Http\Validation\Entries\Upload;
 
+use ec5\DTO\EntryStructureDTO;
+use ec5\DTO\ProjectDTO;
 use ec5\Http\Validation\ValidationBase;
-use ec5\Http\Validation\Entries\Upload\RuleAnswers as AnswerValidator;
-
-use ec5\Models\Projects\Project;
-use ec5\Repositories\QueryBuilder\Entry\Upload\Search\SearchRepository;
-
-use ec5\Models\Entries\EntryStructure;
-
-use Config;
+use ec5\Models\Entries\BranchEntry;
+use ec5\Models\Entries\Entry;
 
 abstract class EntryValidationBase extends ValidationBase
 {
-
     /*
-    |--------------------------------------------------------------------------
-    | EntryHandler
-    |--------------------------------------------------------------------------
-    |
-    | This class contains common functions for entry/branch_entry uploads
-    |
+     * This class contains common functions for entry/branch_entry uploads
     */
 
-    /**
-     * @var AnswerValidator
-     */
-    protected $answerValidator;
+    protected $ruleAnswers;
 
-    /**
-     * @var
-     */
-    protected $searchRepository;
-
-    /**
-     * @param SearchRepository $searchRepository
-     * @param AnswerValidator $answerValidator
-     */
-    public function __construct(SearchRepository $searchRepository, AnswerValidator $answerValidator)
+    public function __construct(RuleAnswers $ruleAnswers)
     {
-        $this->searchRepository = $searchRepository;
-        $this->answerValidator = $answerValidator;
+        $this->ruleAnswers = $ruleAnswers;
     }
 
     /**
      * Function for additional checks
      *
-     * @param Project $project
-     * @param EntryStructure $entryStructure
+     * @param ProjectDTO $project
+     * @param EntryStructureDTO $entryStructure
      */
-    public abstract function additionalChecks(Project $project, EntryStructure $entryStructure);
+    public abstract function additionalChecks(ProjectDTO $project, EntryStructureDTO $entryStructure);
 
     /**
-     * @param Project $project
-     * @param EntryStructure $entryStructure
-     * @param $inputs - may be form or branch entry inputs
+     * @param ProjectDTO $project
+     * @param EntryStructureDTO $entryStructure
+     * @param $inputs - maybe form or branch entry inputs
      */
-    protected function validateAnswers(Project $project, EntryStructure $entryStructure, $inputs)
+    protected function validateAnswers(ProjectDTO $project, EntryStructureDTO $entryStructure, $inputs)
     {
-
         $projectExtra = $project->getProjectExtra();
         $entryAnswers = $entryStructure->getAnswers();
 
@@ -114,14 +90,13 @@ abstract class EntryValidationBase extends ValidationBase
     }
 
     /**
-     * @param Project $project
-     * @param EntryStructure $entryStructure
+     * @param ProjectDTO $project
+     * @param EntryStructureDTO $entryStructure
      * @param $answerData
      * @param $inputRef
      */
-    private function validateAnswer(Project $project, EntryStructure $entryStructure, $answerData, $inputRef)
+    private function validateAnswer(ProjectDTO $project, EntryStructureDTO $entryStructure, $answerData, $inputRef)
     {
-
         $projectExtra = $project->getProjectExtra();
         $input = $projectExtra->getInputData($inputRef);
 
@@ -133,34 +108,36 @@ abstract class EntryValidationBase extends ValidationBase
         }
 
         // Validate the answer
-        $this->answerValidator->validate($answerData);
-        if ($this->answerValidator->hasErrors()) {
-            $this->errors = $this->answerValidator->errors();
+        $this->ruleAnswers->validate($answerData);
+        if ($this->ruleAnswers->hasErrors()) {
+            $this->errors = $this->ruleAnswers->errors();
             return;
         }
         // Do additional checks
-        $this->answerValidator->additionalChecks($project, $entryStructure, $answerData, $inputRef, $this->searchRepository);
-        if ($this->answerValidator->hasErrors()) {
-            $this->errors = $this->answerValidator->errors();
+        $this->ruleAnswers->additionalChecks($project, $entryStructure, $answerData, $inputRef);
+        if ($this->ruleAnswers->hasErrors()) {
+            $this->errors = $this->ruleAnswers->errors();
             return;
         }
     }
 
     /**
-     * @param EntryStructure $entryStructure
+     * @param EntryStructureDTO $entryStructure
      * @param $requestedProjectId
      * @return bool
      */
-    protected function checkCanEdit(EntryStructure $entryStructure, $requestedProjectId)
+    protected function checkCanEdit(EntryStructureDTO $entryStructure, $requestedProjectId): bool
     {
         $entry = $entryStructure->getEntry();
 
         // Check if we already have this UUID in the database for this projectt
         $uuid = $entry['entry_uuid'];
 
-        //the moron who wrote this never considered we might have more than one parameter to pass, go figure :/
-        $dbEntry = $this->searchRepository->where('uuid', '=', $uuid);
-
+        if ($entryStructure->isBranch()) {
+            $dbEntry = BranchEntry::where('uuid', '=', $uuid)->first();
+        } else {
+            $dbEntry = Entry::where('uuid', '=', $uuid)->first();
+        }
         // EDIT
         if ($dbEntry) {
             //if the project ID does not match (bulk uploads between cloned projects for example, where the source uuid is provided by mistake), bail out
@@ -176,7 +153,6 @@ abstract class EntryValidationBase extends ValidationBase
             // Add existing entry to structure
             $entryStructure->addExistingEntry($dbEntry);
         }
-
         return true;
     }
 }

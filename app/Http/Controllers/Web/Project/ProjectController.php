@@ -2,11 +2,11 @@
 
 namespace ec5\Http\Controllers\Web\Project;
 
-use ec5\Models\Eloquent\Project;
-use ec5\Models\Eloquent\ProjectStats;
-use Illuminate\Http\JsonResponse;
+use ec5\Models\Project\Project;
+use ec5\Models\Project\ProjectStats;
 use ec5\Traits\Eloquent\StatsRefresher;
 use ec5\Traits\Requests\RequestAttributes;
+use Illuminate\Http\JsonResponse;
 
 class ProjectController
 {

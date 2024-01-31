@@ -2,10 +2,9 @@
 
 namespace Tests\Http\Validation\Entries\Download;
 
-use ec5\Models\Eloquent\Project;
+use ec5\Http\Validation\Entries\Download\RuleDownload;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
-use ec5\Http\Validation\Entries\Download\RuleDownload;
 
 class RuleDownloadTest extends TestCase
 {

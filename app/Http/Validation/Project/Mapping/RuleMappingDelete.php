@@ -2,8 +2,8 @@
 
 namespace ec5\Http\Validation\Project\Mapping;
 
+use ec5\DTO\ProjectMappingDTO;
 use ec5\Http\Validation\ValidationBase;
-use ec5\Models\Projects\ProjectMapping;
 
 class RuleMappingDelete extends ValidationBase
 {
@@ -25,10 +25,10 @@ class RuleMappingDelete extends ValidationBase
     }
 
     /**
-     * @param ProjectMapping $projectMapping
+     * @param ProjectMappingDTO $projectMapping
      * @param $newMapDetails
      */
-    public function additionalChecks(ProjectMapping $projectMapping, $newMapDetails)
+    public function additionalChecks(ProjectMappingDTO $projectMapping, $newMapDetails)
     {
         // Check the map_index exists
         if (isset($newMapDetails['map_index'])) {

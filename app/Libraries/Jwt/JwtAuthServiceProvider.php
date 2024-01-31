@@ -2,9 +2,9 @@
 
 namespace ec5\Libraries\Jwt;
 
-use Illuminate\Support\ServiceProvider;
-use ec5\Models\Eloquent\User;
 use Auth;
+use ec5\Models\User\User;
+use Illuminate\Support\ServiceProvider;
 
 /**
  * Extend the Auth Guard service by adding a 'jwt' driver

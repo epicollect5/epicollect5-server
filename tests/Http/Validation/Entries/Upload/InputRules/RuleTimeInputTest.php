@@ -2,16 +2,15 @@
 
 namespace Tests\Http\Validation\Entries\Upload\InputRules;
 
-use Config;
+use ec5\DTO\EntryStructureDTO;
 use ec5\Http\Validation\Entries\Upload\InputRules\RuleTimeInput;
-use ec5\Models\Entries\EntryStructure;
 use Tests\TestCase;
 
 class RuleTimeInputTest extends TestCase
 {
 
     /**
-     * @var \ec5\Models\Projects\Project
+     * @var \ec5\DTO\ProjectDTO
      */
     protected $project;
 
@@ -33,12 +32,12 @@ class RuleTimeInputTest extends TestCase
 
         $this->type = 'time';
 
-        $this->project = \Mockery::mock('\ec5\Models\Projects\Project');
+        $this->project = \Mockery::mock('\ec5\DTO\ProjectDTO');
 
         //create a fake EntryStructure instance.
         //I cannot mock it as the validation classes also generates objects (lol...shall we call it the "Validactory" pattern?)
         //This is what happens when you get a crucial part of an application done by a moron.
-        $this->entryStructure = new EntryStructure();
+        $this->entryStructure = new EntryStructureDTO();
 
         $entryData = config('epicollect.structures.entry_data');
         $entryData['id'] = 'xxx';

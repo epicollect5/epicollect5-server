@@ -4,12 +4,12 @@ namespace ec5\Http\Controllers\Web\Admin\Tools;
 
 use Auth;
 use Carbon\Carbon;
+use ec5\DTO\ProjectDTO as LegacyProject;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Libraries\Utilities\GpointConverter;
 use ec5\Mail\DebugEmailSending;
-use ec5\Models\Eloquent\Project;
-use ec5\Models\Images\CreateProjectLogoAvatar;
-use ec5\Models\Projects\Project as LegacyProject;
+use ec5\Models\Project\Project;
+use ec5\Services\AvatarService;
 use ec5\Traits\Eloquent\System\ProjectsStats;
 use Exception;
 use Illuminate\Support\Facades\Mail;
@@ -81,7 +81,7 @@ class PHPToolsController
             $this->project->setId($id);
 
             //generate project logo avatar(s)
-            $avatarCreator = new CreateProjectLogoAvatar();
+            $avatarCreator = new AvatarService();
             $wasCreated = $avatarCreator->generate($ref, $name);
 
             // dd($wasCreated, $ref, $name);

@@ -2,15 +2,14 @@
 
 namespace ec5\Http\Controllers\Api\Project;
 
-use ec5\Http\Validation\Project\RuleSwitchUserRole;
-use ec5\Http\Validation\Project\RuleBulkImportUsers;
-use ec5\Models\Eloquent\ProjectRole;
-use ec5\Models\Eloquent\User;
-use ec5\Services\ProjectService;
-use Illuminate\Http\Request;
 use ec5\Http\Controllers\Api\ApiResponse;
+use ec5\Http\Validation\Project\RuleBulkImportUsers;
+use ec5\Http\Validation\Project\RuleSwitchUserRole;
+use ec5\Models\Project\ProjectRole;
+use ec5\Models\User\User;
+use ec5\Services\ProjectService;
 use ec5\Traits\Requests\RequestAttributes;
-use Illuminate\Support\Facades\Redirect;
+use Illuminate\Http\Request;
 
 class UserController
 {

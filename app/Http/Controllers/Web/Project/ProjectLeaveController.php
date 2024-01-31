@@ -2,11 +2,11 @@
 
 namespace ec5\Http\Controllers\Web\Project;
 
-use ec5\Models\Eloquent\ProjectRole;
-use ec5\Models\Eloquent\Project;
+use ec5\Models\Project\Project;
+use ec5\Models\Project\ProjectRole;
+use ec5\Traits\Requests\RequestAttributes;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use ec5\Traits\Requests\RequestAttributes;
 
 class ProjectLeaveController
 {

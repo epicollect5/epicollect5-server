@@ -2,8 +2,8 @@
 
 namespace ec5\Traits\Project;
 
-use ec5\Models\Eloquent\Project;
-use ec5\Models\Images\CreateProjectLogoAvatar;
+use ec5\Models\Project\Project;
+use ec5\Services\AvatarService;
 use Exception;
 use Log;
 
@@ -12,7 +12,7 @@ trait ProjectTools
     public function createProjectAvatar($projectId, $projectRef, $projectName): array
     {
         //generate avatar
-        $avatarCreator = new CreateProjectLogoAvatar();
+        $avatarCreator = new AvatarService();
         $wasAvatarCreated = $avatarCreator->generate($projectRef, $projectName);
         if (!$wasAvatarCreated) {
             //delete project just created

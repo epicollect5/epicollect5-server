@@ -8,7 +8,7 @@ class PhotoTest extends InputTest
 {
 
     /**
-     * @var \ec5\Models\Projects\Project
+     * @var \ec5\DTO\ProjectDTO
      */
     protected $project;
     /**

@@ -2,20 +2,15 @@
 
 namespace ec5\Http\Controllers\Web\Auth;
 
-use ec5\Http\Controllers\Controller;
-use ec5\Models\Eloquent\User;
-use ec5\Models\Eloquent\UserProvider;
-use Illuminate\Http\Request;
-use Laravel\Socialite\Two\InvalidStateException;
-use Exception;
-use ec5\Libraries\JwtApple\JWT as JWTApple;
-use ec5\Libraries\JwtApple\JWK as JWKApple;
-
-use Laravel\Socialite\Facades\Socialite;
-use Config;
-use View;
 use Auth;
-use Ldap;
+use ec5\Http\Controllers\Controller;
+use ec5\Libraries\JwtApple\JWK as JWKApple;
+use ec5\Libraries\JwtApple\JWT as JWTApple;
+use ec5\Models\User\UserProvider;
+use Exception;
+use Illuminate\Http\Request;
+use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\Two\InvalidStateException;
 use Log;
 
 class ProfileController extends Controller

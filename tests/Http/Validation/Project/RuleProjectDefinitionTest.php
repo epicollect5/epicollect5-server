@@ -2,15 +2,15 @@
 
 namespace Tests\Http\Validation\Project;
 
+use ec5\DTO\ProjectDefinitionDTO;
+use ec5\DTO\ProjectDTO;
+use ec5\DTO\ProjectExtraDTO;
+use ec5\DTO\ProjectMappingDTO;
 use ec5\DTO\ProjectStatsDTO;
 use ec5\Http\Validation\Project\RuleForm;
 use ec5\Http\Validation\Project\RuleInput;
 use ec5\Http\Validation\Project\RuleProjectDefinition;
 use ec5\Http\Validation\Project\RuleProjectExtraDetails;
-use ec5\Models\Projects\Project;
-use ec5\Models\Projects\ProjectDefinition;
-use ec5\Models\Projects\ProjectExtra;
-use ec5\Models\Projects\ProjectMapping;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Str;
 use Ramsey\Uuid\Uuid;
@@ -34,7 +34,7 @@ class RuleProjectDefinitionTest extends TestCase
 
     protected static function getProjectExtraMethod($name): \ReflectionMethod
     {
-        $class = new \ReflectionClass('\ec5\Models\Projects\ProjectExtra');
+        $class = new \ReflectionClass('\ec5\DTO\ProjectExtraDTO');
         $method = $class->getMethod($name);
         $method->setAccessible(true);
         return $method;
@@ -111,10 +111,10 @@ class RuleProjectDefinitionTest extends TestCase
         $this->ruleProjectExtraDetails = new  RuleProjectExtraDetails();
         $this->ruleForm = new RuleForm();
         $this->ruleInput = new RuleInput();
-        $this->projectExtra = new ProjectExtra();
-        $this->projectMapping = new ProjectMapping();
+        $this->projectExtra = new ProjectExtraDTO();
+        $this->projectMapping = new ProjectMappingDTO();
         $this->projectStats = new ProjectStatsDTO();
-        $this->projectDefinition = new ProjectDefinition();
+        $this->projectDefinition = new ProjectDefinitionDTO();
 
         $this->validator = new RuleProjectDefinition(
             $this->ruleProjectExtraDetails,
@@ -129,7 +129,7 @@ class RuleProjectDefinitionTest extends TestCase
 
     public function test_max_inputs_one_form()
     {
-        $project = new Project(
+        $project = new ProjectDTO(
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
@@ -165,7 +165,7 @@ class RuleProjectDefinitionTest extends TestCase
 
     public function test_too_many_inputs_one_form()
     {
-        $project = new Project(
+        $project = new ProjectDTO(
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
@@ -202,7 +202,7 @@ class RuleProjectDefinitionTest extends TestCase
 
     public function test_too_many_inputs_two_forms()
     {
-        $project = new Project(
+        $project = new ProjectDTO(
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
@@ -243,7 +243,7 @@ class RuleProjectDefinitionTest extends TestCase
 
     public function test_too_many_inputs_three_forms()
     {
-        $project = new Project(
+        $project = new ProjectDTO(
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
@@ -286,7 +286,7 @@ class RuleProjectDefinitionTest extends TestCase
 
     public function test_too_many_inputs_four_forms()
     {
-        $project = new Project(
+        $project = new ProjectDTO(
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
@@ -331,7 +331,7 @@ class RuleProjectDefinitionTest extends TestCase
 
     public function test_too_many_inputs_five_forms()
     {
-        $project = new Project(
+        $project = new ProjectDTO(
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
@@ -377,7 +377,7 @@ class RuleProjectDefinitionTest extends TestCase
 
     public function test_one_group_input_with_max_inputs()
     {
-        $project = new Project(
+        $project = new ProjectDTO(
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
@@ -420,7 +420,7 @@ class RuleProjectDefinitionTest extends TestCase
 
     public function test_one_branch_input_with_max_inputs()
     {
-        $project = new Project(
+        $project = new ProjectDTO(
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
@@ -463,7 +463,7 @@ class RuleProjectDefinitionTest extends TestCase
 
     public function test_one_branch_input_with_too_many_inputs()
     {
-        $project = new Project(
+        $project = new ProjectDTO(
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
@@ -507,7 +507,7 @@ class RuleProjectDefinitionTest extends TestCase
 
     public function test_one_group_input_too_many_inputs()
     {
-        $project = new Project(
+        $project = new ProjectDTO(
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
@@ -551,7 +551,7 @@ class RuleProjectDefinitionTest extends TestCase
 
     public function test_one_nested_group_with_max_inputs()
     {
-        $project = new Project(
+        $project = new ProjectDTO(
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
@@ -602,7 +602,7 @@ class RuleProjectDefinitionTest extends TestCase
 
     public function test_one_nested_group_with_too_many_inputs()
     {
-        $project = new Project(
+        $project = new ProjectDTO(
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,

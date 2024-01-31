@@ -2,15 +2,15 @@
 
 namespace Tests\Http\Validation\Project\RuleInput;
 
+use ec5\DTO\ProjectDefinitionDTO;
+use ec5\DTO\ProjectDTO;
+use ec5\DTO\ProjectExtraDTO;
+use ec5\DTO\ProjectMappingDTO;
 use ec5\DTO\ProjectStatsDTO;
 use ec5\Http\Validation\Project\RuleForm;
 use ec5\Http\Validation\Project\RuleInput;
 use ec5\Http\Validation\Project\RuleProjectDefinition;
 use ec5\Http\Validation\Project\RuleProjectExtraDetails;
-use ec5\Models\Projects\Project;
-use ec5\Models\Projects\ProjectDefinition;
-use ec5\Models\Projects\ProjectExtra;
-use ec5\Models\Projects\ProjectMapping;
 use Illuminate\Support\Str;
 use Ramsey\Uuid\Uuid;
 
@@ -30,7 +30,7 @@ class SearchMaxCountTest extends InputTest
 
     protected static function getProjectExtraMethod($name)
     {
-        $class = new \ReflectionClass('\ec5\Models\Projects\ProjectExtra');
+        $class = new \ReflectionClass('\ec5\DTO\ProjectExtraDTO');
         $method = $class->getMethod($name);
         $method->setAccessible(true);
         return $method;
@@ -115,10 +115,10 @@ class SearchMaxCountTest extends InputTest
         $this->projectExtraDetailsValidator = new  RuleProjectExtraDetails();
         $this->formValidator = new RuleForm();
         $this->inputValidator = new RuleInput();
-        $this->projectExtra = new ProjectExtra();
-        $this->projectMapping = new ProjectMapping();
+        $this->projectExtra = new ProjectExtraDTO();
+        $this->projectMapping = new ProjectMappingDTO();
         $this->projectStats = new ProjectStatsDTO();
-        $this->projectDefinition = new ProjectDefinition();
+        $this->projectDefinition = new ProjectDefinitionDTO();
 
         $this->validator = new RuleProjectDefinition(
             $this->projectExtraDetailsValidator,
@@ -134,7 +134,7 @@ class SearchMaxCountTest extends InputTest
 
     public function test_one_search_input_one_form()
     {
-        $project = new Project(
+        $project = new ProjectDTO(
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
@@ -168,7 +168,7 @@ class SearchMaxCountTest extends InputTest
 
     public function test_two_search_inputs_one_form()
     {
-        $project = new Project(
+        $project = new ProjectDTO(
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
@@ -203,7 +203,7 @@ class SearchMaxCountTest extends InputTest
 
     public function test_three_search_inputs_one_form()
     {
-        $project = new Project(
+        $project = new ProjectDTO(
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
@@ -239,7 +239,7 @@ class SearchMaxCountTest extends InputTest
 
     public function test_four_search_inputs_one_form()
     {
-        $project = new Project(
+        $project = new ProjectDTO(
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
@@ -276,7 +276,7 @@ class SearchMaxCountTest extends InputTest
 
     public function test_five_search_inputs_one_form()
     {
-        $project = new Project(
+        $project = new ProjectDTO(
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
@@ -314,7 +314,7 @@ class SearchMaxCountTest extends InputTest
 
     public function test_six_search_inputs_one_form()
     {
-        $project = new Project(
+        $project = new ProjectDTO(
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
@@ -354,7 +354,7 @@ class SearchMaxCountTest extends InputTest
 
     public function test_five_search_inputs_five_forms()
     {
-        $project = new Project(
+        $project = new ProjectDTO(
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
@@ -396,7 +396,7 @@ class SearchMaxCountTest extends InputTest
 
     public function test_six_search_inputs_five_form()
     {
-        $project = new Project(
+        $project = new ProjectDTO(
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
@@ -436,7 +436,7 @@ class SearchMaxCountTest extends InputTest
 
     public function test_one_branch_input_with_five_search_inputs()
     {
-        $project = new Project(
+        $project = new ProjectDTO(
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
@@ -481,7 +481,7 @@ class SearchMaxCountTest extends InputTest
 
     public function test_one_branch_input_with_six_search_inputs()
     {
-        $project = new Project(
+        $project = new ProjectDTO(
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
@@ -529,7 +529,7 @@ class SearchMaxCountTest extends InputTest
 
     public function test_five_branch_inputs_with_one_search_input_each()
     {
-        $project = new Project(
+        $project = new ProjectDTO(
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
@@ -590,7 +590,7 @@ class SearchMaxCountTest extends InputTest
 
     public function test_six_branch_inputs_with_one_search_input_each()
     {
-        $project = new Project(
+        $project = new ProjectDTO(
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
@@ -656,7 +656,7 @@ class SearchMaxCountTest extends InputTest
 
     public function test_one_group_input_with_five_search_inputs()
     {
-        $project = new Project(
+        $project = new ProjectDTO(
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
@@ -701,7 +701,7 @@ class SearchMaxCountTest extends InputTest
 
     public function test_five_group_inputs_with_one_search_input_each()
     {
-        $project = new Project(
+        $project = new ProjectDTO(
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
@@ -762,7 +762,7 @@ class SearchMaxCountTest extends InputTest
 
     public function test_six_group_inputs_with_one_search_input_each()
     {
-        $project = new Project(
+        $project = new ProjectDTO(
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
@@ -827,7 +827,7 @@ class SearchMaxCountTest extends InputTest
     public function test_one_nested_group_with_valid_total_of_search_inputs()
     {
 
-        $project = new Project(
+        $project = new ProjectDTO(
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
@@ -882,7 +882,7 @@ class SearchMaxCountTest extends InputTest
     public function test_one_nested_group_with_too_many_search_inputs()
     {
 
-        $project = new Project(
+        $project = new ProjectDTO(
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
@@ -937,7 +937,7 @@ class SearchMaxCountTest extends InputTest
 
     public function test_five_forms_each_with_agroup_having_one_search_input()
     {
-        $project = new Project(
+        $project = new ProjectDTO(
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
@@ -998,7 +998,7 @@ class SearchMaxCountTest extends InputTest
 
     public function test_five_forms_each_with_too_many_groups_having_one_search_input()
     {
-        $project = new Project(
+        $project = new ProjectDTO(
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
@@ -1064,7 +1064,7 @@ class SearchMaxCountTest extends InputTest
 
     public function test_five_forms_each_with_abranch_having_one_search_input()
     {
-        $project = new Project(
+        $project = new ProjectDTO(
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
@@ -1125,7 +1125,7 @@ class SearchMaxCountTest extends InputTest
 
     public function test_five_forms_each_with_too_many_branches_having_one_search_input()
     {
-        $project = new Project(
+        $project = new ProjectDTO(
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
@@ -1187,7 +1187,7 @@ class SearchMaxCountTest extends InputTest
 
     public function test_five_forms_each_with_abranch_having_one_nested_group_with_one_search_input()
     {
-        $project = new Project(
+        $project = new ProjectDTO(
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
@@ -1267,7 +1267,7 @@ class SearchMaxCountTest extends InputTest
 
     public function test_five_forms_each_with_abranch_having_too_many_nested_groups_with_one_search_input()
     {
-        $project = new Project(
+        $project = new ProjectDTO(
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,

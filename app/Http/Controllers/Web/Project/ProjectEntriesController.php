@@ -3,18 +3,17 @@
 namespace ec5\Http\Controllers\Web\Project;
 
 use ec5\Http\Controllers\Api\ApiResponse;
-use ec5\Models\Eloquent\ProjectStructure;
+use ec5\Http\Validation\Project\RuleEntryLimits;
+use ec5\Models\Project\ProjectStructure;
+use ec5\Traits\Eloquent\StatsRefresher;
+use ec5\Traits\Requests\RequestAttributes;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-
-use ec5\Http\Validation\Project\RuleEntryLimits;
 use Illuminate\View\View;
 use Redirect;
-use ec5\Traits\Requests\RequestAttributes;
-use ec5\Traits\Eloquent\StatsRefresher;
 
 class ProjectEntriesController
 {

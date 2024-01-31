@@ -4,10 +4,9 @@ namespace Tests\Routes\Api\external;
 
 use Carbon\Carbon;
 use ec5\Libraries\Utilities\Generators;
-use ec5\Models\Eloquent\UserPasswordlessApi;
-use ec5\Models\Eloquent\User;
+use ec5\Models\User\User;
+use ec5\Models\User\UserPasswordlessApi;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Illuminate\Support\Facades\Config;
 use Tests\TestCase;
 
 class VerifyGoogleUserExternalTest extends TestCase

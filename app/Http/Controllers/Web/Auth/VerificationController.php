@@ -2,20 +2,19 @@
 
 namespace ec5\Http\Controllers\Web\Auth;
 
-use ec5\Models\Eloquent\UserVerify;
-use Illuminate\Http\Request;
+use Auth;
+use Carbon\Carbon;
+use DB;
 use ec5\Http\Controllers\Controller;
 use ec5\Http\Validation\Auth\RuleVerification;
-use ec5\Models\Eloquent\User;
-use Config;
-use Auth;
-use Log;
-use DB;
-use PDOException;
-use Exception;
-use Carbon\Carbon;
-use Mail;
 use ec5\Mail\UserAccountActivationMail;
+use ec5\Models\User\User;
+use ec5\Models\User\UserVerify;
+use Exception;
+use Illuminate\Http\Request;
+use Log;
+use Mail;
+use PDOException;
 
 class VerificationController extends Controller
 {

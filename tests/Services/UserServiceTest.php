@@ -2,7 +2,7 @@
 
 namespace Tests\Services;
 
-use ec5\Models\Eloquent\User;
+use ec5\Models\User\User;
 use ec5\Services\UserService;
 use Faker\Factory as Faker;
 use Illuminate\Foundation\Testing\DatabaseTransactions;

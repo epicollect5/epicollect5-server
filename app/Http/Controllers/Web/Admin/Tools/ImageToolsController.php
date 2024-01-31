@@ -3,12 +3,10 @@
 namespace ec5\Http\Controllers\Web\Admin\Tools;
 
 use ec5\Http\Controllers\Controller;
-use ec5\Models\Images\UploadImage;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 use ec5\Libraries\DirectoryGenerator\DirectoryGenerator;
-
+use ec5\Services\UploadImageService;
 use Storage;
-use Config;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class ImageToolsController extends Controller
 {
@@ -89,7 +87,7 @@ class ImageToolsController extends Controller
                 if ($resize) {
 
                     // Attempt to save the new image
-                    $thumb = UploadImage::storeImage($directory, $fileSourcePath, $fileName, 'entry_original', $dimensions);
+                    $thumb = UploadImageService::storeImage($directory, $fileSourcePath, $fileName, 'entry_original', $dimensions);
 
                     // Check if any errors creating/saving thumb
                     if (!$thumb) {
@@ -168,7 +166,7 @@ class ImageToolsController extends Controller
                         $dimensions = config('epicollect.media.' . $driver);
 
                         // Attempt to resize and save the new image
-                        $resizedImage = UploadImage::storeImage($directory, $fileDestPath, $fileName, $driver, $dimensions);
+                        $resizedImage = UploadImageService::storeImage($directory, $fileDestPath, $fileName, $driver, $dimensions);
 
                         // Check if any errors creating/saving
                         if (!$resizedImage) {

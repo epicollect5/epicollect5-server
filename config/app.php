@@ -181,7 +181,11 @@ return [
         ec5\Providers\AuthServiceProvider::class,
         ec5\Providers\EventServiceProvider::class,
         ec5\Providers\RouteServiceProvider::class,
-        ec5\Providers\ApiResponseServiceProvider::class,
+        ec5\Providers\ApiResponseProvider::class,
+        ec5\Providers\Macros\Response\ApiErrorCodeMacro::class,
+        ec5\Providers\Macros\Response\ApiSuccessCodeMacro::class,
+        ec5\Providers\Macros\Response\ToCSVStreamMacro::class,
+        ec5\Providers\Macros\Response\ToCSVFileMacro::class,
 
         /**
          * Custom Service Providers

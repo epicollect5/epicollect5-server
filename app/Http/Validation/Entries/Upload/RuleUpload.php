@@ -2,18 +2,14 @@
 
 namespace ec5\Http\Validation\Entries\Upload;
 
-use ec5\Http\Validation\Entries\Upload\RuleBranchEntry as BranchEntryValidator;
+use ec5\DTO\EntryStructureDTO;
+use ec5\DTO\ProjectDTO;
 use ec5\Http\Validation\Entries\Upload\RuleAnswers as AnswerValidator;
-use ec5\Http\Validation\Entries\Upload\RuleFileEntry as FileValidator;
+use ec5\Http\Validation\Entries\Upload\RuleBranchEntry as BranchEntryValidator;
 use ec5\Http\Validation\Entries\Upload\RuleEntry as EntryValidator;
-
-use ec5\Models\Projects\Project;
-use ec5\Models\Entries\EntryStructure;
-use Illuminate\Support\Facades\Log;
-
+use ec5\Http\Validation\Entries\Upload\RuleFileEntry as FileValidator;
 use ec5\Http\Validation\ValidationBase;
-
-use Config;
+use Illuminate\Support\Facades\Log;
 
 class RuleUpload extends ValidationBase
 {
@@ -122,11 +118,11 @@ class RuleUpload extends ValidationBase
 
     /**
      * @param $data
-     * @param Project $project
-     * @param EntryStructure $entryStructure
+     * @param ProjectDTO $project
+     * @param EntryStructureDTO $entryStructure
      * @return null
      */
-    public function additionalChecks($data, Project $project, EntryStructure $entryStructure)
+    public function additionalChecks($data, ProjectDTO $project, EntryStructureDTO $entryStructure)
     {
 
         $projectExtra = $project->getProjectExtra();

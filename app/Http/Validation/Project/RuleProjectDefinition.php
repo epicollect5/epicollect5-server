@@ -2,10 +2,10 @@
 
 namespace ec5\Http\Validation\Project;
 
+use ec5\DTO\ProjectDefinitionDTO;
+use ec5\DTO\ProjectDTO;
+use ec5\DTO\ProjectExtraDTO;
 use ec5\Http\Validation\Project\RuleProjectExtraDetails as ProjectExtraDetailsValidator;
-use ec5\Models\Projects\Project;
-use ec5\Models\Projects\ProjectDefinition;
-use ec5\Models\Projects\ProjectExtra;
 use Illuminate\Support\Str;
 
 class RuleProjectDefinition
@@ -30,8 +30,8 @@ class RuleProjectDefinition
         ProjectExtraDetailsValidator $projectExtraDetailsValidator,
         RuleForm                     $ruleForm,
         RuleInput                    $ruleInput,
-        ProjectExtra                 $projectExtra,
-        ProjectDefinition            $projectDefinition
+        ProjectExtraDTO              $projectExtra,
+        ProjectDefinitionDTO $projectDefinition
     )
     {
 
@@ -57,7 +57,7 @@ class RuleProjectDefinition
         $this->errors = array_merge($this->errors, $e);
     }
 
-    public function getProjectExtra(): ProjectExtra
+    public function getProjectExtra(): ProjectExtraDTO
     {
         return $this->projectExtra;
     }
@@ -65,7 +65,7 @@ class RuleProjectDefinition
     /**
      * Validate the Project Definition
      */
-    public function validate(Project $project): bool
+    public function validate(ProjectDTO $project): bool
     {
         $this->projectExtra = $project->getProjectExtra();
         // Reset the existing data, ready to rebuild

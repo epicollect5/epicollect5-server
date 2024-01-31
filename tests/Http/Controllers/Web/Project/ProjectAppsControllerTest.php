@@ -2,20 +2,20 @@
 
 namespace Tests\Http\Controllers\Web\Project;
 
-use ec5\Models\Eloquent\OAuthAccessToken;
-use ec5\Models\Eloquent\OAuthClient;
-use ec5\Models\Eloquent\OAuthClientProject;
-use ec5\Models\Eloquent\Project;
-use ec5\Models\Eloquent\ProjectRole;
-use ec5\Models\Eloquent\ProjectStats;
-use ec5\Models\Eloquent\ProjectStructure;
-use ec5\Models\Eloquent\User;
+use ec5\Models\OAuth\OAuthAccessToken;
+use ec5\Models\OAuth\OAuthClient;
+use ec5\Models\OAuth\OAuthClientProject;
+use ec5\Models\Project\Project;
+use ec5\Models\Project\ProjectRole;
+use ec5\Models\Project\ProjectStats;
+use ec5\Models\Project\ProjectStructure;
+use ec5\Models\User\User;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Laravel\Passport\ClientRepository;
 use Laravel\Passport\Passport;
 use SebastianBergmann\RecursionContext\Exception;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 class ProjectAppsControllerTest extends TestCase
 {

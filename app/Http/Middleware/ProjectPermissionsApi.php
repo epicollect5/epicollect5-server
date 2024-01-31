@@ -2,13 +2,14 @@
 
 namespace ec5\Http\Middleware;
 
-use League\OAuth2\Server\Exception\OAuthServerException;
-use Symfony\Bridge\PsrHttpMessage\Factory\DiactorosFactory;
-use League\OAuth2\Server\ResourceServer;
-use ec5\Models\Projects\Project;
-use ec5\Models\Eloquent\OAuthClientProject;
+use ec5\DTO\ProjectDTO;
 use ec5\Http\Controllers\Api\ApiResponse as ApiResponse;
+use ec5\Models\OAuth\OAuthClientProject;
 use Illuminate\Http\Request;
+use League\OAuth2\Server\Exception\OAuthServerException;
+use League\OAuth2\Server\ResourceServer;
+use Log;
+use Symfony\Bridge\PsrHttpMessage\Factory\DiactorosFactory;
 
 class ProjectPermissionsApi extends RequestAttributesMiddleware
 {
@@ -34,12 +35,12 @@ class ProjectPermissionsApi extends RequestAttributesMiddleware
      * @param ResourceServer $server
      * @param Request $request
      * @param ApiResponse $apiResponse
-     * @param Project $requestedProject
+     * @param ProjectDTO $requestedProject
      */
     public function __construct(ResourceServer $server,
                                 Request        $request,
                                 ApiResponse    $apiResponse,
-                                Project        $requestedProject
+                                ProjectDTO $requestedProject
     )
     {
         $this->server = $server;
@@ -66,15 +67,18 @@ class ProjectPermissionsApi extends RequestAttributesMiddleware
                 // Attempt to validate the client request
                 $psr = $this->server->validateAuthenticatedRequest($psr);
             } catch (OAuthServerException $e) {
-
                 // Switch on OAuthServerException error type
                 switch ($e->getErrorType()) {
                     case 'access_denied':
                         $this->error = 'ec5_256';
                         break;
                     default:
-                        // Unauthorized error
-                        $this->error = 'ec5_257';
+                        // unknown error
+                        Log::error(__METHOD__ . ' failed.', [
+                            'exception' => $e->getMessage(),
+                            'error-type' => $e->getErrorType()
+                        ]);
+                        $this->error = 'ec5_103';
                 }
                 return false;
             }

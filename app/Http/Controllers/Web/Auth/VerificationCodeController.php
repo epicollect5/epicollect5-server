@@ -2,16 +2,15 @@
 
 namespace ec5\Http\Controllers\Web\Auth;
 
-use Illuminate\Support\Facades\Config;
-use Log;
-use DB;
-use PDOException;
-use Exception;
 use Carbon\Carbon;
-use Mail;
+use DB;
 use ec5\Libraries\Utilities\Generators;
-use ec5\Models\Eloquent\UserPasswordlessApi;
 use ec5\Mail\UserPasswordlessApiMail;
+use ec5\Models\User\UserPasswordlessApi;
+use Exception;
+use Log;
+use Mail;
+use PDOException;
 
 class VerificationCodeController extends AuthController
 {
