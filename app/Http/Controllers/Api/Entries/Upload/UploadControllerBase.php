@@ -4,18 +4,17 @@ declare(strict_types=1);
 
 namespace ec5\Http\Controllers\Api\Entries\Upload;
 
+use ec5\DTO\EntryStructureDTO;
+use ec5\Http\Controllers\Api\ApiRequest;
+use ec5\Http\Controllers\Api\ApiResponse;
 use ec5\Http\Controllers\Api\ProjectApiControllerBase;
 use ec5\Http\Validation\Entries\Upload\RuleUpload as UploadValidator;
-use ec5\Models\Eloquent\Counters\BranchEntryCounter;
-use ec5\Models\Eloquent\Counters\EntryCounter;
-use ec5\Repositories\QueryBuilder\Entry\Upload\Create\BranchEntryRepository as BranchEntryCreateRepository;
-use ec5\Repositories\QueryBuilder\Entry\Upload\Create\EntryRepository as EntryCreateRepository;
-use ec5\Http\Controllers\Api\ApiResponse;
-use ec5\Http\Controllers\Api\ApiRequest;
-use ec5\Models\Entries\EntryStructure;
+use ec5\Models\Counters\BranchEntryCounter;
+use ec5\Models\Counters\EntryCounter;
+use ec5\Services\CreateEntryService;
+use ec5\Traits\Requests\RequestAttributes;
 use Illuminate\Http\Request;
 use Log;
-use ec5\Traits\Requests\RequestAttributes;
 
 class UploadControllerBase extends ProjectApiControllerBase
 {
@@ -31,16 +30,7 @@ class UploadControllerBase extends ProjectApiControllerBase
     use RequestAttributes;
 
     /**
-     * @var EntryCreateRepository Object $entryCreateRepository
-     */
-    protected $entryCreateRepository;
-
-    /**
-     * @var BranchEntryCreateRepository Object $branchEntryCreateRepository
-     */
-    protected $branchEntryCreateRepository;
-    /**
-     * @var EntryStructure $entryStructure
+     * @var EntryStructureDTO $entryStructure
      */
     protected $entryStructure;
     protected $isBulkUpload;
@@ -50,21 +40,15 @@ class UploadControllerBase extends ProjectApiControllerBase
      * @param Request $request
      * @param ApiRequest $apiRequest
      * @param ApiResponse $apiResponse
-     * @param EntryStructure $entryStructure
-     * @param EntryCreateRepository $entryCreateRepository
-     * @param BranchEntryCreateRepository $branchEntryCreateRepository
+     * @param EntryStructureDTO $entryStructure
      */
     public function __construct(
-        Request                     $request,
-        ApiRequest                  $apiRequest,
-        ApiResponse                 $apiResponse,
-        EntryStructure              $entryStructure,
-        EntryCreateRepository       $entryCreateRepository,
-        BranchEntryCreateRepository $branchEntryCreateRepository
+        Request           $request,
+        ApiRequest        $apiRequest,
+        ApiResponse       $apiResponse,
+        EntryStructureDTO $entryStructure
     )
     {
-        $this->entryCreateRepository = $entryCreateRepository;
-        $this->branchEntryCreateRepository = $branchEntryCreateRepository;
         $this->entryStructure = $entryStructure;
 
         parent::__construct($request, $apiRequest, $apiResponse);
@@ -80,8 +64,8 @@ class UploadControllerBase extends ProjectApiControllerBase
     {
         $data = $this->apiRequest->getData();
 
-        // Note: errors will be output in format ['source' => ['ec5_error']]
-        // Required by the ApiResponse class
+        // imp: errors will be output in format ['source' => ['ec5_error']]
+        // imp: Required by the ApiResponse class
 
         /* API REQUEST VALIDATION */
         if (!$this->isValidApiRequest()) {
@@ -127,13 +111,18 @@ class UploadControllerBase extends ProjectApiControllerBase
         }
 
         /* INSERT ENTRY */
-        if (!$this->insertedIntoDb()) {
-
-            Log::error('Error inserting entry: ', [
-                'error' => $this->errors,
-                'data' => $data
-            ]);
-            return false;
+        // If we have answers to insert from our upload
+        if ($this->entryStructure->hasAnswers()) {
+            $createEntryService = new CreateEntryService();
+            // If we received no errors, continue to insert answers and entry
+            if (!$createEntryService->create($this->requestedProject(), $this->entryStructure, $this->isBulkUpload)) {
+                Log::error(__METHOD__ . ' failed.', [
+                    'error' => $this->errors,
+                    'data' => $data
+                ]);
+                $this->errors = $createEntryService->errors;
+                return false;
+            }
         }
         return true;
     }
@@ -224,29 +213,6 @@ class UploadControllerBase extends ProjectApiControllerBase
         return true;
     }
 
-    /**
-     * @return bool
-     */
-    protected function insertedIntoDb()
-    {
-        // If we have answers to insert from our upload
-        if ($this->entryStructure->hasAnswers()) {
-
-            // Entry or Branch Entry
-            if ($this->entryStructure->isBranch()) {
-                $repository = $this->branchEntryCreateRepository;
-            } else {
-                $repository = $this->entryCreateRepository;
-            }
-
-            // If we received no errors, continue to insert answers and entry
-            if (!$repository->create($this->requestedProject(), $this->entryStructure, $this->isBulkUpload)) {
-                $this->errors = $repository->errors();
-                return false;
-            }
-        }
-        return true;
-    }
 
     /**
      * Build Entry Structure
@@ -324,8 +290,6 @@ class UploadControllerBase extends ProjectApiControllerBase
             if (request()->route()->getName() === 'private-import') {
                 return true;
             }
-
-
             $this->errors = ['upload-controller' => ['ec5_71']];
             return false;
         }

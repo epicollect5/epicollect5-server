@@ -7,20 +7,18 @@ namespace ec5\Http\Controllers\Api\Entries\View;
 use ec5\Http\Controllers\Api\ApiRequest;
 use ec5\Http\Controllers\Api\ApiResponse;
 use ec5\Http\Controllers\Api\ProjectApiControllerBase;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Http\Request;
 use ec5\Http\Validation\Entries\Search\RuleQueryString;
 use ec5\Http\Validation\Entries\Upload\RuleAnswers;
-use ec5\Repositories\QueryBuilder\Entry\Search\BranchEntryRepository;
-use ec5\Repositories\QueryBuilder\Entry\Search\EntryRepository;
+use ec5\Models\Entries\BranchEntry;
+use ec5\Models\Entries\Entry;
 use ec5\Traits\Requests\RequestAttributes;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Http\Request;
 
 abstract class EntrySearchControllerBase extends ProjectApiControllerBase
 {
     use RequestAttributes;
 
-    protected $entryRepository;
-    protected $branchEntryRepository;
     protected $ruleQueryString;
     protected $ruleAnswers;
     protected $allowedSearchKeys;
@@ -31,25 +29,19 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
      * @param Request $request
      * @param ApiRequest $apiRequest
      * @param ApiResponse $apiResponse
-     * @param EntryRepository $entryRepository
-     * @param BranchEntryRepository $branchEntryRepository
      * @param RuleQueryString $ruleQueryString
      * @param RuleAnswers $ruleAnswers
      */
     public function __construct(
-        Request               $request,
-        ApiRequest            $apiRequest,
-        ApiResponse           $apiResponse,
-        EntryRepository       $entryRepository,
-        BranchEntryRepository $branchEntryRepository,
-        RuleQueryString       $ruleQueryString,
-        RuleAnswers           $ruleAnswers
+        Request         $request,
+        ApiRequest      $apiRequest,
+        ApiResponse     $apiResponse,
+        RuleQueryString $ruleQueryString,
+        RuleAnswers     $ruleAnswers
     )
     {
         parent::__construct($request, $apiRequest, $apiResponse);
 
-        $this->entryRepository = $entryRepository;
-        $this->branchEntryRepository = $branchEntryRepository;
         $this->ruleAnswers = $ruleAnswers;
         $this->ruleQueryString = $ruleQueryString;
     }
@@ -165,13 +157,13 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
      * @param array $columns
      * @return \Illuminate\Database\Query\Builder
      */
-    protected function runQuery(array $params, array $columns)
+    protected function runQueryHierarchy(array $params, array $columns)
     {
         // NOTE: form_ref is never empty here
-
+        $entryModel = new Entry();
         // Single Entry
         if (!empty($params['uuid'])) {
-            $query = $this->entryRepository->getEntry(
+            $query = $entryModel->getEntry(
                 $this->requestedProject()->getId(),
                 $params,
                 $columns
@@ -179,21 +171,20 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
         } else {
             if (!empty($params['parent_uuid'])) {
                 // Child Entries
-                $query = $this->entryRepository->getChildEntriesForParent(
+                $query = $entryModel->getChildEntriesForParent(
                     $this->requestedProject()->getId(),
                     $params,
                     $columns
                 );
             } else {
                 // All Form Entries
-                $query = $this->entryRepository->getEntries(
+                $query = Entry::getEntriesByForm(
                     $this->requestedProject()->getId(),
                     $params,
                     $columns
                 );
             }
         }
-
         return $query;
     }
 
@@ -205,10 +196,10 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
     protected function runQueryBranch(array $params, array $columns)
     {
         // NOTE: branch_ref is never empty here
-
+        $branchEntryModel = new BranchEntry();
         // Single Branch Entry
         if (!empty($params['uuid'])) {
-            $query = $this->branchEntryRepository->getEntry(
+            $query = $branchEntryModel->getEntry(
                 $this->requestedProject()->getId(),
                 $params,
                 $columns
@@ -216,23 +207,21 @@ abstract class EntrySearchControllerBase extends ProjectApiControllerBase
         } else {
             if (!empty($params['branch_owner_uuid'])) {
                 // Branch Entries for Branch Ref and Branch Owner
-                $query = $this->branchEntryRepository->getBranchEntriesForBranchRefAndOwner(
+                $query = $branchEntryModel->getBranchEntriesForBranchRefAndOwner(
                     $this->requestedProject()->getId(),
                     $params,
                     $columns
                 );
             } else {
                 // All Branch Entries for Branch Ref
-                $query = $this->branchEntryRepository->getBranchEntriesForBranchRef(
+                $query = $branchEntryModel::getBranchEntriesByBranchRef(
                     $this->requestedProject()->getId(),
                     $params,
                     $columns
                 );
             }
         }
-
         // todo: do we ever want all branches for a form, regardless or branch ref or owner_uuid?
-
         return $query;
     }
 

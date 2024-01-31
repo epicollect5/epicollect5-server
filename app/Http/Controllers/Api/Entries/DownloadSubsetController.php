@@ -10,10 +10,8 @@ use ec5\Http\Validation\Entries\Download\RuleDownloadSubset;
 use ec5\Http\Validation\Entries\Search\RuleQueryString;
 use ec5\Http\Validation\Entries\Upload\RuleAnswers;
 use ec5\Libraries\Utilities\Common;
-use ec5\Models\Eloquent\Entries\BranchEntry;
-use ec5\Models\Eloquent\Entries\Entry;
-use ec5\Repositories\QueryBuilder\Entry\Search\BranchEntryRepository;
-use ec5\Repositories\QueryBuilder\Entry\Search\EntryRepository;
+use ec5\Models\Entries\BranchEntry;
+use ec5\Models\Entries\Entry;
 use ec5\Services\DataMappingService;
 use Exception;
 use Illuminate\Http\Request;
@@ -29,22 +27,18 @@ class DownloadSubsetController extends EntrySearchControllerBase
     protected $dataMappingService;
 
     public function __construct(
-        Request               $request,
-        ApiRequest            $apiRequest,
-        ApiResponse           $apiResponse,
-        EntryRepository       $entryRepository,
-        BranchEntryRepository $branchEntryRepository,
-        RuleQueryString       $ruleQueryString,
-        RuleAnswers           $ruleAnswers,
-        DataMappingService    $dataMappingService
+        Request            $request,
+        ApiRequest         $apiRequest,
+        ApiResponse        $apiResponse,
+        RuleQueryString    $ruleQueryString,
+        RuleAnswers        $ruleAnswers,
+        DataMappingService $dataMappingService
     )
     {
         parent::__construct(
             $request,
             $apiRequest,
             $apiResponse,
-            $entryRepository,
-            $branchEntryRepository,
             $ruleQueryString,
             $ruleAnswers
         );

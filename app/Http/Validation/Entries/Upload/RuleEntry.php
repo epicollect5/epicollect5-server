@@ -2,36 +2,27 @@
 
 namespace ec5\Http\Validation\Entries\Upload;
 
-use ec5\Models\Projects\Project;
-use ec5\Repositories\QueryBuilder\Entry\Upload\Search\EntryRepository as EntrySearchRepository;
-
-use ec5\Http\Validation\Entries\Upload\RuleAnswers as AnswerValidator;
-
-use ec5\Models\Entries\EntryStructure;
-use Log;
+use ec5\DTO\EntryStructureDTO;
+use ec5\DTO\ProjectDTO;
 use ec5\Libraries\Utilities\Strings;
+use ec5\Models\Entries\Entry;
+use Log;
 
 class RuleEntry extends EntryValidationBase
 {
-
-    /**
-     * RuleEntry constructor.
-     * @param EntrySearchRepository $entrySearchRepository
-     * @param RuleAnswers $answerValidator
-     */
-    public function __construct(EntrySearchRepository $entrySearchRepository, AnswerValidator $answerValidator)
+    public function __construct(RuleAnswers $ruleAnswers)
     {
-        parent::__construct($entrySearchRepository, $answerValidator);
+        parent::__construct($ruleAnswers);
     }
 
     /**
      * Function for additional checks
      * Checking that any relationships are valid
      *
-     * @param Project $project
-     * @param EntryStructure $entryStructure
+     * @param ProjectDTO $project
+     * @param EntryStructureDTO $entryStructure
      */
-    public function additionalChecks(Project $project, EntryStructure $entryStructure)
+    public function additionalChecks(ProjectDTO $project, EntryStructureDTO $entryStructure)
     {
 
         $projectExtra = $project->getProjectExtra();
@@ -75,7 +66,8 @@ class RuleEntry extends EntryValidationBase
             }
 
             // Check parent entry exists for this parent uuid and parent form ref
-            $parent = $this->searchRepository->getParentEntry($parentEntryUuid, $parentFormRef);
+            $entryModel = new Entry();
+            $parent = $entryModel->getParentEntry($parentEntryUuid, $parentFormRef);
 
             if (!$parent) {
                 $this->errors[$formRef] = ['ec5_19'];
@@ -111,7 +103,7 @@ class RuleEntry extends EntryValidationBase
     }
 
     /**
-     * @param EntryStructure $entryStructure
+     * @param EntryStructureDTO $entryStructure
      * @return bool
      *
      * When bulk uploading child entries for editing, check the parent uuid for matches.
@@ -119,14 +111,14 @@ class RuleEntry extends EntryValidationBase
      * upload the full child entries dataset, without this check he would end up
      * editing entries he did not want to.
      */
-    public function checkMatchingParentUuid(EntryStructure $entryStructure)
+    public function checkMatchingParentUuid(EntryStructureDTO $entryStructure): bool
     {
         // Check parent entry uuid
         $parentEntryUuid = $entryStructure->getParentUuid();//this one if from the request
         $entryUuid = $entryStructure->getEntryUuid();//this is from the request as well
 
         //check in the entries table if this parent_uuid is the right one for the child uuid
-        $entry = $this->searchRepository->where('uuid', '=', $entryUuid);
+        $entry = Entry::where('uuid', '=', $entryUuid)->first();
 
         //if no entry is found, this is a new entry not an edit
         if ($entry === null) {

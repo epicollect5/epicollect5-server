@@ -1,21 +1,16 @@
 <?php
-declare(strict_types=1);
 
 namespace ec5\Http\Controllers\Api\Entries\Upload;
 
-
-use ec5\Http\Validation\Entries\Upload\RuleFileEntry as FileValidator;
-use ec5\Repositories\QueryBuilder\Entry\Upload\Create\EntryRepository as EntryCreateRepository;
-use ec5\Repositories\QueryBuilder\Entry\Upload\Create\BranchEntryRepository as BranchEntryCreateRepository;
-use ec5\Http\Controllers\Api\ApiResponse;
+use ec5\DTO\EntryStructureDTO;
 use ec5\Http\Controllers\Api\ApiRequest;
-use ec5\Models\Entries\EntryStructure;
+use ec5\Http\Controllers\Api\ApiResponse;
+use ec5\Http\Validation\Entries\Upload\RuleFileEntry as FileValidator;
 use Illuminate\Http\Request;
 use Storage;
 
 class TempFileController extends UploadControllerBase
 {
-
     /**
      * @var FileValidator
      */
@@ -26,24 +21,19 @@ class TempFileController extends UploadControllerBase
      * @param Request $request
      * @param ApiRequest $apiRequest
      * @param ApiResponse $apiResponse
-     * @param EntryStructure $entryStructure
-     * @param EntryCreateRepository $entryCreateRepository
-     * @param BranchEntryCreateRepository $branchEntryCreateRepository
+     * @param EntryStructureDTO $entryStructure
      * @param FileValidator $fileValidator
      */
     public function __construct(
-        Request                     $request,
-        ApiRequest                  $apiRequest,
-        ApiResponse                 $apiResponse,
-        EntryStructure              $entryStructure,
-        EntryCreateRepository       $entryCreateRepository,
-        BranchEntryCreateRepository $branchEntryCreateRepository,
-        FileValidator               $fileValidator
+        Request           $request,
+        ApiRequest        $apiRequest,
+        ApiResponse       $apiResponse,
+        EntryStructureDTO $entryStructure,
+        FileValidator     $fileValidator
     )
     {
         $this->fileValidator = $fileValidator;
-        parent::__construct($request, $apiRequest, $apiResponse, $entryStructure, $entryCreateRepository,
-            $branchEntryCreateRepository);
+        parent::__construct($request, $apiRequest, $apiResponse, $entryStructure);
     }
 
     /**
@@ -93,7 +83,7 @@ class TempFileController extends UploadControllerBase
         $fileName = $fileEntry['name'];
         $inputRef = $fileEntry['input_ref'];
 
-        // Store the file into storage location, using driver based on the file type
+        // Store the file into storage location, using the driver based on the file type
         $fileSaved = Storage::disk('temp')->put(
             $fileType . '/' . $projectRef . '/' . $fileName,
             file_get_contents($file->getRealPath())

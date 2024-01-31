@@ -2,15 +2,13 @@
 
 namespace ec5\Http\Controllers\Api\Entries\Upload;
 
-use ec5\Http\Validation\Entries\Upload\RuleUpload as UploadValidator;
-use ec5\Repositories\QueryBuilder\Entry\Upload\Create\BranchEntryRepository as BranchEntryCreateRepository;
-use ec5\Repositories\QueryBuilder\Entry\Upload\Create\EntryRepository as EntryCreateRepository;
-use ec5\Models\Entries\EntryStructure;
-use ec5\Http\Controllers\Api\ApiResponse;
-use ec5\Http\Controllers\Api\ApiRequest;
-use Illuminate\Http\Request;
 use App;
+use ec5\DTO\EntryStructureDTO;
+use ec5\Http\Controllers\Api\ApiRequest;
+use ec5\Http\Controllers\Api\ApiResponse;
+use ec5\Http\Validation\Entries\Upload\RuleUpload as UploadValidator;
 use ec5\Traits\Requests\RequestAttributes;
+use Illuminate\Http\Request;
 
 class UploadController extends UploadControllerBase
 {
@@ -30,26 +28,20 @@ class UploadController extends UploadControllerBase
      * @param Request $request
      * @param ApiRequest $apiRequest
      * @param ApiResponse $apiResponse
-     * @param EntryStructure $entryStructure
-     * @param EntryCreateRepository $entryCreateRepository
-     * @param BranchEntryCreateRepository $branchEntryCreateRepository
+     * @param EntryStructureDTO $entryStructure
      */
     public function __construct(
-        Request                     $request,
-        ApiRequest                  $apiRequest,
-        ApiResponse                 $apiResponse,
-        EntryStructure              $entryStructure,
-        EntryCreateRepository       $entryCreateRepository,
-        BranchEntryCreateRepository $branchEntryCreateRepository
+        Request           $request,
+        ApiRequest        $apiRequest,
+        ApiResponse       $apiResponse,
+        EntryStructureDTO $entryStructure
     )
     {
         parent::__construct(
             $request,
             $apiRequest,
             $apiResponse,
-            $entryStructure,
-            $entryCreateRepository,
-            $branchEntryCreateRepository
+            $entryStructure
         );
     }
 
@@ -74,7 +66,6 @@ class UploadController extends UploadControllerBase
 
     public function postUploadBulk(UploadValidator $uploadValidator)
     {
-
         //kick out if in production, this route is only for debugging locally
         if (!App::isLocal()) {
             return $this->apiResponse->errorResponse(400, ['bulk-upload' => ['ec5_363']]);

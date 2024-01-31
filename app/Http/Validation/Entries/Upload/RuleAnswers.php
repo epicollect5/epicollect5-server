@@ -2,34 +2,29 @@
 
 namespace ec5\Http\Validation\Entries\Upload;
 
-use ec5\Http\Validation\ValidationBase;
-use ec5\Http\Validation\Entries\Upload\InputRules\RuleIntegerInput;
-use ec5\Http\Validation\Entries\Upload\InputRules\RuleDecimalInput;
-use ec5\Http\Validation\Entries\Upload\InputRules\RuleRadioInput;
-use ec5\Http\Validation\Entries\Upload\InputRules\RuleSearchSingleInput;
-use ec5\Http\Validation\Entries\Upload\InputRules\RuleTextInput;
-use ec5\Http\Validation\Entries\Upload\InputRules\RuleTextareaInput;
-use ec5\Http\Validation\Entries\Upload\InputRules\RuleDateInput;
-use ec5\Http\Validation\Entries\Upload\InputRules\RuleTimeInput;
-use ec5\Http\Validation\Entries\Upload\InputRules\RuleLocationInput;
-use ec5\Http\Validation\Entries\Upload\InputRules\RuleCheckboxInput;
-use ec5\Http\Validation\Entries\Upload\InputRules\RuleSearchMultipleInput;
-use ec5\Http\Validation\Entries\Upload\InputRules\RulePhotoInput;
-use ec5\Http\Validation\Entries\Upload\InputRules\RuleVideoInput;
+use ec5\DTO\EntryStructureDTO;
+use ec5\DTO\ProjectDTO;
 use ec5\Http\Validation\Entries\Upload\InputRules\RuleAudioInput;
 use ec5\Http\Validation\Entries\Upload\InputRules\RuleBranchInput;
-use ec5\Http\Validation\Entries\Upload\InputRules\RuleGroupInput;
+use ec5\Http\Validation\Entries\Upload\InputRules\RuleCheckboxInput;
+use ec5\Http\Validation\Entries\Upload\InputRules\RuleDateInput;
+use ec5\Http\Validation\Entries\Upload\InputRules\RuleDecimalInput;
 use ec5\Http\Validation\Entries\Upload\InputRules\RuleDropdownInput;
+use ec5\Http\Validation\Entries\Upload\InputRules\RuleGroupInput;
+use ec5\Http\Validation\Entries\Upload\InputRules\RuleIntegerInput;
+use ec5\Http\Validation\Entries\Upload\InputRules\RuleLocationInput;
 use ec5\Http\Validation\Entries\Upload\InputRules\RulePhoneInput;
-
-
-use ec5\Models\Projects\Project;
-use ec5\Repositories\QueryBuilder\Entry\Upload\Search\SearchRepository;
-
-use ec5\Models\Entries\EntryStructure;
-
+use ec5\Http\Validation\Entries\Upload\InputRules\RulePhotoInput;
+use ec5\Http\Validation\Entries\Upload\InputRules\RuleRadioInput;
+use ec5\Http\Validation\Entries\Upload\InputRules\RuleSearchMultipleInput;
+use ec5\Http\Validation\Entries\Upload\InputRules\RuleSearchSingleInput;
+use ec5\Http\Validation\Entries\Upload\InputRules\RuleTextareaInput;
+use ec5\Http\Validation\Entries\Upload\InputRules\RuleTextInput;
+use ec5\Http\Validation\Entries\Upload\InputRules\RuleTimeInput;
+use ec5\Http\Validation\Entries\Upload\InputRules\RuleVideoInput;
+use ec5\Http\Validation\ValidationBase;
+use ec5\Services\EntryService;
 use Exception;
-use Config;
 use Log;
 
 class RuleAnswers extends ValidationBase
@@ -55,15 +50,6 @@ class RuleAnswers extends ValidationBase
      * @var string
      */
     protected $inputRef = '';
-
-    /**
-     * @var SearchRepository
-     */
-    protected $searchRepository;
-
-    /**
-     * @var
-     */
     protected $ruleIntegerInput,
         $ruleDecimalInput,
         $ruleRadioInput,
@@ -86,7 +72,7 @@ class RuleAnswers extends ValidationBase
     /**
      * RuleAnswers constructor.
      *
-     * @param EntryStructure $entryStructure
+     * @param EntryStructureDTO $entryStructure
      * @param RuleIntegerInput $ruleIntegerInput
      * @param RuleDecimalInput $ruleDecimalInput
      * @param RuleRadioInput $ruleRadioInput
@@ -103,9 +89,11 @@ class RuleAnswers extends ValidationBase
      * @param RuleGroupInput $ruleGroupInput
      * @param RuleDropdownInput $ruleDropdownInput
      * @param RulePhoneInput $rulePhoneInput
+     * @param RuleSearchSingleInput $ruleSearchSingleInput
+     * @param RuleSearchMultipleInput $ruleSearchMultipleInput
      */
     public function __construct(
-        EntryStructure          $entryStructure,
+        EntryStructureDTO       $entryStructure,
         RuleIntegerInput        $ruleIntegerInput,
         RuleDecimalInput        $ruleDecimalInput,
         RuleRadioInput          $ruleRadioInput,
@@ -151,17 +139,14 @@ class RuleAnswers extends ValidationBase
      * against the rules set in the input structures
      * We will add answers to the entry array that will be inserted into the database
      *
-     * @param Project $project
-     * @param EntryStructure $entryStructure
+     * @param ProjectDTO $project
+     * @param EntryStructureDTO $entryStructure
      * @param $answerData
      * @param $inputRef
-     * @param SearchRepository $searchRepository
      */
-    public function additionalChecks(Project $project, EntryStructure $entryStructure, $answerData, $inputRef, SearchRepository $searchRepository)
+    public function additionalChecks(ProjectDTO $project, EntryStructureDTO $entryStructure, $answerData, $inputRef)
     {
         $projectExtra = $project->getProjectExtra();
-        // Set the entry repository
-        $this->searchRepository = $searchRepository;
 
         // Set 'this' input ref
         $this->inputRef = $inputRef;
@@ -172,9 +157,7 @@ class RuleAnswers extends ValidationBase
 
         // If the answer was jumped
         if ($answerData['was_jumped']) {
-
             // Jumped answer here will be set empty (just in case answers incorrectly come through)
-
         } else {
             // If the answer wasn't jumped, validate the answer value
             // Check the answer is valid, against the rules set in the type of the input
@@ -224,11 +207,11 @@ class RuleAnswers extends ValidationBase
      *
      * @param $input
      * @param $answer
-     * @param Project $project
-     * @param EntryStructure|null $entryStructure
+     * @param ProjectDTO $project
+     * @param EntryStructureDTO|null $entryStructure
      * @return mixed
      */
-    public function validateAnswer($input, $answer, Project $project, EntryStructure $entryStructure = null)
+    public function validateAnswer($input, $answer, ProjectDTO $project, EntryStructureDTO $entryStructure = null)
     {
         // todo use reflection here instead? or switch?
         // Construct dynamic variable name, base on input type
@@ -266,7 +249,7 @@ class RuleAnswers extends ValidationBase
      * @param $answer
      * @return bool
      */
-    private function checkRequired($isRequired, $answer)
+    private function checkRequired($isRequired, $answer): bool
     {
         // If the answer is 'required', check it's not empty
         // empty means no null, not an empty string and not an empty array
@@ -280,22 +263,25 @@ class RuleAnswers extends ValidationBase
     /**
      * Check the uniqueness of the answer
      *
-     * @param EntryStructure $entryStructure
+     * @param EntryStructureDTO $entryStructure
      * @param $uniquenessType
      * @param $answer
+     * @param $inputType
+     * @param $inputDatetimeFormat
      * @return bool|null
      */
-    private function isUnique(EntryStructure $entryStructure, $uniquenessType, $answer, $inputType, $inputDatetimeFormat)
+    private function isUnique(EntryStructureDTO $entryStructure, $uniquenessType, $answer, $inputType, $inputDatetimeFormat): ?bool
     {
-        return $this->searchRepository->isUnique($entryStructure, $uniquenessType, $this->inputRef, $answer, $inputType, $inputDatetimeFormat);
+        $entryService = new EntryService();
+        return $entryService->isUnique($entryStructure, $uniquenessType, $this->inputRef, $answer, $inputType, $inputDatetimeFormat);
     }
 
     /**
-     * @param EntryStructure $entryStructure
+     * @param EntryStructureDTO $entryStructure
      * @param $input
      * @param $answerData
      */
-    private function addAnswerToEntry(EntryStructure $entryStructure, $input, $answerData)
+    private function addAnswerToEntry(EntryStructureDTO $entryStructure, $input, $answerData)
     {
         // Filter out types which don't need an answer
         if (!in_array($input['type'], array_keys(config('epicollect.strings.inputs_without_answers')))) {

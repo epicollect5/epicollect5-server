@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace ec5\Http\Controllers\Api\Entries\Upload;
 
-
 use ec5\Http\Validation\Entries\Upload\RuleUniqueness as UniquenessValidator;
-
-use ec5\Repositories\QueryBuilder\Entry\Upload\Search\EntryRepository as EntrySearchRepository;
-use ec5\Repositories\QueryBuilder\Entry\Upload\Search\BranchEntryRepository as BranchEntrySearchRepository;
+use ec5\Services\EntryService;
 use Log;
 
 class UniquenessController extends UploadControllerBase
@@ -16,14 +13,10 @@ class UniquenessController extends UploadControllerBase
 
     /**
      * @param UniquenessValidator $uniquenessValidator
-     * @param EntrySearchRepository $entrySearchRepository
-     * @param BranchEntrySearchRepository $branchEntrySearchRepository
      * @return \Illuminate\Http\JsonResponse
      */
     public function index(
-        UniquenessValidator         $uniquenessValidator,
-        EntrySearchRepository       $entrySearchRepository,
-        BranchEntrySearchRepository $branchEntrySearchRepository
+        UniquenessValidator $uniquenessValidator
     )
     {
 
@@ -78,18 +71,14 @@ class UniquenessController extends UploadControllerBase
         $inputType = $input['type'];
         $inputDatetimeFormat = $input['datetime_format'];
 
-
-        // Set search repository
-        $searchRepository = $entrySearchRepository;
-
-        // If this is from a branch
+        // If this is from a branch, set structure ass branch
         if ($this->entryStructure->getOwnerInputRef()) {
             $this->entryStructure->setAsBranch();
-            $searchRepository = $branchEntrySearchRepository;
         }
 
         // Check if the answer is unique or not
-        if (!$searchRepository->isUnique($this->entryStructure, $uniquenessType, $inputRef, $answer, $inputType, $inputDatetimeFormat)) {
+        $entryService = new EntryService();
+        if (!$entryService->isUnique($this->entryStructure, $uniquenessType, $inputRef, $answer, $inputType, $inputDatetimeFormat)) {
             return $this->apiResponse->errorResponse(400, ['upload-controller' => ['ec5_22']]);
         }
 

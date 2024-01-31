@@ -6,47 +6,34 @@ use ec5\Http\Controllers\Api\ApiRequest;
 use ec5\Http\Controllers\Api\ApiResponse;
 use ec5\Http\Validation\Entries\Upload\RuleAnswers;
 use ec5\Http\Validation\Entries\Search\RuleQueryString;
-use ec5\Models\ProjectData\DataMappingHelper;
-use ec5\Repositories\QueryBuilder\Entry\Search\BranchEntryRepository;
-use ec5\Repositories\QueryBuilder\Entry\Search\EntryRepository;
+use ec5\Services\DataMappingService;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Response;
+use Log;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class EntriesController extends EntrySearchControllerBase
 {
-    /**
-     * @var DataMappingHelper
-     */
-    protected $dataMappingHelper;
-
-    /**
-     *  Create a new api view entry controller instance.
-     *
-     * @param EntryRepository $entryRepository
-     * @param BranchEntryRepository $branchEntryRepository
-     */
+    private $dataMappingService;
 
     /**
      * EntriesController constructor.
      * @param Request $request
      * @param ApiRequest $apiRequest
      * @param ApiResponse $apiResponse
-     * @param EntryRepository $entryRepository
-     * @param BranchEntryRepository $branchEntryRepository
      * @param RuleQueryString $ruleQueryString
      * @param RuleAnswers $ruleAnswers
-     * @param DataMappingHelper $dataMappingHelper
      */
     public function __construct(
-        Request               $request,
-        ApiRequest            $apiRequest,
-        ApiResponse           $apiResponse,
-        EntryRepository       $entryRepository,
-        BranchEntryRepository $branchEntryRepository,
-        RuleQueryString       $ruleQueryString,
-        RuleAnswers           $ruleAnswers,
-        DataMappingHelper     $dataMappingHelper
+        Request            $request,
+        ApiRequest         $apiRequest,
+        ApiResponse        $apiResponse,
+        RuleQueryString    $ruleQueryString,
+        RuleAnswers        $ruleAnswers,
+        DataMappingService $dataMappingService
     )
     {
 
@@ -54,19 +41,17 @@ class EntriesController extends EntrySearchControllerBase
             $request,
             $apiRequest,
             $apiResponse,
-            $entryRepository,
-            $branchEntryRepository,
             $ruleQueryString,
             $ruleAnswers
         );
 
+        $this->dataMappingService = $dataMappingService;
         $this->allowedSearchKeys = array_keys(config('epicollect.strings.search_data_entries'));
-        $this->dataMappingHelper = $dataMappingHelper;
     }
 
     /**
      * @param Request $request
-     * @return ApiResponse|\Illuminate\Http\JsonResponse|null
+     * @return JsonResponse|StreamedResponse
      */
     public function export(Request $request)
     {
@@ -113,7 +98,7 @@ class EntriesController extends EntrySearchControllerBase
             }
         }
         // Set the mapping
-        $this->dataMappingHelper->initialiseMapping(
+        $this->dataMappingService->init(
             $this->requestedProject(),
             $options['format'],
             $options['branch_ref'] !== '' ? 'branch' : 'form',
@@ -127,24 +112,18 @@ class EntriesController extends EntrySearchControllerBase
             case 'csv':
                 // Branch
                 if ($options['branch_ref'] != '') {
-                    $this->getBranchEntriesCsv($options);
+                    return $this->sendBranchEntriesCSV($options);
                 } else {
                     // Form
-                    $this->getEntriesCSV($options);
-
-                    if (count($this->errors) > 0) {
-                        return $this->apiResponse->errorResponse(400, $this->errors);
-                    }
+                    return $this->sendEntriesCSV($options);
                 }
-
-                break;
             default:
                 // Branch
                 if ($options['branch_ref'] != '') {
-                    return $this->getBranchEntriesJson($options, true);
+                    return $this->sendBranchEntriesJSON($options, true);
                 }
                 // Form
-                return $this->getEntriesJSON($options, true);
+                return $this->sendEntriesJSON($options, true);
         }
     }
 
@@ -154,31 +133,31 @@ class EntriesController extends EntrySearchControllerBase
      */
     public function show(Request $request)
     {
-        $options = $this->getRequestParams($request, config('epicollect.limits.entries_table.per_page'));
+        $params = $this->getRequestParams($request, config('epicollect.limits.entries_table.per_page'));
 
-        // Validate the options and query string
-        if (!$this->validateParams($options)) {
+        // Validate the params and query string
+        if (!$this->validateParams($params)) {
             return $this->apiResponse->errorResponse(400, $this->validateErrors);
         }
-
         // Branch
-        if ($options['branch_ref'] != '') {
-            return $this->getBranchEntriesJson($options);
+        if ($params['branch_ref'] != '') {
+            return $this->sendBranchEntriesJSON($params);
         }
         // Form
-        return $this->getEntriesJSON($options);
+        return $this->sendEntriesJSON($params);
     }
 
     /**
      * @param array $options
      * @param bool $map
      * @return \Illuminate\Http\JsonResponse
+     *
      */
-    private function getEntriesJSON(array $options, $map = false)
+    private function sendEntriesJSON(array $options, $map = false)
     {
         $columns = ['title', 'entry_data', 'branch_counts', 'child_counts', 'user_id', 'uploaded_at', 'created_at'];
         $project = $this->requestedProject();
-        $query = $this->runQuery($options, $columns);
+        $query = $this->runQueryHierarchy($options, $columns);
 
         //get newest and oldest dates of this subset (before pagination occurs)
         //and set the format to be like the one from JS for consistency
@@ -205,17 +184,13 @@ class EntriesController extends EntrySearchControllerBase
         // todo: can this be optimised?
         // Loop and json decode the json data from the db
         foreach ($entryData as $row) {
-
             // Add to the json
             $entry = json_decode($row->entry_data, true);
-
             // Map the entries?
             if ($map) {
-
                 $data['entries'][] = json_decode(
-                    $this->dataMappingHelper->swapOutEntryJson(
+                    $this->dataMappingService->getMappedEntryJSON(
                         $row->entry_data,
-                        $row->branch_counts ?? null,
                         $row->user_id,
                         $row->title,
                         $row->uploaded_at
@@ -243,20 +218,19 @@ class EntriesController extends EntrySearchControllerBase
         // Set up the json response
         $this->apiResponse->setMeta($meta);
         $this->apiResponse->setLinks($links);
-
         $this->apiResponse->setData($data);
-
 
         return $this->apiResponse->toJsonResponse(200);
     }
 
     /**
-     * @param array $options
+     * @param array $params
+     * @return JsonResponse|StreamedResponse
      */
-    private function getEntriesCSV(array $options)
+    private function sendEntriesCSV(array $params)
     {
         $columns = ['title', 'entry_data', 'branch_counts', 'child_counts', 'user_id', 'uploaded_at', 'created_at'];
-        $query = $this->runQuery($options, $columns);
+        $query = $this->runQueryHierarchy($params, $columns);
 
         // Open the output stream
         $data = fopen('php://output', 'w');
@@ -265,30 +239,32 @@ class EntriesController extends EntrySearchControllerBase
         ob_start();
 
         // Add csv headers
-        if ($options['headers'] == 'true') {
-            fputcsv($data, $this->dataMappingHelper->headerRowCsv(), ',');
+        if ($params['headers'] == 'true') {
+            fputcsv($data, $this->dataMappingService->getHeaderRowCSV(), ',');
         }
 
-        $entries = $query->paginate($options['per_page']);
+        $entries = $query->paginate($params['per_page']);
+        try {
+            foreach ($entries as $entry) {
+                if (
 
-        foreach ($entries as $entry) {
-
-            if (
-                fputcsv($data, $this->dataMappingHelper->swapOutEntryCsv(
-                    $entry->entry_data,
-                    $entry->branch_counts ?? null,
-                    $entry->user_id,
-                    $entry->title,
-                    $entry->uploaded_at
-                ), ',') === false
-            ) {
-                // Error writing to file
-                $this->errors['entries-export-csv'] = ['ec5_232'];
-                return;
+                    !fputcsv($data, $this->dataMappingService->getMappedEntryCSV(
+                        $entry->entry_data,
+                        $entry->user_id,
+                        $entry->title,
+                        $entry->uploaded_at
+                    ), ',')
+                ) {
+                    // Error writing to file
+                    throw new Exception('Error writing file');
+                }
             }
+        } catch (Exception $e) {
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
+            return $this->apiResponse->errorResponse(400, ['entries-export-csv' => ['ec5_232']]);
         }
 
-        $this->apiResponse->toCsvResponse($data);
+        return Response::toCSVStream($data);
     }
 
     /**
@@ -296,21 +272,20 @@ class EntriesController extends EntrySearchControllerBase
      * @param bool $map
      * @return \Illuminate\Http\JsonResponse
      */
-    private function getBranchEntriesJson(array $options, $map = false)
+    private function sendBranchEntriesJSON(array $options, $map = false)
     {
         $columns = ['title', 'entry_data', 'user_id', 'uploaded_at'];
         $project = $this->requestedProject();
 
         $query = $this->runQueryBranch($options, $columns);
 
-        //get newest and oldest dates of this subset (before pagination occurs)
+        //get the newest and oldest dates of this subset (before pagination occurs)
         //and set the format to be like the one from JS for consistency
         $oldest = str_replace(' ', 'T', $query->min('created_at')) . '.000Z';
         $newest = str_replace(' ', 'T', $query->max('created_at')) . '.000Z';
 
         $entryData = $query->paginate($options['per_page']);
 
-        // Data
         $data = [
             'id' => $project->slug,
             'type' => 'entries',
@@ -325,9 +300,8 @@ class EntriesController extends EntrySearchControllerBase
             // Map the entries?
             if ($map) {
                 $data['entries'][] = json_decode(
-                    $this->dataMappingHelper->swapOutEntryJson(
+                    $this->dataMappingService->getMappedEntryJSON(
                         $row->entry_data,
-                        $row->branch_counts ?? null,
                         $row->user_id,
                         $row->title,
                         $row->uploaded_at
@@ -358,43 +332,47 @@ class EntriesController extends EntrySearchControllerBase
     }
 
     /**
-     * @param array $options
+     * @param array $params
+     * @return JsonResponse|StreamedResponse
      */
-    private function getBranchEntriesCsv(array $options)
+    private function sendBranchEntriesCSV(array $params)
     {
         $columns = ['title', 'entry_data', 'user_id', 'uploaded_at'];
 
-        $query = $this->runQueryBranch($options, $columns);
+        $query = $this->runQueryBranch($params, $columns);
 
         // Open the output stream
         $data = fopen('php://output', 'w');
 
         // Start output buffering (to capture stream contents)
         ob_start();
-
         // Add csv headers
-        if ($options['headers'] == 'true') {
-            fputcsv($data, $this->dataMappingHelper->headerRowCsv(), ',');
+        if ($params['headers'] == 'true') {
+            fputcsv($data, $this->dataMappingService->getHeaderRowCSV(), ',');
         }
 
-        $entries = $query->paginate($options['per_page']);
-
-
-        foreach ($entries as $entry) {
-
-            if (
-                fputcsv(
-                    $data,
-                    $this->dataMappingHelper->swapOutEntryCsv($entry->entry_data, null, $entry->user_id, $entry->title, $entry->uploaded_at),
-                    ','
-                ) === false
-            ) {
-                // Error writing to file
-                $this->errors['entries-export-csv'] = ['ec5_232'];
-                return;
+        $entries = $query->paginate($params['per_page']);
+        try {
+            foreach ($entries as $entry) {
+                if (
+                    !fputcsv(
+                        $data,
+                        $this->dataMappingService->getMappedEntryCSV(
+                            $entry->entry_data,
+                            null,
+                            $entry->user_id,
+                            $entry->title,
+                            $entry->uploaded_at),
+                        ','
+                    )
+                ) {
+                    throw new Exception('Error writing file');
+                }
             }
+        } catch (Exception $e) {
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
+            return $this->apiResponse->errorResponse(400, ['entries-export-csv' => ['ec5_232']]);
         }
-
-        $this->apiResponse->toCsvResponse($data);
+        return Response::toCSVStream($data);
     }
 }

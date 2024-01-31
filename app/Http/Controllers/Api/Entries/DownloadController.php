@@ -8,12 +8,11 @@ use ec5\Http\Controllers\Api\Entries\View\EntrySearchControllerBase;
 use ec5\Http\Validation\Entries\Upload\RuleAnswers;
 use ec5\Http\Validation\Entries\Search\RuleQueryString;
 use ec5\Http\Validation\Entries\Download\RuleDownload;
-use ec5\Repositories\QueryBuilder\Entry\Search\BranchEntryRepository;
-use ec5\Repositories\QueryBuilder\Entry\Search\EntryRepository;
 use ec5\Services\DataMappingService;
 use ec5\Services\DownloadEntriesService;
 use Illuminate\Http\Request;
 use Auth;
+use Illuminate\Support\Facades\Response;
 use Storage;
 use Cookie;
 use ec5\Libraries\Utilities\Common;
@@ -39,27 +38,21 @@ class DownloadController extends EntrySearchControllerBase
      * @param Request $request
      * @param ApiRequest $apiRequest
      * @param ApiResponse $apiResponse
-     * @param EntryRepository $entryRepository
-     * @param BranchEntryRepository $branchEntryRepository
      * @param RuleQueryString $ruleQueryString
      * @param RuleAnswers $ruleAnswers
      */
     public function __construct(
-        Request               $request,
-        ApiRequest            $apiRequest,
-        ApiResponse           $apiResponse,
-        EntryRepository       $entryRepository,
-        BranchEntryRepository $branchEntryRepository,
-        RuleQueryString       $ruleQueryString,
-        RuleAnswers           $ruleAnswers
+        Request         $request,
+        ApiRequest      $apiRequest,
+        ApiResponse     $apiResponse,
+        RuleQueryString $ruleQueryString,
+        RuleAnswers     $ruleAnswers
     )
     {
         parent::__construct(
             $request,
             $apiRequest,
             $apiResponse,
-            $entryRepository,
-            $branchEntryRepository,
             $ruleQueryString,
             $ruleAnswers
         );
@@ -114,7 +107,7 @@ class DownloadController extends EntrySearchControllerBase
             //because on the front end this is requested using window.location
             $filename = 'epicollect5-error.txt';
             $content = trans('status_codes.ec5_364');
-            return response()->attachment($content, $filename);
+            return Response::toCSVFile($content, $filename);
         }
     }
 

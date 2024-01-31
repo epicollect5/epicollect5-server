@@ -2,25 +2,18 @@
 
 namespace ec5\Http\Validation\Entries\Upload;
 
-use ec5\Models\Projects\Project;
-use ec5\Repositories\QueryBuilder\Entry\Upload\Search\BranchEntryRepository as BranchEntrySearchRepository;
-use ec5\Repositories\QueryBuilder\Entry\Upload\Search\EntryRepository as EntrySearchRepository;
-
-use ec5\Http\Validation\Entries\Upload\FileRules\RulePhotoApp as PhotoAppValidator;
-use ec5\Http\Validation\Entries\Upload\FileRules\RulePhotoWeb as PhotoWebValidator;
-use ec5\Http\Validation\Entries\Upload\FileRules\RuleVideo as VideoValidator;
-use ec5\Http\Validation\Entries\Upload\FileRules\RuleAudio as AudioValidator;
-use ec5\Http\Validation\Entries\Upload\RuleAnswers as AnswerValidator;
-
-use ec5\Models\Entries\EntryStructure;
-use ec5\Models\Images\UploadImage;
-
-use Illuminate\Support\Facades\Storage;
-
-use Config;
-use Log;
+use ec5\DTO\EntryStructureDTO;
+use ec5\DTO\ProjectDTO;
+use ec5\Http\Validation\Entries\Upload\FileRules\RuleAudio;
+use ec5\Http\Validation\Entries\Upload\FileRules\RulePhotoApp;
+use ec5\Http\Validation\Entries\Upload\FileRules\RulePhotoWeb;
+use ec5\Http\Validation\Entries\Upload\FileRules\RuleVideo;
+use ec5\Models\Entries\BranchEntry;
+use ec5\Models\Entries\Entry;
+use ec5\Services\UploadImageService;
 use Exception;
 use File;
+use Illuminate\Support\Facades\Storage;
 
 class RuleFileEntry extends EntryValidationBase
 {
@@ -36,75 +29,50 @@ class RuleFileEntry extends EntryValidationBase
     ];
 
     /**
-     * @var EntrySearchRepository
+     * @var RulePhotoApp
      */
-    protected $entrySearchRepository;
+    protected $rulePhotoApp;
 
     /**
-     * @var BranchEntrySearchRepository
+     * @var RulePhotoWeb
      */
-    protected $branchEntrySearchRepository;
+    protected $rulePhotoWeb;
 
     /**
-     * @var PhotoAppValidator
+     * @var RuleVideo
      */
-    protected $photoAppValidator;
+    protected $ruleVideo;
 
     /**
-     * @var PhotoWebValidator
+     * @var RuleAudio
      */
-    protected $photoWebValidator;
+    protected $ruleAudio;
 
-    /**
-     * @var VideoValidator
-     */
-    protected $videoValidator;
-
-    /**
-     * @var AudioValidator
-     */
-    protected $audioValidator;
-
-    /**
-     * RuleFileEntry constructor.
-     * @param EntrySearchRepository $entrySearchRepository
-     * @param BranchEntrySearchRepository $branchEntrySearchRepository
-     * @param PhotoAppValidator $photoAppValidator
-     * @param PhotoWebValidator $photoWebValidator
-     * @param VideoValidator $videoValidator
-     * @param AudioValidator $audioValidator
-     * @param RuleAnswers $answerValidator
-     */
     function __construct(
-        EntrySearchRepository       $entrySearchRepository,
-        BranchEntrySearchRepository $branchEntrySearchRepository,
-        PhotoAppValidator           $photoAppValidator,
-        PhotoWebValidator           $photoWebValidator,
-        VideoValidator              $videoValidator,
-        AudioValidator              $audioValidator,
-        AnswerValidator             $answerValidator
+        RulePhotoApp $rulePhotoApp,
+        RulePhotoWeb $rulePhotoWeb,
+        RuleVideo    $ruleVideo,
+        RuleAudio    $ruleAudio,
+        RuleAnswers  $ruleAnswers
     )
     {
-        $this->entrySearchRepository = $entrySearchRepository;
-        $this->branchEntrySearchRepository = $branchEntrySearchRepository;
-
-        $this->photoAppValidator = $photoAppValidator;
-        $this->photoWebValidator = $photoWebValidator;
-        $this->videoValidator = $videoValidator;
-        $this->audioValidator = $audioValidator;
+        $this->rulePhotoApp = $rulePhotoApp;
+        $this->rulePhotoWeb = $rulePhotoWeb;
+        $this->ruleVideo = $ruleVideo;
+        $this->ruleAudio = $ruleAudio;
 
         // Call to parent constructor, default to $entrySearchRepository
-        parent::__construct($entrySearchRepository, $answerValidator);
+        parent::__construct($ruleAnswers);
     }
 
     /**
      * Function for additional checks
      * Will store the uploaded file here
      *
-     * @param Project $project
-     * @param EntryStructure $entryStructure
+     * @param ProjectDTO $project
+     * @param EntryStructureDTO $entryStructure
      */
-    public function additionalChecks(Project $project, EntryStructure $entryStructure)
+    public function additionalChecks(ProjectDTO $project, EntryStructureDTO $entryStructure)
     {
         if (!$this->isValidFile($entryStructure)) {
             return;
@@ -114,9 +82,9 @@ class RuleFileEntry extends EntryValidationBase
          * If the file does not have a question it belongs to, it means the user is uploading
          * some media files for a question which got deleted. Updating the project on the mobile app
          * does not consider these files (at least on version 2.0.9 and below)
-         * therefore let's go on with the upload but ignore the file and clear the error
+         * therefore, let's go on with the upload but ignore the file and clear the error
          *
-         * we can purge the orphan folder every now and then,
+         * We can purge the orphan folder every now and then,
          * going forward no files will be saved there anyway
          */
         if (!$this->fileInputExists($project, $entryStructure)) {
@@ -134,7 +102,7 @@ class RuleFileEntry extends EntryValidationBase
 
             //here we got an orphan file, move it to orphan folder
             //and remove the error for that entry
-            //we do this due to a bug on the app....
+            //we do this due to a bug on the app
 
             // Get uuid and entry
             $entryUuid = $entryStructure->getEntryUuid();
@@ -145,38 +113,35 @@ class RuleFileEntry extends EntryValidationBase
         }
 
         $this->moveFile($project, $entryStructure);
-
-        if ($this->hasErrors()) {
-        }
     }
 
     /**
-     * @param EntryStructure $entryStructure
+     * @param EntryStructureDTO $entryStructure
      * @param bool $isWebFile
      * @return bool
      */
-    public function isValidFile(EntryStructure $entryStructure, $isWebFile = false)
+    public function isValidFile(EntryStructureDTO $entryStructure, $isWebFile = false): bool
     {
         // Get the entry data
         $fileEntry = $entryStructure->getEntry();
         $fileType = $fileEntry['type'];
         $entryUuid = $entryStructure->getEntryUuid();
 
-        // Use validator related to file type
+        // Use validator related to the file type
         switch ($fileType) {
             case 'video':
-                $validator = $this->videoValidator;
+                $validator = $this->ruleVideo;
                 break;
             case 'audio':
-                $validator = $this->audioValidator;
+                $validator = $this->ruleAudio;
                 break;
             default:
                 // If the file came from a web upload, use different set of rules
                 if ($isWebFile) {
-                    $validator = $this->photoWebValidator;
+                    $validator = $this->rulePhotoWeb;
                 } else {
                     // Otherwise app rules
-                    $validator = $this->photoAppValidator;
+                    $validator = $this->rulePhotoApp;
                 }
         }
 
@@ -214,12 +179,7 @@ class RuleFileEntry extends EntryValidationBase
         return true;
     }
 
-    /**
-     * @param Project $project
-     * @param EntryStructure $entryStructure
-     * @return bool
-     */
-    public function fileEntryExists(Project $project, EntryStructure $entryStructure)
+    public function fileEntryExists(ProjectDTO $project, EntryStructureDTO $entryStructure): bool
     {
         $projectExtra = $project->getProjectExtra();
         // Get the entry data
@@ -227,40 +187,24 @@ class RuleFileEntry extends EntryValidationBase
         $inputRef = $fileEntry['input_ref'];
         $formRef = $entryStructure->getFormRef();
 
-        // todo can we check is branch another way? use relationships property
-        // Check if this file is part of a branch entry
-        if ($projectExtra->isBranchInput($formRef, $inputRef)) {
-            $this->searchRepository = $this->branchEntrySearchRepository;
-        }
-
         // Get uuid and entry
         $entryUuid = $entryStructure->getEntryUuid();
-        $entry = $this->searchRepository->where('uuid', '=', $entryUuid);
 
+        // Check if this file is part of a branch entry
+        if ($projectExtra->isBranchInput($formRef, $inputRef)) {
+            $entry = BranchEntry::where('uuid', '=', $entryUuid)->first();
+        } else {
+            $entry = Entry::where('uuid', '=', $entryUuid)->first();
+        }
         // Check this entry exists
         if (!$entry) {
             $this->errors[$entryUuid] = ['ec5_46'];
-
-            //            //todo we do this because it is failing for many
-            //            Log::error('fileEntryExists() warning: ' . $project->name, [
-            //                'entryUuid' => $entryUuid,
-            //                'entry' => $entry,
-            //                'fileEntry' => $fileEntry,
-            //                'formRef' => $formRef,
-            //                'inputRef' => $inputRef,
-            //                'entryData' => $entryStructure->getData()
-            //            ]);
             return false;
         }
         return true;
     }
 
-    /**
-     * @param Project $project
-     * @param EntryStructure $entryStructure
-     * @return bool
-     */
-    public function fileInputExists(Project $project, EntryStructure $entryStructure)
+    public function fileInputExists(ProjectDTO $project, EntryStructureDTO $entryStructure): bool
     {
         $projectExtra = $project->getProjectExtra();
         // Get the entry data
@@ -279,10 +223,10 @@ class RuleFileEntry extends EntryValidationBase
     }
 
     /**
-     * @param Project $project
-     * @param EntryStructure $entryStructure
+     * @param ProjectDTO $project
+     * @param EntryStructureDTO $entryStructure
      */
-    public function moveFile(Project $project, EntryStructure $entryStructure)
+    public function moveFile(ProjectDTO $project, EntryStructureDTO $entryStructure)
     {
         $projectRef = $project->ref;
 
@@ -320,7 +264,7 @@ class RuleFileEntry extends EntryValidationBase
                 }
 
                 // Attempt to save the original image (resized if necessary) keeping 100% quality
-                $original = UploadImage::saveImage(
+                $original = UploadImageService::saveImage(
                     $projectRef,
                     $entryStructure->getFile(),
                     $fileName,
@@ -338,7 +282,7 @@ class RuleFileEntry extends EntryValidationBase
                 // Entry thumb image
 
                 // Create and save entry thumbnail image for photos, using 'entry_thumb' driver
-                $thumb = UploadImage::saveImage(
+                $thumb = UploadImageService::saveImage(
                     $projectRef,
                     $entryStructure->getFile(),
                     $fileName,
@@ -373,7 +317,7 @@ class RuleFileEntry extends EntryValidationBase
     }
 
     //not used, here for reference
-    public function removeOrphanFile(EntryStructure $entryStructure)
+    public function removeOrphanFile(EntryStructureDTO $entryStructure): bool
     {
         $fileRealPath = $entryStructure->getFile()->getRealPath();
         File::delete($fileRealPath);
@@ -381,7 +325,7 @@ class RuleFileEntry extends EntryValidationBase
     }
 
     //legacy, not used anymore
-    public function moveOrphanFile(Project $project, EntryStructure $entryStructure)
+    public function moveOrphanFile(ProjectDTO $project, EntryStructureDTO $entryStructure)
     {
         $projectRef = $project->ref;
 
@@ -418,7 +362,7 @@ class RuleFileEntry extends EntryValidationBase
                 }
 
                 // Attempt to save the original image (resized if necessary) keeping 100% quality
-                $original = UploadImage::saveImage(
+                $original = UploadImageService::saveImage(
                     $projectRef,
                     $entryStructure->getFile(),
                     $fileName,
@@ -436,7 +380,7 @@ class RuleFileEntry extends EntryValidationBase
                 // Entry thumb image
 
                 // Create and save entry thumbnail image for photos, using 'entry_thumb' driver
-                $thumb = UploadImage::saveImage(
+                $thumb = UploadImageService::saveImage(
                     $projectRef,
                     $entryStructure->getFile(),
                     $fileName,
