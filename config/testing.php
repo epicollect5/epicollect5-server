@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'LOCAL_SERVER' => env('LOCAL_SERVER'),
     'UNIT_TEST_RANDOM_EMAIL' => env('UNIT_TEST_RANDOM_EMAIL'),
     'SUPER_ADMIN_EMAIL' => env('SUPER_ADMIN_EMAIL'),
     'CREATOR_EMAIL' => env('CREATOR_EMAIL'),
