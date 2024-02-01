@@ -7,12 +7,13 @@ use ec5\Http\Controllers\Api\ApiResponse;
 use ec5\Http\Validation\Entries\Upload\RuleAnswers;
 use ec5\Http\Validation\Entries\Search\RuleQueryString;
 use ec5\Http\Validation\Entries\Search\RuleQueryStringMapData;
+use ec5\Models\Entries\BranchEntry;
+use ec5\Models\Entries\Entry;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 
 class EntriesLocationsController extends EntrySearchControllerBase
 {
-
     /**
      * EntriesLocationsController constructor.
      * @param Request $request
@@ -53,10 +54,16 @@ class EntriesLocationsController extends EntrySearchControllerBase
             return Response::apiErrorCode(400, $ruleQueryStringMapData->errors());
         }
 
-        $repository = !empty($options['branch_ref']) ? $this->branchEntryRepository : $this->entryRepository;
-        $project = $this->requestedProject();
+        if (!empty($options['branch_ref'])) {
+            //this is a branch entry
+            $entryModel = new BranchEntry();
+        } else {
+            // this is a hierarchy
+            $entryModel = new Entry();
+        }
 
-        $entryData = $repository->getMapData($project->getId(), $options, $columns)->paginate($options['per_page']);
+        $project = $this->requestedProject();
+        $entryData = $entryModel->getMapData($project->getId(), $options, $columns)->paginate($options['per_page']);
 
         // Data
         $data = [
@@ -89,7 +96,5 @@ class EntriesLocationsController extends EntrySearchControllerBase
         $this->apiResponse->setData($data);
 
         return $this->apiResponse->toJsonResponse(200);
-
     }
-
 }
