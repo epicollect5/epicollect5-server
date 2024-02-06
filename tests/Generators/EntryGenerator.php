@@ -3,13 +3,27 @@
 namespace Tests\Generators;
 
 use Carbon\Carbon;
+use ec5\DTO\EntryStructureDTO;
+use ec5\DTO\ProjectDefinitionDTO;
+use ec5\DTO\ProjectDTO;
+use ec5\DTO\ProjectExtraDTO;
+use ec5\DTO\ProjectMappingDTO;
+use ec5\DTO\ProjectRoleDTO;
+use ec5\DTO\ProjectStatsDTO;
+use ec5\Libraries\Utilities\DateFormatConverter;
+use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
+use ec5\Services\CreateEntryService;
+use ec5\Traits\Assertions;
 use Faker\Factory as Faker;
 use Illuminate\Support\Str;
 use Ramsey\Uuid\Uuid;
+use Tests\TestCase;
 
 class EntryGenerator
 {
+    use Assertions;
+
     const SYMBOLS = ['!', '@', '€', '£', '#', '$', '%', '^', '&', '*', '"', '\'', '\\', '{', ',', '.', '?', '|', '<', '>', '~', '`'];
     const LOCALES = ['it_IT', 'en_US', 'de_DE', 'es_ES', 'en_GB', 'fr_FR'];
 
@@ -214,7 +228,7 @@ class EntryGenerator
         return $answer;
     }
 
-    public function createParentEntry($formRef): array
+    public function createParentEntryPayload($formRef): array
     {
         $projectSlug = array_get($this->projectDefinition, 'data.project.slug');
         $uuid = Uuid::uuid4()->toString();
@@ -278,7 +292,81 @@ class EntryGenerator
         ];
     }
 
-    public function createChildEntry($childFormRef, $parentFormRef, $parentEntryUuid): array
+    public function createParentEntryRow($user, $project, $role, $projectDefinition, $entryPayload): array
+    {
+        $entryStructure = new EntryStructureDTO();
+        $requestedProject = new ProjectDTO(
+            new ProjectDefinitionDTO(),
+            new ProjectExtraDTO(),
+            new ProjectMappingDTO(),
+            new ProjectStatsDTO()
+        );
+        $requestedProjectRole = new ProjectRoleDTO();
+
+        $requestedProject->init(Project::findBySlug($project->slug));
+        $requestedProjectRole->setRole($user, $project->id, $role);
+
+        /* 4 - BUILD ENTRY STRUCTURE */
+        $entryStructure->init(
+            $entryPayload['data'],
+            $project->id,
+            $requestedProjectRole
+        );
+        //for each location question, add geoJson to entryStructure
+        $inputs = array_get($projectDefinition, 'data.project.forms.0.inputs');
+        $skippedInputsRefs = [];
+        foreach ($inputs as $input) {
+            //add the valid answers to entryStructure (we assume they are valid)
+            //imp: skip group and readme
+            $inputsWithoutAnswer = array_keys(config('epicollect.strings.inputs_without_answers'));
+            if (!in_array($input['type'], $inputsWithoutAnswer)) {
+                $answer = $entryPayload['data']['entry']['answers'][$input['ref']];
+                $entryStructure->addAnswerToEntry($input, $answer);
+                //if location, add the geojson
+                if ($input['type'] === config('epicollect.strings.inputs_type.location')) {
+                    $entryStructure->addGeoJsonObject($input, $answer['answer']);
+                }
+            }
+            //if group, add answers for all the group inputs but skip the group owner
+            if ($input['type'] === config('epicollect.strings.inputs_type.group')) {
+                $skippedInputsRefs[] = $input['ref'];
+                //skip readme only (we cannot have nested groups)
+                if ($input['type'] !== config('epicollect.strings.inputs_type.readme')) {
+                    $groupInputs = $input['group'];
+                    foreach ($groupInputs as $groupInput) {
+                        $answer = $entryPayload['data']['entry']['answers'][$groupInput['ref']];
+                        //add the valid answers to entryStructure (we assume they are valid)
+                        $entryStructure->addAnswerToEntry($groupInput, $answer);
+                        //if location, add the geojson
+                        if ($groupInput['type'] === config('epicollect.strings.inputs_type.location')) {
+                            $entryStructure->addGeoJsonObject($groupInput, $answer['answer']);
+                        }
+                        //ignore readme
+                        if ($groupInput['type'] === config('epicollect.strings.inputs_type.readme')) {
+                            $skippedInputsRefs[] = $input['ref'];
+                        }
+                    }
+                }
+            }
+
+            if ($input['type'] === config('epicollect.strings.inputs_type.readme')) {
+                $skippedInputsRefs[] = $input['ref'];
+            }
+        }
+
+        $createEntryService = new CreateEntryService();
+        // If we received no errors, continue to insert answers and entry
+        $createEntryService->create(
+            $requestedProject,
+            $entryStructure);
+
+        return [
+            'entryStructure' => $entryStructure,
+            'skippedInputRefs' => $skippedInputsRefs
+        ];
+    }
+
+    public function createChildEntryPayload($childFormRef, $parentFormRef, $parentEntryUuid): array
     {
         $projectSlug = array_get($this->projectDefinition, 'data.project.slug');
         $uuid = Uuid::uuid4()->toString();
@@ -346,7 +434,7 @@ class EntryGenerator
         ];
     }
 
-    public function createBranchEntry($formRef, $branchInputs, $ownerEntryUuid, $ownerInputRef): array
+    public function createBranchEntryPayload($formRef, $branchInputs, $ownerEntryUuid, $ownerInputRef): array
     {
         $projectSlug = array_get($this->projectDefinition, 'data.project.slug');
         $uuid = Uuid::uuid4()->toString();
@@ -403,7 +491,6 @@ class EntryGenerator
             ]
         ];
     }
-
 
     private function generateMediaFilename($uuid, $type): string
     {

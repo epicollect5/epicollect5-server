@@ -41,6 +41,7 @@ class ProjectDefinitionGenerator
         return rtrim($sentence, '.'); // Turn the sentence into a question
     }
 
+
     private static function getRandomSimpleInputType()
     {
         $types = config('epicollect.strings.inputs_type');
@@ -100,10 +101,16 @@ class ProjectDefinitionGenerator
                     $titlesLeft--;
                 }
             }
+            $inputs[] = ProjectDefinitionGenerator::createTextInput($formRef);
             $inputs[] = ProjectDefinitionGenerator::createIntegerInput($formRef);
             $inputs[] = ProjectDefinitionGenerator::createDecimalInput($formRef);
             $inputs[] = ProjectDefinitionGenerator::createTimeInput($formRef);
             $inputs[] = ProjectDefinitionGenerator::createDateInput($formRef);
+
+            $inputs[] = ProjectDefinitionGenerator::createMultipleChoiceInput($formRef, 'radio');
+            $inputs[] = ProjectDefinitionGenerator::createMultipleChoiceInput($formRef, 'dropdown');
+            $inputs[] = ProjectDefinitionGenerator::createMultipleChoiceInput($formRef, 'checkbox');
+
             $inputs[] = ProjectDefinitionGenerator::createMultipleChoiceInput($formRef);
             $inputs[] = ProjectDefinitionGenerator::createMultipleChoiceInput($formRef);
             $inputs[] = ProjectDefinitionGenerator::createMultipleChoiceInput($formRef);
@@ -199,10 +206,12 @@ class ProjectDefinitionGenerator
     public static function createGroup($formRef): array
     {
         $inputRef = Generators::inputRef($formRef);
-        $n = rand(1, 2);
+        $n = rand(1, 1);
         $groupInputs = [];
 
         for ($i = 0; $i < $n; $i++) {
+            $groupInputs[] = ProjectDefinitionGenerator::createTextInput($inputRef);
+
             $groupInputs[] = ProjectDefinitionGenerator::createSimpleInput($inputRef);
             $groupInputs[] = ProjectDefinitionGenerator::createTimeInput($inputRef);
             $groupInputs[] = ProjectDefinitionGenerator::createDateInput($inputRef);
@@ -252,6 +261,32 @@ class ProjectDefinitionGenerator
             "jumps" => [
             ],
             "regex" => $regex,
+            "branch" => [],
+            "verify" => false,
+            "default" => "",
+            "is_title" => false,
+            "question" => self::generateQuestion(),
+            "uniqueness" => "none",
+            "is_required" => false,
+            "datetime_format" => null,
+            "possible_answers" => [],
+            "set_to_current_datetime" => false
+        ];
+    }
+
+    public static function createTextInput($formRef): array
+    {
+        $type = config('epicollect.strings.inputs_type.text');
+        return [
+            "max" => null,
+            "min" => null,
+            "ref" => Generators::inputRef($formRef),
+            "type" => $type,
+            "group" => [
+            ],
+            "jumps" => [
+            ],
+            "regex" => '',
             "branch" => [],
             "verify" => false,
             "default" => "",
@@ -398,13 +433,13 @@ class ProjectDefinitionGenerator
         ];
     }
 
-    public static function createMultipleChoiceInput($formRef): array
+    public static function createMultipleChoiceInput($formRef, $type = null): array
     {
         return [
             "max" => null,
             "min" => null,
             "ref" => Generators::inputRef($formRef),
-            "type" => self::getRandomMultipleChoiceInputType(),
+            "type" => $type ?? self::getRandomMultipleChoiceInputType(),
             "group" => [
             ],
             "jumps" => [

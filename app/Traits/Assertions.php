@@ -2,6 +2,8 @@
 
 namespace ec5\Traits;
 
+use ec5\Libraries\Utilities\DateFormatConverter;
+use ec5\Models\Entries\Entry;
 use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Assert;
 
@@ -209,5 +211,84 @@ trait Assertions
         //delete fake avatar files
         Storage::disk('project_mobile_logo')->deleteDirectory($project->ref);
         Storage::disk('project_thumb')->deleteDirectory($project->ref);
+    }
+
+    public function assertEntryRow($projectDefinition, $project, $entryStructure, $entryPayload, $skippedInputsRefs, $formRef)
+    {
+        $this->assertCount(1, Entry::where('uuid', $entryPayload['data']['id'])->get());
+        $entryStored = Entry::where('uuid', $entryPayload['data']['id'])->first();
+        $entryStoredEntryData = json_decode($entryStored->entry_data, true);
+        $entryStoredGeoJsonData = json_decode($entryStored->geo_json_data, true);
+
+        //from the entry payload, remove all skipped inputs to compare answers with entry stored
+        //imp: this is done because the group input is uploaded but not saved,
+        //imp: only the nested group inputs,
+        //imp: and the readme is just ignored
+        $entryPayloadAnswers = $entryPayload['data']['entry']['answers'];
+        foreach ($entryPayloadAnswers as $ref => $entryPayloadAnswer) {
+            if (in_array($ref, $skippedInputsRefs)) {
+                unset($entryPayload['data']['entry']['answers'][$ref]);
+            }
+        }
+
+        $this->assertEquals(
+            $entryStoredEntryData['entry']['answers'],
+            $entryPayload['data']['entry']['answers'],
+            json_encode($projectDefinition)
+        );
+
+        foreach ($entryStoredEntryData['entry']['answers'] as $ref => $answer) {
+            $payloadAnswer = $entryPayload['data']['entry']['answers'][$ref]['answer'];
+            $this->assertEquals($answer['answer'], $payloadAnswer);
+        }
+
+        //assert geojson object
+        foreach ($entryStoredGeoJsonData as $inputRef => $geojson) {
+            $locationAnswer = $entryPayload['data']['entry']['answers'][$inputRef]['answer'];
+            $this->assertEquals($geojson['id'], $entryPayload['data']['id']);
+            $this->assertEquals('Feature', $geojson['type']);
+            $this->assertEquals($geojson['geometry'], [
+                'type' => 'Point',
+                'coordinates' => [
+                    $locationAnswer['longitude'],
+                    $locationAnswer['latitude']
+                ]
+            ]);
+
+            $this->assertEquals($geojson['properties'], [
+                "uuid" => $entryPayload['data']['entry']['entry_uuid'],
+                "title" => $entryPayload['data']['entry']['title'],
+                "accuracy" => $locationAnswer['accuracy'],
+                "created_at" => date('Y-m-d', strtotime($entryStructure->getDateCreated())),
+                "possible_answers" => []
+            ]);
+        }
+
+        $this->assertEquals($entryPayload['data']['id'], $entryStored->uuid);
+        $this->assertEquals($entryPayload['data']['entry']['title'], $entryStored->title);
+        $this->assertEquals($project->id, $entryStored->project_id);
+        if (sizeof($entryPayload['data']['relationships']['parent']) > 0) {
+            $this->assertEquals(
+                $entryPayload['data']['relationships']['parent']['parent_entry_uuid'],
+                $entryStored->parent_uuid);
+            $this->assertEquals(
+                $entryPayload['data']['relationships']['parent']['parent_form_ref'],
+                $entryStored->parent_form_ref);
+        } else {
+            $this->assertEquals('', $entryStored->parent_uuid);
+            $this->assertEquals('', $entryStored->parent_form_ref);
+        }
+        $this->assertEquals($formRef, $entryStored->form_ref);
+        $this->assertEquals($entryPayload['data']['entry']['platform'], $entryStored->platform);
+        $this->assertEquals($entryPayload['data']['entry']['device_id'], $entryStored->device_id);
+
+        //assert timestamps are equal (converted as the format is different JS/MYSQL)
+        $this->assertTrue(DateFormatConverter::areTimestampsEqual(
+            $entryStructure->getDateCreated(),
+            $entryStored->created_at)
+        );
+      
+        $this->assertEquals(0, $entryStored->child_counts);
+        $this->assertEquals(0, $entryStored->branch_counts);
     }
 }
