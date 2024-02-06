@@ -243,6 +243,284 @@ class FormbuilderControllerTest extends TestCase
             );
     }
 
+    public function test_should_catch_emoji_in_question()
+    {
+        $this->projectDefinition['data']['project']['forms'][0]['inputs'][0]['question'] = '😊';
+
+        // Convert data array to JSON
+        $jsonData = json_encode($this->projectDefinition);
+        // Gzip Compression
+        $gzippedData = gzencode($jsonData); // '9' is the compression level (0-9, where 9 is highest)
+        // Base64 Encoding
+        $base64EncodedData = base64_encode($gzippedData);
+
+        //see https://github.com/laravel/framework/issues/46455
+        $response = $this->actingAs($this->user)
+            ->call('POST', 'api/internal/formbuilder/' . $this->project->slug,
+                [],
+                [],
+                [],
+                [], $base64EncodedData);
+
+        $response->assertStatus(422)
+            ->assertJsonStructure([
+                'errors' => [
+                    '*' => [
+                        'code',
+                        'title',
+                        'source',
+                    ]
+                ]
+            ])
+            ->assertExactJson([
+                    "errors" => [
+                        [
+                            "code" => "ec5_323",
+                            "title" => "No Emoji allowed.",
+                            "source" => "validation"
+                        ]
+                    ]
+                ]
+            );
+    }
+
+    public function test_should_catch_html_in_question()
+    {
+        $this->projectDefinition['data']['project']['forms'][0]['inputs'][0]['question'] = '<a href="ciao.com"></a>';
+
+        // Convert data array to JSON
+        $jsonData = json_encode($this->projectDefinition);
+        // Gzip Compression
+        $gzippedData = gzencode($jsonData); // '9' is the compression level (0-9, where 9 is highest)
+        // Base64 Encoding
+        $base64EncodedData = base64_encode($gzippedData);
+
+        //see https://github.com/laravel/framework/issues/46455
+        $response = $this->actingAs($this->user)
+            ->call('POST', 'api/internal/formbuilder/' . $this->project->slug,
+                [],
+                [],
+                [],
+                [], $base64EncodedData);
+
+        $response->assertStatus(422)
+            ->assertJsonStructure([
+                'errors' => [
+                    '*' => [
+                        'code',
+                        'title',
+                        'source',
+                    ]
+                ]
+            ])
+            ->assertExactJson([
+                    "errors" => [
+                        [
+                            "code" => "ec5_220",
+                            "title" => "No < or > chars allowed.",
+                            "source" => "validation"
+                        ]
+                    ]
+                ]
+            );
+    }
+
+    public function test_should_catch_emoji_in_form_name()
+    {
+        $this->projectDefinition['data']['project']['forms'][0]['name'] = '😊';
+
+        // Convert data array to JSON
+        $jsonData = json_encode($this->projectDefinition);
+        // Gzip Compression
+        $gzippedData = gzencode($jsonData); // '9' is the compression level (0-9, where 9 is highest)
+        // Base64 Encoding
+        $base64EncodedData = base64_encode($gzippedData);
+
+        //see https://github.com/laravel/framework/issues/46455
+        $response = $this->actingAs($this->user)
+            ->call('POST', 'api/internal/formbuilder/' . $this->project->slug,
+                [],
+                [],
+                [],
+                [], $base64EncodedData);
+
+        $response->assertStatus(422)
+            ->assertJsonStructure([
+                'errors' => [
+                    '*' => [
+                        'code',
+                        'title',
+                        'source',
+                    ]
+                ]
+            ])
+            ->assertExactJson([
+                    "errors" => [
+                        [
+                            "code" => "ec5_323",
+                            "title" => "No Emoji allowed.",
+                            "source" => "validation"
+                        ]
+                    ]
+                ]
+            );
+    }
+
+    public function test_should_catch_html_in_form_name()
+    {
+        $this->projectDefinition['data']['project']['forms'][0]['name'] = '<strong>Ciao</strong>';
+
+        // Convert data array to JSON
+        $jsonData = json_encode($this->projectDefinition);
+        // Gzip Compression
+        $gzippedData = gzencode($jsonData); // '9' is the compression level (0-9, where 9 is highest)
+        // Base64 Encoding
+        $base64EncodedData = base64_encode($gzippedData);
+
+        //see https://github.com/laravel/framework/issues/46455
+        $response = $this->actingAs($this->user)
+            ->call('POST', 'api/internal/formbuilder/' . $this->project->slug,
+                [],
+                [],
+                [],
+                [], $base64EncodedData);
+
+        $response->assertStatus(422)
+            ->assertJsonStructure([
+                'errors' => [
+                    '*' => [
+                        'code',
+                        'title',
+                        'source',
+                    ]
+                ]
+            ])
+            ->assertExactJson([
+                    "errors" => [
+                        [
+                            "code" => "ec5_220",
+                            "title" => "No < or > chars allowed.",
+                            "source" => "validation"
+                        ]
+                    ]
+                ]
+            );
+    }
+
+    public function test_should_catch_emoji_in_possible_answer()
+    {
+        $inputs = $this->projectDefinition['data']['project']['forms'][0]['inputs'];
+        $randomMultipleChoiceInput = $this->faker->randomElement(
+            array_keys(
+                [
+                    'dropdown' => 'dropdown',
+                    'radio' => 'radio',
+                    'checkbox' => 'checkbox',
+                    'searchsingle' => 'searchsingle',
+                    'searchmultiple' => 'searchmultiple'
+                ]));
+
+        foreach ($inputs as $index => $input) {
+            if ($input['type'] === $randomMultipleChoiceInput) {
+                $this->projectDefinition['data']['project']['forms'][0]['inputs'][$index]['possible_answers'][0]['answer'] = '😊';
+                break;
+            }
+        }
+
+        // Convert data array to JSON
+        $jsonData = json_encode($this->projectDefinition);
+        // Gzip Compression
+        $gzippedData = gzencode($jsonData); // '9' is the compression level (0-9, where 9 is highest)
+        // Base64 Encoding
+        $base64EncodedData = base64_encode($gzippedData);
+
+        //see https://github.com/laravel/framework/issues/46455
+        $response = $this->actingAs($this->user)
+            ->call('POST', 'api/internal/formbuilder/' . $this->project->slug,
+                [],
+                [],
+                [],
+                [], $base64EncodedData);
+
+        $response->assertStatus(422)
+            ->assertJsonStructure([
+                'errors' => [
+                    '*' => [
+                        'code',
+                        'title',
+                        'source',
+                    ]
+                ]
+            ])
+            ->assertExactJson([
+                    "errors" => [
+                        [
+                            "code" => "ec5_323",
+                            "title" => "No Emoji allowed.",
+                            "source" => "validation"
+                        ]
+                    ]
+                ]
+            );
+    }
+
+    public function test_should_catch_html_in_possible_answer()
+    {
+        $inputs = $this->projectDefinition['data']['project']['forms'][0]['inputs'];
+        $randomMultipleChoiceInput = $this->faker->randomElement(
+            array_keys(
+                [
+                    'dropdown' => 'dropdown',
+                    'radio' => 'radio',
+                    'checkbox' => 'checkbox',
+                    'searchsingle' => 'searchsingle',
+                    'searchmultiple' => 'searchmultiple'
+                ]));
+
+        foreach ($inputs as $index => $input) {
+            if ($input['type'] === $randomMultipleChoiceInput) {
+                $this->projectDefinition['data']['project']['forms'][0]['inputs'][$index]['possible_answers'][0]['answer'] = '<header>Ciao</header>';
+                break;
+            }
+        }
+
+        // Convert data array to JSON
+        $jsonData = json_encode($this->projectDefinition);
+        // Gzip Compression
+        $gzippedData = gzencode($jsonData); // '9' is the compression level (0-9, where 9 is highest)
+        // Base64 Encoding
+        $base64EncodedData = base64_encode($gzippedData);
+
+        //see https://github.com/laravel/framework/issues/46455
+        $response = $this->actingAs($this->user)
+            ->call('POST', 'api/internal/formbuilder/' . $this->project->slug,
+                [],
+                [],
+                [],
+                [], $base64EncodedData);
+
+        $response->assertStatus(422)
+            ->assertJsonStructure([
+                'errors' => [
+                    '*' => [
+                        'code',
+                        'title',
+                        'source',
+                    ]
+                ]
+            ])
+            ->assertExactJson([
+                    "errors" => [
+                        [
+                            "code" => "ec5_220",
+                            "title" => "No < or > chars allowed.",
+                            "source" => "validation"
+                        ]
+                    ]
+                ]
+            );
+    }
+
     public function test_should_catch_too_long_form_name()
     {
         $this->projectDefinition['data']['project']['forms'][0]['name'] = $this->faker->regexify('[A-Za-z0-9]{51}');

@@ -4,11 +4,9 @@ namespace ec5\Http\Validation\Entries\Upload;
 
 use ec5\DTO\EntryStructureDTO;
 use ec5\DTO\ProjectDTO;
-use ec5\Http\Validation\Entries\Upload\RuleAnswers as AnswerValidator;
-use ec5\Http\Validation\Entries\Upload\RuleBranchEntry as BranchEntryValidator;
-use ec5\Http\Validation\Entries\Upload\RuleEntry as EntryValidator;
-use ec5\Http\Validation\Entries\Upload\RuleFileEntry as FileValidator;
 use ec5\Http\Validation\ValidationBase;
+use ec5\Libraries\Utilities\Arrays;
+use ec5\Libraries\Utilities\Strings;
 use Illuminate\Support\Facades\Log;
 
 class RuleUpload extends ValidationBase
@@ -74,22 +72,22 @@ class RuleUpload extends ValidationBase
     /**
      * @var RuleEntry
      */
-    protected $entryValidator;
+    protected $ruleEntry;
 
     /**
      * @var RuleBranchEntry
      */
-    protected $branchEntryValidator;
+    protected $ruleBranchEntry;
 
     /**
      * @var RuleAnswers
      */
-    protected $answerValidator;
+    protected $ruleAnswers;
 
     /**
      * @var RuleFileEntry
      */
-    protected $fileValidator;
+    protected $ruleFileEntry;
 
     /**
      * @var bool
@@ -98,22 +96,22 @@ class RuleUpload extends ValidationBase
 
     /**
      * RuleUpload constructor.
-     * @param RuleEntry $entryValidator
-     * @param RuleBranchEntry $branchEntryValidator
-     * @param RuleAnswers $answerValidator
-     * @param FileValidator $fileValidator
+     * @param RuleEntry $ruleEntry
+     * @param RuleBranchEntry $ruleBranchEntry
+     * @param RuleAnswers $ruleAnswers
+     * @param RuleFileEntry $ruleFileEntry
      */
     public function __construct(
-        EntryValidator       $entryValidator,
-        BranchEntryValidator $branchEntryValidator,
-        AnswerValidator      $answerValidator,
-        FileValidator        $fileValidator
+        RuleEntry       $ruleEntry,
+        RuleBranchEntry $ruleBranchEntry,
+        RuleAnswers     $ruleAnswers,
+        RuleFileEntry   $ruleFileEntry
     )
     {
-        $this->entryValidator = $entryValidator;
-        $this->branchEntryValidator = $branchEntryValidator;
-        $this->answerValidator = $answerValidator;
-        $this->fileValidator = $fileValidator;
+        $this->ruleEntry = $ruleEntry;
+        $this->ruleBranchEntry = $ruleBranchEntry;
+        $this->ruleAnswers = $ruleAnswers;
+        $this->ruleFileEntry = $ruleFileEntry;
     }
 
     /**
@@ -122,26 +120,40 @@ class RuleUpload extends ValidationBase
      * @param EntryStructureDTO $entryStructure
      * @return null
      */
-    public function additionalChecks($data, ProjectDTO $project, EntryStructureDTO $entryStructure)
+    public function additionalChecks($data, ProjectDTO $project, EntryStructureDTO $entryStructure): ?bool
     {
+        // Implode as string so we can use regex
+        $stringData = Arrays::implodeMulti($this->data);
+
+        // If preg_match returns 1 or false, error out
+        // 0 means no matches, which is the only case allowed
+        // Check for HTML
+        if (Strings::containsHtml($stringData)) {
+            $this->errors['validation'] = ['ec5_220'];
+            return false;
+        }
+
+        // Check for emoji
+        if (Strings::containsEmoji($stringData)) {
+            $this->errors['validation'] = ['ec5_323'];
+            return false;
+        }
+        
 
         $projectExtra = $project->getProjectExtra();
 
         // Default to 'entry' validator
-        $validator = $this->entryValidator;
-
+        $validator = $this->ruleEntry;
 
         /* ENTRY SPECIFIC DETAILS */
 
-        // Set the entry type specific validator to use
+        // Set the entry-type-specific validator to use
         switch ($data['type']) {
-
             case config('epicollect.strings.entry_types.branch_entry'):
-                $validator = $this->branchEntryValidator;
+                $validator = $this->ruleBranchEntry;
                 break;
-
             case config('epicollect.strings.entry_types.file_entry'):
-                $validator = $this->fileValidator;
+                $validator = $this->ruleFileEntry;
                 break;
         }
 
@@ -153,13 +165,13 @@ class RuleUpload extends ValidationBase
         // Check form exists
         if (count($form) == 0) {
             $this->errors[$formRef] = ['ec5_15'];
-            return;
+            return false;
         }
 
-        // If upload entry type is invalid
+        //Bail out if the upload entry type is invalid
         if (!$validator) {
             $this->errors['upload'] = ['ec5_52'];
-            return;
+            return false;
         }
 
         // Validate the entry values
@@ -167,15 +179,15 @@ class RuleUpload extends ValidationBase
         $validator->validate($entry);
         if ($validator->hasErrors()) {
             $this->errors = $validator->errors();
-            return;
+            return false;
         }
         // Do additional checks on all entry types
         $validator->additionalChecks($project, $entryStructure);
         if ($validator->hasErrors()) {
-
             Log::error('Upload additional checks failed', $validator->errors());
             $this->errors = $validator->errors();
-            return;
+            return false;
         }
+        return true;
     }
 }
