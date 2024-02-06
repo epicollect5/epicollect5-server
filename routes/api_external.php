@@ -56,10 +56,10 @@ Route::group(['middleware' => ['throttle:600,1']], function () {
         //   Route::get('api/datasets/{project_slug}', 'Api\Project\DatasetController@download');
 
         // Entry uploads
-        Route::post('api/upload/{project_slug}', 'Api\Entries\Upload\UploadController@postUpload');
+        Route::post('api/upload/{project_slug}', 'Api\Entries\Upload\UploadAppController@postUpload');
 
         //route for debugging, works only on localhost
-        Route::post('api/bulk-upload/{project_slug}', 'Api\Entries\Upload\UploadController@postUploadBulk');
+        Route::post('api/bulk-upload/{project_slug}', 'Api\Entries\Upload\UploadAppController@postUploadBulk');
 
         //Media Controller for access to media files (even via the browser, this is why we are not using the internl endpoint)
         Route::get('api/media/{project_slug}/', 'Api\Project\MediaController@getMedia');
@@ -74,7 +74,7 @@ Route::group(['middleware' => ['throttle:600,1']], function () {
         // Entry uploads
         Route::post(
             'api/json/upload/{project_slug}',
-            'Api\Entries\Upload\UploadController@postUpload'
+            'Api\Entries\Upload\UploadAppController@postUpload'
         );
 
         // Media
@@ -83,30 +83,30 @@ Route::group(['middleware' => ['throttle:600,1']], function () {
 
 
         // Entries for mobile app download
-        Route::get('api/entries/{project_slug}', 'Api\Entries\View\EntriesController@show');
+        Route::get('api/entries/{project_slug}', 'Api\Entries\View\ViewEntriesDataController@show');
 
         // Entry viewing for map
         Route::get(
             'api/entries-locations/{project_slug}',
-            'Api\Entries\View\EntriesLocationsController@show'
+            'Api\Entries\View\ViewEntriesLocationsController@show'
         );
 
         // Web entry uploads
         Route::post(
             'api/web-upload/{project_slug}',
-            'Api\Entries\Upload\WebUploadController@postUpload'
+            'Api\Entries\Upload\UploadWebController@postUpload'
         );
 
         // Web file uploads
         Route::post(
             'api/web-upload-file/{project_slug}',
-            'Api\Entries\Upload\TempFileController@store'
+            'Api\Entries\Upload\UploadTempFileController@store'
         );
 
         // Web answer uniqueness checks
         Route::post(
             'api/unique-answer/{project_slug}',
-            'Api\Entries\Upload\UniquenessController@index'
+            'Api\Entries\Upload\UploadUniquenessController@index'
         );
     });
 
@@ -138,7 +138,7 @@ Route::group(['middleware' => ['throttle:60,1']], function () {
         // Export Project
         Route::get('api/export/project/{project_slug}', 'Api\Project\ProjectController@export');
         // Export Entries
-        Route::get('api/export/entries/{project_slug}', 'Api\Entries\View\EntriesController@export');
+        Route::get('api/export/entries/{project_slug}', 'Api\Entries\View\ViewEntriesDataController@export');
     });
 });
 
@@ -158,7 +158,7 @@ Route::group(['middleware' => ['throttle:240,1']], function () {
     // Set project permissions api middleware
     Route::group(['middleware' => ['project.permissions.api']], function () {
         //COG-UK uploads (private imports)
-        Route::post('api/import/entries/{project_slug}', 'Api\Entries\Upload\UploadController@import')->name('private-import');
+        Route::post('api/import/entries/{project_slug}', 'Api\Entries\Upload\UploadAppController@import')->name('private-import');
     });
 });
 

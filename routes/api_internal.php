@@ -44,27 +44,27 @@ Route::group(['middleware' => ['project.permissions']], function () {
     // Entry Media downloads
     Route::get('api/internal/download-media/{project_slug}', 'Api\Entries\DownloadController@media');
 
-    // Entries for table
-    Route::get('api/internal/entries/{project_slug}', 'Api\Entries\View\EntriesController@show');
+    // Entries for table (dataviewer)
+    Route::get('api/internal/entries/{project_slug}', 'Api\Entries\View\ViewEntriesDataController@show');
 
-    // Entries for map
-    Route::get('api/internal/entries-locations/{project_slug}', 'Api\Entries\View\EntriesLocationsController@show');
+    // Entries for map (dataviewer)
+    Route::get('api/internal/entries-locations/{project_slug}', 'Api\Entries\View\ViewEntriesLocationsController@show');
 
     // Web entry uploads, for data editor and bulk upload from dataviewer
-    Route::post('api/internal/web-upload/{project_slug}', 'Api\Entries\Upload\WebUploadController@store');
+    Route::post('api/internal/web-upload/{project_slug}', 'Api\Entries\Upload\UploadWebController@store');
 
     //wrapping this endpoint to check for bulk upload permissions
     Route::group(['middleware' => ['project.permissions.bulk-upload']], function () {
-        Route::post('api/internal/bulk-upload/{project_slug}', 'Api\Entries\Upload\WebUploadController@storeBulk');
+        Route::post('api/internal/bulk-upload/{project_slug}', 'Api\Entries\Upload\UploadWebController@storeBulk');
     });
 
-    Route::get('api/internal/can-bulk-upload/{project_slug}', 'Api\Entries\View\EntriesLocationsController@show');
+    Route::get('api/internal/can-bulk-upload/{project_slug}', 'Api\Entries\View\ViewEntriesLocationsController@show');
 
     // Web file uploads
-    Route::post('api/internal/web-upload-file/{project_slug}', 'Api\Entries\Upload\TempFileController@store');
+    Route::post('api/internal/web-upload-file/{project_slug}', 'Api\Entries\Upload\UploadTempFileController@store');
 
     // Web answer uniqueness checks
-    Route::post('api/internal/unique-answer/{project_slug}', 'Api\Entries\Upload\UniquenessController@index');
+    Route::post('api/internal/unique-answer/{project_slug}', 'Api\Entries\Upload\UploadUniquenessController@index');
 
     // Entry Archive (delete)
     Route::group(['middleware' => ['project.permissions.viewer.role']], function () {
