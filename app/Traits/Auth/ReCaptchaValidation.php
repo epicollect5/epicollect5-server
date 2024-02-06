@@ -10,10 +10,8 @@ use Exception;
 
 trait ReCaptchaValidation
 {
-
-    public function getAnyRecaptchaErrors($recaptchaResponse)
+    public function getAnyRecaptchaErrors($recaptchaResponse): array
     {
-
         $client = new Client(); //GuzzleHttp\Client
         $ruleRecaptcha = new RuleRecaptcha();
         $response = $client->post(config('epicollect.setup.google_recaptcha.verify_endpoint'), [
@@ -37,7 +35,6 @@ trait ReCaptchaValidation
         if ($ruleRecaptcha->hasErrors()) {
             return $ruleRecaptcha->errors();
         }
-
         //no errors, empty array
         return [];
     }

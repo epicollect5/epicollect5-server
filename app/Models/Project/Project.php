@@ -14,6 +14,7 @@ class Project extends Model
     protected $projectStatsTable = 'project_stats';
     protected $fillable = ['slug'];
 
+    //used to init ProjectDTO, returns a bundle with data from multiple tables
     public static function findBySlug($slug)
     {
         $query = DB::table(config('epicollect.tables.projects'));

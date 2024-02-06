@@ -33,6 +33,7 @@ class CreateEntryService
             $entry['entry_data'] = json_encode($entryData);
             // Add geolocation field if available
             if ($entryStructure->hasGeoLocation()) {
+                //to make the dataviewer pie chart markers
                 $entryStructure->addPossibleAnswersToGeoJson();
                 $entry['geo_json_data'] = json_encode($entryStructure->getGeoJson());
             }
