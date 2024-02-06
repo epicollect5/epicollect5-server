@@ -7,19 +7,8 @@ use Illuminate\Support\Facades\Storage;
 use Image;
 use Log;
 
-class UploadImageService
+class PhotoSaverService
 {
-
-    /**
-     *  Init
-     *
-     */
-
-    public function __construct()
-    {
-
-    }
-
     /**
      * Save a photo to specific dimensions
      *
@@ -31,15 +20,11 @@ class UploadImageService
      * @param int $quality
      * @return bool
      */
-    static function saveImage($projectRef, $image, $fileName, $driver, array $dimensions = [], $quality = 50)
+    public static function saveImage($projectRef, $image, $fileName, $driver, array $dimensions = [], $quality = 50): bool
     {
-
         try {
-
             $imageRealPath = $image->getRealPath();
-
             $img = Image::make($imageRealPath);
-
             // Crop and resize image
             if (count($dimensions) > 0) {
                 $width = $dimensions[0];
@@ -48,7 +33,6 @@ class UploadImageService
             }
 
             $img->encode('jpg', $quality);
-
             // Save new image over existing
             $img->save();
             // Destroy after use
@@ -58,14 +42,11 @@ class UploadImageService
                 $projectRef . '/' . $fileName,
                 file_get_contents($imageRealPath)
             );
-
             return true;
-
         } catch (Exception $e) {
             Log::error('Cannot save image', ['exception' => $e]);
             return false;
         }
-
     }
 
     /**
@@ -79,22 +60,17 @@ class UploadImageService
      * @param int $quality
      * @return bool
      */
-    static function storeImage($projectRef, $imagePath, $fileName, $driver, array $dimensions = [], $quality = 50)
+    public static function storeImage($projectRef, $imagePath, $fileName, $driver, array $dimensions = [], $quality = 50): bool
     {
-
         try {
-
             $img = Image::make($imagePath);
-
             // Crop and resize image
             if (count($dimensions) > 0) {
                 $width = $dimensions[0];
                 $height = isset($dimensions[1]) ? $dimensions[1] : null;
                 $img->fit($width, $height);
             }
-
             $img->encode('jpg', $quality);
-
             // Save new image over existing
             $img->save();
             // Destroy after use
@@ -106,7 +82,6 @@ class UploadImageService
             );
 
             return true;
-
         } catch (Exception $e) {
             Log::error('Cannot save image', ['exception' => $e]);
             return false;

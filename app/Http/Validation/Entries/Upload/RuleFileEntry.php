@@ -10,7 +10,7 @@ use ec5\Http\Validation\Entries\Upload\FileRules\RulePhotoWeb;
 use ec5\Http\Validation\Entries\Upload\FileRules\RuleVideo;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
-use ec5\Services\UploadImageService;
+use ec5\Services\PhotoSaverService;
 use Exception;
 use File;
 use Illuminate\Support\Facades\Storage;
@@ -264,7 +264,7 @@ class RuleFileEntry extends EntryValidationBase
                 }
 
                 // Attempt to save the original image (resized if necessary) keeping 100% quality
-                $original = UploadImageService::saveImage(
+                $original = PhotoSaverService::saveImage(
                     $projectRef,
                     $entryStructure->getFile(),
                     $fileName,
@@ -282,7 +282,7 @@ class RuleFileEntry extends EntryValidationBase
                 // Entry thumb image
 
                 // Create and save entry thumbnail image for photos, using 'entry_thumb' driver
-                $thumb = UploadImageService::saveImage(
+                $thumb = PhotoSaverService::saveImage(
                     $projectRef,
                     $entryStructure->getFile(),
                     $fileName,
@@ -362,7 +362,7 @@ class RuleFileEntry extends EntryValidationBase
                 }
 
                 // Attempt to save the original image (resized if necessary) keeping 100% quality
-                $original = UploadImageService::saveImage(
+                $original = PhotoSaverService::saveImage(
                     $projectRef,
                     $entryStructure->getFile(),
                     $fileName,
@@ -380,7 +380,7 @@ class RuleFileEntry extends EntryValidationBase
                 // Entry thumb image
 
                 // Create and save entry thumbnail image for photos, using 'entry_thumb' driver
-                $thumb = UploadImageService::saveImage(
+                $thumb = PhotoSaverService::saveImage(
                     $projectRef,
                     $entryStructure->getFile(),
                     $fileName,
