@@ -595,7 +595,7 @@ class DownloadSubsetControllerTest extends TestCase
         );
 
         $response = $this->actingAs($user)->get('api/internal/download-entries/' . $project->slug)
-            ->assertStatus(404)
+            ->assertStatus(400)
             ->assertJsonStructure([
                 'errors' => [
                     '*' => [
@@ -655,7 +655,7 @@ class DownloadSubsetControllerTest extends TestCase
 
 
         //for reasons unknown when using withCookie() we need to change approch to test the response
-        $this->assertEquals(404, $response->getStatusCode());
+        $this->assertEquals(400, $response->getStatusCode());
 
         $jsonContent = json_decode($response->getContent(), true);
         $this->assertIsArray($jsonContent);
