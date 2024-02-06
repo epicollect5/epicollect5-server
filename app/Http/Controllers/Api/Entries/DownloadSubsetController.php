@@ -31,22 +31,22 @@ class DownloadSubsetController
         $this->dataMappingService = $dataMappingService;
     }
 
-    public function subset(Request $request, RuleDownloadSubset $ruleDownloadSubset, EntriesViewService $viewEntriesService)
+    public function subset(Request $request, RuleDownloadSubset $ruleDownloadSubset, EntriesViewService $entriesViewService)
     {
         // Check the mapping is valid
         $projectMapping = $this->requestedProject()->getProjectMapping();
 
         $allowedKeys = array_keys(config('epicollect.strings.download_subset_entries'));
         $perPage = config('epicollect.limits.entries_table.per_page');
-        $params = $viewEntriesService->getSanitizedQueryParams($allowedKeys, $perPage);
+        $params = $entriesViewService->getSanitizedQueryParams($allowedKeys, $perPage);
 
         //Get raw query params, $this->getRequestParams is doing some filtering
         $rawParams = $request->all();
         $cookieName = config('epicollect.mappings.cookies.download-entries');
 
         // Validate the options and query string
-        if (!$viewEntriesService->areValidQueryParams($params)) {
-            return Response::apiErrorCode(400, $viewEntriesService->validationErrors);
+        if (!$entriesViewService->areValidQueryParams($params)) {
+            return Response::apiErrorCode(400, $entriesViewService->validationErrors);
         }
 
         $ruleDownloadSubset->validate($rawParams);
