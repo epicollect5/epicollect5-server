@@ -70,9 +70,6 @@ class RuleAnswers extends ValidationBase
         $ruleSearchmultipleInput;
 
     /**
-     * RuleAnswers constructor.
-     *
-     * @param EntryStructureDTO $entryStructure
      * @param RuleIntegerInput $ruleIntegerInput
      * @param RuleDecimalInput $ruleDecimalInput
      * @param RuleRadioInput $ruleRadioInput
@@ -93,7 +90,6 @@ class RuleAnswers extends ValidationBase
      * @param RuleSearchMultipleInput $ruleSearchMultipleInput
      */
     public function __construct(
-        EntryStructureDTO       $entryStructure,
         RuleIntegerInput        $ruleIntegerInput,
         RuleDecimalInput        $ruleDecimalInput,
         RuleRadioInput          $ruleRadioInput,
@@ -170,7 +166,6 @@ class RuleAnswers extends ValidationBase
             // Uniqueness check
             if (!empty($input['uniqueness']) && $input['uniqueness'] != 'none' && $answerData['answer'] != '') {
                 if (!$this->isUnique($entryStructure, $input['uniqueness'], $answerData['answer'], $input['type'], $input['datetime_format'])) {
-
                     $this->errors[$this->inputRef] = ['ec5_22'];
                     return;
                 }
@@ -196,7 +191,8 @@ class RuleAnswers extends ValidationBase
         $answerData['answer'] = $answer;
 
         // Add validated answer to the entry structure
-        $this->addAnswerToEntry($entryStructure, $input, $answerData);
+        //imp: done here because we have direct access to the input
+        $entryStructure->addAnswerToEntry($input, $answerData);
     }
 
     /* HELPER FUNCTIONS */
@@ -274,25 +270,5 @@ class RuleAnswers extends ValidationBase
     {
         $entryService = new EntryService();
         return $entryService->isUnique($entryStructure, $uniquenessType, $this->inputRef, $answer, $inputType, $inputDatetimeFormat);
-    }
-
-    /**
-     * @param EntryStructureDTO $entryStructure
-     * @param $input
-     * @param $answerData
-     */
-    private function addAnswerToEntry(EntryStructureDTO $entryStructure, $input, $answerData)
-    {
-        // Filter out types which don't need an answer
-        if (!in_array($input['type'], array_keys(config('epicollect.strings.inputs_without_answers')))) {
-            // Add validated answer to the entry structure
-            $entryStructure->addValidatedAnswer(
-                $this->inputRef,
-                [
-                    'answer' => $answerData['answer'],
-                    'was_jumped' => $answerData['was_jumped']
-                ]
-            );
-        }
     }
 }

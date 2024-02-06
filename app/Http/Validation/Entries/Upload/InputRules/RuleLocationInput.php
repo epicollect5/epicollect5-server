@@ -72,51 +72,20 @@ class RuleLocationInput extends RuleInputBase
                 return false;
             }
 
-            // Limit lat long to max 6dp
+            // Limit lat long to max 6 decimal places
             $answer['longitude'] = round($answer['longitude'], 6);
             $answer['latitude'] = round($answer['latitude'], 6);
             //Round accuracy to integer
             $answer['accuracy'] = round($answer['accuracy']);
 
-            //add the geojson entry
-            $this->createGeoJson($entryStructure, $inputDetails, $answer);
+            //add the geojson entry to the current entryStructure
+            //imp: it is done here because since have direct access to the current input ref
+            $entryStructure->addGeoJsonObject($inputDetails, $answer);
         }
         return $answer;
     }
 
-    /**
-     * Add the geo json object to the entry structure
-     * @param EntryStructureDTO $entryStructure
-     * @param $inputDetails
-     * @param $entryLocation
-     */
-    private function createGeoJson(EntryStructureDTO $entryStructure, $inputDetails, $entryLocation)
-    {
-
-        $geoJson = [];
-        $geoJson['type'] = 'Feature';
-        $geoJson['id'] = $entryStructure->getEntryUuid();
-        $geoJson['geometry'] = [
-            'type' => 'Point',
-            'coordinates' => [
-                $entryLocation['longitude'],
-                $entryLocation['latitude']
-            ]
-        ];
-        $geoJson['properties'] = [
-            'uuid' => $entryStructure->getEntryUuid(),
-            'title' => $entryStructure->getTitle(),
-            'accuracy' => $entryLocation['accuracy'],
-            'created_at' => date('Y-m-d', strtotime($entryStructure->getDateCreated())),
-
-            // Possible answers will be added at the end
-            'possible_answers' => [],
-        ];
-
-        $entryStructure->addGeoJson($inputDetails['ref'], $geoJson);
-    }
-
-    private function isValidLatitude($latitude)
+    private function isValidLatitude($latitude): bool
     {
         if ($latitude === '') {
             return false;
@@ -131,7 +100,7 @@ class RuleLocationInput extends RuleInputBase
         return true;
     }
 
-    private function isValidLongitude($longitude)
+    private function isValidLongitude($longitude): bool
     {
         if ($longitude === '') {
             return false;
@@ -142,11 +111,10 @@ class RuleLocationInput extends RuleInputBase
         if ($longitude < -180 || $longitude > 180) {
             return false;
         }
-
         return true;
     }
 
-    private function isValidAccuracy($accuracy)
+    private function isValidAccuracy($accuracy): bool
     {
         if ($accuracy === '') {
             return false;
@@ -157,7 +125,6 @@ class RuleLocationInput extends RuleInputBase
         if ($accuracy < 0) {
             return false;
         }
-
         return true;
     }
 }
