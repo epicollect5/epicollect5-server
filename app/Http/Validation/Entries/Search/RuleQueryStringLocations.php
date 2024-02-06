@@ -6,7 +6,7 @@ use ec5\DTO\ProjectDTO;
 use ec5\Http\Validation\ValidationBase;
 
 
-class RuleQueryStringMapData extends ValidationBase
+class RuleQueryStringLocations extends ValidationBase
 {
     /**
      * @var array
@@ -25,13 +25,17 @@ class RuleQueryStringMapData extends ValidationBase
      */
     public function additionalChecks(ProjectDTO $project, $options)
     {
-
         $projectExtra = $project->getProjectExtra();
 
         // Check form ref is valid
         if (!empty($options['form_ref']) && count($projectExtra->getFormDetails($options['form_ref'])) === 0) {
             $this->errors[$options['form_ref']] = ['ec5_15'];
             return;
+        }
+
+        //check input ref is provided, we need to know the location question
+        if (empty($options['input_ref'])) {
+            $this->errors['rule-query-string'] = ['ec5_243'];
         }
 
         // Check input ref exists
