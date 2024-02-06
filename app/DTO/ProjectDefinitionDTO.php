@@ -29,7 +29,7 @@ class ProjectDefinitionDTO extends ProjectModelBase
     /**
      * @return string
      */
-    public function getProjectRef()
+    public function getProjectRef(): string
     {
         return $this->data['project']['ref'] ?? '';
     }
@@ -46,10 +46,7 @@ class ProjectDefinitionDTO extends ProjectModelBase
         }
     }
 
-    /**
-     * @return string
-     */
-    public function getFirstFormRef()
+    public function getFirstFormRef(): string
     {
         return $this->data['project']['forms'][0]['ref'];
     }

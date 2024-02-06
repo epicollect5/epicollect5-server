@@ -412,16 +412,6 @@ class ProjectDTO
         $this->id = $id;
     }
 
-    /**
-     * Get the structure_id from the project_structures table
-     *
-     * @return null | int
-     */
-    public function getProjectStructureId()
-    {
-        return $this->structure_id;
-    }
-
     public function getUpdatedAt()
     {
         return $this->updated_at;

@@ -23,6 +23,25 @@ class EntryStructureDTO
     protected $isBranch = false;
     protected $file = null;
 
+    public function init($payload, $projectId, $requestedProjectRole)
+    {
+        // Get current user
+        $user = auth()->user();
+        // Initialise entry structure based on request payload
+        $this->createStructure($payload);
+        // Add user id (0 if null) to entry structure
+        $this->setUserId(!empty($user) ? $user->id : 0);
+        // Add project id to entry structure
+        $this->setProjectId($projectId);
+        // Add the project role to entry structure
+        $this->setProjectRole($requestedProjectRole);
+        // If there is a file in the request, load into the entry structure
+        if (request()->hasFile('name')) {
+            $this->setFile(request()->file('name'));
+        }
+    }
+
+
     public function createStructure($data)
     {
         $this->data = $data;
@@ -218,15 +237,6 @@ class EntryStructureDTO
     }
 
     /**
-     * @param $inputRef
-     * @param $geoJson
-     */
-    public function addGeoJson($inputRef, $geoJson)
-    {
-        $this->geoJson[$inputRef] = $geoJson;
-    }
-
-    /**
      * @return mixed
      */
     public function getGeoJson()
@@ -284,6 +294,11 @@ class EntryStructureDTO
     }
 
     public function hasGeoLocation(): bool
+    {
+        return count($this->geoJson) > 0;
+    }
+
+    public function setHasGeoLocation(): bool
     {
         return count($this->geoJson) > 0;
     }
@@ -388,5 +403,61 @@ class EntryStructureDTO
     public function shouldUpdateUserId(): bool
     {
         return $this->updateUserId;
+    }
+
+    /**
+     * Add the geo json object to the entry structure
+     * @param $inputDetails
+     *   {
+     *       "ref": "---",
+     *       "question": "---",
+     *       "type": "---",
+     *       "...": "---"
+     *   }
+     * @param $locationAnswer
+     *  {
+     *      "latitude": "---",
+     *      "longitude": "---",
+     *      "accuracy": "---"
+     *  }
+     */
+    public function addGeoJsonObject($inputDetails, $locationAnswer)
+    {
+        $geoJson = [];
+        $geoJson['type'] = 'Feature';
+        $geoJson['id'] = $this->getEntryUuid();
+        $geoJson['geometry'] = [
+            'type' => 'Point',
+            'coordinates' => [
+                $locationAnswer['longitude'],
+                $locationAnswer['latitude']
+            ]
+        ];
+        $geoJson['properties'] = [
+            'uuid' => $this->getEntryUuid(),
+            'title' => $this->getTitle(),
+            'accuracy' => $locationAnswer['accuracy'],
+            'created_at' => date('Y-m-d', strtotime($this->getDateCreated())),
+
+            // Possible answers will be added at the end
+            'possible_answers' => [],
+        ];
+
+        $this->geoJson[$inputDetails['ref']] = $geoJson;
+    }
+
+    public function addAnswerToEntry($input, $answerData)
+    {
+        // Filter out types which don't need an answer
+        if (!in_array($input['type'], array_keys(config('epicollect.strings.inputs_without_answers')))) {
+            // Add validated answer to the entry structure
+            $this->addValidatedAnswer(
+                $input['ref'],
+                [
+                    'answer' => $answerData['answer'],
+                    'was_jumped' => $answerData['was_jumped']
+                ]
+            );
+        }
     }
 }
