@@ -7,6 +7,24 @@ use ec5\Traits\Eloquent\Entries;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
 
+/**
+ * @property int $id
+ * @property int $project_id
+ * @property string $uuid
+ * @property string $parent_uuid
+ * @property string $form_ref
+ * @property string $parent_form_ref
+ * @property int $user_id
+ * @property string $platform
+ * @property string $device_id
+ * @property string $created_at
+ * @property string $uploaded_at
+ * @property string $tile
+ * @property mixed $entry_data
+ * @property string $geo_json_data
+ * @property string $child_counts
+ * @property mixed $branch_counts
+ */
 class Entry extends Model
 {
     use Entries;
@@ -45,11 +63,10 @@ class Entry extends Model
 
     /**
      * @param $projectId
-     * @param $options
-     * @param array $columns
+     * @param $params
      * @return Builder
      */
-    public function getMapData($projectId, $options, $columns = array('*')): Builder
+    public function getGeoJsonData($projectId, $params): Builder
     {
         $selectSql = 'JSON_EXTRACT(geo_json_data, ?) as geo_json_data ';
         $whereSql = 'project_id = ?';
@@ -57,14 +74,14 @@ class Entry extends Model
         //get all location data
         $q = DB::table($this->table)
             ->whereRaw($whereSql, [$projectId])
-            ->selectRaw($selectSql, ['$."' . $options['input_ref'] . '"']);
+            ->selectRaw($selectSql, ['$."' . $params['input_ref'] . '"']);
 
         //filter by user (COLLECTOR ROLE ONLY)
-        if (!empty($options['user_id'])) {
-            $q->where('user_id', '=', $options['user_id']);
+        if (!empty($params['user_id'])) {
+            $q->where('user_id', '=', $params['user_id']);
         }
 
-        return self::sortAndFilterEntries($q, $options);
+        return self::sortAndFilterEntries($q, $params);
     }
 
     /**
