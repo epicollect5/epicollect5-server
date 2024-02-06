@@ -2,14 +2,13 @@
 
 namespace ec5\Http\Controllers\Api\Project;
 
-use ec5\Http\Controllers\Api\ApiResponse;
 use ec5\Http\Validation\Project\RuleBulkImportUsers;
 use ec5\Http\Validation\Project\RuleSwitchUserRole;
 use ec5\Models\Project\ProjectRole;
 use ec5\Models\User\User;
 use ec5\Services\ProjectService;
 use ec5\Traits\Requests\RequestAttributes;
-use Illuminate\Http\Request;
+use Response;
 
 class UserController
 {
@@ -32,33 +31,34 @@ class UserController
                 'role' => $user->role
             ];
         }
-        return response()->apiResponse($jsonUsers);
+
+        return Response::apiData($jsonUsers);
     }
 
     /**
      * Remove all the users of the specified role from the project
      */
-    public function removeByRole(Request $request, ApiResponse $apiResponse)
+    public function removeByRole()
     {
         // Only managers and up have access
         if (!$this->requestedProjectRole()->canManageUsers()) {
             //return error json
-            return $apiResponse->errorResponse(404, ['manage-users' => ['ec5_91']]);
+            return Response::apiErrorCode(404, ['manage-users' => ['ec5_91']]);
         }
 
-        $role = $request->input('role');
+        $role = request()->input('role');
 
         //validate 'role'
         //todo use a 'role' validation rule?
         if (!in_array($role, array_keys(config('epicollect.strings.project_roles')), true)) {
             //return error json
-            return $apiResponse->errorResponse(404, ['manage-users' => ['ec5_91']]);
+            return Response::apiErrorCode(404, ['manage-users' => ['ec5_91']]);
         }
 
         //creator roles cannot be removed!
         if ($role === config('epicollect.strings.project_roles.creator')) {
             //return error json
-            return $apiResponse->errorResponse(404, ['manage-users' => ['ec5_91']]);
+            return Response::apiErrorCode(404, ['manage-users' => ['ec5_91']]);
         }
 
         $projectRole = new ProjectRole();
@@ -74,40 +74,38 @@ class UserController
         if ($userRole === config('epicollect.strings.project_roles.manager')) {
             if ($role === config('epicollect.strings.project_roles.manager')) {
                 //a manager cannot remove other managers, bail out
-                return $apiResponse->errorResponse(404, ['manage-users' => ['ec5_91']]);
+                return Response::apiErrorCode(404, ['manage-users' => ['ec5_91']]);
             }
         }
 
         //all good, try to remove users by role
         if ($projectRole->deleteByRole($projectId, $role, $user) >= 0) {
             //all good, rows deleted (if any)
-            $apiResponse->setData(['message' => trans('status_codes.ec5_343', ['role' => ucfirst($role)])]);
-            return $apiResponse->toJsonResponse(200);
+            $data = ['message' => trans('status_codes.ec5_343', ['role' => ucfirst($role)])];
+            return Response::apiData($data);
         } else {
             //error response
-            return $apiResponse->errorResponse(400, ['manage-users' => ['ec5_104']]);
+            return Response::apiErrorCode(400, ['manage-users' => ['ec5_104']]);
         }
     }
 
     public function switchRole(
-        Request            $request,
-        ApiResponse        $apiResponse,
         RuleSwitchUserRole $ruleSwitchUserRole
     )
     {
         // Only managers and up have access
         if (!$this->requestedProjectRole()->canManageUsers()) {
             //return error json
-            return $apiResponse->errorResponse(404, ['manage-users' => ['ec5_91']]);
+            return Response::apiErrorCode(404, ['manage-users' => ['ec5_91']]);
         }
 
-        $inputs = $request->all();
+        $inputs = request()->all();
 
         $ruleSwitchUserRole->validate($inputs, true);
 
         if ($ruleSwitchUserRole->hasErrors()) {
             //return error json
-            return $apiResponse->errorResponse(400, ['errors' => $ruleSwitchUserRole->errors()]);
+            return Response::apiErrorCode(400, ['errors' => $ruleSwitchUserRole->errors()]);
         }
 
         $userToSwitchCurrentRole = $inputs['currentRole'];
@@ -121,43 +119,43 @@ class UserController
         $userToSwitch = User::whereEmail($email)->first();
 
         //current active user (logged in)
-        $requestedUser = $request->attributes->get('requestedUser');
+        $requestedUser = request()->attributes->get('requestedUser');
 
         //check if the user is trying to change its own role, not possible
         $ruleSwitchUserRole->additionalChecks($requestedUser, $userToSwitch, $this->requestedProjectRole()->getRole(), $userToSwitchNewRole, $userToSwitchCurrentRole);
         if ($ruleSwitchUserRole->hasErrors()) {
-            return $apiResponse->errorResponse(400, $ruleSwitchUserRole->errors());
+            return Response::apiErrorCode(400, $ruleSwitchUserRole->errors());
         }
 
         //all good, switch role ;)
         if ($projectRole->switchUserRole($projectId, $userToSwitch, $userToSwitchCurrentRole, $userToSwitchNewRole) >= 0) {
             //all good, role switched
-            $apiResponse->setData(['message' => trans('status_codes.ec5_241')]);
-            return $apiResponse->toJsonResponse(200);
+            $data = ['message' => trans('status_codes.ec5_241')];
+            return Response::apiData($data);
         } else {
             //error response
-            return $apiResponse->errorResponse(400, ['manage-users' => ['ec5_104']]);
+            return Response::apiErrorCode(400, ['manage-users' => ['ec5_104']]);
         }
     }
 
-    public function addUsersBulk(Request $request, ApiResponse $apiResponse, RuleBulkImportUsers $ruleBulkImportUsers, ProjectService $projectService)
+    public function addUsersBulk(RuleBulkImportUsers $ruleBulkImportUsers, ProjectService $projectService)
     {
-        $requestedUser = $request->attributes->get('requestedUser');
+        $requestedUser = request()->attributes->get('requestedUser');
         $validationErrors = [];
 
         // Only creators and managers have access
         if (!$this->requestedProjectRole()->canManageUsers()) {
-            return $apiResponse->errorResponse(404, ['manage-users' => ['ec5_91']]);
+            return Response::apiErrorCode(404, ['manage-users' => ['ec5_91']]);
         }
 
         // Retrieve post data
-        $payload = $request->all();
+        $payload = request()->all();
 
         // Validate the inputs
         $ruleBulkImportUsers->validate($payload);
         if ($ruleBulkImportUsers->hasErrors()) {
             //kick user out if anything is invalid, teach him a lesson.
-            return $apiResponse->errorResponse(404, $ruleBulkImportUsers->errors());
+            return Response::apiErrorCode(404, $ruleBulkImportUsers->errors());
         }
 
         $emails = $payload['emails'];
@@ -196,11 +194,11 @@ class UserController
         //were there any errors?
         if (sizeof($validationErrors) === 0) {
             // Send http status code 200, ok!
-            $apiResponse->setData(['message' => trans('status_codes.ec5_345', ['role' => $newRole])]);
-            return $apiResponse->toJsonResponse(200);
+            $data = ['message' => trans('status_codes.ec5_345', ['role' => $newRole])];
+            return Response::apiData($data);
         } else {
             //warn user about errors (manager roles which cannot be switched)
-            return $apiResponse->errorResponse(400, $validationErrors);
+            return Response::apiErrorCode(400, $validationErrors);
         }
     }
 }

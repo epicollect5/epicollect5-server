@@ -2,7 +2,6 @@
 
 namespace ec5\Http\Controllers\Api\OAuth;
 
-use ec5\Http\Controllers\Api\ApiResponse;
 use ec5\Models\OAuth\OAuthAccessToken;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -14,6 +13,7 @@ use League\OAuth2\Server\Exception\OAuthServerException;
 use Log;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Response;
 use Zend\Diactoros\Response as Psr7Response;
 
 class OAuthController
@@ -63,10 +63,9 @@ class OAuthController
      * Authorize a client to access by issuing an access_token
      *
      * @param ServerRequestInterface $request
-     * @param ApiResponse $apiResponse
      * @return JsonResponse|ResponseInterface
      */
-    public function issueToken(ServerRequestInterface $request, ApiResponse $apiResponse)
+    public function issueToken(ServerRequestInterface $request)
     {
         // Default error code
         $errors['token issue'] = ['ec5_254'];
@@ -98,6 +97,6 @@ class OAuthController
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
         }
 
-        return $apiResponse->errorResponse(400, $errors);
+        return Response::apiErrorCode(400, $errors);
     }
 }

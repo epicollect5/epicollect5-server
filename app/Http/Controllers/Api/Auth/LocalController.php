@@ -2,12 +2,10 @@
 
 namespace ec5\Http\Controllers\Api\Auth;
 
-use ec5\Http\Controllers\Api\ApiResponse;
 use ec5\Libraries\Jwt\JwtUserProvider;
-use Illuminate\Http\Request;
-use Config;
 use Auth;
 use Log;
+use Response;
 
 class LocalController extends AuthController
 {
@@ -28,15 +26,10 @@ class LocalController extends AuthController
 
     /**
      * Handle a login request to the application.
-     *
-     * @param Request $request
-     * @param ApiResponse $apiResponse
-     * @return \Illuminate\Http\JsonResponse
-     *
      */
-    public function authenticate(Request $request, ApiResponse $apiResponse)
+    public function authenticate()
     {
-        $credentials = $request->only('username', 'password');
+        $credentials = request()->only('username', 'password');
 
         //do we accept local auth?
         if (in_array('local', $this->authMethods) || $this->isAuthApiLocalEnabled) {
@@ -47,28 +40,27 @@ class LocalController extends AuthController
                 'password' => $credentials['password'],
                 'state' => config('epicollect.strings.user_state.active')
             ])) {
-                // Log::info('Local Login successful: ' . $credentials['username']);
                 // Jwt
-                $apiResponse->setData(Auth::guard()->authorizationResponse());
+                $data = Auth::guard()->authorizationResponse();
                 // User name in meta
-                $apiResponse->setMeta([
+                $meta = [
                     'user' => [
                         'name' => Auth::guard()->user()->name,
                         'email' => Auth::guard()->user()->email
                     ]
-                ]);
+                ];
                 // Return JWT response
-                return $apiResponse->toJsonResponse(200, 0);
+                return Response::apiData($data, $meta);
             }
             // Log::error('Local Login failed: ' . $credentials['username']);
             $error['api-local-login'] = ['ec5_12'];
-            return $apiResponse->errorResponse(404, $error);
+            return Response::apiErrorCode(404, $error);
         }
 
         // Auth method not allowed
         $error['api-local-login'] = ['ec5_55'];
 
         Log::error('Local Login not allowed: ' . $credentials['username']);
-        return $apiResponse->errorResponse(400, $error);
+        return Response::apiErrorCode(400, $error);
     }
 }

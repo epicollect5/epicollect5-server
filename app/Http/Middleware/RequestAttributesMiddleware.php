@@ -5,7 +5,6 @@ namespace ec5\Http\Middleware;
 use Closure;
 use ec5\DTO\ProjectDTO;
 use ec5\DTO\ProjectRoleDTO;
-use ec5\Http\Controllers\Api\ApiResponse as ApiResponse;
 use ec5\Models\Project\Project;
 use ec5\Services\ProjectService;
 use ec5\Traits\Middleware\MiddlewareTools;
@@ -20,7 +19,6 @@ abstract class RequestAttributesMiddleware
 
     protected $request;
     protected $search;
-    protected $apiResponse;
     protected $error;
     protected $requestedProject;
     protected $requestedUser;
@@ -41,14 +39,12 @@ abstract class RequestAttributesMiddleware
     /**
      * ProjectPermissionsBase constructor.
      * @param Request $request
-     * @param ApiResponse $apiResponse
      * @param ProjectDTO $requestedProject
      */
-    public function __construct(Request $request, ApiResponse $apiResponse, ProjectDTO $requestedProject)
+    public function __construct(Request $request, ProjectDTO $requestedProject)
     {
         $this->requestedProject = $requestedProject;
         $this->request = $request;
-        $this->apiResponse = $apiResponse;
     }
 
     /**
@@ -63,13 +59,13 @@ abstract class RequestAttributesMiddleware
         $slug = $request->route()->parameter('project_slug');
         $slug = Str::slug($slug, '-');
         if (empty($slug)) {
-            return $this->errorResponse($this->request, 'ec5_21', 404);
+            return $this->middlewareErrorResponse($this->request, 'ec5_21', 404);
         }
         $this->setRequestedProject($slug);
 
         // Check the project exists
         if ($this->requestedProject->getId() === null) {
-            return $this->errorResponse($this->request, 'ec5_11', 404);
+            return $this->middlewareErrorResponse($this->request, 'ec5_11', 404);
         }
 
         // Set the user
@@ -80,7 +76,7 @@ abstract class RequestAttributesMiddleware
 
         // Check if user has permission to access
         if (!$this->hasPermission()) {
-            return $this->errorResponse($this->request, $this->error, 404);
+            return $this->middlewareErrorResponse($this->request, $this->error, 404);
         }
 
         $this->request->attributes->add(['requestedProject' => $this->requestedProject]);

@@ -2,14 +2,14 @@
 
 namespace ec5\Http\Controllers\Api\Auth;
 
-use ec5\Http\Controllers\Api\ApiResponse;
 use ec5\Libraries\Jwt\JwtUserProvider;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use ec5\Libraries\Ldap\Ldap;
 use Exception;
-use Config;
 use Auth;
 use Log;
+use Response;
 
 class LdapController extends AuthController
 {
@@ -32,11 +32,9 @@ class LdapController extends AuthController
      * Handle an ldap login api request to the application.
      *
      * @param Request $request
-     * @param ApiResponse $apiResponse
-     * @return \Illuminate\Http\JsonResponse
-     *
+     * @return JsonResponse
      */
-    public function authenticate(Request $request, ApiResponse $apiResponse)
+    public function authenticate(Request $request)
     {
         $credentials = $request->only('username', 'password');
 
@@ -49,7 +47,7 @@ class LdapController extends AuthController
 
                 // If we can't connect
                 if (Ldap::hasErrors()) {
-                    return $apiResponse->errorResponse(404, Ldap::errors());
+                    return Response::apiErrorCode(404, Ldap::errors());
                 }
 
                 $ldapUser = Ldap::retrieveByCredentials($credentials);
@@ -58,7 +56,7 @@ class LdapController extends AuthController
                 if (!$ldapUser) {
                     Log::error('LDAP Login failed - cant find ldap user: ' . $credentials['username']);
                     $error['api/login'] = ['ec5_33'];
-                    return $apiResponse->errorResponse(404, $error);
+                    return Response::apiErrorCode(404, $error);
                 }
 
                 $user = $this->provider->findUserByEmail($ldapUser->getAuthIdentifier());
@@ -67,23 +65,23 @@ class LdapController extends AuthController
                 if (!$user || $user->state != config('epicollect.strings.user_state.active')) {
                     Log::error('LDAP Login failed - cant find ec5 user: ' . $credentials['username']);
                     $error['api/login'] = ['ec5_33'];
-                    return $apiResponse->errorResponse(404, $error);
+                    return Response::apiErrorCode(404, $error);
                 }
 
                 // Log user in
                 Auth::guard()->login($user);
                 // JWT
-                $apiResponse->setData(Auth::guard()->authorizationResponse());
+                $data = Auth::guard()->authorizationResponse();
                 // User name in meta
-                $apiResponse->setMeta([
+                $meta = [
                     'user' => [
                         'name' => Auth::guard()->user()->name,
                         'email' => Auth::guard()->user()->email
                     ]
-                ]);
+                ];
                 // Return JWT response
                 Log::info('LDAP Login successful: ' . $credentials['username']);
-                return $apiResponse->toJsonResponse(200, 0);
+                return Response::apiData($data, $meta);
             } catch (Exception $e) {
                 // If any exceptions, return error response: could not authenticate
                 Log::error('LDAP Login failed - exception thrown: ', null, [json_encode($e)]);
@@ -91,12 +89,12 @@ class LdapController extends AuthController
 
             Log::error('LDAP Login failed: ' . $credentials['username']);
             $error['api/login'] = ['ec5_33'];
-            return $apiResponse->errorResponse(404, $error);
+            return Response::apiErrorCode(404, $error);
         }
 
         Log::error('LDAP Login not allowed: ' . $credentials['username']);
         // Auth method not allowed
         $error['api/login'] = ['ec5_55'];
-        return $apiResponse->errorResponse(400, $error);
+        return Response::apiErrorCode(400, $error);
     }
 }

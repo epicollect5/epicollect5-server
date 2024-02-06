@@ -9,17 +9,15 @@ use Exception;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
-use Psr\Log\LoggerInterface;
 use Illuminate\Session\TokenMismatchException;
-use ec5\Exceptions\UserNotVerifiedException;
 use Redirect;
 use App;
 
-use ec5\Http\Controllers\Api\ApiResponse;
 
 class Handler extends ExceptionHandler
 {
@@ -37,14 +35,9 @@ class Handler extends ExceptionHandler
         ValidationException::class,
     ];
 
-    /**
-     * @var ApiResponse
-     */
-    protected $apiResponse;
 
-    public function __construct(LoggerInterface $log, ApiResponse $apiResponse)
+    public function __construct()
     {
-        $this->apiResponse = $apiResponse;
         parent::__construct(app());
     }
 
@@ -55,6 +48,7 @@ class Handler extends ExceptionHandler
      *
      * @param \Exception $e
      * @return void
+     * @throws Exception
      */
     public function report(Exception $e)
     {
@@ -80,24 +74,24 @@ class Handler extends ExceptionHandler
             }
 
             //in development, return a 422 error for debugging
-            return $this->errorResponse($request, 'page not found exception', 'ec5_219', 422);
+            return $this->middlewareErrorResponse($request, 'page not found exception', 'ec5_219', 422);
         }
 
         // Handle method not allowed exceptions
         if ($e instanceof MethodNotAllowedHttpException) {
-            return $this->errorResponse($request, 'method not allowed exception', 'ec5_219', 422);
+            return $this->middlewareErrorResponse($request, 'method not allowed exception', 'ec5_219', 422);
         }
 
         // Handle token mismatch exceptions
         if ($e instanceof TokenMismatchException) {
             // todo: redirect to login?
-            return $this->errorResponse($request, 'csrf exception', 'ec5_116', 422);
+            return $this->middlewareErrorResponse($request, 'csrf exception', 'ec5_116', 422);
         }
 
         // Handle user not verified exceptions
         if ($e instanceof UserNotVerifiedException) {
             // todo: redirect to send verification email?
-            return $this->errorResponse($request, 'user not verified exception', 'ec5_374', 422);
+            return $this->middlewareErrorResponse($request, 'user not verified exception', 'ec5_374', 422);
         }
 
         return parent::render($request, $e);
@@ -112,7 +106,7 @@ class Handler extends ExceptionHandler
      */
     protected function unauthenticated($request, AuthenticationException $exception)
     {
-        return $this->errorResponse($request, 'unauthenticated', 'ec5_70', 422);
+        return $this->middlewareErrorResponse($request, 'unauthenticated', 'ec5_70', 422);
     }
 
     /**
@@ -122,13 +116,13 @@ class Handler extends ExceptionHandler
      * @param $httpStatusCode
      * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    private function errorResponse(Request $request, $type, $errorCode, $httpStatusCode)
+    private function middlewareErrorResponse(Request $request, $type, $errorCode, $httpStatusCode)
     {
 
         $errors = [$type => [$errorCode]];
 
         if ($this->isJsonRequest($request)) {
-            return $this->apiResponse->errorResponse($httpStatusCode, $errors);
+            return Response::apiErrorCode($httpStatusCode, $errors);
         }
 
         if ($errorCode == 'ec5_77') {

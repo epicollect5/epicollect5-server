@@ -75,7 +75,7 @@ class ProjectEditControllerTest extends TestCase
                 $response[0]->assertStatus(200);
 
                 $json = json_decode($response[0]->getContent(), true);
-                $this->assertEquals($json['access'], $accessValue);
+                $this->assertEquals($json['data']['access'], $accessValue);
                 $this->assertEquals($accessValue, Project::where('id', $this->project->id)->value('access'));
 
                 $projectStructure = ProjectStructure::where('project_id', $this->project->id)->first();
@@ -105,7 +105,7 @@ class ProjectEditControllerTest extends TestCase
                 $response[0]->assertStatus(200);
 
                 $json = json_decode($response[0]->getContent(), true);
-                $this->assertEquals($json['status'], $statusValue);
+                $this->assertEquals($json['data']['status'], $statusValue);
                 $this->assertEquals($statusValue, Project::where('id', $this->project->id)->value('status'));
 
                 $projectStructure = ProjectStructure::where('project_id', $this->project->id)->first();
@@ -136,7 +136,7 @@ class ProjectEditControllerTest extends TestCase
                 $response[0]->assertStatus(200);
 
                 $json = json_decode($response[0]->getContent(), true);
-                $this->assertEquals($json['visibility'], $visibilityValue);
+                $this->assertEquals($json['data']['visibility'], $visibilityValue);
                 $this->assertEquals($visibilityValue, Project::where('id', $this->project->id)
                     ->value('visibility'));
 
@@ -167,7 +167,7 @@ class ProjectEditControllerTest extends TestCase
                 $response[0]->assertStatus(200);
 
                 $json = json_decode($response[0]->getContent(), true);
-                $this->assertEquals($json['category'], $category);
+                $this->assertEquals($json['data']['category'], $category);
                 $this->assertEquals($category, Project::where('id', $this->project->id)->value('category'));
 
                 $projectStructure = ProjectStructure::where('project_id', $this->project->id)->first();

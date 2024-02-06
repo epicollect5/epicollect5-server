@@ -3,7 +3,6 @@
 namespace ec5\Http\Controllers\Api\Project;
 
 use Auth;
-use ec5\Http\Controllers\Api\ApiResponse as ApiResponse;
 use ec5\Http\Validation\Entries\Upload\RuleCanBulkUpload;
 use ec5\Http\Validation\Project\RuleName;
 use ec5\Models\Project\Project;
@@ -11,9 +10,9 @@ use ec5\Models\Project\ProjectStats;
 use ec5\Traits\Requests\RequestAttributes;
 use Exception;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Log;
+use Response;
 
 class ProjectController
 {
@@ -21,11 +20,10 @@ class ProjectController
     use RequestAttributes;
 
     /**
-     * @param ApiResponse $apiResponse
      * @param ProjectStats $projectStats
      * @return JsonResponse
      */
-    public function show(ApiResponse $apiResponse, ProjectStats $projectStats)
+    public function show(ProjectStats $projectStats)
     {
         $data = $this->requestedProject()->getProjectDefinition()->getData();
 
@@ -61,7 +59,7 @@ class ProjectController
             $userAvatar = config('app.url') . '/images/avatar-placeholder.png';
         }
 
-        $apiResponse->setMeta([
+        $meta = [
             'project_extra' => $projectExtra,
             'project_user' => [
                 'name' => $userName,
@@ -73,18 +71,16 @@ class ProjectController
             'project_stats' => array_merge($this->requestedProject()->getProjectStats()->toArray(), [
                 'structure_last_updated' => $this->requestedProject()->getProjectStats()->structure_last_updated
             ])
-        ]);
-        $apiResponse->setData($data);
+        ];
 
-        return $apiResponse->toJsonResponse('200', $options = 0);
+        return Response::apiData($data, $meta);
     }
 
     /**
-     * @param ApiResponse $apiResponse
      * @param ProjectStats $projectStats
      * @return JsonResponse
      */
-    public function export(ApiResponse $apiResponse, ProjectStats $projectStats)
+    public function export(ProjectStats $projectStats)
     {
         $data = $this->requestedProject()->getProjectDefinition()->getData();
         //todo HACK!!!, we needed to expose the creation date of a project at a later stage and this was the laziest way ;)
@@ -94,24 +90,23 @@ class ProjectController
         $homepage = config('app.url') . '/project/' . $this->requestedProject()->slug;
         $data['project']['homepage'] = $homepage;
 
-        $apiResponse->setData($data);
-
         //todo: update project stats (a try catch need in case it does not work?)
         // Update the project stats counts
         $projectStats->updateProjectStats($this->requestedProject()->getId());
         Log::info('ProjectController export() calls updateProjectEntryStats()');
 
-        $apiResponse->setMeta([
+        $meta = [
             'project_mapping' => $this->requestedProject()->getProjectMapping()->getData(),
             'project_stats' => array_merge($this->requestedProject()->getProjectStats()->toArray(), [
                 'structure_last_updated' => $this->requestedProject()->getProjectStats()->structure_last_updated
             ])
-        ]);
+        ];
 
-        return $apiResponse->toJsonResponse('200', $options = 0);
+        return Response::apiData($data, $meta);
+
     }
 
-    public function search(ApiResponse $apiResponse, $name = '')
+    public function search($name = '')
     {
         $hits = [];
         $projects = [];
@@ -127,38 +122,38 @@ class ProjectController
             $data['project'] = $hit;
             $projects[] = $data;
         }
-        // Set the data
-        $apiResponse->setData($projects);
 
-        return $apiResponse->toJsonResponse('200', $options = 0);
+        return Response::apiData($projects);
+
     }
 
-    public function exists(ApiResponse $apiResponse, RuleName $ruleName, $name)
+    public function exists(RuleName $ruleName, $name)
     {
         $data['name'] = $name;
         $data['slug'] = Str::slug($name, '-');
         // Run validation
         $ruleName->validate($data);
-        // todo should type, id, attributes be setter methods in ApiResponse ?
-        $apiResponse->setData([
+        
+        $data = [
             'type' => 'exists',
             'id' => $data['slug'],
             'exists' => $ruleName->hasErrors()
-        ]);
-        return $apiResponse->toJsonResponse('200', $options = 0);
+        ];
+
+        return Response::apiData($data);
     }
 
-    public function version(ApiResponse $apiResponse, $slug)
+    public function version($slug)
     {
         // If no project found, bail out
         $version = Project::version($slug);
         if (!$version) {
             $errors = ['version' => ['ec5_11']];
-            return $apiResponse->errorResponse('500', $errors);
+            return Response::apiErrorCode('500', $errors);
         }
 
         //return updated_at as the version
-        $apiResponse->setData([
+        $data = [
             'type' => 'project-version',
             'id' => $slug,
             'attributes' => [
@@ -166,24 +161,24 @@ class ProjectController
                 'version' => (string)strtotime($version)
             ]
 
-        ]);
-        return $apiResponse->toJsonResponse('200', $options = 0);
+        ];
+        return Response::apiData($data);
     }
 
-    public function updateCanBulkUpload(Request $request, ApiResponse $apiResponse, RuleCanBulkUpload $ruleCanBulkUpload)
+    public function updateCanBulkUpload(RuleCanBulkUpload $ruleCanBulkUpload)
     {
         if (!$this->requestedProjectRole()->canEditProject()) {
             $errors = ['ec5_91'];
-            return $apiResponse->errorResponse(400, ['errors' => $errors]);
+            return Response::apiErrorCode(400, ['errors' => $errors]);
         }
 
         // Get request params
-        $params = $request->all();
+        $params = request()->all();
 
         //validate params
         $ruleCanBulkUpload->validate($params);
         if ($ruleCanBulkUpload->hasErrors()) {
-            return $apiResponse->errorResponse(400, $ruleCanBulkUpload->errors());
+            return Response::apiErrorCode(400, $ruleCanBulkUpload->errors());
         }
 
         $canBulkUpload = $params['can_bulk_upload'];
@@ -193,10 +188,10 @@ class ProjectController
             $project->save();
         } catch (\Exception $e) {
             $errors = ['ec5_361'];
-            return $apiResponse->errorResponse(400, ['errors' => $errors]);
+            return Response::apiErrorCode(400, ['errors' => $errors]);
         }
 
-        $apiResponse->setData(['message' => trans('status_codes.ec5_362')]);
-        return $apiResponse->toJsonResponse(200);
+        $data = ['message' => trans('status_codes.ec5_362')];
+        return Response::apiData($data);
     }
 }

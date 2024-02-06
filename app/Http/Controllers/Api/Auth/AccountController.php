@@ -2,7 +2,6 @@
 
 namespace ec5\Http\Controllers\Api\Auth;
 
-use ec5\Http\Controllers\Api\ApiResponse;
 use ec5\Http\Controllers\Controller;
 use ec5\Mail\UserAccountDeletionConfirmation;
 use ec5\Models\Project\Project;
@@ -17,20 +16,14 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Log;
+use Response;
 
 class AccountController extends Controller
 {
     use Archiver, Remover;
 
-    protected $apiResponse;
-
-    function __construct(ApiResponse $apiResponse)
-    {
-        $this->apiResponse = $apiResponse;
-    }
-
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function handleDeletionRequest()
     {
@@ -127,7 +120,7 @@ class AccountController extends Controller
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     protected function archiveProjectsCreatedByUser($projects, $userId)
     {
@@ -176,21 +169,20 @@ class AccountController extends Controller
         //send confirmation email to user
         try {
             Mail::to($email)->send(new UserAccountDeletionConfirmation());
-        } catch (\Exception $e) {
-            return $this->apiResponse->errorResponse(400, [
+        } catch (Exception $e) {
+            return Response::apiErrorCode(400, [
                 'account-deletion' => ['ec5_103']
             ]);
         }
         //return a JSON response (account deleted, will trigger a page refresh)
         $data = ['id' => 'account-deletion-performed', 'deleted' => true];
-        $this->apiResponse->setData($data);
+        return Response::apiData($data);
 
-        return $this->apiResponse->toJsonResponse(200, 0);
     }
 
     private function sendResponseError()
     {
-        return $this->apiResponse->errorResponse(400, [
+        return Response::apiErrorCode(400, [
             'account-deletion' => ['ec5_104']
         ]);
     }
@@ -208,7 +200,7 @@ class AccountController extends Controller
                 return false;
             }
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             return false;
         }

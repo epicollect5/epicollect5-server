@@ -56,9 +56,9 @@ window.EC5.projectDetails = window.EC5.projectDetails || {};
         data[action] = setTo;
 
         $.when(window.EC5.projectUtils.postRequest(url, data))
-            .done(function (data) {
+            .done(function (response) {
                 try {
-                    $.each(data, function (key, value) {
+                    $.each(response.data, function (key, value) {
                         window.EC5.projectDetails.parameters[key] = value;
                     });
                     module.updateSettings(action);

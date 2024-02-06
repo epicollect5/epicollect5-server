@@ -5,7 +5,6 @@ namespace ec5\Http\Controllers\Api\Auth;
 use Auth;
 use Carbon\Carbon;
 use DB;
-use ec5\Http\Controllers\Api\ApiResponse;
 use ec5\Http\Validation\Auth\RulePasswordlessApiCode;
 use ec5\Http\Validation\Auth\RulePasswordlessApiLogin;
 use ec5\Libraries\Jwt\JwtUserProvider;
@@ -16,10 +15,10 @@ use ec5\Models\User\UserPasswordlessApi;
 use ec5\Models\User\UserProvider;
 use ec5\Services\UserService;
 use Exception;
-use Illuminate\Http\Request;
 use Log;
 use Mail;
 use PDOException;
+use Response;
 
 class PasswordlessController extends AuthController
 {
@@ -28,17 +27,17 @@ class PasswordlessController extends AuthController
         parent::__construct($provider);
     }
 
-    public function sendCode(Request $request, RulePasswordlessApiCode $validator, ApiResponse $apiResponse)
+    public function sendCode(RulePasswordlessApiCode $validator)
     {
         $tokenExpiresAt = config('auth.passwordless_token_expire', 300);
 
-        $inputs = $request->all();
+        $inputs = request()->all();
 
         //validate request
         $validator->validate($inputs);
         if ($validator->hasErrors()) {
             // Redirect back if errors
-            return $apiResponse->errorResponse(400, $validator->errors());
+            return Response::apiErrorCode(400, $validator->errors());
         }
 
         $email = $inputs['email'];
@@ -64,14 +63,14 @@ class PasswordlessController extends AuthController
             Log::error('Error generating passwordless access code via appi');
             DB::rollBack();
 
-            return $apiResponse->errorResponse(400, [
+            return Response::apiErrorCode(400, [
                 'passwordless-request-code' => ['ec5_104']
             ]);
         } catch (Exception $e) {
             Log::error('Error generating password access code via api');
             DB::rollBack();
 
-            return $apiResponse->errorResponse(400, [
+            return Response::apiErrorCode(400, [
                 'passwordless-request-code' => ['ec5_104']
             ]);
         }
@@ -80,23 +79,23 @@ class PasswordlessController extends AuthController
         try {
             Mail::to($email)->send(new UserPasswordlessApiMail($code));
         } catch (Exception $e) {
-            return $apiResponse->errorResponse(400, [
+            return Response::apiErrorCode(400, [
                 'passwordless-request-code' => ['ec5_116']
             ]);
         }
 
         //send success response (email sent)
-        return $apiResponse->successResponse('ec5_372');
+        return Response::apiSuccessCode('ec5_372');
     }
 
     //try to authenticate user
-    public function login(Request $request, ApiResponse $apiResponse, RulePasswordlessApiLogin $validator)
+    public function login(RulePasswordlessApiLogin $validator)
     {
         //validate request
-        $inputs = $request->all();
+        $inputs = request()->all();
         $validator->validate($inputs);
         if ($validator->hasErrors()) {
-            return $apiResponse->errorResponse(400, $validator->errors());
+            return Response::apiErrorCode(400, $validator->errors());
         }
 
         // Check this auth method is allowed
@@ -111,13 +110,13 @@ class PasswordlessController extends AuthController
             //Does the email exists?
             if ($userPasswordless === null) {
                 Log::error('Error validating passworless code', ['error' => 'Email does not exist']);
-                return $apiResponse->errorResponse(400, ['passwordless-api' => ['ec5_378']]);
+                return Response::apiErrorCode(400, ['passwordless-api' => ['ec5_378']]);
             }
 
             //check if the code is valid
             if (!$userPasswordless->isValidCode($code)) {
                 Log::error('Error validating passworless code', ['error' => 'Code not valid']);
-                return $apiResponse->errorResponse(400, ['passwordless-api' => ['ec5_378']]);
+                return Response::apiErrorCode(400, ['passwordless-api' => ['ec5_378']]);
             }
 
             //code is valid, remove it
@@ -129,7 +128,7 @@ class PasswordlessController extends AuthController
                 //create the new user as passwordless
                 $user = UserService::createPasswordlessUser($email);
                 if (!$user) {
-                    return $apiResponse->errorResponse(400, ['passwordless-api' => ['ec5_376']]);
+                    return Response::apiErrorCode(400, ['passwordless-api' => ['ec5_376']]);
                 }
             }
 
@@ -189,20 +188,20 @@ class PasswordlessController extends AuthController
             //Login user as passwordless
             Auth::guard()->login($user, false);
             // JWT
-            $apiResponse->setData(Auth::guard()->authorizationResponse());
+            $data = Auth::guard()->authorizationResponse();
             // User name in meta
-            $apiResponse->setMeta([
+            $meta = [
                 'user' => [
                     'name' => Auth::guard()->user()->name,
                     'email' => Auth::guard()->user()->email
                 ]
-            ]);
+            ];
             // Return JWT response
-            return $apiResponse->toJsonResponse(200, 0);
+            return Response::apiData($data, $meta);
         }
 
         // Auth method not allowed
-        return $apiResponse->errorResponse(400, [
+        return Response::apiErrorCode(400, [
             'passwordless-api' => ['ec5_55']
         ]);
     }

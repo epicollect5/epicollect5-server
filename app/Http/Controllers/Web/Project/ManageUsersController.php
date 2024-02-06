@@ -2,7 +2,6 @@
 
 namespace ec5\Http\Controllers\Web\Project;
 
-use ec5\Http\Controllers\Api\ApiResponse;
 use ec5\Http\Validation\Project\RuleEmail;
 use ec5\Http\Validation\Project\RuleProjectRole;
 use ec5\Models\Project\ProjectRole;
@@ -14,11 +13,11 @@ use Illuminate\Contracts\View\Factory;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\URL;
 use Illuminate\View\View;
 use Log;
+use Response;
 use Throwable;
 
 class ManageUsersController
@@ -26,12 +25,11 @@ class ManageUsersController
     use RequestAttributes;
 
     /**
-     * @param Request $request
      * @param ProjectService $projectService
      * @return Factory|Application|JsonResponse|RedirectResponse|View
      * @throws Throwable
      */
-    public function index(Request $request, ProjectService $projectService)
+    public function index(ProjectService $projectService)
     {
         // Only managers (and creators) have access
         if (!$this->requestedProjectRole()->canManageUsers()) {
@@ -39,7 +37,7 @@ class ManageUsersController
         }
 
         // Get request data
-        $params = $request->all();
+        $params = request()->all();
         // Set per page limit
         $perPage = config('epicollect.limits.users_per_page');
         // Set search/roles/current page option defaults
@@ -78,7 +76,7 @@ class ManageUsersController
         }
 
         // If ajax, return rendered html
-        if ($request->ajax()) {
+        if (request()->ajax()) {
             // For ajax, we only want to return one rendered view
             // and one set of users for the specified role
             $projectUsers = $projectMembers[$options['roles'][0]];
@@ -127,29 +125,27 @@ class ManageUsersController
      * If the current user is creator/manager,
      * they cannot change their own role
      *
-     * @param Request $request
-     * @param ApiResponse $apiResponse
      * @param RuleProjectRole $ruleProjectRole
      * @param ProjectService $projectService
      * @return JsonResponse|RedirectResponse
      */
-    public function addUserRole(Request $request, ApiResponse $apiResponse, RuleProjectRole $ruleProjectRole, ProjectService $projectService)
+    public function addUserRole(RuleProjectRole $ruleProjectRole, ProjectService $projectService)
     {
         // Only creators and managers have access
         if (!$this->requestedProjectRole()->canManageUsers()) {
             // If ajax, return error json
-            if ($request->ajax()) {
-                return $apiResponse->errorResponse(404, ['manage-users' => ['ec5_91']]);
+            if (request()->ajax()) {
+                return Response::apiErrorCode(404, ['manage-users' => ['ec5_91']]);
             }
             return Redirect::back()->withErrors(['ec5_91']);
         }
 
-        $payload = $request->all();
+        $payload = request()->all();
         $ruleProjectRole->validate($payload);
         if ($ruleProjectRole->hasErrors()) {
             // If ajax, return error json
-            if ($request->ajax()) {
-                return $apiResponse->errorResponse(400, $ruleProjectRole->errors());
+            if (request()->ajax()) {
+                return Response::apiErrorCode(400, $ruleProjectRole->errors());
             }
             return Redirect::back()->withErrors($ruleProjectRole->errors());
         }
@@ -178,8 +174,8 @@ class ManageUsersController
         );
         if ($ruleProjectRole->hasErrors()) {
             // If ajax, return error json
-            if ($request->ajax()) {
-                return $apiResponse->errorResponse(400, $ruleProjectRole->errors());
+            if (request()->ajax()) {
+                return Response::apiErrorCode(400, $ruleProjectRole->errors());
             }
             return Redirect::back()->withErrors($ruleProjectRole->errors());
         }
@@ -191,17 +187,17 @@ class ManageUsersController
             $payload['role']
         )) {
             // If ajax, return error json
-            if ($request->ajax()) {
-                return $apiResponse->errorResponse(400, ['db' => ['ec5_104']]);
+            if (request()->ajax()) {
+                return Response::apiErrorCode(400, ['db' => ['ec5_104']]);
             }
             return Redirect::back()->withErrors(['db' => ['ec5_104']]);
         }
 
         // If ajax, return success json
-        if ($request->ajax()) {
+        if (request()->ajax()) {
             // Send http status code 200, ok!
-            $apiResponse->setData(['message' => trans('status_codes.ec5_88')]);
-            return $apiResponse->toJsonResponse(200);
+            $data = ['message' => trans('status_codes.ec5_88')];
+            return Response::apiData($data);
         }
         // Redirect back to admin page with hash value
         return Redirect::to(URL::previous() . '#' . $payload['role'])->with('message', 'ec5_88');
@@ -212,30 +208,29 @@ class ManageUsersController
      * If the current user is creator/manager,
      * they cannot remove their own role
      *
-     * @param Request $request
-     * @param ApiResponse $apiResponse
      * @param RuleProjectRole $ruleProjectRole
+     * @param RuleEmail $ruleEmail
      * @param ProjectService $projectService
      * @return JsonResponse|RedirectResponse
      */
-    public function removeUserRole(Request $request, ApiResponse $apiResponse, RuleProjectRole $ruleProjectRole, RuleEmail $ruleEmail, ProjectService $projectService)
+    public function removeUserRole(RuleProjectRole $ruleProjectRole, RuleEmail $ruleEmail, ProjectService $projectService)
     {
         // Only managers and up have access
         if (!$this->requestedProjectRole()->canManageUsers()) {
             // If ajax, return error json
-            if ($request->ajax()) {
-                return $apiResponse->errorResponse(404, ['manage-users' => ['ec5_91']]);
+            if (request()->ajax()) {
+                return Response::apiErrorCode(404, ['manage-users' => ['ec5_91']]);
             }
             return Redirect::back()->withErrors(['ec5_91']);
         }
 
         // Retrieve post data
-        $payload = $request->all();
+        $payload = request()->all();
         $ruleEmail->validate($payload);
         if ($ruleEmail->hasErrors()) {
             // If ajax, return error json
-            if ($request->ajax()) {
-                return $apiResponse->errorResponse(400, $ruleEmail->errors());
+            if (request()->ajax()) {
+                return Response::apiErrorCode(400, $ruleEmail->errors());
             }
             return Redirect::back()->withErrors($ruleEmail->errors());
         }
@@ -243,8 +238,8 @@ class ManageUsersController
         // Retrieve the user whose role is to be removed
         $user = User::where('email', '=', $payload['email'])->first();
         if (!$user) {
-            if ($request->ajax()) {
-                return $apiResponse->errorResponse(400, ['manage-users' => ['ec5_90']]);
+            if (request()->ajax()) {
+                return Response::apiErrorCode(400, ['manage-users' => ['ec5_90']]);
             }
             return Redirect::back()->withErrors(['ec5_90']);
         }
@@ -259,8 +254,8 @@ class ManageUsersController
             $userProjectRole->getRole()
         );
         if ($ruleProjectRole->hasErrors()) {
-            if ($request->ajax()) {
-                return $apiResponse->errorResponse(400, $ruleProjectRole->errors());
+            if (request()->ajax()) {
+                return Response::apiErrorCode(400, $ruleProjectRole->errors());
             }
             return Redirect::back()->withErrors($ruleProjectRole->errors());
         }
@@ -272,17 +267,16 @@ class ManageUsersController
                 ->delete();
         } catch (Exception $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
-            if ($request->ajax()) {
-                return $apiResponse->errorResponse(400, ['manage-user' => ['ec5_104']]);
+            if (request()->ajax()) {
+                return Response::apiErrorCode(400, ['manage-user' => ['ec5_104']]);
             }
             return redirect()->back()->withErrors(['manage-user' => ['ec5_104']]);
         }
 
         // If ajax, return success json
-        if ($request->ajax()) {
+        if (request()->ajax()) {
             // Send http status code 200, ok!
-            $apiResponse->setData(['message' => trans('status_codes.ec5_89')]);
-            return $apiResponse->toJsonResponse(200);
+            return Response::apiData(['message' => trans('status_codes.ec5_89')]);
         }
         // Redirect back to admin page
         return Redirect::back()->with('message', 'ec5_89');

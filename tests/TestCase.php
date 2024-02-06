@@ -46,7 +46,7 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
 
         echo "\e[0;31m" . $e->getMessage() . "\e[0m" . PHP_EOL;
         // Get the expected and actual values from the ComparisonFailure object
-        if ($e->getComparisonFailure() !== null) {
+        if (method_exists($e, 'getComparisonFailure') && $e->getComparisonFailure() !== null) {
             $expected = $e->getComparisonFailure()->getExpected() . PHP_EOL;;
             $actual = $e->getComparisonFailure()->getActual() . PHP_EOL;;
         }

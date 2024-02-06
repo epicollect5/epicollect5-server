@@ -2,10 +2,11 @@
 
 namespace ec5\Http\Middleware;
 
-use ec5\Http\Controllers\Api\ApiResponse;
 use Illuminate\Support\Facades\Auth;
 use Closure;
 use ec5\Traits\Middleware\MiddlewareTools;
+use Response;
+
 
 class Unverified
 {
@@ -30,8 +31,7 @@ class Unverified
         if (Auth::guard($guard)->guest()) {
             if ($this->isJsonRequest($request)) {
                 $errors = ['auth' => ['ec5_219']];
-                $apiResponse = new ApiResponse();
-                return $apiResponse->errorResponse(404, $errors);
+                return Response::apiErrorCode(404, $errors);
             } else {
                 return redirect()->guest('login');
             }

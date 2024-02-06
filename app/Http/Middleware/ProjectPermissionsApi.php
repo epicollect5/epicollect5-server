@@ -3,7 +3,6 @@
 namespace ec5\Http\Middleware;
 
 use ec5\DTO\ProjectDTO;
-use ec5\Http\Controllers\Api\ApiResponse as ApiResponse;
 use ec5\Models\OAuth\OAuthClientProject;
 use Illuminate\Http\Request;
 use League\OAuth2\Server\Exception\OAuthServerException;
@@ -34,18 +33,16 @@ class ProjectPermissionsApi extends RequestAttributesMiddleware
      *
      * @param ResourceServer $server
      * @param Request $request
-     * @param ApiResponse $apiResponse
      * @param ProjectDTO $requestedProject
      */
     public function __construct(ResourceServer $server,
                                 Request        $request,
-                                ApiResponse    $apiResponse,
-                                ProjectDTO $requestedProject
+                                ProjectDTO     $requestedProject
     )
     {
         $this->server = $server;
 
-        parent::__construct($request, $apiResponse, $requestedProject);
+        parent::__construct($request, $requestedProject);
     }
 
     /**

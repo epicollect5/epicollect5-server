@@ -15,7 +15,7 @@ trait MiddlewareTools
      * @param $httpStatusCode
      * @return JsonResponse|RedirectResponse
      */
-    public function errorResponse(Request $request, $errorCode, $httpStatusCode)
+    public function middlewareErrorResponse(Request $request, $errorCode, $httpStatusCode)
     {
         $errors = ['middleware' => [$errorCode]];
         if ($this->isJsonRequest($request)) {

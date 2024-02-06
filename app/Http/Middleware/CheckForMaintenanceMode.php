@@ -3,10 +3,10 @@
 namespace ec5\Http\Middleware;
 
 use Closure;
-use ec5\Http\Controllers\Api\ApiResponse;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Foundation\Http\Exceptions\MaintenanceModeException;
 use ec5\Traits\Middleware\MiddlewareTools;
+use Response;
 
 class CheckForMaintenanceMode
 {
@@ -23,7 +23,6 @@ class CheckForMaintenanceMode
     /**
      * CheckForMaintenanceMode constructor.
      * @param Application $app
-     * @param ApiResponse $apiResponse
      */
     public function __construct(Application $app)
     {
@@ -39,8 +38,7 @@ class CheckForMaintenanceMode
 
             if ($this->isJsonRequest($request)) {
                 $errors = ['maintenance.mode' => ['ec5_252']];
-                $apiResponse = new ApiResponse();
-                return $apiResponse->errorResponse(404, $errors);
+                return Response::apiErrorCode(404, $errors);
             } else {
                 $data = json_decode(file_get_contents($this->app->storagePath() . '/framework/down'), true);
                 throw new MaintenanceModeException($data['time'], $data['retry'], $data['message']);

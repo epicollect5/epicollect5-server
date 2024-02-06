@@ -2,13 +2,14 @@
 
 namespace ec5\Http\Controllers\Web\Admin;
 
-use ec5\Http\Controllers\Api\ApiResponse;
 use ec5\Http\Controllers\Controller;
 use ec5\Http\Validation\Admin\RuleAddUser as AddUserValidator;
 use ec5\Http\Validation\Auth\RuleReset as RulePassword;
 use ec5\Models\User\User;
 use ec5\Models\User\UserProvider;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Response;
 
 class AdminUsersController extends Controller
 {
@@ -22,11 +23,8 @@ class AdminUsersController extends Controller
     */
 
     /**
-     * @param Request $request
-     * @param ApiResponse $apiResponse
      * @param AddUserValidator $validator
      * @param RulePassword $passwordValidator
-     * @return $this|\Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
      *
      * Add a new staff user from the admin panel
      *
@@ -35,46 +33,47 @@ class AdminUsersController extends Controller
      * A 'local' provider is also added
      *
      * The server role will be `basic`
+     * @return JsonResponse|RedirectResponse
      */
-    public function addUser(Request $request, ApiResponse $apiResponse, AddUserValidator $validator, RulePassword $passwordValidator)
+    public function addUser(AddUserValidator $validator, RulePassword $passwordValidator)
     {
-        $inputs = $request->all();
+        $inputs = request()->all();
 
         // Validate the data
         $validator->validate($inputs);
         if ($validator->hasErrors()) {
-            if ($request->ajax()) {
-                return $apiResponse->errorResponse(400, $validator->errors());
+            if (request()->ajax()) {
+                return Response::apiErrorCode(400, $validator->errors());
             }
             return redirect()->back()->withErrors($validator->errors());
         }
 
         $validator->additionalChecks($inputs['email']);
         if ($validator->hasErrors()) {
-            if ($request->ajax()) {
-                return $apiResponse->errorResponse(400, $validator->errors());
+            if (request()->ajax()) {
+                return Response::apiErrorCode(400, $validator->errors());
             }
             return redirect()->back()->withErrors($validator->errors());
         }
 
         $passwordValidator->validate($inputs);
         if ($passwordValidator->hasErrors()) {
-            if ($request->ajax()) {
-                return $apiResponse->errorResponse(400, $passwordValidator->errors());
+            if (request()->ajax()) {
+                return Response::apiErrorCode(400, $passwordValidator->errors());
             }
             return redirect()->back()->withErrors($passwordValidator->errors());
         }
         //mainly foolish password choices to check here
         $passwordValidator->additionalChecks($inputs, $inputs['email']);
         if ($passwordValidator->hasErrors()) {
-            if ($request->ajax()) {
-                return $apiResponse->errorResponse(400, $passwordValidator->errors());
+            if (request()->ajax()) {
+                return Response::apiErrorCode(400, $passwordValidator->errors());
             }
             return redirect()->back()->withErrors($passwordValidator->errors());
         }
 
         /**
-         * if the user exists, just add the local provider
+         * if the user exists, add the local provider
          * otherwise add both user and user provider as "local"
          *
          */
@@ -110,15 +109,11 @@ class AdminUsersController extends Controller
 
         // If successfully created
         if ($user->save()) {
-            // If ajax, return success json
-            if ($request->ajax()) {
-                return $apiResponse->toJsonResponse(200);
-            }
             // Redirect back to admin page
             return redirect()->back()->with('message', 'ec5_35');
         }
-        if ($request->ajax()) {
-            return $apiResponse->errorResponse(400, ['add-user' => ['ec5_376']]);
+        if (request()->ajax()) {
+            return Response::apiErrorCode(400, ['add-user' => ['ec5_376']]);
         }
         // Redirect back to admin page with errors
         return redirect()->back()->withErrors(['ec5_376']);

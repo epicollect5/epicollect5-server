@@ -2,7 +2,6 @@
 
 namespace ec5\Http\Controllers\Web\Project;
 
-use ec5\Http\Controllers\Api\ApiResponse;
 use ec5\Http\Validation\Project\RuleEntryLimits;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Traits\Eloquent\StatsRefresher;
@@ -11,9 +10,9 @@ use Illuminate\Contracts\View\Factory;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Redirect;
+use Response;
 
 class ProjectEntriesController
 {
@@ -38,18 +37,16 @@ class ProjectEntriesController
     }
 
     /**
-     * @param Request $request
-     * @param ApiResponse $apiResponse
      * @param RuleEntryLimits $ruleEntryLimits
      * @return Factory|Application|JsonResponse|RedirectResponse|View
      */
-    public function store(Request $request, ApiResponse $apiResponse, RuleEntryLimits $ruleEntryLimits)
+    public function store(RuleEntryLimits $ruleEntryLimits)
     {
         if (!$this->requestedProjectRole()->canEditProject()) {
             return view('errors.gen_error')->withErrors(['errors' => ['ec5_91']]);
         }
         // Get request data
-        $payload = $request->all();
+        $payload = request()->all();
 
         // unset the csrf token
         unset($payload['_token']);
@@ -66,8 +63,8 @@ class ProjectEntriesController
                 $ruleEntryLimits->validate($data);
                 if ($ruleEntryLimits->hasErrors()) {
                     // Otherwise error back and prompt user to add new
-                    if ($request->ajax()) {
-                        return $apiResponse->errorResponse(400, $ruleEntryLimits->errors());
+                    if (request()->ajax()) {
+                        return Response::apiErrorCode(400, $ruleEntryLimits->errors());
                     }
                     return Redirect::back()->withErrors($ruleEntryLimits->errors());
                 }
@@ -76,8 +73,8 @@ class ProjectEntriesController
                 $ruleEntryLimits->additionalChecks($this->requestedProject(), $ref, $data);
                 if ($ruleEntryLimits->hasErrors()) {
                     // Otherwise error back and prompt user to add new
-                    if ($request->ajax()) {
-                        return $apiResponse->errorResponse(400, $ruleEntryLimits->errors());
+                    if (request()->ajax()) {
+                        return Response::apiErrorCode(400, $ruleEntryLimits->errors());
                     }
                     return Redirect::back()->withErrors($ruleEntryLimits->errors());
                 }
@@ -89,15 +86,15 @@ class ProjectEntriesController
 
         //update project structure
         if (!ProjectStructure::updateStructures($this->requestedProject(), true)) {
-            if ($request->ajax()) {
-                return $apiResponse->errorResponse(400, ['manage-entries' => ['ec5_45']]);
+            if (request()->ajax()) {
+                return Response::apiErrorCode(400, ['manage-entries' => ['ec5_45']]);
             }
             return Redirect::back()->withErrors(['errors' => ['ec5_45']]);
         }
 
         //success
-        if ($request->ajax()) {
-            return $apiResponse->toJsonResponse(200);
+        if (request()->ajax()) {
+            return Response::apiSuccessCode('ec5_200');
         }
         return Redirect::back()->with('message', 'ec5_200');
     }

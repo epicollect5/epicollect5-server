@@ -2,21 +2,19 @@
 
 namespace ec5\Http\Controllers\Web\Admin;
 
-use ec5\Http\Controllers\Api\ApiResponse;
 use ec5\Http\Controllers\Controller;
 use ec5\Models\System\SystemStats;
+use Response;
 
 
 class AdminDataController extends Controller
 {
     private $dailySystemStats;
-    private $apiResponse;
 
-    public function __construct(SystemStats $systemStats, ApiResponse $apiResponse)
+    public function __construct(SystemStats $systemStats)
     {
         $this->dailySystemStats = $systemStats;
         $this->dailySystemStats->initDailyStats();
-        $this->apiResponse = $apiResponse;
     }
 
     public function show()
@@ -33,10 +31,10 @@ class AdminDataController extends Controller
         );
 
         if (sizeof($stats['users']) === 0) {
-            return $this->apiResponse->errorResponse(400, ['systems-stats' => 'ec5_356']);
+            return Response::apiErrorCode(400, ['systems-stats' => 'ec5_356']);
         }
 
-        return response()->apiResponse($stats);
+        return Response::apiData($stats);
     }
 
     public function getProjectsStats()
@@ -48,10 +46,10 @@ class AdminDataController extends Controller
         );
 
         if (sizeof($stats['projects']) === 0) {
-            return $this->apiResponse->errorResponse(400, ['systems-stats' => 'ec5_356']);
+            return Response::apiErrorCode(400, ['systems-stats' => 'ec5_356']);
         }
 
-        return response()->apiResponse($stats);
+        return Response::apiData($stats);
     }
 
     public function getEntriesStats()
@@ -64,9 +62,9 @@ class AdminDataController extends Controller
         );
 
         if (sizeof($stats['entries']) === 0 && sizeOf($stats['branch_entries']) === 0) {
-            return $this->apiResponse->errorResponse(400, ['systems-stats' => 'ec5_356']);
+            return Response::apiErrorCode(400, ['systems-stats' => 'ec5_356']);
         }
 
-        return response()->apiResponse($stats);
+        return Response::apiData($stats);
     }
 }

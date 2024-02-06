@@ -74,7 +74,7 @@ class ApiThrottleRequests
      */
     protected function buildResponse($request, $key, $maxAttempts): Response
     {
-        $response = $this->errorResponse($request, 'ec5_255', 429);
+        $response = $this->middlewareErrorResponse($request, 'ec5_255', 429);
         $retryAfter = $this->limiter->availableIn($key);
 
         return $this->addHeaders(

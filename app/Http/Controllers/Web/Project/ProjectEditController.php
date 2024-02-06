@@ -3,7 +3,6 @@
 namespace ec5\Http\Controllers\Web\Project;
 
 use DB;
-use ec5\Http\Controllers\Api\ApiResponse;
 use ec5\Http\Validation\Project\RuleProjectDefinitionDetails;
 use ec5\Http\Validation\Project\RuleSettings;
 use ec5\Models\Project\Project;
@@ -18,6 +17,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use Log;
 use Redirect;
+use Response;
 
 class ProjectEditController
 {
@@ -27,7 +27,6 @@ class ProjectEditController
     protected $slug;
     protected $allowedSettingActions = [];
     protected $request;
-    protected $apiResponse;
     protected $search;
     protected $ruleProjectDefinitionDetails;
     protected $ruleSettings;
@@ -35,22 +34,16 @@ class ProjectEditController
     /**
      * ProjectEditController constructor.
      *
-     * @param ApiResponse $apiResponse
      * @param RuleSettings $ruleSettings
      * @param RuleProjectDefinitionDetails $ruleProjectDefinitionDetails
      */
     public function __construct(
-        ApiResponse                  $apiResponse,
         RuleSettings                 $ruleSettings,
         RuleProjectDefinitionDetails $ruleProjectDefinitionDetails)
     {
-
-
-        $this->apiResponse = $apiResponse;
         $this->ruleProjectDefinitionDetails = $ruleProjectDefinitionDetails;
         $this->ruleSettings = $ruleSettings;
         $this->allowedSettingActions = array_keys(config('epicollect.strings.edit_settings'));
-
     }
 
     /**
@@ -65,17 +58,17 @@ class ProjectEditController
         $this->slug = $slug; //only used for routing imp: do not remove
 
         if (!request()->route('action') || !in_array($action, $this->allowedSettingActions)) {
-            return $this->apiResponse->errorResponse(400, ['errors' => ['ec5_29']]);
+            return Response::apiErrorCode(400, ['errors' => ['ec5_29']]);
         }
 
         if (!$this->requestedProjectRole()->canEditProject()) {
-            return $this->apiResponse->errorResponse(404, ['errors' => ['ec5_91']]);
+            return Response::apiErrorCode(404, ['errors' => ['ec5_91']]);
         }
 
         $params[$action] = request()->get($action);
-        $this->ruleSettings->validate($params, false);
+        $this->ruleSettings->validate($params);
         if ($this->ruleSettings->hasErrors()) {
-            return $this->apiResponse->errorResponse(400, $this->ruleSettings->errors());
+            return Response::apiErrorCode(400, $this->ruleSettings->errors());
         }
 
         if ($action === config('epicollect.strings.edit_settings.status')) {
@@ -90,17 +83,17 @@ class ProjectEditController
 
             $wasProjectUpdated = Project::where('id', $this->requestedProject()->getId())
                 ->update($params);
-            $wasProjectStructureUpdated = ProjectStructure::updateStructures($this->requestedProject(), false);
+            $wasProjectStructureUpdated = ProjectStructure::updateStructures($this->requestedProject());
 
             if ($wasProjectUpdated && $wasProjectStructureUpdated) {
                 DB::commit();
                 //todo: the following code, no one has any clue about
-                $out = [];
+                $data = [];
                 foreach ($this->allowedSettingActions as $value) {
-                    $out[$value] = $this->requestedProject()->$value;
+                    $data[$value] = $this->requestedProject()->$value;
                 }
-                $this->apiResponse->body = $out;
-                return $this->apiResponse->toJsonResponse(200);
+
+                return Response::apiData($data);
             } else {
                 throw new Exception('Cannot update project settings');
             }
@@ -108,7 +101,7 @@ class ProjectEditController
         } catch (Exception $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             DB::rollBack();
-            return $this->apiResponse->errorResponse(400, ['errors' => ['ec5_45']]);
+            return Response::apiErrorCode(400, ['errors' => ['ec5_45']]);
         }
     }
 
@@ -139,7 +132,7 @@ class ProjectEditController
             $payload['logo_height'] = $height;
         }
 
-        $this->ruleProjectDefinitionDetails->validate($payload, false);
+        $this->ruleProjectDefinitionDetails->validate($payload);
         if ($this->ruleProjectDefinitionDetails->hasErrors()) {
             return Redirect::back()->withErrors(
                 $this->ruleProjectDefinitionDetails->errors()

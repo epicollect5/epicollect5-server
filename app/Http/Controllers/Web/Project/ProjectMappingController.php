@@ -2,13 +2,13 @@
 
 namespace ec5\Http\Controllers\Web\Project;
 
-use ec5\Http\Controllers\Api\ApiResponse;
 use ec5\Http\Validation\Project\Mapping\RuleMappingCreate;
 use ec5\Http\Validation\Project\Mapping\RuleMappingDelete;
 use ec5\Http\Validation\Project\Mapping\RuleMappingStructure;
 use ec5\Http\Validation\Project\Mapping\RuleMappingUpdate;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Traits\Requests\RequestAttributes;
+use Response;
 
 class ProjectMappingController
 {
@@ -27,7 +27,7 @@ class ProjectMappingController
         return view('project.project_details', $vars);
     }
 
-    public function store(ApiResponse $apiResponse, RuleMappingCreate $ruleMappingCreate)
+    public function store(RuleMappingCreate $ruleMappingCreate)
     {
         if (!$this->requestedProjectRole()->canEditProject()) {
             return view('errors.gen_error')->withErrors(['errors' => 'ec5_91']);
@@ -39,12 +39,12 @@ class ProjectMappingController
         // Validate
         $ruleMappingCreate->validate($payload);
         if ($ruleMappingCreate->hasErrors()) {
-            return $apiResponse->errorResponse(422, $ruleMappingCreate->errors());
+            return Response::apiErrorCode(422, $ruleMappingCreate->errors());
         }
         // Check for additional
         $ruleMappingCreate->additionalChecks($projectMapping, $payload);
         if ($ruleMappingCreate->hasErrors()) {
-            return $apiResponse->errorResponse(422, $ruleMappingCreate->errors());
+            return Response::apiErrorCode(422, $ruleMappingCreate->errors());
         }
 
         // Create the new custom map
@@ -52,18 +52,17 @@ class ProjectMappingController
 
         if (!ProjectStructure::updateStructures($this->requestedProject())) {
             // DB insert error
-            return $apiResponse->errorResponse(400, ['errors' => ['ec5_116']]);
+            return Response::apiErrorCode(400, ['errors' => ['ec5_116']]);
         }
 
-        $apiResponse->setData([
+        $data = [
             'map_index' => $projectMapping->getLastMapIndex(),
             'mapping' => $projectMapping->getData()
-        ]);
-
-        return $apiResponse->toJsonResponse('200', $options = 0);
+        ];
+        return Response::apiData($data);
     }
 
-    public function delete(ApiResponse $apiResponse, RuleMappingDelete $ruleMappingDelete)
+    public function delete(RuleMappingDelete $ruleMappingDelete)
     {
         if (!$this->requestedProjectRole()->canEditProject()) {
             return view('errors.gen_error')->withErrors(['errors' => 'ec5_91']);
@@ -75,31 +74,30 @@ class ProjectMappingController
         // Validate
         $ruleMappingDelete->validate($payload);
         if ($ruleMappingDelete->hasErrors()) {
-            return $apiResponse->errorResponse(422, $ruleMappingDelete->errors());
+            return Response::apiErrorCode(422, $ruleMappingDelete->errors());
         }
         // Check for additional
         $ruleMappingDelete->additionalChecks($projectMapping, $payload);
         if ($ruleMappingDelete->hasErrors()) {
-            return $apiResponse->errorResponse(422, $ruleMappingDelete->errors());
+            return Response::apiErrorCode(422, $ruleMappingDelete->errors());
         }
 
         // Delete the map
         $projectMapping->deleteMapping($payload['map_index']);
 
         if (!ProjectStructure::updateStructures($this->requestedProject())) {
-            return $apiResponse->errorResponse(400, ['errors' => ['ec5_116']]);
+            return Response::apiErrorCode(400, ['errors' => ['ec5_116']]);
         }
 
-        $apiResponse->setData([
+        $data = [
             'mapping' => $projectMapping->getData()
-        ]);
-        return $apiResponse->toJsonResponse('200', $options = 0);
+        ];
+        return Response::apiData($data);
     }
 
     /**
      */
     public function update(
-        ApiResponse          $apiResponse,
         RuleMappingStructure $ruleMappingStructure,
         RuleMappingUpdate    $ruleMappingUpdate
     )
@@ -113,12 +111,12 @@ class ProjectMappingController
         // Validate
         $ruleMappingUpdate->validate($payload);
         if ($ruleMappingUpdate->hasErrors()) {
-            return $apiResponse->errorResponse(422, $ruleMappingUpdate->errors());
+            return Response::apiErrorCode(422, $ruleMappingUpdate->errors());
         }
         // Check for additional
         $ruleMappingUpdate->additionalChecks($projectMapping, $payload);
         if ($ruleMappingUpdate->hasErrors()) {
-            return $apiResponse->errorResponse(422, $ruleMappingUpdate->errors());
+            return Response::apiErrorCode(422, $ruleMappingUpdate->errors());
         }
 
         // Determine the edit action
@@ -136,12 +134,12 @@ class ProjectMappingController
                 // Validate
                 $ruleMappingStructure->validate($payload['mapping']);
                 if ($ruleMappingStructure->hasErrors()) {
-                    return $apiResponse->errorResponse(422, $ruleMappingStructure->errors());
+                    return Response::apiErrorCode(422, $ruleMappingStructure->errors());
                 }
                 // Check additional (validate the mapping structure)
                 $ruleMappingStructure->additionalChecks($this->requestedProject(), $payload['mapping']);
                 if ($ruleMappingStructure->hasErrors()) {
-                    return $apiResponse->errorResponse(422, $ruleMappingStructure->errors());
+                    return Response::apiErrorCode(422, $ruleMappingStructure->errors());
                 }
 
                 // Update the entire map
@@ -150,12 +148,12 @@ class ProjectMappingController
         }
 
         if (!ProjectStructure::updateStructures($this->requestedProject())) {
-            return $apiResponse->errorResponse(400, ['errors' => ['ec5_116']]);
+            return Response::apiErrorCode(400, ['errors' => ['ec5_116']]);
         }
 
-        $apiResponse->setData([
+        $data = [
             'mapping' => $projectMapping->getData()
-        ]);
-        return $apiResponse->toJsonResponse('200', $options = 0);
+        ];
+        return Response::apiData($data);
     }
 }

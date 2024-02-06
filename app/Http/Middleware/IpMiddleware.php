@@ -3,8 +3,8 @@
 namespace ec5\Http\Middleware;
 
 use Closure;
-use ec5\Http\Controllers\Api\ApiResponse;
 use ec5\Traits\Middleware\MiddlewareTools;
+use Response;
 
 class IpMiddleware
 {
@@ -22,8 +22,7 @@ class IpMiddleware
         if (config('epicollect.setup.ip_filtering_enabled')) {
             if (!in_array($request->ip(), $ips)) {
                 $errors = ['auth' => ['ec5_256']];
-                $apiResponse = new ApiResponse();
-                return $apiResponse->errorResponse(404, $errors);
+                return Response::apiErrorCode(404, $errors);
             }
         }
 

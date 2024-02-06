@@ -3,10 +3,8 @@
 namespace ec5\Http\Controllers\Api\Project;
 
 use ec5\Http\Validation\Media\RuleMedia;
-use ec5\Http\Controllers\Api\ApiResponse;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Exception;
 use Illuminate\Support\Facades\App;
 use Response;
@@ -30,23 +28,21 @@ class MediaController
     use RequestAttributes;
 
     /**
-     * @param Request $request
-     * @param ApiResponse $apiResponse
      * @param ruleMedia $ruleMedia
      * @return JsonResponse|\Illuminate\Http\Response
      * @throws FileNotFoundException
      */
-    public function getMedia(Request $request, ApiResponse $apiResponse, RuleMedia $ruleMedia)
+    public function getMedia(RuleMedia $ruleMedia)
     {
         // todo get the uuid if the media is entry media
         // so collectors can only view their own media
         // Check permissions
-        $params = $request->all();
+        $params = request()->all();
 
         // Validate request params
         $ruleMedia->validate($params);
         if ($ruleMedia->hasErrors()) {
-            return $apiResponse->errorResponse(400, $ruleMedia->errors());
+            return Response::apiErrorCode(400, $ruleMedia->errors());
         }
 
         $inputType = $params['type'];
@@ -87,7 +83,7 @@ class MediaController
                     $stream->start();
                 } else {
                     //photo response is the usual 200
-                    $response = Response::make($file, 200);
+                    $response = Response::make($file);
                     $response->header('Content-Type', $contentType);
                     return $response;
                 }
@@ -95,14 +91,14 @@ class MediaController
                 if ($inputType === config('epicollect.strings.inputs_type.photo')) {
                     //Return default placeholder image for photo questions
                     $file = Storage::disk('public')->get($defaultName);
-                    $response = Response::make($file, 200);
+                    $response = Response::make($file);
                     $response->header('Content-Type', $contentType);
                     return $response;
                 }
 
                 //File not found i.e., not synced yet, send 404 for audio and video
                 $error['api-media-controller'] = ['ec5_69'];
-                return $apiResponse->errorResponse(404, $error);
+                return Response::apiErrorCode(404, $error);
             } catch (Exception $e) {
                 Log::error('Cannot get media file', ['exception' => $e]);
             }
@@ -111,26 +107,24 @@ class MediaController
         //todo: the below could be removed?
         // Otherwise return default placeholder media
         $file = Storage::disk('public')->get($defaultName);
-        $response = Response::make($file, 200);
+        $response = Response::make($file);
         $response->header('Content-Type', $contentType);
 
         return $response;
     }
 
     /**
-     * @param Request $request
-     * @param ApiResponse $apiResponse
      * @param ruleMedia $ruleMedia
      * @return JsonResponse|\Illuminate\Http\Response
      * @throws FileNotFoundException
      */
-    public function getTempMedia(Request $request, ApiResponse $apiResponse, RuleMedia $ruleMedia)
+    public function getTempMedia(RuleMedia $ruleMedia)
     {
-        $params = $request->all();
+        $params = request()->all();
         // Validate request params
         $ruleMedia->validate($params);
         if ($ruleMedia->hasErrors()) {
-            return $apiResponse->errorResponse(400, $ruleMedia->errors());
+            return Response::apiErrorCode(400, $ruleMedia->errors());
         }
 
         $inputType = $params['type'];
@@ -165,20 +159,20 @@ class MediaController
                     $stream->start();
                 } else {
                     //photo response is as usual
-                    $response = Response::make($file, 200);
+                    $response = Response::make($file);
                     $response->header('Content-Type', $contentType);
                     return $response;
                 }
             } catch (Exception $e) {
                 Log::error('Streaming error', ['exception' => $e->getMessage()]);
                 // If the file is not found, see if we have it in the non-temp folders
-                return $this->getMedia($request, $apiResponse, $ruleMedia);
+                return $this->getMedia($ruleMedia);
             }
         }
 
         // Otherwise return default placeholder media
         $file = Storage::disk('public')->get($defaultName);
-        $response = Response::make($file, 200);
+        $response = Response::make($file);
         $response->header('Content-Type', $contentType);
 
         return $response;
