@@ -3,7 +3,6 @@
 namespace ec5\Http\Controllers\Api\Entries;
 
 use ec5\DTO\EntryStructureDTO;
-use ec5\Http\Controllers\Api\ApiResponse;
 use ec5\Http\Controllers\Controller;
 use ec5\Http\Validation\Entries\Archive\RuleArchive;
 use ec5\Models\Entries\BranchEntry;
@@ -11,6 +10,7 @@ use ec5\Models\Entries\Entry;
 use ec5\Services\ArchiveEntryService;
 use ec5\Traits\Requests\RequestAttributes;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Response;
 
 class ArchiveController extends Controller
 {
@@ -25,20 +25,8 @@ class ArchiveController extends Controller
 
     use RequestAttributes;
 
-    protected $apiResponse;
     protected $errors = [];
     protected $request;
-
-    /**
-     * ArchiveController constructor.
-     * @param ApiResponse $apiResponse
-     */
-    public function __construct(
-        ApiResponse $apiResponse
-    )
-    {
-        $this->apiResponse = $apiResponse;
-    }
 
     /**
      * Archive an entry
@@ -51,7 +39,7 @@ class ArchiveController extends Controller
         $data = request()->get('data');
         $ruleArchive->validate($data);
         if ($ruleArchive->hasErrors()) {
-            return $this->apiResponse->errorResponse(400, $ruleArchive->errors());
+            return Response::apiErrorCode(400, $ruleArchive->errors());
         }
 
         // Load an entry structure
@@ -62,7 +50,7 @@ class ArchiveController extends Controller
         // Perform additional checks on the $entryStructure
         $ruleArchive->additionalChecks($this->requestedProject(), $entryStructure);
         if ($ruleArchive->hasErrors()) {
-            return $this->apiResponse->errorResponse(400, $ruleArchive->errors());
+            return Response::apiErrorCode(400, $ruleArchive->errors());
         }
 
         $isBranch = !empty($entryStructure->getOwnerInputRef());
@@ -86,12 +74,12 @@ class ArchiveController extends Controller
         // todo check that the entry exists given parent_uuid, branch_owner etc etc
         $entry = $entryModel->getEntry($this->requestedProject()->getId(), $params)->first();
         if (count($entry) == 0) {
-            return $this->apiResponse->errorResponse(400, ['entry_archive' => ['ec5_239']]);
+            return Response::apiErrorCode(400, ['entry_archive' => ['ec5_239']]);
         }
 
         // Check if this user has permission to delete the entry
         if (!$this->requestedProjectRole()->canDeleteEntry($entry)) {
-            return $this->apiResponse->errorResponse(400, ['entry_archive' => ['ec5_91']]);
+            return Response::apiErrorCode(400, ['entry_archive' => ['ec5_91']]);
         }
 
         // Attempt to Archive
@@ -101,13 +89,13 @@ class ArchiveController extends Controller
                 $entryStructure->getEntryUuid(),
                 $entryStructure,
                 false)) {
-                return $this->apiResponse->errorResponse(400, ['branch_entry_archive' => ['ec5_96']]);
+                return Response::apiErrorCode(400, ['branch_entry_archive' => ['ec5_96']]);
             }
         } else {
             if (!$archiveEntryService->archiveHierarchyEntry($this->requestedProject(), $entryStructure)) {
-                return $this->apiResponse->errorResponse(400, ['entry_archive' => ['ec5_96']]);
+                return Response::apiErrorCode(400, ['entry_archive' => ['ec5_96']]);
             }
         }
-        return $this->apiResponse->successResponse('ec5_236');
+        return Response::apiSuccessCode('ec5_236');
     }
 }

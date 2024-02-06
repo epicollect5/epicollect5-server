@@ -2,14 +2,10 @@
 
 namespace ec5\Http\Controllers\Api\Entries;
 
-use ec5\Http\Controllers\Api\ApiRequest;
-use ec5\Http\Controllers\Api\ApiResponse;
-use ec5\Http\Controllers\Api\Entries\View\EntrySearchControllerBase;
-use ec5\Http\Validation\Entries\Upload\RuleAnswers;
-use ec5\Http\Validation\Entries\Search\RuleQueryString;
 use ec5\Http\Validation\Entries\Download\RuleDownload;
 use ec5\Services\DataMappingService;
 use ec5\Services\DownloadEntriesService;
+use ec5\Services\EntriesViewService;
 use Illuminate\Http\Request;
 use Auth;
 use Illuminate\Support\Facades\Response;
@@ -18,7 +14,7 @@ use Cookie;
 use ec5\Libraries\Utilities\Common;
 use ec5\Traits\Requests\RequestAttributes;
 
-class DownloadController extends EntrySearchControllerBase
+class DownloadController
 {
     use RequestAttributes;
 
@@ -31,61 +27,32 @@ class DownloadController extends EntrySearchControllerBase
     |
     */
 
-    protected $allowedSearchKeys;
-
-    /**
-     * DownloadController constructor.
-     * @param Request $request
-     * @param ApiRequest $apiRequest
-     * @param ApiResponse $apiResponse
-     * @param RuleQueryString $ruleQueryString
-     * @param RuleAnswers $ruleAnswers
-     */
-    public function __construct(
-        Request         $request,
-        ApiRequest      $apiRequest,
-        ApiResponse     $apiResponse,
-        RuleQueryString $ruleQueryString,
-        RuleAnswers     $ruleAnswers
-    )
-    {
-        parent::__construct(
-            $request,
-            $apiRequest,
-            $apiResponse,
-            $ruleQueryString,
-            $ruleAnswers
-        );
-
-        $this->allowedSearchKeys = array_keys(config('epicollect.strings.download_data_entries'));
-    }
-
-    /**
-     */
-    public function index(Request $request, RuleDownload $ruleDownload)
+    public function index(Request $request, RuleDownload $ruleDownload, EntriesViewService $viewEntriesService)
     {
         $user = Auth::user();
-        $params = $this->getRequestParams($request, config('epicollect.limits.entries_table.per_page_download'));
+        $allowedKeys = array_keys(config('epicollect.strings.download_data_entries'));
+        $perPage = config('epicollect.limits.entries_table.per_page_download');
+        $params = $viewEntriesService->getSanitizedQueryParams($allowedKeys, $perPage);
         $cookieName = config('epicollect.mappings.cookies.download-entries');
 
         if ($user === null) {
-            return $this->apiResponse->errorResponse(400, ['download-entries' => ['ec5_86']]);
+            return Response::apiErrorCode(400, ['download-entries' => ['ec5_86']]);
         }
         // Validate the request params
         $ruleDownload->validate($params);
         if ($ruleDownload->hasErrors()) {
-            return $this->apiResponse->errorResponse(400, $this->ruleQueryString->errors());
+            return Response::apiErrorCode(400, $ruleDownload->errors());
         }
         //we send a "media-request" parameter in the query string with a timestamp. to generate a cookie with the same timestamp
         $timestamp = $request->query($cookieName);
         if ($timestamp) {
             //check if the timestamp is valid
             if (!Common::isValidTimestamp($timestamp) && strlen($timestamp) === 13) {
-                return $this->apiResponse->errorResponse(404, ['download-entries' => ['ec5_29']]);
+                return Response::apiErrorCode(400, ['download-entries' => ['ec5_29']]);
             }
         } else {
             //error no timestamp was passed
-            return $this->apiResponse->errorResponse(404, ['download-entries' => ['ec5_29']]);
+            return Response::apiErrorCode(400, ['download-entries' => ['ec5_29']]);
         }
         $projectDir = $this->getArchivePath($user);
         // Try and create the files
@@ -115,7 +82,7 @@ class DownloadController extends EntrySearchControllerBase
     {
         $downloadEntriesService = new DownloadEntriesService(new DataMappingService());
         if (!$downloadEntriesService->createArchive($this->requestedProject(), $projectDir, $params)) {
-            return $this->apiResponse->errorResponse(400, ['download-entries' => ['ec5_83']]);
+            return Response::apiErrorCode(400, ['download-entries' => ['ec5_83']]);
         }
         $zipName = $this->requestedProject()->slug . '-' . $params['format'] . '.zip';
         return $this->sendArchive($projectDir . '/' . $zipName, $zipName, $timestamp);
@@ -130,5 +97,4 @@ class DownloadController extends EntrySearchControllerBase
         //append user ID to handle concurrency -> MUST be logged in to download!
         return $projectDir . '/' . $user->id;
     }
-
 }

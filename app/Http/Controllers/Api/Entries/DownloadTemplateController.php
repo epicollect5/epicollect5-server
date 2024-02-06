@@ -3,11 +3,6 @@
 namespace ec5\Http\Controllers\Api\Entries;
 
 use Cookie;
-use ec5\Http\Controllers\Api\ApiRequest;
-use ec5\Http\Controllers\Api\ApiResponse;
-use ec5\Http\Controllers\Api\Entries\View\EntrySearchControllerBase;
-use ec5\Http\Validation\Entries\Search\RuleQueryString;
-use ec5\Http\Validation\Entries\Upload\RuleAnswers;
 use ec5\Http\Validation\Entries\Upload\RuleDownloadTemplate;
 use ec5\Http\Validation\Entries\Upload\RuleUploadHeaders;
 use ec5\Libraries\Utilities\Common;
@@ -17,7 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Str;
 
-class DownloadTemplateController extends EntrySearchControllerBase
+class DownloadTemplateController
 {
     /*
     |--------------------------------------------------------------------------
@@ -28,35 +23,6 @@ class DownloadTemplateController extends EntrySearchControllerBase
     */
 
     use RequestAttributes;
-
-    protected $allowedSearchKeys;
-
-    /**
-     * DownloadController constructor.
-     * @param Request $request
-     * @param ApiRequest $apiRequest
-     * @param ApiResponse $apiResponse
-     * @param RuleQueryString $ruleQueryString
-     * @param RuleAnswers $ruleAnswers
-     */
-    public function __construct(
-        Request         $request,
-        ApiRequest      $apiRequest,
-        ApiResponse     $apiResponse,
-        RuleQueryString $ruleQueryString,
-        RuleAnswers     $ruleAnswers
-    )
-    {
-        parent::__construct(
-            $request,
-            $apiRequest,
-            $apiResponse,
-            $ruleQueryString,
-            $ruleAnswers
-        );
-
-        $this->allowedSearchKeys = array_keys(config('epicollect.strings.download_data_entries'));
-    }
 
     public function sendTemplateFileCSV(Request $request, RuleDownloadTemplate $ruleUploadTemplate)
     {
@@ -71,7 +37,7 @@ class DownloadTemplateController extends EntrySearchControllerBase
         //todo validation request
         $ruleUploadTemplate->validate($params);
         if ($ruleUploadTemplate->hasErrors()) {
-            return $this->apiResponse->errorResponse(400, $ruleUploadTemplate->errors());
+            return Response::apiErrorCode(400, $ruleUploadTemplate->errors());
         }
 
         //we send a "media-request" parameter in the query string with a timestamp. to generate a cookie with the same timestamp
@@ -113,7 +79,7 @@ class DownloadTemplateController extends EntrySearchControllerBase
 
             //if the branch id not found return error
             if (!$branchFound) {
-                return $this->apiResponse->errorResponse(400, ['upload-template' => ['ec5_99']]);
+                return Response::apiErrorCode(400, ['upload-template' => ['ec5_99']]);
             }
 
             $selectedMapping = $projectMappings[$mapIndex]['forms'][$formRef][$branchRef]['branch'];
@@ -161,7 +127,7 @@ class DownloadTemplateController extends EntrySearchControllerBase
         //validate request
         $ruleUploadHeaders->validate($params);
         if ($ruleUploadHeaders->hasErrors()) {
-            return $this->apiResponse->errorResponse(400, $ruleUploadHeaders->errors());
+            return Response::apiErrorCode(400, $ruleUploadHeaders->errors());
         }
 
         $mapIndex = $params['map_index'];
@@ -185,7 +151,7 @@ class DownloadTemplateController extends EntrySearchControllerBase
 
             //if the branch id not found return error
             if (!$branchFound) {
-                return $this->apiResponse->errorResponse(400, ['upload-template' => ['ec5_99']]);
+                return Response::apiErrorCode(400, ['upload-template' => ['ec5_99']]);
             }
 
             $selectedMapping = $projectMappings[$mapIndex]['forms'][$formRef][$branchRef]['branch'];

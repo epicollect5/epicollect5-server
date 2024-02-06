@@ -5,294 +5,42 @@ declare(strict_types=1);
 namespace ec5\Http\Controllers\Api\Entries\Upload;
 
 use ec5\DTO\EntryStructureDTO;
-use ec5\Http\Controllers\Api\ApiRequest;
-use ec5\Http\Controllers\Api\ApiResponse;
-use ec5\Http\Controllers\Api\ProjectApiControllerBase;
-use ec5\Http\Validation\Entries\Upload\RuleUpload as UploadValidator;
-use ec5\Models\Counters\BranchEntryCounter;
-use ec5\Models\Counters\EntryCounter;
-use ec5\Services\CreateEntryService;
+use ec5\Http\Validation\Entries\Upload\RuleFileEntry;
+use ec5\Http\Validation\Entries\Upload\RuleUpload;
+use ec5\Services\EntriesUploadService;
 use ec5\Traits\Requests\RequestAttributes;
-use Illuminate\Http\Request;
-use Log;
 
-class UploadControllerBase extends ProjectApiControllerBase
+abstract class UploadControllerBase
 {
-    /*
-    |--------------------------------------------------------------------------
-    | Entry Upload Controller
-    |--------------------------------------------------------------------------
-    |
-    | This controller handles the upload of entry data
-    |
-    */
 
     use RequestAttributes;
 
-    /**
-     * @var EntryStructureDTO $entryStructure
-     */
-    protected $entryStructure;
+    protected $ruleFileEntry;
     protected $isBulkUpload;
+    protected $entriesUploadService;
+    protected $entryStructure;
+    protected $errors;
+    protected $ruleUpload;
 
     /**
-     * UploadControllerBase constructor.
-     * @param Request $request
-     * @param ApiRequest $apiRequest
-     * @param ApiResponse $apiResponse
      * @param EntryStructureDTO $entryStructure
+     * @param RuleFileEntry $ruleFileEntry
+     * @param RuleUpload $ruleUpload
      */
     public function __construct(
-        Request           $request,
-        ApiRequest        $apiRequest,
-        ApiResponse       $apiResponse,
-        EntryStructureDTO $entryStructure
+        EntryStructureDTO $entryStructure,
+        RuleFileEntry     $ruleFileEntry,
+        RuleUpload        $ruleUpload
     )
     {
+        $this->ruleFileEntry = $ruleFileEntry;
         $this->entryStructure = $entryStructure;
-
-        parent::__construct($request, $apiRequest, $apiResponse);
-    }
-
-    /**
-     * Handle an upload entry request, either an add or an edit
-     *
-     * @param UploadValidator $uploadValidator
-     * @return bool
-     */
-    public function upload(UploadValidator $uploadValidator)
-    {
-        $data = $this->apiRequest->getData();
-
-        // imp: errors will be output in format ['source' => ['ec5_error']]
-        // imp: Required by the ApiResponse class
-
-        /* API REQUEST VALIDATION */
-        if (!$this->isValidApiRequest()) {
-            Log::error('Upload API Request Error: ', [
-                'error' => $this->apiRequest->errors(),
-                'data' => $data
-            ]);
-            return false;
-        }
-
-        /* UPLOAD VALIDATION */
-        if (!$this->isValidUpload($uploadValidator)) {
-            return false;
-        }
-
-        // Check project status
-        if (!$this->hasValidProjectStatus()) {
-            return false;
-        }
-
-        /* USER AUTHENTICATION AND PERMISSIONS CHECK FOR PRIVATE PROJECTS */
-        if (!$this->userHasPermissions()) {
-            return false;
-        }
-
-        /* BUILD ENTRY STRUCTURE */
-        $this->buildEntryStructure();
-
-        // Check the project version this entry was created with
-        if (!$this->isValidProjectVersion()) {
-            return false;
-        }
-
-        /* ENTRY/ANSWERS VALIDATION */
-        if (!$this->isValidAdditional($uploadValidator)) {
-            return false;
-        }
-
-        /* CHECK LIMITS NOT REACHED */
-        //imp: this is calculated live, it does not use the project stats table
-        if ($this->isEntriesLimitReached()) {
-            return false;
-        }
-
-        /* INSERT ENTRY */
-        // If we have answers to insert from our upload
-        if ($this->entryStructure->hasAnswers()) {
-            $createEntryService = new CreateEntryService();
-            // If we received no errors, continue to insert answers and entry
-            if (!$createEntryService->create($this->requestedProject(), $this->entryStructure, $this->isBulkUpload)) {
-                Log::error(__METHOD__ . ' failed.', [
-                    'error' => $this->errors,
-                    'data' => $data
-                ]);
-                $this->errors = $createEntryService->errors;
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * @param UploadValidator $uploadValidator
-     * @return bool
-     */
-    protected function isValidUpload(UploadValidator $uploadValidator)
-    {
-        $data = $this->apiRequest->getData();
-        // Validate the api upload request
-        $uploadValidator->validate($data);
-        if ($uploadValidator->hasErrors()) {
-            $this->errors = $uploadValidator->errors();
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * @param UploadValidator $uploadValidator
-     * @return bool
-     */
-    protected function isValidAdditional(UploadValidator $uploadValidator)
-    {
-        $data = $this->apiRequest->getData();
-        // Do additional checks
-        $uploadValidator->additionalChecks($data, $this->requestedProject(), $this->entryStructure);
-        if ($uploadValidator->hasErrors()) {
-            $this->errors = $uploadValidator->errors();
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * @return bool
-     */
-    protected function isEntriesLimitReached()
-    {
-        // If the entry is an edit, then it's ok to allow this entry in
-        if ($this->entryStructure->isEdit()) {
-            return false;
-        }
-
-        // If the entry is not an edit, proceed
-        $projectDefinition = $this->requestedProject()->getProjectDefinition();
-
-        // Branch or Form?
-        if ($this->entryStructure->isBranch()) {
-            $ref = $this->entryStructure->getOwnerInputRef();
-        } else {
-            $ref = $this->entryStructure->getFormRef();
-        }
-
-        //When no entries limit set, bail out
-        $entriesLimit = $projectDefinition->getEntriesLimit($ref);
-        if ($entriesLimit === null) {
-            return false;
-        }
-
-        // Check the entries limit has not been reached for the form or branch
-        if ($this->entryStructure->isBranch()) {
-            $entryCounter = new BranchEntryCounter();
-            $currentEntriesCount = $entryCounter->getBranchEntryCounts(
-                $this->requestedProject()->getId(),
-                $this->entryStructure->getFormRef(),
-                $this->entryStructure->getOwnerInputRef(),
-                $this->entryStructure->getOwnerUuid()
-            );
-        } else {
-            $entryCounter = new EntryCounter();
-            $currentEntriesCount = $entryCounter->getFormEntryCounts(
-                $this->requestedProject()->getId(),
-                $this->entryStructure->getFormRef(),
-                $this->entryStructure->getParentUuid()
-            );
-        }
-
-        // If we haven't reached the entries limit (Add 1 to include this entry), all good
-        if (($currentEntriesCount + 1) <= $entriesLimit) {
-            return false;
-        }
-
-        // Entries limit reached, throw error
-        $this->errors = ['upload-controller' => ['ec5_250']];
-        return true;
-    }
-
-
-    /**
-     * Build Entry Structure
-     */
-    protected function buildEntryStructure()
-    {
-        $data = $this->apiRequest->getData();
-        // Get the user from the middleware request
-        $user = $this->requestedProjectRole()->getUser();
-
-        // Initialise entry structure based on posted data
-        $this->entryStructure->createStructure($data);
-        // Add user id (0 if null) to entry structure
-        $this->entryStructure->setUserId(!empty($user) ? $user->id : 0);
-        // Add project id to entry structure
-        $this->entryStructure->setProjectId($this->requestedProject()->getId());
-        // Add project role to entry structure
-        $this->entryStructure->setProjectRole($this->requestedProjectRole());
-
-        // If there is a file in the request, load into the entry structure
-        if (request()->hasFile('name')) {
-            $this->entryStructure->setFile(request()->file('name'));
-        }
-    }
-
-    /**
-     * @return bool
-     */
-    protected function isValidApiRequest()
-    {
-        // Check we didn't have any api request errors
-        if ($this->apiRequest->hasErrors()) {
-            $this->errors = $this->apiRequest->errors();
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * @return bool
-     */
-    protected function isValidProjectVersion()
-    {
-        if ($this->requestedProject()->getProjectStats()->structure_last_updated != $this->entryStructure->getProjectVersion()) {
-            $this->errors = ['upload-controller' => ['ec5_201']];
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * @return bool
-     */
-    protected function hasValidProjectStatus()
-    {
-        if ($this->requestedProject()->status != config('epicollect.strings.project_status.active')) {
-            $this->errors = ['upload-controller' => ['ec5_202']];
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * @return bool
-     */
-    protected function userHasPermissions()
-    {
-        // Check user is permitted to upload if project is private
-        if ($this->requestedProject()->isPrivate() && !$this->requestedProjectRole()->canUpload()) {
-
-            //Is someone posting via the POST API?
-            // We check the route name, if it gets here it means it went through the auth,
-            //so we add the entry without assigning any user to it.
-            //This type of entry will be editable only CREATOR/MANAGER/CURATOR
-            if (request()->route()->getName() === 'private-import') {
-                return true;
-            }
-            $this->errors = ['upload-controller' => ['ec5_71']];
-            return false;
-        }
-        return true;
+        $this->ruleUpload = $ruleUpload;
+        $this->isBulkUpload = false;
+        $this->entriesUploadService = new EntriesUploadService(
+            $this->entryStructure,
+            $this->ruleUpload,
+            $this->isBulkUpload
+        );
     }
 }

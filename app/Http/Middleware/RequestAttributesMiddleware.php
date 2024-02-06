@@ -94,6 +94,21 @@ abstract class RequestAttributesMiddleware
         $requestAttributes->requestedUser = $this->requestedUser;
         View::share('requestAttributes', $requestAttributes);
 
+        //handle multipart uploads
+        if ($request->isMethod('POST')) {
+            if ($this->isMultipartRequest($request)) {
+                /**
+                 *  if the request is multipart,
+                 *  the content will be a string not an array,
+                 *  so we need to pre-parse it and override
+                 *  the original request
+                 */
+                $this->request->merge([
+                    'data' => $this->getParsedJsonInMultipart($request)
+                ]);
+            }
+        }
+
         return $next($this->request);
     }
 
@@ -133,12 +148,29 @@ abstract class RequestAttributesMiddleware
         $projectService = new ProjectService();
         // Retrieve user role
         $this->requestedProjectRole = $projectService->getRole($this->requestedUser, $this->requestedProject->getId());
-        // If no role is found, but the user is an admin/super admin, add creator role
+        // If no role is found, but the user is an admin/super admin, add the creator role
         if (
             !$this->requestedProjectRole->getRole() && $this->requestedUser &&
             ($this->requestedUser->isAdmin() || $this->requestedUser->isSuperAdmin())
         ) {
             $this->requestedProjectRole->setRole($this->requestedUser, $this->requestedProject->getId(), config('epicollect.permissions.projects.creator_role'));
         }
+    }
+
+    private function isMultipartRequest(Request $request): bool
+    {
+        return strpos($request->header('Content-Type'), 'multipart/form-data') !== false;
+    }
+
+    private function getParsedJsonInMultipart(Request $request)
+    {
+        $content = $request->get('data');
+        if (!empty($content)) {
+            $decodedContent = json_decode($content, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                return $decodedContent;
+            }
+        }
+        return '';
     }
 }

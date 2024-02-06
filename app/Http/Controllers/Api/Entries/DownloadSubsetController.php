@@ -3,68 +3,55 @@
 namespace ec5\Http\Controllers\Api\Entries;
 
 use Cookie;
-use ec5\Http\Controllers\Api\ApiRequest;
-use ec5\Http\Controllers\Api\ApiResponse;
-use ec5\Http\Controllers\Api\Entries\View\EntrySearchControllerBase;
 use ec5\Http\Validation\Entries\Download\RuleDownloadSubset;
-use ec5\Http\Validation\Entries\Search\RuleQueryString;
-use ec5\Http\Validation\Entries\Upload\RuleAnswers;
 use ec5\Libraries\Utilities\Common;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use ec5\Services\DataMappingService;
+use ec5\Services\EntriesViewService;
+use ec5\Traits\Requests\RequestAttributes;
 use Exception;
 use Illuminate\Http\Request;
 use League\Csv\Writer;
 use Log;
 use Ramsey\Uuid\Uuid;
+use Response;
 use Storage;
 use ZipArchive;
 
-class DownloadSubsetController extends EntrySearchControllerBase
+class DownloadSubsetController
 {
-    protected $allowedSearchKeys;
+    use RequestAttributes;
+
     protected $dataMappingService;
+    protected $errors;
 
-    public function __construct(
-        Request            $request,
-        ApiRequest         $apiRequest,
-        ApiResponse        $apiResponse,
-        RuleQueryString    $ruleQueryString,
-        RuleAnswers        $ruleAnswers,
-        DataMappingService $dataMappingService
-    )
+    public function __construct(DataMappingService $dataMappingService)
     {
-        parent::__construct(
-            $request,
-            $apiRequest,
-            $apiResponse,
-            $ruleQueryString,
-            $ruleAnswers
-        );
-
-        $this->allowedSearchKeys = array_keys(config('epicollect.strings.download_subset_entries'));
         $this->dataMappingService = $dataMappingService;
     }
 
-    public function subset(Request $request, RuleDownloadSubset $ruleDownloadSubset)
+    public function subset(Request $request, RuleDownloadSubset $ruleDownloadSubset, EntriesViewService $viewEntriesService)
     {
         // Check the mapping is valid
         $projectMapping = $this->requestedProject()->getProjectMapping();
-        $params = $this->getRequestParams($request, config('epicollect.limits.entries_table.per_page'));
+
+        $allowedKeys = array_keys(config('epicollect.strings.download_subset_entries'));
+        $perPage = config('epicollect.limits.entries_table.per_page');
+        $params = $viewEntriesService->getSanitizedQueryParams($allowedKeys, $perPage);
 
         //Get raw query params, $this->getRequestParams is doing some filtering
         $rawParams = $request->all();
         $cookieName = config('epicollect.mappings.cookies.download-entries');
 
         // Validate the options and query string
-        if (!$this->validateParams($params)) {
-            return $this->apiResponse->errorResponse(400, $this->validateErrors);
+        if (!$viewEntriesService->areValidQueryParams($params)) {
+            return Response::apiErrorCode(400, $viewEntriesService->validationErrors);
         }
 
         $ruleDownloadSubset->validate($rawParams);
         if ($ruleDownloadSubset->hasErrors()) {
-            return $this->apiResponse->errorResponse(400, $ruleDownloadSubset->errors());
+            return Response::apiErrorCode(400, $ruleDownloadSubset->errors());
         }
 
         $timestamp = $request->query($cookieName);
@@ -80,7 +67,7 @@ class DownloadSubsetController extends EntrySearchControllerBase
         }
         // If the map_index value passed does not exist, error out
         if (!in_array($params['map_index'], $projectMapping->getMapIndexes())) {
-            return $this->apiResponse->errorResponse(400, ['map_index: ' . $params['map_index'] => ['ec5_322']]);
+            return Response::apiErrorCode(400, ['map_index: ' . $params['map_index'] => ['ec5_322']]);
         }
 
         $this->dataMappingService->init(
@@ -110,7 +97,7 @@ class DownloadSubsetController extends EntrySearchControllerBase
         $filepath = $this->createSubsetArchive($query, $filename);
 
         if (count($this->errors) > 0) {
-            return $this->apiResponse->errorResponse(400, $this->errors);
+            return Response::apiErrorCode(400, $this->errors);
             //todo should I delete any leftovers here?
         }
         //"If set to 0, or omitted, the cookie will expire at the end of the session (when the browser closes)."

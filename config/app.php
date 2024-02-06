@@ -184,6 +184,7 @@ return [
         ec5\Providers\ApiResponseProvider::class,
         ec5\Providers\Macros\Response\ApiErrorCodeMacro::class,
         ec5\Providers\Macros\Response\ApiSuccessCodeMacro::class,
+        ec5\Providers\Macros\Response\ApiDataMacro::class,
         ec5\Providers\Macros\Response\ToCSVStreamMacro::class,
         ec5\Providers\Macros\Response\ToCSVFileMacro::class,
 
