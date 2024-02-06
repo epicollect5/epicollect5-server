@@ -2,20 +2,29 @@
 
 namespace Tests\Http\Controllers\Api\Entries\View;
 
-use ec5\Models\Entries\BranchEntry;
-use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
+use ec5\Traits\Assertions;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Tests\Generators\EntryGenerator;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 
-class EntriesControllerTest extends TestCase
+class ViewEntriesDataControllerTest extends TestCase
 {
+    use DatabaseTransactions, Assertions;
 
     private $user;
+    private $project;
+    private $role;
+    private $projectDefinition;
+    private $entryGenerator;
+    private $entryPayload;
+    private $entryStored;
+
 
     public function setUp()
     {
@@ -23,6 +32,8 @@ class EntriesControllerTest extends TestCase
 
         //create fake user for testing
         $user = factory(User::class)->create();
+        $role = config('epicollect.strings.project_roles.creator');
+
         //create a project with custom project definition
         $projectDefinition = ProjectDefinitionGenerator::createProject(1);
         $project = factory(Project::class)->create(
@@ -38,7 +49,7 @@ class EntriesControllerTest extends TestCase
         factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
-            'role' => config('epicollect.strings.project_roles.creator')
+            'role' => $role
         ]);
 
         //create basic project definition
@@ -55,31 +66,42 @@ class EntriesControllerTest extends TestCase
             ]
         );
 
-        $numOfEntries = mt_rand(10, 100);
-        $numOfBranchEntries = mt_rand(10, 100);
-        //Add mock entries & branch entries to mock project
-        $entriesToArchive = factory(Entry::class, $numOfEntries)->create([
-            'project_id' => $project->id,
-            'form_ref' => $project->ref . '_' . uniqid(),
-            'user_id' => $project->created_by,
-        ]);
-        foreach ($entriesToArchive as $entry) {
-            factory(BranchEntry::class, $numOfBranchEntries)->create([
-                'project_id' => $project->id,
-                'form_ref' => $project->ref . '_' . uniqid(),
-                'user_id' => $project->created_by,
-                'owner_entry_id' => $entry->id //FK!
-            ]);
-        }
-
+        $this->entryGenerator = new EntryGenerator($projectDefinition);
         $this->user = $user;
+        $this->role = $role;
         $this->project = $project;
+        $this->projectDefinition = $projectDefinition;
 
     }
 
-    public function test_response_success()
+    public function test_parent_entry_row_stored_to_db()
     {
+        $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
+        $entryPayload = $this->entryGenerator->createParentEntryPayload($formRef);
+        $entryRowBundle = $this->entryGenerator->createParentEntryRow(
+            $this->user,
+            $this->project,
+            $this->role,
+            $this->projectDefinition,
+            $entryPayload
+        );
+
+        $this->assertEntryRow(
+            $this->projectDefinition,
+            $this->project,
+            $entryRowBundle['entryStructure'],
+            $entryPayload,
+            $entryRowBundle['skippedInputRefs'],
+            $formRef
+        );
 
     }
 
+    public function test_multiple_parent_entry_rows_stored_to_db()
+    {
+        $count = rand(500, 1000);
+        for ($i = 0; $i < $count; $i++) {
+            $this->test_parent_entry_row_stored_to_db();
+        }
+    }
 }

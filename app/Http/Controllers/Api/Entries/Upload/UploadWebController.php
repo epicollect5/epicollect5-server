@@ -5,21 +5,16 @@ declare(strict_types=1);
 namespace ec5\Http\Controllers\Api\Entries\Upload;
 
 use ec5\DTO\EntryStructureDTO;
-use ec5\Http\Controllers\Api\ApiRequest;
-use ec5\Http\Controllers\Api\ApiResponse;
-use ec5\Http\Validation\Entries\Upload\RuleFileEntry as FileValidator;
-use ec5\Http\Validation\Entries\Upload\RuleUpload;
 use ec5\Libraries\Utilities\DateFormatConverter;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use Exception;
 use File;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use Response;
 use Storage;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
-class WebUploadController extends UploadControllerBase
+class UploadWebController extends UploadControllerBase
 {
     /*
     |--------------------------------------------------------------------------
@@ -30,46 +25,16 @@ class WebUploadController extends UploadControllerBase
     |
     */
 
-    /**
-     * @var FileValidator
-     */
-    protected $fileValidator;
-
-    /**
-     * WebUploadController constructor.
-     * @param Request $request
-     * @param ApiRequest $apiRequest
-     * @param ApiResponse $apiResponse
-     * @param EntryStructureDTO $entryStructure
-     * @param FileValidator $fileValidator
-     */
-    public function __construct(
-        Request           $request,
-        ApiRequest        $apiRequest,
-        ApiResponse       $apiResponse,
-        EntryStructureDTO $entryStructure,
-        FileValidator     $fileValidator
-    )
+    public function store()
     {
-        $this->fileValidator = $fileValidator;
-        parent::__construct(
-            $request,
-            $apiRequest,
-            $apiResponse,
-            $entryStructure
-        );
-    }
-
-    public function store(RuleUpload $ruleUpload)
-    {
-        //check the request is valid
-        if (!$this->upload($ruleUpload)) {
-            return $this->apiResponse->errorResponse(400, $this->errors);
+        //try to upload the entry
+        if (!$this->entriesUploadService->upload()) {
+            return Response::apiErrorCode(400, $this->entriesUploadService->errors);
         }
 
         //default response code for new entry
         $responseCode = 'ec5_237';
-        $data = $this->apiRequest->getData();
+        $data = request()->get('data');
         $projectId = $this->requestedProject()->getId();
 
         //was an entry or branch entry upload?
@@ -116,13 +81,13 @@ class WebUploadController extends UploadControllerBase
                     $groupInput = $projectExtra->getInputData($groupInputRef);
                     $this->moveFile($rootFolder, $groupInput);
                     if (count($this->errors) > 0) {
-                        return $this->apiResponse->errorResponse(400, $this->errors);
+                        return Response::apiErrorCode(400, $this->errors);
                     }
                 }
             } else {
                 $this->moveFile($rootFolder, $input);
                 if (count($this->errors) > 0) {
-                    return $this->apiResponse->errorResponse(400, $this->errors);
+                    return Response::apiErrorCode(400, $this->errors);
                 }
             }
         }
@@ -133,26 +98,25 @@ class WebUploadController extends UploadControllerBase
 
         /* PASSED */
         // Send http status code 200, ok!
-        return $this->apiResponse->successResponse($responseCode);
+        return Response::apiSuccessCode($responseCode);
     }
 
     /**
-     * @param RuleUpload $ruleUpload
      *
      * Let's call the web upload controller @store method
      * We do this because the @storeBulk endpoint goes through
      * a middleware to check for bulk upload permissions
      */
-    public function storeBulk(RuleUpload $ruleUpload)
+    public function storeBulk()
     {
         $this->isBulkUpload = true;
-        return $this->store($ruleUpload);
+        return $this->store();
     }
 
     /**
      * @param $rootFolder
      * @param $input
-     * @return bool|JsonResponse
+     * @return bool
      */
     private function moveFile($rootFolder, $input)
     {
@@ -179,9 +143,8 @@ class WebUploadController extends UploadControllerBase
             );
         } catch (Exception $e) {
             // File doesn't exist
-            return $this->apiResponse->errorResponse(400, ['web upload' => [
-                'ec5_231'
-            ]]);
+            $this->errors['web upload'] = ['ec5_231'];
+            return false;
         }
 
         // Load everything into an entry structure model
@@ -189,7 +152,7 @@ class WebUploadController extends UploadControllerBase
 
         $entryData = config('epicollect.structures.entry_data');
         $entryData['id'] = $this->entryStructure->getEntryUuid();
-        $entryData['type'] = array_keys(config('epicollect.strings.entry_types.file_entry'));
+        $entryData['type'] = config('epicollect.strings.entry_types.file_entry');
         $entryData[$entryData['type']] = [
             'type' => $input['type'],
             'name' => $fileName,
@@ -201,9 +164,9 @@ class WebUploadController extends UploadControllerBase
 
         // Move file
         // Note: the file has already been validated on initial upload to temp folder
-        $this->fileValidator->moveFile($this->requestedProject(), $entryStructure);
-        if ($this->fileValidator->hasErrors()) {
-            $this->errors = $this->fileValidator->errors();
+        $this->ruleFileEntry->moveFile($this->requestedProject(), $entryStructure);
+        if ($this->ruleFileEntry->hasErrors()) {
+            $this->errors = $this->ruleFileEntry->errors();
             return false;
         }
 

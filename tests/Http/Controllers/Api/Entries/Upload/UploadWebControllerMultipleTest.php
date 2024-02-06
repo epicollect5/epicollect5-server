@@ -31,7 +31,7 @@ use Tests\TestCase;
 
 */
 
-class WebUploadControllerMultipleTest extends TestCase
+class UploadWebControllerMultipleTest extends TestCase
 {
     use DatabaseTransactions;
 
@@ -95,6 +95,9 @@ class WebUploadControllerMultipleTest extends TestCase
                     [],
                     [], $base64EncodedData);
 
+            /// dd($response[0]);
+
+
             $response[0]->assertStatus(200);
             $this->assertSame(json_decode($response[0]->getContent(), true), $projectDefinition);
             //assert there are no entries or branch entries
@@ -105,6 +108,7 @@ class WebUploadControllerMultipleTest extends TestCase
             $this->project = $project;
             $this->projectDefinition = $projectDefinition;
             $this->entryGenerator = $entryGenerator;
+
         } catch (Exception $e) {
             $this->logTestError($e, $response);
         }
@@ -117,7 +121,7 @@ class WebUploadControllerMultipleTest extends TestCase
             //get top parent formRef
             $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
             //generate a fake entry for the top parent form
-            $entry = $this->entryGenerator->createParentEntry($formRef);
+            $entry = $this->entryGenerator->createParentEntryPayload($formRef);
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post('api/internal/web-upload/' . $this->project->slug, $entry);
             $response[0]->assertStatus(200)
@@ -130,9 +134,120 @@ class WebUploadControllerMultipleTest extends TestCase
                 );
             $this->assertEquals(0, Entry::where('project_id', $this->project->id)->value('child_counts'));
             $this->assertEquals(0, Entry::where('project_id', $this->project->id)->value('branch_counts'));
-            $this->assertCount(1, Entry::where('project_id', $this->project->id)->get());
+            $this->assertCount(
+                1,
+                Entry::where('project_id', $this->project->id)
+                    ->where('uuid', $entry['data']['id'])
+                    ->get()
+            );
         } catch (Exception $e) {
             //dd($e->getMessage(), $response, json_encode($entry), json_encode($projectDefinition));
+            $this->logTestError($e, $response);
+        }
+    }
+
+    public function test_should_catch_emoji_in_hierarchy_entry()
+    {
+        $response = [];
+        try {
+            //get top parent formRef
+            $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
+            //generate a fake entry for the top parent form
+            $entry = $this->entryGenerator->createParentEntryPayload($formRef);
+
+
+            //get a text input ref
+            $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
+            $ref = '';
+            foreach ($inputs as $input) {
+                if ($input['type'] === config('epicollect.strings.inputs_type.text')) {
+                    $ref = $input['ref'];
+                    break;
+                }
+            }
+
+            //use emoji in the text answer (imp: need json_encode to convert to unicode)
+            $entry['data']['entry']['answers'][$ref]['answer'] = '😇'; // Emoji represented as Unicode escape sequence
+
+            //perform a web upload
+            $response[] = $this->actingAs($this->user)->post('api/internal/web-upload/' . $this->project->slug, $entry);
+            $response[0]->assertStatus(400)
+                ->assertExactJson([
+                        "errors" => [
+                            [
+                                "code" => "ec5_323",
+                                "title" => "No Emoji allowed.",
+                                "source" => "validation"
+                            ]
+                        ]
+                    ]
+                );
+            $this->assertCount(
+                0,
+                Entry::where('project_id', $this->project->id)
+                    ->where('uuid', $entry['data']['id'])
+                    ->get()
+            );
+
+            $this->assertCount(
+                0,
+                Entry::where('project_id', $this->project->id)
+                    ->get()
+            );
+        } catch (Exception $e) {
+            //dd($e->getMessage(), $response, json_encode($entry), json_encode($projectDefinition));
+            $this->logTestError($e, $response);
+        }
+    }
+
+    public function test_should_catch_html_in_hierarchy_entry()
+    {
+        $response = [];
+        try {
+            //get top parent formRef
+            $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
+            //generate a fake entry for the top parent form
+            $entry = $this->entryGenerator->createParentEntryPayload($formRef);
+
+            //get a text input ref
+            $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
+            $ref = '';
+            foreach ($inputs as $input) {
+                if ($input['type'] === config('epicollect.strings.inputs_type.text')) {
+                    $ref = $input['ref'];
+                    break;
+                }
+            }
+
+            //use emoji in the text answer (imp: need json_encode to convert to unicode)
+            $entry['data']['entry']['answers'][$ref]['answer'] = '<a href="#">Ciao</a>'; // Emoji represented as Unicode escape sequence
+
+            //perform a web upload
+            $response[] = $this->actingAs($this->user)->post('api/internal/web-upload/' . $this->project->slug, $entry);
+            $response[0]->assertStatus(400)
+                ->assertExactJson([
+                        "errors" => [
+                            [
+                                "code" => "ec5_220",
+                                "title" => "No < or > chars allowed.",
+                                "source" => "validation"
+                            ]
+                        ]
+                    ]
+                );
+            $this->assertCount(
+                0,
+                Entry::where('project_id', $this->project->id)
+                    ->where('uuid', $entry['data']['id'])
+                    ->get()
+            );
+
+            $this->assertCount(
+                0,
+                Entry::where('project_id', $this->project->id)
+                    ->get()
+            );
+        } catch (Exception $e) {
             $this->logTestError($e, $response);
         }
     }

@@ -17,7 +17,7 @@ use Tests\Generators\EntryGenerator;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 
-class WebUploadControllerLimitsTest extends TestCase
+class UploadWebControllerLimitsTest extends TestCase
 {
     use DatabaseTransactions;
 
@@ -37,6 +37,11 @@ class WebUploadControllerLimitsTest extends TestCase
         $email = config('testing.UNIT_TEST_RANDOM_EMAIL');
 
         try {
+
+            //delete any leftovers
+            User::where('email', $email)->delete();
+            Project::where('slug', $slug)->delete();
+
             //create fake user for testing
             $user = factory(User::class)->create(['email' => $email]);
             //create a project with custom project definition
@@ -166,7 +171,7 @@ class WebUploadControllerLimitsTest extends TestCase
             //get top parent formRef
             $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
             //generate a fake entry for the top parent form
-            $entry = $this->entryGenerator->createParentEntry($formRef);
+            $entry = $this->entryGenerator->createParentEntryPayload($formRef);
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post('api/internal/web-upload/' . $this->project->slug, $entry);
             $response[0]->assertStatus(400)
@@ -193,7 +198,7 @@ class WebUploadControllerLimitsTest extends TestCase
             $parentFormRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
             $childFormRef = array_get($this->projectDefinition, 'data.project.forms.1.ref');
             //generate a fake entry for child form level 1
-            $entry = $this->entryGenerator->createChildEntry($childFormRef, $parentFormRef, $this->parentUuids[0]);
+            $entry = $this->entryGenerator->createChildEntryPayload($childFormRef, $parentFormRef, $this->parentUuids[0]);
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post('api/internal/web-upload/' . $this->project->slug, $entry);
             $response[0]->assertStatus(400)
@@ -220,7 +225,7 @@ class WebUploadControllerLimitsTest extends TestCase
             $parentFormRef = array_get($this->projectDefinition, 'data.project.forms.1.ref');
             $childFormRef = array_get($this->projectDefinition, 'data.project.forms.2.ref');
             //generate a fake entry for child form level 1
-            $entry = $this->entryGenerator->createChildEntry($childFormRef, $parentFormRef, $this->parentUuids[1]);
+            $entry = $this->entryGenerator->createChildEntryPayload($childFormRef, $parentFormRef, $this->parentUuids[1]);
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post('api/internal/web-upload/' . $this->project->slug, $entry);
             $response[0]->assertStatus(400)
@@ -247,7 +252,7 @@ class WebUploadControllerLimitsTest extends TestCase
             $parentFormRef = array_get($this->projectDefinition, 'data.project.forms.2.ref');
             $childFormRef = array_get($this->projectDefinition, 'data.project.forms.3.ref');
             //generate a fake entry for child form level 1
-            $entry = $this->entryGenerator->createChildEntry($childFormRef, $parentFormRef, $this->parentUuids[2]);
+            $entry = $this->entryGenerator->createChildEntryPayload($childFormRef, $parentFormRef, $this->parentUuids[2]);
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post('api/internal/web-upload/' . $this->project->slug, $entry);
             $response[0]->assertStatus(400)
@@ -274,7 +279,7 @@ class WebUploadControllerLimitsTest extends TestCase
             $parentFormRef = array_get($this->projectDefinition, 'data.project.forms.3.ref');
             $childFormRef = array_get($this->projectDefinition, 'data.project.forms.4.ref');
             //generate a fake entry for child form level 1
-            $entry = $this->entryGenerator->createChildEntry($childFormRef, $parentFormRef, $this->parentUuids[3]);
+            $entry = $this->entryGenerator->createChildEntryPayload($childFormRef, $parentFormRef, $this->parentUuids[3]);
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post('api/internal/web-upload/' . $this->project->slug, $entry);
             $response[0]->assertStatus(400)
@@ -308,7 +313,7 @@ class WebUploadControllerLimitsTest extends TestCase
                 }
             }
 
-            $branchEntry = $this->entryGenerator->createBranchEntry(
+            $branchEntry = $this->entryGenerator->createBranchEntryPayload(
                 $ownerFormRef,
                 $branches[0]['branch'],
                 $uuid,
@@ -349,7 +354,7 @@ class WebUploadControllerLimitsTest extends TestCase
                 }
             }
 
-            $branchEntry = $this->entryGenerator->createBranchEntry(
+            $branchEntry = $this->entryGenerator->createBranchEntryPayload(
                 $ownerFormRef,
                 $branches[0]['branch'],
                 $uuid,
@@ -390,7 +395,7 @@ class WebUploadControllerLimitsTest extends TestCase
                 }
             }
 
-            $branchEntry = $this->entryGenerator->createBranchEntry(
+            $branchEntry = $this->entryGenerator->createBranchEntryPayload(
                 $ownerFormRef,
                 $branches[0]['branch'],
                 $uuid,
@@ -431,7 +436,7 @@ class WebUploadControllerLimitsTest extends TestCase
                 }
             }
 
-            $branchEntry = $this->entryGenerator->createBranchEntry(
+            $branchEntry = $this->entryGenerator->createBranchEntryPayload(
                 $ownerFormRef,
                 $branches[0]['branch'],
                 $uuid,
@@ -472,7 +477,7 @@ class WebUploadControllerLimitsTest extends TestCase
                 }
             }
 
-            $branchEntry = $this->entryGenerator->createBranchEntry(
+            $branchEntry = $this->entryGenerator->createBranchEntryPayload(
                 $ownerFormRef,
                 $branches[0]['branch'],
                 $uuid,

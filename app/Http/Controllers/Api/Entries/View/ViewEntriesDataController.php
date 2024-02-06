@@ -2,58 +2,19 @@
 
 namespace ec5\Http\Controllers\Api\Entries\View;
 
-use ec5\Http\Controllers\Api\ApiRequest;
-use ec5\Http\Controllers\Api\ApiResponse;
-use ec5\Http\Validation\Entries\Upload\RuleAnswers;
-use ec5\Http\Validation\Entries\Search\RuleQueryString;
-use ec5\Services\DataMappingService;
 use Exception;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Response;
 use Log;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class EntriesController extends EntrySearchControllerBase
+class ViewEntriesDataController extends ViewEntriesControllerBase
 {
-    private $dataMappingService;
-
     /**
-     * EntriesController constructor.
-     * @param Request $request
-     * @param ApiRequest $apiRequest
-     * @param ApiResponse $apiResponse
-     * @param RuleQueryString $ruleQueryString
-     * @param RuleAnswers $ruleAnswers
-     */
-    public function __construct(
-        Request            $request,
-        ApiRequest         $apiRequest,
-        ApiResponse        $apiResponse,
-        RuleQueryString    $ruleQueryString,
-        RuleAnswers        $ruleAnswers,
-        DataMappingService $dataMappingService
-    )
-    {
-
-        parent::__construct(
-            $request,
-            $apiRequest,
-            $apiResponse,
-            $ruleQueryString,
-            $ruleAnswers
-        );
-
-        $this->dataMappingService = $dataMappingService;
-        $this->allowedSearchKeys = array_keys(config('epicollect.strings.search_data_entries'));
-    }
-
-    /**
-     * @param Request $request
      * @return JsonResponse|StreamedResponse
      */
-    public function export(Request $request)
+    public function export()
     {
         $jsonPerPageLimit = config('epicollect.limits.entries_export_per_page_json');
         $csvPerPageLimit = config('epicollect.limits.entries_export_per_page_csv');
@@ -61,83 +22,86 @@ class EntriesController extends EntrySearchControllerBase
         // Check the mapping is valid
         $projectMapping = $this->requestedProject()->getProjectMapping();
 
-        $options = $this->getRequestParams($request, config('epicollect.limits.entries_table.per_page'));
+        $allowedKeys = array_keys(config('epicollect.strings.search_data_entries'));
+        $perPage = config('epicollect.limits.entries_table.per_page');
+        $params = $this->entriesViewService->getSanitizedQueryParams($allowedKeys, $perPage);
 
         // Validate the options and query string
-        if (!$this->validateParams($options)) {
-            return $this->apiResponse->errorResponse(400, $this->validateErrors);
+        if (!$this->entriesViewService->areValidQueryParams($params)) {
+            return Response::apiErrorCode(400, $this->entriesViewService->validationErrors);
         }
 
         // If the map_index value passed does not exist, error out
-        if (!in_array($options['map_index'], $projectMapping->getMapIndexes())) {
-            return $this->apiResponse->errorResponse(400, ['map_index: ' . $options['map_index'] => ['ec5_322']]);
+        if (!in_array($params['map_index'], $projectMapping->getMapIndexes())) {
+            return Response::apiErrorCode(400, ['map_index: ' . $params['map_index'] => ['ec5_322']]);
         }
 
         //if per_page is over the limit, bail out
-        if (isset($options['per_page'])) {
+        if (isset($params['per_page'])) {
 
             //check format, csv has a higher limit
-            if (isset($options['format'])) {
-                if ($options['format'] === 'csv') {
+            if (isset($params['format'])) {
+                if ($params['format'] === 'csv') {
                     //csv format
-                    if ($options['per_page'] > $csvPerPageLimit) {
-                        return $this->apiResponse->errorResponse(400, ['api' => ['ec5_335']]);
+                    if ($params['per_page'] > $csvPerPageLimit) {
+                        return Response::apiErrorCode(400, ['api' => ['ec5_335']]);
                     }
                 }
-                if ($options['format'] === 'json') {
+                if ($params['format'] === 'json') {
                     //json format
-                    if ($options['per_page'] > $jsonPerPageLimit) {
-                        return $this->apiResponse->errorResponse(400, ['api' => ['ec5_335']]);
+                    if ($params['per_page'] > $jsonPerPageLimit) {
+                        return Response::apiErrorCode(400, ['api' => ['ec5_335']]);
                     }
                 }
             } else {
                 //json format
-                if ($options['per_page'] > $jsonPerPageLimit) {
-                    return $this->apiResponse->errorResponse(400, ['api' => ['ec5_335']]);
+                if ($params['per_page'] > $jsonPerPageLimit) {
+                    return Response::apiErrorCode(400, ['api' => ['ec5_335']]);
                 }
             }
         }
         // Set the mapping
         $this->dataMappingService->init(
             $this->requestedProject(),
-            $options['format'],
-            $options['branch_ref'] !== '' ? 'branch' : 'form',
-            $options['form_ref'],
-            $options['branch_ref'],
-            $options['map_index']
+            $params['format'],
+            $params['branch_ref'] !== '' ? 'branch' : 'form',
+            $params['form_ref'],
+            $params['branch_ref'],
+            $params['map_index']
         );
 
         // Switch on the format
-        switch ($options['format']) {
+        switch ($params['format']) {
             case 'csv':
                 // Branch
-                if ($options['branch_ref'] != '') {
-                    return $this->sendBranchEntriesCSV($options);
+                if ($params['branch_ref'] != '') {
+                    return $this->sendBranchEntriesCSV($params);
                 } else {
                     // Form
-                    return $this->sendEntriesCSV($options);
+                    return $this->sendEntriesCSV($params);
                 }
             default:
                 // Branch
-                if ($options['branch_ref'] != '') {
-                    return $this->sendBranchEntriesJSON($options, true);
+                if ($params['branch_ref'] != '') {
+                    return $this->sendBranchEntriesJSON($params, true);
                 }
                 // Form
-                return $this->sendEntriesJSON($options, true);
+                return $this->sendEntriesJSON($params, true);
         }
     }
 
     /**
-     * @param Request $request
      * @return JsonResponse
      */
-    public function show(Request $request)
+    public function show()
     {
-        $params = $this->getRequestParams($request, config('epicollect.limits.entries_table.per_page'));
+        $allowedKeys = array_keys(config('epicollect.strings.search_data_entries'));
+        $perPage = config('epicollect.limits.entries_table.per_page');
+        $params = $this->entriesViewService->getSanitizedQueryParams($allowedKeys, $perPage);
 
         // Validate the params and query string
-        if (!$this->validateParams($params)) {
-            return $this->apiResponse->errorResponse(400, $this->validateErrors);
+        if (!$this->entriesViewService->areValidQueryParams($params)) {
+            return Response::apiErrorCode(400, $this->entriesViewService->validationErrors);
         }
         // Branch
         if ($params['branch_ref'] != '') {
@@ -150,23 +114,22 @@ class EntriesController extends EntrySearchControllerBase
     /**
      * @param array $options
      * @param bool $map
-     * @return \Illuminate\Http\JsonResponse
-     *
+     * @return JsonResponse
      */
-    private function sendEntriesJSON(array $options, $map = false)
+    private function sendEntriesJSON(array $options, bool $map = false)
     {
         $columns = ['title', 'entry_data', 'branch_counts', 'child_counts', 'user_id', 'uploaded_at', 'created_at'];
         $project = $this->requestedProject();
         $query = $this->runQueryHierarchy($options, $columns);
 
-        //get newest and oldest dates of this subset (before pagination occurs)
+        //get the newest and oldest dates of this subset (before pagination occurs)
         //and set the format to be like the one from JS for consistency
         //like 2020-12-10T11:31:30.000Z
         if ($query->first() !== null) {
             $oldest = str_replace(' ', 'T', $query->min('created_at')) . '.000Z';
             $newest = str_replace(' ', 'T', $query->max('created_at')) . '.000Z';
         } else {
-            //no entries, return todays' date as ISO string
+            //no entries, return today's date as ISO string
             $now = Carbon::now()->toIso8601String();
             $oldest = str_replace('+00:00', '.000Z', $now);
             $newest = str_replace('+00:00', '.000Z', $now);
@@ -214,13 +177,7 @@ class EntriesController extends EntrySearchControllerBase
         $meta = $this->getMeta($entryData, $newest, $oldest);
         $links = $this->getLinks($entryData);
 
-
-        // Set up the json response
-        $this->apiResponse->setMeta($meta);
-        $this->apiResponse->setLinks($links);
-        $this->apiResponse->setData($data);
-
-        return $this->apiResponse->toJsonResponse(200);
+        return Response::apiData($data, $meta, $links);
     }
 
     /**
@@ -240,7 +197,7 @@ class EntriesController extends EntrySearchControllerBase
 
         // Add csv headers
         if ($params['headers'] == 'true') {
-            fputcsv($data, $this->dataMappingService->getHeaderRowCSV(), ',');
+            fputcsv($data, $this->dataMappingService->getHeaderRowCSV());
         }
 
         $entries = $query->paginate($params['per_page']);
@@ -253,7 +210,7 @@ class EntriesController extends EntrySearchControllerBase
                         $entry->user_id,
                         $entry->title,
                         $entry->uploaded_at
-                    ), ',')
+                    ))
                 ) {
                     // Error writing to file
                     throw new Exception('Error writing file');
@@ -261,7 +218,7 @@ class EntriesController extends EntrySearchControllerBase
             }
         } catch (Exception $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
-            return $this->apiResponse->errorResponse(400, ['entries-export-csv' => ['ec5_232']]);
+            return Response::apiErrorCode(400, ['entries-export-csv' => ['ec5_232']]);
         }
 
         return Response::toCSVStream($data);
@@ -270,9 +227,9 @@ class EntriesController extends EntrySearchControllerBase
     /**
      * @param array $options
      * @param bool $map
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
-    private function sendBranchEntriesJSON(array $options, $map = false)
+    private function sendBranchEntriesJSON(array $options, bool $map = false)
     {
         $columns = ['title', 'entry_data', 'user_id', 'uploaded_at'];
         $project = $this->requestedProject();
@@ -323,12 +280,7 @@ class EntriesController extends EntrySearchControllerBase
         $meta = $this->getMeta($entryData, $newest, $oldest);
         $links = $this->getLinks($entryData);
 
-        // Set up the json response
-        $this->apiResponse->setMeta($meta);
-        $this->apiResponse->setLinks($links);
-        $this->apiResponse->setData($data);
-
-        return $this->apiResponse->toJsonResponse(200);
+        return Response::apiData($data, $meta, $links);
     }
 
     /**
@@ -348,7 +300,7 @@ class EntriesController extends EntrySearchControllerBase
         ob_start();
         // Add csv headers
         if ($params['headers'] == 'true') {
-            fputcsv($data, $this->dataMappingService->getHeaderRowCSV(), ',');
+            fputcsv($data, $this->dataMappingService->getHeaderRowCSV());
         }
 
         $entries = $query->paginate($params['per_page']);
@@ -362,8 +314,7 @@ class EntriesController extends EntrySearchControllerBase
                             null,
                             $entry->user_id,
                             $entry->title,
-                            $entry->uploaded_at),
-                        ','
+                            $entry->uploaded_at)
                     )
                 ) {
                     throw new Exception('Error writing file');
@@ -371,7 +322,7 @@ class EntriesController extends EntrySearchControllerBase
             }
         } catch (Exception $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
-            return $this->apiResponse->errorResponse(400, ['entries-export-csv' => ['ec5_232']]);
+            return Response::apiErrorCode(400, ['entries-export-csv' => ['ec5_232']]);
         }
         return Response::toCSVStream($data);
     }

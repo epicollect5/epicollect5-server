@@ -21,7 +21,7 @@ use Tests\TestCase;
    therefore, we use concatenation of @depends
  */
 
-class WebUploadControllerSequenceTest extends TestCase
+class UploadWebControllerSequenceTest extends TestCase
 {
     public function setUp()
     {
@@ -129,7 +129,7 @@ class WebUploadControllerSequenceTest extends TestCase
             //get top parent formRef
             $formRef = array_get($projectDefinition, 'data.project.forms.0.ref');
             //generate a fake entry for the top parent form
-            $entry = $entryGenerator->createParentEntry($formRef);
+            $entry = $entryGenerator->createParentEntryPayload($formRef);
             //perform a web upload
             $response[] = $this->actingAs($user)->post('api/internal/web-upload/' . $project->slug, $entry);
             $response[0]->assertStatus(200)
@@ -143,6 +143,10 @@ class WebUploadControllerSequenceTest extends TestCase
             $uuid = $entry['data']['id'];
             $this->assertCount(1, Entry::where('project_id', $project->id)->get());
             $this->assertEquals(0, Entry::where('uuid', $uuid)->value('child_counts'));
+
+            //entry should be assigned to currently logged-in user
+            $this->assertEquals($user->id, Entry::where('uuid', $uuid)->value('user_id'));
+
             return [
                 'entry' => $entry,
                 'parentEntry' => null,
@@ -177,7 +181,7 @@ class WebUploadControllerSequenceTest extends TestCase
             $parentEntryUuid = $entry['data']['id'];
             $parentFormRef = array_get($projectDefinition, 'data.project.forms.0.ref');
             $childFormRef = array_get($projectDefinition, 'data.project.forms.1.ref');
-            $childEntry1 = $entryGenerator->createChildEntry(
+            $childEntry1 = $entryGenerator->createChildEntryPayload(
                 $childFormRef,
                 $parentFormRef,
                 $parentEntryUuid
@@ -198,7 +202,8 @@ class WebUploadControllerSequenceTest extends TestCase
             $this->assertCount(1, Entry::where('form_ref', $childFormRef)->get());
             $this->assertEquals(1, Entry::where('uuid', $parentEntryUuid)->value('child_counts'));
             $this->assertEquals(0, Entry::where('uuid', $childEntry1['data']['id'])->value('child_counts'));
-
+            //entry should be assigned to currently logged-in user
+            $this->assertEquals($user->id, Entry::where('uuid', $childEntry1['data']['id'])->value('user_id'));
 
             return [
                 'entry' => $entry,
@@ -233,7 +238,7 @@ class WebUploadControllerSequenceTest extends TestCase
             $parentEntryUuid = $childEntry1['data']['id'];
             $parentFormRef = array_get($projectDefinition, 'data.project.forms.1.ref');
             $childFormRef = array_get($projectDefinition, 'data.project.forms.2.ref');
-            $childEntry2 = $entryGenerator->createChildEntry(
+            $childEntry2 = $entryGenerator->createChildEntryPayload(
                 $childFormRef,
                 $parentFormRef,
                 $parentEntryUuid
@@ -258,6 +263,9 @@ class WebUploadControllerSequenceTest extends TestCase
                 ->value('child_counts'));
             $this->assertEquals(0, Entry::where('uuid', $childEntry2['data']['id'])
                 ->value('child_counts'));
+
+            //entry should be assigned to currently logged-in user
+            $this->assertEquals($user->id, Entry::where('uuid', $childEntry2['data']['id'])->value('user_id'));
 
             return [
                 'entry' => $entry,
@@ -295,7 +303,7 @@ class WebUploadControllerSequenceTest extends TestCase
             $parentEntryUuid = $childEntry2['data']['id'];
             $parentFormRef = array_get($projectDefinition, 'data.project.forms.2.ref');
             $childFormRef = array_get($projectDefinition, 'data.project.forms.3.ref');
-            $childEntry3 = $entryGenerator->createChildEntry(
+            $childEntry3 = $entryGenerator->createChildEntryPayload(
                 $childFormRef,
                 $parentFormRef,
                 $parentEntryUuid
@@ -323,6 +331,10 @@ class WebUploadControllerSequenceTest extends TestCase
                 ->value('child_counts'));
             $this->assertEquals(0, Entry::where('uuid', $childEntry3['data']['id'])
                 ->value('child_counts'));
+
+            //entry should be assigned to currently logged-in user
+            $this->assertEquals($user->id, Entry::where('uuid', $childEntry3['data']['id'])->value('user_id'));
+
             return [
                 'entry' => $entry,
                 'childEntry1' => $childEntry1,
@@ -361,7 +373,7 @@ class WebUploadControllerSequenceTest extends TestCase
             $parenEntryUuid = $childEntry3['data']['id'];
             $parentFormRef = array_get($projectDefinition, 'data.project.forms.3.ref');
             $childFormRef = array_get($projectDefinition, 'data.project.forms.4.ref');
-            $childEntry4 = $entryGenerator->createChildEntry(
+            $childEntry4 = $entryGenerator->createChildEntryPayload(
                 $childFormRef,
                 $parentFormRef,
                 $parenEntryUuid
@@ -391,6 +403,9 @@ class WebUploadControllerSequenceTest extends TestCase
                 ->value('child_counts'));
             $this->assertEquals(0, Entry::where('uuid', $childEntry4['data']['id'])
                 ->value('child_counts'));
+
+            //entry should be assigned to currently logged-in user
+            $this->assertEquals($user->id, Entry::where('uuid', $childEntry4['data']['id'])->value('user_id'));
 
             return [
                 'entry' => $entry,
@@ -440,7 +455,7 @@ class WebUploadControllerSequenceTest extends TestCase
                 }
             }
 
-            $branchEntry = $entryGenerator->createBranchEntry(
+            $branchEntry = $entryGenerator->createBranchEntryPayload(
                 $ownerFormRef,
                 $branches[0]['branch'],
                 $uuid,
@@ -482,6 +497,8 @@ class WebUploadControllerSequenceTest extends TestCase
                 $branches[0]['ref'] => 1
             ], $branchCounts);
 
+            //entry should be assigned to currently logged-in user
+            $this->assertEquals($user->id, BranchEntry::where('uuid', $branchEntry['data']['id'])->value('user_id'));
 
             return [
                 'entry' => $entry,
@@ -531,7 +548,7 @@ class WebUploadControllerSequenceTest extends TestCase
                 }
             }
 
-            $branchEntry = $entryGenerator->createBranchEntry(
+            $branchEntry = $entryGenerator->createBranchEntryPayload(
                 $ownerFormRef,
                 $branches[0]['branch'],
                 $uuid,
@@ -567,6 +584,9 @@ class WebUploadControllerSequenceTest extends TestCase
             $this->assertEquals([
                 $branches[0]['ref'] => 1
             ], $branchCounts);
+
+            //entry should be assigned to currently logged-in user
+            $this->assertEquals($user->id, BranchEntry::where('uuid', $branchEntry['data']['id'])->value('user_id'));
 
             return [
                 'entry' => $entry,
@@ -616,7 +636,7 @@ class WebUploadControllerSequenceTest extends TestCase
                 }
             }
 
-            $branchEntry = $entryGenerator->createBranchEntry(
+            $branchEntry = $entryGenerator->createBranchEntryPayload(
                 $ownerFormRef,
                 $branches[0]['branch'],
                 $uuid,
@@ -652,6 +672,10 @@ class WebUploadControllerSequenceTest extends TestCase
             $this->assertEquals([
                 $branches[0]['ref'] => 1
             ], $branchCounts);
+
+            //entry should be assigned to currently logged-in user
+            $this->assertEquals($user->id, BranchEntry::where('uuid', $branchEntry['data']['id'])->value('user_id'));
+
             return [
                 'entry' => $entry,
                 'childEntry1' => $childEntry1,
@@ -700,7 +724,7 @@ class WebUploadControllerSequenceTest extends TestCase
                 }
             }
 
-            $branchEntry = $entryGenerator->createBranchEntry(
+            $branchEntry = $entryGenerator->createBranchEntryPayload(
                 $ownerFormRef,
                 $branches[0]['branch'],
                 $uuid,
@@ -736,6 +760,9 @@ class WebUploadControllerSequenceTest extends TestCase
             $this->assertEquals([
                 $branches[0]['ref'] => 1
             ], $branchCounts);
+
+            //entry should be assigned to currently logged-in user
+            $this->assertEquals($user->id, BranchEntry::where('uuid', $branchEntry['data']['id'])->value('user_id'));
             return [
                 'entry' => $entry,
                 'childEntry1' => $childEntry1,
@@ -780,7 +807,7 @@ class WebUploadControllerSequenceTest extends TestCase
                 }
             }
 
-            $branchEntry = $entryGenerator->createBranchEntry(
+            $branchEntry = $entryGenerator->createBranchEntryPayload(
                 $ownerFormRef,
                 $branches[0]['branch'],
                 $uuid,
@@ -816,6 +843,9 @@ class WebUploadControllerSequenceTest extends TestCase
             $this->assertEquals([
                 $branches[0]['ref'] => 1
             ], $branchCounts);
+
+            //entry should be assigned to currently logged-in user
+            $this->assertEquals($user->id, BranchEntry::where('uuid', $branchEntry['data']['id'])->value('user_id'));
 
             $this->clearDatabase([
                 'user' => $user,
