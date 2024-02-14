@@ -129,6 +129,11 @@ class ProjectDefinitionGenerator
 
             //add 1 search input (limit is 5 across one project)
             $inputs[] = ProjectDefinitionGenerator::createSearchInput($formRef);
+            if ($howManyForms === 1) {
+                $inputs[] = ProjectDefinitionGenerator::createSearchSingleInput($formRef);
+                $inputs[] = ProjectDefinitionGenerator::createSearchMultipleInput($formRef);
+            }
+
 
             $formName = 'Form ' . self::convertToWord($formIndex + 1);
             $forms[] = [
@@ -496,6 +501,57 @@ class ProjectDefinitionGenerator
             "min" => null,
             "ref" => Generators::inputRef($formRef),
             "type" => $randomType,
+            "group" => [
+            ],
+            "jumps" => [
+            ],
+            "regex" => null,
+            "branch" => [],
+            "verify" => false,
+            "default" => "",
+            "is_title" => false,
+            "question" => "Name",
+            "uniqueness" => "none",
+            "is_required" => false,
+            "datetime_format" => null,
+            "possible_answers" => self::createPossibleAnswers(rand(1, 50)),
+            "set_to_current_datetime" => false
+        ];
+    }
+
+
+    public static function createSearchMultipleInput($formRef): array
+    {
+        return [
+            "max" => null,
+            "min" => null,
+            "ref" => Generators::inputRef($formRef),
+            "type" => 'searchmultiple',
+            "group" => [
+            ],
+            "jumps" => [
+            ],
+            "regex" => null,
+            "branch" => [],
+            "verify" => false,
+            "default" => "",
+            "is_title" => false,
+            "question" => "Name",
+            "uniqueness" => "none",
+            "is_required" => false,
+            "datetime_format" => null,
+            "possible_answers" => self::createPossibleAnswers(rand(1, 50)),
+            "set_to_current_datetime" => false
+        ];
+    }
+
+    public static function createSearchSingleInput($formRef): array
+    {
+        return [
+            "max" => null,
+            "min" => null,
+            "ref" => Generators::inputRef($formRef),
+            "type" => 'searchsingle',
             "group" => [
             ],
             "jumps" => [
