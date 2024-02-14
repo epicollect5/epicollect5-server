@@ -28,5 +28,7 @@
         <env name="CACHE_DRIVER" value="array"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="QUEUE_DRIVER" value="sync"/>
+        <ini name="error_reporting" value="E_ALL"/>
+        <ini name="memory_limit" value="8048M"/> <!-- Adjust the memory limit as needed -->
     </php>
 </phpunit>

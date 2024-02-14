@@ -24,13 +24,12 @@ class RuleEntry extends EntryValidationBase
      */
     public function additionalChecks(ProjectDTO $project, EntryStructureDTO $entryStructure)
     {
-
         $projectExtra = $project->getProjectExtra();
-
+        $projectDefinition = $project->getProjectDefinition();
         $formRef = $entryStructure->getFormRef();
 
         // Check if this entry should have a parent entry uuid
-        $hasParent = $projectExtra->formHasParent($formRef);
+        $parentFormRef = $projectDefinition->getParentFormRef($formRef);
 
         //check entry uuid is in correct format -> todo
         if (!Strings::isValidUuid($entryStructure->getEntryUuid())) {
@@ -39,20 +38,16 @@ class RuleEntry extends EntryValidationBase
             return;
         }
 
-        if ($hasParent) {
-
-            $parentFormRef = $entryStructure->getParentFormRef();
-
-            // Check parent form is a direct ancestor
-            if ($hasParent != $parentFormRef) {
-                $this->errors[$parentFormRef] = ['ec5_18'];
+        if ($parentFormRef !== null) {
+            $entryParentFormRef = $entryStructure->getParentFormRef();
+            // Check the parent form is a direct ancestor
+            if ($parentFormRef !== $entryParentFormRef) {
+                $this->errors[$entryParentFormRef] = ['ec5_18'];
                 return;
             }
 
-            $parentForm = $projectExtra->getFormDetails($parentFormRef);
-
-            // Check parent form exists
-            if (count($parentForm) == 0) {
+            // Check the parent form actually exists
+            if (!$projectExtra->formExists($entryParentFormRef)) {
                 $this->errors[$formRef] = ['ec5_15'];
                 return;
             }
@@ -67,7 +62,7 @@ class RuleEntry extends EntryValidationBase
 
             // Check parent entry exists for this parent uuid and parent form ref
             $entryModel = new Entry();
-            $parent = $entryModel->getParentEntry($parentEntryUuid, $parentFormRef);
+            $parent = $entryModel->getParentEntry($parentEntryUuid, $entryParentFormRef);
 
             if (!$parent) {
                 $this->errors[$formRef] = ['ec5_19'];

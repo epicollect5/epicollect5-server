@@ -98,13 +98,10 @@ abstract class EntryValidationBase extends ValidationBase
     private function validateAnswer(ProjectDTO $project, EntryStructureDTO $entryStructure, $answerData, $inputRef)
     {
         $projectExtra = $project->getProjectExtra();
-        $input = $projectExtra->getInputData($inputRef);
 
         // Check this input exists
-        if (count($input) == 0) {
-            // Input doesn't exist
+        if (!$projectExtra->inputExists($inputRef)) {
             $this->errors['upload'] = ['ec5_84'];
-            return;
         }
 
         // Validate the answer
@@ -129,10 +126,10 @@ abstract class EntryValidationBase extends ValidationBase
     protected function checkCanEdit(EntryStructureDTO $entryStructure, $requestedProjectId): bool
     {
         $entry = $entryStructure->getEntry();
-
-        // Check if we already have this UUID in the database for this projectt
+        // Check if we already have this UUID in the database for this project
         $uuid = $entry['entry_uuid'];
 
+        //get entry or branch entry from the database
         if ($entryStructure->isBranch()) {
             $dbEntry = BranchEntry::where('uuid', '=', $uuid)->first();
         } else {
