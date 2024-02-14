@@ -3,6 +3,7 @@
 namespace ec5\Models\Entries;
 
 use DB;
+use ec5\Services\EntriesViewService;
 use ec5\Traits\Eloquent\Entries;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
@@ -19,7 +20,7 @@ use Illuminate\Database\Query\Builder;
  * @property string $device_id
  * @property string $created_at
  * @property string $uploaded_at
- * @property string $tile
+ * @property string $title
  * @property mixed $entry_data
  * @property string $geo_json_data
  * @property string $child_counts
@@ -76,7 +77,10 @@ class Entry extends Model
             ->whereRaw($whereSql, [$projectId])
             ->selectRaw($selectSql, ['$."' . $params['input_ref'] . '"']);
 
-        //filter by user (COLLECTOR ROLE ONLY)
+        //filter by user (imp: applied to COLLECTOR ROLE ONLY)
+        /**
+         * @see EntriesViewService::getSanitizedQueryParams
+         */
         if (!empty($params['user_id'])) {
             $q->where('user_id', '=', $params['user_id']);
         }

@@ -2,7 +2,7 @@
 
 namespace ec5\Services;
 
-use ec5\Http\Validation\Entries\Search\RuleQueryString;
+use ec5\Http\Validation\Entries\View\RuleQueryString;
 use ec5\Http\Validation\Entries\Upload\InputRules\RuleAudioInput;
 use ec5\Http\Validation\Entries\Upload\InputRules\RuleBranchInput;
 use ec5\Http\Validation\Entries\Upload\InputRules\RuleCheckboxInput;
@@ -65,6 +65,7 @@ class EntriesViewService
     public function getSanitizedQueryParams($allowedKeys, $perPage): array
     {
         $params = [];
+        //set default keys if missing
         foreach ($allowedKeys as $k) {
             $params[$k] = request()->get($k) ?? '';
         }
@@ -95,7 +96,7 @@ class EntriesViewService
             $params['form_ref'] = $this->requestedProject()->getProjectDefinition()->getFirstFormRef();
         }
 
-        //if no map_index provide, return default map (check of empty string, as 0 is a valid map index)
+        //if no map_index provided, return default map (check of empty string, as 0 is a valid map index)
         if ($params['map_index'] === '') {
             $params['map_index'] = $this->requestedProject()->getProjectMapping()->getDefaultMapIndex();
         }

@@ -7,10 +7,30 @@ use ec5\Traits\Eloquent\Entries;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
 
+/**
+ * @property int $id
+ * @property int $project_id
+ * @property string $uuid
+ * @property int $owner_entry_id
+ * @property string $owner_uuid
+ * @property string $owner_input_ref
+ * @property string $form_ref
+ * @property int $user_id
+ * @property string $platform
+ * @property string $device_id
+ * @property string $created_at
+ * @property string $uploaded_at
+ * @property string $title
+ * @property mixed $entry_data
+ * @property string $geo_json_data
+ */
 class BranchEntry extends Model
 {
     use Entries;
 
+    /**
+     * @var mixed
+     */
     protected $table = 'branch_entries';
     //disable eloquent timestamps because we are using "uploaded_at"
     public $timestamps = false;

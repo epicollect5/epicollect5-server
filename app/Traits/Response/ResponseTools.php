@@ -6,12 +6,14 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 trait ResponseTools
 {
+
     public function getMeta(LengthAwarePaginator $entriesPaginator, $newest = null, $oldest = null): array
     {
         return [
             'total' => $entriesPaginator->total(),
             //imp: cast to int for consistency:
             //imp: sometimes the paginator gives a string back, go figure
+            /** @noinspection */
             'per_page' => (int)$entriesPaginator->perPage(),
             'current_page' => $entriesPaginator->currentPage(),
             'last_page' => $entriesPaginator->lastPage(),
