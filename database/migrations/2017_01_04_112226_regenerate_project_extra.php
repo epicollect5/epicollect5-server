@@ -36,7 +36,7 @@ class RegenerateProjectExtra extends Migration
             $projectDefinitionValidator = new ProjectDefinitionValidator(new ProjectExtraDetailsValidator, new FormValidator, new InputValidator, new ProjectExtraDTO, new ProjectDefinitionDTO);
 
             // Initialise with the project and the project_definition
-            $projectModel->init($project);
+            $projectModel->initAllDTOs($project);
 
             // Validate and generate Project Extra from Project Definition
             $projectDefinitionValidator->validate($projectModel);

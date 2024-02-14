@@ -125,8 +125,9 @@ abstract class RequestAttributesMiddleware
     {
         $project = Project::findBySlug($slug);
         if ($project) {
-            // Initialise the main Project model
-            $this->requestedProject->init($project);
+            // Initialise all the DTOs objects
+            //imp: initAllDTOs() also sets the other DTOs (like ProjectExtra DTO)
+            $this->requestedProject->initAllDTOs($project);
         }
     }
 
