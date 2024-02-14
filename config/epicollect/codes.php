@@ -164,7 +164,7 @@ return [
     "ec5_226" => "Failed. Please contact support.",
     "ec5_227" => "Reserved Word, cannot use anything with ec5_ ",
     "ec5_228" => "Mapping name already exists.",
-    "ec5_229" => "Sorry, you have reached the number of allowed maps.",
+    "ec5_229" => "Sorry, you have reached the max number of allowed maps.",
     "ec5_230" => "This map doesn't exist.",
     "ec5_231" => "File does not exist.",
     "ec5_232" => "File is currently being written to.",

@@ -5,7 +5,7 @@
             <div class="var-holder-error" data-message="{{$error}}"></div>
         @else
             {{--translate error--}}
-            <div class="var-holder-error" data-message="{{trans('status_codes.' . $error)}}"></div>
+            <div class="var-holder-error" data-message="{{config('epicollect.codes.' . $error)}}"></div>
         @endif
     @endforeach
     <script>

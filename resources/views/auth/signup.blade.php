@@ -29,7 +29,7 @@
                                     @if (strpos($errors->first('name'), 'ec5_') === false)
                                         <small class="text-danger">{{ $errors->first('name') }}</small>
                                     @else
-                                        <small class="text-danger">{{ trans('status_codes.' . $errors->first('name'))  }}</small>
+                                        <small class="text-danger">{{ config('epicollect.codes.' . $errors->first('name'))  }}</small>
                                     @endif
                                     <div>
                                         <small>Use 3 to 25 characters
@@ -49,7 +49,7 @@
                                     @if (strpos($errors->first('email'), 'ec5_') === false)
                                         <small class="text-danger">{{ $errors->first('email') }}</small>
                                     @else
-                                        <small class="text-danger">{{ trans('status_codes.' . $errors->first('email'))  }}</small>
+                                        <small class="text-danger">{{ config('epicollect.codes.' . $errors->first('email'))  }}</small>
                                     @endif
                                 </div>
                             </div>
@@ -65,7 +65,7 @@
                                     @if (strpos($errors->first('password'), 'ec5_') === false)
                                         <small class="text-danger">{{ $errors->first('password') }}</small>
                                     @else
-                                        <small class="text-danger">{{ trans('status_codes.' . $errors->first('password'))  }}</small>
+                                        <small class="text-danger">{{ config('epicollect.codes.' . $errors->first('password'))  }}</small>
                                     @endif
                                 </div>
                             </div>

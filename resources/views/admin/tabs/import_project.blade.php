@@ -40,7 +40,7 @@
                             </span>
 
                 @if ($errors->has('name'))
-                    <small class="text-danger">{{ trans('status_codes.' . $errors->first('name')) }}</small>
+                    <small class="text-danger">{{ config('epicollect.codes.' . $errors->first('name')) }}</small>
                 @else
                     <small>{{trans('site.max_50_chars')}}</small>
                 @endif
@@ -50,7 +50,7 @@
                 <label class="control-label">{{trans('site.project_json')}}</label>
                 <input required type="file" class="form-control" name="file">
                 @if ($errors->has('file'))
-                    <small class="text-danger">{{ trans('status_codes.' . $errors->first('file')) }}</small>
+                    <small class="text-danger">{{ config('epicollect.codes.' . $errors->first('file')) }}</small>
                 @endif
             </div>
 

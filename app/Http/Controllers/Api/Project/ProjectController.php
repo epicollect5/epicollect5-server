@@ -133,7 +133,7 @@ class ProjectController
         $data['slug'] = Str::slug($name, '-');
         // Run validation
         $ruleName->validate($data);
-        
+
         $data = [
             'type' => 'exists',
             'id' => $data['slug'],
@@ -191,7 +191,7 @@ class ProjectController
             return Response::apiErrorCode(400, ['errors' => $errors]);
         }
 
-        $data = ['message' => trans('status_codes.ec5_362')];
+        $data = ['message' => config('epicollect.codes.ec5_362')];
         return Response::apiData($data);
     }
 }

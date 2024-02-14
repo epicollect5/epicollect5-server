@@ -4,7 +4,7 @@ namespace ec5\Http\Controllers\Api\Entries;
 
 use ec5\Http\Validation\Entries\Download\RuleDownload;
 use ec5\Services\DataMappingService;
-use ec5\Services\DownloadEntriesService;
+use ec5\Services\EntriesDownloadService;
 use ec5\Services\EntriesViewService;
 use Illuminate\Http\Request;
 use Auth;
@@ -73,15 +73,15 @@ class DownloadController
             //to keep the user on the dataviewer page.
             //because on the front end this is requested using window.location
             $filename = 'epicollect5-error.txt';
-            $content = trans('status_codes.ec5_364');
+            $content = config('epicollect.codes.ec5_364');
             return Response::toCSVFile($content, $filename);
         }
     }
 
     private function createArchive(string $projectDir, array $params, $timestamp)
     {
-        $downloadEntriesService = new DownloadEntriesService(new DataMappingService());
-        if (!$downloadEntriesService->createArchive($this->requestedProject(), $projectDir, $params)) {
+        $entriesDownloadService = new EntriesDownloadService(new DataMappingService());
+        if (!$entriesDownloadService->createArchive($this->requestedProject(), $projectDir, $params)) {
             return Response::apiErrorCode(400, ['download-entries' => ['ec5_83']]);
         }
         $zipName = $this->requestedProject()->slug . '-' . $params['format'] . '.zip';

@@ -18,7 +18,7 @@ class ApiSuccessCodeMacro extends ServiceProvider
                 ->json([
                     'data' => [
                         'code' => $code,
-                        'title' => trans('status_codes.' . $code)
+                        'title' => config('epicollect.codes.' . $code)
                     ]
                 ])
                 ->header(

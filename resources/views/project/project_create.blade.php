@@ -10,7 +10,8 @@
                 @if($errors->has('missing_keys') || $errors->has('extra_keys'))
                     <div class="var-holder-error" data-message="{{trans('site.invalid_form')}}"></div>
                 @elseif($errors->has('slug'))
-                    <div class="var-holder-error" data-message="{{trans('status_codes.' . $errors->first())}}"></div>
+                    <div class="var-holder-error"
+                         data-message="{{config('epicollect.codes.' . $errors->first())}}"></div>
                 @else
                     @foreach($errors->all() as $error)
                         @if (strpos($error, 'ec5_') === false)
@@ -18,7 +19,7 @@
                             <div class="var-holder-error" data-message="{{$error}}"></div>
                         @else
                             {{--translate error--}}
-                            <div class="var-holder-error" data-message="{{trans('status_codes.' . $error)}}"></div>
+                            <div class="var-holder-error" data-message="{{config('epicollect.codes.' . $error)}}"></div>
                         @endif
                     @endforeach
                 @endif

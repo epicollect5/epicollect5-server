@@ -4,6 +4,7 @@ namespace ec5\Http\Validation\Project;
 
 use ec5\Http\Validation\ValidationBase;
 use Config;
+use ec5\Libraries\Utilities\Common;
 
 class RuleBulkImportUsers extends ValidationBase
 {
@@ -20,7 +21,10 @@ class RuleBulkImportUsers extends ValidationBase
 
         $this->messages['required'] = 'ec5_21';
         $this->messages['emails.min'] = 'ec5_347';
-        $this->messages['emails.max'] = trans('status_codes.ec5_346', ['limit' => $emailsLimitMax]);
+        $this->messages['emails.max'] = Common::configWithParams(
+            'epicollect.codes.ec5_346',
+            ['limit' => $emailsLimitMax]
+        );
         $this->messages['in'] = 'ec5_98';
         //role must be known by the system
         $this->rules['role'] = 'required|in:' . implode($roles, ',');
@@ -31,10 +35,10 @@ class RuleBulkImportUsers extends ValidationBase
      * We compare the new role and the existing role (if there is one), against the admin user's
      *
      * @param $projectAdmin
-     * @param $user
+     * @param $userToAdd
      * @param $projectAdminRole
-     * @param $userToAddRole
-     * @param $existingUserRole
+     * @param null $userToAddRole
+     * @param null $existingUserRole
      */
     public function additionalChecks($projectAdmin, $userToAdd, $projectAdminRole, $userToAddRole = null, $existingUserRole = null)
     {

@@ -4,6 +4,7 @@ namespace ec5\Http\Controllers\Api\Project;
 
 use ec5\Http\Validation\Project\RuleBulkImportUsers;
 use ec5\Http\Validation\Project\RuleSwitchUserRole;
+use ec5\Libraries\Utilities\Common;
 use ec5\Models\Project\ProjectRole;
 use ec5\Models\User\User;
 use ec5\Services\ProjectService;
@@ -81,7 +82,8 @@ class UserController
         //all good, try to remove users by role
         if ($projectRole->deleteByRole($projectId, $role, $user) >= 0) {
             //all good, rows deleted (if any)
-            $data = ['message' => trans('status_codes.ec5_343', ['role' => ucfirst($role)])];
+            $data = ['message' => Common::configWithParams('epicollect.codes.ec5_343', ['role' => ucfirst($role)])];
+
             return Response::apiData($data);
         } else {
             //error response
@@ -130,7 +132,7 @@ class UserController
         //all good, switch role ;)
         if ($projectRole->switchUserRole($projectId, $userToSwitch, $userToSwitchCurrentRole, $userToSwitchNewRole) >= 0) {
             //all good, role switched
-            $data = ['message' => trans('status_codes.ec5_241')];
+            $data = ['message' => config('epicollect.codes.ec5_241')];
             return Response::apiData($data);
         } else {
             //error response
@@ -194,7 +196,7 @@ class UserController
         //were there any errors?
         if (sizeof($validationErrors) === 0) {
             // Send http status code 200, ok!
-            $data = ['message' => trans('status_codes.ec5_345', ['role' => $newRole])];
+            $data = ['message' => Common::configWithParams('epicollect.codes.ec5_345', ['role' => $newRole])];
             return Response::apiData($data);
         } else {
             //warn user about errors (manager roles which cannot be switched)

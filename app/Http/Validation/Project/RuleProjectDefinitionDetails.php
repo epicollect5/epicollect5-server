@@ -4,6 +4,7 @@ namespace ec5\Http\Validation\Project;
 
 use ec5\Http\Validation\ValidationBase;
 use Config;
+use ec5\Libraries\Utilities\Common;
 
 class RuleProjectDefinitionDetails extends ValidationBase
 {
@@ -33,12 +34,12 @@ class RuleProjectDefinitionDetails extends ValidationBase
         $projectDescriptionMinLength = config('epicollect.limits.project.description.min');
         $projectDescriptionMaxLength = config('epicollect.limits.project.description.max');
 
-        $this->messages['description.between'] = trans('status_codes.ec5_393', [
+        $this->messages['description.between'] = Common::configWithParams('epicollect.codes.ec5_393', [
             'min' => $projectDescriptionMinLength,
             'max' => $projectDescriptionMaxLength
         ]);
 
-        $this->messages['small_description.between'] = trans('status_codes.ec5_394', [
+        $this->messages['small_description.between'] = Common::configWithParams('epicollect.codes.ec5_394', [
             'min' => $projectSmallDescMinLength,
             'max' => $projectSmallDescMaxLength
         ]);

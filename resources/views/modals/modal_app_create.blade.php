@@ -29,11 +29,11 @@
 
                         @if($errors->has('application_name'))
                             <i class="fa fa-2x fa-times form-control-feedback project-application_name-error"></i>
-                            <small class="text-danger">{{ trans('status_codes.' . $errors->first('application_name'))  }}</small>
+                            <small class="text-danger">{{ config('epicollect.codes.' . $errors->first('application_name'))  }}</small>
                             <small class="text-hint hidden">{{trans('site.max_50_chars')}}</small>
                         @else
                             <i class="fa fa-2x fa-times form-control-feedback project-application_name-error hidden"></i>
-                            <small class="text-danger hidden">{{ trans('status_codes.' . $errors->first('application_name')) }}</small>
+                            <small class="text-danger hidden">{{ config('epicollect.codes.' . $errors->first('application_name')) }}</small>
                             <small class="text-hint">{{trans('site.max_50_chars')}}</small>
                         @endif
                     </div>

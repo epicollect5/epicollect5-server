@@ -28,7 +28,7 @@
                                     @if (strpos($errors->first('email'), 'ec5_') === false)
                                         <small class="text-danger">{{ $errors->first('email') }}</small>
                                     @else
-                                        <small class="text-danger">{{ trans('status_codes.' . $errors->first('email'))  }}</small>
+                                        <small class="text-danger">{{ config('epicollect.codes.' . $errors->first('email'))  }}</small>
                                     @endif
                                 </div>
                             </div>

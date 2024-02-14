@@ -33,7 +33,7 @@ class ApiErrorCodeMacro extends ServiceProvider
                             if (strpos($errorValue, 'ec5_') === false) {
                                 $tempArray['title'] = $errorValue;
                             } else {
-                                $tempArray['title'] = Lang::get('status_codes.' . $errorValue);
+                                $tempArray['title'] = config('epicollect.codes.' . $errorValue);
                             }
                             $tempArray['source'] = $key;
                         }

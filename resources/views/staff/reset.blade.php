@@ -26,7 +26,7 @@
                                     @if (strpos($errors->first('password'), 'ec5_') === false)
                                         <small class="text-danger">{{ $errors->first('password') }}</small>
                                     @else
-                                        <small class="text-danger">{{ trans('status_codes.' . $errors->first('password'))  }}</small>
+                                        <small class="text-danger">{{ config('epicollect.codes.' . $errors->first('password'))  }}</small>
                                     @endif
                                     <div>
                                         <small>
@@ -47,7 +47,7 @@
                                     @if (strpos($errors->first('password-confirm'), 'ec5_') === false)
                                         <small class="text-danger">{{ $errors->first('password-confirm') }}</small>
                                     @else
-                                        <small class="text-danger">{{ trans('status_codes.' . $errors->first('password-confirm'))  }}</small>
+                                        <small class="text-danger">{{ config('epicollect.codes.' . $errors->first('password-confirm'))  }}</small>
                                     @endif
                                     <div class="form-check">
                                         <input type="checkbox" class="form-check-input show-password-control"

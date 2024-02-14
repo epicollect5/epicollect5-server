@@ -196,7 +196,7 @@ class ManageUsersController
         // If ajax, return success json
         if (request()->ajax()) {
             // Send http status code 200, ok!
-            $data = ['message' => trans('status_codes.ec5_88')];
+            $data = ['message' => config('epicollect.codes.ec5_88')];
             return Response::apiData($data);
         }
         // Redirect back to admin page with hash value
@@ -276,7 +276,7 @@ class ManageUsersController
         // If ajax, return success json
         if (request()->ajax()) {
             // Send http status code 200, ok!
-            return Response::apiData(['message' => trans('status_codes.ec5_89')]);
+            return Response::apiData(['message' => config('epicollect.codes.ec5_89')]);
         }
         // Redirect back to admin page
         return Redirect::back()->with('message', 'ec5_89');

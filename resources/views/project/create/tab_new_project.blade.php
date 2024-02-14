@@ -27,7 +27,7 @@
             @if (strpos($errors->first('name'), 'ec5_') === false)
                 <small class="text-danger">{{ $errors->first('name') }}</small>
             @else
-                <small class="text-danger">{{ trans('status_codes.' . $errors->first('name'))  }}</small>
+                <small class="text-danger">{{ config('epicollect.codes.' . $errors->first('name'))  }}</small>
             @endif
             <small class="text-hint hidden">{{trans('site.max_50_chars')}}</small>
         @else
@@ -38,7 +38,7 @@
                 </small>
             @else
                 <small class="text-danger hidden">
-                    {{ trans('status_codes.' . $errors->first('name'))}}
+                    {{ config('epicollect.codes.' . $errors->first('name'))}}
                 </small>
             @endif
             <small class="text-hint">{{trans('site.max_50_chars')}}</small>
@@ -61,7 +61,7 @@
                 </small>
             @else
                 <small class="text-danger">
-                    {{ trans('status_codes.' . $errors->first('small_description')) }}
+                    {{ config('epicollect.codes.' . $errors->first('small_description')) }}
                 </small>
             @endif
             <small class="text-hint hidden">{{trans('site.max_100_chars')}}</small>
@@ -73,7 +73,7 @@
                 </small>
             @else
                 <small class="text-danger hidden">
-                    {{ trans('status_codes.' . $errors->first('small_description')) }}
+                    {{ config('epicollect.codes.' . $errors->first('small_description')) }}
                 </small>
             @endif
             <small class="text-hint">{{trans('site.max_100_chars')}}</small>
@@ -94,7 +94,7 @@
                 </small>
             @else
                 <small class="text-danger">
-                    {{ trans('status_codes.' . $errors->first('form_name') ?? 'ec5_205')}}
+                    {{ config('epicollect.codes.' . $errors->first('form_name') ?? 'ec5_205')}}
                 </small>
             @endif
             <small class="text-hint hidden">{{trans('site.max_50_chars')}}</small>
@@ -105,7 +105,7 @@
                     {{ $errors->first('form_name') ?? 'ec5_205'}}
                 </small>
             @else
-                <small class="text-danger hidden">{{ trans('status_codes.' . $errors->first('form_name'))}}</small>
+                <small class="text-danger hidden">{{ config('epicollect.codes.' . $errors->first('form_name'))}}</small>
             @endif
             <small class="text-hint">{{trans('site.max_50_chars')}}</small>
         @endif

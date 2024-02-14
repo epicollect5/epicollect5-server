@@ -79,7 +79,7 @@
                                placeholder="{{trans('site.first_name')}}"
                                name="first_name" value="{{ old('first_name') }}" required>
                         @if ($errors->has('first_name'))
-                            <span class="help-block">{{trans('status_codes.'.$errors->first('first_name'))}}</span>
+                            <span class="help-block">{{config('epicollect.codes.'.$errors->first('first_name'))}}</span>
                         @endif
                     </div>
 
@@ -89,7 +89,7 @@
                                placeholder="{{trans('site.last_name')}}"
                                name="last_name" value="{{ old('last_name') }}" required>
                         @if ($errors->has('last_name'))
-                            <span class="help-block">{{trans('status_codes.'.$errors->first('last_name'))}}</span>
+                            <span class="help-block">{{config('epicollect.codes.'.$errors->first('last_name'))}}</span>
                         @endif
                     </div>
 
@@ -99,7 +99,7 @@
                                placeholder="{{trans('site.email_address')}}"
                                name="email" value="{{ old('email') }}" required>
                         @if ($errors->has('email'))
-                            <span class="help-block">{{trans('status_codes.'.$errors->first('email'))}}</span>
+                            <span class="help-block">{{config('epicollect.codes.'.$errors->first('email'))}}</span>
                         @endif
                     </div>
 
@@ -109,7 +109,7 @@
                                placeholder="{{trans('site.password')}}"
                                name="password" value="{{ old('password') }}" required>
                         @if ($errors->has('password'))
-                            <span class="help-block">{{trans('status_codes.'.$errors->first('password'))}}</span>
+                            <span class="help-block">{{config('epicollect.codes.'.$errors->first('password'))}}</span>
                         @endif
                         <div>
                             <small>
@@ -125,7 +125,7 @@
                                name="password_confirmation"
                                value="{{ old('password_confirmation') }}" required>
                         @if ($errors->has('password'))
-                            <span class="help-block">{{trans('status_codes.'.$errors->first('password'))}}</span>
+                            <span class="help-block">{{config('epicollect.codes.'.$errors->first('password'))}}</span>
                         @endif
                     </div>
 

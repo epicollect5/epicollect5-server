@@ -119,4 +119,88 @@ class Common
         $jsonAsStringDestination = str_replace($existingRef, $newRef, $jsonAsStringSource);
         return json_decode($jsonAsStringDestination, true);
     }
+
+    public static function getLocationInputRefs($projectDefinition, $formIndex = 0): array
+    {
+        $locationInputRefs = [];
+        $inputs = array_get($projectDefinition, 'data.project.forms.' . $formIndex . '.inputs');
+        foreach ($inputs as $input) {
+            if ($input['type'] === config('epicollect.strings.inputs_type.location')) {
+                $locationInputRefs[] = $input['ref'];
+            }
+
+            if ($input['type'] === config('epicollect.strings.inputs_type.group')) {
+                $groupInputs = $input['group'];
+                foreach ($groupInputs as $groupInput) {
+                    if ($groupInput['type'] === config('epicollect.strings.inputs_type.location')) {
+                        $locationInputRefs[] = $groupInput['ref'];
+                    }
+                }
+            }
+        }
+
+        return $locationInputRefs;
+    }
+
+    public static function getBranchLocationInputRefs($projectDefinition, $formIndex, $branchRef): array
+    {
+        $locationInputRefs = [];
+        $inputs = array_get($projectDefinition, 'data.project.forms.' . $formIndex . '.inputs');
+        foreach ($inputs as $input) {
+
+            if ($input['type'] === config('epicollect.strings.inputs_type.branch') && $input['ref'] === $branchRef) {
+
+                $branchInputs = $input['branch'];
+
+                foreach ($branchInputs as $branchInput) {
+
+                    if ($branchInput['type'] === config('epicollect.strings.inputs_type.location')) {
+                        $locationInputRefs[] = $branchInput['ref'];
+                    }
+
+                    if ($branchInput['type'] === config('epicollect.strings.inputs_type.group')) {
+                        $groupInputs = $branchInput['group'];
+                        foreach ($groupInputs as $groupInput) {
+                            if ($groupInput['type'] === config('epicollect.strings.inputs_type.location')) {
+                                $locationInputRefs[] = $groupInput['ref'];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return $locationInputRefs;
+    }
+
+    public static function getBranchRefs($projectDefinition, $formIndex = 0): array
+    {
+        $branchRefs = [];
+        $inputs = array_get($projectDefinition, 'data.project.forms.' . $formIndex . '.inputs');
+        foreach ($inputs as $input) {
+            if ($input['type'] === config('epicollect.strings.inputs_type.branch')) {
+                $branchRefs[] = $input['ref'];
+            }
+
+            if ($input['type'] === config('epicollect.strings.inputs_type.group')) {
+                $groupInputs = $input['group'];
+                foreach ($groupInputs as $groupInput) {
+                    if ($groupInput['type'] === config('epicollect.strings.inputs_type.branch')) {
+                        $branchRefs[] = $groupInput['ref'];
+                    }
+                }
+            }
+        }
+
+        return $branchRefs;
+    }
+
+    public static function configWithParams($key, $params = [])
+    {
+        $value = config($key);
+        foreach ($params as $placeholder => $replacement) {
+            $value = str_replace(':' . $placeholder, $replacement, $value);
+        }
+        return $value;
+    }
 }

@@ -4,6 +4,7 @@ namespace ec5\Http\Validation\Project;
 
 use ec5\Http\Validation\ValidationBase;
 use Config;
+use ec5\Libraries\Utilities\Common;
 
 class RuleCreateRequest extends ValidationBase
 {
@@ -24,10 +25,10 @@ class RuleCreateRequest extends ValidationBase
         $formNameMaxLength = config('epicollect.limits.project.form.name.max');
 
         $this->rules['form_name'] = 'required|alpha_num_under_spaces|min:1|max:' . $formNameMaxLength;
-        $this->messages['name.min'] = trans('status_codes.ec5_349', ['min' => $projectNameMinLength]);
-        $this->messages['name.max'] = trans('status_codes.ec5_350', ['max' => $projectNameMaxLength]);
-        $this->messages['small_description.min'] = trans('status_codes.ec5_351', ['min' => $projectSmallDescMinLength]);
-        $this->messages['small_description.max'] = trans('status_codes.ec5_352', ['max' => $projectSmallDescMaxLength]);
+        $this->messages['name.min'] = Common::configWithParams('epicollect.codes.ec5_349', ['min' => $projectNameMinLength]);
+        $this->messages['name.max'] = Common::configWithParams('epicollect.codes.ec5_350', ['max' => $projectNameMaxLength]);
+        $this->messages['small_description.min'] = Common::configWithParams('epicollect.codes.ec5_351', ['min' => $projectSmallDescMinLength]);
+        $this->messages['small_description.max'] = Common::configWithParams('epicollect.codes.ec5_352', ['max' => $projectSmallDescMaxLength]);
 
         $this->messages['unique'] = 'ec5_85';
         $this->messages['unique_except_archived'] = 'ec5_85';

@@ -4,6 +4,7 @@ namespace ec5\Http\Validation\Project;
 
 use ec5\Http\Validation\ValidationBase;
 use Config;
+use ec5\Libraries\Utilities\Common;
 
 class RuleImportRequest extends ValidationBase
 {
@@ -26,8 +27,8 @@ class RuleImportRequest extends ValidationBase
             'file.max' => 'ec5_206'
         ]);
 
-        $this->messages['name.min'] = trans('status_codes.ec5_349', ['min' => $projectNameMinLength]);
-        $this->messages['name.max'] = trans('status_codes.ec5_350', ['max' => $projectNameMaxLength]);
+        $this->messages['name.min'] = Common::configWithParams('epicollect.codes.ec5_349', ['min' => $projectNameMinLength]);
+        $this->messages['name.max'] = Common::configWithParams('epicollect.codes.ec5_350', ['max' => $projectNameMaxLength]);
         $this->messages['unique_except_archived'] = 'ec5_85';
     }
 
