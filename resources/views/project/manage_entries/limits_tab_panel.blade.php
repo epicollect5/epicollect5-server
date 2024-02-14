@@ -1,7 +1,14 @@
 @php
+    /**
+     * @var $projectDefinition \ec5\DTO\ProjectDefinitionDTO
+     */
+    $projectDefinition = $requestAttributes->requestedProject->getProjectDefinition();
+    /**
+     * @var $projectDefinition \ec5\DTO\ProjectExtraDTO
+     */
     $projectExtra = $requestAttributes->requestedProject->getProjectExtra();
     /**
-      * @var $projectStats \ec5\DTO\ProjectStatsDTO
+    * @var $projectStats \ec5\DTO\ProjectStatsDTO
     */
     $projectStats = $requestAttributes->requestedProject->getProjectStats();
 @endphp
@@ -37,6 +44,7 @@
                         @foreach($projectExtra->getForms() as $formRef => $form)
                             @include('project.manage_entries.limits_row',
                                     [
+                                        'projectDefinition' => $projectDefinition,
                                     'projectExtra' => $projectExtra,
                                     'ref' => $formRef,
                                     'name' => $form['details']['name'],
@@ -50,6 +58,7 @@
                                 @foreach($form['branch'] as $branchRef => $branchInputs)
                                     @include('project.manage_entries.limits_row',
                                     [
+                                        'projectDefinition' => $projectDefinition,
                                     'projectExtra' => $projectExtra,
                                     'ref' => $branchRef,
                                     'name' => $projectExtra->getInputData($branchRef)['question'],

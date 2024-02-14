@@ -31,7 +31,7 @@ class RuleProjectDefinition
         RuleForm                     $ruleForm,
         RuleInput                    $ruleInput,
         ProjectExtraDTO              $projectExtra,
-        ProjectDefinitionDTO $projectDefinition
+        ProjectDefinitionDTO         $projectDefinition
     )
     {
 
@@ -238,7 +238,7 @@ class RuleProjectDefinition
         // Add the project details
         $this->projectExtra->addProjectDetails($projectExtraDetails);
         // Add the entries limits
-        $this->projectExtra->addEntriesLimits($data['entries_limits'] ?? []);
+        $this->projectDefinition->addEntriesLimits($data['entries_limits'] ?? []);
         return true;
     }
 
@@ -336,7 +336,7 @@ class RuleProjectDefinition
         }
 
         // Add an array to the project extra for this group
-        $this->projectExtra->addFormSpecialType($formRef, config('epicollect.strings.group'), $inputRef);
+        $this->projectExtra->addGroup($formRef, $inputRef);
 
         foreach ($groupInputs as $key => $groupInput) {
 
@@ -349,9 +349,8 @@ class RuleProjectDefinition
                 $valid = false;
                 break;
             }
-            $this->projectExtra->addFormSpecialTypeInput(
+            $this->projectExtra->addGroupInput(
                 $formRef,
-                config('epicollect.strings.group'),
                 $inputRef,
                 $groupInput['ref']);
 
@@ -386,7 +385,7 @@ class RuleProjectDefinition
             return false;
         }
 
-        $this->projectExtra->addFormSpecialType($formRef, config('epicollect.strings.branch'), $inputRef);
+        $this->projectExtra->addBranch($formRef, $inputRef);
 
         foreach ($branchInputs as $key => $branchInput) {
             // Validate the input, passing in the branch ref, so we know it's a branch input
@@ -395,8 +394,8 @@ class RuleProjectDefinition
                 break;
             }
 
-            $this->projectExtra->addFormSpecialTypeInput(
-                $formRef, config('epicollect.strings.branch'),
+            $this->projectExtra->addBranchInput(
+                $formRef,
                 $inputRef,
                 $branchInput['ref']);
 

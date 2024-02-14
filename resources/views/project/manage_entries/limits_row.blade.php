@@ -9,7 +9,7 @@
                     type="checkbox"
                     class="input__set-limit"
 
-                    @if($projectExtra->getEntriesLimit($ref) !== null)
+                    @if($projectDefinition->getEntriesLimit($ref) !== null)
                         checked value="true"
                     @else
                         value="false"
@@ -26,9 +26,9 @@
                     max="50000"
                     step="1"
                     class="input__limit-to form-control"
-                    value="{{$projectExtra->getEntriesLimit($ref) ?? ''}}"
+                    value="{{$projectDefinition->getEntriesLimit($ref) ?? ''}}"
 
-                    @if($projectExtra->getEntriesLimit($ref) === null) disabled @endif
+                    @if($projectDefinition->getEntriesLimit($ref) === null) disabled @endif
             >
             <i class="fa fa-2x fa-times form-control-feedback hidden"></i>
             <input
