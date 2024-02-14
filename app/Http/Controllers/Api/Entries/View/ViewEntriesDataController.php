@@ -225,23 +225,23 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
     }
 
     /**
-     * @param array $options
+     * @param array $params
      * @param bool $map
      * @return JsonResponse
      */
-    private function sendBranchEntriesJSON(array $options, bool $map = false)
+    private function sendBranchEntriesJSON(array $params, bool $map = false)
     {
         $columns = ['title', 'entry_data', 'user_id', 'uploaded_at'];
         $project = $this->requestedProject();
 
-        $query = $this->runQueryBranch($options, $columns);
+        $query = $this->runQueryBranch($params, $columns);
 
         //get the newest and oldest dates of this subset (before pagination occurs)
         //and set the format to be like the one from JS for consistency
         $oldest = str_replace(' ', 'T', $query->min('created_at')) . '.000Z';
         $newest = str_replace(' ', 'T', $query->max('created_at')) . '.000Z';
 
-        $entryData = $query->paginate($options['per_page']);
+        $entryData = $query->paginate($params['per_page']);
 
         $data = [
             'id' => $project->slug,
@@ -266,7 +266,7 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
                     true
                 );
                 $projectMapping = $this->requestedProject()->getProjectMapping();
-                $data['mapping'] = $projectMapping->getMapDetails($options['map_index']);
+                $data['mapping'] = $projectMapping->getMapDetails($params['map_index']);
             } else {
                 // Add the user id
                 $entry['relationships']['user']['data']['id'] = $row->user_id;
@@ -275,7 +275,7 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
         }
 
         // Append the required options to the LengthAwarePaginator
-        $this->appendOptions($entryData, $options);
+        $this->appendOptions($entryData, $params);
         // Get Meta and Links
         $meta = $this->getMeta($entryData, $newest, $oldest);
         $links = $this->getLinks($entryData);
