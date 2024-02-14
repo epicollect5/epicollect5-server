@@ -12,7 +12,7 @@ use ec5\DTO\ProjectRoleDTO;
 use ec5\DTO\ProjectStatsDTO;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
-use ec5\Services\CreateEntryService;
+use ec5\Services\Entries\CreateEntryService;
 use ec5\Traits\Assertions;
 use Faker\Factory as Faker;
 use Illuminate\Support\Str;

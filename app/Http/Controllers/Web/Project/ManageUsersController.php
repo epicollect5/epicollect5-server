@@ -6,7 +6,7 @@ use ec5\Http\Validation\Project\RuleEmail;
 use ec5\Http\Validation\Project\RuleProjectRole;
 use ec5\Models\Project\ProjectRole;
 use ec5\Models\User\User;
-use ec5\Services\ProjectService;
+use ec5\Services\Project\ProjectService;
 use ec5\Traits\Requests\RequestAttributes;
 use Exception;
 use Illuminate\Contracts\View\Factory;

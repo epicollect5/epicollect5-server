@@ -1,6 +1,6 @@
 <?php
 
-namespace ec5\Services;
+namespace ec5\Services\Entries;
 
 use ec5\DTO\EntryStructureDTO;
 use ec5\Http\Validation\Entries\Upload\RuleUpload;

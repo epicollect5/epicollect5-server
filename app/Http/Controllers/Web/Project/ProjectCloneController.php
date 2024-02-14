@@ -4,8 +4,8 @@ namespace ec5\Http\Controllers\Web\Project;
 
 use ec5\Http\Validation\Project\RuleName;
 use ec5\Models\Project\Project;
-use ec5\Services\AvatarService;
-use ec5\Services\ProjectService;
+use ec5\Services\Project\ProjectAvatarService;
+use ec5\Services\Project\ProjectService;
 use ec5\Traits\Requests\RequestAttributes;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Foundation\Application;
@@ -79,7 +79,7 @@ class ProjectCloneController
         }
 
         //create project logo avatar if clone is successful
-        $avatarCreator = new AvatarService();
+        $avatarCreator = new ProjectAvatarService();
         $wasAvatarCreated = $avatarCreator->generate($clonedProject->ref, $clonedProject->name);
         if (!$wasAvatarCreated) {
             $request->flash();

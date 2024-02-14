@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ec5\Http\Controllers\Api\Entries\Upload;
 
 use ec5\Http\Validation\Entries\Upload\RuleUniqueness;
-use ec5\Services\EntriesUniquenessService;
+use ec5\Services\Entries\EntriesUniquenessService;
 use Illuminate\Http\JsonResponse;
 use Log;
 use Response;

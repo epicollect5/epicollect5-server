@@ -8,7 +8,7 @@ use ec5\Libraries\Utilities\Common;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use ec5\Services\DataMappingService;
-use ec5\Services\EntriesViewService;
+use ec5\Services\Entries\EntriesViewService;
 use ec5\Traits\Requests\RequestAttributes;
 use Exception;
 use Illuminate\Http\Request;

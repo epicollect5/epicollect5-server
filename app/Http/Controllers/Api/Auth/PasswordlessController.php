@@ -13,7 +13,7 @@ use ec5\Mail\UserPasswordlessApiMail;
 use ec5\Models\User\User;
 use ec5\Models\User\UserPasswordlessApi;
 use ec5\Models\User\UserProvider;
-use ec5\Services\UserService;
+use ec5\Services\User\UserService;
 use Exception;
 use Log;
 use Mail;

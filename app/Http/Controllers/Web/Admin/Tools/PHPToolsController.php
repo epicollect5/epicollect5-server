@@ -9,7 +9,7 @@ use ec5\Libraries\Utilities\Generators;
 use ec5\Libraries\Utilities\GpointConverter;
 use ec5\Mail\DebugEmailSending;
 use ec5\Models\Project\Project;
-use ec5\Services\AvatarService;
+use ec5\Services\Project\ProjectAvatarService;
 use ec5\Traits\Eloquent\System\ProjectsStats;
 use Exception;
 use Illuminate\Support\Facades\Mail;
@@ -81,7 +81,7 @@ class PHPToolsController
             $this->project->setId($id);
 
             //generate project logo avatar(s)
-            $avatarCreator = new AvatarService();
+            $avatarCreator = new ProjectAvatarService();
             $wasCreated = $avatarCreator->generate($ref, $name);
 
             // dd($wasCreated, $ref, $name);

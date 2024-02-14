@@ -7,7 +7,7 @@ use ec5\Http\Validation\Project\RuleSwitchUserRole;
 use ec5\Libraries\Utilities\Common;
 use ec5\Models\Project\ProjectRole;
 use ec5\Models\User\User;
-use ec5\Services\ProjectService;
+use ec5\Services\Project\ProjectService;
 use ec5\Traits\Requests\RequestAttributes;
 use Response;
 

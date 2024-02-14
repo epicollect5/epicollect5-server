@@ -7,7 +7,7 @@ use ec5\Http\Controllers\Controller;
 use ec5\Http\Validation\Entries\Archive\RuleArchive;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
-use ec5\Services\ArchiveEntryService;
+use ec5\Services\Entries\ArchiveEntryService;
 use ec5\Traits\Requests\RequestAttributes;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Response;

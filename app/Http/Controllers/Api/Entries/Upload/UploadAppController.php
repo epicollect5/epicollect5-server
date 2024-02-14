@@ -3,7 +3,7 @@
 namespace ec5\Http\Controllers\Api\Entries\Upload;
 
 use App;
-use ec5\Services\EntriesUploadService;
+use ec5\Services\Entries\EntriesUploadService;
 use Illuminate\Http\JsonResponse;
 use Response;
 

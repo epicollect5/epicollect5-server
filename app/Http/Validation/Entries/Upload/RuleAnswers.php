@@ -23,7 +23,7 @@ use ec5\Http\Validation\Entries\Upload\InputRules\RuleTextInput;
 use ec5\Http\Validation\Entries\Upload\InputRules\RuleTimeInput;
 use ec5\Http\Validation\Entries\Upload\InputRules\RuleVideoInput;
 use ec5\Http\Validation\ValidationBase;
-use ec5\Services\EntriesUniquenessService;
+use ec5\Services\Entries\EntriesUniquenessService;
 use Exception;
 use Log;
 

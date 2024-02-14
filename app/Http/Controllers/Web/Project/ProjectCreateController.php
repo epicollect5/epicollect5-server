@@ -5,7 +5,7 @@ namespace ec5\Http\Controllers\Web\Project;
 use ec5\DTO\ProjectDTO;
 use ec5\Http\Validation\Project\RuleCreateRequest;
 use ec5\Libraries\Utilities\Generators;
-use ec5\Services\ProjectService;
+use ec5\Services\Project\ProjectService;
 use ec5\Traits\Project\ProjectTools;
 use Exception;
 use Illuminate\Contracts\View\Factory;

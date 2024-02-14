@@ -5,8 +5,8 @@ namespace ec5\Http\Controllers\Web\Admin;
 use ec5\Http\Controllers\Controller;
 use ec5\Models\Project\Project;
 use ec5\Models\User\User;
-use ec5\Services\ProjectService;
-use ec5\Services\UserService;
+use ec5\Services\Project\ProjectService;
+use ec5\Services\User\UserService;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller

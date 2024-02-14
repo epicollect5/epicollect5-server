@@ -8,7 +8,7 @@ use ec5\Libraries\Jwt\JwtUserProvider;
 use ec5\Models\User\User;
 use ec5\Models\User\UserPasswordlessApi;
 use ec5\Models\User\UserProvider;
-use ec5\Services\UserService;
+use ec5\Services\User\UserService;
 use ec5\Traits\Auth\GoogleUserUpdater;
 use Exception;
 use Illuminate\Http\Request;

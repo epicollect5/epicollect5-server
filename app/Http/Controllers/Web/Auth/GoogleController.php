@@ -7,7 +7,7 @@ use ec5\Http\Validation\Auth\RulePasswordlessApiLogin;
 use ec5\Models\User\User;
 use ec5\Models\User\UserPasswordlessApi;
 use ec5\Models\User\UserProvider;
-use ec5\Services\UserService;
+use ec5\Services\User\UserService;
 use ec5\Traits\Auth\GoogleUserUpdater;
 use Exception;
 use Illuminate\Http\Request;

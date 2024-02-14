@@ -8,6 +8,7 @@ use ec5\DTO\ProjectExtraDTO;
 use ec5\DTO\ProjectMappingDTO;
 use ec5\DTO\ProjectRoleDTO;
 use ec5\DTO\ProjectStatsDTO;
+use ec5\Http\Validation\Entries\View\RuleQueryString;
 use ec5\Libraries\Utilities\Common;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Models\Project\Project;
@@ -15,12 +16,11 @@ use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
-use ec5\Services\ProjectExtraService;
+use ec5\Services\Project\ProjectExtraService;
+use Faker\Factory as Faker;
 use Tests\Generators\EntryGenerator;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
-use Faker\Factory as Faker;
-use ec5\Http\Validation\Entries\View\RuleQueryString;
 
 class RuleQueryStringTest extends TestCase
 {

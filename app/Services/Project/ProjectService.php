@@ -1,6 +1,6 @@
 <?php
 
-namespace ec5\Services;
+namespace ec5\Services\Project;
 
 use DB;
 use ec5\DTO\ProjectDTO;

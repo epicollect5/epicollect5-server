@@ -2,17 +2,17 @@
 
 namespace ec5\Http\Controllers\Api\Entries;
 
-use ec5\Http\Validation\Entries\Download\RuleDownload;
-use ec5\Services\DataMappingService;
-use ec5\Services\EntriesDownloadService;
-use ec5\Services\EntriesViewService;
-use Illuminate\Http\Request;
 use Auth;
+use Cookie;
+use ec5\Http\Validation\Entries\Download\RuleDownload;
+use ec5\Libraries\Utilities\Common;
+use ec5\Services\DataMappingService;
+use ec5\Services\Entries\EntriesDownloadService;
+use ec5\Services\Entries\EntriesViewService;
+use ec5\Traits\Requests\RequestAttributes;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use Storage;
-use Cookie;
-use ec5\Libraries\Utilities\Common;
-use ec5\Traits\Requests\RequestAttributes;
 
 class DownloadController
 {

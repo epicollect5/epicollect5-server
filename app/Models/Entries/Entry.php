@@ -3,7 +3,7 @@
 namespace ec5\Models\Entries;
 
 use DB;
-use ec5\Services\EntriesViewService;
+use ec5\Services\Entries\EntriesViewService;
 use ec5\Traits\Eloquent\Entries;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;

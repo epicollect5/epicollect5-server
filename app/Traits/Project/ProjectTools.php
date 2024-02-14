@@ -3,7 +3,7 @@
 namespace ec5\Traits\Project;
 
 use ec5\Models\Project\Project;
-use ec5\Services\AvatarService;
+use ec5\Services\Project\ProjectAvatarService;
 use Exception;
 use Log;
 
@@ -12,7 +12,7 @@ trait ProjectTools
     public function createProjectAvatar($projectId, $projectRef, $projectName): array
     {
         //generate avatar
-        $avatarCreator = new AvatarService();
+        $avatarCreator = new ProjectAvatarService();
         $wasAvatarCreated = $avatarCreator->generate($projectRef, $projectName);
         if (!$wasAvatarCreated) {
             //delete project just created

@@ -4,7 +4,7 @@ namespace ec5\Http\Controllers\Web\Auth;
 
 use Auth;
 use ec5\Models\User\User;
-use ec5\Services\UserService;
+use ec5\Services\User\UserService;
 use Illuminate\Http\Request;
 use Ldap;
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace ec5\Services;
+namespace ec5\Services\User;
 
 use DB;
 use ec5\Libraries\Ldap\LdapUser;

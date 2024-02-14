@@ -6,7 +6,7 @@ use Closure;
 use ec5\DTO\ProjectDTO;
 use ec5\DTO\ProjectRoleDTO;
 use ec5\Models\Project\Project;
-use ec5\Services\ProjectService;
+use ec5\Services\Project\ProjectService;
 use ec5\Traits\Middleware\MiddlewareTools;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;

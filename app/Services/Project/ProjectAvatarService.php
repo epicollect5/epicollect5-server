@@ -1,12 +1,12 @@
 <?php
 
-namespace ec5\Services;
+namespace ec5\Services\Project;
 
 use Exception;
 use Laravolt\Avatar\Facade as Avatar;
 use Storage;
 
-class AvatarService
+class ProjectAvatarService
 {
     protected $width;
     protected $height;

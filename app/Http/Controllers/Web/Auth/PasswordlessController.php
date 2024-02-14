@@ -13,7 +13,7 @@ use ec5\Mail\UserPasswordlessApiMail;
 use ec5\Models\User\User;
 use ec5\Models\User\UserPasswordlessWeb;
 use ec5\Models\User\UserProvider;
-use ec5\Services\UserService;
+use ec5\Services\User\UserService;
 use ec5\Traits\Auth\ReCaptchaValidation;
 use Exception;
 use Firebase\JWT\JWT as FirebaseJwt;

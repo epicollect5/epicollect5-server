@@ -7,7 +7,7 @@ use ec5\Http\Validation\Project\RuleImportJson as ImportJsonValidator;
 use ec5\Http\Validation\Project\RuleImportRequest as ImportRequestValidator;
 use ec5\Http\Validation\Project\RuleProjectDefinition as ProjectDefinitionValidator;
 use ec5\Libraries\Utilities\Generators;
-use ec5\Services\ProjectService;
+use ec5\Services\Project\ProjectService;
 use ec5\Traits\Project\ProjectTools;
 use Exception;
 use File;

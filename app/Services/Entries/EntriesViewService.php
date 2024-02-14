@@ -1,8 +1,7 @@
 <?php
 
-namespace ec5\Services;
+namespace ec5\Services\Entries;
 
-use ec5\Http\Validation\Entries\View\RuleQueryString;
 use ec5\Http\Validation\Entries\Upload\InputRules\RuleAudioInput;
 use ec5\Http\Validation\Entries\Upload\InputRules\RuleBranchInput;
 use ec5\Http\Validation\Entries\Upload\InputRules\RuleCheckboxInput;
@@ -22,6 +21,7 @@ use ec5\Http\Validation\Entries\Upload\InputRules\RuleTextInput;
 use ec5\Http\Validation\Entries\Upload\InputRules\RuleTimeInput;
 use ec5\Http\Validation\Entries\Upload\InputRules\RuleVideoInput;
 use ec5\Http\Validation\Entries\Upload\RuleAnswers;
+use ec5\Http\Validation\Entries\View\RuleQueryString;
 use ec5\Traits\Requests\RequestAttributes;
 
 class EntriesViewService

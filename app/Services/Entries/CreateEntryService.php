@@ -1,6 +1,6 @@
 <?php
 
-namespace ec5\Services;
+namespace ec5\Services\Entries;
 
 
 use DB;
