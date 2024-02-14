@@ -25,7 +25,7 @@ class RuleBranchEntry extends EntryValidationBase
     {
         $projectExtra = $project->getProjectExtra();
 
-        $branchEntryStructure->setAsBranch();
+        //$branchEntryStructure->setAsBranch();
 
         $formRef = $branchEntryStructure->getFormRef();
 
@@ -50,7 +50,7 @@ class RuleBranchEntry extends EntryValidationBase
             $this->errors[$branchOwnerInputRef] = ['ec5_17'];
             return;
         }
-        $branchEntryStructure->addBranchOwnerEntryToStructure($owner);
+        $branchEntryStructure->setOwnerEntryID($owner->id);
 
         /* DETERMINE WHETHER ADD OR EDIT */
         // Check if this entry can be edited

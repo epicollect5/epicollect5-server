@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ec5\Http\Controllers\Api\Entries\Upload;
 
 use ec5\Http\Validation\Entries\Upload\RuleUniqueness;
-use ec5\Services\EntryService;
+use ec5\Services\EntriesUniquenessService;
 use Illuminate\Http\JsonResponse;
 use Log;
 use Response;
@@ -65,13 +65,13 @@ class UploadUniquenessController extends UploadControllerBase
         $inputType = $input['type'];
         $inputDatetimeFormat = $input['datetime_format'];
 
-        // If this is from a branch, set structure as branch
-        if ($this->entryStructure->getOwnerInputRef()) {
-            $this->entryStructure->setAsBranch();
-        }
+//        // If this is from a branch, set structure as branch
+//        if ($this->entryStructure->getOwnerInputRef()) {
+//            $this->entryStructure->setAsBranch();
+//        }
 
         // Check if the answer is unique or not
-        $entryService = new EntryService();
+        $entryService = new EntriesUniquenessService();
         if (!$entryService->isUnique($this->entryStructure, $uniquenessType, $inputRef, $answer, $inputType, $inputDatetimeFormat)) {
             return Response::apiErrorCode(400, ['uniqueness-controller' => ['ec5_22']]);
         }
