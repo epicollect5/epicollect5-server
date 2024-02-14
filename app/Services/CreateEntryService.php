@@ -8,11 +8,14 @@ use ec5\DTO\EntryStructureDTO;
 use ec5\DTO\ProjectDTO;
 use ec5\Models\Counters\BranchEntryCounter;
 use ec5\Models\Counters\EntryCounter;
+use ec5\Traits\Eloquent\Entries;
 use Exception;
 use Log;
 
 class CreateEntryService
 {
+    use Entries;
+
     public $errors;
 
     public function create(ProjectDTO $project, EntryStructureDTO $entryStructure, $isBulkUpload = false): bool
@@ -94,23 +97,28 @@ class CreateEntryService
             } else {
                 //Store the new entry
                 if ($entryStructure->isBranch()) {
-                    $entryService = new BranchEntryService();
-                    $entryRowId = $entryService->storeBranchEntry($entryStructure, $entry);
+                    // Add additional keys/values for branch entries
+                    $entry['owner_entry_id'] = $entryStructure->getOwnerEntryID();
+                    $entry['owner_uuid'] = $entryStructure->getOwnerUuid();
+                    $entry['owner_input_ref'] = $entryStructure->getOwnerInputRef();
+                    $entryRowId = $this->storeEntry($entryStructure, $entry);
                 } else {
-                    $entryService = new EntryService();
-                    $entryRowId = $entryService->storeEntryHierarchy($entryStructure, $entry);
+                    // Add additional keys/values for hierarchy entries
+                    $entry['parent_uuid'] = $entryStructure->getParentUuid();
+                    $entry['parent_form_ref'] = $entryStructure->getParentFormRef();
+                    $entryRowId = $this->storeEntry($entryStructure, $entry);
                 }
             }
 
             if (!$entryRowId) {
-                $this->errors['entry-create'] = ['ec5_95'];
-                return false;
+                $this->errors['entry-create'] = ['ec5_45'];
+                throw new Exception(config('epicollect.codes.ec5_95'));
             }
 
             // Update the stats for the entry
             if (!$this->updateEntriesCounts($project, $entryStructure)) {
-                $this->errors['entry-create'] = ['ec5_94'];
-                return false;
+                $this->errors['stats-update'] = ['ec5_45'];
+                throw new Exception(config('epicollect.codes.ec5_94'));
             }
 
             // All good
@@ -118,7 +126,7 @@ class CreateEntryService
             return true;
         } catch (Exception $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
-            $this->errors['entry-create'] = ['ec5_45'];
+            $this->errors['create-entry-service'] = ['ec5_45'];
             DB::rollBack();
             return false;
         }
@@ -131,7 +139,6 @@ class CreateEntryService
         //imp: also branches are stored in a separate table, counts will be faster
         $entryCounter = $entryStructure->isBranch() ? new BranchEntryCounter() : new EntryCounter();
         if (!$entryCounter->updateCounters($project, $entryStructure)) {
-            $this->errors['entry-create'] = ['ec5_94'];
             return false;
         }
         return true;
