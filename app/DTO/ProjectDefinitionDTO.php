@@ -8,11 +8,11 @@ use ec5\Libraries\Utilities\Arrays;
 |--------------------------------------------------------------------------
 | Project Definition Model
 |--------------------------------------------------------------------------
-| A model for the JSON Project Definition
+| A DTO for the JSON Project Definition
 |
 */
 
-class ProjectDefinitionDTO extends ProjectModelBase
+class ProjectDefinitionDTO extends ProjectDTOBase
 {
     /**
      * @param array $data
@@ -20,8 +20,32 @@ class ProjectDefinitionDTO extends ProjectModelBase
     public function create(array $data)
     {
         // Retrieve project definition template
-        $projectDefinitionStructure = config('epicollect.structures.project_definition');
-
+        $projectDefinitionStructure = [
+            'id' => '{{project_ref}}',
+            'type' => 'project',
+            'project' => [
+                'ref' => '{{project_ref}}',
+                'name' => '',
+                'slug' => '',
+                'forms' => [
+                    [
+                        'ref' => '{{form_ref}}',
+                        'name' => '',
+                        'slug' => '',
+                        'type' => 'hierarchy',
+                        'inputs' => []
+                    ]
+                ],
+                'access' => '',
+                'status' => '',
+                'logo_url' => '',
+                'visibility' => '',
+                'small_description' => '',
+                'description' => '',
+                'category' => 'general',
+                'entries_limits' => []
+            ]
+        ];
         // Replace key values from $data into the $projectStructure
         $this->data = Arrays::merge($projectDefinitionStructure, $data);
     }
@@ -34,9 +58,6 @@ class ProjectDefinitionDTO extends ProjectModelBase
         return $this->data['project']['ref'] ?? '';
     }
 
-    /**
-     * @param array $data
-     */
     public function updateProjectDetails(array $data)
     {
         foreach ($data as $key => $value) {
@@ -51,25 +72,73 @@ class ProjectDefinitionDTO extends ProjectModelBase
         return $this->data['project']['forms'][0]['ref'];
     }
 
+    public function getParentFormRef($formRef)
+    {
+        $forms = $this->data['project']['forms'];
+        foreach ($forms as $formIndex => $form) {
+            if ($form['ref'] === $formRef) {
+                // If the form is the first one, it has no parent
+                if ($formIndex === 0) {
+                    return null;
+                }
+                // Otherwise, return the ref of the previous form as the parent
+                return $forms[$formIndex - 1]['ref'];
+            }
+        }
+        return null;
+    }
+
+    public function getInputsByFormRef($formRef)
+    {
+        $inputs = [];
+        foreach ($this->data['project']['forms'] as $form) {
+            if ($form['ref'] === $formRef) {
+                $inputs = $form['inputs'];
+                break;
+            }
+        }
+        return $inputs;
+    }
+
+    public function getBranchesByFormRef($formRef): array
+    {
+        $forms = $this->data['project']['forms'];
+        $inputs = [];
+
+        foreach ($forms as $form) {
+            if ($form['ref'] === $formRef) {
+                $inputs = $form['inputs'];
+                break;
+            }
+        }
+
+        $branches = [];
+        foreach ($inputs as $input) {
+            if ($input['type'] === config('epicollect.strings.branch')) {
+                $branches[] = $input;
+            }
+        }
+
+        return $branches;
+    }
+
     public function getEntriesLimit($ref): ?int
     {
         return $this->data['project']['entries_limits'][$ref] ?? null;
     }
 
-    /**
-     *
-     */
+    public function setEntriesLimit($ref, $limitTo)
+    {
+        $this->data['project']['entries_limits'][$ref] = $limitTo;
+    }
+
     public function clearEntriesLimits()
     {
         $this->data['project']['entries_limits'] = [];
     }
 
-    /**
-     * @param $ref
-     * @param $limitTo
-     */
-    public function setEntriesLimit($ref, $limitTo)
+    public function addEntriesLimits($entriesLimits)
     {
-        $this->data['project']['entries_limits'][$ref] = $limitTo;
+        $this->data['project']['entries_limits'] = $entriesLimits;
     }
 }

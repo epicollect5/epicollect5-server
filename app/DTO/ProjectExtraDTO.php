@@ -6,13 +6,13 @@ use ec5\Libraries\Utilities\Arrays;
 
 /*
 |--------------------------------------------------------------------------
-| Project Extra Model
+| Project Extra DTO
 |--------------------------------------------------------------------------
-| A model for the JSON Project Extra
+| A DTO for the JSON Project Extra
 |
 */
 
-class ProjectExtraDTO extends ProjectModelBase
+class ProjectExtraDTO extends ProjectDTOBase
 {
     public function create(array $data)
     {
@@ -25,9 +25,6 @@ class ProjectExtraDTO extends ProjectModelBase
         $this->data = Arrays::merge($projectExtraStructure, $data);
     }
 
-    /**
-     * Reset the data
-     */
     public function reset()
     {
         // Retrieve project extra (keys only) template
@@ -95,14 +92,6 @@ class ProjectExtraDTO extends ProjectModelBase
     }
 
     /**
-     * Get ALL FORM REFS otherwise empty array
-     **/
-    public function getFormRefs(): array
-    {
-        return $this->data['project']['forms'] ?? [];
-    }
-
-    /**
      * Get the form details otherwise empty array
      **/
     public function getFormDetails($formRef): array
@@ -110,37 +99,24 @@ class ProjectExtraDTO extends ProjectModelBase
         return $this->data['forms'][$formRef] ?? [];
     }
 
-    public function addFormSpecialType($formRef, $type, $inputRef)
+    public function addBranch($formRef, $inputRef)
     {
+        $type = config('epicollect.strings.inputs_type.branch');
         $this->data['forms'][$formRef][$type][$inputRef] = [];
     }
 
-    /**
-     * Check if a form has a parent
-     */
-    public function formHasParent($formRef)
+    public function addGroup($formRef, $inputRef)
     {
-        for ($i = 0; $i < count($this->data['project']['forms']); $i++) {
-            // If we found a match on the first form, we have a top level parent
-            if ($i === 0 && $this->data['project']['forms'][$i] === $formRef) {
-                return null;
-            } else {
-                if ($this->data['project']['forms'][$i] === $formRef) {
-                    // If we find a match at any other level, return the parent form ref, as we have a child
-                    return $this->data['project']['forms'][$i - 1];
-                }
-            }
-        }
-        return null;
+        $type = config('epicollect.strings.inputs_type.group');
+        $this->data['forms'][$formRef][$type][$inputRef] = [];
     }
 
     /* INPUTS */
-
     public function getInputs(): array
     {
         return $this->data['inputs'] ?? [];
     }
-
+    
     public function getFormInputs($formRef): array
     {
         return $this->data['forms'][$formRef]['inputs'] ?? [];
@@ -166,6 +142,11 @@ class ProjectExtraDTO extends ProjectModelBase
         return $this->data['inputs'][$inputRef] ?? [];
     }
 
+    public function inputExists($inputRef): bool
+    {
+        return isset($this->data['inputs'][$inputRef]);
+    }
+
     /**
      * Return a particular input detail - eg 'type', 'possible_answers' etc
      */
@@ -185,13 +166,16 @@ class ProjectExtraDTO extends ProjectModelBase
     public function addInput($formRef, $inputRef, $input, $branchRef = null)
     {
         $this->data['inputs'][$inputRef]['data'] = $input;
-        $this->dealWithInput($formRef, $inputRef, $input, $branchRef);
+        $this->addInputExtra($formRef, $inputRef, $input, $branchRef);
     }
 
     /**
-     * Add extra information to the Project Extra for certain inputs
+     * Add extra info to the Project Extra for certain questions
+     *
+     * Lists of multiple choice and location questions
+     * to be used by dataviewer
      */
-    private function dealWithInput($formRef, $inputRef, $input, $branchRef)
+    private function addInputExtra($formRef, $inputRef, $input, $branchRef)
     {
         switch ($input['type']) {
             //the following types have all possible answers
@@ -234,17 +218,32 @@ class ProjectExtraDTO extends ProjectModelBase
         }
     }
 
-    public function addFormSpecialTypeInput($formRef, $type, $ownerRef, $inputRef)
+    public function addBranchInput($formRef, $ownerRef, $inputRef)
     {
+        $type = config('epicollect.strings.inputs_type.branch');
         $this->data['forms'][$formRef][$type][$ownerRef][] = $inputRef;
+    }
+
+    public function addGroupInput($formRef, $ownerRef, $inputRef)
+    {
+        $type = config('epicollect.strings.inputs_type.group');
+        $this->data['forms'][$formRef][$type][$ownerRef][] = $inputRef;
+    }
+
+    /**
+     * Check if a form exists by ref
+     */
+    public function formExists($formRef): bool
+    {
+        return isset($this->data['forms'][$formRef]);
     }
 
     /**
      * Check if a branch exists by ref
      */
-    public function branchExists($formRef, $inputRef): bool
+    public function branchExists($formRef, $branchRef): bool
     {
-        return (isset($this->data['forms'][$formRef]['branch'][$inputRef]) ? true : false);
+        return isset($this->data['forms'][$formRef]['branch'][$branchRef]);
     }
 
     /**
@@ -282,21 +281,6 @@ class ProjectExtraDTO extends ProjectModelBase
         return false;
     }
 
-    public function getPossibleAnswers($inputRef): array
-    {
-        $possibleAnswers = $this->getInputDetail($inputRef, 'possible_answers');
-        $possibles = [];
-
-        if (!empty($possibleAnswers)) {
-            // todo we can get this from the mapping
-            foreach ($possibleAnswers as $possibleAnswer) {
-                $possibles[] = $possibleAnswer['answer_ref'];
-            }
-        }
-
-        return $possibles;
-    }
-
     public function possibleAnswerExists($inputRef, $answerRef): bool
     {
         $possibleAnswers = $this->getInputDetail($inputRef, 'possible_answers');
@@ -318,107 +302,8 @@ class ProjectExtraDTO extends ProjectModelBase
     }
 
     /**
-     * Get all form input data, including group inputs but not the main group input
-     */
-    public function getFormInputData(string $formRef): array
-    {
-        $formInputRefs = $this->getFormInputs($formRef);
-        $inputs = [];
-
-        foreach ($formInputRefs as $inputRef) {
-
-            $input = $this->getInputData($inputRef);
-            // If we have a group, add the group inputs
-            if ($input['type'] == config('epicollect.strings.inputs_type.group')) {
-
-                $groupInputRefs = $this->getGroupInputs($formRef, $inputRef);
-
-                foreach ($groupInputRefs as $groupInputRef) {
-
-                    $groupInput = $this->getInputData($groupInputRef);
-                    $inputs[] = $groupInput;
-                }
-
-            } else {
-                $inputs[] = $input;
-            }
-        }
-        return $inputs;
-    }
-
-    /**
-     * Get all branch input data, including group inputs but not the main group input
-     *
-     * @param string $formRef
-     * @param string $branchRef
-     * @return array
-     */
-    public function getBranchInputData(string $formRef, string $branchRef): array
-    {
-        $branchInputRefs = $this->getBranchInputs($formRef, $branchRef);
-        $inputs = [];
-
-        foreach ($branchInputRefs as $inputRef) {
-
-            $input = $this->getInputData($inputRef);
-            // If we have a group, add the group inputs
-            if ($input['type'] == config('epicollect.strings.inputs_type.group')) {
-
-                $groupInputRefs = $this->getGroupInputs($formRef, $inputRef);
-
-                foreach ($groupInputRefs as $groupInputRef) {
-
-                    $groupInput = $this->getInputData($groupInputRef);
-                    $inputs[] = $groupInput;
-                }
-            } else {
-                $inputs[] = $input;
-            }
-        }
-
-        return $inputs;
-
-    }
-
-    /**
-     * @param $ref
-     * @return int
-     */
-    public function getEntriesLimit($ref)
-    {
-        return $this->data['project']['entries_limits'][$ref] ?? null;
-    }
-
-    /**
-     *
-     */
-    public function clearEntriesLimits()
-    {
-        $this->data['project']['entries_limits'] = [];
-    }
-
-    /**
-     * @param $ref
-     * @param $limitTo
-     */
-    public function setEntriesLimit($ref, $limitTo)
-    {
-        $this->data['project']['entries_limits'][$ref] = $limitTo;
-    }
-
-    /**
-     * @param $entriesLimits
-     */
-    public function addEntriesLimits($entriesLimits)
-    {
-        $this->data['project']['entries_limits'] = $entriesLimits;
-    }
-
-    /**
      * Add extra form, details, ie, has location, has jumps
      *
-     * @param string $formRef
-     * @param array
      **/
     public function addExtraFormDetails($formRef, $data)
     {

@@ -4,6 +4,7 @@ namespace ec5\DTO;
 
 use Hash;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use ec5\Models\Entries\Entry;
 
 class EntryStructureDTO
 {
@@ -17,10 +18,9 @@ class EntryStructureDTO
      */
     protected $projectRole = null;
     protected $geoJson = [];
-    protected $branchOwnerEntryDbId;
+    protected $branchOwnerEntryRowId;
     protected $possibleAnswers = [];
     protected $existingEntry = null;
-    protected $isBranch = false;
     protected $file = null;
 
     public function init($payload, $projectId, $requestedProjectRole)
@@ -42,27 +42,87 @@ class EntryStructureDTO
     }
 
 
-    public function createStructure($data)
+    public function createStructure($payload)
     {
-        $this->data = $data;
+        /**
+         * @var array $payload
+         *   Data array.
+         *   - type: string - Entry type.
+         *   - id: string - Entry ID.
+         *   - attributes: array - Entry attributes.
+         *     - form: array - Form attributes.
+         *       - ref: string - Reference of the form.
+         *       - type: string - Type of the form.
+         *   - relationships: array - Entry relationships.
+         *     - parent: array - Parent relationship.
+         *       - data: array - Parent data.
+         *         - parent_form_ref: string - Parent form reference.
+         *         - parent_entry_uuid: string - Parent entry UUID.
+         *     - branch: array - Branch relationship.
+         *   - entry: array - Entry details.
+         *     - entry_uuid: string - Entry UUID.
+         *     - created_at: string - Creation timestamp.
+         *     - device_id: string - Device ID.
+         *     - platform: string - Platform.
+         *     - title: string - Title.
+         *     - answers: array - Answers array.
+         *       - {inputRef}: array - Answer details.
+         *         - answer: string - Answer text.
+         *         - was_jumped: bool - Was jumped.
+         *     - project_version: string - Project version.
+         */
+
+
+        $type = $payload['type'];//entry, branch_entry, file, archive
+        $this->data = [
+            'type' => $payload['type'],
+            'id' => $payload['id'],
+            'attributes' => [
+                'form' => [
+                    'ref' => $payload['attributes']['form']['ref'],
+                    'type' => 'hierarchy'
+                ]
+            ],
+            'relationships' => [
+                'parent' => [
+                    'data' => [
+                        'parent_form_ref' => $payload['relationships']['parent']['data']['parent_form_ref'] ?? '',
+                        'parent_entry_uuid' => $payload['relationships']['parent']['data']['parent_entry_uuid'] ?? ''
+                    ]
+                ],
+                'branch' => [
+                    'data' => [
+                        'owner_input_ref' => $payload['relationships']['branch']['data']['owner_input_ref'] ?? '',
+                        'owner_entry_uuid' => $payload['relationships']['branch']['data']['owner_entry_uuid'] ?? '',
+                    ]
+                ]
+            ],
+            //'type' is dynamic, it depends on what type of action we are performing
+            $type => [
+                'entry_uuid' => $payload[$type]['entry_uuid'] ?? '',
+                'created_at' => $payload[$type]['created_at'] ?? '', // like '2024-02-12T11:32:32.321Z',
+                'device_id' => $payload[$type]['device_id'] ?? '',
+                'platform' => $payload[$type]['platform'] ?? '', //WEB, Android, iOS
+                'title' => $payload[$type]['title'] ?? '',
+                'answers' => $payload[$type]['answers'] ?? [],
+                'project_version' => $payload[$type]['project_version'] ?? '' // like '2024-02-12 11:32:05'
+            ]
+        ];
     }
 
     /**
-     * Store the db id for a branch owner entry
+     * Store the DB id for a branch owner entry
      *
-     * @param $owner
+     * @param $ownerId
      */
-    public function addBranchOwnerEntryToStructure($owner)
+    public function setOwnerEntryID($ownerId)
     {
-        $this->branchOwnerEntryDbId = $owner->id;
+        $this->branchOwnerEntryRowId = $ownerId;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getBranchOwnerEntryDbId()
+    public function getOwnerEntryID(): int
     {
-        return $this->branchOwnerEntryDbId;
+        return $this->branchOwnerEntryRowId;
     }
 
     /**
@@ -154,7 +214,7 @@ class EntryStructureDTO
     }
 
     /**
-     * Get Entry array
+     * Get the Entry array
      *
      */
     public function getEntry(): array
@@ -163,7 +223,7 @@ class EntryStructureDTO
     }
 
     /**
-     * Get Entry array
+     * Get the Entry array
      */
     public function getValidatedEntry(): array
     {
@@ -262,7 +322,7 @@ class EntryStructureDTO
     /**
      * @return string
      */
-    public function getParentFormRef()
+    public function getParentFormRef(): string
     {
         return $this->data['relationships']['parent']['data']['parent_form_ref'] ?? '';
     }
@@ -285,6 +345,8 @@ class EntryStructureDTO
 
     /**
      * Add the possible answers array to the geo json object
+     *
+     * They are needed for the dataviewer pie charts
      */
     public function addPossibleAnswersToGeoJson()
     {
@@ -324,17 +386,10 @@ class EntryStructureDTO
         return !empty($this->existingEntry);
     }
 
-    /**
-     * Set this entry structure to be a branch
-     */
-    public function setAsBranch()
-    {
-        $this->isBranch = true;
-    }
 
     public function isBranch(): bool
     {
-        return $this->isBranch;
+        return $this->data['type'] === config('epicollect.strings.entry_types.branch_entry');
     }
 
     public function getTitle(): string
@@ -364,7 +419,7 @@ class EntryStructureDTO
     /**
      * @return UploadedFile|null
      */
-    public function getFile()
+    public function getFile(): ?UploadedFile
     {
         return $this->file ?? null;
     }
@@ -373,6 +428,7 @@ class EntryStructureDTO
      * Check if this entry can be an edit for the supplied $dbEntry
      *
      * @param $dbEntry
+     * @return bool
      */
     public function canEdit($dbEntry): bool
     {
@@ -385,7 +441,7 @@ class EntryStructureDTO
         if ($dbEntry->user_id != 0 && $dbEntry->user_id == $this->getUserId()) {
             return true;
         }
-        // Is the device id (non-empty) the same (for non web platforms)?
+        // Is the device id (non-empty) the same (for non-web platforms)?
         if ($this->getPlatform() != config('epicollect.mappings.web_platform') &&
             !empty($this->getDeviceId()) &&
             Hash::check($this->getDeviceId(), $dbEntry->device_id)) {
@@ -409,16 +465,16 @@ class EntryStructureDTO
      * Add the geo json object to the entry structure
      * @param $inputDetails
      *   {
-     *       "ref": "---",
-     *       "question": "---",
-     *       "type": "---",
-     *       "...": "---"
+     *       'Ref': '---',
+     *       'question': '---',
+     *       'type': '---',
+     *       '...': '---'
      *   }
      * @param $locationAnswer
      *  {
-     *      "latitude": "---",
-     *      "longitude": "---",
-     *      "accuracy": "---"
+     *      'Latitude': '---',
+     *      'longitude': '---',
+     *      'accuracy': '---'
      *  }
      */
     public function addGeoJsonObject($inputDetails, $locationAnswer)

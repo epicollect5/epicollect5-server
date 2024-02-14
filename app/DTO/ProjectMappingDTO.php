@@ -6,13 +6,13 @@ use ec5\Libraries\Utilities\Arrays;
 
 /*
 |--------------------------------------------------------------------------
-| Project Mapping Model
+| Project Mapping DTO
 |--------------------------------------------------------------------------
-| A model for the JSON Mapping Definition
+| A DTO for the JSON Data Mapping
 |
 */
 
-class ProjectMappingDTO extends ProjectModelBase
+class ProjectMappingDTO extends ProjectDTOBase
 {
     /**
      * @var int
@@ -35,10 +35,7 @@ class ProjectMappingDTO extends ProjectModelBase
         //
     }
 
-    /**
-     * @return int
-     */
-    public function getMapCount()
+    public function getMapCount(): int
     {
         return count($this->data);
     }
@@ -57,8 +54,6 @@ class ProjectMappingDTO extends ProjectModelBase
     }
 
     /** * Get an array of all the map indexes
-     *
-     * @return array
      */
     public function getMapIndexes(): array
     {
@@ -223,7 +218,6 @@ class ProjectMappingDTO extends ProjectModelBase
      */
     public function cleanMapRef($text): string
     {
-
         $text = trim($text);
         // Replace sequences of spaces with underscore
         $text = preg_replace('/  */', '_', $text);

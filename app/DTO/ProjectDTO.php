@@ -13,12 +13,12 @@ use stdClass;
 
 /*
 |--------------------------------------------------------------------------
-| Project Model
+| Project DTO
 |--------------------------------------------------------------------------
-| A container for all the other Project models
+| A container for all the other Project DTOs
 | Contains its own properties reflecting those in the 'projects' db table
-| Deals with the initialisation, creation and importing of data into this
-| and contained models
+| Deals with the initialization, creation and importing of data into this
+| and contained DTOs
 |
 */
 
@@ -60,14 +60,6 @@ class ProjectDTO
     public $status = '';
     public $can_bulk_upload = 'nobody';
 
-    /**
-     * Project constructor.
-     *
-     * @param ProjectDefinitionDTO $projectDefinition
-     * @param ProjectExtraDTO $projectExtra
-     * @param ProjectMappingDTO $projectMapping
-     * @param ProjectStatsDTO $projectStats
-     */
     public function __construct(
         ProjectDefinitionDTO $projectDefinition,
         ProjectExtraDTO      $projectExtra,
@@ -83,9 +75,37 @@ class ProjectDTO
 
     /**
      * Initialise from existing data
-     * $data is an object
+     * imp: $data is an object like:
+     *
+     * "id": 145096
+     * "name": "EC5 8U5iSRja7C"
+     * "slug": "ec5-8u5isrja7c"
+     * "ref": "914c66a1ab074819b0dde5a2bc282f06"
+     * "description": "Magnam eum perspiciatis quibusdam eveniet consequatur."
+     * "small_description": "Aliquam quidem.Quod quasi perspiciatis sit qui. Perferendis nam quisquam incidunt porro."
+     * "logo_url": ""
+     * "access": "private"
+     * "visibility": "listed"
+     * "category": "general"
+     * "created_by": 312321
+     * "created_at": "2024-02-08 14:19:36"
+     * "updated_at": "2024-02-08 14:19:42"
+     * "status": "active"
+     * "can_bulk_upload": "nobody"
+     * "stats_id": 147223
+     * "project_id": 167369
+     * "total_entries": 0
+     * "total_users": 0
+     * "form_counts": "[]"
+     * "branch_counts": "[]"
+     * "project_definition":{json string...}"
+     * "project_extra": "{json string...}"
+     * "project_mapping": "{json string...}"
+     * "structure_last_updated": "2024-02-08 14:19:42"
+     * "structure_id": 145096
+     * }
      */
-    public function init(stdClass $data)
+    public function initAllDTOs(stdClass $data)
     {
         $this->addProjectDefinition($data->project_definition ?? []);
         $this->addProjectExtra($data->project_extra ?? []);
@@ -115,45 +135,45 @@ class ProjectDTO
      * Create from new data
      *
      * @param $projectRef
-     * @param $data
+     * @param $projectDetails
      * @throws Exception
      */
-    public function create($projectRef, $data)
+    public function create($projectRef, $projectDetails)
     {
         // Check we have the required project and form name data set
-        if (!isset($data['name']) || !isset($data['form_name'])) {
-            throw new Exception(config('status_codes.ec5_224'));
+        if (!isset($projectDetails['name']) || !isset($projectDetails['form_name'])) {
+            throw new Exception(config('epicollect.codes.ec5_224'));
         }
         // Create project and first form refs
         $formRef = $projectRef . '_' . uniqid();
         // Set required project data
-        $data['ref'] = $projectRef;
-        $data['status'] = 'active';
-        $data['visibility'] = 'hidden';
-        $data['category'] = config('epicollect.strings.project_categories.general');
+        $projectDetails['ref'] = $projectRef;
+        $projectDetails['status'] = 'active';
+        $projectDetails['visibility'] = 'hidden';
+        $projectDetails['category'] = config('epicollect.strings.project_categories.general');
         // Set required form data
-        $data['forms'][0]['name'] = $data['form_name'];
-        $data['forms'][0]['slug'] = Str::slug($data['form_name'], '-');
-        $data['forms'][0]['type'] = 'hierarchy';
-        $data['forms'][0]['ref'] = $formRef;
+        $projectDetails['forms'][0]['name'] = $projectDetails['form_name'];
+        $projectDetails['forms'][0]['slug'] = Str::slug($projectDetails['form_name'], '-');
+        $projectDetails['forms'][0]['type'] = 'hierarchy';
+        $projectDetails['forms'][0]['ref'] = $formRef;
 
         // Add the Project details
-        $this->addProjectDetails($data);
+        $this->addProjectDetails($projectDetails);
         // Create new JSON Project Definition
         $this->projectDefinition->create([
             'id' => $projectRef,
-            'project' => $data
+            'project' => $projectDetails
         ]);
 
         // Create new JSON Project Extra
         $this->projectExtra->create([
             'project' => [
-                'details' => $data,
+                'details' => $projectDetails,
                 'forms' => [$formRef]
             ],
             'forms' => [
                 $formRef => [
-                    'details' => $data['forms'][0]
+                    'details' => $projectDetails['forms'][0]
                 ]
             ]
         ]);
@@ -197,7 +217,7 @@ class ProjectDTO
         // Validate the Project Definition and create the Project Extra data
         $projectDefinitionValidator->validate($this);
         if ($projectDefinitionValidator->hasErrors()) {
-            throw new Exception(config('status_codes.ec5_225'));
+            throw new Exception(config('epicollect.codes.ec5_225'));
         }
         // Create new JSON Project Mapping
         $this->projectMapping->autoGenerateMap($this->projectExtra);
@@ -430,12 +450,10 @@ class ProjectDTO
 
     public function setEntriesLimits($entriesLimits)
     {
-        $this->projectExtra->clearEntriesLimits();
         $this->projectDefinition->clearEntriesLimits();
         foreach ($entriesLimits as $ref => $params) {
             // If a limit is set
             if ($params['setLimit']) {
-                $this->projectExtra->setEntriesLimit($ref, $params['limitTo']);
                 $this->projectDefinition->setEntriesLimit($ref, $params['limitTo']);
             }
         }

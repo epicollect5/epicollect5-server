@@ -4,13 +4,13 @@ namespace ec5\DTO;
 
 /*
 |--------------------------------------------------------------------------
-| Project Model Base
+| Project DTO Base
 |--------------------------------------------------------------------------
-| An abstract model which is extended by other JSON Project Models
+| An abstract model which is extended by other JSON Project DTOs
 |
 */
 
-abstract class ProjectModelBase
+abstract class ProjectDTOBase
 {
     /**
      * @var $data
