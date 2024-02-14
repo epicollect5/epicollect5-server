@@ -56,7 +56,7 @@ if ($('.page-search-projects').length > 0) {
                 }, 500);
             } else {
                 //reset giving all projects
-                if (projectName.trim() == '') {
+                if (projectName.trim() === '') {
                     delay(function () {
                         window.EC5.projectsSearch.getProjects({
                             projectName: '',
@@ -116,7 +116,6 @@ if ($('.page-search-projects').length > 0) {
             module.getProjects = function (params) {
 
                 var queryParams = {};
-
                 //hide current projects cards and show loader
                 projectsContainer.empty();
                 loader.removeClass('hidden');

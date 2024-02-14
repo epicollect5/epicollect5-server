@@ -83,7 +83,10 @@
                 </div>
 
             </div>
+
+            <div class="loader hidden">Loading...</div>
         </div>
+
 
         <div class="my-projects projects-list hidden">
             @include('projects.project_cards')

@@ -7,6 +7,9 @@ window.EC5.projects = window.EC5.projects || {};
  */
 (function projects(module) {
 
+    module.loader = $('.loader');
+
+
     // Default ordering object
     module.defaultOrdering = {
         field: 'created_at', type: 'asc', label: 'Date Asc'
@@ -92,6 +95,7 @@ window.EC5.projects = window.EC5.projects || {};
                 // Make visible if hidden
                 module.domElements.projects_div.removeClass('hidden');
                 window.scrollTo({top: 0, behavior: 'auto'});
+                module.loader.addClass('hidden');
                 window.setTimeout(function () {
                     window.EC5.overlay.fadeOut();
                 }, 500);
@@ -101,13 +105,16 @@ window.EC5.projects = window.EC5.projects || {};
             if (error.responseJSON.errors) {
                 // Show the errors
                 if (error.responseJSON.errors.length > 0) {
-
                     var i;
                     for (i = 0; i < error.responseJSON.errors.length; i++) {
                         window.EC5.toast.showError(error.responseJSON.errors[i].title);
                     }
                 }
             }
+            module.loader.addClass('hidden');
+            window.setTimeout(function () {
+                window.EC5.overlay.fadeOut();
+            }, 500);
         };
 
     };
@@ -119,6 +126,8 @@ window.EC5.projects = window.EC5.projects || {};
      */
     module.getProjects = function () {
         // Make ajax request to load projects
+        module.domElements.projects_div.addClass('hidden');
+        module.loader.removeClass('hidden');
         $.ajax({
             url: module.options.url, type: 'GET', dataType: 'json', data: {
                 page: module.options.page,
