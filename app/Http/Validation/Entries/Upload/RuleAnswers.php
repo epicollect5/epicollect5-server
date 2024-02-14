@@ -23,7 +23,7 @@ use ec5\Http\Validation\Entries\Upload\InputRules\RuleTextInput;
 use ec5\Http\Validation\Entries\Upload\InputRules\RuleTimeInput;
 use ec5\Http\Validation\Entries\Upload\InputRules\RuleVideoInput;
 use ec5\Http\Validation\ValidationBase;
-use ec5\Services\EntryService;
+use ec5\Services\EntriesUniquenessService;
 use Exception;
 use Log;
 
@@ -268,7 +268,7 @@ class RuleAnswers extends ValidationBase
      */
     private function isUnique(EntryStructureDTO $entryStructure, $uniquenessType, $answer, $inputType, $inputDatetimeFormat): ?bool
     {
-        $entryService = new EntryService();
+        $entryService = new EntriesUniquenessService();
         return $entryService->isUnique($entryStructure, $uniquenessType, $this->inputRef, $answer, $inputType, $inputDatetimeFormat);
     }
 }
