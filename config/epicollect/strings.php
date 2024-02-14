@@ -221,6 +221,13 @@ return [
         'device_id' => 'device_id',
         'platform' => 'platform'
     ],
+    'multiple_choice_question_types' => [
+        'radio' => 'radio',
+        'checkbox' => 'checkbox',
+        'dropdown' => 'dropdown',
+        'searchsingle' => 'searchsingle',
+        'searchmultiple' => 'searchmultiple',
+    ],
     'bulk_uploadables' => [
         'text' => 'text',
         'phone' => 'phone',
