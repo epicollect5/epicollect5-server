@@ -111,7 +111,7 @@ class UploadWebControllerSequenceTest extends TestCase
                 'user' => $user,
                 'project' => $project
             ]);
-            dd($exception->getMessage());
+            $this->logTestError($exception, $response);
         }
     }
 
@@ -227,6 +227,7 @@ class UploadWebControllerSequenceTest extends TestCase
      */
     public function test_it_should_upload_a_child_entry_level_2($params)
     {
+        $response = [];
         try {
             $entry = $params['entry'];
             $childEntry1 = $params['childEntry1'];
@@ -245,9 +246,9 @@ class UploadWebControllerSequenceTest extends TestCase
             );
 
             //post the child entry
-            $response = $this->actingAs($user)->post('api/internal/web-upload/' . $project->slug, $childEntry2);
+            $response[] = $this->actingAs($user)->post('api/internal/web-upload/' . $project->slug, $childEntry2);
 
-            $response->assertStatus(200)
+            $response[0]->assertStatus(200)
                 ->assertExactJson([
                         "data" => [
                             "code" => "ec5_237",
@@ -281,7 +282,7 @@ class UploadWebControllerSequenceTest extends TestCase
                 'user' => $user,
                 'project' => $project
             ]);
-            dd($e->getMessage());
+            $this->logTestError($e, $response);
             //dd($e->getMessage(), $response, json_encode($entry), json_encode($projectDefinition));
         }
     }
@@ -291,6 +292,7 @@ class UploadWebControllerSequenceTest extends TestCase
      */
     public function test_it_should_upload_a_child_entry_level_3($params)
     {
+        $response = [];
         try {
             $entry = $params['entry'];
             $childEntry1 = $params['childEntry1'];
@@ -310,9 +312,9 @@ class UploadWebControllerSequenceTest extends TestCase
             );
 
             //post the child entry
-            $response = $this->actingAs($user)->post('api/internal/web-upload/' . $project->slug, $childEntry3);
+            $response[] = $this->actingAs($user)->post('api/internal/web-upload/' . $project->slug, $childEntry3);
 
-            $response->assertStatus(200)
+            $response[0]->assertStatus(200)
                 ->assertExactJson([
                         "data" => [
                             "code" => "ec5_237",
@@ -350,7 +352,7 @@ class UploadWebControllerSequenceTest extends TestCase
                 'user' => $user,
                 'project' => $project
             ]);
-            dd($e->getMessage());
+            $this->logTestError($e, $response);
         }
     }
 
@@ -492,7 +494,6 @@ class UploadWebControllerSequenceTest extends TestCase
 
             $branchCounts = json_decode(Entry::where('uuid', $entry['data']['id'])
                 ->value('branch_counts'), true);
-
             $this->assertEquals([
                 $branches[0]['ref'] => 1
             ], $branchCounts);

@@ -159,7 +159,7 @@ class UploadWebControllerLimitsTest extends TestCase
             $this->parentUuids = $parentUuids;
 
         } catch (Exception $exception) {
-            dd($exception->getMessage());
+            $this->logTestError($exception, $response);
         }
 
     }
