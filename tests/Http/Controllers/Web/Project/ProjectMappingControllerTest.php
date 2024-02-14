@@ -83,7 +83,7 @@ class ProjectMappingControllerTest extends TestCase
         try {
             $response->assertStatus(200);
         } catch (Exception $exception) {
-            dd($response, json_encode($projectDefinition));
+            $this->logTestError($exception, $response);
         }
 
         $this->assertSame(json_decode($response->getContent(), true), $projectDefinition);
@@ -103,7 +103,7 @@ class ProjectMappingControllerTest extends TestCase
 
             $response[0]->assertStatus(200);
         } catch (Exception $e) {
-            dd($response[0], $e->getMessage());
+            $this->logTestError($e, $response);
         }
     }
 
@@ -714,7 +714,7 @@ class ProjectMappingControllerTest extends TestCase
                     "errors" => [
                         [
                             "code" => "ec5_230",
-                            "title" => "Map doesn't exist.",
+                            "title" => "This map doesn't exist.",
                             "source" => "mapping"
                         ]
                     ]

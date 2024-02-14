@@ -516,9 +516,6 @@ class ProjectControllerTest extends TestCase
             //compare
             $this->assertEquals($projectDefinition, $projectResponse);
         } catch (\Exception $e) {
-            if (!$response) {
-                dd($e->getMessage());
-            }
             $this->logTestError($e, $response);
         }
     }

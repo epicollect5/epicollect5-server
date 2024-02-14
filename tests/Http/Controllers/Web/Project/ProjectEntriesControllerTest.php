@@ -38,6 +38,7 @@ class ProjectEntriesControllerTest extends TestCase
         $slug = config('testing.WEB_UPLOAD_CONTROLLER_PROJECT.slug');
         $email = config('testing.UNIT_TEST_RANDOM_EMAIL');
 
+        $response = [];
         try {
             //create fake user for testing
             $user = factory(User::class)->create(['email' => $email]);
@@ -102,15 +103,15 @@ class ProjectEntriesControllerTest extends TestCase
             $base64EncodedData = base64_encode($gzippedData);
 
             //see https://github.com/laravel/framework/issues/46455
-            $response = $this->actingAs($user)
+            $response[] = $this->actingAs($user)
                 ->call('POST', 'api/internal/formbuilder/' . $project->slug,
                     [],
                     [],
                     [],
                     [], $base64EncodedData);
 
-            $response->assertStatus(200);
-            $this->assertSame(json_decode($response->getContent(), true), $projectDefinition);
+            $response[0]->assertStatus(200);
+            $this->assertSame(json_decode($response[0]->getContent(), true), $projectDefinition);
             //assert there are no entries or branch entries
             $this->assertCount(0, Entry::where('project_id', $project->id)->get());
             $this->assertCount(0, BranchEntry::where('project_id', $project->id)->get());
@@ -127,7 +128,7 @@ class ProjectEntriesControllerTest extends TestCase
             $this->entriesLimits = $entriesLimits;
 
         } catch (Exception $exception) {
-            dd($exception->getMessage());
+            $this->logTestError($exception, $response);
         }
 
     }

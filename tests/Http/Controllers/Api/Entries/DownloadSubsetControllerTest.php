@@ -384,7 +384,7 @@ class DownloadSubsetControllerTest extends TestCase
         try {
             $response->assertStatus(200);
         } catch (\Exception $exception) {
-            dd($response, json_encode($projectDefinition));
+            $this->logTestError($exception, $response);
         }
 
         $cookies = [config('epicollect.mappings.cookies.download-entries') => Carbon::now()->timestamp];
@@ -474,7 +474,7 @@ class DownloadSubsetControllerTest extends TestCase
         try {
             $response->assertStatus(200);
         } catch (\Exception $exception) {
-            dd($response, json_encode($projectDefinition));
+            $this->logTestError($exception, $response);
         }
 
         $cookies = [config('epicollect.mappings.cookies.download-entries') => Carbon::now()->timestamp];

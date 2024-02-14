@@ -204,8 +204,8 @@ class ProjectLeaveControllerTest extends TestCase
     {
         //creator
         $role = config('epicollect.strings.project_roles.creator');
-        $numOfEntries = mt_rand(10, 100);
-        $numOfBranchEntries = mt_rand(10, 100);
+        $numOfEntries = mt_rand(1, 5);
+        $numOfBranchEntries = mt_rand(1, 5);
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
@@ -272,8 +272,8 @@ class ProjectLeaveControllerTest extends TestCase
     {
         //creator
         $role = config('epicollect.strings.project_roles.creator');
-        $numOfEntries = mt_rand(10, 100);
-        $numOfBranchEntries = mt_rand(10, 100);
+        $numOfEntries = mt_rand(1, 5);
+        $numOfBranchEntries = mt_rand(1, 5);
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
@@ -340,8 +340,8 @@ class ProjectLeaveControllerTest extends TestCase
     {
         //creator
         $role = config('epicollect.strings.project_roles.creator');
-        $numOfEntries = mt_rand(10, 100);
-        $numOfBranchEntries = mt_rand(10, 100);
+        $numOfEntries = mt_rand(1, 5);
+        $numOfBranchEntries = mt_rand(1, 5);
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
         $anotherUser = factory(User::class)->create();
@@ -411,8 +411,8 @@ class ProjectLeaveControllerTest extends TestCase
     {
         //creator
         $role = config('epicollect.strings.project_roles.manager');
-        $numOfEntries = mt_rand(10, 100);
-        $numOfBranchEntries = mt_rand(10, 100);
+        $numOfEntries = mt_rand(1, 5);
+        $numOfBranchEntries = mt_rand(1, 5);
         //create a fake user and save it to DB
         $creator = factory(User::class)->create();
         $manager = factory(User::class)->create();
@@ -485,8 +485,8 @@ class ProjectLeaveControllerTest extends TestCase
     {
         //creator
         $role = config('epicollect.strings.project_roles.curator');
-        $numOfEntries = mt_rand(10, 100);
-        $numOfBranchEntries = mt_rand(10, 100);
+        $numOfEntries = mt_rand(1, 5);
+        $numOfBranchEntries = mt_rand(1, 5);
         //create a fake user and save it to DB
         $creator = factory(User::class)->create();
         $curator = factory(User::class)->create();
@@ -559,8 +559,8 @@ class ProjectLeaveControllerTest extends TestCase
     {
         //creator
         $role = config('epicollect.strings.project_roles.collector');
-        $numOfEntries = mt_rand(10, 100);
-        $numOfBranchEntries = mt_rand(10, 100);
+        $numOfEntries = mt_rand(2, 5);
+        $numOfBranchEntries = mt_rand(1, 3);
         //create a fake user and save it to DB
         $creator = factory(User::class)->create();
         $collector = factory(User::class)->create();

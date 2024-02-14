@@ -121,7 +121,8 @@ class ProjectDefinitionGenerator
             $inputs[] = ProjectDefinitionGenerator::createMediaInput($formRef);
             $inputs[] = ProjectDefinitionGenerator::createMediaInput($formRef);
             $inputs[] = ProjectDefinitionGenerator::createMediaInput($formRef);
-            //add one group
+            //add two groups
+            $inputs[] = ProjectDefinitionGenerator::createGroup($formRef);
             $inputs[] = ProjectDefinitionGenerator::createGroup($formRef);
             //add one branch
             $inputs[] = ProjectDefinitionGenerator::createBranch($formRef);
@@ -179,6 +180,8 @@ class ProjectDefinitionGenerator
             $branchInputs[] = ProjectDefinitionGenerator::createMultipleChoiceInput($inputRef);
             $branchInputs[] = ProjectDefinitionGenerator::createLocationInput($inputRef);
             $branchInputs[] = ProjectDefinitionGenerator::createMediaInput($inputRef);
+            $branchInputs[] = ProjectDefinitionGenerator::createGroup($inputRef);
+            $branchInputs[] = ProjectDefinitionGenerator::createGroup($inputRef);
         }
 
         return [
@@ -211,7 +214,6 @@ class ProjectDefinitionGenerator
 
         for ($i = 0; $i < $n; $i++) {
             $groupInputs[] = ProjectDefinitionGenerator::createTextInput($inputRef);
-
             $groupInputs[] = ProjectDefinitionGenerator::createSimpleInput($inputRef);
             $groupInputs[] = ProjectDefinitionGenerator::createTimeInput($inputRef);
             $groupInputs[] = ProjectDefinitionGenerator::createDateInput($inputRef);

@@ -88,7 +88,7 @@ class FormbuilderControllerTest extends TestCase
         try {
             $response->assertStatus(200);
         } catch (\Exception $exception) {
-            dd($response, json_encode($this->projectDefinition));
+            $this->logTestError($exception, $response);
         }
 
         $this->assertSame(json_decode($response->getContent(), true), $this->projectDefinition);
@@ -796,7 +796,7 @@ class FormbuilderControllerTest extends TestCase
         try {
             $response->assertStatus(200);
         } catch (\Exception $exception) {
-            dd($response, json_encode($this->projectDefinition));
+            $this->logTestError($exception, $response);
         }
 
         $this->assertSame(json_decode($response->getContent(), true), $this->projectDefinition);
@@ -835,7 +835,7 @@ class FormbuilderControllerTest extends TestCase
         try {
             $response->assertStatus(200);
         } catch (\Exception $exception) {
-            dd($response, json_encode($this->projectDefinition));
+            $this->logTestError($exception, $response);
         }
 
         $this->assertSame(json_decode($response->getContent(), true), $this->projectDefinition);
@@ -922,7 +922,7 @@ class FormbuilderControllerTest extends TestCase
         try {
             $response->assertStatus(200);
         } catch (\Exception $exception) {
-            dd($response, json_encode($this->projectDefinition));
+            $this->logTestError($exception, $response);
         }
 
         $this->assertSame(json_decode($response->getContent(), true), $this->projectDefinition);
@@ -972,7 +972,7 @@ class FormbuilderControllerTest extends TestCase
         try {
             $response->assertStatus(200);
         } catch (\Exception $exception) {
-            dd($response, json_encode($this->projectDefinition));
+            $this->logTestError($exception, $response);
         }
 
         $this->assertSame(json_decode($response->getContent(), true), $this->projectDefinition);
