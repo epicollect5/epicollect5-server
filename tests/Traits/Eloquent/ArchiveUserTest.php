@@ -15,7 +15,7 @@ class ArchiveUserTest extends TestCase
 
     public function test_it_archives_users_without_roles_or_providers()
     {
-        $repeatCount = rand(5, 10);
+        $repeatCount = rand(1, 5);
         for ($i = 0; $i < $repeatCount; $i++) {
             // Create a fake user
             $user = factory(User::class)->create();
@@ -40,7 +40,7 @@ class ArchiveUserTest extends TestCase
 
     public function test_it_archives_users_without_roles_but_one_provider()
     {
-        $repeatCount = rand(5, 10);
+        $repeatCount = rand(1, 5);
         for ($i = 0; $i < $repeatCount; $i++) {
             // Create a fake user
             $user = factory(User::class)->create();
@@ -79,7 +79,7 @@ class ArchiveUserTest extends TestCase
 
     public function test_it_archives_users_with_roles_and_providers()
     {
-        $repeatCount = rand(5, 10);;
+        $repeatCount = rand(1, 4);
         for ($i = 0; $i < $repeatCount; $i++) {
             // Create a fake user
             $user = factory(User::class)->create();

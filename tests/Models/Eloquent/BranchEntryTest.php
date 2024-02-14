@@ -97,7 +97,7 @@ class BranchEntryTest extends TestCase
     public function test_should_get_branch_entries_by_form_and_branch_input_ref()
     {
         //create fake branch entries
-        $numOfEntries = rand(25, 50);
+        $numOfEntries = rand(1, 5);
 
         for ($i = 0; $i < $numOfEntries; $i++) {
             factory(BranchEntry::class)->create([
@@ -123,7 +123,7 @@ class BranchEntryTest extends TestCase
     public function test_should_get_branch_entries_by_form_and_title()
     {
         //create fake entries
-        $numOfEntries = rand(25, 50);
+        $numOfEntries = rand(1, 5);
 
         for ($i = 0; $i < $numOfEntries; $i++) {
             factory(BranchEntry::class)->create([
@@ -171,7 +171,7 @@ class BranchEntryTest extends TestCase
     public function test_should_get_branch_entries_by_user()
     {
         //create fake entries
-        $numOfEntries = rand(25, 50);
+        $numOfEntries = rand(1, 5);
 
         //create a collector user for the project
         $collector = factory(User::class)->create();

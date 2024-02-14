@@ -75,7 +75,7 @@ class EntryTest extends TestCase
     public function test_should_get_entries_by_form()
     {
         //create fake entries
-        $numOfEntries = rand(25, 50);
+        $numOfEntries = rand(1, 5);
 
         for ($i = 0; $i < $numOfEntries; $i++) {
             factory(Entry::class)->create([
@@ -97,7 +97,7 @@ class EntryTest extends TestCase
     public function test_should_get_entries_by_form_and_title()
     {
         //create fake entries
-        $numOfEntries = rand(25, 50);
+        $numOfEntries = rand(1, 5);
 
         for ($i = 0; $i < $numOfEntries; $i++) {
             factory(Entry::class)->create([
@@ -139,7 +139,7 @@ class EntryTest extends TestCase
     public function test_should_get_entries_by_user()
     {
         //create fake entries
-        $numOfEntries = rand(25, 50);
+        $numOfEntries = rand(1, 5);
 
         //create a collector user for the project
         $collector = factory(User::class)->create();

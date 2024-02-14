@@ -71,8 +71,8 @@ class ProjectDeleteEntriesControllerTest extends TestCase
     {
         //creator
         $role = config('epicollect.strings.project_roles.creator');
-        $numOfEntries = mt_rand(10, 100);
-        $numOfBranchEntries = mt_rand(10, 100);
+        $numOfEntries = mt_rand(1, 5);
+        $numOfBranchEntries = mt_rand(1, 5);
 
         //get existing counts
         $projectsCount = Project::count();

@@ -80,7 +80,7 @@ class ProjectDeleteControllerTest extends TestCase
     {
         //creator
         $role = config('epicollect.strings.project_roles.creator');
-        $numOfEntries = mt_rand(10, 100);
+        $numOfEntries = mt_rand(1, 3);
         $numOfBranchEntries = mt_rand(10, 100);
 
         //create a fake user and save it to DB

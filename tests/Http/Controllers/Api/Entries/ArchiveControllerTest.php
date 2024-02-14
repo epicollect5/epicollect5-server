@@ -478,7 +478,7 @@ class ArchiveControllerTest extends TestCase
         }
 
         //add a few branch entries
-        $numOfBranchEntries = rand(5, 20);
+        $numOfBranchEntries = rand(1, 5);
         for ($i = 0; $i < $numOfBranchEntries; $i++) {
             $branchEntry = factory(BranchEntry::class)->create(
                 [

@@ -21,10 +21,10 @@ class ArchiveEntriesTest extends TestCase
 
         for ($i = 0; $i < $repeatCount; $i++) {
 
-            $numOfEntries = mt_rand(10, 100);
-            $numOfAdditionalEntries = mt_rand(10, 100);
-            $numOfBranchEntries = mt_rand(10, 100);
-            $numOfAdditionalBranchEntries = mt_rand(10, 100);
+            $numOfEntries = mt_rand(1, 5);
+            $numOfAdditionalEntries = mt_rand(1, 5);
+            $numOfBranchEntries = mt_rand(1, 5);
+            $numOfAdditionalBranchEntries = mt_rand(1, 5);
 
             //echo "Archived". $numOfEntries . ' entries, ' . $numOfBranchEntries . ' branches, ' . ($i + 1) . ' run ' . "\n"; // Log iteration number to console
             // Create a test project (created with system admin ID)

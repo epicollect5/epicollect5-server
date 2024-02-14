@@ -33,7 +33,7 @@ class RuleMappingCreateTest extends TestCase
 
     public function test_invalid_names()
     {
-        $count = rand(1, 5);
+        $count = rand(1, 50);
         for ($i = 0; $i < $count; $i++) {
             $data = [
                 'name' => $this->faker->regexify('^[A-Za-z0-9 \-\_]{0,2}$')
@@ -43,7 +43,7 @@ class RuleMappingCreateTest extends TestCase
             $this->ruleMappingCreate->resetErrors();
         }
 
-        $count = rand(1, 5);
+        $count = rand(1, 50);
         for ($i = 0; $i < $count; $i++) {
             $data = [
                 'name' => $this->faker->regexify('^[A-Za-z0-9 \-\_]{21,50}$')
