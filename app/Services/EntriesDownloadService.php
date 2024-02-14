@@ -14,7 +14,7 @@ use Log;
 use Storage;
 use ZipArchive;
 
-class DownloadEntriesService
+class EntriesDownloadService
 {
     protected $project;
     protected $dataMappingService;

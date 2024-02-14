@@ -7,7 +7,7 @@ use ec5\DTO\EntryStructureDTO;
 use ec5\Traits\Eloquent\Entries;
 use PDO;
 
-class EntryService
+class EntriesUniquenessService
 {
     use Entries;
 
@@ -18,13 +18,6 @@ class EntryService
         $this->table = config('epicollect.tables.entries');
     }
 
-    public function storeEntryHierarchy(EntryStructureDTO $entryStructure, $entry): int
-    {
-        // Add additional keys/values for hierarchy entries
-        $entry['parent_uuid'] = $entryStructure->getParentUuid();
-        $entry['parent_form_ref'] = $entryStructure->getParentFormRef();
-        return $this->storeEntry($entryStructure, $entry);
-    }
 
     /**
      * Function for checking whether an answer for an input is unique
