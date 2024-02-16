@@ -1,15 +1,19 @@
 <?php
 
-namespace ec5\Services;
+namespace ec5\Services\Mapping;
 
 use Carbon\Carbon;
 use ec5\DTO\ProjectDTO;
+use ec5\DTO\ProjectMappingDTO;
 use ec5\Libraries\Utilities\GpointConverter;
 use ec5\Models\User\User;
+use ec5\Traits\Project\ProjectTools;
 use Exception;
 
 class DataMappingService
 {
+    use ProjectTools;
+
     protected $project;
     protected $forms;
     protected $format;
@@ -181,7 +185,7 @@ class DataMappingService
         return $output;
     }
 
-    private function getUUIDHeadersForm($uuid, $a): array
+    private function getUUIDHeadersForm($uuid, $relationships): array
     {
         //imp: order matters so don't change, otherwise need to change other places where header is ...
         $out = [];
@@ -189,7 +193,8 @@ class DataMappingService
         if ($this->isTopHierarchyForm) {
             return $out;
         }
-        $out[] = $a->parent->data->parent_entry_uuid ?? '';
+        //child entry needs the parent entry uuid
+        $out[] = $relationships['parent']['data']['parent_entry_uuid'] ?? '';
         return $out;
     }
 
@@ -197,7 +202,7 @@ class DataMappingService
     {
         $out = [];
         //imp: order matters so don't change, otherwise need to change other places where header is ...
-        $out[] = $relationships->branch->data->owner_entry_uuid ?? '';
+        $out[] = $relationships['branch']['data']['owner_entry_uuid'] ?? '';
         $out[] = $uuid;
         return $out;
     }
@@ -300,7 +305,8 @@ class DataMappingService
             return $out;
         }
 
-        $out[$this->mappingEC5Keys['ec5_parent_uuid']] = $relationships->parent->data->parent_entry_uuid ?? '';
+
+        $out[$this->mappingEC5Keys['ec5_parent_uuid']] = $relationships['parent']['data']['parent_entry_uuid'] ?? '';
 
         return $out;
     }
@@ -309,7 +315,8 @@ class DataMappingService
     {
         $output = [];
         //!!! remember order matters so don't change, otherwise need to change other places where header is ...
-        $output[$this->mappingEC5Keys['ec5_branch_owner_uuid']] = $relationships->branch->data->owner_entry_uuid ?? '';
+
+        $output[$this->mappingEC5Keys['ec5_branch_owner_uuid']] = $relationships['branch']['data']['owner_entry_uuid'] ?? '';
         $output[$this->mappingEC5Keys['ec5_branch_uuid']] = $uuid;
         return $output;
     }
@@ -331,6 +338,9 @@ class DataMappingService
      */
     private function setupMapping($formRef, $branchRef, $mapIndex)
     {
+        /**
+         * @var $projectMapping ProjectMappingDTO
+         */
         $projectMapping = $this->project->getProjectMapping();
         $selectedMapping = $projectMapping->getMap($mapIndex, $formRef);
 
@@ -407,30 +417,30 @@ class DataMappingService
                 $parsedAnswer = count($temp) == 0 ? [] : $temp;
                 break;
             case 'location':
-                $parsedAnswer = $answer->latitude ?? '';
+                $parsedAnswer = $answer['latitude'] ?? '';
                 $parsedAnswer .= ', ';
-                $parsedAnswer .= $answer->longitude ?? '';
+                $parsedAnswer .= $answer['longitude'] ?? '';
                 break;
 
             case 'csv-location':
                 try {
-                    if ($answer->latitude && $answer->longitude) {
-                        $converter->setLongLat($answer->longitude, $answer->latitude);
+                    if ($answer['latitude'] && $answer['longitude']) {
+                        $converter->setLongLat($answer['longitude'], $$answer['latitude']);
                         $converter->convertLLtoTM(null);
 
                         $parsedAnswer = [
-                            $answer->latitude,
-                            $answer->longitude,
-                            $answer->accuracy,
+                            $answer['latitude'],
+                            $answer['longitude'],
+                            $answer['accuracy'],
                             (int)$converter->N(),
                             (int)$converter->E(),
                             $converter->Z()
                         ];
                     } else {
                         $parsedAnswer = [
-                            $answer->latitude ?? '',
-                            $answer->longitude ?? '',
-                            $answer->accuracy ?? '',
+                            $answer['latitude'] ?? '',
+                            $answer['longitude'] ?? '',
+                            $answer['accuracy'] ?? '',
                             '',
                             '',
                             ''
@@ -450,23 +460,23 @@ class DataMappingService
                 break;
             case 'json-location':
                 try {
-                    if ($answer->latitude && $answer->longitude) {
-                        $converter->setLongLat($answer->longitude, $answer->latitude);
+                    if ($answer['latitude'] && $answer['longitude']) {
+                        $converter->setLongLat($answer['longitude'], $answer['latitude']);
                         $converter->convertLLtoTM(null);
 
                         $parsedAnswer = [
-                            'latitude' => $answer->latitude,
-                            'longitude' => $answer->longitude,
-                            'accuracy' => $answer->accuracy,
+                            'latitude' => $answer['latitude'],
+                            'longitude' => $answer['longitude'],
+                            'accuracy' => $answer['accuracy'],
                             'UTM_Northing' => (int)$converter->N(),
                             'UTM_Easting' => (int)$converter->E(),
                             'UTM_Zone' => $converter->Z()
                         ];
                     } else {
                         $parsedAnswer = [
-                            'latitude' => $answer->latitude ?? '',
-                            'longitude' => $answer->longitude ?? '',
-                            'accuracy' => $answer->accuracy ?? '',
+                            'latitude' => $answer['latitude'] ?? '',
+                            'longitude' => $answer['longitude'] ?? '',
+                            'accuracy' => $answer['accuracy'] ?? '',
                             'UTM_Northing' => '',
                             'UTM_Easting' => '',
                             'UTM_Zone' => ''
@@ -534,28 +544,6 @@ class DataMappingService
     /* This function returns a flat list of inputs and nested group inputs, 
     * dropping the group inputs owner
     */
-    private function getInputsFlattened($forms, $formRef): array
-    {
-        $inputs = [];
-        $flattenInputs = [];
-        foreach ($forms as $form) {
-            if ($form['ref'] === $formRef) {
-                $inputs = $form['inputs'];
-            }
-        }
-
-        //todo: where is the readme skipped?
-        foreach ($inputs as $input) {
-            if ($input['type'] == config('epicollect.strings.inputs_type.group')) {
-                foreach ($input['group'] as $groupInput) {
-                    $flattenInputs[] = $groupInput;
-                }
-            } else {
-                $flattenInputs[] = $input;
-            }
-        }
-        return $flattenInputs;
-    }
 
     private function getBranchInputsFlattened($forms, $formRef, $branchInputRef): array
     {
@@ -572,7 +560,10 @@ class DataMappingService
             }
         }
 
-        //todo: where is the readme skipped?
+        /**
+         * imp: the readme is skipped in the ProjectMappingService
+         * @see ProjectMappingService::getMappedInputs()
+         */
         foreach ($branchInputs as $branchInput) {
             if ($branchInput['type'] == config('epicollect.strings.inputs_type.group')) {
                 foreach ($branchInput['group'] as $groupInput) {

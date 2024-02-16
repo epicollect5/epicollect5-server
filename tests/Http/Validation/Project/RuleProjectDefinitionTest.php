@@ -11,6 +11,7 @@ use ec5\Http\Validation\Project\RuleForm;
 use ec5\Http\Validation\Project\RuleInput;
 use ec5\Http\Validation\Project\RuleProjectDefinition;
 use ec5\Http\Validation\Project\RuleProjectExtraDetails;
+use ec5\Services\Mapping\ProjectMappingService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Str;
 use Ramsey\Uuid\Uuid;
@@ -133,7 +134,8 @@ class RuleProjectDefinitionTest extends TestCase
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
-            $this->projectStats
+            $this->projectStats,
+            new ProjectMappingService()
         );
 
         $projectMock = $this->getProjectMock();
@@ -169,7 +171,8 @@ class RuleProjectDefinitionTest extends TestCase
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
-            $this->projectStats
+            $this->projectStats,
+            new ProjectMappingService()
         );
 
         $projectMock = $this->getProjectMock();
@@ -206,7 +209,8 @@ class RuleProjectDefinitionTest extends TestCase
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
-            $this->projectStats
+            $this->projectStats,
+            new ProjectMappingService()
         );
 
         $projectMock = $this->getProjectMock();
@@ -247,7 +251,8 @@ class RuleProjectDefinitionTest extends TestCase
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
-            $this->projectStats
+            $this->projectStats,
+            new ProjectMappingService()
         );
 
         $projectMock = $this->getProjectMock();
@@ -290,7 +295,8 @@ class RuleProjectDefinitionTest extends TestCase
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
-            $this->projectStats
+            $this->projectStats,
+            new ProjectMappingService()
         );
 
         $projectMock = $this->getProjectMock();
@@ -335,7 +341,8 @@ class RuleProjectDefinitionTest extends TestCase
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
-            $this->projectStats
+            $this->projectStats,
+            new ProjectMappingService()
         );
 
         $projectMock = $this->getProjectMock();
@@ -381,7 +388,8 @@ class RuleProjectDefinitionTest extends TestCase
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
-            $this->projectStats
+            $this->projectStats,
+            new ProjectMappingService()
         );
 
         $projectMock = $this->getProjectMock();
@@ -424,7 +432,8 @@ class RuleProjectDefinitionTest extends TestCase
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
-            $this->projectStats
+            $this->projectStats,
+            new ProjectMappingService()
         );
 
         $projectMock = $this->getProjectMock();
@@ -467,7 +476,8 @@ class RuleProjectDefinitionTest extends TestCase
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
-            $this->projectStats
+            $this->projectStats,
+            new ProjectMappingService()
         );
 
         $projectMock = $this->getProjectMock();
@@ -511,7 +521,8 @@ class RuleProjectDefinitionTest extends TestCase
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
-            $this->projectStats
+            $this->projectStats,
+            new ProjectMappingService()
         );
 
         $projectMock = $this->getProjectMock();
@@ -555,7 +566,8 @@ class RuleProjectDefinitionTest extends TestCase
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
-            $this->projectStats
+            $this->projectStats,
+            new ProjectMappingService()
         );
 
         $projectMock = $this->getProjectMock();
@@ -606,7 +618,8 @@ class RuleProjectDefinitionTest extends TestCase
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
-            $this->projectStats
+            $this->projectStats,
+            new ProjectMappingService()
         );
 
         $projectMock = $this->getProjectMock();

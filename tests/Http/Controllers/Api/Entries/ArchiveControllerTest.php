@@ -589,7 +589,7 @@ class ArchiveControllerTest extends TestCase
 
         $this->assertCount(1, Entry::where('project_id', $this->project->id)->get());
         $this->assertCount(0, EntryArchive::where('project_id', $this->project->id)->get());
-        $this->assertCount(5, BranchEntry::where('project_id', $this->project->id)->get());
+        $this->assertCount(sizeof($branchEntries), BranchEntry::where('project_id', $this->project->id)->get());
         $this->assertCount(0, BranchEntryArchive::where('project_id', $this->project->id)->get());
 
         //build archive payload
@@ -623,7 +623,9 @@ class ArchiveControllerTest extends TestCase
 
             $this->assertCount(1, Entry::where('project_id', $this->project->id)->get());
             $this->assertCount(0, EntryArchive::where('project_id', $this->project->id)->get());
-            $this->assertCount(4, BranchEntry::where('project_id', $this->project->id)->get());
+            //branch was archived, so assert the count -1
+            $this->assertCount(sizeof($branchCounts) - 1, BranchEntry::where('project_id', $this->project->id)->get());
+            //one branch was archived
             $this->assertCount(1, BranchEntryArchive::where('project_id', $this->project->id)->get());
 
             $branchCountsResult = Entry::where('project_id', $this->project->id)->value('branch_counts');

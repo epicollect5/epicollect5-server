@@ -10,6 +10,7 @@ use Ramsey\Uuid\Uuid;
 use ReflectionClass;
 use ReflectionProperty;
 use stdClass;
+use ec5\Services\Mapping\ProjectMappingService;
 
 /*
 |--------------------------------------------------------------------------
@@ -59,18 +60,24 @@ class ProjectDTO
     public $created_by = '';
     public $status = '';
     public $can_bulk_upload = 'nobody';
+    /**
+     * @var ProjectMappingService
+     */
+    private $projectMappingService;
 
     public function __construct(
-        ProjectDefinitionDTO $projectDefinition,
-        ProjectExtraDTO      $projectExtra,
-        ProjectMappingDTO    $projectMapping,
-        ProjectStatsDTO      $projectStats
+        ProjectDefinitionDTO  $projectDefinition,
+        ProjectExtraDTO       $projectExtra,
+        ProjectMappingDTO     $projectMapping,
+        ProjectStatsDTO       $projectStats,
+        ProjectMappingService $projectMappingService
     )
     {
         $this->projectDefinition = $projectDefinition;
         $this->projectExtra = $projectExtra;
         $this->projectMapping = $projectMapping;
         $this->projectStats = $projectStats;
+        $this->projectMappingService = $projectMappingService;
     }
 
     /**
@@ -179,7 +186,9 @@ class ProjectDTO
         ]);
         // Create new JSON Project Mapping
         //$this->projectMapping->create([]);
-        $this->projectMapping->autoGenerateMap($this->projectExtra);
+
+        $mapping = $this->projectMappingService->createEC5AUTOMapping($this->getProjectExtra()->getData());
+        $this->projectMapping->setEC5AUTOMapping($mapping);
         // No need to initialise the Project Stats, as they will be empty
     }
 
@@ -219,8 +228,9 @@ class ProjectDTO
         if ($projectDefinitionValidator->hasErrors()) {
             throw new Exception(config('epicollect.codes.ec5_225'));
         }
-        // Create new JSON Project Mapping
-        $this->projectMapping->autoGenerateMap($this->projectExtra);
+        //EC5 AUTO mapping
+        $mapping = $this->projectMappingService->createEC5AUTOMapping($this->getProjectExtra()->getData());
+        $this->projectMapping->setEC5AUTOMapping($mapping);
         // No need to initialise the Project Stats, as they will be empty
     }
 
@@ -357,16 +367,6 @@ class ProjectDTO
         $this->projectDefinition->updateProjectDetails($data);
         // Update the Project Extra
         $this->projectExtra->updateProjectDetails($data);
-    }
-
-    /**
-     * Update the Project Forms Extra and Project Mappings
-     * Based on the latest Project Definition/Extra
-     */
-    public function updateProjectMappings()
-    {
-        // Update custom mappings
-        $this->projectMapping->syncNewStructure($this->projectExtra);
     }
 
     /**

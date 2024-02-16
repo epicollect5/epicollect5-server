@@ -48,7 +48,7 @@ class ProjectMappingController
         }
 
         // Create the new custom map
-        $projectMapping->createCustomMap($payload);
+        $projectMapping->createCustomMapping($payload);
 
         if (!ProjectStructure::updateStructures($this->requestedProject())) {
             // DB insert error

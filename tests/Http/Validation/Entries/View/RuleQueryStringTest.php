@@ -16,6 +16,7 @@ use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
+use ec5\Services\Mapping\ProjectMappingService;
 use ec5\Services\Project\ProjectExtraService;
 use Faker\Factory as Faker;
 use Tests\Generators\EntryGenerator;
@@ -85,7 +86,8 @@ class RuleQueryStringTest extends TestCase
             new ProjectDefinitionDTO(),
             new ProjectExtraDTO(),
             new ProjectMappingDTO(),
-            new ProjectStatsDTO()
+            new ProjectStatsDTO(),
+            new ProjectMappingService()
         );
         $requestedProjectRole = new ProjectRoleDTO();
         $requestedProject->initAllDTOs(Project::findBySlug($this->project->slug));
@@ -108,7 +110,8 @@ class RuleQueryStringTest extends TestCase
             new ProjectDefinitionDTO(),
             new ProjectExtraDTO(),
             new ProjectMappingDTO(),
-            new ProjectStatsDTO()
+            new ProjectStatsDTO(),
+            new ProjectMappingService()
         );
         $requestedProjectRole = new ProjectRoleDTO();
         $requestedProject->initAllDTOs(Project::findBySlug($this->project->slug));
@@ -160,7 +163,8 @@ class RuleQueryStringTest extends TestCase
             new ProjectDefinitionDTO(),
             new ProjectExtraDTO(),
             new ProjectMappingDTO(),
-            new ProjectStatsDTO()
+            new ProjectStatsDTO(),
+            new ProjectMappingService()
         );
         $requestedProjectRole = new ProjectRoleDTO();
         $requestedProject->initAllDTOs(Project::findBySlug($this->project->slug));
@@ -193,7 +197,8 @@ class RuleQueryStringTest extends TestCase
             new ProjectDefinitionDTO(),
             new ProjectExtraDTO(),
             new ProjectMappingDTO(),
-            new ProjectStatsDTO()
+            new ProjectStatsDTO(),
+            new ProjectMappingService()
         );
         $requestedProjectRole = new ProjectRoleDTO();
         $requestedProject->initAllDTOs(Project::findBySlug($this->project->slug));
@@ -221,7 +226,8 @@ class RuleQueryStringTest extends TestCase
             new ProjectDefinitionDTO(),
             new ProjectExtraDTO(),
             new ProjectMappingDTO(),
-            new ProjectStatsDTO()
+            new ProjectStatsDTO(),
+            new ProjectMappingService()
         );
         $requestedProjectRole = new ProjectRoleDTO();
         $requestedProject->initAllDTOs(Project::findBySlug($this->project->slug));

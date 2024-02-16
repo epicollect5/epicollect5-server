@@ -124,7 +124,8 @@ class ProjectDefinitionGenerator
             //add two groups
             $inputs[] = ProjectDefinitionGenerator::createGroup($formRef);
             $inputs[] = ProjectDefinitionGenerator::createGroup($formRef);
-            //add one branch
+            //add two branches
+            $inputs[] = ProjectDefinitionGenerator::createBranch($formRef);
             $inputs[] = ProjectDefinitionGenerator::createBranch($formRef);
 
             //add 1 search input (limit is 5 across one project)

@@ -11,6 +11,7 @@ use ec5\Http\Validation\Project\RuleForm;
 use ec5\Http\Validation\Project\RuleInput;
 use ec5\Http\Validation\Project\RuleProjectDefinition;
 use ec5\Http\Validation\Project\RuleProjectExtraDetails;
+use ec5\Services\Mapping\ProjectMappingService;
 use Illuminate\Support\Str;
 use Ramsey\Uuid\Uuid;
 
@@ -138,7 +139,8 @@ class SearchMaxCountTest extends InputTest
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
-            $this->projectStats
+            $this->projectStats,
+            new ProjectMappingService()
         );
 
         $projectMock = $this->getProjectMock();
@@ -172,7 +174,8 @@ class SearchMaxCountTest extends InputTest
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
-            $this->projectStats
+            $this->projectStats,
+            new ProjectMappingService()
         );
 
         $projectMock = $this->getProjectMock();
@@ -207,7 +210,8 @@ class SearchMaxCountTest extends InputTest
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
-            $this->projectStats
+            $this->projectStats,
+            new ProjectMappingService()
         );
 
         $projectMock = $this->getProjectMock();
@@ -243,7 +247,8 @@ class SearchMaxCountTest extends InputTest
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
-            $this->projectStats
+            $this->projectStats,
+            new ProjectMappingService()
         );
 
         $projectMock = $this->getProjectMock();
@@ -280,7 +285,8 @@ class SearchMaxCountTest extends InputTest
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
-            $this->projectStats
+            $this->projectStats,
+            new ProjectMappingService()
         );
 
         $projectMock = $this->getProjectMock();
@@ -318,7 +324,8 @@ class SearchMaxCountTest extends InputTest
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
-            $this->projectStats
+            $this->projectStats,
+            new ProjectMappingService()
         );
 
         $projectMock = $this->getProjectMock();
@@ -358,7 +365,8 @@ class SearchMaxCountTest extends InputTest
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
-            $this->projectStats
+            $this->projectStats,
+            new ProjectMappingService()
         );
 
         $projectMock = $this->getProjectMock();
@@ -400,7 +408,8 @@ class SearchMaxCountTest extends InputTest
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
-            $this->projectStats
+            $this->projectStats,
+            new ProjectMappingService()
         );
 
         $projectMock = $this->getProjectMock();
@@ -440,7 +449,8 @@ class SearchMaxCountTest extends InputTest
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
-            $this->projectStats
+            $this->projectStats,
+            new ProjectMappingService()
         );
 
         $projectMock = $this->getProjectMock();
@@ -485,7 +495,8 @@ class SearchMaxCountTest extends InputTest
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
-            $this->projectStats
+            $this->projectStats,
+            new ProjectMappingService()
         );
 
         $projectMock = $this->getProjectMock();
@@ -533,7 +544,8 @@ class SearchMaxCountTest extends InputTest
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
-            $this->projectStats
+            $this->projectStats,
+            new ProjectMappingService()
         );
 
         $projectMock = $this->getProjectMock();
@@ -594,7 +606,8 @@ class SearchMaxCountTest extends InputTest
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
-            $this->projectStats
+            $this->projectStats,
+            new ProjectMappingService()
         );
 
         $projectMock = $this->getProjectMock();
@@ -660,7 +673,8 @@ class SearchMaxCountTest extends InputTest
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
-            $this->projectStats
+            $this->projectStats,
+            new ProjectMappingService()
         );
 
         $projectMock = $this->getProjectMock();
@@ -705,7 +719,8 @@ class SearchMaxCountTest extends InputTest
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
-            $this->projectStats
+            $this->projectStats,
+            new ProjectMappingService()
         );
 
         $projectMock = $this->getProjectMock();
@@ -766,7 +781,8 @@ class SearchMaxCountTest extends InputTest
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
-            $this->projectStats
+            $this->projectStats,
+            new ProjectMappingService()
         );
 
         $projectMock = $this->getProjectMock();
@@ -831,7 +847,8 @@ class SearchMaxCountTest extends InputTest
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
-            $this->projectStats
+            $this->projectStats,
+            new ProjectMappingService()
         );
 
         $projectMock = $this->getProjectMock();
@@ -886,7 +903,8 @@ class SearchMaxCountTest extends InputTest
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
-            $this->projectStats
+            $this->projectStats,
+            new ProjectMappingService()
         );
 
         $projectMock = $this->getProjectMock();
@@ -941,7 +959,8 @@ class SearchMaxCountTest extends InputTest
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
-            $this->projectStats
+            $this->projectStats,
+            new ProjectMappingService()
         );
 
         $projectMock = $this->getProjectMock();
@@ -1002,7 +1021,8 @@ class SearchMaxCountTest extends InputTest
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
-            $this->projectStats
+            $this->projectStats,
+            new ProjectMappingService()
         );
 
         $projectMock = $this->getProjectMock();
@@ -1068,7 +1088,8 @@ class SearchMaxCountTest extends InputTest
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
-            $this->projectStats
+            $this->projectStats,
+            new ProjectMappingService()
         );
 
         $projectMock = $this->getProjectMock();
@@ -1129,7 +1150,8 @@ class SearchMaxCountTest extends InputTest
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
-            $this->projectStats
+            $this->projectStats,
+            new ProjectMappingService()
         );
 
         $projectMock = $this->getProjectMock();
@@ -1191,7 +1213,8 @@ class SearchMaxCountTest extends InputTest
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
-            $this->projectStats
+            $this->projectStats,
+            new ProjectMappingService()
         );
 
         $projectMock = $this->getProjectMock();
@@ -1271,7 +1294,8 @@ class SearchMaxCountTest extends InputTest
             $this->projectDefinition,
             $this->projectExtra,
             $this->projectMapping,
-            $this->projectStats
+            $this->projectStats,
+            new ProjectMappingService()
         );
 
         $projectMock = $this->getProjectMock();

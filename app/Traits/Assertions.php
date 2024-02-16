@@ -313,6 +313,66 @@ trait Assertions
 
     }
 
+    public function assertEntriesExportResponse($response, $mapping, $params)
+    {
+        $json = json_decode($response->getContent(), true);
+
+        // dd($mapping[0]['forms'][$params['form_ref']], $json['data']);
+        $mappedInputs = $mapping[0]['forms'][$params['form_ref']];
+
+        $mapTos = [];
+        foreach ($mappedInputs as $inputRef => $mappedInput) {
+            if (!$mappedInput['hide']) {
+
+                if (sizeof($mappedInput['group']) > 0) {
+                    //this is a group,
+                    //so skip input ref map_to but grab all the group inputs map_to(s)
+                    foreach ($mappedInput['group'] as $groupInputRef => $mappedGroupInput) {
+                        //we need the below to skip branch inputs
+                        if (in_array($groupInputRef, $params['onlyMapTheseRefs'])) {
+                            $mapTos[] = $mappedGroupInput['map_to'];
+                        }
+                    }
+                } else {
+                    //we need the below to skip branch inputs
+                    if (in_array($inputRef, $params['onlyMapTheseRefs'])) {
+                        //not a group input, so grab the map_to
+                        $mapTos[] = $mappedInput['map_to'];
+                    }
+                }
+            }
+        }
+
+        //dd($mappedInputs, $params['onlyMapTheseRefs'], $mapTos);
+
+        $entries = $json['data']['entries'];
+        $fixedHierarchyEntryKeys = [
+            'ec5_uuid',
+            'created_at',
+            'uploaded_at',
+            'title'
+        ];
+
+        if ($params['form_index'] > 0) {
+            $fixedHierarchyEntryKeys[] = 'ec5_parent_uuid';
+        }
+
+        foreach ($fixedHierarchyEntryKeys as $key) {
+            foreach ($entries as $entry) {
+                $this->assertArrayHasKey($key, $entry);
+            }
+        }
+
+        foreach ($mapTos as $mapTo) {
+            foreach ($entries as $entry) {
+                $this->assertArrayHasKey($mapTo, $entry);
+            }
+        }
+        $this->assertMeta($json['meta']);
+        $this->assertLinks($json['links']);
+    }
+
+
     public function assertEntriesLocationsResponse($response)
     {
         $response->assertJsonStructure([
@@ -433,29 +493,31 @@ trait Assertions
             $this->assertEquals($answer['answer'], $payloadAnswer);
         }
 
-        //assert geojson object
-        foreach ($entryStoredGeoJsonData as $inputRef => $geojson) {
-            $locationAnswer = $entryPayload['data'][$entryType]['answers'][$inputRef]['answer'];
-            $this->assertEquals($geojson['id'], $entryPayload['data']['id']);
-            $this->assertEquals('Feature', $geojson['type']);
-            $this->assertEquals($geojson['geometry'], [
-                'type' => 'Point',
-                'coordinates' => [
-                    $locationAnswer['longitude'],
-                    $locationAnswer['latitude']
-                ]
-            ]);
+        //assert geojson object if we have a location
+        if (!is_null($entryStoredGeoJsonData)) {
+            foreach ($entryStoredGeoJsonData as $inputRef => $geojson) {
+                $locationAnswer = $entryPayload['data'][$entryType]['answers'][$inputRef]['answer'];
+                $this->assertEquals($geojson['id'], $entryPayload['data']['id']);
+                $this->assertEquals('Feature', $geojson['type']);
+                $this->assertEquals($geojson['geometry'], [
+                    'type' => 'Point',
+                    'coordinates' => [
+                        $locationAnswer['longitude'],
+                        $locationAnswer['latitude']
+                    ]
+                ]);
 
-            $this->assertEquals($geojson['properties'], [
-                "uuid" => $entryPayload['data'][$entryType]['entry_uuid'],
-                "title" => $entryPayload['data'][$entryType]['title'],
-                "accuracy" => $locationAnswer['accuracy'],
-                "created_at" => date('Y-m-d', strtotime($entryStructure->getDateCreated())),
-                "possible_answers" => $this->getPayloadPossibleAnswers(
-                    $entryPayload['data'][$entryType]['answers'],
-                    $multipleChoiceInputRefs
-                )
-            ]);
+                $this->assertEquals($geojson['properties'], [
+                    "uuid" => $entryPayload['data'][$entryType]['entry_uuid'],
+                    "title" => $entryPayload['data'][$entryType]['title'],
+                    "accuracy" => $locationAnswer['accuracy'],
+                    "created_at" => date('Y-m-d', strtotime($entryStructure->getDateCreated())),
+                    "possible_answers" => $this->getPayloadPossibleAnswers(
+                        $entryPayload['data'][$entryType]['answers'],
+                        $multipleChoiceInputRefs
+                    )
+                ]);
+            }
         }
 
         $this->assertEquals($entryPayload['data']['id'], $entryStored->uuid);

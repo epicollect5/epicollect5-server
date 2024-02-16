@@ -116,7 +116,7 @@ class ProjectExtraDTO extends ProjectDTOBase
     {
         return $this->data['inputs'] ?? [];
     }
-    
+
     public function getFormInputs($formRef): array
     {
         return $this->data['forms'][$formRef]['inputs'] ?? [];
@@ -166,7 +166,7 @@ class ProjectExtraDTO extends ProjectDTOBase
     public function addInput($formRef, $inputRef, $input, $branchRef = null)
     {
         $this->data['inputs'][$inputRef]['data'] = $input;
-        $this->addInputExtra($formRef, $inputRef, $input, $branchRef);
+        $this->addInputExtraLists($formRef, $inputRef, $input, $branchRef);
     }
 
     /**
@@ -175,7 +175,7 @@ class ProjectExtraDTO extends ProjectDTOBase
      * Lists of multiple choice and location questions
      * to be used by dataviewer
      */
-    private function addInputExtra($formRef, $inputRef, $input, $branchRef)
+    private function addInputExtraLists($formRef, $inputRef, $input, $branchRef)
     {
         switch ($input['type']) {
             //the following types have all possible answers

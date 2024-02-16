@@ -13,6 +13,7 @@ use ec5\DTO\ProjectStatsDTO;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
 use ec5\Services\Entries\CreateEntryService;
+use ec5\Services\Mapping\ProjectMappingService;
 use ec5\Traits\Assertions;
 use Faker\Factory as Faker;
 use Illuminate\Support\Str;
@@ -301,7 +302,8 @@ class EntryGenerator
             new ProjectDefinitionDTO(),
             new ProjectExtraDTO(),
             new ProjectMappingDTO(),
-            new ProjectStatsDTO()
+            new ProjectStatsDTO(),
+            new ProjectMappingService()
         );
         $requestedProjectRole = new ProjectRoleDTO();
         $requestedProject->initAllDTOs(Project::findBySlug($project->slug));
@@ -383,7 +385,8 @@ class EntryGenerator
             new ProjectDefinitionDTO(),
             new ProjectExtraDTO(),
             new ProjectMappingDTO(),
-            new ProjectStatsDTO()
+            new ProjectStatsDTO(),
+            new ProjectMappingService()
         );
         $requestedProjectRole = new ProjectRoleDTO();
         $requestedProject->initAllDTOs(Project::findBySlug($project->slug));
@@ -596,7 +599,8 @@ class EntryGenerator
             new ProjectDefinitionDTO(),
             new ProjectExtraDTO(),
             new ProjectMappingDTO(),
-            new ProjectStatsDTO()
+            new ProjectStatsDTO(),
+            new ProjectMappingService()
         );
         $requestedProjectRole = new ProjectRoleDTO();
         $requestedProject->initAllDTOs(Project::findBySlug($project->slug));

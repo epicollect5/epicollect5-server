@@ -6,6 +6,7 @@ use ec5\Http\Validation\Project\RuleProjectDefinition;
 use ec5\Libraries\Utilities\Arrays;
 use ec5\Libraries\Utilities\Strings;
 use ec5\Models\Project\ProjectStructure;
+use ec5\Services\Mapping\ProjectMappingService;
 use ec5\Traits\Requests\RequestAttributes;
 use Exception;
 use Log;
@@ -15,7 +16,7 @@ class FormBuilderController
 {
     use RequestAttributes;
 
-    public function store(RuleProjectDefinition $ruleProjectDefinition)
+    public function store(RuleProjectDefinition $ruleProjectDefinition, ProjectMappingService $projectMappingService)
     {
         //unpack posted project definition which is gzipped and base64 encoded
         try {
@@ -76,7 +77,8 @@ class FormBuilderController
             return Response::apiErrorCode(422, $ruleProjectDefinition->errors());
         }
         // Update Project Mappings
-        $this->requestedProject()->updateProjectMappings();
+        $projectExtra = $this->requestedProject()->getProjectExtra();
+        $this->requestedProject()->getProjectMapping()->updateMappings($projectExtra, $projectMappingService);
         // Update structures, set updated_at field to true
         if (!ProjectStructure::updateStructures($this->requestedProject(), true)) {
             return Response::apiErrorCode(422, ['DB' => ['ec5_116']]);

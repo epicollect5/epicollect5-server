@@ -6,7 +6,7 @@ use ec5\DTO\ProjectDTO;
 use ec5\Libraries\Utilities\Common;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
-use ec5\Services\DataMappingService;
+use ec5\Services\Mapping\DataMappingService;
 use Exception;
 use File;
 use Illuminate\Database\Query\Builder;

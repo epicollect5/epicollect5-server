@@ -6,8 +6,8 @@ namespace ec5\Http\Controllers\Api\Entries\View;
 
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
-use ec5\Services\DataMappingService;
 use ec5\Services\Entries\EntriesViewService;
+use ec5\Services\Mapping\DataMappingService;
 use ec5\Traits\Requests\RequestAttributes;
 use ec5\Traits\Response\ResponseTools;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;

@@ -26,6 +26,7 @@ class UploadWebControllerLimitsTest extends TestCase
     private $projectDefinition;
     private $entryGenerator;
     private $parentUuids;
+    private $branchesCounter;
 
     public function setUp()
     {
@@ -64,7 +65,6 @@ class UploadWebControllerLimitsTest extends TestCase
             }
 
             $projectDefinition['data']['project']['entries_limits'] = $entriesLimits;
-
             $project = factory(Project::class)->create(
                 [
                     'created_by' => $user->id,
@@ -120,7 +120,7 @@ class UploadWebControllerLimitsTest extends TestCase
 
             $parentUuids = [];
             foreach ($forms as $key => $form) {
-
+                $this->branchesCounter = 0;
                 $entry = factory(Entry::class)->create([
                     'project_id' => $project->id,
                     'parent_uuid' => $parentUuids[$key - 1] ?? '',
@@ -134,6 +134,7 @@ class UploadWebControllerLimitsTest extends TestCase
                 $inputs = $form['inputs'];
                 foreach ($inputs as $input) {
                     if ($input['type'] === config('epicollect.strings.branch')) {
+                        $this->branchesCounter++;
                         $branchEntry = factory(BranchEntry::class)->create(
                             [
                                 'project_id' => $project->id,
@@ -149,8 +150,8 @@ class UploadWebControllerLimitsTest extends TestCase
                 }
             }
 
-            $this->assertCount(5, Entry::where('project_id', $project->id)->get());
-            $this->assertCount(5, BranchEntry::where('project_id', $project->id)->get());
+            $this->assertCount(sizeof($forms), Entry::where('project_id', $project->id)->get());
+            $this->assertCount(sizeof($forms) * $this->branchesCounter, BranchEntry::where('project_id', $project->id)->get());
 
             $this->user = $user;
             $this->project = $project;

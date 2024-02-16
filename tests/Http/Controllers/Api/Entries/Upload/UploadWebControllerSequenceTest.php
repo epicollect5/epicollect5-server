@@ -492,10 +492,12 @@ class UploadWebControllerSequenceTest extends TestCase
             $this->assertEquals(0, Entry::where('uuid', $childEntry4['data']['id'])
                 ->value('child_counts'));
 
-            $branchCounts = json_decode(Entry::where('uuid', $entry['data']['id'])
-                ->value('branch_counts'), true);
+            $branchCounts = json_decode(
+                Entry::where('uuid', $entry['data']['id'])
+                    ->value('branch_counts'), true);
             $this->assertEquals([
-                $branches[0]['ref'] => 1
+                $branches[0]['ref'] => 1,
+                $branches[1]['ref'] => 0,//branch was deleted
             ], $branchCounts);
 
             //entry should be assigned to currently logged-in user

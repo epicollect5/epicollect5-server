@@ -13,7 +13,6 @@ class ProjectExtraService
         $forms = $projectDefinition['project']['forms'];
         $formsExtra = $this->buildFormsExtra($forms);
 
-
         return [
             'forms' => $formsExtra,
             'inputs' => $this->inputsExtra,
@@ -65,8 +64,8 @@ class ProjectExtraService
                 //loop groups
                 if ($input['type'] === config('epicollect.strings.inputs_type.group')) {
                     $groupInputs = $input['group'];
+                    $groupInputRefs = [];
                     foreach ($groupInputs as $groupInput) {
-                        $inputRefs[] = $groupInput['ref'];
                         $groupInputRefs[] = $groupInput['ref'];
                         $this->inputsExtra[$groupInput['ref']] = [
                             'data' => $groupInput
@@ -125,10 +124,10 @@ class ProjectExtraService
                         //loop groups
                         if ($branchInput['type'] === config('epicollect.strings.inputs_type.group')) {
                             $branchGroupInputs = $branchInput['group'];
+                            $groupInputRefs = [];
                             foreach ($branchGroupInputs as $branchGroupInput) {
 
                                 $groupInputRefs[] = $branchGroupInput['ref'];
-                                $inputRefs[] = $branchGroupInput['ref'];
                                 $this->inputsExtra[$branchGroupInput['ref']] = [
                                     'data' => $branchGroupInput
                                 ];

@@ -3,11 +3,13 @@
 namespace Tests\Http\Controllers\Api\Entries\View;
 
 use Common;
+use ec5\DTO\ProjectExtraDTO;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
+use ec5\Services\Mapping\ProjectMappingService;
 use ec5\Services\Project\ProjectExtraService;
 use ec5\Traits\Assertions;
 use Faker\Factory as Faker;
@@ -62,11 +64,19 @@ abstract class ViewEntriesBaseControllerTest extends TestCase
         //create project structures
         $projectExtraService = new ProjectExtraService();
         $projectExtra = $projectExtraService->generateExtraStructure($projectDefinition['data']);
+
+        //  dd(json_encode($projectExtra));
+        $projectMappingService = new ProjectMappingService();
+        $projectMapping = [$projectMappingService->createEC5AUTOMapping($projectExtra)];
+
+        //dd(json_encode($projectExtra));
+
         factory(ProjectStructure::class)->create(
             [
                 'project_id' => $project->id,
                 'project_definition' => json_encode($projectDefinition['data']),
-                'project_extra' => json_encode($projectExtra)
+                'project_extra' => json_encode($projectExtra),
+                'project_mapping' => json_encode($projectMapping)
             ]
         );
         factory(ProjectStats::class)->create(

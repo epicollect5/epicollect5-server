@@ -47,16 +47,21 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
         echo "\e[0;31m" . $e->getMessage() . "\e[0m" . PHP_EOL;
         // Get the expected and actual values from the ComparisonFailure object
         if (method_exists($e, 'getComparisonFailure') && $e->getComparisonFailure() !== null) {
-            $expected = $e->getComparisonFailure()->getExpected() . PHP_EOL;;
-            $actual = $e->getComparisonFailure()->getActual() . PHP_EOL;;
+            $expected = print_r($e->getComparisonFailure()->getExpected(), true) . PHP_EOL;
+            $actual = print_r($e->getComparisonFailure()->getActual(), true) . PHP_EOL;
         }
 
         echo 'Expected: ', $expected ?? PHP_EOL;
         echo 'Actual: ' . $actual ?? PHP_EOL;
+        if (is_array($response)) {
+            if (sizeof($response) > 0) {
+                $response = $response[0];
+            }
+        }
         if (sizeof($response) > 0) {
-            $jsonResponse = $response[0]->baseResponse->exception === null
-                ? json_encode(['response' => $response[0]])
-                : json_encode(['exception' => $response[0]->baseResponse->exception->getMessage()]);
+            $jsonResponse = $response->baseResponse->exception === null
+                ? json_encode(['response' => $response])
+                : json_encode(['exception' => $response->baseResponse->exception->getMessage()]);
 
             echo "\e[1;34m" . $jsonResponse . "\e[0m" . PHP_EOL;
         } else {

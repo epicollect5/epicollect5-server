@@ -322,7 +322,6 @@ class ViewEntriesLocationsControllerTest extends ViewEntriesBaseControllerTest
         }
     }
 
-
     public function test_entries_locations_endpoint_form_0_single_entry()
     {
         //generate entries
