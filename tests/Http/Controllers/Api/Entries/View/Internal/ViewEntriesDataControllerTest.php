@@ -1055,7 +1055,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
             Entry::where('project_id', $this->project->id)->get()
         );
         $this->assertCount(
-            $numOfEntries * $numOfBranchEntries,
+            $numOfEntries * $numOfBranchEntries * sizeof($branches),
             BranchEntry::where('project_id', $this->project->id)->get()
         );
 
