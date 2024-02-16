@@ -7,13 +7,10 @@ use ec5\DTO\ProjectDTO;
 use ec5\DTO\ProjectMappingDTO;
 use ec5\Libraries\Utilities\GpointConverter;
 use ec5\Models\User\User;
-use ec5\Traits\Project\ProjectTools;
 use Exception;
 
 class DataMappingService
 {
-    use ProjectTools;
-
     protected $project;
     protected $forms;
     protected $format;
@@ -541,11 +538,43 @@ class DataMappingService
         return $this->map[$input['ref']]['possible_answers'][$answerRef]['map_to'] ?? '';
     }
 
+    /**
+     * @param $forms
+     * @param $formRef
+     * @return array
+     *
+     * Used to get a list of top level inputs and groups
+     * as a flat list, skipping branch inputs
+     * @see DataMappingService::setupMapping()
+     */
+    public function getInputsFlattened($forms, $formRef): array
+    {
+        $inputs = [];
+        $flattenInputs = [];
+        foreach ($forms as $form) {
+            if ($form['ref'] === $formRef) {
+                $inputs = $form['inputs'];
+            }
+        }
+
+        //todo: where is the readme skipped?
+        //imp: it is skipped when saving the entry payload to the DB
+        foreach ($inputs as $input) {
+            if ($input['type'] == config('epicollect.strings.inputs_type.group')) {
+                foreach ($input['group'] as $groupInput) {
+                    $flattenInputs[] = $groupInput;
+                }
+            } else {
+                $flattenInputs[] = $input;
+            }
+        }
+        return $flattenInputs;
+    }
+
     /* This function returns a flat list of inputs and nested group inputs, 
     * dropping the group inputs owner
     */
-
-    private function getBranchInputsFlattened($forms, $formRef, $branchInputRef): array
+    public function getBranchInputsFlattened($forms, $formRef, $branchInputRef): array
     {
         $branchInputs = [];
         $flattenBranchInputs = [];

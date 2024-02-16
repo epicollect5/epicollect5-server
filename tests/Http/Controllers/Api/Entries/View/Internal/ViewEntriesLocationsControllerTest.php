@@ -1,6 +1,6 @@
 <?php
 
-namespace Http\Controllers\Api\Entries\View\Internal;
+namespace Tests\Http\Controllers\Api\Entries\View\Internal;
 
 use Auth;
 use ec5\Libraries\Utilities\Common;

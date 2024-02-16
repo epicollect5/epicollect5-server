@@ -8,7 +8,6 @@ use GuzzleHttp\Client;
 
 class ApiPrivateEntriesController extends Controller
 {
-
     private $serverURL;
     private $clientId;
     private $clientSecret;
@@ -28,10 +27,9 @@ class ApiPrivateEntriesController extends Controller
     //get entries for a private project to test the response
     public function getEntries()
     {
-
         $tokenClient = new Client();
         //can expose localhost using ngrok if needed
-        $tokenURL = $this->serverURL.'/api/oauth/token';
+        $tokenURL = $this->serverURL . '/api/oauth/token';
 
         //get token first
         try {
@@ -48,21 +46,20 @@ class ApiPrivateEntriesController extends Controller
             $obj = json_decode($body);
             $token = $obj->access_token;
         } catch (RequestException $e) {
-                //handle errors
+            //handle errors
             echo $e->getMessage();
             exit();
 
         }
 
         //get entries now
-        $entriesURL = $this->serverURL.'/api/export/entries/'.$this->projectSlug;
+        $entriesURL = $this->serverURL . '/api/export/entries/' . $this->projectSlug;
 //        $childEntriesURL = $this->serverURL.'/api/export/entries/'.$projectSlug.' ?map_index=&form_ref=343196b968c5408eab5979bace15c850_5984724af75be';
 //        $parentEntryUuid = '4492790c-443c-256a-d7c2-7321b96e7ee6';
 //        $parentFormRef = '343196b968c5408eab5979bace15c850_59819b13f1d3c';
 //        $branchRef = '343196b968c5408eab5979bace15c850_59819b13f1d3c_598451783a61a';
 //        $branchEntriesURL = $serverURL.'/api/export/entries/'.$projectSlug.'?branch_ref='.$branchRef;
 //        $branchOwneruuid = '4492790c-443c-256a-d7c2-7321b96e7ee6';
-
 
 
         $entriesClient = new Client([
@@ -76,17 +73,17 @@ class ApiPrivateEntriesController extends Controller
             $response = $entriesClient->request('GET', $entriesURL);
 
             //get all branch entries
-           // $response = $entriesClient->request('GET', $branchEntriesURL);
+            // $response = $entriesClient->request('GET', $branchEntriesURL);
 
             //get all branch entries for a main entry
-           // $response = $entriesClient->request('GET', $branchEntriesURL.'&branch_owner_uuid='.$branchOwneruuid);
+            // $response = $entriesClient->request('GET', $branchEntriesURL.'&branch_owner_uuid='.$branchOwneruuid);
 
             //get all child form entries
-          //  $response = $entriesClient->request('GET', $childEntriesURL);
+            //  $response = $entriesClient->request('GET', $childEntriesURL);
 
 
             //get child form entry for a parent entry
-           // $response = $entriesClient->request('GET', $childEntriesURL.'&parent_uuid='.$parentEntryUuid.'&parent_form_ref='.$parentFormRef.'&map_index=1');
+            // $response = $entriesClient->request('GET', $childEntriesURL.'&parent_uuid='.$parentEntryUuid.'&parent_form_ref='.$parentFormRef.'&map_index=1');
 
             $body = $response->getBody();
             $obj = json_decode($body);
@@ -99,7 +96,7 @@ class ApiPrivateEntriesController extends Controller
             echo '</pre>';
 
         } catch (RequestException $e) {
-                //handle errors
+            //handle errors
             echo $e->getMessage();
             exit();
         }
@@ -172,13 +169,12 @@ class ApiPrivateEntriesController extends Controller
             $entries = $obj->data->entries;
 
 
-
             foreach ($entries as $entry) {
 
                 //set headers to force the browser to download the image
                 //header('Content-Description: File Transfer');
-              //  header('Content-Type: application/octet-stream');
-              //  header('Content-Disposition: attachment; filename="' . $entry->photo . '"');
+                //  header('Content-Type: application/octet-stream');
+                //  header('Content-Disposition: attachment; filename="' . $entry->photo . '"');
 
                 //build the full resolution image url
                 $photoURL = $this->serverURL . $this->mediaEndpoint . $this->projectSlug . '?type=photo&format=entry_original&name=' . $entry->photo;
@@ -191,17 +187,15 @@ class ApiPrivateEntriesController extends Controller
 
                 $b64image = base64_encode($response->getBody());
 
-                $entriesClient->request('GET', $photoURL, ['sink' => storage_path().'/'.$entry->photo]);
+                $entriesClient->request('GET', $photoURL, ['sink' => storage_path() . '/' . $entry->photo]);
 
-                echo '<img src="data:image/png;base64,'. $b64image .'" />';
+                echo '<img src="data:image/png;base64,' . $b64image . '" />';
                 echo '<br/>';
 
                 //download
-              //  echo $response->getBody();
+                //  echo $response->getBody();
 
             }
-
-
 
 
         } catch (RequestException $e) {

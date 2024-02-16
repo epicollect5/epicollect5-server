@@ -1,6 +1,6 @@
 <?php
 
-namespace Http\Controllers\Api\Entries\View\External;
+namespace Tests\Http\Controllers\Api\Entries\View\External;
 
 use Auth;
 use ec5\Models\Entries\BranchEntry;
@@ -10,14 +10,14 @@ use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use ec5\Traits\Assertions;
-use ec5\Traits\Project\ProjectTools;
 use Exception;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Laravel\Passport\Passport;
 use Tests\Http\Controllers\Api\Entries\View\ViewEntriesBaseControllerTest;
 
-class ViewEntriesDataControllerExportTest extends ViewEntriesBaseControllerTest
+class EntriesExportTest extends ViewEntriesBaseControllerTest
 {
-    use DatabaseTransactions, Assertions, ProjectTools;
+    use DatabaseTransactions, Assertions;
 
     public function test_parent_entry_row_stored_to_db()
     {
@@ -91,13 +91,11 @@ class ViewEntriesDataControllerExportTest extends ViewEntriesBaseControllerTest
             $mapping = json_decode($projectStructure->project_mapping, true);
             $forms = array_get($this->projectDefinition, 'data.project.forms');
 
-            $inputsFlattened = $this->getInputsFlattened($forms, $formRef);
+            $inputsFlattened = $this->dataMappingService->getInputsFlattened($forms, $formRef);
             // dd($inputsFlattened);
             $onlyMapTheseRefs = array_map(function ($input) {
                 return $input['ref'];
             }, $inputsFlattened);
-
-            //dd($onlyMapTheseRefs);
 
             $this->assertEntriesExportResponse($response[0], $mapping, [
                 'form_ref' => $formRef,
@@ -174,7 +172,7 @@ class ViewEntriesDataControllerExportTest extends ViewEntriesBaseControllerTest
             $mapping = json_decode($projectStructure->project_mapping, true);
             $forms = array_get($this->projectDefinition, 'data.project.forms');
 
-            $inputsFlattened = $this->getInputsFlattened($forms, $formRef);
+            $inputsFlattened = $this->dataMappingService->getInputsFlattened($forms, $formRef);
             $onlyMapTheseRefs = array_map(function ($input) {
                 return $input['ref'];
             }, $inputsFlattened);
@@ -272,7 +270,7 @@ class ViewEntriesDataControllerExportTest extends ViewEntriesBaseControllerTest
             $mapping = json_decode($projectStructure->project_mapping, true);
             $forms = array_get($this->projectDefinition, 'data.project.forms');
 
-            $inputsFlattened = $this->getInputsFlattened($forms, $childFormRef);
+            $inputsFlattened = $this->dataMappingService->getInputsFlattened($forms, $childFormRef);
             $onlyMapTheseRefs = array_map(function ($input) {
                 return $input['ref'];
             }, $inputsFlattened);
@@ -311,6 +309,132 @@ class ViewEntriesDataControllerExportTest extends ViewEntriesBaseControllerTest
     {
         for ($i = 0; $i < rand(10, 50); $i++) {
             $this->test_entries_export_endpoint_child_single_entry();
+        }
+    }
+
+    public function test_entries_export_endpoint_branch_of_form_0_single_entry()
+    {
+        //set project as public so the endpoint is accessible without auth
+        $this->project->access = config('epicollect.strings.project_access.public');
+        $this->project->save();
+
+        //generate a parent entry (form 0)
+        $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
+        $entryPayloads = [];
+        for ($i = 0; $i < 1; $i++) {
+            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entryRowBundle = $this->entryGenerator->createParentEntryRow(
+                $this->user,
+                $this->project,
+                $this->role,
+                $this->projectDefinition,
+                $entryPayloads[$i]
+            );
+
+            $this->assertEntryRowAgainstPayload(
+                $entryRowBundle,
+                $entryPayloads[$i]
+            );
+        }
+
+        //assert row is created
+        $this->assertCount(
+            1,
+            Entry::where('uuid', $entryPayloads[0]['data']['id'])->get()
+        );
+        $parentEntryFromDB = Entry::where('uuid', $entryPayloads[0]['data']['id'])->first();
+
+        $inputs = $this->projectDefinition['data']['project']['forms'][0]['inputs'];
+
+        $branches = [];
+        foreach ($inputs as $input) {
+            if ($input['type'] === config('epicollect.strings.branch')) {
+                $branches[] = $input;
+            }
+        }
+
+        //generate a branch entry for the first branch (index 0)
+        $randomBranchIndex = $this->faker->randomKey($branches);
+        $branchRef = $branches[$randomBranchIndex]['ref'];
+        $branchEntryPayloads = [];
+        for ($i = 0; $i < 1; $i++) {
+            $branchEntryPayloads[$i] = $this->entryGenerator->createBranchEntryPayload(
+                $formRef,
+                $branches[$randomBranchIndex]['branch'],
+                $parentEntryFromDB->uuid,
+                $branchRef);
+            $entryRowBundle = $this->entryGenerator->createBranchEntryRow(
+                $this->user,
+                $this->project,
+                $this->role,
+                $this->projectDefinition,
+                $branchEntryPayloads[$i]
+            );
+
+            $this->assertEntryRowAgainstPayload(
+                $entryRowBundle,
+                $branchEntryPayloads[$i]
+            );
+        }
+
+        //assert row is created
+        $this->assertCount(
+            1,
+            BranchEntry::where('uuid', $branchEntryPayloads[0]['data']['id'])->get()
+        );
+        $projectStructure = ProjectStructure::where('project_id', $this->project->id)->first();
+        $branchEntryFromDB = BranchEntry::where('uuid', $branchEntryPayloads[0]['data']['id'])->first();
+
+        //assert response passing the form ref and the branch ref
+        $queryString = '?form_ref=' . $formRef . '&branch_ref=' . $branchRef;
+        $response = [];
+        try {
+            $response[] = $this->actingAs($this->user)
+                ->get('api/export/entries/' . $this->project->slug . $queryString);
+            $response[0]->assertStatus(200);
+            $mapping = json_decode($projectStructure->project_mapping, true);
+            $forms = array_get($this->projectDefinition, 'data.project.forms');
+
+            $inputsFlattened = $this->dataMappingService->getBranchInputsFlattened($forms, $formRef, $branchRef);
+
+            $onlyMapTheseRefs = array_map(function ($input) {
+                return $input['ref'];
+            }, $inputsFlattened);
+
+            $this->assertEntriesExportResponse($response[0], $mapping, [
+                'form_ref' => $formRef,
+                'form_index' => 0,
+                'onlyMapTheseRefs' => $onlyMapTheseRefs,
+                'projectDefinition' => $this->projectDefinition,
+                'branchRef' => $branchRef
+            ]);
+
+            $json = json_decode($response[0]->getContent(), true);
+            $entryFromResponse = $json['data']['entries'][0];
+            //dd($entryFromResponse);
+            $this->assertEquals($branchEntryFromDB->uuid, $entryFromResponse['ec5_branch_uuid']);
+            $this->assertEquals($branchEntryFromDB->owner_uuid, $entryFromResponse['ec5_branch_owner_uuid']);
+            $this->assertEquals($branchEntryFromDB->title, $entryFromResponse['title']);
+            //timestamp
+            $this->assertEquals(
+                str_replace(' ', 'T', $branchEntryFromDB->created_at) . '.000Z',
+                $entryFromResponse['created_at']);
+            $this->assertEquals(
+                str_replace(' ', 'T', $branchEntryFromDB->uploaded_at) . '.000Z',
+                $entryFromResponse['uploaded_at']);
+
+            //assert branch owner row ID
+            $ownerEntry = Entry::where('uuid', $branchEntryFromDB->owner_uuid)->first();
+            $this->assertEquals($branchEntryFromDB->owner_entry_id, $ownerEntry->id);
+        } catch (Exception $e) {
+            $this->logTestError($e, $response);
+        }
+    }
+
+    public function test_entries_export_endpoint_branch_of_form_0_single_entry_loop()
+    {
+        for ($i = 0; $i < rand(5, 10); $i++) {
+            $this->test_entries_export_endpoint_branch_of_form_0_single_entry();
         }
     }
 

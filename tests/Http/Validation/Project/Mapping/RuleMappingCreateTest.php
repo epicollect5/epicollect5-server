@@ -45,11 +45,17 @@ class RuleMappingCreateTest extends TestCase
 
         $count = rand(1, 50);
         for ($i = 0; $i < $count; $i++) {
+
+            //we need this to make sure the length is correct as regexify() fails sometimes
+            do {
+                $invalidName = $this->faker->regexify('^[A-Za-z0-9 \-\_]{21,50}$');
+            } while (strlen($invalidName) < 21 || strlen($invalidName) > 50);
+
             $data = [
-                'name' => $this->faker->regexify('^[A-Za-z0-9 \-\_]{21,50}$')
+                'name' => $invalidName
             ];
             $this->ruleMappingCreate->validate($data);
-            $this->assertTrue($this->ruleMappingCreate->hasErrors());
+            $this->assertTrue($this->ruleMappingCreate->hasErrors(), print_r($data['name'], true));
             $this->ruleMappingCreate->resetErrors();
         }
 

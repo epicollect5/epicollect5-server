@@ -38,7 +38,6 @@ class UploadWebControllerLimitsTest extends TestCase
         $email = config('testing.UNIT_TEST_RANDOM_EMAIL');
 
         try {
-
             //delete any leftovers
             User::where('email', $email)->delete();
             Project::where('slug', $slug)->delete();

@@ -315,10 +315,27 @@ trait Assertions
 
     public function assertEntriesExportResponse($response, $mapping, $params)
     {
-        $json = json_decode($response->getContent(), true);
+        $mappedInputs = [];
+        if (is_array($response)) {
+            //from Guzzle response
+            $json = $response;
+        } else {
+            //from unit test response
+            $json = json_decode($response->getContent(), true);
+        }
 
         // dd($mapping[0]['forms'][$params['form_ref']], $json['data']);
-        $mappedInputs = $mapping[0]['forms'][$params['form_ref']];
+        if (array_key_exists('branchRef', $params)) {
+            //dd($mapping[0]['forms'][$params['form_ref']], $params['branchRef']);
+
+            foreach ($mapping[0]['forms'][$params['form_ref']] as $ref => $inputs) {
+                if ($ref === $params['branchRef']) {
+                    $mappedInputs = $mapping[0]['forms'][$params['form_ref']][$ref]['branch'];
+                }
+            }
+        } else {
+            $mappedInputs = $mapping[0]['forms'][$params['form_ref']];
+        }
 
         $mapTos = [];
         foreach ($mappedInputs as $inputRef => $mappedInput) {
@@ -346,20 +363,31 @@ trait Assertions
         //dd($mappedInputs, $params['onlyMapTheseRefs'], $mapTos);
 
         $entries = $json['data']['entries'];
-        $fixedHierarchyEntryKeys = [
-            'ec5_uuid',
+        $fixedEntryKeys = [
             'created_at',
             'uploaded_at',
             'title'
         ];
 
-        if ($params['form_index'] > 0) {
-            $fixedHierarchyEntryKeys[] = 'ec5_parent_uuid';
+        if (array_key_exists('branchRef', $params)) {
+            $fixedEntryKeys[] = 'ec5_branch_owner_uuid';
+            $fixedEntryKeys[] = 'ec5_branch_uuid';
+        } else {
+            $fixedEntryKeys[] = 'ec5_uuid';
+            if ($params['form_index'] > 0) {
+                $fixedEntryKeys[] = 'ec5_parent_uuid';
+            }
         }
 
-        foreach ($fixedHierarchyEntryKeys as $key) {
+
+        foreach ($fixedEntryKeys as $key) {
             foreach ($entries as $entry) {
                 $this->assertArrayHasKey($key, $entry);
+
+                if (!is_array($response)) {
+                    //public project, it must not have created_by
+                    $this->assertArrayNotHasKey('created_by', $entry);
+                }
             }
         }
 
@@ -368,6 +396,51 @@ trait Assertions
                 $this->assertArrayHasKey($mapTo, $entry);
             }
         }
+
+        if (is_array($response)) {
+            //Guzzle response(json)
+            // Assert the structure of the JSON data
+            $this->assertArrayHasKey('data', $response);
+            $this->assertArrayHasKey('meta', $response);
+            $this->assertArrayHasKey('links', $response);
+
+            $this->assertArrayHasKey('id', $response['data']);
+            $this->assertArrayHasKey('type', $response['data']);
+            $this->assertArrayHasKey('entries', $response['data']);
+            $this->assertArrayHasKey('mapping', $response['data']);
+
+            // Check the structure of 'entries'
+            $this->assertIsArray($response['data']['entries']);
+            foreach ($response['data']['entries'] as $entry) {
+                $this->assertIsArray($entry);
+                //assert created_by since the project is private when using Guzzle
+                $this->assertArrayHasKey('created_by', $entry);
+            }
+
+            // Check the structure of 'mapping'
+            $this->assertArrayHasKey('map_name', $response['data']['mapping']);
+            $this->assertArrayHasKey('map_index', $response['data']['mapping']);
+
+        } else {
+            //test response
+            $response->assertJsonStructure(
+                [
+                    'data' => [
+                        'id',
+                        'type',
+                        'entries' => [
+                            '*' => []
+                        ],
+                        'mapping' => [
+                            'map_name',
+                            'map_index'
+                        ]
+                    ],
+                    'meta',
+                    'links'
+                ]);
+        }
+
         $this->assertMeta($json['meta']);
         $this->assertLinks($json['links']);
     }

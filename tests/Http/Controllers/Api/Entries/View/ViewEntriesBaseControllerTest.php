@@ -9,6 +9,7 @@ use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
+use ec5\Services\Mapping\DataMappingService;
 use ec5\Services\Mapping\ProjectMappingService;
 use ec5\Services\Project\ProjectExtraService;
 use ec5\Traits\Assertions;
@@ -32,12 +33,14 @@ abstract class ViewEntriesBaseControllerTest extends TestCase
     protected $entryPayload;
     protected $entryStored;
     protected $locationInputRefs;
+    protected $dataMappingService;
 
     public function setUp()
     {
         parent::setUp();
 
         $this->faker = Faker::create();
+        $this->dataMappingService = new DataMappingService();
 
         //create fake user for testing
         $user = factory(User::class)->create();

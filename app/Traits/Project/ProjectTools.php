@@ -37,38 +37,5 @@ trait ProjectTools
         }
     }
 
-    /**
-     * @param $forms
-     * @param $formRef
-     * @return array
-     *
-     * Used to get a list of top level inputs and groups
-     * as a flat list, skipping branch inputs
-     * @see DataMappingService::setupMapping()
-     */
-    public function getInputsFlattened($forms, $formRef): array
-    {
-        $inputs = [];
-        $flattenInputs = [];
-        foreach ($forms as $form) {
-            if ($form['ref'] === $formRef) {
-                $inputs = $form['inputs'];
-            }
-        }
-
-        //todo: where is the readme skipped?
-        //imp: it is skipped when saving the entry payload to the DB
-        foreach ($inputs as $input) {
-            if ($input['type'] == config('epicollect.strings.inputs_type.group')) {
-                foreach ($input['group'] as $groupInput) {
-                    $flattenInputs[] = $groupInput;
-                }
-            } else {
-                $flattenInputs[] = $input;
-            }
-        }
-        return $flattenInputs;
-    }
-
 
 }
