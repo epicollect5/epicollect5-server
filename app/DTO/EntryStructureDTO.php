@@ -73,7 +73,8 @@ class EntryStructureDTO
          */
 
 
-        $type = $payload['type'];//entry, branch_entry, file, archive
+        $type = $payload['type']; // entry, branch_entry, file_entry, archive
+        // Common data structure
         $this->data = [
             'type' => $payload['type'],
             'id' => $payload['id'],
@@ -96,18 +97,31 @@ class EntryStructureDTO
                         'owner_entry_uuid' => $payload['relationships']['branch']['data']['owner_entry_uuid'] ?? '',
                     ]
                 ]
-            ],
-            //'type' is dynamic, it depends on what type of action we are performing
-            $type => [
-                'entry_uuid' => $payload[$type]['entry_uuid'] ?? '',
-                'created_at' => $payload[$type]['created_at'] ?? '', // like '2024-02-12T11:32:32.321Z',
-                'device_id' => $payload[$type]['device_id'] ?? '',
-                'platform' => $payload[$type]['platform'] ?? '', //WEB, Android, iOS
-                'title' => $payload[$type]['title'] ?? '',
-                'answers' => $payload[$type]['answers'] ?? [],
-                'project_version' => $payload[$type]['project_version'] ?? '' // like '2024-02-12 11:32:05'
             ]
         ];
+
+        // Dynamic-type-specific data
+        $this->data[$type] = [
+            'entry_uuid' => $payload[$type]['entry_uuid'] ?? '',
+            'created_at' => $payload[$type]['created_at'] ?? '', // like '2024-02-12T11:32:32.321Z',
+            'device_id' => $payload[$type]['device_id'] ?? '',
+            'platform' => $payload[$type]['platform'] ?? '', //WEB, Android, iOS
+            'project_version' => $payload[$type]['project_version'] ?? '' // like '2024-02-12 11:32:05'
+        ];
+
+        // Additional fields for specific types
+        if ($type === config('epicollect.strings.entry_types.file_entry')) {
+            $this->data[$type] += [
+                'name' => $payload[$type]['name'],
+                'type' => $payload[$type]['type'],
+                'input_ref' => $payload[$type]['input_ref']
+            ];
+        } else {
+            $this->data[$type] += [
+                'title' => $payload[$type]['title'] ?? '',
+                'answers' => $payload[$type]['answers'] ?? []
+            ];
+        }
     }
 
     /**

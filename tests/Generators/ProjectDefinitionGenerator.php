@@ -118,9 +118,9 @@ class ProjectDefinitionGenerator
             //make sure there is at least 1 location input
             $inputs[] = ProjectDefinitionGenerator::createLocationInput($formRef);
             //add some media inputs
-            $inputs[] = ProjectDefinitionGenerator::createMediaInput($formRef);
-            $inputs[] = ProjectDefinitionGenerator::createMediaInput($formRef);
-            $inputs[] = ProjectDefinitionGenerator::createMediaInput($formRef);
+            $inputs[] = ProjectDefinitionGenerator::createPhotoInput($formRef);
+            $inputs[] = ProjectDefinitionGenerator::createAudioInput($formRef);
+            $inputs[] = ProjectDefinitionGenerator::createVideoInput($formRef);
             //add two groups
             $inputs[] = ProjectDefinitionGenerator::createGroup($formRef);
             $inputs[] = ProjectDefinitionGenerator::createGroup($formRef);
@@ -466,13 +466,28 @@ class ProjectDefinitionGenerator
         ];
     }
 
-    public static function createMediaInput($formRef): array
+    public static function createPhotoInput($formRef): array
+    {
+        return self::createMediaInput($formRef, 'photo');
+    }
+
+    public static function createAudioInput($formRef): array
+    {
+        return self::createMediaInput($formRef, 'audio');
+    }
+
+    public static function createVideoInput($formRef): array
+    {
+        return self::createMediaInput($formRef, 'video');
+    }
+
+    public static function createMediaInput($formRef, $type = 'photo'): array
     {
         return [
             "max" => null,
             "min" => null,
             "ref" => Generators::inputRef($formRef),
-            "type" => self::getRandomMediaInputType(),
+            "type" => $type,
             "group" => [
             ],
             "jumps" => [
