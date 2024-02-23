@@ -77,7 +77,7 @@ class ExternalRoutesTest extends TestCase
         //imp: do not use the below on api_external guard
         //$this->actingAs($user, 'api_external');
 
-        //Login user as passwordless to get a JWT
+        //Login user using external guard (JWT)
         Auth::guard('api_external')->login($this->user, false);
         $jwt = Auth::guard('api_external')->authorizationResponse()['jwt'];
 

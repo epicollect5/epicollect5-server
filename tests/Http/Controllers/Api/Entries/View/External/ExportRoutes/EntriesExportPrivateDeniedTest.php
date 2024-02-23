@@ -1,9 +1,7 @@
 <?php
 
-namespace Tests\Http\Controllers\Api\Entries\View\External;
+namespace Http\Controllers\Api\Entries\View\External\ExportRoutes;
 
-use Auth;
-use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use ec5\Models\OAuth\OAuthClientProject;
 use ec5\Models\Project\Project;
@@ -11,7 +9,6 @@ use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
-use ec5\Services\Mapping\DataMappingService;
 use ec5\Services\Mapping\ProjectMappingService;
 use ec5\Services\Project\ProjectExtraService;
 use ec5\Traits\Assertions;
@@ -23,7 +20,7 @@ use Tests\Generators\EntryGenerator;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 
-class EntriesExportPrivateCreatorTest extends TestCase
+class EntriesExportPrivateDeniedTest extends TestCase
 {
     use Assertions;
 
@@ -146,7 +143,7 @@ class EntriesExportPrivateCreatorTest extends TestCase
     /**
      * @depends test_getting_OAuth2_token
      */
-    public function test_entries_export_endpoint_private($params)
+    public function test_entries_export_endpoint_private_denied_without_token($params)
     {
         $token = $params['token'];
         $user = $params['user'];
@@ -154,14 +151,11 @@ class EntriesExportPrivateCreatorTest extends TestCase
         $role = $params['role'];
         $projectDefinition = $params['projectDefinition'];
         $entryGenerator = $params['entryGenerator'];
-        $dataMappingService = new DataMappingService();
 
-
-        //generate entries by that manager
+        //generate entries
         $formRef = array_get($projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
         for ($i = 0; $i < 1; $i++) {
-            Auth::login($user);
             $entryPayloads[$i] = $entryGenerator->createParentEntryPayload($formRef);
             $entryRowBundle = $entryGenerator->createParentEntryRow(
                 $user,
@@ -170,7 +164,6 @@ class EntriesExportPrivateCreatorTest extends TestCase
                 $projectDefinition,
                 $entryPayloads[$i]
             );
-            Auth::login($user);
 
             $this->assertEntryRowAgainstPayload(
                 $entryRowBundle,
@@ -184,62 +177,50 @@ class EntriesExportPrivateCreatorTest extends TestCase
             Entry::where('uuid', $entryPayloads[0]['data']['id'])->get()
         );
 
-        $entryFromDB = Entry::where('uuid', $entryPayloads[0]['data']['id'])->first();
-        $projectStructure = ProjectStructure::where('project_id', $project->id)->first();
-
         if ($token === null) {
             $this->clearDatabase($params);
             $this->fail('token not received');
         }
 
         $entriesURL = config('testing.LOCAL_SERVER') . '/api/export/entries/';
-        $entriesClient = new Client([
-            'headers' => [
-                //imp: without this, does not work
-                'Content-Type' => 'application/vnd.api+json',
-                'Authorization' => 'Bearer ' . $token //this will last for 2 hours!
-            ]
-        ]);
+        $queryString = '?form_ref=' . $formRef;
 
-        //Get the project
+        //Try to get the entries without the token, expect to fail
         try {
-            $response = $entriesClient->request('GET', $entriesURL . $project->slug);
-            $json = $response->getBody();
-            $jsonResponse = json_decode($json, true);
+            //imp: using Guzzle to impersonate a third-party client using the api_external guard
+            $client = new Client(['http_errors' => false]);
+            $response[] = $client->get(
+                $entriesURL . $project->slug . $queryString,
+                [
+                    'headers' => [
+                        'X-Requested-With' => 'XMLHttpRequest'
+                    ]
+                ]);
 
-            $mapping = json_decode($projectStructure->project_mapping, true);
-            $forms = array_get($projectDefinition, 'data.project.forms');
+            $content = $response[0]->getBody()->getContents();
 
-            $inputsFlattened = $dataMappingService->getInputsFlattened($forms, $formRef);
-            // dd($inputsFlattened);
-            $onlyMapTheseRefs = array_map(function ($input) {
-                return $input['ref'];
-            }, $inputsFlattened);
-
-            $this->assertEntriesExportResponse($jsonResponse, $mapping, [
-                'form_ref' => $formRef,
-                'form_index' => 0,
-                'onlyMapTheseRefs' => $onlyMapTheseRefs,
-                'projectDefinition' => $projectDefinition
+            // Assert the status code
+            $this->assertEquals(404, $response[0]->getStatusCode());
+            // Assert the JSON content
+            $expectedJson = json_encode([
+                'errors' => [
+                    [
+                        'code' => 'ec5_256',
+                        'title' => 'Access denied.',
+                        'source' => 'middleware'
+                    ]
+                ]
             ]);
+            $this->assertJsonStringEqualsJsonString($expectedJson, $content);
 
-            //assert the single entry response
-            $entryFromResponse = $jsonResponse['data']['entries'][0];
-            //dd($entryFromResponse);
-            $this->assertEquals($entryFromDB->uuid, $entryFromResponse['ec5_uuid']);
-            $this->assertEquals($entryFromDB->title, $entryFromResponse['title']);
-            $this->assertEquals($user->email, $entryFromResponse['created_by']);
-            //timestamp
-            $this->assertEquals(
-                str_replace(' ', 'T', $entryFromDB->created_at) . '.000Z',
-                $entryFromResponse['created_at']);
-            $this->assertEquals(
-                str_replace(' ', 'T', $entryFromDB->uploaded_at) . '.000Z',
-                $entryFromResponse['uploaded_at']);
-
-            $this->clearDatabase($params);
-
-        } catch (GuzzleException $e) {
+            $this->clearDatabase(
+                [
+                    'token' => null,
+                    'user' => $user,
+                    'project' => $project,
+                ]
+            );
+        } catch (Exception $e) {
             $this->clearDatabase($params);
             $this->logTestError($e, []);
             return false;

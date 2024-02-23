@@ -1,9 +1,7 @@
 <?php
 
-namespace Http\Controllers\Api\Entries\View\External;
+namespace Http\Controllers\Api\Entries\View\External\ExportRoutes;
 
-use Auth;
-use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use ec5\Models\OAuth\OAuthClientProject;
 use ec5\Models\Project\Project;
@@ -11,19 +9,20 @@ use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
-use ec5\Services\Mapping\DataMappingService;
 use ec5\Services\Mapping\ProjectMappingService;
 use ec5\Services\Project\ProjectExtraService;
 use ec5\Traits\Assertions;
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Passport\ClientRepository;
 use Tests\Generators\EntryGenerator;
+use Tests\Generators\MediaGenerator;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 
-class EntriesExportPrivateManagerTest extends TestCase
+class MediaExportPrivateVideoTest extends TestCase
 {
     use Assertions;
 
@@ -146,31 +145,35 @@ class EntriesExportPrivateManagerTest extends TestCase
     /**
      * @depends test_getting_OAuth2_token
      */
-    public function test_entries_export_endpoint_private($params)
+    public function test_videos_export_endpoint_private($params)
     {
         $token = $params['token'];
         $user = $params['user'];
         $project = $params['project'];
         $role = $params['role'];
         $projectDefinition = $params['projectDefinition'];
+        /**
+         * @var $entryGenerator EntryGenerator
+         */
         $entryGenerator = $params['entryGenerator'];
-        $dataMappingService = new DataMappingService();
 
-
-        //add a manager user
-        $manager = factory(User::class)->create();
-        factory(ProjectRole::class)->create([
-            'user_id' => $manager->id,
-            'project_id' => $project->id,
-            'role' => config('epicollect.strings.project_roles.manager')
-        ]);
-
-        //generate entries by that manager
+        //generate entries
         $formRef = array_get($projectDefinition, 'data.project.forms.0.ref');
+        $inputs = array_get($projectDefinition, 'data.project.forms.0.inputs');
+
+        $videoRefs = array_values(array_map(function ($input) {
+            return $input['ref'];
+        }, array_filter($inputs, function ($input) {
+            return $input['type'] === config('epicollect.strings.inputs_type.video');
+        })));
+
         $entryPayloads = [];
+        $videoAnswers = [];
         for ($i = 0; $i < 1; $i++) {
-            Auth::login($manager);
             $entryPayloads[$i] = $entryGenerator->createParentEntryPayload($formRef);
+
+            $videoAnswers[] = $entryPayloads[0]['data']['entry']['answers'][$videoRefs[0]];
+
             $entryRowBundle = $entryGenerator->createParentEntryRow(
                 $user,
                 $project,
@@ -178,7 +181,6 @@ class EntriesExportPrivateManagerTest extends TestCase
                 $projectDefinition,
                 $entryPayloads[$i]
             );
-            Auth::login($manager);
 
             $this->assertEntryRowAgainstPayload(
                 $entryRowBundle,
@@ -186,21 +188,25 @@ class EntriesExportPrivateManagerTest extends TestCase
             );
         }
 
+        //add the fake audio
+        $filename = $videoAnswers[0]['answer'];
+
+        //create a fake audio for the entry
+        $videoContent = MediaGenerator::getFakeVideoContentBase64();
+        Storage::disk('video')->put($project->ref . '/' . $filename, $videoContent);
+
         //assert row is created
         $this->assertCount(
             1,
             Entry::where('uuid', $entryPayloads[0]['data']['id'])->get()
         );
 
-        $entryFromDB = Entry::where('uuid', $entryPayloads[0]['data']['id'])->first();
-        $projectStructure = ProjectStructure::where('project_id', $project->id)->first();
-
         if ($token === null) {
             $this->clearDatabase($params);
             $this->fail('token not received');
         }
 
-        $entriesURL = config('testing.LOCAL_SERVER') . '/api/export/entries/';
+        $entriesURL = config('testing.LOCAL_SERVER') . '/api/export/media/';
         $entriesClient = new Client([
             'headers' => [
                 //imp: without this, does not work
@@ -209,44 +215,22 @@ class EntriesExportPrivateManagerTest extends TestCase
             ]
         ]);
 
-        //Get the project
+        $queryString = '?type=video&name=' . $filename . '&format=video';
+
         try {
-            $response = $entriesClient->request('GET', $entriesURL . $project->slug);
-            $json = $response->getBody();
-            $jsonResponse = json_decode($json, true);
+            $response = $entriesClient->request('GET', $entriesURL . $project->slug . $queryString);
 
-            $mapping = json_decode($projectStructure->project_mapping, true);
-            $forms = array_get($projectDefinition, 'data.project.forms');
+            // Get the response headers
+            $headers = $response->getHeaders();
+            // Assert that the Content-Type header exists and has the expected value
+            $this->assertArrayHasKey('Content-Type', $headers);
+            $this->assertEquals(config('epicollect.media.content_type.video'), $headers['Content-Type'][0]);
 
-            $inputsFlattened = $dataMappingService->getInputsFlattened($forms, $formRef);
-            // dd($inputsFlattened);
-            $onlyMapTheseRefs = array_map(function ($input) {
-                return $input['ref'];
-            }, $inputsFlattened);
+            // Assert that the content length is greater than 0
+            $this->assertGreaterThan(0, $response->getBody()->getSize());
 
-            $this->assertEntriesExportResponse($jsonResponse, $mapping, [
-                'form_ref' => $formRef,
-                'form_index' => 0,
-                'onlyMapTheseRefs' => $onlyMapTheseRefs,
-                'projectDefinition' => $projectDefinition
-            ]);
-
-            //assert the single entry response
-            $entryFromResponse = $jsonResponse['data']['entries'][0];
-            //dd($entryFromResponse);
-            $this->assertEquals($entryFromDB->uuid, $entryFromResponse['ec5_uuid']);
-            $this->assertEquals($entryFromDB->title, $entryFromResponse['title']);
-            $this->assertEquals($manager->email, $entryFromResponse['created_by']);
-            //timestamp
-            $this->assertEquals(
-                str_replace(' ', 'T', $entryFromDB->created_at) . '.000Z',
-                $entryFromResponse['created_at']);
-            $this->assertEquals(
-                str_replace(' ', 'T', $entryFromDB->uploaded_at) . '.000Z',
-                $entryFromResponse['uploaded_at']);
-
+            Storage::disk('video')->deleteDirectory($project->ref);
             $this->clearDatabase($params);
-
         } catch (GuzzleException $e) {
             $this->clearDatabase($params);
             $this->logTestError($e, []);

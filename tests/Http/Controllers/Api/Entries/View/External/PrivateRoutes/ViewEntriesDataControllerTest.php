@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Http\Controllers\Api\Entries\View\Internal;
+namespace Http\Controllers\Api\Entries\View\External\PrivateRoutes;
 
 use Auth;
 use ec5\Models\Entries\BranchEntry;
@@ -16,6 +16,8 @@ use Tests\Http\Controllers\Api\Entries\View\ViewEntriesBaseControllerTest;
 class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
 {
     use DatabaseTransactions, Assertions;
+
+    private $endpoint = 'api/entries/';
 
     public function test_parent_entry_row_stored_to_db()
     {
@@ -44,7 +46,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
         }
     }
 
-    public function test_entries_internal_endpoint_form_0_single_entry()
+    public function test_entries_external_endpoint_catch_user_not_logged_in()
     {
         //generate entries
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
@@ -77,8 +79,116 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
         $queryString = '?form_ref=' . $formRef;
         $response = [];
         try {
+            $response[] = $this->get($this->endpoint . $this->project->slug . $queryString);
+            $response[0]->assertStatus(404);
+            $response[0]->assertExactJson([
+                "errors" => [
+                    [
+                        "code" => "ec5_77",
+                        "title" => "This project is private. Please log in.",
+                        "source" => "middleware"
+                    ]
+                ]
+            ]);
+
+        } catch (Exception $e) {
+            $this->logTestError($e, $response);
+        }
+    }
+
+    public function test_entries_external_endpoint_catch_user_logged_in_but_not_a_member()
+    {
+        //generate entries
+        $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
+        $entryPayloads = [];
+        for ($i = 0; $i < 1; $i++) {
+            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entryRowBundle = $this->entryGenerator->createParentEntryRow(
+                $this->user,
+                $this->project,
+                $this->role,
+                $this->projectDefinition,
+                $entryPayloads[$i]
+            );
+
+            $this->assertEntryRowAgainstPayload(
+                $entryRowBundle,
+                $entryPayloads[$i]
+            );
+        }
+
+        //assert row is created
+        $this->assertCount(
+            1,
+            Entry::where('uuid', $entryPayloads[0]['data']['id'])->get()
+        );
+
+        //create a not member user
+        $notAMember = factory(User::class)->create();
+        //Login user using external guard (JWT)
+        Auth::guard('api_external')->login($notAMember);
+
+        //assert response passing parent form ref
+        $queryString = '?form_ref=' . $formRef;
+        $response = [];
+        try {
+            $response[] = $this->get($this->endpoint . $this->project->slug . $queryString);
+            $response[0]->assertStatus(404);
+            $response[0]->assertExactJson([
+                "errors" => [
+                    [
+                        "code" => "ec5_78",
+                        "source" => "middleware",
+                        "title" => "This project is private. <br/> You need permission to access it."
+                    ]
+                ]
+            ]);
+        } catch (Exception $e) {
+            $this->logTestError($e, $response);
+        }
+    }
+
+
+    public function test_entries_external_endpoint_form_0_single_entry()
+    {
+        //generate entries
+        $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
+        $entryPayloads = [];
+        for ($i = 0; $i < 1; $i++) {
+            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entryRowBundle = $this->entryGenerator->createParentEntryRow(
+                $this->user,
+                $this->project,
+                $this->role,
+                $this->projectDefinition,
+                $entryPayloads[$i]
+            );
+
+            $this->assertEntryRowAgainstPayload(
+                $entryRowBundle,
+                $entryPayloads[$i]
+            );
+        }
+
+        //assert row is created
+        $this->assertCount(
+            1,
+            Entry::where('uuid', $entryPayloads[0]['data']['id'])->get()
+        );
+
+        $entryFromDB = Entry::where('uuid', $entryPayloads[0]['data']['id'])->first();
+
+        //assert response passing parent form ref
+        $queryString = '?form_ref=' . $formRef;
+        //Login user using external guard (JWT)
+        Auth::guard('api_external')->login($this->user);
+
+        $response = [];
+        try {
             $response[] = $this->actingAs($this->user)
-                ->get('api/internal/entries/' . $this->project->slug . $queryString);
+                ->get(
+                    $this->endpoint . $this->project->slug . $queryString
+                );
             $response[0]->assertStatus(200);
             $this->assertEntriesResponse($response[0]);
             $json = json_decode($response[0]->getContent(), true);
@@ -103,7 +213,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
         }
     }
 
-    public function test_entries_internal_endpoint_default_to_first_form()
+    public function test_entries_external_endpoint_default_to_first_form()
     {
         //generate entries
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
@@ -134,10 +244,11 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
 
         //assert response passing empty form ref, should default to top parent one
         $queryString = '?form_ref=' . $formRef;
+        //Login user using external guard (JWT)
+        Auth::guard('api_external')->login($this->user);
         $response = [];
         try {
-            $response[] = $this->actingAs($this->user)
-                ->get('api/internal/entries/' . $this->project->slug . $queryString);
+            $response[] = $this->get($this->endpoint . $this->project->slug . $queryString);
             $response[0]->assertStatus(200);
             $this->assertEntriesResponse($response[0]);
             $json = json_decode($response[0]->getContent(), true);
@@ -162,14 +273,14 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
         }
     }
 
-    public function test_entries_internal_endpoint_form_0_single_entry_loop()
+    public function test_entries_external_endpoint_form_0_single_entry_loop()
     {
         for ($i = 0; $i < rand(5, 10); $i++) {
-            $this->test_entries_internal_endpoint_form_0_single_entry();
+            $this->test_entries_external_endpoint_form_0_single_entry();
         }
     }
 
-    public function test_entries_internal_endpoint_child_form_1_single_entry()
+    public function test_entries_external_endpoint_child_form_1_single_entry()
     {
         //generate a parent entry (form 0)
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
@@ -225,10 +336,13 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
 
         //assert response passing the child form ref
         $queryString = '?form_ref=' . $childFormRef;
+        //Login user using external guard (JWT)
+        Auth::guard('api_external')->login($this->user);
+
         $response = [];
         try {
             $response[] = $this->actingAs($this->user)
-                ->get('api/internal/entries/' . $this->project->slug . $queryString);
+                ->get($this->endpoint . $this->project->slug . $queryString);
             $response[0]->assertStatus(200);
             $this->assertEntriesResponse($response[0]);
             $json = json_decode($response[0]->getContent(), true);
@@ -257,7 +371,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
         }
     }
 
-    public function test_entries_internal_endpoint_form_0_multiple_entries()
+    public function test_entries_external_endpoint_form_0_multiple_entries()
     {
         //generate entries
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
@@ -287,10 +401,13 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
 
         //assert response passing parent form ref
         $queryString = '?form_ref=' . $formRef;
+        //Login user using external guard (JWT)
+        Auth::guard('api_external')->login($this->user);
+
         $response = [];
         try {
             $response[] = $this->actingAs($this->user)
-                ->get('api/internal/entries/' . $this->project->slug . $queryString);
+                ->get($this->endpoint . $this->project->slug . $queryString);
             $response[0]->assertStatus(200);
             $this->assertEntriesResponse($response[0]);
             $json = json_decode($response[0]->getContent(), true);
@@ -306,7 +423,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
         }
     }
 
-    public function test_entries_internal_endpoint_child_form_multiple_entries()
+    public function test_entries_external_endpoint_child_form_multiple_entries()
     {
         //generate a parent entry (form 0)
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
@@ -364,10 +481,13 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
 
         //assert response passing the child form ref
         $queryString = '?form_ref=' . $childFormRef;
+        //Login user using external guard (JWT)
+        Auth::guard('api_external')->login($this->user);
+
         $response = [];
         try {
             $response[] = $this->actingAs($this->user)
-                ->get('api/internal/entries/' . $this->project->slug . $queryString);
+                ->get($this->endpoint . $this->project->slug . $queryString);
             $response[0]->assertStatus(200);
             $this->assertEntriesResponse($response[0]);
             $json = json_decode($response[0]->getContent(), true);
@@ -438,10 +558,13 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
 
         //get location inputs for the parent form
         $queryString = '?form_ref=' . $formRef;
+        //Login user using external guard (JWT)
+        Auth::guard('api_external')->login($this->user);
+
         $response = [];
         try {
             $response[] = $this->actingAs($this->user)
-                ->get('api/internal/entries/' . $this->project->slug . $queryString);
+                ->get($this->endpoint . $this->project->slug . $queryString);
             $response[0]->assertStatus(200);
             $this->assertEntriesResponse($response[0]);
 
@@ -510,10 +633,13 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
         );
 
         $queryString = '?form_ref=' . $formRef;
+        //Login user using external guard (JWT)
+        Auth::guard('api_external')->login($this->user);
+
         $response = [];
         try {
             $response[] = $this->actingAs($manager)
-                ->get('api/internal/entries/' . $this->project->slug . $queryString);
+                ->get($this->endpoint . $this->project->slug . $queryString);
             $response[0]->assertStatus(200);
             $this->assertEntriesResponse($response[0]);
 
@@ -584,10 +710,13 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
 
         //get location inputs for the parent form
         $queryString = '?form_ref=' . $formRef;
+        //Login user using external guard (JWT)
+        Auth::guard('api_external')->login($this->user);
+
         $response = [];
         try {
             $response[] = $this->actingAs($curator)
-                ->get('api/internal/entries/' . $this->project->slug . $queryString);
+                ->get($this->endpoint . $this->project->slug . $queryString);
             $response[0]->assertStatus(200);
             $this->assertEntriesResponse($response[0]);
 
@@ -657,10 +786,13 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
 
         //get location inputs for the parent form
         $queryString = '?form_ref=' . $formRef;
+        //Login user using external guard (JWT)
+        Auth::guard('api_external')->login($this->user);
+
         $response = [];
         try {
             $response[] = $this->actingAs($viewer)
-                ->get('api/internal/entries/' . $this->project->slug . $queryString);
+                ->get($this->endpoint . $this->project->slug . $queryString);
             $response[0]->assertStatus(200);
             $this->assertEntriesResponse($response[0]);
 
@@ -755,7 +887,6 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
             );
         }
 
-
         //assert rows are created
         $this->assertCount(
             $numOfEntries * 3,
@@ -763,10 +894,11 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
         );
 
         $queryString = '?form_ref=' . $formRef . '&user_id=' . $collector->id;
+        //Login $collector using external guard (JWT)
+        Auth::guard('api_external')->login($collector);
         $response = [];
         try {
-            $response[] = $this->actingAs($collector)
-                ->get('api/internal/entries/' . $this->project->slug . $queryString);
+            $response[] = $this->get($this->endpoint . $this->project->slug . $queryString);
             $response[0]->assertStatus(200);
             $this->assertEntriesResponse($response[0]);
             $json = json_decode($response[0]->getContent(), true);
@@ -785,7 +917,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
     }
 
     //branches
-    public function test_entries_internal_endpoint_branch_of_form_0_single_entry()
+    public function test_entries_external_endpoint_branch_of_form_0_single_entry()
     {
         //generate a parent entry (form 0)
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
@@ -854,10 +986,13 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
 
         //assert response passing the form ref and the branch ref
         $queryString = '?form_ref=' . $formRef . '&branch_ref=' . $branchRef;
+        //Login user using external guard (JWT)
+        Auth::guard('api_external')->login($this->user);
+
         $response = [];
         try {
             $response[] = $this->actingAs($this->user)
-                ->get('api/internal/entries/' . $this->project->slug . $queryString);
+                ->get($this->endpoint . $this->project->slug . $queryString);
             $response[0]->assertStatus(200);
             // dd($response[0]);
             $this->assertEntriesResponse($response[0], true);
@@ -886,14 +1021,14 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
         }
     }
 
-    public function test_entries_internal_endpoint_branch_of_form_0_single_entry_loop()
+    public function test_entries_external_endpoint_branch_of_form_0_single_entry_loop()
     {
         for ($i = 0; $i < rand(10, 50); $i++) {
-            $this->test_entries_internal_endpoint_branch_of_form_0_single_entry();
+            $this->test_entries_external_endpoint_branch_of_form_0_single_entry();
         }
     }
 
-    public function test_entries_internal_endpoint_branch_of_form_0_multiple_entries()
+    public function test_entries_external_endpoint_branch_of_form_0_multiple_entries()
     {
         //generate a parent entry (form 0)
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
@@ -962,10 +1097,13 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
 
         //assert response passing the form ref and the branch ref
         $queryString = '?form_ref=' . $formRef . '&branch_ref=' . $branchRef;
+        //Login user using external guard (JWT)
+        Auth::guard('api_external')->login($this->user);
+
         $response = [];
         try {
             $response[] = $this->actingAs($this->user)
-                ->get('api/internal/entries/' . $this->project->slug . $queryString);
+                ->get($this->endpoint . $this->project->slug . $queryString);
             $response[0]->assertStatus(200);
             $this->assertEntriesResponse($response[0], true);
             $json = json_decode($response[0]->getContent(), true);
@@ -1062,10 +1200,13 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
         //assert response passing the form ref, the branch ref the owner entry uuid
         $queryString = '?form_ref=' . $formRef . '&branch_ref=' . $branches[0]['ref'] . '&branch_owner_uuid=' . $ownerEntryFromDB->uuid;
 
+        //Login user using external guard (JWT)
+        Auth::guard('api_external')->login($this->user);
+
         $response = [];
         try {
             $response[] = $this->actingAs($this->user)
-                ->get('api/internal/entries/' . $this->project->slug . $queryString);
+                ->get($this->endpoint . $this->project->slug . $queryString);
             $response[0]->assertStatus(200);
             $this->assertEntriesResponse($response[0], true);
             $json = json_decode($response[0]->getContent(), true);

@@ -1,13 +1,10 @@
 <?php
 
-namespace Tests\Http\Controllers\Api\Entries\View\Internal;
+namespace Http\Controllers\Api\Entries\View\External\PublicRoutes;
 
-use Auth;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
-use ec5\Models\Project\ProjectRole;
-use ec5\Models\User\User;
 use ec5\Traits\Assertions;
 use Exception;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -16,6 +13,8 @@ use Tests\Http\Controllers\Api\Entries\View\ViewEntriesBaseControllerTest;
 class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
 {
     use DatabaseTransactions, Assertions;
+
+    private $endpoint = 'api/entries/';
 
     public function test_parent_entry_row_stored_to_db()
     {
@@ -36,16 +35,12 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
 
     }
 
-    public function test_multiple_parent_entry_rows_stored_to_db()
+    public function test_entries_external_endpoint_form_0_single_entry()
     {
-        $count = rand(5, 10);
-        for ($i = 0; $i < $count; $i++) {
-            $this->test_parent_entry_row_stored_to_db();
-        }
-    }
+        //set the project as public
+        $this->project->access = config('epicollect.strings.project_access.public');
+        $this->project->save();
 
-    public function test_entries_internal_endpoint_form_0_single_entry()
-    {
         //generate entries
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
@@ -77,8 +72,8 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
         $queryString = '?form_ref=' . $formRef;
         $response = [];
         try {
-            $response[] = $this->actingAs($this->user)
-                ->get('api/internal/entries/' . $this->project->slug . $queryString);
+            $response[] = $this
+                ->get($this->endpoint . $this->project->slug . $queryString);
             $response[0]->assertStatus(200);
             $this->assertEntriesResponse($response[0]);
             $json = json_decode($response[0]->getContent(), true);
@@ -103,8 +98,11 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
         }
     }
 
-    public function test_entries_internal_endpoint_default_to_first_form()
+    public function test_entries_external_endpoint_default_to_first_form()
     {
+        //set the project as public
+        $this->project->access = config('epicollect.strings.project_access.public');
+        $this->project->save();
         //generate entries
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
@@ -136,8 +134,8 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
         $queryString = '?form_ref=' . $formRef;
         $response = [];
         try {
-            $response[] = $this->actingAs($this->user)
-                ->get('api/internal/entries/' . $this->project->slug . $queryString);
+            $response[] = $this
+                ->get($this->endpoint . $this->project->slug . $queryString);
             $response[0]->assertStatus(200);
             $this->assertEntriesResponse($response[0]);
             $json = json_decode($response[0]->getContent(), true);
@@ -162,15 +160,18 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
         }
     }
 
-    public function test_entries_internal_endpoint_form_0_single_entry_loop()
+    public function test_entries_external_endpoint_form_0_single_entry_loop()
     {
         for ($i = 0; $i < rand(5, 10); $i++) {
-            $this->test_entries_internal_endpoint_form_0_single_entry();
+            $this->test_entries_external_endpoint_form_0_single_entry();
         }
     }
 
-    public function test_entries_internal_endpoint_child_form_1_single_entry()
+    public function test_entries_external_endpoint_child_form_1_single_entry()
     {
+        //set the project as public
+        $this->project->access = config('epicollect.strings.project_access.public');
+        $this->project->save();
         //generate a parent entry (form 0)
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
@@ -227,8 +228,8 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
         $queryString = '?form_ref=' . $childFormRef;
         $response = [];
         try {
-            $response[] = $this->actingAs($this->user)
-                ->get('api/internal/entries/' . $this->project->slug . $queryString);
+            $response[] = $this
+                ->get($this->endpoint . $this->project->slug . $queryString);
             $response[0]->assertStatus(200);
             $this->assertEntriesResponse($response[0]);
             $json = json_decode($response[0]->getContent(), true);
@@ -257,8 +258,11 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
         }
     }
 
-    public function test_entries_internal_endpoint_form_0_multiple_entries()
+    public function test_entries_external_endpoint_form_0_multiple_entries()
     {
+        //set the project as public
+        $this->project->access = config('epicollect.strings.project_access.public');
+        $this->project->save();
         //generate entries
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
@@ -289,8 +293,8 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
         $queryString = '?form_ref=' . $formRef;
         $response = [];
         try {
-            $response[] = $this->actingAs($this->user)
-                ->get('api/internal/entries/' . $this->project->slug . $queryString);
+            $response[] = $this
+                ->get($this->endpoint . $this->project->slug . $queryString);
             $response[0]->assertStatus(200);
             $this->assertEntriesResponse($response[0]);
             $json = json_decode($response[0]->getContent(), true);
@@ -306,8 +310,11 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
         }
     }
 
-    public function test_entries_internal_endpoint_child_form_multiple_entries()
+    public function test_entries_external_endpoint_child_form_multiple_entries()
     {
+        //set the project as public
+        $this->project->access = config('epicollect.strings.project_access.public');
+        $this->project->save();
         //generate a parent entry (form 0)
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
@@ -366,8 +373,8 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
         $queryString = '?form_ref=' . $childFormRef;
         $response = [];
         try {
-            $response[] = $this->actingAs($this->user)
-                ->get('api/internal/entries/' . $this->project->slug . $queryString);
+            $response[] = $this
+                ->get($this->endpoint . $this->project->slug . $queryString);
             $response[0]->assertStatus(200);
             $this->assertEntriesResponse($response[0]);
             $json = json_decode($response[0]->getContent(), true);
@@ -382,411 +389,12 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
         }
     }
 
-    public function test_creator_should_view_all_entries()
-    {
-        $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
-        $numOfEntries = rand(5, 10);
-        $entryPayloads = [];
-        //creator entries
-        for ($i = 0; $i < $numOfEntries; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
-            $entryRowBundle = $this->entryGenerator->createParentEntryRow(
-                $this->user,
-                $this->project,
-                $this->role,
-                $this->projectDefinition,
-                $entryPayloads[$i]
-            );
-
-            $this->assertEntryRowAgainstPayload(
-                $entryRowBundle,
-                $entryPayloads[$i]
-            );
-        }
-
-        //add manager to project
-        $manager = factory(User::class)->create();
-        factory(ProjectRole::class)->create([
-            'user_id' => $manager->id,
-            'project_id' => $this->project->id,
-            'role' => config('epicollect.strings.project_roles.manager')
-        ]);
-
-        //add manager entries
-        for ($i = 0; $i < $numOfEntries; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
-            $entryRowBundle = $this->entryGenerator->createParentEntryRow(
-                $manager,
-                $this->project,
-                $this->role,
-                $this->projectDefinition,
-                $entryPayloads[$i]
-            );
-
-            $this->assertEntryRowAgainstPayload(
-                $entryRowBundle,
-                $entryPayloads[$i]
-            );
-        }
-
-
-        //assert rows are created
-        $this->assertCount(
-            $numOfEntries * 2,
-            Entry::where('project_id', $this->project->id)->get()
-        );
-
-        //get location inputs for the parent form
-        $queryString = '?form_ref=' . $formRef;
-        $response = [];
-        try {
-            $response[] = $this->actingAs($this->user)
-                ->get('api/internal/entries/' . $this->project->slug . $queryString);
-            $response[0]->assertStatus(200);
-            $this->assertEntriesResponse($response[0]);
-
-            $json = json_decode($response[0]->getContent(), true);
-
-            //should be able to get all the entries ($this->user)
-            $this->assertCount($numOfEntries * 2, $json['data']['entries']);
-
-        } catch (Exception $e) {
-            $this->logTestError($e, $response);
-        }
-    }
-
-    public function test_manager_should_view_all_entries()
-    {
-        $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
-        $numOfEntries = rand(5, 10);
-        $entryPayloads = [];
-        //creator entries
-        for ($i = 0; $i < $numOfEntries; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
-            $entryRowBundle = $this->entryGenerator->createParentEntryRow(
-                $this->user,
-                $this->project,
-                $this->role,
-                $this->projectDefinition,
-                $entryPayloads[$i]
-            );
-
-            $this->assertEntryRowAgainstPayload(
-                $entryRowBundle,
-                $entryPayloads[$i]
-            );
-        }
-
-        //add manager to project
-        $manager = factory(User::class)->create();
-        factory(ProjectRole::class)->create([
-            'user_id' => $manager->id,
-            'project_id' => $this->project->id,
-            'role' => config('epicollect.strings.project_roles.manager')
-        ]);
-
-        //add manager entries
-        for ($i = 0; $i < $numOfEntries; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
-            $entryRowBundle = $this->entryGenerator->createParentEntryRow(
-                $manager,
-                $this->project,
-                $this->role,
-                $this->projectDefinition,
-                $entryPayloads[$i]
-            );
-
-            $this->assertEntryRowAgainstPayload(
-                $entryRowBundle,
-                $entryPayloads[$i]
-            );
-        }
-
-
-        //assert rows are created
-        $this->assertCount(
-            $numOfEntries * 2,
-            Entry::where('project_id', $this->project->id)->get()
-        );
-
-        $queryString = '?form_ref=' . $formRef;
-        $response = [];
-        try {
-            $response[] = $this->actingAs($manager)
-                ->get('api/internal/entries/' . $this->project->slug . $queryString);
-            $response[0]->assertStatus(200);
-            $this->assertEntriesResponse($response[0]);
-
-            $json = json_decode($response[0]->getContent(), true);
-
-
-            //should be able to get all the entries ($this->user)
-            $this->assertCount($numOfEntries * 2, $json['data']['entries']);
-
-        } catch (Exception $e) {
-            $this->logTestError($e, $response);
-        }
-    }
-
-    public function test_curator_should_view_all_entries()
-    {
-        $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
-        $numOfEntries = rand(5, 10);
-        $entryPayloads = [];
-        //creator entries
-        for ($i = 0; $i < $numOfEntries; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
-            $entryRowBundle = $this->entryGenerator->createParentEntryRow(
-                $this->user,
-                $this->project,
-                $this->role,
-                $this->projectDefinition,
-                $entryPayloads[$i]
-            );
-
-            $this->assertEntryRowAgainstPayload(
-                $entryRowBundle,
-                $entryPayloads[$i]
-            );
-        }
-
-        //add curator to project
-        $curator = factory(User::class)->create();
-        factory(ProjectRole::class)->create([
-            'user_id' => $curator->id,
-            'project_id' => $this->project->id,
-            'role' => config('epicollect.strings.project_roles.curator')
-        ]);
-
-        //add curator entries
-        for ($i = 0; $i < $numOfEntries; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
-            $entryRowBundle = $this->entryGenerator->createParentEntryRow(
-                $curator,
-                $this->project,
-                $this->role,
-                $this->projectDefinition,
-                $entryPayloads[$i]
-            );
-
-            $this->assertEntryRowAgainstPayload(
-                $entryRowBundle,
-                $entryPayloads[$i]
-            );
-        }
-
-
-        //assert rows are created
-        $this->assertCount(
-            $numOfEntries * 2,
-            Entry::where('project_id', $this->project->id)->get()
-        );
-
-        //get location inputs for the parent form
-        $queryString = '?form_ref=' . $formRef;
-        $response = [];
-        try {
-            $response[] = $this->actingAs($curator)
-                ->get('api/internal/entries/' . $this->project->slug . $queryString);
-            $response[0]->assertStatus(200);
-            $this->assertEntriesResponse($response[0]);
-
-            $json = json_decode($response[0]->getContent(), true);
-
-            //should be able to get all the entries ($this->user)
-            $this->assertCount($numOfEntries * 2, $json['data']['entries']);
-
-        } catch (Exception $e) {
-            $this->logTestError($e, $response);
-        }
-    }
-
-    public function test_viewer_should_view_all_entries()
-    {
-        $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
-        $numOfEntries = rand(5, 10);
-        $entryPayloads = [];
-        //creator entries
-        for ($i = 0; $i < $numOfEntries; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
-            $entryRowBundle = $this->entryGenerator->createParentEntryRow(
-                $this->user,
-                $this->project,
-                $this->role,
-                $this->projectDefinition,
-                $entryPayloads[$i]
-            );
-
-            $this->assertEntryRowAgainstPayload(
-                $entryRowBundle,
-                $entryPayloads[$i]
-            );
-        }
-
-        //add viewer to project
-        $viewer = factory(User::class)->create();
-        factory(ProjectRole::class)->create([
-            'user_id' => $viewer->id,
-            'project_id' => $this->project->id,
-            'role' => config('epicollect.strings.project_roles.viewer')
-        ]);
-
-        //add viewer entries
-        for ($i = 0; $i < $numOfEntries; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
-            $entryRowBundle = $this->entryGenerator->createParentEntryRow(
-                $viewer,
-                $this->project,
-                $this->role,
-                $this->projectDefinition,
-                $entryPayloads[$i]
-            );
-
-            $this->assertEntryRowAgainstPayload(
-                $entryRowBundle,
-                $entryPayloads[$i]
-            );
-        }
-
-
-        //assert rows are created
-        $this->assertCount(
-            $numOfEntries * 2,
-            Entry::where('project_id', $this->project->id)->get()
-        );
-
-        //get location inputs for the parent form
-        $queryString = '?form_ref=' . $formRef;
-        $response = [];
-        try {
-            $response[] = $this->actingAs($viewer)
-                ->get('api/internal/entries/' . $this->project->slug . $queryString);
-            $response[0]->assertStatus(200);
-            $this->assertEntriesResponse($response[0]);
-
-            $json = json_decode($response[0]->getContent(), true);
-
-            //should be able to get all the entries ($this->user)
-            $this->assertCount($numOfEntries * 2, $json['data']['entries']);
-
-        } catch (Exception $e) {
-            $this->logTestError($e, $response);
-        }
-    }
-
-    public function test_collector_can_view_only_own_entries()
-    {
-        $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
-        $numOfEntries = rand(5, 10);
-        $entryPayloads = [];
-        //creator entries
-        for ($i = 0; $i < $numOfEntries; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
-            Auth::login($this->user);
-            $entryRowBundle = $this->entryGenerator->createParentEntryRow(
-                $this->user,
-                $this->project,
-                $this->role,
-                $this->projectDefinition,
-                $entryPayloads[$i]
-            );
-            Auth::logout();
-
-            $this->assertEntryRowAgainstPayload(
-                $entryRowBundle,
-                $entryPayloads[$i]
-            );
-        }
-
-
-        //add collector to project
-        $collector = factory(User::class)->create();
-        factory(ProjectRole::class)->create([
-            'user_id' => $collector->id,
-            'project_id' => $this->project->id,
-            'role' => config('epicollect.strings.project_roles.collector')
-        ]);
-
-        //add another collector to project
-        $collector2 = factory(User::class)->create();
-        factory(ProjectRole::class)->create([
-            'user_id' => $collector2->id,
-            'project_id' => $this->project->id,
-            'role' => config('epicollect.strings.project_roles.collector')
-        ]);
-
-        //add collector entries
-        $collectorEntriesUuids = [];
-        for ($i = 0; $i < $numOfEntries; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
-            $collectorEntriesUuids[] = $entryPayloads[$i]['data']['id'];
-            Auth::login($collector);
-            $entryRowBundle = $this->entryGenerator->createParentEntryRow(
-                $collector,
-                $this->project,
-                $this->role,
-                $this->projectDefinition,
-                $entryPayloads[$i]
-            );
-            Auth::logout();
-
-            $this->assertEntryRowAgainstPayload(
-                $entryRowBundle,
-                $entryPayloads[$i]
-            );
-        }
-
-        //add collector2 entries
-        for ($i = 0; $i < $numOfEntries; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
-            Auth::login($collector2);
-            $entryRowBundle = $this->entryGenerator->createParentEntryRow(
-                $collector2,
-                $this->project,
-                $this->role,
-                $this->projectDefinition,
-                $entryPayloads[$i]
-            );
-            Auth::logout();
-
-            $this->assertEntryRowAgainstPayload(
-                $entryRowBundle,
-                $entryPayloads[$i]
-            );
-        }
-
-
-        //assert rows are created
-        $this->assertCount(
-            $numOfEntries * 3,
-            Entry::where('project_id', $this->project->id)->get()
-        );
-
-        $queryString = '?form_ref=' . $formRef . '&user_id=' . $collector->id;
-        $response = [];
-        try {
-            $response[] = $this->actingAs($collector)
-                ->get('api/internal/entries/' . $this->project->slug . $queryString);
-            $response[0]->assertStatus(200);
-            $this->assertEntriesResponse($response[0]);
-            $json = json_decode($response[0]->getContent(), true);
-
-            //should be able to get only own entries
-            $this->assertCount($numOfEntries, $json['data']['entries']);
-
-            //check entries uuids match
-            foreach ($json['data']['entries'] as $entry) {
-                //should be able to get only collector entries
-                $this->assertTrue(in_array($entry['id'], $collectorEntriesUuids));
-            }
-        } catch (Exception $e) {
-            $this->logTestError($e, $response);
-        }
-    }
-
     //branches
-    public function test_entries_internal_endpoint_branch_of_form_0_single_entry()
+    public function test_entries_external_endpoint_branch_of_form_0_single_entry()
     {
+        //set the project as public
+        $this->project->access = config('epicollect.strings.project_access.public');
+        $this->project->save();
         //generate a parent entry (form 0)
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
@@ -856,8 +464,8 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
         $queryString = '?form_ref=' . $formRef . '&branch_ref=' . $branchRef;
         $response = [];
         try {
-            $response[] = $this->actingAs($this->user)
-                ->get('api/internal/entries/' . $this->project->slug . $queryString);
+            $response[] = $this
+                ->get($this->endpoint . $this->project->slug . $queryString);
             $response[0]->assertStatus(200);
             // dd($response[0]);
             $this->assertEntriesResponse($response[0], true);
@@ -886,15 +494,18 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
         }
     }
 
-    public function test_entries_internal_endpoint_branch_of_form_0_single_entry_loop()
+    public function test_entries_external_endpoint_branch_of_form_0_single_entry_loop()
     {
         for ($i = 0; $i < rand(10, 50); $i++) {
-            $this->test_entries_internal_endpoint_branch_of_form_0_single_entry();
+            $this->test_entries_external_endpoint_branch_of_form_0_single_entry();
         }
     }
 
-    public function test_entries_internal_endpoint_branch_of_form_0_multiple_entries()
+    public function test_entries_external_endpoint_branch_of_form_0_multiple_entries()
     {
+        //set the project as public
+        $this->project->access = config('epicollect.strings.project_access.public');
+        $this->project->save();
         //generate a parent entry (form 0)
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
@@ -964,8 +575,8 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
         $queryString = '?form_ref=' . $formRef . '&branch_ref=' . $branchRef;
         $response = [];
         try {
-            $response[] = $this->actingAs($this->user)
-                ->get('api/internal/entries/' . $this->project->slug . $queryString);
+            $response[] = $this
+                ->get($this->endpoint . $this->project->slug . $queryString);
             $response[0]->assertStatus(200);
             $this->assertEntriesResponse($response[0], true);
             $json = json_decode($response[0]->getContent(), true);
@@ -981,6 +592,9 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
 
     public function test_branch_entries_internal_filter_by_owner_entry_uuid()
     {
+        //set the project as public
+        $this->project->access = config('epicollect.strings.project_access.public');
+        $this->project->save();
         //generate some parent entries (form 0)
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
@@ -1064,8 +678,8 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
 
         $response = [];
         try {
-            $response[] = $this->actingAs($this->user)
-                ->get('api/internal/entries/' . $this->project->slug . $queryString);
+            $response[] = $this
+                ->get($this->endpoint . $this->project->slug . $queryString);
             $response[0]->assertStatus(200);
             $this->assertEntriesResponse($response[0], true);
             $json = json_decode($response[0]->getContent(), true);

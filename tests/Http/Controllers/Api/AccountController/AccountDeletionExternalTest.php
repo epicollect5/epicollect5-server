@@ -55,7 +55,7 @@ class AccountDeletionExternalTest extends TestCase
         $projectRoles = ProjectRole::where('user_id', $user->id)->first();
         $this->assertEmpty($projectRoles);
 
-        //Login user as passwordless to get a JWT
+        //Login user using external guard (JWT)
         Auth::guard('api_external')->login($user, false);
         $jwt = Auth::guard('api_external')->authorizationResponse()['jwt'];
 
@@ -150,7 +150,7 @@ class AccountDeletionExternalTest extends TestCase
             Storage::disk('video')->put($project->ref . '/' . $entry->uuid . '.mp4', '');
         }
 
-        //Login user as passwordless to get a JWT
+        //Login user using external guard (JWT)
         Auth::guard('api_external')->login($user, false);
         $jwt = Auth::guard('api_external')->authorizationResponse()['jwt'];
 
@@ -269,7 +269,7 @@ class AccountDeletionExternalTest extends TestCase
         $this->assertEquals($role, ProjectRole::where('project_id', $project->id)->where('user_id', $user->id)->value('role'));
 
 
-        //Login user as passwordless to get a JWT
+        //Login user using external guard (JWT)
         Auth::guard('api_external')->login($user, false);
         $jwt = Auth::guard('api_external')->authorizationResponse()['jwt'];
 
@@ -393,7 +393,7 @@ class AccountDeletionExternalTest extends TestCase
         $this->assertGreaterThan(0, count($videos));
         $this->assertCount($numOfEntries, $videos);
 
-        //Login user as passwordless to get a JWT
+        //Login user using external guard (JWT)
         Auth::guard('api_external')->login($user, false);
         $jwt = Auth::guard('api_external')->authorizationResponse()['jwt'];
 
@@ -532,7 +532,7 @@ class AccountDeletionExternalTest extends TestCase
         $this->assertGreaterThan(0, count($videos));
         $this->assertCount($numOfEntries, $videos);
 
-        //Login user as passwordless to get a JWT
+        //Login user using external guard (JWT)
         Auth::guard('api_external')->login($user, false);
         $jwt = Auth::guard('api_external')->authorizationResponse()['jwt'];
 
@@ -670,7 +670,7 @@ class AccountDeletionExternalTest extends TestCase
         $this->assertGreaterThan(0, count($videos));
         $this->assertCount($numOfEntries, $videos);
 
-        //Login user as passwordless to get a JWT
+        //Login user using external guard (JWT)
         Auth::guard('api_external')->login($user, false);
         $jwt = Auth::guard('api_external')->authorizationResponse()['jwt'];
 
@@ -808,7 +808,7 @@ class AccountDeletionExternalTest extends TestCase
         $this->assertGreaterThan(0, count($videos));
         $this->assertCount($numOfEntries, $videos);
 
-        //Login user as passwordless to get a JWT
+        //Login user using external guard (JWT)
         Auth::guard('api_external')->login($user, false);
         $jwt = Auth::guard('api_external')->authorizationResponse()['jwt'];
 
@@ -898,7 +898,7 @@ class AccountDeletionExternalTest extends TestCase
             'email' => $user->email
         ]);
 
-        //Login manager user as passwordless to get a JWT
+        //Login manager user using external guard (JWT)
         Auth::guard('api_external')->login($user, false);
         $jwt = Auth::guard('api_external')->authorizationResponse()['jwt'];
 
@@ -1184,7 +1184,7 @@ class AccountDeletionExternalTest extends TestCase
 
         //4 delete user account
         Mail::fake();
-        //Login user as passwordless to get a JWT
+        //Login user using external guard (JWT)
         Auth::guard('api_external')->login($user, false);
         $jwt = Auth::guard('api_external')->authorizationResponse()['jwt'];
 
@@ -1397,7 +1397,7 @@ class AccountDeletionExternalTest extends TestCase
 
         //4 delete user account
         Mail::fake();
-        //Login user as passwordless to get a JWT
+        //Login user using external guard (JWT)
         Auth::guard('api_external')->login($user, false);
         $jwt = Auth::guard('api_external')->authorizationResponse()['jwt'];
 

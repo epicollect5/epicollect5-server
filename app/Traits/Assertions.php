@@ -2,9 +2,18 @@
 
 namespace ec5\Traits;
 
+use ec5\DTO\EntryStructureDTO;
+use ec5\DTO\ProjectDefinitionDTO;
+use ec5\DTO\ProjectDTO;
+use ec5\DTO\ProjectExtraDTO;
+use ec5\DTO\ProjectMappingDTO;
+use ec5\DTO\ProjectRoleDTO;
+use ec5\DTO\ProjectStatsDTO;
 use ec5\Libraries\Utilities\DateFormatConverter;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
+use ec5\Models\Project\Project;
+use ec5\Services\Mapping\ProjectMappingService;
 use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Assert;
 
@@ -619,6 +628,189 @@ trait Assertions
 
         $this->assertEquals(0, $entryStored->child_counts);
         $this->assertEquals(0, $entryStored->branch_counts);
+    }
+
+    public function assertEntryStoredAgainstEntryPayload($entryFromDB, $entryFromPayload, $projectDefinition, $formIndex = 0)
+    {
+        //for each location question, add geoJson to entryStructure
+        $inputs = array_get($projectDefinition, 'data.project.forms.' . $formIndex . '.inputs');
+        $inputRefsToSkip = [];
+        $multipleChoiceInputRefs = [];
+
+        foreach ($inputs as $input) {
+            if (in_array(
+                $input['type'],
+                config('epicollect.strings.multiple_choice_question_types'))) {
+                $multipleChoiceInputRefs[] = $input['ref'];
+            }
+            //imp: skip group and readme
+            //if group, add answers for all the group inputs but skip the group owner
+            if ($input['type'] === config('epicollect.strings.inputs_type.group')) {
+                $inputRefsToSkip[] = $input['ref'];
+                //skip readme only (we cannot have nested groups)
+                $groupInputs = $input['group'];
+                foreach ($groupInputs as $groupInput) {
+                    if ($groupInput['type'] === config('epicollect.strings.inputs_type.readme')) {
+                        $inputRefsToSkip[] = $groupInput['ref'];
+                    }
+
+                    if (in_array(
+                        $groupInput['type'],
+                        config('epicollect.strings.multiple_choice_question_types'))) {
+                        $multipleChoiceInputRefs[] = $groupInput['ref'];
+                    }
+                }
+            }
+
+            if ($input['type'] === config('epicollect.strings.inputs_type.readme')) {
+                $inputRefsToSkip[] = $input['ref'];
+            }
+        }
+
+        foreach ($entryFromPayload['answers'] as $ref => $entryPayloadAnswer) {
+            if (in_array($ref, $inputRefsToSkip)) {
+                unset($entryFromPayload['answers'][$ref]);
+            }
+        }
+
+        $entryFromDBEntryData = json_decode($entryFromDB->entry_data, true);
+        $entryFromDBGeoJsonData = json_decode($entryFromDB->geo_json_data, true);
+
+        $possibleAnswers = [];
+        foreach ($multipleChoiceInputRefs as $multipleChoiceInputRef) {
+            $answer = $entryFromPayload['answers'][$multipleChoiceInputRef]['answer'];
+            if (is_array($entryFromPayload['answers'][$multipleChoiceInputRef]['answer'])) {
+                foreach ($answer as $value) {
+                    $possibleAnswers[$value] = 1;
+                }
+            } else {
+                $possibleAnswers[$answer] = 1;
+            }
+
+        }
+        foreach ($entryFromDBGeoJsonData as $locationQuestionRef => $feature) {
+            $this->assertGeoJsonData(
+                $locationQuestionRef,
+                $entryFromPayload,
+                $feature,
+                $possibleAnswers
+            );
+        }
+
+        $this->assertEquals(
+            $entryFromDBEntryData['entry']['answers'],
+            $entryFromPayload['answers']
+        );
+    }
+
+    public function assertBranchEntryStoredAgainstBranchEntryPayload($branchEntryFromDB, $branchEntryFromPayload, $projectDefinition, $branchRef, $formIndex = 0)
+    {
+
+        //for each location question, add geoJson to entryStructure
+        $inputs = array_get($projectDefinition, 'data.project.forms.' . $formIndex . '.inputs');
+        $branchInputs = [];
+        foreach ($inputs as $input) {
+            if ($input['type'] === config('epicollect.strings.inputs_type.branch')) {
+                if ($input['ref'] === $branchRef) {
+                    $branchInputs = $input['branch'];
+                }
+            }
+        }
+
+        $branchInputRefsToSkip = [];
+        $multipleChoiceBranchInputRefs = [];
+
+        foreach ($branchInputs as $branchInput) {
+            if (in_array(
+                $branchInput['type'],
+                config('epicollect.strings.multiple_choice_question_types'))) {
+                $multipleChoiceBranchInputRefs[] = $branchInput['ref'];
+            }
+            //imp: skip group and readme
+            //if group, add answers for all the group inputs but skip the group owner
+            if ($branchInput['type'] === config('epicollect.strings.inputs_type.group')) {
+                $branchInputRefsToSkip[] = $branchInput['ref'];
+                //skip readme only (we cannot have nested groups)
+                $groupInputs = $branchInput['group'];
+                foreach ($groupInputs as $groupInput) {
+                    if ($groupInput['type'] === config('epicollect.strings.inputs_type.readme')) {
+                        $branchInputRefsToSkip[] = $groupInput['ref'];
+                    }
+
+                    if (in_array(
+                        $groupInput['type'],
+                        config('epicollect.strings.multiple_choice_question_types'))) {
+                        $multipleChoiceBranchInputRefs[] = $groupInput['ref'];
+                    }
+                }
+            }
+
+            if ($branchInput['type'] === config('epicollect.strings.inputs_type.readme')) {
+                $branchInputRefsToSkip[] = $branchInput['ref'];
+            }
+        }
+
+        foreach ($branchEntryFromPayload['answers'] as $ref => $entryPayloadAnswer) {
+            if (in_array($ref, $branchInputRefsToSkip)) {
+                unset($branchEntryFromPayload['answers'][$ref]);
+            }
+        }
+
+        $entryFromDBEntryData = json_decode($branchEntryFromDB->entry_data, true);
+        $entryFromDBGeoJsonData = json_decode($branchEntryFromDB->geo_json_data, true);
+
+        $possibleAnswers = [];
+        foreach ($multipleChoiceBranchInputRefs as $multipleChoiceInputRef) {
+            $answer = $branchEntryFromPayload['answers'][$multipleChoiceInputRef]['answer'];
+            if (is_array($branchEntryFromPayload['answers'][$multipleChoiceInputRef]['answer'])) {
+                foreach ($answer as $value) {
+                    $possibleAnswers[$value] = 1;
+                }
+            } else {
+                $possibleAnswers[$answer] = 1;
+            }
+
+        }
+        foreach ($entryFromDBGeoJsonData as $locationQuestionRef => $feature) {
+            $this->assertGeoJsonData(
+                $locationQuestionRef,
+                $branchEntryFromPayload,
+                $feature,
+                $possibleAnswers
+            );
+        }
+
+        $this->assertEquals(
+            $entryFromDBEntryData['branch_entry']['answers'],
+            $branchEntryFromPayload['answers']
+        );
+    }
+
+
+    public function assertGeoJsonData($locationQuestionRef, $entryFromPayload, $geoJsonFeature, $possibleAnswers = [])
+    {
+        $locationAnswer = $entryFromPayload['answers'][$locationQuestionRef]['answer'];
+
+        $this->assertEquals($locationAnswer['longitude'], $geoJsonFeature['geometry']['coordinates'][0]);
+        $this->assertEquals($locationAnswer['latitude'], $geoJsonFeature['geometry']['coordinates'][1]);
+        $this->assertEquals($locationAnswer['accuracy'], $geoJsonFeature['properties']['accuracy']);
+
+        $this->assertInternalType('float', $geoJsonFeature['geometry']['coordinates'][0]);
+        $this->assertInternalType('float', $geoJsonFeature['geometry']['coordinates'][1]);
+        $this->assertEquals(round($locationAnswer['longitude'], 6), $geoJsonFeature['geometry']['coordinates'][0]);
+        $this->assertEquals(round($locationAnswer['latitude'], 6), $geoJsonFeature['geometry']['coordinates'][1]);
+
+        $this->assertEquals($entryFromPayload['entry_uuid'], $geoJsonFeature['properties']['uuid']);
+        $this->assertEquals($entryFromPayload['title'], $geoJsonFeature['properties']['title']);
+
+        //Uploaded: 2024-02-07T15:56:10.000Z
+        //Actual: 2024-02-07
+        $this->assertEquals(
+            date('Y-m-d', strtotime($entryFromPayload['created_at'])),
+            $geoJsonFeature['properties']['created_at']);
+        if ($possibleAnswers) {
+            $this->assertEquals($possibleAnswers, $geoJsonFeature['properties']['possible_answers']);
+        }
     }
 
     private function getPayloadPossibleAnswers($answers, $multipleChoiceInputRefs): array

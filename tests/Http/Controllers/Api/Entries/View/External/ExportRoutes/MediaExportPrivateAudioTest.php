@@ -1,9 +1,7 @@
 <?php
 
-namespace Http\Controllers\Api\Entries\View\External;
+namespace Http\Controllers\Api\Entries\View\External\ExportRoutes;
 
-use Auth;
-use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use ec5\Models\OAuth\OAuthClientProject;
 use ec5\Models\Project\Project;
@@ -11,18 +9,16 @@ use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
-use ec5\Services\Mapping\DataMappingService;
 use ec5\Services\Mapping\ProjectMappingService;
 use ec5\Services\Project\ProjectExtraService;
 use ec5\Traits\Assertions;
 use Exception;
-use Tests\Generators\MediaGenerator;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Storage;
-use Image;
 use Laravel\Passport\ClientRepository;
 use Tests\Generators\EntryGenerator;
+use Tests\Generators\MediaGenerator;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 

@@ -1,9 +1,7 @@
 <?php
 
-namespace Http\Controllers\Api\Entries\View\External;
+namespace Http\Controllers\Api\Entries\View\External\ExportRoutes;
 
-use Auth;
-use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use ec5\Models\OAuth\OAuthClientProject;
 use ec5\Models\Project\Project;
@@ -19,12 +17,13 @@ use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Storage;
+use Image;
 use Laravel\Passport\ClientRepository;
 use Tests\Generators\EntryGenerator;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 
-class EntriesExportPrivateDeniedTest extends TestCase
+class MediaExportPrivatePhotoTest extends TestCase
 {
     use Assertions;
 
@@ -147,20 +146,37 @@ class EntriesExportPrivateDeniedTest extends TestCase
     /**
      * @depends test_getting_OAuth2_token
      */
-    public function test_entries_export_endpoint_private_denied_without_token($params)
+    public function test_photos_export_endpoint_private($params)
     {
         $token = $params['token'];
         $user = $params['user'];
         $project = $params['project'];
         $role = $params['role'];
         $projectDefinition = $params['projectDefinition'];
+        /**
+         * @var $entryGenerator EntryGenerator
+         */
         $entryGenerator = $params['entryGenerator'];
+        $dataMappingService = new DataMappingService();
 
         //generate entries
         $formRef = array_get($projectDefinition, 'data.project.forms.0.ref');
+        $inputs = array_get($projectDefinition, 'data.project.forms.0.inputs');
+
+
+        $photoRefs = array_values(array_map(function ($input) {
+            return $input['ref'];
+        }, array_filter($inputs, function ($input) {
+            return $input['type'] === config('epicollect.strings.inputs_type.photo');
+        })));
+
         $entryPayloads = [];
+        $photoAnswers = [];
         for ($i = 0; $i < 1; $i++) {
             $entryPayloads[$i] = $entryGenerator->createParentEntryPayload($formRef);
+
+            $photoAnswers[] = $entryPayloads[0]['data']['entry']['answers'][$photoRefs[0]];
+
             $entryRowBundle = $entryGenerator->createParentEntryRow(
                 $user,
                 $project,
@@ -175,6 +191,19 @@ class EntriesExportPrivateDeniedTest extends TestCase
             );
         }
 
+        //add the fake photo
+        $filename = $photoAnswers[0]['answer'];
+
+        //create a fake photo for the entry
+        $landscapeWidth = config('epicollect.media.entry_original_landscape')[0];
+        $landscapeHeight = config('epicollect.media.entry_original_landscape')[1];
+        $image = Image::canvas($landscapeWidth, $landscapeHeight, '#ffffff'); // Width, height, and background color
+
+        // Encode the image as JPEG or other formats
+        $imageData = (string)$image->encode('jpg');
+        Storage::disk('entry_original')->put($project->ref . '/' . $filename, $imageData);
+        $imagePath = Storage::disk('entry_original')->getAdapter()->getPathPrefix() . $project->ref . '/' . $filename;
+
         //assert row is created
         $this->assertCount(
             1,
@@ -186,45 +215,45 @@ class EntriesExportPrivateDeniedTest extends TestCase
             $this->fail('token not received');
         }
 
-        $entriesURL = config('testing.LOCAL_SERVER') . '/api/export/entries/';
-        $queryString = '?form_ref=' . $formRef;
+        $entriesURL = config('testing.LOCAL_SERVER') . '/api/export/media/';
+        $entriesClient = new Client([
+            'headers' => [
+                //imp: without this, does not work
+                'Content-Type' => 'application/vnd.api+json',
+                'Authorization' => 'Bearer ' . $token //this will last for 2 hours!
+            ]
+        ]);
 
-        //Try to get the entries without the token, expect to fail
+        $queryString = '?type=photo&name=' . $filename . '&format=entry_original';
+
         try {
-            //imp: using Guzzle to impersonate a third-party client using the api_external guard
-            $client = new Client(['http_errors' => false]);
-            $response[] = $client->get(
-                $entriesURL . $project->slug . $queryString,
-                [
-                    'headers' => [
-                        'X-Requested-With' => 'XMLHttpRequest'
-                    ]
-                ]);
+            $response = $entriesClient->request('GET', $entriesURL . $project->slug . $queryString);
 
-            $content = $response[0]->getBody()->getContents();
+            // Get the response headers
+            $headers = $response->getHeaders();
+            // Assert that the Content-Type header exists and has the expected value
+            $this->assertArrayHasKey('Content-Type', $headers);
+            $this->assertEquals(config('epicollect.media.content_type.photo'), $headers['Content-Type'][0]);
 
-            // Assert the status code
-            $this->assertEquals(404, $response[0]->getStatusCode());
-            // Assert the JSON content
-            $expectedJson = json_encode([
-                'errors' => [
-                    [
-                        'code' => 'ec5_256',
-                        'title' => 'Access denied.',
-                        'source' => 'middleware'
-                    ]
-                ]
-            ]);
-            $this->assertJsonStringEqualsJsonString($expectedJson, $content);
+            // Assert that the content type is as expected
+            $this->assertContains('image', $response->getHeaderLine('Content-Type'));
+            // Assert that the content length is greater than 0
+            $this->assertGreaterThan(0, $response->getBody()->getSize());
 
-            $this->clearDatabase(
-                [
-                    'token' => null,
-                    'user' => $user,
-                    'project' => $project,
-                ]
-            );
-        } catch (Exception $e) {
+            // Get the image content from the response
+            $imageContent = (string)$response->getBody();
+            // Create an Intervention Image instance from the image content
+            $entryOriginal = Image::make($imageContent);
+            $this->assertEquals($entryOriginal->width(), config('epicollect.media.entry_original_landscape')[0]);
+            $this->assertEquals($entryOriginal->height(), config('epicollect.media.entry_original_landscape')[1]);
+            // Get the size of the image content in bytes
+            $fileSize = strlen($imageContent);
+            $this->assertEquals($fileSize, filesize($imagePath));
+
+            Storage::disk('entry_original')->deleteDirectory($project->ref);
+
+            $this->clearDatabase($params);
+        } catch (GuzzleException $e) {
             $this->clearDatabase($params);
             $this->logTestError($e, []);
             return false;

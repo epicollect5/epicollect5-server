@@ -69,7 +69,9 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
         }
 
         // Mark the test as failed with expected and actual values
-        $this->fail($e->getMessage());
+        $filePath = str_replace(base_path(), '', $e->getFile());
+        $errorMessage = "Error in {$filePath} at line {$e->getLine()}:\n\n{$e->getMessage()}";
+        $this->fail($errorMessage);
     }
 
     //clear database manually as we are not using database transactions

@@ -1,6 +1,6 @@
 <?php
 
-namespace Http\Controllers\Api\Entries\Upload\Internal;
+namespace Tests\Http\Controllers\Api\Entries\Upload\External\PrivateRoutes;
 
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
@@ -9,8 +9,10 @@ use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
+use ec5\Traits\Assertions;
 use Exception;
 use Faker\Factory as Faker;
+use Illuminate\Support\Facades\Auth;
 use Tests\Generators\EntryGenerator;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
@@ -21,9 +23,11 @@ use Tests\TestCase;
    therefore, we use concatenation of @depends
  */
 
-class UploadWebControllerSequenceTest extends TestCase
+class UploadAppControllerSequenceTest extends TestCase
 {
-    private $endpoint = 'api/internal/web-upload/';
+    use Assertions;
+
+    private $endpoint = 'api/upload/';
 
     public function setUp()
     {
@@ -120,38 +124,33 @@ class UploadWebControllerSequenceTest extends TestCase
     /**
      * @depends test_should_create_fake_project
      */
-    public function test_it_should_upload_a_top_hierarchy_entry($params)
+    public function test_it_should_catch_user_not_logged_in($params)
     {
+        $user = $params['user'];
+        $projectDefinition = $params['projectDefinition'];
+        $project = $params['project'];
+        $entryGenerator = $params['entryGenerator'];
         $response = [];
         try {
-            $user = $params['user'];
-            $projectDefinition = $params['projectDefinition'];
-            $project = $params['project'];
-            $entryGenerator = $params['entryGenerator'];
             //get top parent formRef
             $formRef = array_get($projectDefinition, 'data.project.forms.0.ref');
             //generate a fake entry for the top parent form
             $entry = $entryGenerator->createParentEntryPayload($formRef);
-            //perform a web upload
-            $response[] = $this->actingAs($user)->post($this->endpoint . $project->slug, $entry);
-            $response[0]->assertStatus(200)
+            $response[] = $this->post($this->endpoint . $project->slug, $entry);
+            $response[0]->assertStatus(404)
                 ->assertExactJson([
-                        "data" => [
-                            "code" => "ec5_237",
-                            "title" => "Entry successfully uploaded."
+                        "errors" => [
+                            [
+                                "code" => "ec5_77",
+                                "source" => "middleware",
+                                "title" => "This project is private. Please log in."
+                            ]
                         ]
                     ]
                 );
-            $uuid = $entry['data']['id'];
-            $this->assertCount(1, Entry::where('project_id', $project->id)->get());
-            $this->assertEquals(0, Entry::where('uuid', $uuid)->value('child_counts'));
 
-            //entry should be assigned to currently logged-in user
-            $this->assertEquals($user->id, Entry::where('uuid', $uuid)->value('user_id'));
 
             return [
-                'entry' => $entry,
-                'parentEntry' => null,
                 'user' => $user,
                 'projectDefinition' => $projectDefinition,
                 'project' => $project,
@@ -168,17 +167,133 @@ class UploadWebControllerSequenceTest extends TestCase
     }
 
     /**
-     * @depends test_it_should_upload_a_top_hierarchy_entry
+     * @depends test_it_should_catch_user_not_logged_in
      */
-    public function test_it_should_upload_a_child_entry_level_1($params)
+    public function test_it_should_catch_user_logged_in_but_not_a_member($params)
+    {
+        $notAMember = factory(User::class)->create();
+        $user = $params['user'];
+        $projectDefinition = $params['projectDefinition'];
+        $project = $params['project'];
+        $entryGenerator = $params['entryGenerator'];
+        $response = [];
+        try {
+            //get top parent formRef
+            $formRef = array_get($projectDefinition, 'data.project.forms.0.ref');
+            //generate a fake entry for the top parent form
+            $entry = $entryGenerator->createParentEntryPayload($formRef);
+            Auth::guard('api_external')->login($notAMember);
+            $response[] = $this->actingAs($user)->post($this->endpoint . $project->slug, $entry);
+            $response[0]->assertStatus(404)
+                ->assertExactJson([
+                        "errors" => [
+                            [
+                                "code" => "ec5_78",
+                                "source" => "middleware",
+                                "title" => "This project is private. <br/> You need permission to access it."
+                            ]
+                        ]
+                    ]
+                );
+
+            return [
+                'user' => $user,
+                'projectDefinition' => $projectDefinition,
+                'project' => $project,
+                'entryGenerator' => $entryGenerator
+            ];
+        } catch (Exception $e) {
+            $this->clearDatabase([
+                'user' => $user,
+                'project' => $project
+            ]);
+            //dd($e->getMessage(), $response, json_encode($entry), json_encode($projectDefinition));
+            $this->logTestError($e, $response);
+        }
+    }
+
+    /**
+     * @depends test_it_should_catch_user_logged_in_but_not_a_member
+     */
+    public function test_it_should_upload_a_top_hierarchy_entry($params)
     {
         $response = [];
         try {
-            $entry = $params['entry'];
             $user = $params['user'];
             $projectDefinition = $params['projectDefinition'];
             $project = $params['project'];
             $entryGenerator = $params['entryGenerator'];
+            //get top parent formRef
+            $formRef = array_get($projectDefinition, 'data.project.forms.0.ref');
+            //generate a fake payload for the top parent form
+            $payload = $entryGenerator->createParentEntryPayload($formRef);
+            //perform an app upload (auth via JWT)
+            Auth::guard('api_external')->login($user);
+            $response[] = $this->actingAs($user)->post($this->endpoint . $project->slug, $payload);
+            $response[0]->assertStatus(200)
+                ->assertExactJson([
+                        "data" => [
+                            "code" => "ec5_237",
+                            "title" => "Entry successfully uploaded."
+                        ]
+                    ]
+                );
+            $uuid = $payload['data']['id'];
+            $this->assertCount(1, Entry::where('project_id', $project->id)->get());
+            $this->assertEquals(0, Entry::where('uuid', $uuid)->value('child_counts'));
+
+            //payload should be assigned to currently logged-in user
+            $entryFromDB = Entry::where('uuid', $uuid)->first();
+            $this->assertEquals($user->id, $entryFromDB->user_id);
+
+            $entryFromPayload = $payload['data']['entry'];
+            $this->assertEquals($entryFromDB->uuid, $entryFromPayload['entry_uuid']);
+            $this->assertEquals($entryFromDB->title, $entryFromPayload['title']);
+            //timestamp
+            $this->assertEquals(
+                str_replace(' ', 'T', $entryFromDB->created_at) . '.000Z',
+                $entryFromPayload['created_at']);
+
+
+            //assert payload stored vs. payload uploaded
+            $this->assertEntryStoredAgainstEntryPayload(
+                $entryFromDB,
+                $entryFromPayload,
+                $projectDefinition
+            );
+
+            return [
+                'entry' => $payload,
+                'parentEntry' => null,
+                'user' => $user,
+                'projectDefinition' => $projectDefinition,
+                'project' => $project,
+                'entryGenerator' => $entryGenerator
+            ];
+        } catch (Exception $e) {
+            $this->clearDatabase([
+                'user' => $user,
+                'project' => $project
+            ]);
+            //dd($e->getMessage(), $response, json_encode($payload), json_encode($projectDefinition));
+            $this->logTestError($e, $response);
+        }
+    }
+
+    /**
+     * @depends test_it_should_upload_a_top_hierarchy_entry
+     */
+    public function test_it_should_upload_a_child_entry_level_1($params)
+    {
+        $entry = $params['entry'];
+        $user = $params['user'];
+        $projectDefinition = $params['projectDefinition'];
+        $project = $params['project'];
+        $entryGenerator = $params['entryGenerator'];
+
+        $response = [];
+        try {
+
             //now generate a child form entry (level 1)
             $parentEntryUuid = $entry['data']['id'];
             $parentFormRef = array_get($projectDefinition, 'data.project.forms.0.ref');
@@ -190,8 +305,9 @@ class UploadWebControllerSequenceTest extends TestCase
             );
 
             //post the child entry
+            //perform an app upload (auth via JWT)
+            Auth::guard('api_external')->login($user);
             $response[] = $this->actingAs($user)->post($this->endpoint . $project->slug, $childEntry1);
-
             $response[0]->assertStatus(200)
                 ->assertExactJson([
                         "data" => [
@@ -206,6 +322,17 @@ class UploadWebControllerSequenceTest extends TestCase
             $this->assertEquals(0, Entry::where('uuid', $childEntry1['data']['id'])->value('child_counts'));
             //entry should be assigned to currently logged-in user
             $this->assertEquals($user->id, Entry::where('uuid', $childEntry1['data']['id'])->value('user_id'));
+
+            //assert payload stored vs. payload uploaded
+            $entryFromDB = Entry::where('uuid', $childEntry1['data']['id'])->first();
+            $this->assertEquals($user->id, $entryFromDB->user_id);
+            $entryFromPayload = $childEntry1['data']['entry'];
+            $this->assertEntryStoredAgainstEntryPayload(
+                $entryFromDB,
+                $entryFromPayload,
+                $projectDefinition,
+                1
+            );
 
             return [
                 'entry' => $entry,
@@ -248,6 +375,8 @@ class UploadWebControllerSequenceTest extends TestCase
             );
 
             //post the child entry
+            //perform an app upload (auth via JWT)
+            Auth::guard('api_external')->login($user);
             $response[] = $this->actingAs($user)->post($this->endpoint . $project->slug, $childEntry2);
 
             $response[0]->assertStatus(200)
@@ -269,6 +398,17 @@ class UploadWebControllerSequenceTest extends TestCase
 
             //entry should be assigned to currently logged-in user
             $this->assertEquals($user->id, Entry::where('uuid', $childEntry2['data']['id'])->value('user_id'));
+
+            //assert payload stored vs. payload uploaded
+            $entryFromDB = Entry::where('uuid', $childEntry2['data']['id'])->first();
+            $this->assertEquals($user->id, $entryFromDB->user_id);
+            $entryFromPayload = $childEntry2['data']['entry'];
+            $this->assertEntryStoredAgainstEntryPayload(
+                $entryFromDB,
+                $entryFromPayload,
+                $projectDefinition,
+                2
+            );
 
             return [
                 'entry' => $entry,
@@ -314,6 +454,8 @@ class UploadWebControllerSequenceTest extends TestCase
             );
 
             //post the child entry
+            //perform an app upload (auth via JWT)
+            Auth::guard('api_external')->login($user);
             $response[] = $this->actingAs($user)->post($this->endpoint . $project->slug, $childEntry3);
 
             $response[0]->assertStatus(200)
@@ -338,6 +480,17 @@ class UploadWebControllerSequenceTest extends TestCase
 
             //entry should be assigned to currently logged-in user
             $this->assertEquals($user->id, Entry::where('uuid', $childEntry3['data']['id'])->value('user_id'));
+
+            //assert payload stored vs. payload uploaded
+            $entryFromDB = Entry::where('uuid', $childEntry3['data']['id'])->first();
+            $this->assertEquals($user->id, $entryFromDB->user_id);
+            $entryFromPayload = $childEntry3['data']['entry'];
+            $this->assertEntryStoredAgainstEntryPayload(
+                $entryFromDB,
+                $entryFromPayload,
+                $projectDefinition,
+                3
+            );
 
             return [
                 'entry' => $entry,
@@ -384,6 +537,8 @@ class UploadWebControllerSequenceTest extends TestCase
             );
 
             //post the child entry
+            //perform an app upload (auth via JWT)
+            Auth::guard('api_external')->login($user);
             $response[] = $this->actingAs($user)->post($this->endpoint . $project->slug, $childEntry4);
 
             $response[0]->assertStatus(200)
@@ -410,6 +565,17 @@ class UploadWebControllerSequenceTest extends TestCase
 
             //entry should be assigned to currently logged-in user
             $this->assertEquals($user->id, Entry::where('uuid', $childEntry4['data']['id'])->value('user_id'));
+
+            //assert payload stored vs. payload uploaded
+            $entryFromDB = Entry::where('uuid', $childEntry4['data']['id'])->first();
+            $this->assertEquals($user->id, $entryFromDB->user_id);
+            $entryFromPayload = $childEntry4['data']['entry'];
+            $this->assertEntryStoredAgainstEntryPayload(
+                $entryFromDB,
+                $entryFromPayload,
+                $projectDefinition,
+                4
+            );
 
             return [
                 'entry' => $entry,
@@ -467,6 +633,8 @@ class UploadWebControllerSequenceTest extends TestCase
             );
 
             //post the branch entry
+            //perform an app upload (auth via JWT)
+            Auth::guard('api_external')->login($user);
             $response[] = $this->actingAs($user)->post($this->endpoint . $project->slug, $branchEntry);
             $response[0]->assertStatus(200)
                 ->assertExactJson([
@@ -504,6 +672,18 @@ class UploadWebControllerSequenceTest extends TestCase
 
             //entry should be assigned to currently logged-in user
             $this->assertEquals($user->id, BranchEntry::where('uuid', $branchEntry['data']['id'])->value('user_id'));
+
+            //assert payload stored vs. payload uploaded
+            $branchEntryFromDB = BranchEntry::where('uuid', $branchEntry['data']['id'])->first();
+            $this->assertEquals($user->id, $branchEntryFromDB->user_id);
+            $entryFromPayload = $branchEntry['data']['branch_entry'];
+            $this->assertBranchEntryStoredAgainstBranchEntryPayload(
+                $branchEntryFromDB,
+                $entryFromPayload,
+                $projectDefinition,
+                $branches[0]['ref'],
+                0
+            );
 
             return [
                 'entry' => $entry,
@@ -561,6 +741,8 @@ class UploadWebControllerSequenceTest extends TestCase
             );
 
             //post the branch entry
+            //perform an app upload (auth via JWT)
+            Auth::guard('api_external')->login($user);
             $response[] = $this->actingAs($user)->post($this->endpoint . $project->slug, $branchEntry);
             $response[0]->assertStatus(200)
                 ->assertExactJson([
@@ -593,6 +775,19 @@ class UploadWebControllerSequenceTest extends TestCase
 
             //entry should be assigned to currently logged-in user
             $this->assertEquals($user->id, BranchEntry::where('uuid', $branchEntry['data']['id'])->value('user_id'));
+
+            //assert payload stored vs. payload uploaded
+            $branchEntryFromDB = BranchEntry::where('uuid', $branchEntry['data']['id'])->first();
+            $this->assertEquals($user->id, $branchEntryFromDB->user_id);
+            $entryFromPayload = $branchEntry['data']['branch_entry'];
+            $this->assertBranchEntryStoredAgainstBranchEntryPayload(
+                $branchEntryFromDB,
+                $entryFromPayload,
+                $projectDefinition,
+                $branches[0]['ref'],
+                1
+            );
+
 
             return [
                 'entry' => $entry,
@@ -650,6 +845,8 @@ class UploadWebControllerSequenceTest extends TestCase
             );
 
             //post the branch entry
+            //perform an app upload (auth via JWT)
+            Auth::guard('api_external')->login($user);
             $response[] = $this->actingAs($user)->post($this->endpoint . $project->slug, $branchEntry);
             $response[0]->assertStatus(200)
                 ->assertExactJson([
@@ -682,6 +879,18 @@ class UploadWebControllerSequenceTest extends TestCase
 
             //entry should be assigned to currently logged-in user
             $this->assertEquals($user->id, BranchEntry::where('uuid', $branchEntry['data']['id'])->value('user_id'));
+
+            //assert payload stored vs. payload uploaded
+            $branchEntryFromDB = BranchEntry::where('uuid', $branchEntry['data']['id'])->first();
+            $this->assertEquals($user->id, $branchEntryFromDB->user_id);
+            $entryFromPayload = $branchEntry['data']['branch_entry'];
+            $this->assertBranchEntryStoredAgainstBranchEntryPayload(
+                $branchEntryFromDB,
+                $entryFromPayload,
+                $projectDefinition,
+                $branches[0]['ref'],
+                2
+            );
 
             return [
                 'entry' => $entry,
@@ -739,6 +948,8 @@ class UploadWebControllerSequenceTest extends TestCase
             );
 
             //post the branch entry
+            //perform an app upload (auth via JWT)
+            Auth::guard('api_external')->login($user);
             $response[] = $this->actingAs($user)->post($this->endpoint . $project->slug, $branchEntry);
             $response[0]->assertStatus(200)
                 ->assertExactJson([
@@ -771,6 +982,19 @@ class UploadWebControllerSequenceTest extends TestCase
 
             //entry should be assigned to currently logged-in user
             $this->assertEquals($user->id, BranchEntry::where('uuid', $branchEntry['data']['id'])->value('user_id'));
+
+            //assert payload stored vs. payload uploaded
+            $branchEntryFromDB = BranchEntry::where('uuid', $branchEntry['data']['id'])->first();
+            $this->assertEquals($user->id, $branchEntryFromDB->user_id);
+            $entryFromPayload = $branchEntry['data']['branch_entry'];
+            $this->assertBranchEntryStoredAgainstBranchEntryPayload(
+                $branchEntryFromDB,
+                $entryFromPayload,
+                $projectDefinition,
+                $branches[0]['ref'],
+                3
+            );
+
             return [
                 'entry' => $entry,
                 'childEntry1' => $childEntry1,
@@ -823,6 +1047,8 @@ class UploadWebControllerSequenceTest extends TestCase
             );
 
             //post the branch entry
+            //perform an app upload (auth via JWT)
+            Auth::guard('api_external')->login($user);
             $response[] = $this->actingAs($user)->post($this->endpoint . $project->slug, $branchEntry);
             $response[0]->assertStatus(200)
                 ->assertExactJson([
@@ -855,6 +1081,19 @@ class UploadWebControllerSequenceTest extends TestCase
 
             //entry should be assigned to currently logged-in user
             $this->assertEquals($user->id, BranchEntry::where('uuid', $branchEntry['data']['id'])->value('user_id'));
+
+            //assert payload stored vs. payload uploaded
+            $branchEntryFromDB = BranchEntry::where('uuid', $branchEntry['data']['id'])->first();
+            $this->assertEquals($user->id, $branchEntryFromDB->user_id);
+            $entryFromPayload = $branchEntry['data']['branch_entry'];
+            $this->assertBranchEntryStoredAgainstBranchEntryPayload(
+                $branchEntryFromDB,
+                $entryFromPayload,
+                $projectDefinition,
+                $branches[0]['ref'],
+                4
+            );
+
 
             $this->clearDatabase([
                 'user' => $user,

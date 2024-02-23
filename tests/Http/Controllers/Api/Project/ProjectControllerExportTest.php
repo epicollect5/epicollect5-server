@@ -254,7 +254,7 @@ class ProjectControllerExportTest extends TestCase
     {
         $this->setupProject();
 
-        //Login user as passwordless to get a JWT
+        //Login user using external guard (JWT)
         Auth::guard('api_external')->login($this->user, false);
         $jwt = Auth::guard('api_external')->authorizationResponse()['jwt'];
 

@@ -238,25 +238,10 @@ class ViewEntriesLocationsControllerTest extends ViewEntriesBaseControllerTest
 
             $this->assertEquals(1, sizeof($geoJson['features']));
             $this->assertEquals($entriesSavedUuids[0], $geoJson['features'][0]['id']);
-            $this->assertEquals($entriesSavedUuids[0], $geoJson['features'][0]['properties']['uuid']);
-            $this->assertEquals($entriesSavedTitles[0], $geoJson['features'][0]['properties']['title']);
-
-            //Uploaded: 2024-02-07T15:56:10.000Z
-            //Actual: 2024-02-07
-            $this->assertEquals(
-                date('Y-m-d', strtotime($entryPayloads[0]['data']['entry']['created_at'])),
-                $geoJson['features'][0]['properties']['created_at']);
-
-
-            $locationAnswer = $entryPayloads[0]['data']['entry']['answers'][$locationInputRefs[0]]['answer'];
-            $this->assertEquals($locationAnswer['longitude'], $geoJson['features'][0]['geometry']['coordinates'][0]);
-            $this->assertEquals($locationAnswer['latitude'], $geoJson['features'][0]['geometry']['coordinates'][1]);
-            $this->assertEquals($locationAnswer['accuracy'], $geoJson['features'][0]['properties']['accuracy']);
-
-            $this->assertInternalType('float', $geoJson['features'][0]['geometry']['coordinates'][0]);
-            $this->assertInternalType('float', $geoJson['features'][0]['geometry']['coordinates'][1]);
-            $this->assertEquals(round($locationAnswer['longitude'], 6), $geoJson['features'][0]['geometry']['coordinates'][0]);
-            $this->assertEquals(round($locationAnswer['latitude'], 6), $geoJson['features'][0]['geometry']['coordinates'][1]);
+            $this->assertGeoJsonData(
+                $locationInputRefs[0],
+                $entryPayloads[0]['data']['entry'],
+                $geoJson['features'][0]);
         } catch (\Exception $e) {
             $this->logTestError($e, $response);
         }
@@ -380,15 +365,10 @@ class ViewEntriesLocationsControllerTest extends ViewEntriesBaseControllerTest
                 $geoJson['features'][0]['properties']['created_at']);
 
 
-            $locationAnswer = $entryPayloads[0]['data']['entry']['answers'][$locationInputRefs[0]]['answer'];
-            $this->assertEquals($locationAnswer['longitude'], $geoJson['features'][0]['geometry']['coordinates'][0]);
-            $this->assertEquals($locationAnswer['latitude'], $geoJson['features'][0]['geometry']['coordinates'][1]);
-            $this->assertEquals($locationAnswer['accuracy'], $geoJson['features'][0]['properties']['accuracy']);
-
-            $this->assertInternalType('float', $geoJson['features'][0]['geometry']['coordinates'][0]);
-            $this->assertInternalType('float', $geoJson['features'][0]['geometry']['coordinates'][1]);
-            $this->assertEquals(round($locationAnswer['longitude'], 6), $geoJson['features'][0]['geometry']['coordinates'][0]);
-            $this->assertEquals(round($locationAnswer['latitude'], 6), $geoJson['features'][0]['geometry']['coordinates'][1]);
+            $this->assertGeoJsonData(
+                $locationInputRefs[0],
+                $entryPayloads[0]['data']['entry'],
+                $geoJson['features'][0]);
         } catch (\Exception $e) {
             $this->logTestError($e, $response);
         }

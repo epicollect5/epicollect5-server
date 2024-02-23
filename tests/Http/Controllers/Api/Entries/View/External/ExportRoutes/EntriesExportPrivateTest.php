@@ -1,8 +1,7 @@
 <?php
 
-namespace Http\Controllers\Api\Entries\View\External;
+namespace Http\Controllers\Api\Entries\View\External\ExportRoutes;
 
-use Auth;
 use ec5\Models\Entries\Entry;
 use ec5\Models\OAuth\OAuthClientProject;
 use ec5\Models\Project\Project;
@@ -22,7 +21,7 @@ use Tests\Generators\EntryGenerator;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 
-class EntriesExportPrivateCollectorTest extends TestCase
+class EntriesExportPrivateTest extends TestCase
 {
     use Assertions;
 
@@ -155,20 +154,10 @@ class EntriesExportPrivateCollectorTest extends TestCase
         $entryGenerator = $params['entryGenerator'];
         $dataMappingService = new DataMappingService();
 
-
-        //add a collector user
-        $collector = factory(User::class)->create();
-        factory(ProjectRole::class)->create([
-            'user_id' => $collector->id,
-            'project_id' => $project->id,
-            'role' => config('epicollect.strings.project_roles.collector')
-        ]);
-
-        //generate entries by that collector
+        //generate entries
         $formRef = array_get($projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
         for ($i = 0; $i < 1; $i++) {
-            Auth::login($collector);
             $entryPayloads[$i] = $entryGenerator->createParentEntryPayload($formRef);
             $entryRowBundle = $entryGenerator->createParentEntryRow(
                 $user,
@@ -177,7 +166,6 @@ class EntriesExportPrivateCollectorTest extends TestCase
                 $projectDefinition,
                 $entryPayloads[$i]
             );
-            Auth::login($collector);
 
             $this->assertEntryRowAgainstPayload(
                 $entryRowBundle,
@@ -235,7 +223,7 @@ class EntriesExportPrivateCollectorTest extends TestCase
             //dd($entryFromResponse);
             $this->assertEquals($entryFromDB->uuid, $entryFromResponse['ec5_uuid']);
             $this->assertEquals($entryFromDB->title, $entryFromResponse['title']);
-            $this->assertEquals($collector->email, $entryFromResponse['created_by']);
+            $this->assertEquals('n/a', $entryFromResponse['created_by']);
             //timestamp
             $this->assertEquals(
                 str_replace(' ', 'T', $entryFromDB->created_at) . '.000Z',

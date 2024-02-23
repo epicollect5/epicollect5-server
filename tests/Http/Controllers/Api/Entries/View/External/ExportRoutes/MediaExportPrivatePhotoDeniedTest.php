@@ -1,6 +1,6 @@
 <?php
 
-namespace Http\Controllers\Api\Entries\View\External;
+namespace Http\Controllers\Api\Entries\View\External\ExportRoutes;
 
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
@@ -12,18 +12,18 @@ use ec5\Services\Mapping\ProjectMappingService;
 use ec5\Services\Project\ProjectExtraService;
 use ec5\Traits\Assertions;
 use Exception;
-use Tests\Generators\MediaGenerator;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Storage;
 use Tests\Generators\EntryGenerator;
+use Tests\Generators\MediaGenerator;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 
-class MediaExportPrivateAudioDeniedTest extends TestCase
+class MediaExportPrivatePhotoDeniedTest extends TestCase
 {
     use Assertions;
 
-    public function test_audios_export_endpoint_denied_without_token()
+    public function test_photos_export_endpoint_denied_without_token()
     {
         parent::setUp();
         //remove leftovers
@@ -84,18 +84,18 @@ class MediaExportPrivateAudioDeniedTest extends TestCase
         $formRef = array_get($projectDefinition, 'data.project.forms.0.ref');
         $inputs = array_get($projectDefinition, 'data.project.forms.0.inputs');
 
-        $audioRefs = array_values(array_map(function ($input) {
+        $videoRefs = array_values(array_map(function ($input) {
             return $input['ref'];
         }, array_filter($inputs, function ($input) {
             return $input['type'] === config('epicollect.strings.inputs_type.audio');
         })));
 
         $entryPayloads = [];
-        $audioAnswers = [];
+        $photoAnswers = [];
         for ($i = 0; $i < 1; $i++) {
             $entryPayloads[$i] = $entryGenerator->createParentEntryPayload($formRef);
 
-            $audioAnswers[] = $entryPayloads[0]['data']['entry']['answers'][$audioRefs[0]];
+            $photoAnswers[] = $entryPayloads[0]['data']['entry']['answers'][$videoRefs[0]];
 
             $entryRowBundle = $entryGenerator->createParentEntryRow(
                 $user,
@@ -112,11 +112,11 @@ class MediaExportPrivateAudioDeniedTest extends TestCase
         }
 
         //add the fake audio
-        $filename = $audioAnswers[0]['answer'];
+        $filename = $photoAnswers[0]['answer'];
 
         //create a fake audio for the entry
-        $audioContent = MediaGenerator::getFakeAudioContentBase64();
-        Storage::disk('audio')->put($project->ref . '/' . $filename, $audioContent);
+        $photoContent = MediaGenerator::getFakePhotoContentBase64();
+        Storage::disk('video')->put($project->ref . '/' . $filename, $photoContent);
 
         //assert row is created
         $this->assertCount(
@@ -125,7 +125,7 @@ class MediaExportPrivateAudioDeniedTest extends TestCase
         );
 
         $mediaURL = config('testing.LOCAL_SERVER') . '/api/export/media/';
-        $queryString = '?type=audio&name=' . $filename . '&format=audio';
+        $queryString = '?type=photo&name=' . $filename . '&format=photo';
 
         $response = [];
         try {

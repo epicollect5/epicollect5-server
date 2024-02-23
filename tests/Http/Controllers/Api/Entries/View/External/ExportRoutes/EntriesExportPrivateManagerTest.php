@@ -1,9 +1,8 @@
 <?php
 
-namespace Tests\Http\Controllers\Api\Entries\View\External;
+namespace Http\Controllers\Api\Entries\View\External\ExportRoutes;
 
 use Auth;
-use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use ec5\Models\OAuth\OAuthClientProject;
 use ec5\Models\Project\Project;
@@ -23,7 +22,7 @@ use Tests\Generators\EntryGenerator;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 
-class EntriesExportPrivateTest extends TestCase
+class EntriesExportPrivateManagerTest extends TestCase
 {
     use Assertions;
 
@@ -156,10 +155,20 @@ class EntriesExportPrivateTest extends TestCase
         $entryGenerator = $params['entryGenerator'];
         $dataMappingService = new DataMappingService();
 
-        //generate entries
+
+        //add a manager user
+        $manager = factory(User::class)->create();
+        factory(ProjectRole::class)->create([
+            'user_id' => $manager->id,
+            'project_id' => $project->id,
+            'role' => config('epicollect.strings.project_roles.manager')
+        ]);
+
+        //generate entries by that manager
         $formRef = array_get($projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
         for ($i = 0; $i < 1; $i++) {
+            Auth::login($manager);
             $entryPayloads[$i] = $entryGenerator->createParentEntryPayload($formRef);
             $entryRowBundle = $entryGenerator->createParentEntryRow(
                 $user,
@@ -168,6 +177,7 @@ class EntriesExportPrivateTest extends TestCase
                 $projectDefinition,
                 $entryPayloads[$i]
             );
+            Auth::login($manager);
 
             $this->assertEntryRowAgainstPayload(
                 $entryRowBundle,
@@ -225,7 +235,7 @@ class EntriesExportPrivateTest extends TestCase
             //dd($entryFromResponse);
             $this->assertEquals($entryFromDB->uuid, $entryFromResponse['ec5_uuid']);
             $this->assertEquals($entryFromDB->title, $entryFromResponse['title']);
-            $this->assertEquals('n/a', $entryFromResponse['created_by']);
+            $this->assertEquals($manager->email, $entryFromResponse['created_by']);
             //timestamp
             $this->assertEquals(
                 str_replace(' ', 'T', $entryFromDB->created_at) . '.000Z',
