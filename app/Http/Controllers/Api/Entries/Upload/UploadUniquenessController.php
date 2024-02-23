@@ -65,11 +65,6 @@ class UploadUniquenessController extends UploadControllerBase
         $inputType = $input['type'];
         $inputDatetimeFormat = $input['datetime_format'];
 
-//        // If this is from a branch, set structure as branch
-//        if ($this->entryStructure->getOwnerInputRef()) {
-//            $this->entryStructure->setAsBranch();
-//        }
-
         // Check if the answer is unique or not
         $entryService = new EntriesUniquenessService();
         if (!$entryService->isUnique($this->entryStructure, $uniquenessType, $inputRef, $answer, $inputType, $inputDatetimeFormat)) {

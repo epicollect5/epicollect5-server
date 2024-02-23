@@ -104,9 +104,12 @@ class ProjectDefinitionGenerator
             $inputs[] = ProjectDefinitionGenerator::createTextInput($formRef);
             $inputs[] = ProjectDefinitionGenerator::createIntegerInput($formRef);
             $inputs[] = ProjectDefinitionGenerator::createDecimalInput($formRef);
+            $inputs[] = ProjectDefinitionGenerator::createPhoneInput($formRef);
             $inputs[] = ProjectDefinitionGenerator::createTimeInput($formRef);
             $inputs[] = ProjectDefinitionGenerator::createDateInput($formRef);
-
+            $inputs[] = ProjectDefinitionGenerator::createTextBoxInput($formRef);
+            $inputs[] = ProjectDefinitionGenerator::createBarcodeInput($formRef);
+//
             $inputs[] = ProjectDefinitionGenerator::createMultipleChoiceInput($formRef, 'radio');
             $inputs[] = ProjectDefinitionGenerator::createMultipleChoiceInput($formRef, 'dropdown');
             $inputs[] = ProjectDefinitionGenerator::createMultipleChoiceInput($formRef, 'checkbox');
@@ -115,20 +118,20 @@ class ProjectDefinitionGenerator
             $inputs[] = ProjectDefinitionGenerator::createMultipleChoiceInput($formRef);
             $inputs[] = ProjectDefinitionGenerator::createMultipleChoiceInput($formRef);
             $inputs[] = ProjectDefinitionGenerator::createMultipleChoiceInput($formRef);
-            //make sure there is at least 1 location input
+//            make sure there is at least 1 location input
             $inputs[] = ProjectDefinitionGenerator::createLocationInput($formRef);
-            //add some media inputs
+//            add some media inputs
             $inputs[] = ProjectDefinitionGenerator::createPhotoInput($formRef);
             $inputs[] = ProjectDefinitionGenerator::createAudioInput($formRef);
             $inputs[] = ProjectDefinitionGenerator::createVideoInput($formRef);
-            //add two groups
+//            add two groups
             $inputs[] = ProjectDefinitionGenerator::createGroup($formRef);
             $inputs[] = ProjectDefinitionGenerator::createGroup($formRef);
-            //add two branches
+//            add two branches
             $inputs[] = ProjectDefinitionGenerator::createBranch($formRef);
             $inputs[] = ProjectDefinitionGenerator::createBranch($formRef);
 
-            //add 1 search input (limit is 5 across one project)
+            // add 1 search input (limit is 5 across one project)
             $inputs[] = ProjectDefinitionGenerator::createSearchInput($formRef);
             if ($howManyForms === 1) {
                 $inputs[] = ProjectDefinitionGenerator::createSearchSingleInput($formRef);
@@ -176,18 +179,27 @@ class ProjectDefinitionGenerator
     {
         $inputRef = Generators::inputRef($formRef);
 
-        $n = rand(1, 2);
+        $n = rand(1, 1);
         $branchInputs = [];
 
         for ($i = 0; $i < $n; $i++) {
+            $branchInputs[] = ProjectDefinitionGenerator::createTextInput($inputRef);
+            $branchInputs[] = ProjectDefinitionGenerator::createIntegerInput($inputRef);
+            $branchInputs[] = ProjectDefinitionGenerator::createDecimalInput($inputRef);
+            $branchInputs[] = ProjectDefinitionGenerator::createPhoneInput($inputRef);
             $branchInputs[] = ProjectDefinitionGenerator::createSimpleInput($inputRef);
             $branchInputs[] = ProjectDefinitionGenerator::createTimeInput($inputRef);
             $branchInputs[] = ProjectDefinitionGenerator::createDateInput($inputRef);
             $branchInputs[] = ProjectDefinitionGenerator::createMultipleChoiceInput($inputRef);
+            $branchInputs[] = ProjectDefinitionGenerator::createMultipleChoiceInput($inputRef, 'radio');
+            $branchInputs[] = ProjectDefinitionGenerator::createMultipleChoiceInput($inputRef, 'dropdown');
+            $branchInputs[] = ProjectDefinitionGenerator::createMultipleChoiceInput($inputRef, 'checkbox');
             $branchInputs[] = ProjectDefinitionGenerator::createLocationInput($inputRef);
             $branchInputs[] = ProjectDefinitionGenerator::createMediaInput($inputRef);
             $branchInputs[] = ProjectDefinitionGenerator::createGroup($inputRef);
             $branchInputs[] = ProjectDefinitionGenerator::createGroup($inputRef);
+            $branchInputs[] = ProjectDefinitionGenerator::createTextBoxInput($inputRef);
+            $branchInputs[] = ProjectDefinitionGenerator::createBarcodeInput($inputRef);
         }
 
         return [
@@ -220,12 +232,20 @@ class ProjectDefinitionGenerator
 
         for ($i = 0; $i < $n; $i++) {
             $groupInputs[] = ProjectDefinitionGenerator::createTextInput($inputRef);
+            $groupInputs[] = ProjectDefinitionGenerator::createIntegerInput($inputRef);
+            $groupInputs[] = ProjectDefinitionGenerator::createDecimalInput($inputRef);
+            $groupInputs[] = ProjectDefinitionGenerator::createPhoneInput($inputRef);
             $groupInputs[] = ProjectDefinitionGenerator::createSimpleInput($inputRef);
             $groupInputs[] = ProjectDefinitionGenerator::createTimeInput($inputRef);
             $groupInputs[] = ProjectDefinitionGenerator::createDateInput($inputRef);
             $groupInputs[] = ProjectDefinitionGenerator::createMultipleChoiceInput($inputRef);
+            $groupInputs[] = ProjectDefinitionGenerator::createMultipleChoiceInput($inputRef, 'radio');
+            $groupInputs[] = ProjectDefinitionGenerator::createMultipleChoiceInput($inputRef, 'dropdown');
+            $groupInputs[] = ProjectDefinitionGenerator::createMultipleChoiceInput($inputRef, 'checkbox');
             $groupInputs[] = ProjectDefinitionGenerator::createLocationInput($inputRef);
             $groupInputs[] = ProjectDefinitionGenerator::createMediaInput($inputRef);
+            $groupInputs[] = ProjectDefinitionGenerator::createTextBoxInput($inputRef);
+            $groupInputs[] = ProjectDefinitionGenerator::createBarcodeInput($inputRef);
         }
 
         return [
@@ -308,6 +328,85 @@ class ProjectDefinitionGenerator
         ];
     }
 
+    public static function createTextBoxInput($formRef): array
+    {
+        $type = config('epicollect.strings.inputs_type.textarea');
+        return [
+            "max" => null,
+            "min" => null,
+            "ref" => Generators::inputRef($formRef),
+            "type" => $type,
+            "group" => [
+            ],
+            "jumps" => [
+            ],
+            "regex" => '',
+            "branch" => [],
+            "verify" => false,
+            "default" => "",
+            "is_title" => false,
+            "question" => self::generateQuestion(),
+            "uniqueness" => "none",
+            "is_required" => false,
+            "datetime_format" => null,
+            "possible_answers" => [],
+            "set_to_current_datetime" => false
+        ];
+    }
+
+    public static function createBarcodeInput($formRef): array
+    {
+        $type = config('epicollect.strings.inputs_type.barcode');
+        return [
+            "max" => null,
+            "min" => null,
+            "ref" => Generators::inputRef($formRef),
+            "type" => $type,
+            "group" => [
+            ],
+            "jumps" => [
+            ],
+            "regex" => '',
+            "branch" => [],
+            "verify" => false,
+            "default" => "",
+            "is_title" => false,
+            "question" => self::generateQuestion(),
+            "uniqueness" => "none",
+            "is_required" => false,
+            "datetime_format" => null,
+            "possible_answers" => [],
+            "set_to_current_datetime" => false
+        ];
+    }
+
+
+    public static function createPhoneInput($formRef): array
+    {
+        $type = config('epicollect.strings.inputs_type.phone');
+        return [
+            "max" => null,
+            "min" => null,
+            "ref" => Generators::inputRef($formRef),
+            "type" => $type,
+            "group" => [
+            ],
+            "jumps" => [
+            ],
+            "regex" => '',
+            "branch" => [],
+            "verify" => false,
+            "default" => "",
+            "is_title" => false,
+            "question" => self::generateQuestion(),
+            "uniqueness" => "none",
+            "is_required" => false,
+            "datetime_format" => null,
+            "possible_answers" => [],
+            "set_to_current_datetime" => false
+        ];
+    }
+
     public static function createIntegerInput($formRef): array
     {
         $minmax = self::generateRandomMinMaxInteger();
@@ -364,8 +463,9 @@ class ProjectDefinitionGenerator
 
     public static function createDateInput($formRef): array
     {
+        $faker = Faker::create();
         $formats = array_keys(config('epicollect.strings.date_formats'));
-        $datetimeFormat = array_rand(array_flip($formats));
+        $datetimeFormat = $faker->randomElement($formats);
         return [
             "max" => null,
             "min" => null,

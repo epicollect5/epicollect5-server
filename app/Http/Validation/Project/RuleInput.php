@@ -59,7 +59,7 @@ class RuleInput extends ValidationBase
         // Set the question length limit
         switch ($inputType) {
             case config('epicollect.strings.inputs_type.readme'):
-                // If we have a type 'readme', limit is higher
+                // If we have a type 'readme', the limit is higher
                 $questionLengthLimit = config('epicollect.limits.readme_question_limit');
                 // Decode then strip the html tags
                 $question = strip_tags(html_entity_decode($this->data['question']));

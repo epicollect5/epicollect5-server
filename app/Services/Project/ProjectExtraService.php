@@ -33,6 +33,8 @@ class ProjectExtraService
             $multipleChoiceBranchInputRefsInOrder = [];
             $this->formRefs[] = $form['ref'];
             $inputs = $form['inputs'];
+            //imp: inputRefs array will contain only top level inputs,
+            // not the branch inputs or group inputs
             $inputRefs = [];
             $branches = [];
             $groups = [];
@@ -99,7 +101,7 @@ class ProjectExtraService
                     foreach ($branchInputs as $branchInput) {
 
                         $branchInputRefs[] = $branchInput['ref'];
-                        $inputRefs[] = $branchInput['ref'];
+                        //  $inputRefs[] = $branchInput['ref'];
                         $this->inputsExtra[$branchInput['ref']] = [
                             'data' => $branchInput
                         ];

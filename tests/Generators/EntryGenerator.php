@@ -15,6 +15,7 @@ use ec5\Models\Project\Project;
 use ec5\Services\Entries\CreateEntryService;
 use ec5\Services\Mapping\ProjectMappingService;
 use ec5\Traits\Assertions;
+use Exception;
 use Faker\Factory as Faker;
 use Illuminate\Support\Str;
 use Ramsey\Uuid\Uuid;
@@ -180,7 +181,7 @@ class EntryGenerator
             case 'date':
                 $formatDate = config('epicollect.mappings.carbon_formats.fake_date');
                 // Generate a random DateTime within this decade using Faker
-                $randomDateTime = $this->faker->dateTimeThisDecade->format('Y-m-d H:i:s');
+                $randomDateTime = $this->faker->dateTimeThisCentury->format('Y-m-d H:i:s');
                 // Convert the generated string to Carbon
                 $carbonDate = Carbon::createFromFormat('Y-m-d H:i:s', $randomDateTime);
                 // Format the Carbon date using the specified format
@@ -193,7 +194,7 @@ class EntryGenerator
             case 'time':
                 $formatTime = config('epicollect.mappings.carbon_formats.fake_time');
                 // Generate a random DateTime within this decade using Faker
-                $randomDateTime = $this->faker->dateTimeThisDecade->format('Y-m-d H:i:s');
+                $randomDateTime = $this->faker->dateTimeThisCentury->format('Y-m-d H:i:s');
                 // Convert the generated string to Carbon
                 $carbonDate = Carbon::createFromFormat('Y-m-d H:i:s', $randomDateTime);
                 // Format the Carbon date using the specified format
@@ -473,11 +474,21 @@ class EntryGenerator
 
         $forms = array_get($this->projectDefinition, 'data.project.forms');
         $currentForm = '';
-        foreach ($forms as $form) {
-            if ($form['ref'] === $childFormRef) {
-                $currentForm = $form;
+        try {
+            foreach ($forms as $form) {
+                if ($form['ref'] === $childFormRef) {
+                    $currentForm = $form;
+                }
             }
+
+            if ($currentForm === '') {
+                throw new Exception('This project does not have child forms');
+            }
+        } catch (Exception $e) {
+            echo $e->getMessage();
+            return [];
         }
+
 
         $inputs = $currentForm['inputs'];
         $answers = [];

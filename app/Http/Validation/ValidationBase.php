@@ -4,8 +4,6 @@ namespace ec5\Http\Validation;
 
 use Validator;
 use Auth;
-use Config;
-use Exception;
 use Log;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
@@ -47,8 +45,6 @@ abstract class ValidationBase
 
     /**
      * Reset the class errors
-     *
-     * @return array
      */
     public function resetErrors()
     {
@@ -152,14 +148,15 @@ abstract class ValidationBase
         $this->errors[$ref] = [$code];
     }
 
-    protected function isValidRef($ref)
+    protected function isValidRef($ref): bool
     {
         $inputRef = (isset($this->data['ref'])) ? $this->data['ref'] : '';
         if (!preg_match("/^{$ref}+_[a-zA-Z0-9]{13}$/", $inputRef)) {
             $this->errors[$inputRef] = ['ec5_243'];
-        } else {
-            return true;
+            return false;
         }
+
+        return true;
     }
 
     /**

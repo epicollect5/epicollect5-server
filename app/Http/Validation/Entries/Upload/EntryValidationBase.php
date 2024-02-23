@@ -44,7 +44,7 @@ abstract class EntryValidationBase extends ValidationBase
 
             $inputType = $projectExtra->getInputDetail($inputRef, 'type');
 
-            // If the input type requires an answer
+            // If the input type requires an answer (all but group and readme)
             if (!in_array($inputType, array_keys(config('epicollect.strings.inputs_without_answers')))) {
                 // Check the answer data exists for this input
                 if (!isset($entryAnswers[$inputRef])) {
@@ -60,7 +60,7 @@ abstract class EntryValidationBase extends ValidationBase
                 $this->validateAnswer($project, $entryStructure, $answerData, $inputRef);
             }
 
-            // If input type is a group, validate each group answer
+            // If the input type is a group, validate each group answer
             if ($inputType === config('epicollect.strings.inputs_type.group')) {
 
                 $groupInputs = $projectExtra->getGroupInputs($entryStructure->getFormRef(), $inputRef);

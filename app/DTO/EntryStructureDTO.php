@@ -106,7 +106,10 @@ class EntryStructureDTO
             'created_at' => $payload[$type]['created_at'] ?? '', // like '2024-02-12T11:32:32.321Z',
             'device_id' => $payload[$type]['device_id'] ?? '',
             'platform' => $payload[$type]['platform'] ?? '', //WEB, Android, iOS
-            'project_version' => $payload[$type]['project_version'] ?? '' // like '2024-02-12 11:32:05'
+            'project_version' => $payload[$type]['project_version'] ?? '', // like '2024-02-12 11:32:05'
+            //when testing uniqueness, we set the below properties
+            'input_ref' => $payload[$type]['input_ref'] ?? '',
+            'answer' => $payload[$type]['answer'] ?? ''
         ];
 
         // Additional fields for specific types
