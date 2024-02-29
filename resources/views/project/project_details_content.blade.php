@@ -271,9 +271,20 @@
             <div class="panel-heading">
                 <div class="panel-title">Universal Link (App Link)</div>
             </div>
-            <div class="panel-body">
+            <div class="panel-body deeplink-btn-panel">
                 <p>On any device with the Epicollect5 app installed, tapping the link below will automatically add the
-                    project.</p>
+                    project.
+                    <span class="deeplink-copy-btn"
+                          data-url="{{ url('/open/project') . '/' . $requestAttributes->requestedProject->slug }}">
+                        Copy Link
+                        <i class="material-icons" data-toggle="tooltip" data-placement="top"
+                           title="Copied!"
+                           data-trigger="manual">
+                            content_copy
+                        </i>
+                    </span>
+                </p>
+
                 <pre><strong>{{ url('/open/project/'.$requestAttributes->requestedProject->slug) }}</strong></pre>
                 @include('project.share.share_links')
             </div>

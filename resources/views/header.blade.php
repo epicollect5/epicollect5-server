@@ -32,11 +32,11 @@
 {{--Add og: metatag on single project home page--}}
 @if(isset($requestAttributes->requestedProject))
     @if(Route::currentRouteName() === 'project-home')
-        @include('meta.meta_project_home');
+        @include('meta.meta_project_home')
     @endif
 
     @if(Route::currentRouteName() === 'project-open')
-        @include('meta.meta_project_open');
+        @include('meta.meta_project_open')
     @endif
 @endif
 
@@ -105,7 +105,20 @@
         src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js"></script>
 
 {{-- Share Links js--}}
-<script type='text/javascript'
-        src='//platform-api.sharethis.com/js/sharethis.js#property=58d59cc8a1c5fb00126d1e14&product=inline-share-buttons'
-        async='async'>
-</script>
+@if(config('app.url') == 'https://five.epicollect.net')
+    <script type='text/javascript'
+            src='//platform-api.sharethis.com/js/sharethis.js#property=58d59cc8a1c5fb00126d1e14&product=inline-share-buttons'
+            async='async'>
+    </script>
+@elseif(config('app.url') == 'https://dev.epicollect.net')
+    <script type='text/javascript'
+            src='//platform-api.sharethis.com/js/sharethis.js#property=65e078139391bf00191aa09a&product=inline-share-buttons'
+            async='async'>
+    </script>
+@else
+    {{--    Not working on localhost but buttons are still displayed--}}
+    <script type='text/javascript'
+            src='//platform-api.sharethis.com/js/sharethis.js#property=58d59cc8a1c5fb00126d1e14&product=inline-share-buttons'
+            async='async'>
+    </script>
+@endif

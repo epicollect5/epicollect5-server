@@ -176,6 +176,20 @@ $(document).ready(function () {
             //do nothing
         });
     });
+
+    $('.deeplink-copy-btn').on('click', function () {
+        var self = $(this);
+        var url = self.data('url')
+        console.log(url);
+        navigator.clipboard.writeText(url).then(function () {
+            self.find('i').tooltip('show');
+            window.setTimeout(function () {
+                self.find('i').tooltip('hide');
+            }, 1500);
+        }, function () {
+            //do nothing
+        });
+    });
 });
 
 

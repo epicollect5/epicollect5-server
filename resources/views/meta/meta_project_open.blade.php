@@ -50,10 +50,3 @@
               {{ url('/api/internal/media/'.$requestAttributes->requestedProject->slug . '?type=photo&name=logo.jpg&format=project_thumb') }}
               @endif"/>
 
-{{-- Share Links js--}}
-<script type='text/javascript'
-        src='//platform-api.sharethis.com/js/sharethis.js#property=58d59cc8a1c5fb00126d1e14&product=inline-share-buttons'
-        async='async'>
-
-</script>
-

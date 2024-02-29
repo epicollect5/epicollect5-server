@@ -12,7 +12,8 @@
                     {{ trans('site.project_home_page') }}:
                     <a target="_blank"
                        href="{{ url('project') . '/' . $requestAttributes->requestedProject->slug }}">{{ url('project') . '/' . $requestAttributes->requestedProject->slug }}</a>
-                    <i class="material-icons copy-btn" data-toggle="tooltip" data-placement="top" title="Copied!"
+                    <i class="material-icons copy-btn" data-toggle="tooltip" data-placement="top"
+                       title="Copied!"
                        data-trigger="manual">
                         content_copy
                     </i>

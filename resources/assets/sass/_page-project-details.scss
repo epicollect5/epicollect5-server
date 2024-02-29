@@ -235,4 +235,10 @@
       margin: 10px;
     }
   }
+  .deeplink-btn-panel {
+    .deeplink-copy-btn, span {
+      cursor: pointer;
+      color: $deep-purple;
+    }
+  }
 }
