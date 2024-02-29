@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "uk.ac.imperial.epicollect.five",
+      "sha256_cert_fingerprints": [
+        "C9:3F:23:53:15:6F:DF:3A:7A:52:CF:69:DD:3A:26:DF:18:52:2D:94:3E:F4:01:1D:61:84:11:89:3F:14:D0:11"
+      ]
+    }
+  }
+]

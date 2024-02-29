@@ -1,0 +1,60 @@
+.page-project-open {
+  .h1, .h2, .h3, h1, h2, h3 {
+    margin: 0;
+  }
+  .project-open__logo {
+    margin: 0 auto;
+    border: 2px solid $deep-purple;
+  }
+  .project-open__logo-wrapper {
+    border: none;
+    position: relative;
+    display: block;
+    .loader {
+      position: absolute;
+      z-index: 21;
+    }
+    img {
+      opacity: 0;
+      z-index: 22;
+      position: relative;
+      //min-height: 256px;
+      margin: 0 auto;
+    }
+  }
+  .project-open__project-view-btn {
+    text-align: center;
+  }
+
+  .project-open__project-name h1 {
+    font-size: 36px;
+    @include card-project-name();
+    display: block;
+  }
+  .project-open__project-name {
+    //padding-bottom:0;
+    overflow: hidden;
+  }
+  .project-open__small-description {
+    padding-top: 0;
+    h2 {
+      word-break: break-all;
+      overflow-wrap: break-word;
+    }
+  }
+  .project-open__project-description {
+    .well {
+      word-break: break-all;
+      overflow-wrap: break-word;
+    }
+  }
+
+  .project-open__action-btns {
+    margin-top: 15px;
+    .btn {
+      display: block;
+      @include text-overflow;
+    }
+  }
+}
+

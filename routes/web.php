@@ -236,4 +236,16 @@ Route::group(['middleware' => 'project.permissions'], function () {
         ->name('project-home');
     Route::get('project/{project_slug?}/data', 'Web\Project\ProjectController@dataviewer')
         ->name('dataviewer');
+
 });
+
+//deeplinks (same permissions as project home page)
+Route::group(['middleware' => 'project.permissions'], function () {
+    // Deeplink (open the project in the app if installed, otherwise redirect to the project home page)
+    Route::get('open/project/{project_slug?}', 'Web\Project\ProjectController@open')
+        ->name('project-open');
+});
+
+
+
+

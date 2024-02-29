@@ -32,33 +32,11 @@
 {{--Add og: metatag on single project home page--}}
 @if(isset($requestAttributes->requestedProject))
     @if(Route::currentRouteName() === 'project-home')
-        <meta property="og:title" content="{{$requestAttributes->requestedProject->name}}"/>
-        <meta property="og:description" content="{{$requestAttributes->requestedProject->small_description}}"/>
-        <meta property="og:type" content="article"/>
-        <meta property="og:image" content="@if($requestAttributes->requestedProject->logo_url == '') {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
-              @else
-              {{ url('/api/internal/media/'.$requestAttributes->requestedProject->slug . '?type=photo&name=logo.jpg&format=project_thumb') }}
-              @endif"/>
-        <meta property="og:image:width" content="128"/>
-        <meta property="og:image:height" content="128"/>
+        @include('meta.meta_project_home');
+    @endif
 
-        {{--add twitter card metadata--}}
-        <meta name="twitter:card" content="summary"/>
-        <meta name="twitter:site" content="@EpiCollect"/>
-        <meta name="twitter:title" content="{{$requestAttributes->requestedProject->name}}"/>
-        <meta name="twitter:description" content="{{$requestAttributes->requestedProject->small_description}}"/>
-        <meta name="twitter:image" content="@if($requestAttributes->requestedProject->logo_url == '') {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
-              @else
-              {{ url('/api/internal/media/'.$requestAttributes->requestedProject->slug . '?type=photo&name=logo.jpg&format=project_thumb') }}
-              @endif"/>
-
-        {{-- Share Links js--}}
-        <script type='text/javascript'
-                src='//platform-api.sharethis.com/js/sharethis.js#property=58d59cc8a1c5fb00126d1e14&product=inline-share-buttons'
-                async='async'>
-
-        </script>
-
+    @if(Route::currentRouteName() === 'project-open')
+        @include('meta.meta_project_open');
     @endif
 @endif
 
@@ -125,3 +103,9 @@
 {{--Apple Sign in--}}
 <script type="text/javascript"
         src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js"></script>
+
+{{-- Share Links js--}}
+<script type='text/javascript'
+        src='//platform-api.sharethis.com/js/sharethis.js#property=58d59cc8a1c5fb00126d1e14&product=inline-share-buttons'
+        async='async'>
+</script>

@@ -8,9 +8,9 @@
 
         <div class="row">
 
-            <div href="#" class="project-home-wrapper col-sm-12 col-md-8 col-lg-8 col-md-offset-2 col-lg-offset-2">
+            <div class="project-home-wrapper col-sm-12 col-md-8 col-lg-8 col-md-offset-2 col-lg-offset-2">
 
-                <div id="" class="panel panel-default ">
+                <div class="panel panel-default ">
                     <div class="panel-body">
                         <a href="{{url('project/' . $requestAttributes->requestedProject->slug . '/data')}}"
                            class="project-home__logo-wrapper">
@@ -49,11 +49,9 @@
                     </div>
 
                     {{--Show social media share buttons if project is public and listed--}}
-                    @if($canShowSocialMediaShareBtns)
-                        <div class="panel-body project-home__share-btns">
-                            <div class="sharethis-inline-share-buttons"></div>
-                        </div>
-                    @endif
+                    <div class="panel-body project-home__share-btns">
+                        @include('project.share.share_links')
+                    </div>
 
                 </div>
             </div>

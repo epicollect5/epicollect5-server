@@ -21,6 +21,7 @@
 @import "page-login";
 @import "page-profile";
 @import "page-project-home";
+@import "page-project-open";
 @import "page-project-delete";
 @import "page-project-leave";
 @import "page-projects-list";
@@ -353,4 +354,10 @@ div.hr-or:before {
 .ec5-img-responsive {
   max-width: 100%;
   height: auto;
+}
+
+.deeplink {
+  color: $deep-purple;
+  font-weight: 700;
+  margin: 16px 0;
 }

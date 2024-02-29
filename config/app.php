@@ -187,6 +187,7 @@ return [
         ec5\Providers\Macros\Response\ApiDataMacro::class,
         ec5\Providers\Macros\Response\ToCSVStreamMacro::class,
         ec5\Providers\Macros\Response\ToCSVFileMacro::class,
+        ec5\Providers\Macros\Response\ToJSONFileMacro::class,
 
         /**
          * Custom Service Providers

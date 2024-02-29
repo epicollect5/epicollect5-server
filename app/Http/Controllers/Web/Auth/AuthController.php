@@ -20,7 +20,6 @@ class AuthController extends Controller
     use AuthenticatesUsers;
 
     protected $redirectTo = '/';
-    protected $adminRedirectPath = '/admin';
     protected $authMethods = [];
     protected $appleProviderLabel;
     protected $googleProviderLabel;

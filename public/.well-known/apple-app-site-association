@@ -1,0 +1,13 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "SNU2YAUFNA.uk.ac.imperial.epicollect.five",
+        "paths": [
+                 "/open/project/*"
+        ]
+      }
+    ]
+  }
+}

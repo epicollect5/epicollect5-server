@@ -10,9 +10,9 @@ class RedirectIfAuthenticated
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
-     * @param  string|null  $guard
+     * @param \Illuminate\Http\Request $request
+     * @param \Closure $next
+     * @param string|null $guard
      * @return mixed
      */
     public function handle($request, Closure $next, $guard = null)
@@ -21,7 +21,6 @@ class RedirectIfAuthenticated
             \Log::info('intended', ['url' => redirect()->intended()->getTargetUrl()]);
             return redirect()->intended('/');
         }
-
         return $next($request);
     }
 }

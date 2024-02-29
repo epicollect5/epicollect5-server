@@ -16,7 +16,7 @@ class ProjectControllerTest extends TestCase
 
     const DRIVER = 'web';
 
-    public function test_project_home_page_renders_correctly()
+    public function test_private_project_home_page_renders_correctly()
     {
         //create mock user
         $user = factory(User::class)->create();
@@ -46,6 +46,42 @@ class ProjectControllerTest extends TestCase
 
         $response = $this
             ->actingAs($user, self::DRIVER)
+            ->get('project/' . $project->slug)
+            ->assertStatus(200);
+    }
+
+    public function test_public_project_home_page_renders_correctly()
+    {
+        //create mock user
+        $user = factory(User::class)->create();
+
+        //create a fake project with that user
+        $project = factory(Project::class)->create([
+            'created_by' => $user->id,
+            'access' => config('epicollect.strings.project_access.public')
+        ]);
+
+        //assign the user to that project with the CREATOR role
+        $role = config('epicollect.strings.project_roles.creator');
+        $projectRole = factory(ProjectRole::class)->create([
+            'user_id' => $user->id,
+            'project_id' => $project->id,
+            'role' => $role
+        ]);
+
+        //set up project stats and project structures (to make R&A middleware work, to be removed)
+        //because they are using a repository with joins
+        factory(ProjectStats::class)->create(
+            [
+                'project_id' => $project->id,
+                'total_entries' => 0
+            ]
+        );
+        factory(ProjectStructure::class)->create(
+            ['project_id' => $project->id]
+        );
+
+        $response = $this
             ->get('project/' . $project->slug)
             ->assertStatus(200);
     }

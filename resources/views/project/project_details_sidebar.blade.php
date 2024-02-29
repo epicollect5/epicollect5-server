@@ -1,7 +1,7 @@
 @if ($requestAttributes->requestedProjectRole->canEditProject())
     <div class="list-group">
         <a href="#" class="list-group-item disabled">
-            Dashboard
+            <strong>Dashboard</strong>
         </a>
         <a class="list-group-item" href="{{ url('/myprojects/'.$requestAttributes->requestedProject->slug)}}">
             <i class="material-icons">&#xE8B8;</i>

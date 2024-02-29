@@ -4,6 +4,7 @@
 
 // Headings
 // -------------------------
+@use "sass:math";
 
 h1,
 h2,
@@ -44,6 +45,7 @@ h3,
     font-size: 65%;
   }
 }
+
 h4,
 .h4,
 h5,
@@ -63,22 +65,27 @@ h1,
 .h1 {
   font-size: $font-size-h1;
 }
+
 h2,
 .h2 {
   font-size: $font-size-h2;
 }
+
 h3,
 .h3 {
   font-size: $font-size-h3;
 }
+
 h4,
 .h4 {
   font-size: $font-size-h4;
 }
+
 h5,
 .h5 {
   font-size: $font-size-h5;
 }
+
 h6,
 .h6 {
   font-size: $font-size-h6;
@@ -121,15 +128,19 @@ mark,
 .text-left {
   text-align: left;
 }
+
 .text-right {
   text-align: right;
 }
+
 .text-center {
   text-align: center;
 }
+
 .text-justify {
   text-align: justify;
 }
+
 .text-nowrap {
   white-space: nowrap;
 }
@@ -138,9 +149,11 @@ mark,
 .text-lowercase {
   text-transform: lowercase;
 }
+
 .text-uppercase {
   text-transform: uppercase;
 }
+
 .text-capitalize {
   text-transform: capitalize;
 }
@@ -168,6 +181,7 @@ mark,
   // automatically.
   color: #fff;
 }
+
 @include bg-variant(".bg-primary", $brand-primary);
 
 @include bg-variant(".bg-success", $state-success-bg);
@@ -208,6 +222,7 @@ ol {
   padding-left: 0;
   list-style: none;
 }
+
 // [converter] extracted as `@mixin list-unstyled` for libsass compatibility
 .list-unstyled {
   @include list-unstyled;
@@ -230,13 +245,16 @@ dl {
   margin-top: 0; // Remove browser default
   margin-bottom: $line-height-computed;
 }
+
 dt,
 dd {
   line-height: $line-height-base;
 }
+
 dt {
   font-weight: bold;
 }
+
 dd {
   margin-left: 0; // Undo browser default
 }
@@ -270,11 +288,12 @@ dd {
 
 // Abbreviations and acronyms
 abbr[title],
-// Add data-* attribute to help out our tooltip plugin, per https://github.com/twbs/bootstrap/issues/5257
+  // Add data-* attribute to help out our tooltip plugin, per https://github.com/twbs/bootstrap/issues/5257
 abbr[data-original-title] {
   cursor: help;
   border-bottom: 1px dotted $abbr-border-color;
 }
+
 .initialism {
   font-size: 90%;
   @extend .text-uppercase;

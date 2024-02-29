@@ -7,30 +7,21 @@ use ec5\Models\Project\ProjectStats;
 use ec5\Traits\Eloquent\StatsRefresher;
 use ec5\Traits\Requests\RequestAttributes;
 use Illuminate\Http\JsonResponse;
+use Response;
 
 class ProjectController
 {
-
     use StatsRefresher, RequestAttributes;
 
     public function show()
     {
         $this->refreshProjectStats($this->requestedProject());
         $vars = [];
-        $canShowSocialMediaShareBtns = false;
-        $public = config('epicollect.strings.project_access.public');
-        $listed = config('epicollect.strings.project_visibility.listed');
-
-        if ($this->requestedProject()->access === $public && $this->requestedProject()->visibility === $listed) {
-            $canShowSocialMediaShareBtns = true;
-        }
-        $vars['canShowSocialMediaShareBtns'] = $canShowSocialMediaShareBtns;
 
         // If the project is trashed, redirect to error page
         if ($this->requestedProject()->status == config('epicollect.strings.project_status.trashed')) {
             return view('errors.gen_error')->withErrors(['view' => 'ec5_202']);
         }
-
 
         /**
          * @var $projectStats ProjectStats
@@ -39,10 +30,6 @@ class ProjectController
         $projectStats = ProjectStats::where('project_id', $this->requestedProject()->getId())->first();
         $vars['mostRecentEntryTimestamp'] = $projectStats->getMostRecentEntryTimestamp();
 
-        if (auth()->user()->server_role == config('epicollect.strings.server_roles.superadmin')) {
-            $creatorEmail = Project::creatorEmail($this->requestedProject()->getId());
-            $vars['creatorEmail'] = $creatorEmail;
-        }
         return view('project.project_home', $vars);
     }
 
@@ -72,14 +59,9 @@ class ProjectController
      */
     public function downloadProjectDefinition()
     {
-        //todo: we have an attachment macro?
-        return new JsonResponse(
-            ['data' => $this->requestedProject()->getProjectDefinition()->getData()],
-            200,
-            [
-                'Content-disposition' => 'attachment; filename=' . $this->requestedProject()->slug . '.json',
-                'Content-type' => 'text/plain'
-            ]
+        return Response::toJSONFile(
+            $this->requestedProject()->getProjectDefinition()->getData(),
+            $this->requestedProject()->slug . '.json'
         );
     }
 
@@ -103,5 +85,17 @@ class ProjectController
         return view('project.dataviewer', [
             'project' => $this->requestedProject()
         ]);
+    }
+
+    //opn the project in app page
+    public function open()
+    {
+        //show the project open page with the open-in-app banner
+        $params = [];
+        // If the project is trashed, redirect to error page
+        if ($this->requestedProject()->status == config('epicollect.strings.project_status.trashed')) {
+            return view('errors.gen_error')->withErrors(['view' => 'ec5_202']);
+        }
+        return view('project.project_open', $params);
     }
 }

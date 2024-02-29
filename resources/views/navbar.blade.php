@@ -57,7 +57,8 @@
                             </a>
                         </li>
                     @else
-                        <li @if (Request::is('myprojects')) class="active" @endif><a href="{{ url('/myprojects') }}"><i
+                        <li @if (Request::is('myprojects')) class="active" @endif><a
+                                    href="{{ url('/myprojects') }}"><i
                                         class="material-icons">
                                     &#xE2C8;</i>&nbsp;{{ trans('site.my_projects') }}</a></li>
                         <li @if (Request::is('myprojects/create')) class="active" @endif><a
@@ -107,4 +108,3 @@
         @endif
     </div>
 </nav>
-

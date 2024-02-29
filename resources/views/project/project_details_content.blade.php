@@ -19,7 +19,7 @@
         <div id="details-view"
              class="panel panel-default project-details-panel @if ($showPanel != 'details-view') ec5-hide-block @endif ">
             <div class="panel-heading">
-                <h4>{{ trans('site.project_details') }}</h4>
+                <div class="panel-title">{{ trans('site.project_details') }}</div>
                 @if ($requestAttributes->requestedProjectRole->canEditProject())
                     <button class="btn btn-default btn-action btn-sm pull-right project-details__edit">
                         <i class="material-icons">&#xE254;</i>
@@ -155,7 +155,7 @@
         <div class="col-sm-12 col-md-12 col-lg-5 equal-height">
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    <h4>{{ trans('site.settings') }}</h4>
+                    <div class="panel-title">{{ trans('site.settings') }}</div>
                 </div>
                 <div class="panel-body">
                     <div class="table-responsive">
@@ -268,10 +268,26 @@
 <div class="row">
     <div class="col-sm-12 col-md-12 col-lg-12">
         <div class="panel panel-default">
-            <div class="panel-body project-details-panel--feedback text-center">
-                <span>
+            <div class="panel-heading">
+                <div class="panel-title">Universal Link (App Link)</div>
+            </div>
+            <div class="panel-body">
+                <p>On any device with the Epicollect5 app installed, tapping the link below will automatically add the
+                    project.</p>
+                <pre><strong>{{ url('/open/project/'.$requestAttributes->requestedProject->slug) }}</strong></pre>
+                @include('project.share.share_links')
+            </div>
+        </div>
 
-                    <strong>Found a bug? Have a question? Ask the Community at
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-12 col-md-12 col-lg-12">
+        <div class="panel panel-default">
+            <div class="panel-body project-details-panel--feedback ">
+                <span>
+                    <strong>For any questions or to report any bugs, please reach out to us at
                         <a href="https://community.epicollect.net" target="_blank">
                             community.epicollect.net
                         </a>
@@ -279,7 +295,6 @@
                 </span>
             </div>
         </div>
-
     </div>
 </div>
 

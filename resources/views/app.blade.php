@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-@include('header')
+    @include('header')
 </head>
 <body id="@yield('page-name')">
 <!--[if lt IE 9]>
@@ -11,8 +11,11 @@
 <![endif]-->
 <div class="wait-overlay"></div>
 <div class="container-fluid">
-
-    @include('navbar', ['hideMenu' => $hideMenu ?? false])
+    @if(Route::currentRouteName() === 'project-open')
+        @include('navbar-open')
+    @else
+        @include('navbar', ['hideMenu' => $hideMenu ?? false])
+    @endif
 
     @yield('content')
 
