@@ -46,13 +46,18 @@
 
                             <a href="
                             https://play.google.com/store/apps/details?id=uk.ac.imperial.epicollect.five">
-                                <img src="{{ asset('/images/more-pages/play-store-badge.jpg') }}" width="140"
+                                <img class="margin-bottom-md"
+                                     src="{{ asset('/images/more-pages/play-store-badge.jpg') }}" width="140"
                                      alt="Epicollect5 Play Store badge"/>
                             </a>
 
-                            <a href="https://itunes.apple.com/us/app/epicollect5/id1183858199?mt=8">
-                                <img src="{{ asset('/images/more-pages/app-store-badge.jpg') }}" width="140"
-                                     alt="Epicollect5 App Store badge"/>
+
+                            <a
+                                    href="https://itunes.apple.com/us/app/epicollect5/id1183858199?mt=8">
+                                <img
+                                        class="margin-bottom-md"
+                                        src="{{ asset('/images/more-pages/app-store-badge.jpg') }}" width="140"
+                                        alt="Epicollect5 App Store badge"/>
                             </a>
                         </div>
                     </div>

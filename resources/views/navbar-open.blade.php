@@ -28,8 +28,13 @@
         }
     });
 </script>
-<nav class="navbar navbar-default navbar-fixed-top site-navbar">
-    <a class="navbar-brand" href="{{ url('/') }}">
+<nav class="navbar navbar-default navbar-fixed-top site-navbar project-open-navbar">
+
+    <a class="navbar-brand visible-xs-block" href="{{ url('/') }}">
+        <img src="{{ asset('/images/epicollect-icon-256x256@2x.png') }}" width="36"
+             alt="Epicollect5: Mobile & Web Application for free and easy data collection.">
+    </a>
+    <a class="navbar-brand visible-sm-block visible-md-block visible-lg-block visible-xl-block" href="{{ url('/') }}">
         <img src="{{ asset('/images/brand.png') }}" width="180" height="40"
              alt="Epicollect5: Mobile & Web Application for free and easy data collection.">
     </a>
@@ -39,7 +44,7 @@
                 <i class="material-icons">
                     android
                 </i>
-                Get the App
+                <span class="">Get the App</span>
             </a>
         </li>
         <li class="ios-button">
@@ -47,15 +52,15 @@
                 <i class="material-icons">
                     apple
                 </i>
-                Get the App
+                <span class="hidden-380"> Get the App</span>
             </a>
         </li>
         <li>
             <a href="{{ url('project/' . $requestAttributes->requestedProject->slug . '/data') }}">
                 <i class="material-icons">
-                    computer
+                    open_in_browser
                 </i>
-                Open in Browser
+                <span class="hidden-380"> Open in Browser</span>
             </a>
         </li>
     </ul>
