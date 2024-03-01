@@ -57,7 +57,7 @@ class AppleController extends AuthController
                 return $apiResponse->errorResponse(400, $error);
             }
 
-            if ($parsed_id_token['email_verified'] !== 'true') {
+            if (!isset($parsed_id_token['email'])) {
                 //return api error
                 $error['api-login-apple'] = ['ec5_382'];
                 return $apiResponse->errorResponse(400, $error);
@@ -173,7 +173,7 @@ class AppleController extends AuthController
                 }
             }
 
-            /** 
+            /**
              * external_api routes use the global pattern
              * https://laravel.com/docs/5.4/routing#parameters-global-constraints
              * so they all get the jwt guard when calling guard() without parameters.
@@ -205,11 +205,12 @@ class AppleController extends AuthController
             return $apiResponse->errorResponse(400, $error);
         }
     }
+
     /**
      * This verifies an Apple User who already has an account (Google or passwordless)
      * If the code is valid, the apple provider is added
      * This is performed only the first time the user logs in with a new provider
-     * 
+     *
      * IMP:Local users are asked to enter the password when they login using a different provider
      * IMP:they are not verified here, local auth has its own verification controller
      */
