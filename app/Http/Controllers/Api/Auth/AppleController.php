@@ -65,12 +65,6 @@ class AppleController extends AuthController
                 return Response::apiErrorCode(400, $error);
             }
 
-//            if ($parsed_id_token['email_verified'] != 'true') {
-//                //return api error
-//                $error['api-login-apple'] = ['ec5_382'];
-//                return Response::apiErrorCode(400, $error);
-//            }
-
             //get Apple user email, always sent in the token
             $email = $parsed_id_token['email'];
             //look for the user
