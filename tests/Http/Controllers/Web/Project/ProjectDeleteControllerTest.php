@@ -2,6 +2,7 @@
 
 namespace Tests\Http\Controllers\Web\Project;
 
+use Auth;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
@@ -74,6 +75,46 @@ class ProjectDeleteControllerTest extends TestCase
             ->actingAs($user, self::DRIVER)
             ->get('myprojects/' . $project->slug . '/delete')
             ->assertStatus(200);
+    }
+
+    public function test_delete_page_redirectes_not_logged_in()
+    {
+        //create mock user
+        $user = factory(User::class)->create();
+        //add a user provider
+        $provider = factory(UserProvider::class)->create([
+            'user_id' => $user->id,
+            'email' => $user->email
+        ]);
+
+        //create a fake project with that user
+        $project = factory(Project::class)->create(['created_by' => $user->id]);
+
+        //assign the user to that project with the CREATOR role
+        $role = config('epicollect.strings.project_roles.creator');
+        $projectRole = factory(ProjectRole::class)->create([
+            'user_id' => $user->id,
+            'project_id' => $project->id,
+            'role' => $role
+        ]);
+
+        //set up project stats and project structures (to make R&A middleware work, to be removed)
+        //because they are using a repository with joins
+        factory(ProjectStats::class)->create(
+            [
+                'project_id' => $project->id,
+                'total_entries' => 0
+            ]
+        );
+        factory(ProjectStructure::class)->create(
+            ['project_id' => $project->id]
+        );
+
+        Auth::logout();
+        $response = $this
+            ->get('myprojects/' . $project->slug . '/delete')
+            ->assertStatus(302)
+            ->assertRedirect(Route('login'));
     }
 
     public function test_delete_post_request_but_missing_project_name()

@@ -27,6 +27,15 @@ class AuthControllerTest extends TestCase
         $this->assertFalse(auth()->check());
     }
 
+    public function test_logout_when_not_logged_in()
+    {
+        $response = $this->get(route('logout')); // Replace with the actual route or URL to your view
+        $response->assertRedirect(Route('login')); // Ensure the response is successful
+
+        // Assert that the user is logged out after logout action
+        $this->assertFalse(auth()->check());
+    }
+
     public function test_logout_redirection_from_dataviewer()
     {
         $user = factory(User::class)->create();

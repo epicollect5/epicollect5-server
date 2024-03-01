@@ -70,10 +70,18 @@ class ProjectAppsControllerTest extends TestCase
 
     public function test_apps_page_renders_correctly()
     {
-        $response = $this
+        $this
             ->actingAs($this->user, self::DRIVER)
             ->get('myprojects/' . $this->project->slug . '/apps')
             ->assertStatus(200);
+    }
+
+    public function test_apps_page_redirect_if_not_logged_in()
+    {
+        $this
+            ->get('myprojects/' . $this->project->slug . '/apps')
+            ->assertStatus(302)
+            ->assertRedirect(Route('login'));
     }
 
     public function test_app_is_created()

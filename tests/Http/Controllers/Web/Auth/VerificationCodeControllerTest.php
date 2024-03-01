@@ -12,6 +12,7 @@ class VerificationCodeControllerTest extends TestCase
 
     const DRIVER = 'web';
 
+    //routes to enter 6-digit code when account email clashes
     public function test_page_renders_correctly()
     {
         //create a fake user and save it to DB

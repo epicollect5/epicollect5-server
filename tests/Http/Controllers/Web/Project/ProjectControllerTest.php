@@ -2,12 +2,14 @@
 
 namespace Tests\Http\Controllers\Web\Project;
 
+use Auth;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Symfony\Component\Routing\Exception\RouteNotFoundException;
 use Tests\TestCase;
 
 class ProjectControllerTest extends TestCase
@@ -50,6 +52,40 @@ class ProjectControllerTest extends TestCase
             ->assertStatus(200);
     }
 
+    public function test_private_project_home_page_redirect_if_not_logged_in()
+    {
+        //create mock user
+        $user = factory(User::class)->create();
+
+        //create a fake project with that user
+        $project = factory(Project::class)->create(['created_by' => $user->id]);
+
+        //assign the user to that project with the CREATOR role
+        $role = config('epicollect.strings.project_roles.creator');
+        $projectRole = factory(ProjectRole::class)->create([
+            'user_id' => $user->id,
+            'project_id' => $project->id,
+            'role' => $role
+        ]);
+
+        //set up project stats and project structures (to make R&A middleware work, to be removed)
+        //because they are using a repository with joins
+        factory(ProjectStats::class)->create(
+            [
+                'project_id' => $project->id,
+                'total_entries' => 0
+            ]
+        );
+        factory(ProjectStructure::class)->create(
+            ['project_id' => $project->id]
+        );
+
+        $response = $this
+            ->get('project/' . $project->slug)
+            ->assertStatus(302)
+            ->assertRedirect(Route('login'));
+    }
+
     public function test_public_project_home_page_renders_correctly()
     {
         //create mock user
@@ -82,6 +118,43 @@ class ProjectControllerTest extends TestCase
         );
 
         $response = $this
+            ->get('project/' . $project->slug)
+            ->assertStatus(200);
+    }
+
+    public function test_public_project_home_page_renders_correctly_logged_in()
+    {
+        //create mock user
+        $user = factory(User::class)->create();
+
+        //create a fake project with that user
+        $project = factory(Project::class)->create([
+            'created_by' => $user->id,
+            'access' => config('epicollect.strings.project_access.public')
+        ]);
+
+        //assign the user to that project with the CREATOR role
+        $role = config('epicollect.strings.project_roles.creator');
+        $projectRole = factory(ProjectRole::class)->create([
+            'user_id' => $user->id,
+            'project_id' => $project->id,
+            'role' => $role
+        ]);
+
+        //set up project stats and project structures (to make R&A middleware work, to be removed)
+        //because they are using a repository with joins
+        factory(ProjectStats::class)->create(
+            [
+                'project_id' => $project->id,
+                'total_entries' => 0
+            ]
+        );
+        factory(ProjectStructure::class)->create(
+            ['project_id' => $project->id]
+        );
+
+        $response = $this
+            ->actingAs($user)
             ->get('project/' . $project->slug)
             ->assertStatus(200);
     }
@@ -120,6 +193,43 @@ class ProjectControllerTest extends TestCase
             ->actingAs($user, self::DRIVER)
             ->get('myprojects/' . $project->slug)
             ->assertStatus(200);
+    }
+
+    public function test_project_details_page_renders_redirects_not_logged_in()
+    {
+        //create mock user
+        $user = factory(User::class)->create();
+
+        //create a fake project with that user
+        $project = factory(Project::class)->create(['created_by' => $user->id]);
+
+        //assign the user to that project with the CREATOR role
+        $role = config('epicollect.strings.project_roles.creator');
+        $projectRole = factory(ProjectRole::class)->create([
+            'user_id' => $user->id,
+            'project_id' => $project->id,
+            'role' => $role
+        ]);
+
+        /*
+        set up project stats and project structures (to make R&A middleware work, to be removed)
+        because they are using a repository with joins
+        */
+        factory(ProjectStats::class)->create(
+            [
+                'project_id' => $project->id,
+                'total_entries' => 0
+            ]
+        );
+        factory(ProjectStructure::class)->create(
+            ['project_id' => $project->id]
+        );
+
+        Auth::logout();
+        $response = $this
+            ->get('myprojects/' . $project->slug)
+            ->assertStatus(302)
+            ->assertRedirect(Route('login'));
     }
 
     public function test_project_details_page_renders_correctly_with_server_role_superadmin()
@@ -476,6 +586,42 @@ class ProjectControllerTest extends TestCase
         $this->assertEquals('ec5_91', $errorsArray[0]);
     }
 
+    public function test_formbuilder_page_forbidden_to_guests()
+    {
+        //create mock user
+        $user = factory(User::class)->create();
+        $creator = factory(User::class)->create();
+        //create a fake project with the creator
+        $project = factory(Project::class)->create(['created_by' => $creator->id]);
+
+        //add the manager role to user
+        factory(ProjectRole::class)->create(
+            [
+                'user_id' => $user->id,
+                'project_id' => $project->id,
+                'role' => config('epicollect.strings.project_roles.viewer')
+            ]);
+
+        //set up project stats and project structures (to make R&A middleware work, to be removed)
+        //because they are using a repository with joins
+        factory(ProjectStats::class)->create(
+            [
+                'project_id' => $project->id,
+                'total_entries' => 0
+            ]
+        );
+        factory(ProjectStructure::class)->create(
+            ['project_id' => $project->id]
+        );
+
+        Auth::logout();
+        $response = $this
+            ->get(Route('formbuilder', ['project_slug' => $project->slug]))
+            ->assertStatus(302)
+            ->assertRedirect(Route('login'));
+    }
+
+
     public function test_download_project_definition()
     {
         //create mock user
@@ -509,50 +655,5 @@ class ProjectControllerTest extends TestCase
             ->assertStatus(200);
     }
 
-    public function test_api_export_project()
-    {
-        //create mock user
-        $user = factory(User::class)->create();
-        //create a fake project with that user
-        $project = factory(Project::class)->create(['created_by' => $user->id]);
-        //assign the user to that project with the CREATOR role
-        $role = config('epicollect.strings.project_roles.creator');
-        $projectRole = factory(ProjectRole::class)->create([
-            'user_id' => $user->id,
-            'project_id' => $project->id,
-            'role' => $role
-        ]);
 
-        //set up project stats and project structures (to make R&A middleware work, to be removed)
-        //because they are using a repository with joins
-        factory(ProjectStats::class)->create(
-            [
-                'project_id' => $project->id,
-                'total_entries' => 0
-            ]
-        );
-        factory(ProjectStructure::class)->create(
-            ['project_id' => $project->id]
-        );
-
-        $response = [];
-        try {
-            $response[] = $this->actingAs($user)->get('api/export/project/' . $project->slug);
-            $response[0]->assertStatus(200);
-
-            //assert project definition
-            $json = ProjectStructure::where('project_id', $project->id)->value('project_definition');
-            $projectDefinition = json_decode($json, true);
-            $projectResponse = json_decode($response[0]->getContent(), true)['data'];
-
-            //add any extra key added by the controller
-            $projectDefinition['project']['created_at'] = $project->created_at;
-            $homepage = config('app.url') . '/project/' . $project->slug;
-            $projectDefinition['project']['homepage'] = $homepage;
-            //compare
-            $this->assertEquals($projectDefinition, $projectResponse);
-        } catch (\Exception $e) {
-            $this->logTestError($e, $response);
-        }
-    }
 }

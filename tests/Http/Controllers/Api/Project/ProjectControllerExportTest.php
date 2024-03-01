@@ -45,6 +45,19 @@ class ProjectControllerExportTest extends TestCase
             $response[0]->assertStatus(200);
             $jsonResponse = json_decode($response[0]->getContent(), true);
             $this->assertProjectExportResponse($jsonResponse);
+
+            //assert project definition
+            $json = ProjectStructure::where('project_id', $this->project->id)->value('project_definition');
+            $projectDefinition = json_decode($json, true);
+            $projectResponse = json_decode($response[0]->getContent(), true)['data'];
+
+            //add any extra key added by the controller
+            $projectDefinition['project']['created_at'] = $this->project->created_at;
+            $homepage = config('app.url') . '/project/' . $this->project->slug;
+            $projectDefinition['project']['homepage'] = $homepage;
+            //compare
+            $this->assertEquals($projectDefinition, $projectResponse);
+
             $this->clearDatabase(['user' => $this->user, 'project' => $this->project]);
         } catch (Exception $e) {
             $this->logTestError($e, $response);

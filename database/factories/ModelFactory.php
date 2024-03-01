@@ -94,10 +94,10 @@ $factory->define(Project::class, function (Faker\Generator $faker) {
         'description' => $faker->sentence,
         'small_description' => $faker->text($smallDescMin) . $faker->text($smallDescMax - $smallDescMin),
         'logo_url' => '',
-        'access' => 'public',
-        'visibility' => 'listed',
+        'access' => 'private',
+        'visibility' => 'hidden',
         'category' => 'general',
-        'created_by' => User::where('email', env('SUPER_ADMIN_EMAIL'))->first()['id'],
+        'created_by' => User::where('email', config('epicollect.setup.super_admin_user.email'))->first()['id'],
         'status' => 'active'
     ];
 });

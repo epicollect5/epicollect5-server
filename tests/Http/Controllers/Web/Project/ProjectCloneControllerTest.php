@@ -2,6 +2,7 @@
 
 namespace Tests\Http\Controllers\Web\Project;
 
+use Auth;
 use ec5\Libraries\Utilities\Common;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Models\Project\Project;
@@ -99,10 +100,19 @@ class ProjectCloneControllerTest extends TestCase
 
     public function test_clone_page_renders_correctly()
     {
-        $response = $this
+        Auth::logout();
+        $this
             ->actingAs($this->user, self::DRIVER)
             ->get('myprojects/' . $this->project->slug . '/clone')
             ->assertStatus(200);
+    }
+
+    public function test_clone_page_redirect_if_not_logged_in()
+    {
+        Auth::logout();
+        $this->get('myprojects/' . $this->project->slug . '/clone')
+            ->assertStatus(302)
+            ->assertRedirect(Route('login'));
     }
 
     public function test_project_is_cloned_without_users()

@@ -2,6 +2,7 @@
 
 namespace Tests\Http\Controllers\Web\Project;
 
+use Auth;
 use ec5\Http\Validation\Project\RuleCreateRequest;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Models\Entries\BranchEntry;
@@ -70,6 +71,15 @@ class ProjectCreateControllerTest extends TestCase
         $user = factory(User::class)->create();
         $response = $this->actingAs($user, self::DRIVER)->get(route('my-projects-create')); // Replace with the actual route or URL to your view
         $response->assertStatus(200); // Ensure the response is successful
+    }
+
+    public function test_create_page_redirect_not_logged_in()
+    {
+        //create a fake user and save it to DB
+        Auth::logout();
+        $response = $this->get(route('my-projects-create')); // Replace with the actual route or URL to your view
+        $response->assertStatus(302); // Ensure the response is successful
+        $response->assertRedirect(Route('login'));
     }
 
     public function test_name()

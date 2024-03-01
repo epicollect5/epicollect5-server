@@ -2,18 +2,18 @@
 
 namespace Tests\Http\Controllers\Web\Projects;
 
-use ec5\Http\Validation\Project\RuleSearch as ProjectsSearchValidator;
+use ec5\Http\Validation\Project\RuleSearch;
 use Tests\TestCase;
 
 class SearchProjectsControllerTest extends TestCase
 {
-    protected $validator;
+    protected $ruleSearch;
 
     public function setUp()
     {
         // This method will automatically be called prior to any of your test cases
         parent::setUp();
-        $this->validator = new ProjectsSearchValidator();
+        $this->ruleSearch = new RuleSearch();
     }
 
     public function test_page_renders_correctly()
@@ -40,146 +40,146 @@ class SearchProjectsControllerTest extends TestCase
             'page' => '1'
         ];
 
-        $this->validator->validate($parameters);
-        $this->assertFalse($this->validator->hasErrors());
-        $this->validator->resetErrors();
+        $this->ruleSearch->validate($parameters);
+        $this->assertFalse($this->ruleSearch->hasErrors());
+        $this->ruleSearch->resetErrors();
     }
 
     public function test_sort_by()
     {
         //invalid sort_by
         $parameters['sort_by'] = 'id';
-        $this->validator->validate($parameters);
-        $this->assertTrue($this->validator->hasErrors());
+        $this->ruleSearch->validate($parameters);
+        $this->assertTrue($this->ruleSearch->hasErrors());
         //fwrite(STDOUT, print_r($this->validator->errors()) . "\n");
-        $this->validator->resetErrors();
+        $this->ruleSearch->resetErrors();
 
         //invalid sort_by
         $parameters['sort_by'] = '##';
-        $this->validator->validate($parameters);
-        $this->assertTrue($this->validator->hasErrors());
+        $this->ruleSearch->validate($parameters);
+        $this->assertTrue($this->ruleSearch->hasErrors());
         //fwrite(STDOUT, print_r($this->validator->errors()) . "\n");
-        $this->validator->resetErrors();
+        $this->ruleSearch->resetErrors();
 
         //empty sort_by, valid
         $parameters['sort_by'] = '';
-        $this->validator->validate($parameters);
-        $this->assertFalse($this->validator->hasErrors());
+        $this->ruleSearch->validate($parameters);
+        $this->assertFalse($this->ruleSearch->hasErrors());
         //fwrite(STDOUT, print_r($this->validator->errors()) . "\n");
-        $this->validator->resetErrors();
+        $this->ruleSearch->resetErrors();
     }
 
     public function test_sort_order()
     {
         //invalid sort_order
         $parameters['sort_order'] = 'xx';
-        $this->validator->validate($parameters);
-        $this->assertTrue($this->validator->hasErrors());
+        $this->ruleSearch->validate($parameters);
+        $this->assertTrue($this->ruleSearch->hasErrors());
         //fwrite(STDOUT, print_r($this->validator->errors()) . "\n");
-        $this->validator->resetErrors();
+        $this->ruleSearch->resetErrors();
 
         //invalid sort_order
         $parameters['sort_order'] = '##';
-        $this->validator->validate($parameters);
-        $this->assertTrue($this->validator->hasErrors());
+        $this->ruleSearch->validate($parameters);
+        $this->assertTrue($this->ruleSearch->hasErrors());
         //fwrite(STDOUT, print_r($this->validator->errors()) . "\n");
-        $this->validator->resetErrors();
+        $this->ruleSearch->resetErrors();
 
         //empty sort_order, valid
         $parameters['sort_order'] = '';
-        $this->validator->validate($parameters);
-        $this->assertFalse($this->validator->hasErrors());
+        $this->ruleSearch->validate($parameters);
+        $this->assertFalse($this->ruleSearch->hasErrors());
         //fwrite(STDOUT, print_r($this->validator->errors()) . "\n");
-        $this->validator->resetErrors();
+        $this->ruleSearch->resetErrors();
 
         //asc sort_order, valid
         $parameters['sort_order'] = 'asc';
-        $this->validator->validate($parameters);
-        $this->assertFalse($this->validator->hasErrors());
+        $this->ruleSearch->validate($parameters);
+        $this->assertFalse($this->ruleSearch->hasErrors());
         //fwrite(STDOUT, print_r($this->validator->errors()) . "\n");
-        $this->validator->resetErrors();
+        $this->ruleSearch->resetErrors();
 
         //desc sort_order, valid
         $parameters['sort_order'] = 'desc';
-        $this->validator->validate($parameters);
-        $this->assertFalse($this->validator->hasErrors());
+        $this->ruleSearch->validate($parameters);
+        $this->assertFalse($this->ruleSearch->hasErrors());
         //fwrite(STDOUT, print_r($this->validator->errors()) . "\n");
-        $this->validator->resetErrors();
+        $this->ruleSearch->resetErrors();
     }
 
     public function test_name()
     {
         //invalid name
         $parameters['name'] = '--';
-        $this->validator->validate($parameters);
-        $this->assertTrue($this->validator->hasErrors());
+        $this->ruleSearch->validate($parameters);
+        $this->assertTrue($this->ruleSearch->hasErrors());
         //fwrite(STDOUT, print_r($this->validator->errors()) . "\n");
-        $this->validator->resetErrors();
+        $this->ruleSearch->resetErrors();
 
         //invalid name
         $parameters['name'] = ' # # ';
-        $this->validator->validate($parameters);
-        $this->assertTrue($this->validator->hasErrors());
+        $this->ruleSearch->validate($parameters);
+        $this->assertTrue($this->ruleSearch->hasErrors());
         //fwrite(STDOUT, print_r($this->validator->errors()) . "\n");
-        $this->validator->resetErrors();
+        $this->ruleSearch->resetErrors();
 
         //invalid name, too long
         $parameters['name'] = '123456789012345678901234567890123456789012345678901';
-        $this->validator->validate($parameters);
-        $this->assertTrue($this->validator->hasErrors());
+        $this->ruleSearch->validate($parameters);
+        $this->assertTrue($this->ruleSearch->hasErrors());
         //fwrite(STDOUT, print_r($this->validator->errors()) . "\n");
-        $this->validator->resetErrors();
+        $this->ruleSearch->resetErrors();
 
         //empty name, valid
         $parameters['name'] = '';
-        $this->validator->validate($parameters);
-        $this->assertFalse($this->validator->hasErrors());
+        $this->ruleSearch->validate($parameters);
+        $this->assertFalse($this->ruleSearch->hasErrors());
         //fwrite(STDOUT, print_r($this->validator->errors()) . "\n");
-        $this->validator->resetErrors();
+        $this->ruleSearch->resetErrors();
 
         //name with spaces, valid
         $parameters['name'] = 'the project is ';
-        $this->validator->validate($parameters);
-        $this->assertFalse($this->validator->hasErrors());
+        $this->ruleSearch->validate($parameters);
+        $this->assertFalse($this->ruleSearch->hasErrors());
         //fwrite(STDOUT, print_r($this->validator->errors()) . "\n");
-        $this->validator->resetErrors();
+        $this->ruleSearch->resetErrors();
     }
 
     public function test_page()
     {
         //invalid page
         $parameters['page'] = '--';
-        $this->validator->validate($parameters);
-        $this->assertTrue($this->validator->hasErrors());
+        $this->ruleSearch->validate($parameters);
+        $this->assertTrue($this->ruleSearch->hasErrors());
         //fwrite(STDOUT, print_r($this->validator->errors()) . "\n");
-        $this->validator->resetErrors();
+        $this->ruleSearch->resetErrors();
 
         //invalid page
         $parameters['page'] = '0';
-        $this->validator->validate($parameters);
-        $this->assertTrue($this->validator->hasErrors());
+        $this->ruleSearch->validate($parameters);
+        $this->assertTrue($this->ruleSearch->hasErrors());
         //fwrite(STDOUT, print_r($this->validator->errors()) . "\n");
-        $this->validator->resetErrors();
+        $this->ruleSearch->resetErrors();
 
         //invalid page
         $parameters['page'] = '-4';
-        $this->validator->validate($parameters);
-        $this->assertTrue($this->validator->hasErrors());
+        $this->ruleSearch->validate($parameters);
+        $this->assertTrue($this->ruleSearch->hasErrors());
         //fwrite(STDOUT, print_r($this->validator->errors()) . "\n");
-        $this->validator->resetErrors();
+        $this->ruleSearch->resetErrors();
 
         //empty page, valid
         $parameters['page'] = '';
-        $this->validator->validate($parameters);
-        $this->assertFalse($this->validator->hasErrors());
+        $this->ruleSearch->validate($parameters);
+        $this->assertFalse($this->ruleSearch->hasErrors());
         //fwrite(STDOUT, print_r($this->validator->errors()) . "\n");
-        $this->validator->resetErrors();
+        $this->ruleSearch->resetErrors();
 
         //valid
         $parameters['page'] = '3';
-        $this->validator->validate($parameters);
-        $this->assertFalse($this->validator->hasErrors());
+        $this->ruleSearch->validate($parameters);
+        $this->assertFalse($this->ruleSearch->hasErrors());
         //fwrite(STDOUT, print_r($this->validator->errors()) . "\n");
-        $this->validator->resetErrors();
+        $this->ruleSearch->resetErrors();
     }
 }

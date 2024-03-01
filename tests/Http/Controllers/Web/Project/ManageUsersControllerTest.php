@@ -68,6 +68,19 @@ class ManageUsersControllerTest extends TestCase
 
     }
 
+    public function test_manage_users_redirect_if_not_logged_in()
+    {
+        $response = [];
+        try {
+            $response[] = $this->get('myprojects/' . $this->project->slug . '/manage-users');
+            $response[0]->assertStatus(302);
+            $response[0]->assertRedirect(Route('login'));
+        } catch (\Exception $e) {
+            $this->logTestError($e, $response);
+        }
+    }
+
+
     public function test_manage_users_page_renders_correctly()
     {
         $response = [];
