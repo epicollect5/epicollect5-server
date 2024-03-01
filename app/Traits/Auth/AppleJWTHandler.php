@@ -23,7 +23,7 @@ trait AppleJWTHandler
         $kid = JWTApple::jsonDecode(JWTApple::urlsafeB64Decode($header_base_64));
         $kid = $kid->kid;
 
-        //build jwt publick key using keys from Apple endpoint (using JWK)
+        //build jwt public key using keys from Apple endpoint (using JWK)
         try {
             $public_key = JWKApple::parseKeySet($jwks);
             $public_key = $public_key[$kid];
