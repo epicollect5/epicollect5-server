@@ -58,7 +58,8 @@ class EntryCounter extends Model
         //are there any branches?
         if (!empty($branches)) {
             //grab branch counts from DB
-            $branchCounts = $this->getEntryBranchCounts($project, $entryStructure->getProjectId(), $entryStructure->getFormRef(), $entryStructure->getEntryUuid());
+            $branchEntryCounter = new BranchEntryCounter();
+            $branchCounts = $branchEntryCounter->getEntryBranchCounts($project, $entryStructure->getProjectId(), $entryStructure->getFormRef(), $entryStructure->getEntryUuid());
         }
 
         // Update this entry

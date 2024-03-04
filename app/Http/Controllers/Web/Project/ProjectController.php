@@ -60,7 +60,7 @@ class ProjectController
     public function downloadProjectDefinition()
     {
         return Response::toJSONFile(
-            $this->requestedProject()->getProjectDefinition()->getData(),
+            ['data' => $this->requestedProject()->getProjectDefinition()->getData()],
             $this->requestedProject()->slug . '.json'
         );
     }

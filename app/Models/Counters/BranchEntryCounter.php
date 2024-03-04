@@ -56,7 +56,7 @@ class BranchEntryCounter extends Model
      * @param $ownerEntryUuid
      * @return array
      */
-    public function getEntryBranchCounts(ProjectDTO $project, $projectId, $formRef, $ownerEntryUuid)
+    public function getEntryBranchCounts(ProjectDTO $project, $projectId, $formRef, $ownerEntryUuid): array
     {
         $projectExtra = $project->getProjectExtra();
 

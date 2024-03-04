@@ -44,28 +44,8 @@ class ProjectDefinitionGenerator
 
     private static function getRandomSimpleInputType()
     {
-        $types = config('epicollect.strings.inputs_type');
-        $keysToRemove = [
-            'integer',
-            'decimal',
-            'date',
-            'time',
-            'branch',
-            'group',
-            'searchsingle',
-            'searchmultiple',
-            'radio',
-            'dropdown',
-            'checkbox'
-        ];
-
-        foreach ($keysToRemove as $key) {
-            unset($types[$key]);
-        }
-
-        $types = array_keys($types);
-        $randomInputIndex = array_rand($types);
-        return $types[$randomInputIndex];
+        $faker = Faker::create();
+        return $faker->randomElement(['text', 'textarea', 'phone']);
     }
 
     private static function getRandomMultipleChoiceInputType(): string
@@ -128,8 +108,8 @@ class ProjectDefinitionGenerator
             $inputs[] = ProjectDefinitionGenerator::createGroup($formRef);
             $inputs[] = ProjectDefinitionGenerator::createGroup($formRef);
 //            add two branches
-            $inputs[] = ProjectDefinitionGenerator::createBranch($formRef);
-            $inputs[] = ProjectDefinitionGenerator::createBranch($formRef);
+            $inputs[] = ProjectDefinitionGenerator::createBranch($formRef, $withTitles);
+            $inputs[] = ProjectDefinitionGenerator::createBranch($formRef, $withTitles);
 
             // add 1 search input (limit is 5 across one project)
             $inputs[] = ProjectDefinitionGenerator::createSearchInput($formRef);
@@ -175,12 +155,23 @@ class ProjectDefinitionGenerator
         ];
     }
 
-    public static function createBranch($formRef): array
+    public static function createBranch($formRef, $withTitles = false): array
     {
         $inputRef = Generators::inputRef($formRef);
+        $titleMaxCount = config('epicollect.limits.titlesMaxCount');
 
         $n = rand(1, 1);
         $branchInputs = [];
+
+        $titlesLeft = $withTitles ? $titleMaxCount : 0;
+        for ($branchInputIndex = 0; $branchInputIndex < $titleMaxCount; $branchInputIndex++) {
+            $branchInputs[] = ProjectDefinitionGenerator::createSimpleInput($inputRef);
+            //set branch input as title (if possible)
+            if ($titlesLeft > 0) {
+                $branchInputs[$branchInputIndex]['is_title'] = true;
+                $titlesLeft--;
+            }
+        }
 
         for ($i = 0; $i < $n; $i++) {
             $branchInputs[] = ProjectDefinitionGenerator::createTextInput($inputRef);
