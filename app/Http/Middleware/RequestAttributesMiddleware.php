@@ -159,15 +159,20 @@ abstract class RequestAttributesMiddleware
         return strpos($request->header('Content-Type'), 'multipart/form-data') !== false;
     }
 
-    private function getParsedJsonInMultipart(Request $request)
+    private function getParsedJsonInMultipart(Request $request): array
     {
         $content = $request->get('data');
         if (!empty($content)) {
+            //if the content is already an array, just return it
+            if (is_array($content)) {
+                return $content;
+            }
+            //otherwise, parse it
             $decodedContent = json_decode($content, true);
             if (json_last_error() === JSON_ERROR_NONE) {
                 return $decodedContent;
             }
         }
-        return '';
+        return [];
     }
 }

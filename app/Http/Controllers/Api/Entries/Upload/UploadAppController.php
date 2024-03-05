@@ -5,6 +5,7 @@ namespace ec5\Http\Controllers\Api\Entries\Upload;
 use App;
 use ec5\Services\Entries\EntriesUploadService;
 use Illuminate\Http\JsonResponse;
+use Log;
 use Response;
 
 class UploadAppController extends UploadControllerBase
@@ -23,6 +24,7 @@ class UploadAppController extends UploadControllerBase
      */
     public function postUpload()
     {
+        //Log::info('request', ['request' => request()->all()]);
         /* UPLOAD AND CHECK IT WAS SUCCESSFUL */
         if (!$this->entriesUploadService->upload()) {
             return Response::apiErrorCode(400, $this->entriesUploadService->errors);

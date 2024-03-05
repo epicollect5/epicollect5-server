@@ -87,15 +87,16 @@ class ProjectController
         ]);
     }
 
-    //opn the project in app page
+    //open the project in app page
     public function open()
     {
         //show the project open page with the open-in-app banner
         $params = [];
         // If the project is trashed, redirect to error page
-        if ($this->requestedProject()->status == config('epicollect.strings.project_status.trashed')) {
+        if ($this->requestedProject()->status === config('epicollect.strings.project_status.trashed')) {
             return view('errors.gen_error')->withErrors(['view' => 'ec5_202']);
         }
+
         return view('project.project_open', $params);
     }
 }

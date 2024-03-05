@@ -459,20 +459,14 @@ class ProjectDTO
         }
     }
 
-    /**
-     * @return bool
-     */
-    public function isPrivate()
+    public function isPrivate(): bool
     {
-        return $this->access == config('epicollect.strings.project_access.private');
+        return $this->access === config('epicollect.strings.project_access.private');
     }
 
-    /**
-     * @return bool
-     */
-    public function isPublic()
+    public function isPublic(): bool
     {
-        return $this->access == config('epicollect.strings.project_access.public');
+        return $this->access === config('epicollect.strings.project_access.public');
     }
 
     public function canBulkUpload()

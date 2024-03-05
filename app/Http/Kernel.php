@@ -57,6 +57,7 @@ class Kernel extends HttpKernel
         'auth.admin' => \ec5\Http\Middleware\AdminAuthenticate::class,
         'auth.superadmin' => \ec5\Http\Middleware\SuperAdminAuthenticate::class,
         'project.permissions' => \ec5\Http\Middleware\ProjectPermissions::class,
+        'project.permissions.open' => \ec5\Http\Middleware\ProjectPermissionsOpen::class,
         'project.permissions.required.role' => \ec5\Http\Middleware\ProjectPermissionsRequiredRole::class,
         'project.permissions.viewer.role' => \ec5\Http\Middleware\ProjectPermissionsViewerRole::class,
         'project.permissions.api' => \ec5\Http\Middleware\ProjectPermissionsApi::class,

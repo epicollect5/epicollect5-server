@@ -239,9 +239,10 @@ Route::group(['middleware' => 'project.permissions'], function () {
 
 });
 
-//deeplinks (same permissions as project home page)
-Route::group(['middleware' => 'project.permissions'], function () {
-    // Deeplink (open the project in the app if installed, otherwise redirect to the project home page)
+// Deeplink (open the project in the app if installed, otherwise redirect to the project home page)
+//always public, but the app will ask to log in when private.
+//Same goes for "Open in Browser"
+Route::group(['middleware' => 'project.permissions.open'], function () {
     Route::get('open/project/{project_slug?}', 'Web\Project\ProjectController@open')
         ->name('project-open');
 });
