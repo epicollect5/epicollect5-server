@@ -84,8 +84,6 @@ class RuleFileEntry extends EntryValidationBase
          * does not consider these files (at least on version 2.0.9 and below)
          * therefore, let's go on with the upload but ignore the file and clear the error
          *
-         * We can purge the orphan folder every now and then,
-         * going forward no files will be saved there anyway
          */
         if (!$this->fileInputExists($project, $entryStructure)) {
             // Get input_ref and entry
@@ -100,7 +98,7 @@ class RuleFileEntry extends EntryValidationBase
         //errors are logged inside the function
         if (!$this->fileEntryExists($project, $entryStructure)) {
 
-            //here we got an orphan file, move it to orphan folder
+            //here we got an orphan file, ignore it
             //and remove the error for that entry
             //we do this due to a bug on the app
 
@@ -237,14 +235,14 @@ class RuleFileEntry extends EntryValidationBase
         $fileName = $fileEntry['name'];
         $inputRef = $fileEntry['input_ref'];
 
-        list($width, $height) = getimagesize($entryStructure->getFile()->getRealPath());
 
         // Process each file type
         switch ($fileType) {
 
-            case 'photo':
+            case config('epicollect.strings.inputs_type.photo'):
 
                 // Entry original image
+                list($width, $height) = getimagesize($entryStructure->getFile()->getRealPath());
 
                 // Check if it's landscape
                 if ($width > $height) {
@@ -335,14 +333,13 @@ class RuleFileEntry extends EntryValidationBase
         $fileName = $fileEntry['name'];
         $inputRef = $fileEntry['input_ref'];
 
-        list($width, $height) = getimagesize($entryStructure->getFile()->getRealPath());
-
         // Process each file type
         switch ($fileType) {
 
             case 'photo':
 
                 // Entry original image
+                list($width, $height) = getimagesize($entryStructure->getFile()->getRealPath());
 
                 // Check if it's landscape
                 if ($width > $height) {

@@ -90,14 +90,19 @@ abstract class RequestAttributesMiddleware
         $requestAttributes->requestedUser = $this->requestedUser;
         View::share('requestAttributes', $requestAttributes);
 
-        //handle multipart uploads
+        //handle multipart uploads (from Cordova FileTransfer)
         if ($request->isMethod('POST')) {
             if ($this->isMultipartRequest($request)) {
+
+
                 /**
-                 *  if the request is multipart,
-                 *  the content will be a string not an array,
+                 *  if the request is a multipart upload,
+                 *  the content will be a json_encoded string not an array,
                  *  so we need to pre-parse it and override
-                 *  the original request
+                 *  the original request.
+                 *
+                 *  This happens when uploading files from the
+                 *  mobile apps using Cordova FileTransfer
                  */
                 $this->request->merge([
                     'data' => $this->getParsedJsonInMultipart($request)

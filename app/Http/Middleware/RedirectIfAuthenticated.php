@@ -18,7 +18,6 @@ class RedirectIfAuthenticated
     public function handle($request, Closure $next, $guard = null)
     {
         if (Auth::guard($guard)->check()) {
-            \Log::info('intended', ['url' => redirect()->intended()->getTargetUrl()]);
             return redirect()->intended('/');
         }
         return $next($request);

@@ -93,7 +93,6 @@ class ProjectController
         //todo: update project stats (a try catch need in case it does not work?)
         // Update the project stats counts
         $projectStats->updateProjectStats($this->requestedProject()->getId());
-        Log::info('ProjectController export() calls updateProjectEntryStats()');
 
         $meta = [
             'project_mapping' => $this->requestedProject()->getProjectMapping()->getData(),

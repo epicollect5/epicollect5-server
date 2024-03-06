@@ -17,6 +17,8 @@ use ec5\Services\Mapping\ProjectMappingService;
 use ec5\Traits\Assertions;
 use Exception;
 use Faker\Factory as Faker;
+use File;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
 use Ramsey\Uuid\Uuid;
 
@@ -293,6 +295,77 @@ class EntryGenerator
                     'project_version' => Project::version($projectSlug)
                 ]
             ]
+        ];
+    }
+
+    //in Laravel 5.4, mimetype for fake files is created based of file extension
+    // see https://github.com/laravel/framework/blob/5.5/src/Illuminate/Http/Testing/MimeType.php
+    // in 6, it is possible to specify the mimetype
+    //todo: refactor when updating Laravel
+    public function createFilePayload($formRef, $entryUuid, $filename, $type, $inputRef, $platform = 'Android', $dotExt = '.jpg'): array
+    {
+        $projectSlug = array_get($this->projectDefinition, 'data.project.slug');
+
+        if ($platform === 'Android') {
+            $audioExt = '.mp4';
+        } else {
+            //iOS only works with wav
+            $audioExt = '.wav';
+        }
+
+        switch ($type) {
+            case config('epicollect.strings.inputs_type.audio'):
+                //get test audio file
+                $sampleAudioFilePath = base_path('tests/Files/audio' . $audioExt);
+                //build fake uploaded file
+                $file = new UploadedFile(
+                    $sampleAudioFilePath,  // Path to the temporary file
+                    $filename,   // File name
+                    config('epicollect.media.content_type.audio'),   // MIME type
+                    filesize($sampleAudioFilePath),
+                    null,
+                    true// Test mode (set to true)
+                );
+                break;
+            case config('epicollect.strings.inputs_type.photo'):
+                $file = UploadedFile::fake()->image('photo' . $dotExt, 1024, 768)->size(500);
+                break;
+            case config('epicollect.strings.inputs_type.video'):
+                $file = UploadedFile::fake()->create('video.mp4', 500);
+                break;
+            default:
+                $file = UploadedFile::fake()->create('video' . $dotExt, 500);
+                break;
+        }
+
+        return [
+            "data" => [
+                "type" => "file_entry",
+                "id" => $entryUuid,
+                "attributes" => [
+                    "form" => [
+                        "ref" => $formRef,
+                        "type" => "hierarchy"
+                    ]
+                ],
+                "relationships" => [
+                    "parent" => [
+                    ],
+                    "branch" => [
+                    ]
+                ],
+                "file_entry" => [
+                    "entry_uuid" => $entryUuid,
+                    "name" => $filename,
+                    "type" => $type,
+                    "input_ref" => $inputRef,
+                    "project_version" => Project::version($projectSlug),
+                    "created_at" => Carbon::now()->format(config('epicollect.mappings.carbon_formats.ISO')),
+                    "device_id" => '',
+                    "platform" => $platform
+                ]
+            ],
+            'name' => $file
         ];
     }
 
@@ -702,7 +775,6 @@ class EntryGenerator
             'multipleChoiceInputRefs' => $this->multipleChoiceInputRefs
         ];
     }
-
 
     private function generateMediaFilename($uuid, $type): string
     {

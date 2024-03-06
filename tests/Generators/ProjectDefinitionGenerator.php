@@ -187,6 +187,9 @@ class ProjectDefinitionGenerator
             $branchInputs[] = ProjectDefinitionGenerator::createMultipleChoiceInput($inputRef, 'checkbox');
             $branchInputs[] = ProjectDefinitionGenerator::createLocationInput($inputRef);
             $branchInputs[] = ProjectDefinitionGenerator::createMediaInput($inputRef);
+            $branchInputs[] = ProjectDefinitionGenerator::createPhotoInput($inputRef);
+            $branchInputs[] = ProjectDefinitionGenerator::createAudioInput($inputRef);
+            $branchInputs[] = ProjectDefinitionGenerator::createVideoInput($inputRef);
             $branchInputs[] = ProjectDefinitionGenerator::createGroup($inputRef);
             $branchInputs[] = ProjectDefinitionGenerator::createGroup($inputRef);
             $branchInputs[] = ProjectDefinitionGenerator::createTextBoxInput($inputRef);
