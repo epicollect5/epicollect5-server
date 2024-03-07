@@ -785,15 +785,6 @@ class UploadAppControllerAudioTest extends TestCase
             $filename = $entryPayloads[0]['data']['entry']['answers'][$inputRef]['answer'];
             $entryUuid = $entryPayloads[0]['data']['entry']['entry_uuid'];
 
-            //generate a fake payload for the top parent form
-            $payload = $this->entryGenerator->createFilePayload(
-                $formRef,
-                $entryUuid,
-                $filename,
-                'audio',
-                $inputRef
-            );
-
             //delete the audio question
             foreach ($inputs as $index => $input) {
                 if ($input['ref'] === $inputRef) {
@@ -810,6 +801,16 @@ class UploadAppControllerAudioTest extends TestCase
                 'project_definition' => json_encode($this->projectDefinition['data']),
                 'project_extra' => json_encode($projectExtra),
             ]);
+
+            //generate a fake payload for the top parent form
+            //imp: done after modifying the project as that changes the project version
+            $payload = $this->entryGenerator->createFilePayload(
+                $formRef,
+                $entryUuid,
+                $filename,
+                'audio',
+                $inputRef
+            );
 
             //multipart upload from app with json encoded string and file (Cordova FileTransfer)
             $response[] = $this->post($this->endpoint . $this->project->slug,
