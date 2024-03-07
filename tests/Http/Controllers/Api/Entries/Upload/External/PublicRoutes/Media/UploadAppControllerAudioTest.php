@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Http\Controllers\Api\Entries\Upload\External\PublicRoutes;
+namespace Http\Controllers\Api\Entries\Upload\External\PublicRoutes\Media;
 
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
@@ -26,7 +26,7 @@ use Tests\TestCase;
    therefore, we use concatenation of @depends
  */
 
-class UploadAppControllerPhotoTest extends TestCase
+class UploadAppControllerAudioTest extends TestCase
 {
     use DatabaseTransactions, Assertions;
 
@@ -99,17 +99,17 @@ class UploadAppControllerPhotoTest extends TestCase
         $this->projectExtra = $projectExtra;
     }
 
-    public function test_it_should_upload_a_top_hierarchy_photo_jpg()
+    public function test_it_should_upload_a_top_hierarchy_audio_android()
     {
         $response = [];
         $inputRef = null;
         try {
             //get top parent formRef
             $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
-            //get first photo question
+            //get first audio question
             $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
             foreach ($inputs as $input) {
-                if ($input['type'] === config('epicollect.strings.inputs_type.photo')) {
+                if ($input['type'] === config('epicollect.strings.inputs_type.audio')) {
                     $inputRef = $input['ref'];
                 }
             }
@@ -140,7 +140,7 @@ class UploadAppControllerPhotoTest extends TestCase
                 $formRef,
                 $entryUuid,
                 $filename,
-                'photo',
+                'audio',
                 $inputRef
             );
 
@@ -160,20 +160,17 @@ class UploadAppControllerPhotoTest extends TestCase
                 );
 
             //assert file is uploaded
-            $photos = Storage::disk('entry_original')->files($this->project->ref);
-            $this->assertCount(1, $photos);
-            $photos = Storage::disk('entry_thumb')->files($this->project->ref);
-            $this->assertCount(1, $photos);
+            $audios = Storage::disk('audio')->files($this->project->ref);
+            $this->assertCount(1, $audios);
 
-            Storage::disk('entry_original')->deleteDirectory($this->project->ref);
-            Storage::disk('entry_thumb')->deleteDirectory($this->project->ref);
+            Storage::disk('audio')->deleteDirectory($this->project->ref);
 
         } catch (Exception $e) {
             $this->logTestError($e, $response);
         }
     }
 
-    public function test_it_should_upload_a_child_entry_photo_jpg()
+    public function test_it_should_upload_a_child_entry_audio_android()
     {
         $response = [];
         $inputRef = null;
@@ -185,10 +182,10 @@ class UploadAppControllerPhotoTest extends TestCase
                 throw new Exception('This project does not have a child form with index 1');
             }
 
-            //get first photo question
+            //get first audio question
             $inputs = array_get($this->projectDefinition, 'data.project.forms.1.inputs');
             foreach ($inputs as $input) {
-                if ($input['type'] === config('epicollect.strings.inputs_type.photo')) {
+                if ($input['type'] === config('epicollect.strings.inputs_type.audio')) {
                     $inputRef = $input['ref'];
                 }
             }
@@ -244,7 +241,7 @@ class UploadAppControllerPhotoTest extends TestCase
                 $childFormRef,
                 $childEntryUuid,
                 $filename,
-                'photo',
+                'audio',
                 $inputRef
             );
             //add parent references
@@ -269,32 +266,27 @@ class UploadAppControllerPhotoTest extends TestCase
                 );
 
             //assert file is uploaded
-            $photos = Storage::disk('entry_original')->files($this->project->ref);
-            $this->assertCount(1, $photos);
-            $photos = Storage::disk('entry_thumb')->files($this->project->ref);
-            $this->assertCount(1, $photos);
-
+            $audios = Storage::disk('audio')->files($this->project->ref);
+            $this->assertCount(1, $audios);
 
             //deleted the file
-            Storage::disk('entry_original')->deleteDirectory($this->project->ref);
-            Storage::disk('entry_thumb')->deleteDirectory($this->project->ref);
-
+            Storage::disk('audio')->deleteDirectory($this->project->ref);
         } catch (Exception $e) {
             $this->logTestError($e, $response);
         }
     }
 
-    public function test_it_should_upload_a_top_hierarchy_photo_jpeg()
+    public function test_it_should_upload_a_top_hierarchy_audio_ios()
     {
         $response = [];
         $inputRef = null;
         try {
             //get top parent formRef
             $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
-            //get first photo question
+            //get first audio question
             $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
             foreach ($inputs as $input) {
-                if ($input['type'] === config('epicollect.strings.inputs_type.photo')) {
+                if ($input['type'] === config('epicollect.strings.inputs_type.audio')) {
                     $inputRef = $input['ref'];
                 }
             }
@@ -325,10 +317,9 @@ class UploadAppControllerPhotoTest extends TestCase
                 $formRef,
                 $entryUuid,
                 $filename,
-                'photo',
+                'audio',
                 $inputRef,
-                'Android',
-                '.jpeg'
+                'iOS'
             );
 
             //multipart upload from app with json encoded string and file (Cordova FileTransfer)
@@ -347,30 +338,29 @@ class UploadAppControllerPhotoTest extends TestCase
                 );
 
             //assert file is uploaded
-            $photos = Storage::disk('entry_original')->files($this->project->ref);
-            $this->assertCount(1, $photos);
-            $photos = Storage::disk('entry_thumb')->files($this->project->ref);
-            $this->assertCount(1, $photos);
+            $audios = Storage::disk('audio')->files($this->project->ref);
+            $this->assertCount(1, $audios);
 
-            Storage::disk('entry_original')->deleteDirectory($this->project->ref);
-            Storage::disk('entry_thumb')->deleteDirectory($this->project->ref);
+
+            Storage::disk('audio')->deleteDirectory($this->project->ref);
+
 
         } catch (Exception $e) {
             $this->logTestError($e, $response);
         }
     }
 
-    public function test_it_should_upload_a_top_hierarchy_photo_png()
+    public function test_it_should_not_allow_mp3()
     {
         $response = [];
         $inputRef = null;
         try {
             //get top parent formRef
             $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
-            //get first photo question
+            //get first audio question
             $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
             foreach ($inputs as $input) {
-                if ($input['type'] === config('epicollect.strings.inputs_type.photo')) {
+                if ($input['type'] === config('epicollect.strings.inputs_type.audio')) {
                     $inputRef = $input['ref'];
                 }
             }
@@ -401,86 +391,10 @@ class UploadAppControllerPhotoTest extends TestCase
                 $formRef,
                 $entryUuid,
                 $filename,
-                'photo',
+                'mp3',
                 $inputRef,
                 'Android',
-                '.png'
-            );
-
-            //multipart upload from app with json encoded string and file (Cordova FileTransfer)
-            $response[] = $this->post($this->endpoint . $this->project->slug,
-                ['data' => json_encode($payload['data']), 'name' => $payload['name']],
-                ['Content-Type' => 'multipart/form-data']
-            );
-
-            $response[0]->assertStatus(200)
-                ->assertExactJson([
-                        "data" => [
-                            "code" => "ec5_237",
-                            "title" => "Entry successfully uploaded."
-                        ]
-                    ]
-                );
-
-            //assert file is uploaded
-            $photos = Storage::disk('entry_original')->files($this->project->ref);
-            $this->assertCount(1, $photos);
-            $photos = Storage::disk('entry_thumb')->files($this->project->ref);
-            $this->assertCount(1, $photos);
-
-            Storage::disk('entry_original')->deleteDirectory($this->project->ref);
-            Storage::disk('entry_thumb')->deleteDirectory($this->project->ref);
-
-        } catch (Exception $e) {
-            $this->logTestError($e, $response);
-        }
-    }
-
-    public function test_it_should_not_allow_gif()
-    {
-        $response = [];
-        $inputRef = null;
-        try {
-            //get top parent formRef
-            $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
-            //get first photo question
-            $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
-            foreach ($inputs as $input) {
-                if ($input['type'] === config('epicollect.strings.inputs_type.photo')) {
-                    $inputRef = $input['ref'];
-                }
-            }
-
-            //create parent entry
-            $entryPayloads = [];
-            for ($i = 0; $i < 1; $i++) {
-                $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
-                $entryRowBundle = $this->entryGenerator->createParentEntryRow(
-                    $this->user,
-                    $this->project,
-                    $this->role,
-                    $this->projectDefinition,
-                    $entryPayloads[$i]
-                );
-
-                $this->assertEntryRowAgainstPayload(
-                    $entryRowBundle,
-                    $entryPayloads[$i]
-                );
-            }
-
-            $filename = $entryPayloads[0]['data']['entry']['answers'][$inputRef]['answer'];
-            $entryUuid = $entryPayloads[0]['data']['entry']['entry_uuid'];
-
-            //generate a fake payload for the top parent form
-            $payload = $this->entryGenerator->createFilePayload(
-                $formRef,
-                $entryUuid,
-                $filename,
-                'photo',
-                $inputRef,
-                'Android',
-                '.gif'
+                '.mp3'
             );
 
             //multipart upload from app with json encoded string and file (Cordova FileTransfer)
@@ -493,36 +407,36 @@ class UploadAppControllerPhotoTest extends TestCase
                 ->assertExactJson([
                         "errors" => [
                             [
-                                "code" => "ec5_81",
-                                "title" => "File type incorrect.",
-                                "source" => "file"
+                                "code" => "ec5_47",
+                                "title" => "File format incorrect.",
+                                "source" => "type"
                             ]
                         ]
                     ]
                 );
 
-            Storage::disk('entry_original')->deleteDirectory($this->project->ref);
-            Storage::disk('entry_thumb')->deleteDirectory($this->project->ref);
+            Storage::disk('audio')->deleteDirectory($this->project->ref);
+
 
         } catch (Exception $e) {
             $this->logTestError($e, $response);
         }
     }
 
-    public function test_it_should_upload_a_branch_photo_jpg()
+    public function test_it_should_upload_a_branch_audio_android()
     {
         //get branch inputs
         $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
         $branchInputs = [];
         $ownerInputRef = null;
         $branchInputRef = null;
-        //get first photo question in the branch
+        //get first audio question in the branch
         foreach ($inputs as $index => $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.branch')) {
                 $ownerInputRef = $input['ref'];
                 $branchInputs = $input['branch'];
                 foreach ($branchInputs as $branchInputIndex => $branchInput) {
-                    if ($branchInput['type'] === config('epicollect.strings.inputs_type.photo')) {
+                    if ($branchInput['type'] === config('epicollect.strings.inputs_type.audio')) {
                         $this->projectDefinition['data']['project']['forms'][0]['inputs'][$index]['branch'][$branchInputIndex]['uniqueness'] = 'form';
                         $branchInputRef = $branchInput['ref'];
                         break 2;
@@ -597,7 +511,7 @@ class UploadAppControllerPhotoTest extends TestCase
                 $formRef,
                 $branchEntryUuid,
                 $filename,
-                'photo',
+                'audio',
                 $branchInputRef
             );
 
@@ -625,32 +539,31 @@ class UploadAppControllerPhotoTest extends TestCase
                 );
 
             //assert file is uploaded
-            $photos = Storage::disk('entry_original')->files($this->project->ref);
-            $this->assertCount(1, $photos);
-            $photos = Storage::disk('entry_thumb')->files($this->project->ref);
-            $this->assertCount(1, $photos);
+            $audios = Storage::disk('audio')->files($this->project->ref);
+            $this->assertCount(1, $audios);
 
-            Storage::disk('entry_original')->deleteDirectory($this->project->ref);
-            Storage::disk('entry_thumb')->deleteDirectory($this->project->ref);
+
+            Storage::disk('audio')->deleteDirectory($this->project->ref);
+
         } catch (Exception $e) {
             $this->logTestError($e, $response);
         }
     }
 
-    public function test_it_should_ignore_missing_branch_entry()
+    public function test_it_should_ignore_missing_branch_entry_android()
     {
         //get branch inputs
         $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
         $branchInputs = [];
         $ownerInputRef = null;
         $branchInputRef = null;
-        //get first photo question in the branch
+        //get first audio question in the branch
         foreach ($inputs as $index => $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.branch')) {
                 $ownerInputRef = $input['ref'];
                 $branchInputs = $input['branch'];
                 foreach ($branchInputs as $branchInputIndex => $branchInput) {
-                    if ($branchInput['type'] === config('epicollect.strings.inputs_type.photo')) {
+                    if ($branchInput['type'] === config('epicollect.strings.inputs_type.audio')) {
                         $this->projectDefinition['data']['project']['forms'][0]['inputs'][$index]['branch'][$branchInputIndex]['uniqueness'] = 'form';
                         $branchInputRef = $branchInput['ref'];
                         break 2;
@@ -725,7 +638,7 @@ class UploadAppControllerPhotoTest extends TestCase
                 $formRef,
                 $branchEntryUuid,
                 $filename,
-                'photo',
+                'audio',
                 $branchInputRef
             );
 
@@ -756,26 +669,25 @@ class UploadAppControllerPhotoTest extends TestCase
                 );
 
             //assert file is not saved
-            $photos = Storage::disk('entry_original')->files($this->project->ref);
-            $this->assertCount(0, $photos);
-            $photos = Storage::disk('entry_thumb')->files($this->project->ref);
-            $this->assertCount(0, $photos);
+            $audios = Storage::disk('audio')->files($this->project->ref);
+            $this->assertCount(0, $audios);
+
         } catch (Exception $e) {
             $this->logTestError($e, $response);
         }
     }
 
-    public function test_it_should_ignore_missing_entry()
+    public function test_it_should_ignore_missing_entry_android()
     {
         $response = [];
         $inputRef = null;
         try {
             //get top parent formRef
             $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
-            //get first photo question
+            //get first audio question
             $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
             foreach ($inputs as $input) {
-                if ($input['type'] === config('epicollect.strings.inputs_type.photo')) {
+                if ($input['type'] === config('epicollect.strings.inputs_type.audio')) {
                     $inputRef = $input['ref'];
                 }
             }
@@ -806,7 +718,7 @@ class UploadAppControllerPhotoTest extends TestCase
                 $formRef,
                 $entryUuid,
                 $filename,
-                'photo',
+                'audio',
                 $inputRef
             );
 
@@ -829,26 +741,25 @@ class UploadAppControllerPhotoTest extends TestCase
                 );
 
             //assert file is not saved
-            $photos = Storage::disk('entry_original')->files($this->project->ref);
-            $this->assertCount(0, $photos);
-            $photos = Storage::disk('entry_thumb')->files($this->project->ref);
-            $this->assertCount(0, $photos);
+            $audios = Storage::disk('audio')->files($this->project->ref);
+            $this->assertCount(0, $audios);
+
         } catch (Exception $e) {
             $this->logTestError($e, $response);
         }
     }
 
-    public function test_it_should_ignore_photo_question_deleted()
+    public function test_it_should_ignore_audio_question_deleted_android()
     {
         $response = [];
         $inputRef = null;
         try {
             //get top parent formRef
             $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
-            //get first photo question
+            //get first audio question
             $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
             foreach ($inputs as $input) {
-                if ($input['type'] === config('epicollect.strings.inputs_type.photo')) {
+                if ($input['type'] === config('epicollect.strings.inputs_type.audio')) {
                     $inputRef = $input['ref'];
                 }
             }
@@ -874,16 +785,7 @@ class UploadAppControllerPhotoTest extends TestCase
             $filename = $entryPayloads[0]['data']['entry']['answers'][$inputRef]['answer'];
             $entryUuid = $entryPayloads[0]['data']['entry']['entry_uuid'];
 
-            //generate a fake payload for the top parent form
-            $payload = $this->entryGenerator->createFilePayload(
-                $formRef,
-                $entryUuid,
-                $filename,
-                'photo',
-                $inputRef
-            );
-
-            //delete the photo question
+            //delete the audio question
             foreach ($inputs as $index => $input) {
                 if ($input['ref'] === $inputRef) {
                     unset($this->projectDefinition['data']['project']['forms'][0]['inputs'][$index]);
@@ -899,6 +801,16 @@ class UploadAppControllerPhotoTest extends TestCase
                 'project_definition' => json_encode($this->projectDefinition['data']),
                 'project_extra' => json_encode($projectExtra),
             ]);
+
+            //generate a fake payload for the top parent form
+            //imp: done after modifying the project as that changes the project version
+            $payload = $this->entryGenerator->createFilePayload(
+                $formRef,
+                $entryUuid,
+                $filename,
+                'audio',
+                $inputRef
+            );
 
             //multipart upload from app with json encoded string and file (Cordova FileTransfer)
             $response[] = $this->post($this->endpoint . $this->project->slug,
@@ -916,10 +828,8 @@ class UploadAppControllerPhotoTest extends TestCase
                 );
 
             //assert file is not saved
-            $photos = Storage::disk('entry_original')->files($this->project->ref);
-            $this->assertCount(0, $photos);
-            $photos = Storage::disk('entry_thumb')->files($this->project->ref);
-            $this->assertCount(0, $photos);
+            $audios = Storage::disk('audio')->files($this->project->ref);
+            $this->assertCount(0, $audios);
         } catch (Exception $e) {
             $this->logTestError($e, $response);
         }
