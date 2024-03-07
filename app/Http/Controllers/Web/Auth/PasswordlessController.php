@@ -52,10 +52,14 @@ class PasswordlessController extends AuthController
         //imp: skip captcha only when testing
         if (!(App::environment() === 'testing')) {
             //parse recaptcha response for any errors
-            $recaptchaResponse = $params['g-recaptcha-response'];
-            $recaptchaErrors = $this->getAnyRecaptchaErrors($recaptchaResponse);
-            if (!empty($recaptchaErrors)) {
-                return redirect()->back()->withErrors($recaptchaErrors);
+            if (isset($params['g-recaptcha-response'])) {
+                $recaptchaResponse = $params['g-recaptcha-response'];
+                $recaptchaErrors = $this->getAnyRecaptchaErrors($recaptchaResponse);
+                if (!empty($recaptchaErrors)) {
+                    return redirect()->back()->withErrors($recaptchaErrors);
+                }
+            } else {
+                return redirect()->back()->withErrors(['recaptcha' => ['ec5_103']]);
             }
         }
 
