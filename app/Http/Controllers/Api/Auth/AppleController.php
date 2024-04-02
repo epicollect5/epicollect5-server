@@ -51,8 +51,8 @@ class AppleController extends AuthController
 
             //validate Apple jwt
             $parsed_id_token = $this->parseIdentityToken($identityToken);
-            Log::error('Apple parsed id token', ['token' => $parsed_id_token]);
             if (!$parsed_id_token) {
+                Log::error('Apple parsed id token failed');
                 $error['api-login-apple'] = ['ec5_382'];
                 return Response::apiErrorCode(400, $error);
             }
