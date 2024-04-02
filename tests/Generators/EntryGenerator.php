@@ -17,7 +17,6 @@ use ec5\Services\Mapping\ProjectMappingService;
 use ec5\Traits\Assertions;
 use Exception;
 use Faker\Factory as Faker;
-use File;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
 use Ramsey\Uuid\Uuid;
@@ -28,6 +27,8 @@ class EntryGenerator
 
     const SYMBOLS = ['!', '@', '€', '£', '#', '$', '%', '^', '&', '*', '"', '\'', '\\', '{', ',', '.', '?', '|', '<', '>', '~', '`'];
     const LOCALES = ['it_IT', 'en_US', 'de_DE', 'es_ES', 'en_GB', 'fr_FR'];
+    const PLATFORMS = ['Android', 'iOS'];
+
 
     private $faker;
     private $randomLocale;
@@ -46,7 +47,7 @@ class EntryGenerator
 
     }
 
-    private function createAnswer($input, $uuid): array
+    public function createAnswer($input, $uuid): array
     {
         switch ($input['type']) {
             case 'text':
@@ -234,7 +235,7 @@ class EntryGenerator
         return $answer;
     }
 
-    public function createParentEntryPayload($formRef): array
+    public function createParentEntryPayload($formRef, $deviceId = ''): array
     {
         $projectSlug = array_get($this->projectDefinition, 'data.project.slug');
         $uuid = Uuid::uuid4()->toString();
@@ -288,8 +289,8 @@ class EntryGenerator
                 'entry' => [
                     'entry_uuid' => $uuid,
                     'created_at' => Carbon::now()->format(config('epicollect.mappings.carbon_formats.ISO')),
-                    'device_id' => '',
-                    'platform' => 'WEB',
+                    'device_id' => $deviceId,
+                    'platform' => empty($deviceId) ? 'WEB' : $this->faker->randomElement(self::PLATFORMS),
                     'title' => $title,
                     'answers' => $answers,
                     'project_version' => Project::version($projectSlug)
@@ -302,7 +303,7 @@ class EntryGenerator
     // see https://github.com/laravel/framework/blob/5.5/src/Illuminate/Http/Testing/MimeType.php
     // in 6, it is possible to specify the mimetype
     //todo: refactor when updating Laravel
-    public function createFilePayload($formRef, $entryUuid, $filename, $type, $inputRef, $platform = 'Android', $dotExt = '.jpg'): array
+    public function createFilePayload($formRef, $entryUuid, $filename, $type, $inputRef, $platform = 'Android', $dotExt = '.jpg', $deviceId = ''): array
     {
         $projectSlug = array_get($this->projectDefinition, 'data.project.slug');
 
@@ -361,8 +362,8 @@ class EntryGenerator
                     "input_ref" => $inputRef,
                     "project_version" => Project::version($projectSlug),
                     "created_at" => Carbon::now()->format(config('epicollect.mappings.carbon_formats.ISO')),
-                    "device_id" => '',
-                    "platform" => $platform
+                    'device_id' => $deviceId,
+                    'platform' => empty($deviceId) ? 'WEB' : $this->faker->randomElement(self::PLATFORMS),
                 ]
             ],
             'name' => $file
@@ -387,6 +388,7 @@ class EntryGenerator
         $entryStructure->init(
             $entryPayload['data'],
             $project->id,
+            $user,
             $requestedProjectRole
         );
         //for each location question, add geoJson to entryStructure
@@ -470,6 +472,7 @@ class EntryGenerator
         $entryStructure->init(
             $childEntryPayload['data'],
             $project->id,
+            $user,
             $requestedProjectRole
         );
 
@@ -539,7 +542,7 @@ class EntryGenerator
         ];
     }
 
-    public function createChildEntryPayload($childFormRef, $parentFormRef, $parentEntryUuid): array
+    public function createChildEntryPayload($childFormRef, $parentFormRef, $parentEntryUuid, $deviceId = ''): array
     {
         $projectSlug = array_get($this->projectDefinition, 'data.project.slug');
         $uuid = Uuid::uuid4()->toString();
@@ -607,8 +610,8 @@ class EntryGenerator
                 'entry' => [
                     'entry_uuid' => $uuid,
                     'created_at' => Carbon::now()->format(config('epicollect.mappings.carbon_formats.ISO')),
-                    'device_id' => '',
-                    'platform' => 'WEB',
+                    'device_id' => $deviceId,
+                    'platform' => empty($deviceId) ? 'WEB' : $this->faker->randomElement(self::PLATFORMS),
                     'title' => $title,
                     'answers' => $answers,
                     'project_version' => Project::version($projectSlug)
@@ -617,7 +620,7 @@ class EntryGenerator
         ];
     }
 
-    public function createBranchEntryPayload($formRef, $branchInputs, $ownerEntryUuid, $ownerInputRef): array
+    public function createBranchEntryPayload($formRef, $branchInputs, $ownerEntryUuid, $ownerInputRef, $deviceId = ''): array
     {
         $projectSlug = array_get($this->projectDefinition, 'data.project.slug');
         $uuid = Uuid::uuid4()->toString();
@@ -665,8 +668,8 @@ class EntryGenerator
                 'branch_entry' => [
                     'entry_uuid' => $uuid,
                     'created_at' => Carbon::now()->format(config('epicollect.mappings.carbon_formats.ISO')),
-                    'device_id' => '',
-                    'platform' => 'WEB',
+                    'device_id' => $deviceId,
+                    'platform' => empty($deviceId) ? 'WEB' : $this->faker->randomElement(self::PLATFORMS),
                     'title' => $title,
                     'answers' => $answers,
                     'project_version' => Project::version($projectSlug)
@@ -694,6 +697,7 @@ class EntryGenerator
         $entryStructure->init(
             $branchEntryPayload['data'],
             $project->id,
+            $user,
             $requestedProjectRole
         );
 

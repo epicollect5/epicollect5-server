@@ -2,6 +2,7 @@
 
 namespace Tests\Http\Controllers\Api\Entries\Upload\External\PublicRoutes;
 
+use ec5\Libraries\Utilities\Common;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
@@ -32,6 +33,8 @@ class UploadAppControllerSequenceTest extends TestCase
     {
         parent::setUp();
         $this->faker = Faker::create();
+        $this->deviceId = Common::generateRandomHex();
+
     }
 
     public function test_should_create_fake_project()
@@ -134,7 +137,7 @@ class UploadAppControllerSequenceTest extends TestCase
             //get top parent formRef
             $formRef = array_get($projectDefinition, 'data.project.forms.0.ref');
             //generate a fake payload for the top parent form
-            $payload = $entryGenerator->createParentEntryPayload($formRef);
+            $payload = $entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
             //perform an app upload without auth
             $response[] = $this->post($this->endpoint . $project->slug, $payload);
             $response[0]->assertStatus(200)

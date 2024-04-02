@@ -171,13 +171,13 @@ class EntriesExportPrivateCuratorTest extends TestCase
             Auth::login($curator);
             $entryPayloads[$i] = $entryGenerator->createParentEntryPayload($formRef);
             $entryRowBundle = $entryGenerator->createParentEntryRow(
-                $user,
+                $curator,
                 $project,
                 $role,
                 $projectDefinition,
                 $entryPayloads[$i]
             );
-            Auth::login($curator);
+            Auth::logout();
 
             $this->assertEntryRowAgainstPayload(
                 $entryRowBundle,

@@ -3,6 +3,7 @@
 namespace Tests\Http\Controllers\Api\Entries\Upload\External\PrivateRoutes\Uniqueness\Hierarchy;
 
 use Auth;
+use ec5\Libraries\Utilities\Common;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectRole;
@@ -88,6 +89,8 @@ class UniquenessHierarchyGroupTest extends TestCase
         $this->project = $project;
         $this->projectDefinition = $projectDefinition;
         $this->projectExtra = $projectExtra;
+        $this->deviceId = Common::generateRandomHex();
+
     }
 
     public function test_hierarchy_group_uniqueness_text_by_web_upload()
@@ -126,7 +129,7 @@ class UniquenessHierarchyGroupTest extends TestCase
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
         for ($i = 0; $i < 1; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
             $entryRowBundle = $this->entryGenerator->createParentEntryRow(
                 $this->user,
                 $this->project,
@@ -268,7 +271,7 @@ class UniquenessHierarchyGroupTest extends TestCase
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
         for ($i = 0; $i < 1; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
             $entryRowBundle = $this->entryGenerator->createParentEntryRow(
                 $this->user,
                 $this->project,
@@ -391,7 +394,7 @@ class UniquenessHierarchyGroupTest extends TestCase
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
         for ($i = 0; $i < 1; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
             $entryRowBundle = $this->entryGenerator->createParentEntryRow(
                 $this->user,
                 $this->project,
@@ -513,7 +516,7 @@ class UniquenessHierarchyGroupTest extends TestCase
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
         for ($i = 0; $i < 1; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
             $entryRowBundle = $this->entryGenerator->createParentEntryRow(
                 $this->user,
                 $this->project,
@@ -644,7 +647,7 @@ class UniquenessHierarchyGroupTest extends TestCase
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
         for ($i = 0; $i < 1; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
             $entryRowBundle = $this->entryGenerator->createParentEntryRow(
                 $this->user,
                 $this->project,
@@ -775,7 +778,7 @@ class UniquenessHierarchyGroupTest extends TestCase
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
         for ($i = 0; $i < 1; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
             $entryRowBundle = $this->entryGenerator->createParentEntryRow(
                 $this->user,
                 $this->project,
@@ -906,7 +909,7 @@ class UniquenessHierarchyGroupTest extends TestCase
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
         for ($i = 0; $i < 1; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
             $entryRowBundle = $this->entryGenerator->createParentEntryRow(
                 $this->user,
                 $this->project,
@@ -1037,7 +1040,7 @@ class UniquenessHierarchyGroupTest extends TestCase
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
         for ($i = 0; $i < 1; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
             $entryRowBundle = $this->entryGenerator->createParentEntryRow(
                 $this->user,
                 $this->project,
@@ -1168,7 +1171,7 @@ class UniquenessHierarchyGroupTest extends TestCase
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
         for ($i = 0; $i < 1; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
             $entryRowBundle = $this->entryGenerator->createParentEntryRow(
                 $this->user,
                 $this->project,
@@ -1301,7 +1304,7 @@ class UniquenessHierarchyGroupTest extends TestCase
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
         for ($i = 0; $i < 1; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
             $entryRowBundle = $this->entryGenerator->createParentEntryRow(
                 $this->user,
                 $this->project,
@@ -1434,7 +1437,7 @@ class UniquenessHierarchyGroupTest extends TestCase
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
         for ($i = 0; $i < 1; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
             $entryRowBundle = $this->entryGenerator->createParentEntryRow(
                 $this->user,
                 $this->project,
@@ -1567,7 +1570,7 @@ class UniquenessHierarchyGroupTest extends TestCase
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
         for ($i = 0; $i < 1; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
             $entryRowBundle = $this->entryGenerator->createParentEntryRow(
                 $this->user,
                 $this->project,
@@ -1700,7 +1703,7 @@ class UniquenessHierarchyGroupTest extends TestCase
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
         for ($i = 0; $i < 1; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
             $entryRowBundle = $this->entryGenerator->createParentEntryRow(
                 $this->user,
                 $this->project,
@@ -1833,7 +1836,7 @@ class UniquenessHierarchyGroupTest extends TestCase
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
         for ($i = 0; $i < 1; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
             $entryRowBundle = $this->entryGenerator->createParentEntryRow(
                 $this->user,
                 $this->project,
@@ -1956,7 +1959,7 @@ class UniquenessHierarchyGroupTest extends TestCase
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
         for ($i = 0; $i < 1; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
             $entryRowBundle = $this->entryGenerator->createParentEntryRow(
                 $this->user,
                 $this->project,
@@ -2079,7 +2082,7 @@ class UniquenessHierarchyGroupTest extends TestCase
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
         for ($i = 0; $i < 1; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
             $entryRowBundle = $this->entryGenerator->createParentEntryRow(
                 $this->user,
                 $this->project,

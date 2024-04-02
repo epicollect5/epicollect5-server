@@ -203,4 +203,20 @@ class Common
         }
         return $value;
     }
+
+    //used to generate random Android device ID in tests
+    public static function generateRandomHex($length = 16)
+    {
+        // Calculate the number of bytes needed
+        $byteLength = (int)ceil($length / 2);
+
+        // Generate random bytes
+        $randomBytes = random_bytes($byteLength);
+
+        // Convert random bytes to hexadecimal
+        $hex = bin2hex($randomBytes);
+
+        // Trim to desired length
+        return substr($hex, 0, $length);
+    }
 }

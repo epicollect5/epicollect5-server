@@ -2,6 +2,7 @@
 
 namespace Tests\Http\Controllers\Api\Entries\Upload\External\PrivateRoutes;
 
+use ec5\Libraries\Utilities\Common;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
@@ -33,6 +34,7 @@ class UploadAppControllerSequenceTest extends TestCase
     {
         parent::setUp();
         $this->faker = Faker::create();
+        $this->deviceId = Common::generateRandomHex();
     }
 
     public function test_should_create_fake_project()
@@ -135,7 +137,7 @@ class UploadAppControllerSequenceTest extends TestCase
             //get top parent formRef
             $formRef = array_get($projectDefinition, 'data.project.forms.0.ref');
             //generate a fake entry for the top parent form
-            $entry = $entryGenerator->createParentEntryPayload($formRef);
+            $entry = $entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
             $response[] = $this->post($this->endpoint . $project->slug, $entry);
             $response[0]->assertStatus(404)
                 ->assertExactJson([
@@ -181,7 +183,7 @@ class UploadAppControllerSequenceTest extends TestCase
             //get top parent formRef
             $formRef = array_get($projectDefinition, 'data.project.forms.0.ref');
             //generate a fake entry for the top parent form
-            $entry = $entryGenerator->createParentEntryPayload($formRef);
+            $entry = $entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
             Auth::guard('api_external')->login($notAMember);
             $response[] = $this->actingAs($user)->post($this->endpoint . $project->slug, $entry);
             $response[0]->assertStatus(404)
@@ -226,7 +228,7 @@ class UploadAppControllerSequenceTest extends TestCase
             //get top parent formRef
             $formRef = array_get($projectDefinition, 'data.project.forms.0.ref');
             //generate a fake payload for the top parent form
-            $payload = $entryGenerator->createParentEntryPayload($formRef);
+            $payload = $entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
             //perform an app upload (auth via JWT)
             Auth::guard('api_external')->login($user);
             $response[] = $this->actingAs($user)->post($this->endpoint . $project->slug, $payload);
@@ -301,7 +303,8 @@ class UploadAppControllerSequenceTest extends TestCase
             $childEntry1 = $entryGenerator->createChildEntryPayload(
                 $childFormRef,
                 $parentFormRef,
-                $parentEntryUuid
+                $parentEntryUuid,
+                $this->deviceId
             );
 
             //post the child entry
@@ -371,7 +374,8 @@ class UploadAppControllerSequenceTest extends TestCase
             $childEntry2 = $entryGenerator->createChildEntryPayload(
                 $childFormRef,
                 $parentFormRef,
-                $parentEntryUuid
+                $parentEntryUuid,
+                $this->deviceId
             );
 
             //post the child entry
@@ -450,7 +454,8 @@ class UploadAppControllerSequenceTest extends TestCase
             $childEntry3 = $entryGenerator->createChildEntryPayload(
                 $childFormRef,
                 $parentFormRef,
-                $parentEntryUuid
+                $parentEntryUuid,
+                $this->deviceId
             );
 
             //post the child entry
@@ -533,7 +538,8 @@ class UploadAppControllerSequenceTest extends TestCase
             $childEntry4 = $entryGenerator->createChildEntryPayload(
                 $childFormRef,
                 $parentFormRef,
-                $parenEntryUuid
+                $parenEntryUuid,
+                $this->deviceId
             );
 
             //post the child entry

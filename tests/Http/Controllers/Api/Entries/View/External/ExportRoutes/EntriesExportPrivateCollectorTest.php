@@ -152,6 +152,9 @@ class EntriesExportPrivateCollectorTest extends TestCase
         $project = $params['project'];
         $role = $params['role'];
         $projectDefinition = $params['projectDefinition'];
+        /**
+         * @var $entryGenerator EntryGenerator
+         */
         $entryGenerator = $params['entryGenerator'];
         $dataMappingService = new DataMappingService();
 
@@ -171,13 +174,13 @@ class EntriesExportPrivateCollectorTest extends TestCase
             Auth::login($collector);
             $entryPayloads[$i] = $entryGenerator->createParentEntryPayload($formRef);
             $entryRowBundle = $entryGenerator->createParentEntryRow(
-                $user,
+                $collector,
                 $project,
                 $role,
                 $projectDefinition,
                 $entryPayloads[$i]
             );
-            Auth::login($collector);
+            Auth::logout();
 
             $this->assertEntryRowAgainstPayload(
                 $entryRowBundle,

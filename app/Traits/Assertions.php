@@ -14,6 +14,7 @@ use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
 use ec5\Services\Mapping\ProjectMappingService;
+use Hash;
 use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Assert;
 
@@ -618,7 +619,14 @@ trait Assertions
         }
         $this->assertEquals($formRef, $entryStored->form_ref);
         $this->assertEquals($entryPayload['data'][$entryType]['platform'], $entryStored->platform);
-        $this->assertEquals($entryPayload['data'][$entryType]['device_id'], $entryStored->device_id);
+
+        if ($entryPayload['data'][$entryType]['device_id'] !== '') {
+            //assert the device id is the same
+            $this->assertTrue(Hash::check($entryPayload['data'][$entryType]['device_id'], $entryStored->device_id));
+        } else {
+            //empty, assert strings directly (should both be empty)
+            $this->assertEquals($entryPayload['data'][$entryType]['device_id'], $entryStored->device_id);
+        }
 
         //assert timestamps are equal (converted as the format is different JS/MYSQL)
         $this->assertTrue(DateFormatConverter::areTimestampsEqual(

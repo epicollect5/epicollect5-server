@@ -2,6 +2,7 @@
 
 namespace Http\Controllers\Api\Entries\Upload\External\PublicRoutes\Media;
 
+use ec5\Libraries\Utilities\Common;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
@@ -97,6 +98,8 @@ class UploadAppControllerVideoTest extends TestCase
         $this->project = $project;
         $this->projectDefinition = $projectDefinition;
         $this->projectExtra = $projectExtra;
+        $this->deviceId = Common::generateRandomHex();
+
     }
 
     public function test_it_should_upload_a_top_hierarchy_video()
@@ -117,7 +120,7 @@ class UploadAppControllerVideoTest extends TestCase
             //create parent entry
             $entryPayloads = [];
             for ($i = 0; $i < 1; $i++) {
-                $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+                $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
                 $entryRowBundle = $this->entryGenerator->createParentEntryRow(
                     $this->user,
                     $this->project,
@@ -293,7 +296,7 @@ class UploadAppControllerVideoTest extends TestCase
             //create parent entry
             $entryPayloads = [];
             for ($i = 0; $i < 1; $i++) {
-                $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+                $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
                 $entryRowBundle = $this->entryGenerator->createParentEntryRow(
                     $this->user,
                     $this->project,
@@ -375,7 +378,7 @@ class UploadAppControllerVideoTest extends TestCase
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
         for ($i = 0; $i < 1; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
             $entryRowBundle = $this->entryGenerator->createParentEntryRow(
                 $this->user,
                 $this->project,
@@ -500,7 +503,7 @@ class UploadAppControllerVideoTest extends TestCase
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
         for ($i = 0; $i < 1; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
             $entryRowBundle = $this->entryGenerator->createParentEntryRow(
                 $this->user,
                 $this->project,
@@ -619,7 +622,7 @@ class UploadAppControllerVideoTest extends TestCase
             //create parent entry
             $entryPayloads = [];
             for ($i = 0; $i < 1; $i++) {
-                $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+                $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
                 $entryRowBundle = $this->entryGenerator->createParentEntryRow(
                     $this->user,
                     $this->project,
@@ -691,7 +694,7 @@ class UploadAppControllerVideoTest extends TestCase
             //create parent entry
             $entryPayloads = [];
             for ($i = 0; $i < 1; $i++) {
-                $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+                $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
                 $entryRowBundle = $this->entryGenerator->createParentEntryRow(
                     $this->user,
                     $this->project,

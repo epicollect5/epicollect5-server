@@ -1,6 +1,6 @@
 <?php
 
-namespace Http\Controllers\Api\Entries\Upload\Internal;
+namespace Tests\Http\Controllers\Api\Entries\Upload\Internal;
 
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
@@ -27,6 +27,8 @@ class UploadWebControllerLimitsTest extends TestCase
     private $entryGenerator;
     private $parentUuids;
     private $branchesCounter;
+
+    private $endpoint = 'api/internal/web-upload/';
 
     public function setUp()
     {
@@ -173,7 +175,7 @@ class UploadWebControllerLimitsTest extends TestCase
             //generate a fake entry for the top parent form
             $entry = $this->entryGenerator->createParentEntryPayload($formRef);
             //perform a web upload
-            $response[] = $this->actingAs($this->user)->post('api/internal/web-upload/' . $this->project->slug, $entry);
+            $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $entry);
             $response[0]->assertStatus(400)
                 ->assertExactJson([
                         "errors" => [
@@ -200,7 +202,7 @@ class UploadWebControllerLimitsTest extends TestCase
             //generate a fake entry for child form level 1
             $entry = $this->entryGenerator->createChildEntryPayload($childFormRef, $parentFormRef, $this->parentUuids[0]);
             //perform a web upload
-            $response[] = $this->actingAs($this->user)->post('api/internal/web-upload/' . $this->project->slug, $entry);
+            $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $entry);
             $response[0]->assertStatus(400)
                 ->assertExactJson([
                         "errors" => [
@@ -227,7 +229,7 @@ class UploadWebControllerLimitsTest extends TestCase
             //generate a fake entry for child form level 1
             $entry = $this->entryGenerator->createChildEntryPayload($childFormRef, $parentFormRef, $this->parentUuids[1]);
             //perform a web upload
-            $response[] = $this->actingAs($this->user)->post('api/internal/web-upload/' . $this->project->slug, $entry);
+            $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $entry);
             $response[0]->assertStatus(400)
                 ->assertExactJson([
                         "errors" => [
@@ -254,7 +256,7 @@ class UploadWebControllerLimitsTest extends TestCase
             //generate a fake entry for child form level 1
             $entry = $this->entryGenerator->createChildEntryPayload($childFormRef, $parentFormRef, $this->parentUuids[2]);
             //perform a web upload
-            $response[] = $this->actingAs($this->user)->post('api/internal/web-upload/' . $this->project->slug, $entry);
+            $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $entry);
             $response[0]->assertStatus(400)
                 ->assertExactJson([
                         "errors" => [
@@ -281,7 +283,7 @@ class UploadWebControllerLimitsTest extends TestCase
             //generate a fake entry for child form level 1
             $entry = $this->entryGenerator->createChildEntryPayload($childFormRef, $parentFormRef, $this->parentUuids[3]);
             //perform a web upload
-            $response[] = $this->actingAs($this->user)->post('api/internal/web-upload/' . $this->project->slug, $entry);
+            $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $entry);
             $response[0]->assertStatus(400)
                 ->assertExactJson([
                         "errors" => [
@@ -321,7 +323,7 @@ class UploadWebControllerLimitsTest extends TestCase
             );
 
             //post the branch entry
-            $response[] = $this->actingAs($this->user)->post('api/internal/web-upload/' . $this->project->slug, $branchEntry);
+            $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $branchEntry);
             $response[0]->assertStatus(400)
                 ->assertExactJson([
                         "errors" => [
@@ -362,7 +364,7 @@ class UploadWebControllerLimitsTest extends TestCase
             );
 
             //post the branch entry
-            $response[] = $this->actingAs($this->user)->post('api/internal/web-upload/' . $this->project->slug, $branchEntry);
+            $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $branchEntry);
             $response[0]->assertStatus(400)
                 ->assertExactJson([
                         "errors" => [
@@ -403,7 +405,7 @@ class UploadWebControllerLimitsTest extends TestCase
             );
 
             //post the branch entry
-            $response[] = $this->actingAs($this->user)->post('api/internal/web-upload/' . $this->project->slug, $branchEntry);
+            $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $branchEntry);
             $response[0]->assertStatus(400)
                 ->assertExactJson([
                         "errors" => [
@@ -444,7 +446,7 @@ class UploadWebControllerLimitsTest extends TestCase
             );
 
             //post the branch entry
-            $response[] = $this->actingAs($this->user)->post('api/internal/web-upload/' . $this->project->slug, $branchEntry);
+            $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $branchEntry);
             $response[0]->assertStatus(400)
                 ->assertExactJson([
                         "errors" => [
@@ -485,7 +487,7 @@ class UploadWebControllerLimitsTest extends TestCase
             );
 
             //post the branch entry
-            $response[] = $this->actingAs($this->user)->post('api/internal/web-upload/' . $this->project->slug, $branchEntry);
+            $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $branchEntry);
             $response[0]->assertStatus(400)
                 ->assertExactJson([
                         "errors" => [

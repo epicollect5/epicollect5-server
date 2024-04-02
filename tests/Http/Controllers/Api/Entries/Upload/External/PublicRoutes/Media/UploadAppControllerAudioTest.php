@@ -2,6 +2,7 @@
 
 namespace Http\Controllers\Api\Entries\Upload\External\PublicRoutes\Media;
 
+use ec5\Libraries\Utilities\Common;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
@@ -97,6 +98,8 @@ class UploadAppControllerAudioTest extends TestCase
         $this->project = $project;
         $this->projectDefinition = $projectDefinition;
         $this->projectExtra = $projectExtra;
+        $this->deviceId = Common::generateRandomHex();
+
     }
 
     public function test_it_should_upload_a_top_hierarchy_audio_android()
@@ -106,7 +109,7 @@ class UploadAppControllerAudioTest extends TestCase
         try {
             //get top parent formRef
             $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
-            //get first audio question
+            //get the first audio question
             $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
             foreach ($inputs as $input) {
                 if ($input['type'] === config('epicollect.strings.inputs_type.audio')) {

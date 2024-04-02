@@ -171,13 +171,13 @@ class EntriesExportPrivateManagerTest extends TestCase
             Auth::login($manager);
             $entryPayloads[$i] = $entryGenerator->createParentEntryPayload($formRef);
             $entryRowBundle = $entryGenerator->createParentEntryRow(
-                $user,
+                $manager,
                 $project,
                 $role,
                 $projectDefinition,
                 $entryPayloads[$i]
             );
-            Auth::login($manager);
+            Auth::logout();
 
             $this->assertEntryRowAgainstPayload(
                 $entryRowBundle,

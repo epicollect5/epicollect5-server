@@ -151,6 +151,9 @@ class EntriesExportPrivateTest extends TestCase
         $project = $params['project'];
         $role = $params['role'];
         $projectDefinition = $params['projectDefinition'];
+        /**
+         * @var $entryGenerator EntryGenerator
+         */
         $entryGenerator = $params['entryGenerator'];
         $dataMappingService = new DataMappingService();
 
@@ -160,7 +163,7 @@ class EntriesExportPrivateTest extends TestCase
         for ($i = 0; $i < 1; $i++) {
             $entryPayloads[$i] = $entryGenerator->createParentEntryPayload($formRef);
             $entryRowBundle = $entryGenerator->createParentEntryRow(
-                $user,
+                null, //so it gets user id of 0
                 $project,
                 $role,
                 $projectDefinition,

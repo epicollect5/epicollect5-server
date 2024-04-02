@@ -2,6 +2,7 @@
 
 namespace Tests\Http\Controllers\Api\Entries\Upload\External\PublicRoutes\Uniqueness\Form;
 
+use ec5\Libraries\Utilities\Common;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
@@ -88,6 +89,8 @@ class UniquenessFormBranchTest extends TestCase
         $this->project = $project;
         $this->projectDefinition = $projectDefinition;
         $this->projectExtra = $projectExtra;
+        $this->deviceId = Common::generateRandomHex();
+
     }
 
     public function test_form_uniqueness_branch_text_by_web_upload()
@@ -128,7 +131,7 @@ class UniquenessFormBranchTest extends TestCase
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
         for ($i = 0; $i < 1; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
             $entryRowBundle = $this->entryGenerator->createParentEntryRow(
                 $this->user,
                 $this->project,
@@ -255,7 +258,7 @@ class UniquenessFormBranchTest extends TestCase
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
         for ($i = 0; $i < 1; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
             $entryRowBundle = $this->entryGenerator->createParentEntryRow(
                 $this->user,
                 $this->project,
@@ -382,7 +385,7 @@ class UniquenessFormBranchTest extends TestCase
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
         for ($i = 0; $i < 1; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
             $entryRowBundle = $this->entryGenerator->createParentEntryRow(
                 $this->user,
                 $this->project,
@@ -509,7 +512,7 @@ class UniquenessFormBranchTest extends TestCase
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
         for ($i = 0; $i < 1; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
             $entryRowBundle = $this->entryGenerator->createParentEntryRow(
                 $this->user,
                 $this->project,
@@ -643,7 +646,7 @@ class UniquenessFormBranchTest extends TestCase
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
         for ($i = 0; $i < 1; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
             $entryRowBundle = $this->entryGenerator->createParentEntryRow(
                 $this->user,
                 $this->project,
@@ -778,7 +781,7 @@ class UniquenessFormBranchTest extends TestCase
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
         for ($i = 0; $i < 1; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
             $entryRowBundle = $this->entryGenerator->createParentEntryRow(
                 $this->user,
                 $this->project,
@@ -913,7 +916,7 @@ class UniquenessFormBranchTest extends TestCase
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
         for ($i = 0; $i < 1; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
             $entryRowBundle = $this->entryGenerator->createParentEntryRow(
                 $this->user,
                 $this->project,
@@ -1048,7 +1051,7 @@ class UniquenessFormBranchTest extends TestCase
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
         for ($i = 0; $i < 1; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
             $entryRowBundle = $this->entryGenerator->createParentEntryRow(
                 $this->user,
                 $this->project,
@@ -1183,7 +1186,7 @@ class UniquenessFormBranchTest extends TestCase
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
         for ($i = 0; $i < 1; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
             $entryRowBundle = $this->entryGenerator->createParentEntryRow(
                 $this->user,
                 $this->project,
@@ -1320,7 +1323,7 @@ class UniquenessFormBranchTest extends TestCase
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
         for ($i = 0; $i < 1; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
             $entryRowBundle = $this->entryGenerator->createParentEntryRow(
                 $this->user,
                 $this->project,
@@ -1457,7 +1460,7 @@ class UniquenessFormBranchTest extends TestCase
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
         for ($i = 0; $i < 1; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
             $entryRowBundle = $this->entryGenerator->createParentEntryRow(
                 $this->user,
                 $this->project,
@@ -1594,7 +1597,7 @@ class UniquenessFormBranchTest extends TestCase
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
         for ($i = 0; $i < 1; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
             $entryRowBundle = $this->entryGenerator->createParentEntryRow(
                 $this->user,
                 $this->project,
@@ -1731,7 +1734,7 @@ class UniquenessFormBranchTest extends TestCase
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
         for ($i = 0; $i < 1; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
             $entryRowBundle = $this->entryGenerator->createParentEntryRow(
                 $this->user,
                 $this->project,
@@ -1868,7 +1871,7 @@ class UniquenessFormBranchTest extends TestCase
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
         for ($i = 0; $i < 1; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
             $entryRowBundle = $this->entryGenerator->createParentEntryRow(
                 $this->user,
                 $this->project,
@@ -1995,7 +1998,7 @@ class UniquenessFormBranchTest extends TestCase
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
         for ($i = 0; $i < 1; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
             $entryRowBundle = $this->entryGenerator->createParentEntryRow(
                 $this->user,
                 $this->project,
@@ -2122,7 +2125,7 @@ class UniquenessFormBranchTest extends TestCase
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
         for ($i = 0; $i < 1; $i++) {
-            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
             $entryRowBundle = $this->entryGenerator->createParentEntryRow(
                 $this->user,
                 $this->project,

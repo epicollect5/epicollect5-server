@@ -2,6 +2,7 @@
 
 namespace Tests\Http\Controllers\Api\Entries\Upload\External\PublicRoutes;
 
+use ec5\Libraries\Utilities\Common;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
@@ -159,6 +160,8 @@ class UploadAppControllerLimitsTest extends TestCase
             $this->projectDefinition = $projectDefinition;
             $this->entryGenerator = $entryGenerator;
             $this->parentUuids = $parentUuids;
+            $this->deviceId = Common::generateRandomHex();
+
 
         } catch (Exception $exception) {
             $this->logTestError($exception, $response);
@@ -173,7 +176,7 @@ class UploadAppControllerLimitsTest extends TestCase
             //get top parent formRef
             $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
             //generate a fake entry for the top parent form
-            $entry = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entry = $this->entryGenerator->createParentEntryPayload($formRef, $this->deviceId);
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $entry);
             $response[0]->assertStatus(400)

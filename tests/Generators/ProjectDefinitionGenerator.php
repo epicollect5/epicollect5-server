@@ -178,7 +178,7 @@ class ProjectDefinitionGenerator
             $branchInputs[] = ProjectDefinitionGenerator::createIntegerInput($inputRef);
             $branchInputs[] = ProjectDefinitionGenerator::createDecimalInput($inputRef);
             $branchInputs[] = ProjectDefinitionGenerator::createPhoneInput($inputRef);
-            $branchInputs[] = ProjectDefinitionGenerator::createSimpleInput($inputRef);
+            $branchInputs[] = ProjectDefinitionGenerator::createTextBoxInput($inputRef);
             $branchInputs[] = ProjectDefinitionGenerator::createTimeInput($inputRef);
             $branchInputs[] = ProjectDefinitionGenerator::createDateInput($inputRef);
             $branchInputs[] = ProjectDefinitionGenerator::createMultipleChoiceInput($inputRef);
@@ -192,7 +192,6 @@ class ProjectDefinitionGenerator
             $branchInputs[] = ProjectDefinitionGenerator::createVideoInput($inputRef);
             $branchInputs[] = ProjectDefinitionGenerator::createGroup($inputRef);
             $branchInputs[] = ProjectDefinitionGenerator::createGroup($inputRef);
-            $branchInputs[] = ProjectDefinitionGenerator::createTextBoxInput($inputRef);
             $branchInputs[] = ProjectDefinitionGenerator::createBarcodeInput($inputRef);
         }
 
