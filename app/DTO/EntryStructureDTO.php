@@ -23,10 +23,10 @@ class EntryStructureDTO
     protected $existingEntry = null;
     protected $file = null;
 
-    public function init($payload, $projectId, $requestedProjectRole)
+    public function init($payload, $projectId, $requestedUser, $requestedProjectRole)
     {
-        // Get current user
-        $user = auth()->user();
+        // Get current user (from $requestedUser since we do not know what guard was used)
+        $user = $requestedUser;
         // Initialise entry structure based on request payload
         $this->createStructure($payload);
         // Add user id (0 if null) to entry structure
@@ -473,6 +473,15 @@ class EntryStructureDTO
         return false;
     }
 
+    /**
+     * We replaced the user id when
+     *  - the upload is from a device
+     *  - the existing entry has an ID of zero (0) (public upload without logging in)
+     *  - the device ID matches
+     *
+     *  This means the upload is an edit from the same device,
+     *  and the user logged in, so we safely assign the entry to that user
+     */
     public function shouldUpdateUserId(): bool
     {
         return $this->updateUserId;

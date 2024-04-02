@@ -131,6 +131,4 @@ class Handler extends ExceptionHandler
 
         return response()->make(view('errors.gen_error')->withErrors([$errorCode]), $httpStatusCode);
     }
-
-
 }

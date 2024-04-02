@@ -53,6 +53,7 @@ class EntriesUploadService
         $this->entryStructure->init(
             $payload,
             $this->requestedProject()->getId(),
+            $this->requestedUser(),
             $this->requestedProjectRole()
         );
 

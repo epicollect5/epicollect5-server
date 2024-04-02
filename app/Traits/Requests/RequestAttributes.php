@@ -8,10 +8,10 @@ use ec5\Models\User\User;
 
 trait RequestAttributes
 {
-    protected function requestedUser(): User
+    protected function requestedUser(): ?User
     {
         /**
-         * @var User $user
+         * @var User|null $user
          */
         $user = request()->attributes->get('requestedUser');
         return $user;

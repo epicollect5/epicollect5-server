@@ -33,6 +33,7 @@ class UploadUniquenessController extends UploadControllerBase
         $this->entryStructure->init(
             request()->get('data'),
             $this->requestedProject()->getId(),
+            $this->requestedUser(),
             $this->requestedProjectRole()
         );
 
