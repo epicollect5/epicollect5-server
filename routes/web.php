@@ -104,7 +104,10 @@ Route::group(['middleware' => 'auth.admin'], function () {
     Route::get('admin/tools/hash-password', 'Web\Admin\Tools\AuthToolsController@show');
     Route::post('admin/tools/hash-password', 'Web\Admin\Tools\AuthToolsController@hash');
 
-    Route::get('admin/tools/email', 'Web\Admin\Tools\PHPToolsController@sendEmail');
+    Route::get('admin/tools/send-superadmin-email', 'Web\Admin\Tools\PHPToolsController@sendSuperAdminEmail');
+
+    Route::get('admin/tools/send-system-email', 'Web\Admin\Tools\PHPToolsController@sendSystemEmail');
+
 
     Route::get('admin/tools/email-preview', 'Web\Admin\Tools\PHPToolsController@previewEmail');
 

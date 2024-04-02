@@ -110,11 +110,22 @@ class PHPToolsController
         return Project::updateAllTables($this->project, $params, false);
     }
 
-    public function sendEmail()
+    public function sendSuperAdminEmail()
     {
         //send test email to verify it is all working
         try {
             Mail::to(config('epicollect.setup.super_admin_user.email'))->send(new DebugEmailSending());
+            return 'Mail sent.';
+        } catch (Exception $e) {
+            return 'Failed -> ' . $e->getMessage();
+        }
+    }
+
+    public function sendSystemEmail()
+    {
+        //send test email to verify it is all working
+        try {
+            Mail::to(config('epicollect.setup.system.email'))->send(new DebugEmailSending());
             return 'Mail sent.';
         } catch (Exception $e) {
             return 'Failed -> ' . $e->getMessage();
