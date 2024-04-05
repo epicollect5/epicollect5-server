@@ -6,10 +6,12 @@ namespace ec5\Http\Controllers\Api\Entries\Upload;
 
 use ec5\DTO\EntryStructureDTO;
 use ec5\Libraries\Utilities\DateFormatConverter;
+use ec5\Models\Counters\BranchEntryCounter;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use Exception;
 use File;
+use Log;
 use Response;
 use Storage;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -31,6 +33,7 @@ class UploadWebController extends UploadControllerBase
         if (!$this->entriesUploadService->upload()) {
             return Response::apiErrorCode(400, $this->entriesUploadService->errors);
         }
+
 
         //default response code for new entry
         $responseCode = 'ec5_237';
@@ -92,6 +95,19 @@ class UploadWebController extends UploadControllerBase
             }
         }
 
+        /**
+         * imp: Remove any leftover branch entry
+         *
+         * This situation arises when branches are added via the web interface
+         * and then they are skipped due to a jump, either during editing
+         * or while navigating back and forth to adjust jump responses.
+         *
+         * If a branch reference is skipped in the owner entry, all branches associated with that reference and the owner entry UUID are deleted.
+         *
+         * Fixes this -> https://community.epicollect.net/t/online-data-and-download-data-differ/802/3
+         */
+        $this->removeLeftoverBranchEntries($formRef, $projectExtra);
+
         //Throttle for half a second so the server does not get smashed by uploads
         time_nanosleep(0, (int)(config('epicollect.setup.api.response_delay.upload')));
 
@@ -116,13 +132,13 @@ class UploadWebController extends UploadControllerBase
     /**
      * @param $rootFolder
      * @param $input
-     * @return bool
+     * @return void
      */
-    private function moveFile($rootFolder, $input)
+    private function moveFile($rootFolder, $input): void
     {
         // If we don't have a media input type
         if (!in_array($input['type'], array_keys(config('epicollect.strings.media_input_types')))) {
-            return false;
+            return;
         }
 
         $fileName = $this->entryStructure->getValidatedAnswer($input['ref'])['answer'];
@@ -131,7 +147,7 @@ class UploadWebController extends UploadControllerBase
         // If the answer is empty
         // Or if we don't have a file for this input in the temp folder
         if (empty($fileName) || !File::exists($filePath)) {
-            return false;
+            return;
         }
 
         try {
@@ -144,7 +160,7 @@ class UploadWebController extends UploadControllerBase
         } catch (Exception $e) {
             // File doesn't exist
             $this->errors['web upload'] = ['ec5_231'];
-            return false;
+            return;
         }
 
         // Load everything into an entry structure model
@@ -167,12 +183,79 @@ class UploadWebController extends UploadControllerBase
         $this->ruleFileEntry->moveFile($this->requestedProject(), $entryStructure);
         if ($this->ruleFileEntry->hasErrors()) {
             $this->errors = $this->ruleFileEntry->errors();
-            return false;
+            return;
         }
 
         // Delete file from temp folder
         File::delete($filePath);
 
-        return true;
+    }
+
+    private function removeLeftoverBranchEntries($formRef, $projectExtra)
+    {
+        //if this is a branch, bail out (cannot have branches within branches)
+        if ($this->entryStructure->isBranch()) {
+            return;
+        }
+
+        //if this is not an edit, bail out
+        $existingEntry = $this->entryStructure->getExisting();
+        if (!$existingEntry) {
+            return;
+        }
+
+        //are there any branches? Otherwise, bail out
+        $branches = $projectExtra->getBranches($formRef);
+        if (sizeof($branches) === 0) {
+            return;
+        }
+
+        //get jumped input refs, if any
+        $jumpedInputRefs = [];
+        $answers = $this->entryStructure->getValidatedAnswers();
+        foreach ($answers as $ref => $answer) {
+            if ($answer['was_jumped'] === true) {
+                $jumpedInputRefs[] = $ref;
+            }
+        }
+
+        //do we have some jumped questions? Otherwise, bail out
+        if (sizeof($jumpedInputRefs) === 0) {
+            return;
+        }
+
+        //filter refs by those which are branch refs
+        $skippedBranchRefs = [];
+        foreach ($branches as $branchRef => $value) {
+            if (in_array($branchRef, $jumpedInputRefs)) {
+                //this branch was skipped, remove any leftovers
+                $skippedBranchRefs[] = $branchRef;
+            }
+        }
+
+        //if any leftovers, delete using branch ref and entry owner uuid, otherwise bail out
+        if (sizeof($skippedBranchRefs) === 0) {
+            return;
+        }
+
+        //perform the deletion
+        try {
+            //delete leftover branch entries
+            BranchEntry::where('owner_uuid', $this->entryStructure->getEntryUuid())
+                ->whereIn('owner_input_ref', $skippedBranchRefs)
+                ->delete();
+
+            //update branch counts
+            $entryCounter = new BranchEntryCounter();
+            if (!$entryCounter->updateCounters($this->requestedProject(), $this->entryStructure)) {
+                throw new Exception('Cannot update branch entries counters after leftover deletion');
+            }
+        } catch (Exception $e) {
+            Log::error('Could not delete leftover branches', [
+                'owner_uuid' => $this->entryStructure->getEntryUuid(),
+                'owner_input_ref(s)' => $skippedBranchRefs,
+                'exception' => $e->getMessage()
+            ]);
+        }
     }
 }

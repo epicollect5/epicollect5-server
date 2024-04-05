@@ -115,6 +115,7 @@ class CreateEntryService
                 throw new Exception(config('epicollect.codes.ec5_95'));
             }
 
+
             // Update the stats for the entry
             if (!$this->updateEntriesCounts($project, $entryStructure)) {
                 $this->errors['stats-update'] = ['ec5_45'];
