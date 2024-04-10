@@ -1070,7 +1070,7 @@ class EditExistingHierarchyEntryTest extends TestCase
         }
     }
 
-    public function test_edit_existing_entry_textarea_by_app_upload_same_user()
+    public function test_edit_existing_entry_textbox_by_app_upload_same_user()
     {
         //get project definition
         $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
@@ -1932,7 +1932,7 @@ class EditExistingHierarchyEntryTest extends TestCase
             }
         }
 
-        //create entry with the creator role
+        //create entry with the collector A role
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
         for ($i = 0; $i < 1; $i++) {
@@ -2052,7 +2052,7 @@ class EditExistingHierarchyEntryTest extends TestCase
 
         $entryFromDB = Entry::where('uuid', $entryPayloads[0]['data']['id'])->first();
 
-        //try to upload payload text answer edited (reversing the string)
+        //try to upload payload text answer edited
         $editedAnswers = json_decode($entryFromDB->entry_data, true)['entry']['answers'];
         foreach ($editedAnswers as $ref => $existingAnswer) {
             if ($ref === $inputRef) {
@@ -2268,8 +2268,7 @@ class EditExistingHierarchyEntryTest extends TestCase
         $response = [];
         try {
             //perform an app upload with the user, the same device, should update user ID
-            Auth::guard('api_external')->login($collector, false);
-            $response[] = $this->actingAs($collector)->post($this->endpoint . $this->project->slug, $entryPayloads[0]);
+            $response[] = $this->actingAs($collector, 'api_external')->post($this->endpoint . $this->project->slug, $entryPayloads[0]);
             $response[0]->assertStatus(200);
 
             $response[0]->assertExactJson([
