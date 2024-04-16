@@ -91,12 +91,6 @@ Route::group(['middleware' => ['throttle:600,1']], function () {
             'Api\Entries\View\ViewEntriesLocationsController@show'
         );
 
-        // Web entry uploads
-        Route::post(
-            'api/web-upload/{project_slug}',
-            'Api\Entries\Upload\UploadWebController@postUpload'
-        );
-
         // Web file uploads
         Route::post(
             'api/web-upload-file/{project_slug}',
