@@ -323,7 +323,7 @@ trait Assertions
 
     }
 
-    public function assertEntriesExportResponse($response, $mapping, $params)
+    public function assertEntriesExportResponse($response, $mapping, $params, $mapIndex = 0)
     {
         $mappedInputs = [];
         if (is_array($response)) {
@@ -334,17 +334,17 @@ trait Assertions
             $json = json_decode($response->getContent(), true);
         }
 
-        // dd($mapping[0]['forms'][$params['form_ref']], $json['data']);
+        // dd($mapping[$mapIndex]['forms'][$params['form_ref']], $json['data']);
         if (array_key_exists('branchRef', $params)) {
-            //dd($mapping[0]['forms'][$params['form_ref']], $params['branchRef']);
+            //dd($mapping[$mapIndex]['forms'][$params['form_ref']], $params['branchRef']);
 
-            foreach ($mapping[0]['forms'][$params['form_ref']] as $ref => $inputs) {
+            foreach ($mapping[$mapIndex]['forms'][$params['form_ref']] as $ref => $inputs) {
                 if ($ref === $params['branchRef']) {
-                    $mappedInputs = $mapping[0]['forms'][$params['form_ref']][$ref]['branch'];
+                    $mappedInputs = $mapping[$mapIndex]['forms'][$params['form_ref']][$ref]['branch'];
                 }
             }
         } else {
-            $mappedInputs = $mapping[0]['forms'][$params['form_ref']];
+            $mappedInputs = $mapping[$mapIndex]['forms'][$params['form_ref']];
         }
 
         $mapTos = [];
@@ -455,6 +455,151 @@ trait Assertions
         $this->assertLinks($json['links']);
     }
 
+    public function assertEntriesExportResponseCSV($response, $mapping, $params, $mapIndex = 0)
+    {
+        $access = $params['projectDefinition']['data']['project']['access'];
+
+        $locationInputs = [];
+
+        $forms = $params['projectDefinition']['data']['project']['forms'];
+        foreach ($forms as $form) {
+            $inputs = $form['inputs'];
+            foreach ($inputs as $input) {
+                if ($input['type'] === config('epicollect.strings.inputs_type.location')) {
+                    $locationInputs[] = $input['ref'];
+                }
+                if ($input['type'] === config('epicollect.strings.inputs_type.group')) {
+                    $groupInputs = $input['group'];
+                    foreach ($groupInputs as $groupInput) {
+                        if ($groupInput['type'] === config('epicollect.strings.inputs_type.location')) {
+                            $locationInputs[] = $groupInput['ref'];
+                        }
+                    }
+                }
+                if ($input['type'] === config('epicollect.strings.inputs_type.branch')) {
+                    $branchInputs = $input['branch'];
+                    foreach ($branchInputs as $branchInput) {
+                        if ($branchInput['type'] === config('epicollect.strings.inputs_type.location')) {
+                            $locationInputs[] = $branchInput['ref'];
+                        }
+                        if ($branchInput['type'] === config('epicollect.strings.inputs_type.group')) {
+                            $nestedGroupInputs = $branchInput['group'];
+                            foreach ($nestedGroupInputs as $nestedGroupInput) {
+                                if ($nestedGroupInput['type'] === config('epicollect.strings.inputs_type.location')) {
+                                    $locationInputs[] = $nestedGroupInput['ref'];
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
+        $mappedInputs = [];
+        $json = $response;
+
+        // dd($mapping[$mapIndex]['forms'][$params['form_ref']], $json['data']);
+        if (array_key_exists('branchRef', $params)) {
+            //dd($mapping[$mapIndex]['forms'][$params['form_ref']], $params['branchRef']);
+
+            foreach ($mapping[$mapIndex]['forms'][$params['form_ref']] as $ref => $inputs) {
+                if ($ref === $params['branchRef']) {
+                    $mappedInputs = $mapping[$mapIndex]['forms'][$params['form_ref']][$ref]['branch'];
+                }
+            }
+        } else {
+            $mappedInputs = $mapping[$mapIndex]['forms'][$params['form_ref']];
+        }
+
+        $mapTos = [];
+        foreach ($mappedInputs as $inputRef => $mappedInput) {
+            if (!$mappedInput['hide']) {
+
+                if (sizeof($mappedInput['group']) > 0) {
+                    //this is a group,
+                    //so skip input ref map_to but grab all the group inputs map_to(s)
+                    foreach ($mappedInput['group'] as $groupInputRef => $mappedGroupInput) {
+                        if (in_array($groupInputRef, $locationInputs)) {
+                            //todo:handle location
+                            $mapTos[] = 'lat_' . $mappedGroupInput['map_to'];
+                            $mapTos[] = 'long_' . $mappedGroupInput['map_to'];
+                            $mapTos[] = 'accuracy_' . $mappedGroupInput['map_to'];
+                            $mapTos[] = 'UTM_Northing_' . $mappedGroupInput['map_to'];
+                            $mapTos[] = 'UTM_Easting_' . $mappedGroupInput['map_to'];
+                            $mapTos[] = 'UTM_Zone_' . $mappedGroupInput['map_to'];
+                        } else {
+                            //we need the below to skip branch inputs
+                            if (in_array($groupInputRef, $params['onlyMapTheseRefs'])) {
+                                $mapTos[] = $mappedGroupInput['map_to'];
+                            }
+                        }
+                    }
+                } else {
+                    //we need the below to skip branch inputs
+                    if (in_array($inputRef, $params['onlyMapTheseRefs'])) {
+
+                        //if a location input,
+                        if (in_array($inputRef, $locationInputs)) {
+                            //todo:handle location
+                            $mapTos[] = 'lat_' . $mappedInput['map_to'];
+                            $mapTos[] = 'long_' . $mappedInput['map_to'];
+                            $mapTos[] = 'accuracy_' . $mappedInput['map_to'];
+                            $mapTos[] = 'UTM_Northing_' . $mappedInput['map_to'];
+                            $mapTos[] = 'UTM_Easting_' . $mappedInput['map_to'];
+                            $mapTos[] = 'UTM_Zone_' . $mappedInput['map_to'];
+                        } else {
+                            //not a group input, so grab the map_to
+                            $mapTos[] = $mappedInput['map_to'];
+                        }
+                    }
+                }
+            }
+        }
+
+        //dd($mappedInputs, $params['onlyMapTheseRefs'], $mapTos);
+
+        $entries = $json['data']['entries'];
+        $fixedEntryKeys = [
+            'created_at',
+            'uploaded_at',
+            'title'
+        ];
+
+        if (array_key_exists('branchRef', $params)) {
+            $fixedEntryKeys[] = 'ec5_branch_owner_uuid';
+            $fixedEntryKeys[] = 'ec5_branch_uuid';
+        } else {
+            $fixedEntryKeys[] = 'ec5_uuid';
+            if ($params['form_index'] > 0) {
+                $fixedEntryKeys[] = 'ec5_parent_uuid';
+            }
+        }
+
+
+        foreach ($fixedEntryKeys as $key) {
+            foreach ($entries as $entry) {
+                if ($key !== 'created_by') {
+                    $this->assertArrayHasKey($key, $entry);
+                } else {
+                    if ($access === config('epicollect.strings.project_access.public')) {
+                        //public project, it must NOT have created_by
+                        $this->assertArrayNotHasKey('created_by', $entry);
+                    }
+                    if ($access === config('epicollect.strings.project_access.private')) {
+                        //private project must have created_by
+                        $this->assertArrayHasKey('created_by', $entry);
+                    }
+                }
+            }
+        }
+
+        foreach ($mapTos as $mapTo) {
+            foreach ($entries as $entry) {
+                $this->assertArrayHasKey($mapTo, $entry);
+            }
+        }
+    }
 
     public function assertEntriesLocationsResponse($response)
     {

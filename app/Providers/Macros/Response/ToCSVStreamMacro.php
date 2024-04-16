@@ -10,19 +10,13 @@ class ToCSVStreamMacro extends ServiceProvider
     public function boot()
     {
         Response::macro('toCSVStream', function ($data) {
-            // Set headers for CSV content
-            $headers = [
-                'Content-Type' => 'text/csv',
-            ];
-            // Return a response instance with streaming CSV content
-            return response()->stream(function () use ($data) {
-                $output = fopen('php://output', 'w');
-                // Output CSV rows
-                foreach ($data as $row) {
-                    fputcsv($output, $row);
-                }
-                fclose($output);
-            }, 200, $headers);
+            // fpassthru($data); // Not necessary in this context
+
+            // Get the CSV content from the output buffer and clean it
+            $csvContent = ob_get_clean();
+
+            // Return a response with CSV data
+            return response($csvContent);
         });
     }
 }

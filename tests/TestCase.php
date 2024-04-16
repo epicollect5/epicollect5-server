@@ -59,11 +59,15 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
             }
         }
         if (sizeof($response) > 0) {
-            $jsonResponse = $response->baseResponse->exception === null
-                ? json_encode(['response' => $response])
-                : json_encode(['exception' => $response->baseResponse->exception->getMessage()]);
+            if (isset($response->baseResponse)) {
+                $jsonResponse = $response->baseResponse->exception === null
+                    ? json_encode(['response' => $response])
+                    : json_encode(['exception' => $response->baseResponse->exception->getMessage()]);
 
-            echo "\e[1;34m" . $jsonResponse . "\e[0m" . PHP_EOL;
+                echo "\e[1;34m" . $jsonResponse . "\e[0m" . PHP_EOL;
+            } else {
+                echo "\e[1;34m" . $e->getMessage() . "\e[0m" . PHP_EOL;
+            }
         } else {
             echo "\e[1;34m" . $e->getTraceAsString() . "\e[0m" . PHP_EOL;
         }

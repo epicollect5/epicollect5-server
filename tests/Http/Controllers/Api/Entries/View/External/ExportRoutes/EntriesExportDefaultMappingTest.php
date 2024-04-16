@@ -1,6 +1,6 @@
 <?php
 
-namespace Http\Controllers\Api\Entries\View\External\ExportRoutes;
+namespace Tests\Http\Controllers\Api\Entries\View\External\ExportRoutes;
 
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
@@ -10,9 +10,11 @@ use Exception;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\Http\Controllers\Api\Entries\View\ViewEntriesBaseControllerTest;
 
-class EntriesExportTest extends ViewEntriesBaseControllerTest
+class EntriesExportDefaultMappingTest extends ViewEntriesBaseControllerTest
 {
     use DatabaseTransactions, Assertions;
+
+    private $endpoint = 'api/export/entries/';
 
     public function test_parent_entry_row_stored_to_db()
     {
@@ -80,7 +82,7 @@ class EntriesExportTest extends ViewEntriesBaseControllerTest
         $response = [];
         try {
             $response[] = $this->actingAs($this->user)
-                ->get('api/export/entries/' . $this->project->slug . $queryString);
+                ->get($this->endpoint . $this->project->slug . $queryString);
             $response[0]->assertStatus(200);
 
             $mapping = json_decode($projectStructure->project_mapping, true);
@@ -161,7 +163,7 @@ class EntriesExportTest extends ViewEntriesBaseControllerTest
         $response = [];
         try {
             $response[] = $this->actingAs($this->user)
-                ->get('api/export/entries/' . $this->project->slug . $queryString);
+                ->get($this->endpoint . $this->project->slug . $queryString);
             $response[0]->assertStatus(200);
 
             $mapping = json_decode($projectStructure->project_mapping, true);
@@ -259,7 +261,7 @@ class EntriesExportTest extends ViewEntriesBaseControllerTest
         $response = [];
         try {
             $response[] = $this->actingAs($this->user)
-                ->get('api/export/entries/' . $this->project->slug . $queryString);
+                ->get($this->endpoint . $this->project->slug . $queryString);
             $response[0]->assertStatus(200);
 
             $mapping = json_decode($projectStructure->project_mapping, true);

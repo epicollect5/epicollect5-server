@@ -89,7 +89,7 @@ class ProjectDefinitionGenerator
             $inputs[] = ProjectDefinitionGenerator::createDateInput($formRef);
             $inputs[] = ProjectDefinitionGenerator::createTextBoxInput($formRef);
             $inputs[] = ProjectDefinitionGenerator::createBarcodeInput($formRef);
-//
+
             $inputs[] = ProjectDefinitionGenerator::createMultipleChoiceInput($formRef, 'radio');
             $inputs[] = ProjectDefinitionGenerator::createMultipleChoiceInput($formRef, 'dropdown');
             $inputs[] = ProjectDefinitionGenerator::createMultipleChoiceInput($formRef, 'checkbox');
@@ -98,16 +98,16 @@ class ProjectDefinitionGenerator
             $inputs[] = ProjectDefinitionGenerator::createMultipleChoiceInput($formRef);
             $inputs[] = ProjectDefinitionGenerator::createMultipleChoiceInput($formRef);
             $inputs[] = ProjectDefinitionGenerator::createMultipleChoiceInput($formRef);
-//            make sure there is at least 1 location input
+            //make sure there is at least 1 location input
             $inputs[] = ProjectDefinitionGenerator::createLocationInput($formRef);
-//            add some media inputs
+            //add some media inputs
             $inputs[] = ProjectDefinitionGenerator::createPhotoInput($formRef);
             $inputs[] = ProjectDefinitionGenerator::createAudioInput($formRef);
             $inputs[] = ProjectDefinitionGenerator::createVideoInput($formRef);
-//            add two groups
+            //add two groups
             $inputs[] = ProjectDefinitionGenerator::createGroup($formRef);
             $inputs[] = ProjectDefinitionGenerator::createGroup($formRef);
-//            add two branches
+            // add two branches
             $inputs[] = ProjectDefinitionGenerator::createBranch($formRef, $withTitles);
             $inputs[] = ProjectDefinitionGenerator::createBranch($formRef, $withTitles);
 
@@ -117,7 +117,6 @@ class ProjectDefinitionGenerator
                 $inputs[] = ProjectDefinitionGenerator::createSearchSingleInput($formRef);
                 $inputs[] = ProjectDefinitionGenerator::createSearchMultipleInput($formRef);
             }
-
 
             $formName = 'Form ' . self::convertToWord($formIndex + 1);
             $forms[] = [
