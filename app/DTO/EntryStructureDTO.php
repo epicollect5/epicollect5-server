@@ -4,7 +4,6 @@ namespace ec5\DTO;
 
 use Hash;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use ec5\Models\Entries\Entry;
 
 class EntryStructureDTO
 {
@@ -135,6 +134,11 @@ class EntryStructureDTO
     public function setOwnerEntryID($ownerId)
     {
         $this->branchOwnerEntryRowId = $ownerId;
+    }
+
+    public function setOwnerEntryUuid($ownerEntryUuid)
+    {
+        $this->data['relationships']['branch']['data']['owner_entry_uuid'] = $ownerEntryUuid;
     }
 
     public function getOwnerEntryID(): int

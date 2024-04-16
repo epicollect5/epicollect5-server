@@ -241,11 +241,24 @@ class UploadWebController extends UploadControllerBase
         //perform the deletion
         try {
             //delete leftover branch entries
-            BranchEntry::where('owner_uuid', $this->entryStructure->getEntryUuid())
+            $leftoverBranchEntries = BranchEntry::where('owner_uuid', $this->entryStructure->getEntryUuid())
                 ->whereIn('owner_input_ref', $skippedBranchRefs)
-                ->delete();
+                ->get();
+
+            $allBranchEntries = BranchEntry::where('owner_uuid', $this->entryStructure->getEntryUuid())
+                ->get();
+
+
+            $leftoverBranchEntries->each(function ($entry) {
+                $entry->delete();
+            });
 
             //update branch counts
+            /**
+             * imp: artificially set the owner uuid to itself in the entryStructure DTO,
+             * imp: to re-use the branch update counter methods
+             */
+            $this->entryStructure->setOwnerEntryUuid($this->entryStructure->getEntryUuid());
             $entryCounter = new BranchEntryCounter();
             if (!$entryCounter->updateCounters($this->requestedProject(), $this->entryStructure)) {
                 throw new Exception('Cannot update branch entries counters after leftover deletion');

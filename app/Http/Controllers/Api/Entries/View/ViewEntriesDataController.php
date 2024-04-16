@@ -156,7 +156,8 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
                         $row->entry_data,
                         $row->user_id,
                         $row->title,
-                        $row->uploaded_at
+                        $row->uploaded_at,
+                        $row->branch_counts ?? null
                     ),
                     true
                 );
@@ -209,7 +210,8 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
                         $entry->entry_data,
                         $entry->user_id,
                         $entry->title,
-                        $entry->uploaded_at
+                        $entry->uploaded_at,
+                        $entry->branch_counts ?? null
                     ))
                 ) {
                     // Error writing to file
@@ -261,7 +263,8 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
                         $row->entry_data,
                         $row->user_id,
                         $row->title,
-                        $row->uploaded_at
+                        $row->uploaded_at,
+                        $row->branch_counts ?? null
                     ),
                     true
                 );
@@ -304,6 +307,7 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
         }
 
         $entries = $query->paginate($params['per_page']);
+
         try {
             foreach ($entries as $entry) {
                 if (
@@ -311,10 +315,11 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
                         $data,
                         $this->dataMappingService->getMappedEntryCSV(
                             $entry->entry_data,
-                            null,
                             $entry->user_id,
                             $entry->title,
-                            $entry->uploaded_at)
+                            $entry->uploaded_at,
+                            $entry->branch_counts ?? null
+                        )
                     )
                 ) {
                     throw new Exception('Error writing file');

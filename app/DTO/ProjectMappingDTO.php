@@ -23,6 +23,7 @@ class ProjectMappingDTO extends ProjectDTOBase
         $this->data = $data;
     }
 
+
     /**
      * @param array $data
      */
