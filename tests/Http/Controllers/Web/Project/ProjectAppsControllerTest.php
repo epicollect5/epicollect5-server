@@ -228,6 +228,7 @@ class ProjectAppsControllerTest extends TestCase
                     ->where('id', $client->id)
                     ->get());
 
+
             $this->assertCount(
                 1,
                 OAuthAccessToken::where('client_id', $client->id)
@@ -240,8 +241,8 @@ class ProjectAppsControllerTest extends TestCase
             $response[] = $this->actingAs($this->user)->post('myprojects/' . $this->project->slug . '/app-revoke', $payload);
             $response[0]->assertStatus(302);
             $response[0]->assertRedirect($startingUrl)
-                ->assertSessionHas('message', 'ec5_259');
-            //check access token entry is deleted
+                ->assertSessionHas('message', 'ec5_398');
+            //check access token is deleted
             $this->assertCount(0, OAuthAccessToken::where('client_id', $client->id)->get());
         } catch (Exception $e) {
             $this->logTestError($e, $response);

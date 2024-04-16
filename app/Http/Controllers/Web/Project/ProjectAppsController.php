@@ -159,6 +159,6 @@ class ProjectAppsController
         // Revoke all access tokens
         OAuthAccessToken::where('client_id', $payload['client_id'])->delete();
         // Success
-        return Redirect::back()->with('message', 'ec5_259');
+        return Redirect::back()->with('message', 'ec5_398');
     }
 }

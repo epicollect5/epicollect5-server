@@ -331,5 +331,6 @@ return [
     "ec5_394" => "Project small description must be between :min to :max chars long",
     "ec5_395" => "Are you sure you want to leave this project?",
     "ec5_396" => "Project left.",
-    "ec5_397" => "Only one single answer is allowed"
+    "ec5_397" => "Only one single answer is allowed",
+    "ec5_398" => "Token revoked"
 ];
