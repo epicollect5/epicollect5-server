@@ -32,13 +32,14 @@ class ProjectStructure extends Model
 
             // Set updated_at field when needed
             //imp: we skip this for status updates for example,
-            //imp: as that should not trigger a project update on the app
-            //imp: therefore timestamps gets disabled in that case
+            // as that should not trigger a project update on the app
+            // therefore timestamps gets disabled in that case
+            // updated_at is the value we use for project versioning
             if ($setUpdatedAt) {
+                $currentStructure->updated_at = date('Y-m-d H:i:s');
                 return $currentStructure->save();
             } else {
                 $currentStructure->timestamps = false;
-                $currentStructure->updated_at = date('Y-m-d H:i:s');
                 $wasSaved = $currentStructure->save();
                 $currentStructure->timestamps = true;
                 return $wasSaved;
