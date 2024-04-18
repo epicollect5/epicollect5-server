@@ -31,10 +31,18 @@ class ProjectStructure extends Model
             $currentStructure->project_mapping = $project->getProjectMapping()->getJsonData();
 
             // Set updated_at field when needed
+            //imp: we skip this for status updates for example,
+            //imp: as that should not trigger a project update on the app
+            //imp: therefore timestamps gets disabled in that case
             if ($setUpdatedAt) {
+                return $currentStructure->save();
+            } else {
+                $currentStructure->timestamps = false;
                 $currentStructure->updated_at = date('Y-m-d H:i:s');
+                $wasSaved = $currentStructure->save();
+                $currentStructure->timestamps = true;
+                return $wasSaved;
             }
-            return $currentStructure->save();
         } catch (Exception $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             return false;
