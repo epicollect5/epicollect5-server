@@ -30,18 +30,28 @@ trait Remover
     {
         try {
             // Delete records from the Entry model in chunks
-            Entry::where('project_id', $projectId)->chunk(250, function ($entries) {
-                foreach ($entries as $entry) {
-                    $entry->delete();
-                }
-            });
+//            Entry::where('project_id', $projectId)->chunk(250, function ($entries) {
+//                foreach ($entries as $entry) {
+//                    $entry->delete();
+//                }
+//            });
+
+            foreach (Entry::where('project_id', $projectId)->cursor() as $row) {
+                // Delete the row
+                $row->delete();
+            }
 
             // Delete records from the BranchEntry model in chunks
-            BranchEntry::where('project_id', $projectId)->chunk(250, function ($branchEntries) {
-                foreach ($branchEntries as $branchEntry) {
-                    $branchEntry->delete();
-                }
-            });
+//            BranchEntry::where('project_id', $projectId)->chunk(250, function ($branchEntries) {
+//                foreach ($branchEntries as $branchEntry) {
+//                    $branchEntry->delete();
+//                }
+//            });
+
+            foreach (BranchEntry::where('project_id', $projectId)->cursor() as $row) {
+                // Delete the row
+                $row->delete();
+            }
 
             //remove all the entries media folders
             $drivers = config('epicollect.media.entries_deletable');

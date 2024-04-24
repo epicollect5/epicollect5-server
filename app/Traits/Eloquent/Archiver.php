@@ -65,48 +65,96 @@ trait Archiver
 
     public function archiveEntries($projectId): bool
     {
+        $initialMemoryUsage = memory_get_usage();
+        $peakMemoryUsage = memory_get_peak_usage();
+
         try {
             DB::beginTransaction();
             //move entries
             Entry::where('project_id', $projectId)->chunk(100, function ($rowsToMove) {
                 foreach ($rowsToMove as $row) {
                     $rowToArchive = $row->replicate();
+                    $rowToArchive->created_at = $row->created_at;
+
                     // make into an array for mass assign.
                     $rowToArchive = $rowToArchive->toArray();
-                    //create copy to projects_archive table
-                    EntryArchive::create($rowToArchive);
+
+                    // Perform a manual search for an existing record
+                    $existingRecord = EntryArchive::where('uuid', $rowToArchive['uuid'])
+                        //   ->where('parent_uuid', $rowToArchive['parent_uuid'])
+                        ->where('project_id', $rowToArchive['project_id'])
+                        //    ->where('parent_form_ref', $rowToArchive['parent_form_ref'])
+                        //      ->where('form_ref', $rowToArchive['form_ref'])
+                        //    ->where('title', $rowToArchive['title'])
+                        //    ->where('entry_data', $rowToArchive['entry_data'])
+                        //   ->where('created_at', $rowToArchive['created_at'])
+                        //    ->where('uploaded_at', $rowToArchive['uploaded_at'])
+                        ->first();
+
+                    if (!$existingRecord) {
+                        //create copy to projects_archive table
+                        EntryArchive::create($rowToArchive);
+                    }
                 }
             });
-
             //move branch entries as well
             BranchEntry::where('project_id', $projectId)->chunk(100, function ($rowsToMove) {
                 foreach ($rowsToMove as $row) {
                     $rowToArchive = $row->replicate();
-                    // make into array for mass assign. 
+                    $rowToArchive->created_at = $row->created_at;
+                    // make into array for mass assign.
                     $rowToArchive = $rowToArchive->toArray();
+
+                    // Perform a manual search for an existing record
+                    $existingRecord = BranchEntryArchive::where('uuid', $rowToArchive['uuid'])
+//                        ->where('parent_uuid', $rowToArchive['parent_uuid'])
+                        ->where('project_id', $rowToArchive['project_id'])
+//                        ->where('parent_form_ref', $rowToArchive['parent_form_ref'])
+//                        ->where('form_ref', $rowToArchive['form_ref'])
+//                        ->where('title', $rowToArchive['title'])
+//                        ->where('entry_data', $rowToArchive['entry_data'])
+//                        ->where('created_at', $rowToArchive['created_at'])
+//                        ->where('uploaded_at', $rowToArchive['uploaded_at'])
+                        ->first();
+
                     //create copy to projects_archive table
-                    BranchEntryArchive::create($rowToArchive);
+                    if (!$existingRecord) {
+                        BranchEntryArchive::create($rowToArchive);
+                    }
                 }
             });
-
             // All rows have been successfully moved, so you can proceed with deleting the original rows
-            Entry::where('project_id', $projectId)->chunk(100, function ($rows) {
-                foreach ($rows as $row) {
-                    $row->delete();
-                }
-            });
+            foreach (Entry::where('project_id', $projectId)->cursor() as $row) {
+                // Delete the row
+                $row->delete();
+                // Update the peak memory usage
+                $peakMemoryUsage = max($peakMemoryUsage, memory_get_peak_usage());
+            }
 
-            BranchEntry::where('project_id', $projectId)->chunk(100, function ($rows) {
-                foreach ($rows as $row) {
-                    $row->delete();
-                }
-            });
+            foreach (BranchEntry::where('project_id', $projectId)->cursor() as $row) {
+                // Delete the row
+                $row->delete();
+                // Update the peak memory usage
+                $peakMemoryUsage = max($peakMemoryUsage, memory_get_peak_usage());
+            }
+
 
             DB::commit();
+
+            $finalMemoryUsage = memory_get_usage();
+            $memoryUsed = $finalMemoryUsage - $initialMemoryUsage;
+
+            // Log memory usage details
+            Log::info("Memory Usage for Deleting Entries");
+            Log::info("Initial Memory Usage: " . $initialMemoryUsage . " bytes");
+            Log::info("Final Memory Usage: " . $finalMemoryUsage . " bytes");
+            Log::info("Memory Used: " . $memoryUsed . " bytes");
+            Log::info("Peak Memory Usage: " . $peakMemoryUsage . " bytes");
             return true;
         } catch (Exception $e) {
             Log::error(__METHOD__ . ' failed.', [
-                'exception' => $e->getMessage()
+                'exception' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
             DB::rollBack();
             return false;
