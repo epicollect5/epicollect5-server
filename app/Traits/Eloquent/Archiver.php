@@ -70,7 +70,7 @@ trait Archiver
         $peakMemoryUsage = memory_get_peak_usage();
 
         try {
-            DB::beginTransaction();
+
 //            //move entries
 //            Entry::where('project_id', $projectId)->chunk(100, function ($rowsToMove) {
 //                foreach ($rowsToMove as $row) {
@@ -126,17 +126,21 @@ trait Archiver
 //            });
 
             do {
+                DB::beginTransaction();
                 $deleted = Entry::where('project_id', $projectId)->limit(1000)->delete();
                 sleep(1);
                 Log::info("Deleted " . $deleted . " Entries");
                 $peakMemoryUsage = max($peakMemoryUsage, memory_get_peak_usage());
+                DB::commit();
             } while ($deleted > 0);
 
             do {
+                DB::beginTransaction();
                 $deleted = BranchEntry::where('project_id', $projectId)->limit(1000)->delete();
                 sleep(1);
                 Log::info("Deleted " . $deleted . " branch Entries");
                 $peakMemoryUsage = max($peakMemoryUsage, memory_get_peak_usage());
+                DB::commit();
             } while ($deleted > 0);
 
 
@@ -155,8 +159,6 @@ trait Archiver
 //                $peakMemoryUsage = max($peakMemoryUsage, memory_get_peak_usage());
 //            }
 
-
-            DB::commit();
 
             $finalMemoryUsage = memory_get_usage();
             $memoryUsed = $finalMemoryUsage - $initialMemoryUsage;
