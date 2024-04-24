@@ -2,6 +2,7 @@
 
 namespace ec5\Traits\Eloquent;
 
+use ec5\Libraries\Utilities\Common;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\BranchEntryArchive;
@@ -123,20 +124,36 @@ trait Archiver
 //                    }
 //                }
 //            });
-            // All rows have been successfully moved, so you can proceed with deleting the original rows
-            foreach (Entry::where('project_id', $projectId)->cursor() as $row) {
-                // Delete the row
-                $row->delete();
-                // Update the peak memory usage
-                $peakMemoryUsage = max($peakMemoryUsage, memory_get_peak_usage());
-            }
 
-            foreach (BranchEntry::where('project_id', $projectId)->cursor() as $row) {
-                // Delete the row
-                $row->delete();
-                // Update the peak memory usage
+            do {
+                $deleted = Entry::where('project_id', $projectId)->limit(1000)->delete();
+                sleep(1);
+                Log::info("Deleted " . $deleted . " Entries");
                 $peakMemoryUsage = max($peakMemoryUsage, memory_get_peak_usage());
-            }
+            } while ($deleted > 0);
+
+            do {
+                $deleted = BranchEntry::where('project_id', $projectId)->limit(1000)->delete();
+                sleep(1);
+                Log::info("Deleted " . $deleted . " branch Entries");
+                $peakMemoryUsage = max($peakMemoryUsage, memory_get_peak_usage());
+            } while ($deleted > 0);
+
+
+//            // All rows have been successfully moved, so you can proceed with deleting the original rows
+//            foreach (Entry::where('project_id', $projectId)->cursor() as $row) {
+//                // Delete the row
+//                $row->delete();
+//                // Update the peak memory usage
+//                $peakMemoryUsage = max($peakMemoryUsage, memory_get_peak_usage());
+//            }
+
+//            foreach (BranchEntry::where('project_id', $projectId)->cursor() as $row) {
+//                // Delete the row
+//                $row->delete();
+//                // Update the peak memory usage
+//                $peakMemoryUsage = max($peakMemoryUsage, memory_get_peak_usage());
+//            }
 
 
             DB::commit();
@@ -144,12 +161,17 @@ trait Archiver
             $finalMemoryUsage = memory_get_usage();
             $memoryUsed = $finalMemoryUsage - $initialMemoryUsage;
 
+            $initialMemoryUsage = Common::formatBytes($initialMemoryUsage);
+            $finalMemoryUsage = Common::formatBytes($finalMemoryUsage);
+            $memoryUsed = Common::formatBytes($memoryUsed);
+            $peakMemoryUsage = Common::formatBytes($peakMemoryUsage);
+
             // Log memory usage details
             Log::info("Memory Usage for Deleting Entries");
-            Log::info("Initial Memory Usage: " . $initialMemoryUsage . " bytes");
-            Log::info("Final Memory Usage: " . $finalMemoryUsage . " bytes");
-            Log::info("Memory Used: " . $memoryUsed . " bytes");
-            Log::info("Peak Memory Usage: " . $peakMemoryUsage . " bytes");
+            Log::info("Initial Memory Usage: " . $initialMemoryUsage);
+            Log::info("Final Memory Usage: " . $finalMemoryUsage);
+            Log::info("Memory Used: " . $memoryUsed);
+            Log::info("Peak Memory Usage: " . $peakMemoryUsage);
             return true;
         } catch (Exception $e) {
             Log::error(__METHOD__ . ' failed.', [
