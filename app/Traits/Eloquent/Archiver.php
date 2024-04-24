@@ -127,7 +127,7 @@ trait Archiver
 
             do {
                 DB::beginTransaction();
-                $deleted = Entry::where('project_id', $projectId)->limit(1000)->delete();
+                $deleted = Entry::where('project_id', $projectId)->orderBy('id', 'DESC')->limit(1000)->delete();
                 sleep(1);
                 Log::info("Deleted " . $deleted . " Entries");
                 $peakMemoryUsage = max($peakMemoryUsage, memory_get_peak_usage());
@@ -136,7 +136,7 @@ trait Archiver
 
             do {
                 DB::beginTransaction();
-                $deleted = BranchEntry::where('project_id', $projectId)->limit(1000)->delete();
+                $deleted = BranchEntry::where('project_id', $projectId)->orderBy('id', 'DESC')->limit(1000)->delete();
                 sleep(1);
                 Log::info("Deleted " . $deleted . " branch Entries");
                 $peakMemoryUsage = max($peakMemoryUsage, memory_get_peak_usage());
