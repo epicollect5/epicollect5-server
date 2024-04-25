@@ -71,22 +71,36 @@ trait Archiver
 
         try {
             do {
-                //   DB::beginTransaction();
-                $deleted = Entry::where('project_id', $projectId)->orderBy('id', 'DESC')->limit(1000)->delete();
-                sleep(1);
-                Log::info("Deleted " . $deleted . " Entries");
+                // Update the `project_id` to `-(project_id)` for rows in batches of 1000
+                $updated = Entry::where('project_id', $projectId)
+                    ->limit(10000)
+                    ->update(['project_id' => DB::raw("-(project_id)")]);
+
+                // Log the number of rows updated
+                Log::info("Updated " . $updated . " Entries by setting project_id to negative");
+
+                // Check and update peak memory usage
                 $peakMemoryUsage = max($peakMemoryUsage, memory_get_peak_usage());
-                // DB::commit();
-            } while ($deleted > 0);
+
+                // Pause for 1 second to avoid overloading the database
+                // sleep(1);
+            } while ($updated > 0);
 
             do {
-                //  DB::beginTransaction();
-                $deleted = BranchEntry::where('project_id', $projectId)->orderBy('id', 'DESC')->limit(1000)->delete();
-                sleep(1);
-                Log::info("Deleted " . $deleted . " branch Entries");
+                // Update the `project_id` to `-(project_id)` for rows in batches of 1000
+                $updated = BranchEntry::where('project_id', $projectId)
+                    ->limit(10000)
+                    ->update(['project_id' => DB::raw("-(project_id)")]);
+
+                // Log the number of rows updated
+                Log::info("Updated " . $updated . " Branches by setting project_id to negative");
+
+                // Check and update peak memory usage
                 $peakMemoryUsage = max($peakMemoryUsage, memory_get_peak_usage());
-                //   DB::commit();
-            } while ($deleted > 0);
+
+                // Pause for 1 second to avoid overloading the database
+                // sleep(1);
+            } while ($updated > 0);
 
             $finalMemoryUsage = memory_get_usage();
             $memoryUsed = $finalMemoryUsage - $initialMemoryUsage;
