@@ -60,23 +60,31 @@ class ProjectDeleteEntriesController
         }
 
         try {
-            DB::beginTransaction();
+            //  DB::beginTransaction();
 
             if (!$this->archiveEntries($this->requestedProject()->getId())) {
-                DB::rollBack();
+
+                //always update project stats,
+                //since we are deleting in chunks ans some entries could have been deleted
+                if (!$projectStats->updateProjectStats($this->requestedProject()->getId())) {
+                    //     DB::rollBack();
+                    return redirect('myprojects/' . $this->requestedProject()->slug . '/manage-entries')->withErrors(['ec5_94']);
+                }
+
+                //     DB::rollBack();
                 return redirect('myprojects/' . $this->requestedProject()->slug . '/manage-entries')->withErrors(['ec5_104']);
             } else {
                 if (!$projectStats->updateProjectStats($this->requestedProject()->getId())) {
-                    DB::rollBack();
+                    //     DB::rollBack();
                     return redirect('myprojects/' . $this->requestedProject()->slug . '/manage-entries')->withErrors(['ec5_94']);
                 }
             }
             // Success!
-            DB::commit();
+            //  DB::commit();
             return redirect('myprojects/' . $this->requestedProject()->slug . '/manage-entries')->with('message', 'ec5_122');
         } catch (\Exception $e) {
             \Log::error('Error softDelete() entries', ['exception' => $e->getMessage()]);
-            DB::rollBack();
+            //   DB::rollBack();
             return redirect('myprojects/' . $this->requestedProject()->slug . '/manage-entries')->withErrors(['ec5_104']);
         }
     }
