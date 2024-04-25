@@ -10,6 +10,7 @@ use ec5\Models\Entries\Entry;
 use ec5\Models\Entries\EntryArchive;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectRole;
+use ec5\Models\Project\ProjectStats;
 use ec5\Models\User\User;
 use ec5\Models\User\UserProvider;
 use Exception;
@@ -69,24 +70,62 @@ trait Archiver
         $initialMemoryUsage = memory_get_usage();
         $peakMemoryUsage = memory_get_peak_usage();
 
+        //todo: lock the project
+
+        $entriesCount = ProjectStats::where('project_id', $projectId)->value('total_entries');
+        $maxEntryId = Entry::max('id');
+        $lowEntryId = 1;
+        $highEntryId = 100000;
+        $entriesDeleted = 0;
+
+
+        $maxBranchEntryId = BranchEntry::max('id');
+        $lowBranchEntryId = 1;
+        $highBranchEntryId = 10000;
+
         try {
             do {
                 //   DB::beginTransaction();
-                $deleted = Entry::where('project_id', $projectId)->orderBy('id', 'DESC')->limit(1000)->delete();
+                $deleted = Entry::
+                whereBetween('id', [$lowEntryId, $highEntryId])
+                    ->where('project_id', $projectId)
+                    ->delete();
                 sleep(1);
+                $entriesDeleted += $deleted;
                 Log::info("Deleted " . $deleted . " Entries");
                 $peakMemoryUsage = max($peakMemoryUsage, memory_get_peak_usage());
                 // DB::commit();
-            } while ($deleted > 0);
 
-            do {
-                //  DB::beginTransaction();
-                $deleted = BranchEntry::where('project_id', $projectId)->orderBy('id', 'DESC')->limit(1000)->delete();
-                sleep(1);
-                Log::info("Deleted " . $deleted . " branch Entries");
-                $peakMemoryUsage = max($peakMemoryUsage, memory_get_peak_usage());
-                //   DB::commit();
-            } while ($deleted > 0);
+                $lowEntryId += 100000;
+                $highEntryId += 100000;
+
+            } while ($lowEntryId <= $maxEntryId && $entriesDeleted < $entriesCount);
+
+//            do {
+//                //   DB::beginTransaction();
+//                $deleted = BranchEntry::
+//                whereBetween('id', [$lowBranchEntryId, $highBranchEntryId])
+//                    ->where('project_id', $projectId)
+//                    ->delete();
+//                sleep(1);
+//                Log::info("Deleted " . $deleted . " Entries");
+//                $peakMemoryUsage = max($peakMemoryUsage, memory_get_peak_usage());
+//                // DB::commit();
+//
+//                $lowBranchEntryId += 10000;
+//                $highBranchEntryId += 10000;
+//
+//            } while ($lowBranchEntryId <= $maxBranchEntryId);
+
+
+//            do {
+//                //  DB::beginTransaction();
+//                $deleted = BranchEntry::where('project_id', $projectId)->orderBy('id', 'DESC')->limit(1000)->delete();
+//                sleep(1);
+//                Log::info("Deleted " . $deleted . " branch Entries");
+//                $peakMemoryUsage = max($peakMemoryUsage, memory_get_peak_usage());
+//                //   DB::commit();
+//            } while ($deleted > 0);
 
             $finalMemoryUsage = memory_get_usage();
             $memoryUsed = $finalMemoryUsage - $initialMemoryUsage;
