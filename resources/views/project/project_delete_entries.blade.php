@@ -23,26 +23,20 @@
                         <h2 class="project-name">{{ $requestAttributes->requestedProject->name }}</h2>
                         <p class="warning-well">{!! trans('site.confirm_deletion_entries', ['totalEntries' => $totalEntries]) !!}</p>
 
-                        <form action="{{ url('myprojects') . '/' . $requestAttributes->requestedProject->slug . '/delete-entries' }}"
-                              class="delete-entries" method="POST">
-
-                            {{ csrf_field() }}
-
+                        <div class="delete-entries-wrapper" data-total-entries="{{$totalEntries}}">
                             <div class="form-group">
                                 <label for="project-name"
                                        class="control-label">{{ trans('site.confirm_project_name') }}</label>
                                 <input id="project-name" type="text" class="form-control" name="project-name"
                                        placeholder="{{ trans('site.project_name') }}" required>
                             </div>
-                            <a class="btn btn-sm btn-action pull-left"
+                            <a class="btn btn-sm btn-action pull-left btn-cancel-deletion"
                                href="{{ url('myprojects') . '/' . $requestAttributes->requestedProject->slug }}">{{ trans('site.cancel') }}</a>
                             <div class="form-group">
-                                <input required type="submit"
-                                       class="btn btn-danger btn-sm pull-right submit-delete-entries" disabled
-                                       name="submit"
+                                <input required class="btn btn-danger btn-sm pull-right btn-delete-entries" disabled
                                        value="{{ trans('site.delete') }}">
                             </div>
-                        </form>
+                        </div>
 
                     </div>
 

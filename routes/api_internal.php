@@ -66,10 +66,18 @@ Route::group(['middleware' => ['project.permissions']], function () {
     // Web answer uniqueness checks
     Route::post('api/internal/unique-answer/{project_slug}', 'Api\Entries\Upload\UploadUniquenessController@index');
 
-    // Entry Archive (delete)
+
     Route::group(['middleware' => ['project.permissions.viewer.role']], function () {
+        // Entry Archive (delete a single entry)
         Route::post('api/internal/archive/{project_slug}', 'Api\Entries\ArchiveController@index');
+
+        //Delete all entries for a project (soft delete)
+        Route::post('api/internal/deletion/{project_slug}', 'Api\Entries\ArchiveController@deletion');
+
+        Route::get('api/internal/counters/entries/{project_slug}', 'Api\Project\ProjectController@countersEntries');
+
     });
+
 
     //User management
     //used to export the users to csv

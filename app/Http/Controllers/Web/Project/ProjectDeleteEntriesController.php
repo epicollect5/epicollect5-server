@@ -4,22 +4,27 @@ namespace ec5\Http\Controllers\Web\Project;
 
 use ec5\Models\Project\ProjectStats;
 use ec5\Traits\Eloquent\Archiver;
+use ec5\Traits\Eloquent\StatsRefresher;
 use ec5\Traits\Requests\RequestAttributes;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class ProjectDeleteEntriesController
 {
-    use RequestAttributes, Archiver;
+    use RequestAttributes, Archiver, StatsRefresher;
 
     protected $errors = [];
 
     public function show()
     {
+        ///check permissions
         if (!$this->requestedProjectRole()->canDeleteEntries()) {
             $errors = ['ec5_91'];
             return view('errors.gen_error')->withErrors(['errors' => $errors]);
         }
+
+        //refresh stats to get the latest entries and branch entries counts
+        $this->refreshProjectStats($this->requestedProject());
 
         $projectStats = ProjectStats::where('project_id', $this->requestedProject()->getId())->first();
         return view('project.project_delete_entries', [
@@ -60,27 +65,18 @@ class ProjectDeleteEntriesController
         }
 
         try {
-            //  DB::beginTransaction();
-
+            DB::beginTransaction();
             if (!$this->archiveEntries($this->requestedProject()->getId())) {
-
-                //always update project stats,
-                //since we are deleting in chunks ans some entries could have been deleted
-                if (!$projectStats->updateProjectStats($this->requestedProject()->getId())) {
-                    //     DB::rollBack();
-                    return redirect('myprojects/' . $this->requestedProject()->slug . '/manage-entries')->withErrors(['ec5_94']);
-                }
-
-                //     DB::rollBack();
+                DB::rollBack();
                 return redirect('myprojects/' . $this->requestedProject()->slug . '/manage-entries')->withErrors(['ec5_104']);
             } else {
                 if (!$projectStats->updateProjectStats($this->requestedProject()->getId())) {
-                    //     DB::rollBack();
+                    DB::rollBack();
                     return redirect('myprojects/' . $this->requestedProject()->slug . '/manage-entries')->withErrors(['ec5_94']);
                 }
             }
             // Success!
-            //  DB::commit();
+            DB::commit();
             return redirect('myprojects/' . $this->requestedProject()->slug . '/manage-entries')->with('message', 'ec5_122');
         } catch (\Exception $e) {
             \Log::error('Error softDelete() entries', ['exception' => $e->getMessage()]);

@@ -8,10 +8,12 @@ use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectRole;
+use ec5\Models\Project\ProjectStats;
 use ec5\Models\User\User;
 use ec5\Models\User\UserProvider;
 use Exception;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Response;
 use Log;
 
 trait Archiver
@@ -121,6 +123,60 @@ trait Archiver
                 'trace' => $e->getTraceAsString()
             ]);
             //  DB::rollBack();
+            return false;
+        }
+    }
+
+    public function archiveEntriesChunk($projectId): bool
+    {
+        $initialMemoryUsage = memory_get_usage();
+        $peakMemoryUsage = memory_get_peak_usage();
+        $projectStats = new ProjectStats();
+        //lock the project
+        $project = Project::where('id', $projectId)->first();
+        $project->status = config('epicollect.strings.project_status.locked');
+        $project->save();
+        try {
+            DB::beginTransaction();
+
+            $deleted = Entry::where('project_id', $projectId)
+                ->limit(10000)
+                ->delete();
+            if (!$projectStats->updateProjectStats($this->requestedProject()->getId())) {
+                throw new Exception('Failed to count entries after archive');
+            }
+
+            // Check and update peak memory usage
+            $peakMemoryUsage = max($peakMemoryUsage, memory_get_peak_usage());
+
+            $finalMemoryUsage = memory_get_usage();
+            $memoryUsed = $finalMemoryUsage - $initialMemoryUsage;
+
+            $initialMemoryUsage = Common::formatBytes($initialMemoryUsage);
+            $finalMemoryUsage = Common::formatBytes($finalMemoryUsage);
+            $memoryUsed = Common::formatBytes($memoryUsed);
+            $peakMemoryUsage = Common::formatBytes($peakMemoryUsage);
+
+            // Log memory usage details
+            Log::info("Memory Usage for Deleting Entries");
+            Log::info("Initial Memory Usage: " . $initialMemoryUsage);
+            Log::info("Final Memory Usage: " . $finalMemoryUsage);
+            Log::info("Memory Used: " . $memoryUsed);
+            Log::info("Peak Memory Usage: " . $peakMemoryUsage);
+            DB::commit();
+            $project->status = config('epicollect.strings.project_status.active');
+            $project->save();
+            // Pause for a second to avoid overloading the database
+            sleep(1);
+            return true;
+        } catch (Exception $e) {
+            Log::error(__METHOD__ . ' failed.', [
+                'exception' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            DB::rollBack();
+            $project->status = config('epicollect.strings.project_status.active');
+            $project->save();
             return false;
         }
     }

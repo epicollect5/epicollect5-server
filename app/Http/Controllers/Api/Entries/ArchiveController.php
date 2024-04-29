@@ -7,13 +7,18 @@ use ec5\Http\Controllers\Controller;
 use ec5\Http\Validation\Entries\Archive\RuleArchive;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
+use ec5\Models\Project\ProjectStats;
 use ec5\Services\Entries\ArchiveEntryService;
+use ec5\Traits\Eloquent\Archiver;
 use ec5\Traits\Requests\RequestAttributes;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
 
 class ArchiveController extends Controller
 {
+    use Archiver;
+
     /*
     |--------------------------------------------------------------------------
     | Archive Controller
@@ -97,5 +102,45 @@ class ArchiveController extends Controller
             }
         }
         return Response::apiSuccessCode('ec5_236');
+    }
+
+    /**
+     * Soft delete a chunk of entries
+     *
+     * @return JsonResponse
+     */
+    public function deletion()
+    {
+        // Validate the request
+        $data = request()->get('data');
+        $projectName = $data['project-name'];
+
+        //no project name passed?
+        if (!isset($projectName)) {
+            return Response::apiErrorCode(400, ['deletion-entries' => ['ec5_399']]);
+        }
+
+        //if we are sending the wrong project name, bail out
+        if (trim($this->requestedProject()->name) !== $projectName) {
+            return Response::apiErrorCode(400, ['deletion-entries' => ['ec5_399']]);
+        }
+
+        //do we have the right permissions?
+        if (!$this->requestedProjectRole()->canDeleteEntries()) {
+            return Response::apiErrorCode(400, ['errors' => ['ec5_91']]);
+        }
+
+
+        // Attempt to Archive a chuck of entries
+        try {
+            if (!$this->archiveEntriesChunk($this->requestedProject()->getId())) {
+                return Response::apiErrorCode(400, ['errors' => ['ec5_104']]);
+            }
+            // Success!
+            return Response::apiSuccessCode('ec5_400');
+        } catch (\Exception $e) {
+            \Log::error('Error softDelete() entries', ['exception' => $e->getMessage()]);
+            return Response::apiErrorCode(400, ['errors' => ['ec5_104']]);
+        }
     }
 }

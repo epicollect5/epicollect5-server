@@ -332,5 +332,8 @@ return [
     "ec5_395" => "Are you sure you want to leave this project?",
     "ec5_396" => "Project left.",
     "ec5_397" => "Only one single answer is allowed",
-    "ec5_398" => "Token revoked"
+    "ec5_398" => "Token revoked",
+    "ec5_399" => "Invalid project name",
+    "ec5_400" => "Chunk entries archived successfully.",
+    "ec5_401" => "Chunk branch entries archived successfully."
 ];

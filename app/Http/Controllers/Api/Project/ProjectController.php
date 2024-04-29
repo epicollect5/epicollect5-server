@@ -3,9 +3,11 @@
 namespace ec5\Http\Controllers\Api\Project;
 
 use Auth;
+use DB;
 use ec5\Http\Validation\Entries\Upload\RuleCanBulkUpload;
 use ec5\Http\Validation\Project\RuleName;
 use ec5\Models\Project\Project;
+use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
 use ec5\Traits\Requests\RequestAttributes;
 use Exception;
@@ -41,11 +43,8 @@ class ProjectController
         $projectExtra = $this->requestedProject()->getProjectExtra()->getData();
 
         // Update the project stats counts
-        //todo: (a try catch need in case it does not work?)
         $projectStats->updateProjectStats($this->requestedProject()->getId());
 
-        $userName = '';
-        $userAvatar = '';
         try {
             $userName = Auth::user()->name;
             $userAvatar = Auth::user()->avatar;
@@ -160,6 +159,29 @@ class ProjectController
                 'version' => (string)strtotime($version)
             ]
 
+        ];
+        return Response::apiData($data);
+    }
+
+    public function countersEntries($slug)
+    {
+        $projectStats = ProjectStats::where('project_id', $this->requestedProject()->getId())
+            ->select('*') // Select all columns
+            ->first();
+        $totalBranches = 0;
+        $branchCounts = json_decode($projectStats->branch_counts, true);
+        foreach ($branchCounts as $branchCount) {
+            $totalBranches += $branchCount['count'];
+        }
+
+        $data = [
+            'type' => 'counters-project-entries',
+            'id' => $slug,
+            'counters' => [
+                'total' => $totalBranches + $projectStats->total_entries,
+                'entries' => $projectStats->total_entries,
+                'branch_entries' => $totalBranches
+            ]
         ];
         return Response::apiData($data);
     }
