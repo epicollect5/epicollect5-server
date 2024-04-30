@@ -10,6 +10,7 @@ use ec5\Models\Entries\Entry;
 use ec5\Models\Project\ProjectStats;
 use ec5\Services\Entries\ArchiveEntryService;
 use ec5\Traits\Eloquent\Archiver;
+use ec5\Traits\Eloquent\Remover;
 use ec5\Traits\Requests\RequestAttributes;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +18,7 @@ use Illuminate\Support\Facades\Response;
 
 class ArchiveController extends Controller
 {
-    use Archiver;
+    use Archiver, Remover;
 
     /*
     |--------------------------------------------------------------------------
@@ -130,10 +131,15 @@ class ArchiveController extends Controller
             return Response::apiErrorCode(400, ['errors' => ['ec5_91']]);
         }
 
+        //is the project locked? Otherwise, bail out
+        if ($this->requestedProject()->status !== config('epicollect.strings.project_status.locked')) {
+            return Response::apiErrorCode(400, ['deletion-entries' => ['ec5_91']]);
+        }
+
 
         // Attempt to Archive a chuck of entries
         try {
-            if (!$this->archiveEntriesChunk($this->requestedProject()->getId())) {
+            if (!$this->removeEntriesChunk($this->requestedProject()->getId())) {
                 return Response::apiErrorCode(400, ['errors' => ['ec5_104']]);
             }
             // Success!

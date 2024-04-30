@@ -2,11 +2,14 @@
 
 namespace ec5\Traits\Eloquent;
 
+use ec5\Libraries\Utilities\Common;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
+use ec5\Models\Project\ProjectStats;
 use Exception;
 use File;
+use Illuminate\Support\Facades\DB;
 use Log;
 use Storage;
 
@@ -29,33 +32,13 @@ trait Remover
     public function removeEntries($projectId, $projectRef): bool
     {
         try {
-            // Delete records from the Entry model in chunks
-//            Entry::where('project_id', $projectId)->chunk(250, function ($entries) {
-//                foreach ($entries as $entry) {
-//                    $entry->delete();
-//                }
-//            });
-
-            foreach (Entry::where('project_id', $projectId)->cursor() as $row) {
-                // Delete the row
-                $row->delete();
-            }
-
-            // Delete records from the BranchEntry model in chunks
-//            BranchEntry::where('project_id', $projectId)->chunk(250, function ($branchEntries) {
-//                foreach ($branchEntries as $branchEntry) {
-//                    $branchEntry->delete();
-//                }
-//            });
-
-            foreach (BranchEntry::where('project_id', $projectId)->cursor() as $row) {
+            foreach (Entry::where('project_id', $projectId)->take(10000)->cursor() as $row) {
                 // Delete the row
                 $row->delete();
             }
 
             //remove all the entries media folders
             $drivers = config('epicollect.media.entries_deletable');
-
             foreach ($drivers as $driver) {
                 // Get disk, path prefix and all directories for this driver
                 $disk = Storage::disk($driver);
@@ -69,6 +52,67 @@ trait Remover
             Log::error(__METHOD__ . ' failed.', [
                 'exception' => $e->getMessage()
             ]);
+            return false;
+        }
+    }
+
+    public function removeEntriesChunk($projectId): bool
+    {
+        $initialMemoryUsage = memory_get_usage();
+        $peakMemoryUsage = memory_get_peak_usage();
+        $projectStats = new ProjectStats();
+        try {
+            DB::beginTransaction();
+
+            Entry::where('project_id', $projectId)
+                ->limit(10000)
+                ->delete();
+            if (!$projectStats->updateProjectStats($this->requestedProject()->getId())) {
+                throw new Exception('Failed to count entries after archive');
+            }
+
+            // Check and update peak memory usage
+            $peakMemoryUsage = max($peakMemoryUsage, memory_get_peak_usage());
+
+            $finalMemoryUsage = memory_get_usage();
+            $memoryUsed = $finalMemoryUsage - $initialMemoryUsage;
+
+            $initialMemoryUsage = Common::formatBytes($initialMemoryUsage);
+            $finalMemoryUsage = Common::formatBytes($finalMemoryUsage);
+            $memoryUsed = Common::formatBytes($memoryUsed);
+            $peakMemoryUsage = Common::formatBytes($peakMemoryUsage);
+
+            // Log memory usage details
+            Log::info("Memory Usage for Deleting Entries");
+            Log::info("Initial Memory Usage: " . $initialMemoryUsage);
+            Log::info("Final Memory Usage: " . $finalMemoryUsage);
+            Log::info("Memory Used: " . $memoryUsed);
+            Log::info("Peak Memory Usage: " . $peakMemoryUsage);
+            DB::commit();
+            // Pause for a second to avoid overloading the database
+            sleep(1);
+
+            //if we have 0 entries left, delete all media files
+            $totalEntries = ProjectStats::where('project_id', $projectId)->value('total_entries');
+            if ($totalEntries === 0) {
+                //remove all the entries media folders
+                $drivers = config('epicollect.media.entries_deletable');
+                foreach ($drivers as $driver) {
+                    // Get disk, path prefix and all directories for this driver
+                    $disk = Storage::disk($driver);
+                    $pathPrefix = $disk->getDriver()->getAdapter()->getPathPrefix();
+                    // Note: need to use File facade here, as Storage doesn't delete
+                    File::deleteDirectory($pathPrefix . $this->requestedProject()->ref);
+                }
+            }
+
+            return true;
+        } catch (Exception $e) {
+            Log::error(__METHOD__ . ' failed.', [
+                'exception' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            DB::rollBack();
             return false;
         }
     }

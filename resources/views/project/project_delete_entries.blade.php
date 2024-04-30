@@ -5,6 +5,7 @@
 
     <div class='container-fluid page-entries-deletion'>
         @include('modals/modal_deletion')
+
         <div class="row">
             <div href="#" class="col-sm-12 col-md-6 col-lg-6 col-md-offset-3 col-lg-offset-3">
                 <div id="" class="panel panel-default ">
