@@ -164,11 +164,11 @@ class AccountDeletionInternalTest extends TestCase
             ]);
             //add a fake file per each entry (per each media type)
             //photo
-            Storage::disk('entry_original')->put($project->ref . '/' . $entry->uuid . '.jpg', '');
+            Storage::disk('entry_original')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
             //audio
-            Storage::disk('audio')->put($project->ref . '/' . $entry->uuid . '.mp4', '');
+            Storage::disk('audio')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
             //video
-            Storage::disk('video')->put($project->ref . '/' . $entry->uuid . '.mp4', '');
+            Storage::disk('video')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
         }
 
         //assert files exist
@@ -396,11 +396,11 @@ class AccountDeletionInternalTest extends TestCase
 
             //add a fake file per each entry (per each media type)
             //photo
-            Storage::disk('entry_original')->put($project->ref . '/' . $entry->uuid . '.jpg', '');
+            Storage::disk('entry_original')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
             //audio
-            Storage::disk('audio')->put($project->ref . '/' . $entry->uuid . '.mp4', '');
+            Storage::disk('audio')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
             //video
-            Storage::disk('video')->put($project->ref . '/' . $entry->uuid . '.mp4', '');
+            Storage::disk('video')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
         }
 
         //assert files exist
@@ -530,11 +530,11 @@ class AccountDeletionInternalTest extends TestCase
 
             //add a fake file per each entry (per each media type)
             //photo
-            Storage::disk('entry_original')->put($project->ref . '/' . $entry->uuid . '.jpg', '');
+            Storage::disk('entry_original')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
             //audio
-            Storage::disk('audio')->put($project->ref . '/' . $entry->uuid . '.mp4', '');
+            Storage::disk('audio')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
             //video
-            Storage::disk('video')->put($project->ref . '/' . $entry->uuid . '.mp4', '');
+            Storage::disk('video')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
         }
 
         //assert files exist
@@ -666,11 +666,11 @@ class AccountDeletionInternalTest extends TestCase
 
             //add a fake file per each entry (per each media type)
             //photo
-            Storage::disk('entry_original')->put($project->ref . '/' . $entry->uuid . '.jpg', '');
+            Storage::disk('entry_original')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
             //audio
-            Storage::disk('audio')->put($project->ref . '/' . $entry->uuid . '.mp4', '');
+            Storage::disk('audio')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
             //video
-            Storage::disk('video')->put($project->ref . '/' . $entry->uuid . '.mp4', '');
+            Storage::disk('video')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
         }
 
         //assert files exist
@@ -801,11 +801,11 @@ class AccountDeletionInternalTest extends TestCase
 
             //add a fake file per each entry (per each media type)
             //photo
-            Storage::disk('entry_original')->put($project->ref . '/' . $entry->uuid . '.jpg', '');
+            Storage::disk('entry_original')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
             //audio
-            Storage::disk('audio')->put($project->ref . '/' . $entry->uuid . '.mp4', '');
+            Storage::disk('audio')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
             //video
-            Storage::disk('video')->put($project->ref . '/' . $entry->uuid . '.mp4', '');
+            Storage::disk('video')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
         }
 
         //assert files exist
@@ -996,11 +996,11 @@ class AccountDeletionInternalTest extends TestCase
 
                 //add a fake files per each entry (per each media type)
                 //photo
-                Storage::disk('entry_original')->put($project->ref . '/' . $entry->uuid . '.jpg', '');
+                Storage::disk('entry_original')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
                 //audio
-                Storage::disk('audio')->put($project->ref . '/' . $entry->uuid . '.mp4', '');
+                Storage::disk('audio')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
                 //video
-                Storage::disk('video')->put($project->ref . '/' . $entry->uuid . '.mp4', '');
+                Storage::disk('video')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
             }
             //secondly, entries by other role (aside from viewer)
             if ($otherRole !== 'viewer') {
@@ -1020,11 +1020,11 @@ class AccountDeletionInternalTest extends TestCase
 
                     //add a fake file per each entry (per each media type)
                     //photo
-                    Storage::disk('entry_original')->put($project->ref . '/' . $entry->uuid . '.jpg', '');
+                    Storage::disk('entry_original')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
                     //audio
-                    Storage::disk('audio')->put($project->ref . '/' . $entry->uuid . '.mp4', '');
+                    Storage::disk('audio')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
                     //video
-                    Storage::disk('video')->put($project->ref . '/' . $entry->uuid . '.mp4', '');
+                    Storage::disk('video')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
                 }
                 //assert entries exist
                 $this->assertEquals(2 * $numOfEntries, Entry::where('project_id', $project->id)
@@ -1102,11 +1102,11 @@ class AccountDeletionInternalTest extends TestCase
             ]);
             //add s fake file per each entry (per each media type)
             //photo
-            Storage::disk('entry_original')->put($projectRoleCreatorOne->ref . '/' . $entry->uuid . '.jpg', '');
+            Storage::disk('entry_original')->put($projectRoleCreatorOne->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
             //audio
-            Storage::disk('audio')->put($projectRoleCreatorOne->ref . '/' . $entry->uuid . '.mp4', '');
+            Storage::disk('audio')->put($projectRoleCreatorOne->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
             //video
-            Storage::disk('video')->put($projectRoleCreatorOne->ref . '/' . $entry->uuid . '.mp4', '');
+            Storage::disk('video')->put($projectRoleCreatorOne->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
         }
 
         $entriesToArchiveTwo = factory(Entry::class, $numOfEntries)->create([
@@ -1123,11 +1123,11 @@ class AccountDeletionInternalTest extends TestCase
             ]);
             //add a fake file per each entry (per each media type)
             //photo
-            Storage::disk('entry_original')->put($projectRoleCreatorTwo->ref . '/' . $entry->uuid . '.jpg', '');
+            Storage::disk('entry_original')->put($projectRoleCreatorTwo->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
             //audio
-            Storage::disk('audio')->put($projectRoleCreatorTwo->ref . '/' . $entry->uuid . '.mp4', '');
+            Storage::disk('audio')->put($projectRoleCreatorTwo->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
             //video
-            Storage::disk('video')->put($projectRoleCreatorTwo->ref . '/' . $entry->uuid . '.mp4', '');
+            Storage::disk('video')->put($projectRoleCreatorTwo->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
         }
 
         //assert entries are present
