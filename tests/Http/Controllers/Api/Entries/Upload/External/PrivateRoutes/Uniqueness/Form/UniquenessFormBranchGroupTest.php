@@ -345,7 +345,9 @@ class UniquenessFormBranchGroupTest extends TestCase
             $ownerInputRef);
         $payloadAnswers = $payload['data']['branch_entry']['answers'];
 
-
+        if ($branchGroupInputRef === '') {
+            $this->fail('No branch ref found. Check ProjectDefinitionGenerator');
+        }
         $this->setDuplicatedAnswer($payloadAnswers, $payload, $branchGroupInputRef, $inputAnswer);
 
         //Login user using external guard (JWT)
