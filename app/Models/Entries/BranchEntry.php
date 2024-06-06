@@ -83,28 +83,28 @@ class BranchEntry extends Model
      * Get all branch entry uuids for the array of entry uuids
      *
      * @param $projectId
-     * @param array $entries
+     * @param array $hierarchyEntriesUuids
      * @return array
      */
-    public function getBranchEntriesUuids($projectId, array $entries): array
+    public function getBranchEntriesUuids($projectId, array $hierarchyEntriesUuids): array
     {
         // Array of all the entry uuids we'll collect
-        $uuids = [];
+        $branchEntriesUuids = [];
 
         // Get all branch entries, chunking data (batches of 100)
         // NOTE: we need the same $uuids array, so pass by reference
         DB::table($this->table)
             ->where('project_id', '=', $projectId)
-            ->whereIn('owner_uuid', $entries)
+            ->whereIn('owner_uuid', $hierarchyEntriesUuids)
             ->select('uuid')
             ->orderBy('created_at', 'DESC')
-            ->chunk(100, function ($data) use (&$uuids) {
+            ->chunk(100, function ($data) use (&$branchEntriesUuids) {
                 foreach ($data as $entry) {
                     // Add uuid to array
-                    $uuids[] = $entry->uuid;
+                    $branchEntriesUuids[] = $entry->uuid;
                 }
             });
-        return $uuids;
+        return $branchEntriesUuids;
     }
 
     /**
