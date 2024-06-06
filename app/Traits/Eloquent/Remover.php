@@ -56,7 +56,7 @@ trait Remover
         }
     }
 
-    public function removeEntriesChunk($projectId): bool
+    public function removeEntriesChunk($projectId, $projectRef): bool
     {
         $initialMemoryUsage = memory_get_usage();
         $peakMemoryUsage = memory_get_peak_usage();
@@ -67,7 +67,7 @@ trait Remover
             Entry::where('project_id', $projectId)
                 ->limit(10000)
                 ->delete();
-            if (!$projectStats->updateProjectStats($this->requestedProject()->getId())) {
+            if (!$projectStats->updateProjectStats($projectId)) {
                 throw new Exception('Failed to count entries after archive');
             }
 
@@ -102,7 +102,7 @@ trait Remover
                     $disk = Storage::disk($driver);
                     $pathPrefix = $disk->getDriver()->getAdapter()->getPathPrefix();
                     // Note: need to use File facade here, as Storage doesn't delete
-                    File::deleteDirectory($pathPrefix . $this->requestedProject()->ref);
+                    File::deleteDirectory($pathPrefix . $projectRef);
                 }
             }
 

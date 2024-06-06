@@ -68,11 +68,11 @@ Route::group(['middleware' => ['project.permissions']], function () {
 
 
     Route::group(['middleware' => ['project.permissions.viewer.role']], function () {
-        // Entry Archive (delete a single entry)
-        Route::post('api/internal/archive/{project_slug}', 'Api\Entries\ArchiveController@index');
+        // Entry deletion (delete a single entry)
+        Route::post('api/internal/deletion/entry/{project_slug}', 'Api\Entries\DeleteController@deleteEntry');
 
-        //Delete all entries for a project (soft delete)
-        Route::post('api/internal/deletion/{project_slug}', 'Api\Entries\ArchiveController@deletion');
+        //Delete all entries for a project
+        Route::post('api/internal/deletion/entries/{project_slug}', 'Api\Entries\DeleteController@deleteEntries');
 
         Route::get('api/internal/counters/entries/{project_slug}', 'Api\Project\ProjectController@countersEntries');
 

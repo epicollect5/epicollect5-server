@@ -86,7 +86,7 @@ return [
     "ec5_93" => "Could not update project stats.",
     "ec5_94" => "Could not update entry counts.",
     "ec5_95" => "Entry could not be added.",
-    "ec5_96" => "Entry could not be archived.",
+    "ec5_96" => "Entry could not be deleted.",
     "ec5_97" => "Entry UUID not valid.",
     "ec5_98" => "Parameters supplied not valid.",
     "ec5_99" => "Branch does not exist",
@@ -171,7 +171,7 @@ return [
     "ec5_233" => "Mapped question invalid.",
     "ec5_234" => "Mapping key already exists.",
     "ec5_235" => ":values is a reserved word.",
-    "ec5_236" => "Entry successfully archived",
+    "ec5_236" => "Entry successfully deleted",
     "ec5_237" => "Entry successfully uploaded.",
     "ec5_238" => "Sorry, you cannot edit this map.",
     "ec5_239" => "This entry does not exist.",
@@ -334,6 +334,6 @@ return [
     "ec5_397" => "Only one single answer is allowed",
     "ec5_398" => "Token revoked",
     "ec5_399" => "Invalid project name",
-    "ec5_400" => "Chunk entries archived successfully.",
-    "ec5_401" => "Chunk branch entries archived successfully."
+    "ec5_400" => "Chunk entries deleted successfully.",
+    "ec5_401" => "Chunk branch entries deleted successfully."
 ];

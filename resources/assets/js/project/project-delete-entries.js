@@ -17,7 +17,7 @@ $(document).ready(function () {
             }
 
             var projectSlug = window.EC5.projectUtils.slugify(projectName.trim());
-            var endpoint = window.EC5.SITE_URL + '/api/internal/deletion/' + projectSlug;
+            var endpoint = window.EC5.SITE_URL + '/api/internal/deletion/entries/' + projectSlug;
 
             var payload = {
                 data: {

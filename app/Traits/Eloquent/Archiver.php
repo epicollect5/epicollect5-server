@@ -66,69 +66,6 @@ trait Archiver
         }
     }
 
-    public function archiveEntries($projectId): bool
-    {
-        $initialMemoryUsage = memory_get_usage();
-        $peakMemoryUsage = memory_get_peak_usage();
-
-        try {
-            do {
-                // Update the `project_id` to `-(project_id)` for rows in batches of 1000
-                $updated = Entry::where('project_id', $projectId)
-                    ->limit(10000)
-                    ->update(['project_id' => DB::raw("-(project_id)")]);
-
-                // Log the number of rows updated
-                Log::info("Updated " . $updated . " Entries by setting project_id to negative");
-
-                // Check and update peak memory usage
-                $peakMemoryUsage = max($peakMemoryUsage, memory_get_peak_usage());
-
-                // Pause for 1 second to avoid overloading the database
-                // sleep(1);
-            } while ($updated > 0);
-
-            do {
-                // Update the `project_id` to `-(project_id)` for rows in batches of 1000
-                $updated = BranchEntry::where('project_id', $projectId)
-                    ->limit(10000)
-                    ->update(['project_id' => DB::raw("-(project_id)")]);
-
-                // Log the number of rows updated
-                Log::info("Updated " . $updated . " Branches by setting project_id to negative");
-
-                // Check and update peak memory usage
-                $peakMemoryUsage = max($peakMemoryUsage, memory_get_peak_usage());
-
-                // Pause for 1 second to avoid overloading the database
-                // sleep(1);
-            } while ($updated > 0);
-
-            $finalMemoryUsage = memory_get_usage();
-            $memoryUsed = $finalMemoryUsage - $initialMemoryUsage;
-
-            $initialMemoryUsage = Common::formatBytes($initialMemoryUsage);
-            $finalMemoryUsage = Common::formatBytes($finalMemoryUsage);
-            $memoryUsed = Common::formatBytes($memoryUsed);
-            $peakMemoryUsage = Common::formatBytes($peakMemoryUsage);
-
-            // Log memory usage details
-            Log::info("Memory Usage for Deleting Entries");
-            Log::info("Initial Memory Usage: " . $initialMemoryUsage);
-            Log::info("Final Memory Usage: " . $finalMemoryUsage);
-            Log::info("Memory Used: " . $memoryUsed);
-            Log::info("Peak Memory Usage: " . $peakMemoryUsage);
-            return true;
-        } catch (Exception $e) {
-            Log::error(__METHOD__ . ' failed.', [
-                'exception' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            //  DB::rollBack();
-            return false;
-        }
-    }
-
     public function archiveUser($email, $userId): bool
     {
         try {

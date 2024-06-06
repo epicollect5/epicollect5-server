@@ -17,7 +17,7 @@ class RuleArchiveTest extends TestCase
     {
         // This method will automatically be called prior to any of your test cases
         parent::setUp();
-        $this->ruleArchive = new ruleArchive();
+        $this->ruleArchive = new RuleArchive();
         $this->payload = [
             'type' => 'archive',
             'id' => '42fd84b0-99e7-11ee-92b0-758caf1d828e',

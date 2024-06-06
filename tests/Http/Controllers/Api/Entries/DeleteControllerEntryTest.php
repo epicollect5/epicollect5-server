@@ -3,9 +3,7 @@
 namespace Tests\Http\Controllers\Api\Entries;
 
 use ec5\Models\Entries\BranchEntry;
-use ec5\Models\Entries\BranchEntryArchive;
 use ec5\Models\Entries\Entry;
-use ec5\Models\Entries\EntryArchive;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
@@ -13,15 +11,17 @@ use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use Exception;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\Storage;
 use Ramsey\Uuid\Uuid;
 use Tests\Generators\EntryGenerator;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 
-//todo: need to test archiving at any level (5 forms), also branches
-class ArchiveControllerTest extends TestCase
+class DeleteControllerEntryTest extends TestCase
 {
     use DatabaseTransactions;
+
+    private $endpoint = 'api/internal/deletion/entry/';
 
     protected function setUp()
     {
@@ -118,7 +118,7 @@ class ArchiveControllerTest extends TestCase
                 'form_counts' => json_encode($formCounts),
                 'total_entries' => 1
             ]);
-        //build archive payload
+        //build delete payload
         $payload = $this->createPayload(
             $this->user->id,
             $entry->uuid,
@@ -128,15 +128,14 @@ class ArchiveControllerTest extends TestCase
         );
 
         $this->assertCount(1, Entry::where('uuid', $entry->uuid)->get());
-        $this->assertCount(0, EntryArchive::where('uuid', $entry->uuid)->get());
         $this->assertEquals(1,
             ProjectStats::where('project_id', $this->project->id)
                 ->value('total_entries'));
 
-        //hit the archive endpoint
+        //hit the delete endpoint
         $response = [];
         try {
-            $response[] = $this->actingAs($this->user)->post('api/internal/archive/' . $this->project->slug, [$payload]);
+            $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, [$payload]);
             $response[0]->assertStatus(400);
             $response[0]->assertExactJson([
                 "errors" => [
@@ -149,7 +148,6 @@ class ArchiveControllerTest extends TestCase
             ]);
 
             $this->assertCount(1, Entry::where('uuid', $entry->uuid)->get());
-            $this->assertCount(0, EntryArchive::where('uuid', $entry->uuid)->get());
             $this->assertEquals(1,
                 ProjectStats::where('project_id', $this->project->id)
                     ->value('total_entries'));
@@ -159,7 +157,7 @@ class ArchiveControllerTest extends TestCase
         }
     }
 
-    public function test_it_should_archive_entry()
+    public function test_it_should_delete_entry()
     {
         $formRef = $this->projectDefinition['data']['project']['forms'][0]['ref'];
         $entry = factory(Entry::class)->create(
@@ -170,6 +168,14 @@ class ArchiveControllerTest extends TestCase
                 'uuid' => Uuid::uuid4()->toString()
             ]
         );
+
+        //add a fake file per each entry (per each media type)
+        //photo
+        Storage::disk('entry_original')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+        //audio
+        Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
+        //video
+        Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
 
         $formCounts = [
             $formRef => [
@@ -184,7 +190,6 @@ class ArchiveControllerTest extends TestCase
                 'total_entries' => 1
             ]);
 
-        //todo: build archive payload
         $payload = $this->createPayload(
             $this->user->id,
             $entry->uuid,
@@ -193,24 +198,22 @@ class ArchiveControllerTest extends TestCase
             0
         );
         $this->assertCount(1, Entry::where('uuid', $entry->uuid)->get());
-        $this->assertCount(0, EntryArchive::where('uuid', $entry->uuid)->get());
         $this->assertEquals(1,
             ProjectStats::where('project_id', $this->project->id)
                 ->value('total_entries'));
 
-        //hit the archive endpoint
+        //hit the delete endpoint
         $response = [];
         try {
-            $response[] = $this->actingAs($this->user)->post('api/internal/archive/' . $this->project->slug, ['data' => $payload]);
+            $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, ['data' => $payload]);
             $response[0]->assertStatus(200);
             $response[0]->assertExactJson([
                 "data" => [
                     "code" => "ec5_236",
-                    "title" => "Entry successfully archived"
+                    "title" => "Entry successfully deleted"
                 ]
             ]);
             $this->assertCount(0, Entry::where('uuid', $entry->uuid)->get());
-            $this->assertCount(1, EntryArchive::where('uuid', $entry->uuid)->get());
             $this->assertEquals(0,
                 ProjectStats::where('project_id', $this->project->id)
                     ->value('total_entries'));
@@ -218,14 +221,23 @@ class ArchiveControllerTest extends TestCase
             $formCounts = json_decode(ProjectStats::where('project_id', $this->project->id)
                 ->value('form_counts'), true);
             $this->assertEquals([], $formCounts);
+
+            //assert media files are deleted
+            $photos = Storage::disk('entry_original')->files($this->project->ref);
+            $this->assertCount(0, $photos);
+
+            $audios = Storage::disk('audio')->files($this->project->ref);
+            $this->assertCount(0, $audios);
+
+            $videos = Storage::disk('video')->files($this->project->ref);
+            $this->assertCount(0, $videos);
         } catch (Exception $e) {
             $this->logTestError($e, $response);
         }
     }
 
-    public function test_it_should_archive_child_entry()
+    public function test_it_should_delete_child_entry()
     {
-        //todo: add hierarchy entry to the project
         $formRef = $this->projectDefinition['data']['project']['forms'][0]['ref'];
         $entry = factory(Entry::class)->create(
             [
@@ -235,6 +247,15 @@ class ArchiveControllerTest extends TestCase
                 'uuid' => Uuid::uuid4()->toString()
             ]
         );
+
+        //add a fake file per each entry (per each media type)
+        //photo
+        Storage::disk('entry_original')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+        //audio
+        Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
+        //video
+        Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
+
 
         $childFormRef = $this->projectDefinition['data']['project']['forms'][1]['ref'];
         $childEntry = factory(Entry::class)->create(
@@ -248,6 +269,15 @@ class ArchiveControllerTest extends TestCase
 
             ]
         );
+
+        //add a fake file per each entry (per each media type)
+        //photo
+        Storage::disk('entry_original')->put($this->project->ref . '/' . $childEntry->uuid . '_' . time() . '.jpg', '');
+        //audio
+        Storage::disk('audio')->put($this->project->ref . '/' . $childEntry->uuid . '_' . time() . '.mp4', '');
+        //video
+        Storage::disk('video')->put($this->project->ref . '/' . $childEntry->uuid . '_' . time() . '.mp4', '');
+
 
         //update $entry with child count
         $entry->child_counts = 1;
@@ -274,12 +304,9 @@ class ArchiveControllerTest extends TestCase
 
         $this->assertCount(1, Entry::where('uuid', $entry->uuid)->get());
         $this->assertEquals(1, Entry::where('uuid', $entry->uuid)->value('child_counts'));
-
-        $this->assertCount(0, EntryArchive::where('uuid', $entry->uuid)->get());
         $this->assertCount(1, Entry::where('uuid', $childEntry->uuid)->get());
-        $this->assertCount(0, EntryArchive::where('uuid', $childEntry->uuid)->get());
 
-        //build archive payload (child entry)
+        //build deleted payload (child entry)
         $payload = $this->createPayload(
             $this->user->id,
             $childEntry->uuid,
@@ -295,21 +322,19 @@ class ArchiveControllerTest extends TestCase
             ]
         ];
 
-        //hit the archive endpoint
+        //hit the delete endpoint
         $response = [];
         try {
-            $response[] = $this->actingAs($this->user)->post('api/internal/archive/' . $this->project->slug, ['data' => $payload]);
+            $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, ['data' => $payload]);
             $response[0]->assertStatus(200);
             $response[0]->assertExactJson([
                 "data" => [
                     "code" => "ec5_236",
-                    "title" => "Entry successfully archived"
+                    "title" => "Entry successfully deleted"
                 ]
             ]);
             $this->assertCount(1, Entry::where('uuid', $entry->uuid)->get());
-            $this->assertCount(0, EntryArchive::where('uuid', $entry->uuid)->get());
             $this->assertCount(0, Entry::where('uuid', $childEntry->uuid)->get());
-            $this->assertCount(1, EntryArchive::where('uuid', $childEntry->uuid)->get());
 
             $this->assertEquals(1,
                 ProjectStats::where('project_id', $this->project->id)
@@ -327,12 +352,28 @@ class ArchiveControllerTest extends TestCase
 
             //also check parent entry child count was updated
             $this->assertEquals(0, Entry::where('uuid', $entry->uuid)->value('child_counts'));
+
+            //test only the child entry files were deleted, parent entry files untouched
+            $photos = Storage::disk('entry_original')->files($this->project->ref);
+            $this->assertCount(1, $photos);
+
+            $audios = Storage::disk('audio')->files($this->project->ref);
+            $this->assertCount(1, $audios);
+
+            $videos = Storage::disk('video')->files($this->project->ref);
+            $this->assertCount(1, $videos);
+
+            //delete fake files
+            Storage::disk('entry_original')->deleteDirectory($this->project->ref);
+            Storage::disk('audio')->deleteDirectory($this->project->ref);
+            Storage::disk('video')->deleteDirectory($this->project->ref);
+
         } catch (Exception $e) {
             $this->logTestError($e, $response);
         }
     }
 
-    public function test_it_should_archive_entry_and_child_entries()
+    public function test_it_should_delete_entry_and_child_entries()
     {
         $uuids = [];
         $forms = $this->projectDefinition['data']['project']['forms'];
@@ -345,6 +386,14 @@ class ArchiveControllerTest extends TestCase
                 'uuid' => Uuid::uuid4()->toString()
             ]
         );
+
+        //add a fake file per each entry (per each media type)
+        //photo
+        Storage::disk('entry_original')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+        //audio
+        Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
+        //video
+        Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
 
         $uuids[] = $entry->uuid;
 
@@ -361,10 +410,17 @@ class ArchiveControllerTest extends TestCase
                 'child_counts' => $i === 4 ? 0 : 1
             ]);
 
+            //add a fake file per each entry (per each media type)
+            //photo
+            Storage::disk('entry_original')->put($this->project->ref . '/' . $childEntry->uuid . '_' . time() . '.jpg', '');
+            //audio
+            Storage::disk('audio')->put($this->project->ref . '/' . $childEntry->uuid . '_' . time() . '.mp4', '');
+            //video
+            Storage::disk('video')->put($this->project->ref . '/' . $childEntry->uuid . '_' . time() . '.mp4', '');
+
             $uuids[] = $childEntry->uuid;
 
             $this->assertCount(1, Entry::where('uuid', $childEntry->uuid)->get());
-            $this->assertCount(0, EntryArchive::where('uuid', $childEntry->uuid)->get());
             // Set the created child entry as the parent for the next iteration
             $parentEntry = $childEntry;
         }
@@ -376,19 +432,16 @@ class ArchiveControllerTest extends TestCase
 
         $this->assertEquals(4, Entry::where('uuid', $entry->uuid)->value('child_counts'));
         $this->assertCount(1, Entry::where('uuid', $entry->uuid)->get());
-        $this->assertCount(0, EntryArchive::where('uuid', $entry->uuid)->get());
 
         //assert project has a total of 5 entries, one per form, hierarchically
         $this->assertCount(5, Entry::where('project_id', $this->project->id)->get());
-        foreach ($forms as $key => $form) {
+        foreach ($forms as $form) {
             $this->assertCount(1, Entry::where('form_ref', $form['ref'])->get());
-            $this->assertCount(0, EntryArchive::where('form_ref', $form['ref'])->get());
 
         }
 
         foreach ($uuids as $key => $uuid) {
             $this->assertCount(1, Entry::where('uuid', $uuid)->get());
-            $this->assertCount(0, EntryArchive::where('uuid', $uuid)->get());
             //assert the child counts skipping last form
             if ($key === 0) {
                 $this->assertEquals(4, Entry::where('uuid', $uuid)->value('child_counts'));
@@ -407,7 +460,7 @@ class ArchiveControllerTest extends TestCase
             }
         }
 
-        //build archive payload to delete top parent entry
+        //build deletion payload to delete top parent entry
         $payload = $this->createPayload(
             $this->user->id,
             $entry->uuid,
@@ -417,28 +470,25 @@ class ArchiveControllerTest extends TestCase
         );
 
 
-        //hit the archive endpoint
+        //hit the delete endpoint
         $response = [];
         try {
-            $response[] = $this->actingAs($this->user)->post('api/internal/archive/' . $this->project->slug, ['data' => $payload]);
+            $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, ['data' => $payload]);
             $response[0]->assertStatus(200);
             $response[0]->assertExactJson([
                 "data" => [
                     "code" => "ec5_236",
-                    "title" => "Entry successfully archived"
+                    "title" => "Entry successfully deleted"
                 ]
             ]);
-            //assert the project has zero entries; they are all archived
+            //assert the project has zero entries; they are all deleted
             $this->assertCount(0, Entry::where('project_id', $this->project->id)->get());
-            $this->assertCount(5, EntryArchive::where('project_id', $this->project->id)->get());
 
             foreach ($forms as $form) {
                 $this->assertCount(0, Entry::where('form_ref', $form['ref'])->get());
-                $this->assertCount(1, EntryArchive::where('form_ref', $form['ref'])->get());
             }
             foreach ($uuids as $uuid) {
                 $this->assertCount(0, Entry::where('uuid', $uuid)->get());
-                $this->assertCount(1, EntryArchive::where('uuid', $uuid)->get());
             }
 
             $this->assertEquals(0,
@@ -449,12 +499,22 @@ class ArchiveControllerTest extends TestCase
                 ->value('form_counts'), true);
             $this->assertEquals([], $formCounts);
 
+            //assert media files are deleted
+            $photos = Storage::disk('entry_original')->files($this->project->ref);
+            $this->assertCount(0, $photos);
+
+            $audios = Storage::disk('audio')->files($this->project->ref);
+            $this->assertCount(0, $audios);
+
+            $videos = Storage::disk('video')->files($this->project->ref);
+            $this->assertCount(0, $videos);
+
         } catch (Exception $e) {
             $this->logTestError($e, $response);
         }
     }
 
-    public function test_it_should_archive_entry_and_branch_entries()
+    public function test_it_should_delete_entry_and_branch_entries()
     {
         $branchUuids = [];
         $forms = $this->projectDefinition['data']['project']['forms'];
@@ -467,6 +527,27 @@ class ArchiveControllerTest extends TestCase
                 'uuid' => Uuid::uuid4()->toString()
             ]
         );
+
+        //add a fake file per each entry (per each media type)
+        //photo
+        Storage::disk('entry_original')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+        //audio
+        Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
+        //video
+        Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
+
+        //add a few media files to test they will not bwe deleted
+        $numOfFilesNotToBeDelete = rand(3, 10);
+        for ($j = 0; $j < $numOfFilesNotToBeDelete; $j++) {
+            $uuid = Uuid::uuid4()->toString();
+            //photo
+            Storage::disk('entry_original')->put($this->project->ref . '/' . $uuid . '_' . time() . '.jpg', '');
+            //audio
+            Storage::disk('audio')->put($this->project->ref . '/' . $uuid . '_' . time() . '.mp4', '');
+            //video
+            Storage::disk('video')->put($this->project->ref . '/' . $uuid . '_' . time() . '.mp4', '');
+        }
+
 
         $inputs = $forms[0]['inputs'];
         $branchRef = '';
@@ -492,6 +573,14 @@ class ArchiveControllerTest extends TestCase
                 ]
             );
             $branchUuids[] = $branchEntry->uuid;
+
+            //add a fake file per each entry (per each media type)
+            //photo
+            Storage::disk('entry_original')->put($this->project->ref . '/' . $branchEntry->uuid . '_' . time() . '.jpg', '');
+            //audio
+            Storage::disk('audio')->put($this->project->ref . '/' . $branchEntry->uuid . '_' . time() . '.mp4', '');
+            //video
+            Storage::disk('video')->put($this->project->ref . '/' . $branchEntry->uuid . '_' . time() . '.mp4', '');
         }
 
         $branchCounts = [
@@ -501,12 +590,10 @@ class ArchiveControllerTest extends TestCase
         $entry->save();
 
         $this->assertCount(1, Entry::where('project_id', $this->project->id)->get());
-        $this->assertCount(0, EntryArchive::where('project_id', $this->project->id)->get());
         $this->assertCount($numOfBranchEntries, BranchEntry::where('project_id', $this->project->id)->get());
-        $this->assertCount(0, BranchEntryArchive::where('project_id', $this->project->id)->get());
 
 
-        //build archive payload
+        //build delete payload
         $payload = $this->createPayload(
             $this->user->id,
             $entry->uuid,
@@ -515,35 +602,45 @@ class ArchiveControllerTest extends TestCase
             0
         );
 
-
-        //hit the archive endpoint
+        //hit the delete endpoint
         $response = [];
         try {
-            $response[] = $this->actingAs($this->user)->post('api/internal/archive/' . $this->project->slug, ['data' => $payload]);
+            $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, ['data' => $payload]);
             $response[0]->assertStatus(200);
             $response[0]->assertExactJson([
                 "data" => [
                     "code" => "ec5_236",
-                    "title" => "Entry successfully archived"
+                    "title" => "Entry successfully deleted"
                 ]
             ]);
 
             $this->assertCount(0, Entry::where('project_id', $this->project->id)->get());
-            $this->assertCount(1, EntryArchive::where('project_id', $this->project->id)->get());
             $this->assertCount(0, BranchEntry::where('project_id', $this->project->id)->get());
-            $this->assertCount($numOfBranchEntries, BranchEntryArchive::where('project_id', $this->project->id)->get());
 
             foreach ($branchUuids as $branchUuid) {
                 $this->assertCount(0, BranchEntry::where('uuid', $branchUuid)->get());
-                $this->assertCount(1, BranchEntryArchive::where('uuid', $branchUuid)->get());
             }
 
+            //test we still have the files belonging to other entries
+            $photos = Storage::disk('entry_original')->files($this->project->ref);
+            $this->assertCount($numOfFilesNotToBeDelete, $photos);
+
+            $audios = Storage::disk('audio')->files($this->project->ref);
+            $this->assertCount($numOfFilesNotToBeDelete, $audios);
+
+            $videos = Storage::disk('video')->files($this->project->ref);
+            $this->assertCount($numOfFilesNotToBeDelete, $videos);
+
+            //delete fake files
+            Storage::disk('entry_original')->deleteDirectory($this->project->ref);
+            Storage::disk('audio')->deleteDirectory($this->project->ref);
+            Storage::disk('video')->deleteDirectory($this->project->ref);
         } catch (Exception $e) {
             $this->logTestError($e, $response);
         }
     }
 
-    public function test_should_archive_branch_entry()
+    public function test_should_delete_branch_entry()
     {
         $forms = $this->projectDefinition['data']['project']['forms'];
         $formRef = $forms[0]['ref'];
@@ -555,6 +652,14 @@ class ArchiveControllerTest extends TestCase
                 'uuid' => Uuid::uuid4()->toString()
             ]
         );
+
+        //add a fake file per each entry (per each media type)
+        //photo
+        Storage::disk('entry_original')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+        //audio
+        Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
+        //video
+        Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
 
         //add branch refs
         $branchRefs = [];
@@ -570,6 +675,7 @@ class ArchiveControllerTest extends TestCase
         $branchCounts = [];
         $branchEntries = [];
         foreach ($branchRefs as $branchRef) {
+            $branchUuid = Uuid::uuid4()->toString();
             $branchEntries[] = factory(BranchEntry::class)->create(
                 [
                     'project_id' => $this->project->id,
@@ -578,9 +684,15 @@ class ArchiveControllerTest extends TestCase
                     'owner_entry_id' => $entry->id,
                     'owner_uuid' => $entry->uuid,
                     'owner_input_ref' => $branchRef,
-                    'uuid' => Uuid::uuid4()->toString()
+                    'uuid' => $branchUuid
                 ]
             );
+            //photo
+            Storage::disk('entry_original')->put($this->project->ref . '/' . $branchUuid . '_' . time() . '.jpg', '');
+            //audio
+            Storage::disk('audio')->put($this->project->ref . '/' . $branchUuid . '_' . time() . '.mp4', '');
+            //video
+            Storage::disk('video')->put($this->project->ref . '/' . $branchUuid . '_' . time() . '.mp4', '');
 
             $branchCounts[$branchRef] = 1;
         }
@@ -588,11 +700,9 @@ class ArchiveControllerTest extends TestCase
         $entry->save();
 
         $this->assertCount(1, Entry::where('project_id', $this->project->id)->get());
-        $this->assertCount(0, EntryArchive::where('project_id', $this->project->id)->get());
         $this->assertCount(sizeof($branchEntries), BranchEntry::where('project_id', $this->project->id)->get());
-        $this->assertCount(0, BranchEntryArchive::where('project_id', $this->project->id)->get());
 
-        //build archive payload
+        //build delete payload
         $payload = $this->createPayload(
             $this->user->id,
             $branchEntries[0]->uuid,
@@ -609,28 +719,40 @@ class ArchiveControllerTest extends TestCase
             ]
         ];
 
-        //hit the archive endpoint
+        //hit the delete endpoint
         $response = [];
         try {
-            $response[] = $this->actingAs($this->user)->post('api/internal/archive/' . $this->project->slug, ['data' => $payload]);
+            $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, ['data' => $payload]);
             $response[0]->assertStatus(200);
             $response[0]->assertExactJson([
                 "data" => [
                     "code" => "ec5_236",
-                    "title" => "Entry successfully archived"
+                    "title" => "Entry successfully deleted"
                 ]
             ]);
 
             $this->assertCount(1, Entry::where('project_id', $this->project->id)->get());
-            $this->assertCount(0, EntryArchive::where('project_id', $this->project->id)->get());
-            //branch was archived, so assert the count -1
+            //branch was deleted, so assert the count -1
             $this->assertCount(sizeof($branchCounts) - 1, BranchEntry::where('project_id', $this->project->id)->get());
-            //one branch was archived
-            $this->assertCount(1, BranchEntryArchive::where('project_id', $this->project->id)->get());
 
             $branchCountsResult = Entry::where('project_id', $this->project->id)->value('branch_counts');
             $branchCounts[$branchRefs[0]] = 0;
             $this->assertEquals($branchCounts, json_decode($branchCountsResult, true));
+
+            //test only the branch entry files of one branch were deleted, parent entry files untouched, other branches untouched
+            $photos = Storage::disk('entry_original')->files($this->project->ref);
+            $this->assertCount(1 + (sizeof($branchEntries) - 1), $photos);
+
+            $audios = Storage::disk('audio')->files($this->project->ref);
+            $this->assertCount(1 + (sizeof($branchEntries) - 1), $audios);
+
+            $videos = Storage::disk('video')->files($this->project->ref);
+            $this->assertCount(1 + (sizeof($branchEntries) - 1), $videos);
+
+            //delete fake files
+            Storage::disk('entry_original')->deleteDirectory($this->project->ref);
+            Storage::disk('audio')->deleteDirectory($this->project->ref);
+            Storage::disk('video')->deleteDirectory($this->project->ref);
 
         } catch (Exception $e) {
             $this->logTestError($e, $response);
@@ -640,7 +762,7 @@ class ArchiveControllerTest extends TestCase
     private function createPayload($userId, $entryUuid, $formRef, $branchCounts, $childCounts)
     {
         return [
-            'type' => 'archive',
+            'type' => 'delete',
             'id' => $entryUuid,
             'attributes' => [
                 'form' => [
@@ -659,7 +781,7 @@ class ArchiveControllerTest extends TestCase
                     ]
                 ]
             ],
-            'archive' => [
+            'delete' => [
                 'entry_uuid' => $entryUuid
             ]
         ];

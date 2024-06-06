@@ -4,28 +4,25 @@ namespace ec5\Http\Controllers\Api\Entries;
 
 use ec5\DTO\EntryStructureDTO;
 use ec5\Http\Controllers\Controller;
-use ec5\Http\Validation\Entries\Archive\RuleArchive;
+use ec5\Http\Validation\Entries\Delete\RuleDelete;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
-use ec5\Models\Project\ProjectStats;
-use ec5\Services\Entries\ArchiveEntryService;
-use ec5\Traits\Eloquent\Archiver;
+use ec5\Services\Entries\DeleteEntryService;
 use ec5\Traits\Eloquent\Remover;
 use ec5\Traits\Requests\RequestAttributes;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
 
-class ArchiveController extends Controller
+class DeleteController extends Controller
 {
-    use Archiver, Remover;
+    use Remover;
 
     /*
     |--------------------------------------------------------------------------
-    | Archive Controller
+    | Delete Controller
     |--------------------------------------------------------------------------
     |
-    | This controller handles the archiving of an entry
+    | This controller handles the deletion of entries
     |
     */
 
@@ -35,17 +32,17 @@ class ArchiveController extends Controller
     protected $request;
 
     /**
-     * Archive an entry
+     * Delete an entry
      *
      * @return JsonResponse
      */
-    public function index(RuleArchive $ruleArchive, EntryStructureDTO $entryStructure, ArchiveEntryService $archiveEntryService)
+    public function deleteEntry(RuleDelete $ruleDelete, EntryStructureDTO $entryStructure, DeleteEntryService $deleteEntryService)
     {
         // Validate the $data
         $data = request()->get('data');
-        $ruleArchive->validate($data);
-        if ($ruleArchive->hasErrors()) {
-            return Response::apiErrorCode(400, $ruleArchive->errors());
+        $ruleDelete->validate($data);
+        if ($ruleDelete->hasErrors()) {
+            return Response::apiErrorCode(400, $ruleDelete->errors());
         }
 
         // Load an entry structure
@@ -54,9 +51,9 @@ class ArchiveController extends Controller
         $entryStructure->setProjectId($this->requestedProject()->getId());
 
         // Perform additional checks on the $entryStructure
-        $ruleArchive->additionalChecks($this->requestedProject(), $entryStructure);
-        if ($ruleArchive->hasErrors()) {
-            return Response::apiErrorCode(400, $ruleArchive->errors());
+        $ruleDelete->additionalChecks($this->requestedProject(), $entryStructure);
+        if ($ruleDelete->hasErrors()) {
+            return Response::apiErrorCode(400, $ruleDelete->errors());
         }
 
         $isBranch = !empty($entryStructure->getOwnerInputRef());
@@ -80,37 +77,37 @@ class ArchiveController extends Controller
         // todo check that the entry exists given parent_uuid, branch_owner etc etc
         $entry = $entryModel->getEntry($this->requestedProject()->getId(), $params)->first();
         if (count($entry) == 0) {
-            return Response::apiErrorCode(400, ['entry_archive' => ['ec5_239']]);
+            return Response::apiErrorCode(400, ['deletion-entries' => ['ec5_239']]);
         }
 
         // Check if this user has permission to delete the entry
         if (!$this->requestedProjectRole()->canDeleteEntry($entry)) {
-            return Response::apiErrorCode(400, ['entry_archive' => ['ec5_91']]);
+            return Response::apiErrorCode(400, ['deletion-entries' => ['ec5_91']]);
         }
 
-        // Attempt to Archive
+        // Attempt to delete
         if ($isBranch) {
-            if (!$archiveEntryService->archiveBranchEntry(
+            if (!$deleteEntryService->deleteBranchEntry(
                 $this->requestedProject(),
                 $entryStructure->getEntryUuid(),
                 $entryStructure,
                 false)) {
-                return Response::apiErrorCode(400, ['branch_entry_archive' => ['ec5_96']]);
+                return Response::apiErrorCode(400, ['deletion-entries-branch' => ['ec5_96']]);
             }
         } else {
-            if (!$archiveEntryService->archiveHierarchyEntry($this->requestedProject(), $entryStructure)) {
-                return Response::apiErrorCode(400, ['entry_archive' => ['ec5_96']]);
+            if (!$deleteEntryService->deleteHierarchyEntry($this->requestedProject(), $entryStructure)) {
+                return Response::apiErrorCode(400, ['deletion-entries' => ['ec5_96']]);
             }
         }
         return Response::apiSuccessCode('ec5_236');
     }
 
     /**
-     * Soft delete a chunk of entries
+     * Delete a chunk of entries
      *
      * @return JsonResponse
      */
-    public function deletion()
+    public function deleteEntries()
     {
         // Validate the request
         $data = request()->get('data');
@@ -137,15 +134,15 @@ class ArchiveController extends Controller
         }
 
 
-        // Attempt to Archive a chuck of entries
+        // Attempt to remove a chuck of entries
         try {
-            if (!$this->removeEntriesChunk($this->requestedProject()->getId())) {
+            if (!$this->removeEntriesChunk($this->requestedProject()->getId(), $this->requestedProject()->ref)) {
                 return Response::apiErrorCode(400, ['errors' => ['ec5_104']]);
             }
             // Success!
             return Response::apiSuccessCode('ec5_400');
         } catch (\Exception $e) {
-            \Log::error('Error softDelete() entries', ['exception' => $e->getMessage()]);
+            \Log::error('Error deletion() entries', ['exception' => $e->getMessage()]);
             return Response::apiErrorCode(400, ['errors' => ['ec5_104']]);
         }
     }
