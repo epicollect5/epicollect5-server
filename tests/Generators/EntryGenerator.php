@@ -25,7 +25,7 @@ class EntryGenerator
 {
     use Assertions;
 
-    const SYMBOLS = ['!', '@', '€', '£', '#', '$', '%', '^', '&', '*', '"', '\'', '\\', '{', ',', '.', '?', '|', '<', '>', '~', '`'];
+    const SYMBOLS = ['!', '@', '€', '£', '#', '$', '%', '^', '&', '*', '"', '{', ',', '.', '?', '|', '<', '>', '~', '`'];
     const LOCALES = ['it_IT', 'en_US', 'de_DE', 'es_ES', 'en_GB', 'fr_FR'];
     const PLATFORMS = ['Android', 'iOS'];
 
@@ -64,14 +64,33 @@ class EntryGenerator
                         } else {
                             $randomPhrase .= ' ' . $this->faker->sentence;
                         }
-
                     }
                     $randomPhrase .= ' ' . self::SYMBOLS[mt_rand(0, count(self::SYMBOLS) - 1)];
                     $randomPhrase = str_replace('>', '\ufe65', $randomPhrase);
                     $randomPhrase = str_replace('<', '\ufe64', $randomPhrase);
                 }
+
+                // Ensure the string is encoded in UTF-8
+                $randomPhrase = mb_convert_encoding($randomPhrase, 'UTF-8', 'auto');
+
+                // Remove any non-UTF-8 characters (more strict approach)
+                $randomPhrase = preg_replace('/[^\x00-\x7F]/u', '', $randomPhrase);
+
+                // Remove potential leading 'b' character
+                if (strpos($randomPhrase, 'b') === 0) {
+                    $randomPhrase = substr($randomPhrase, 1);
+                }
+
+                // Convert to JSON and back to escape characters like \ or \\
+                $jsonEncodedString = json_encode($randomPhrase);
+                $randomPhrase = json_decode($jsonEncodedString, true);
+
+                // Ensure we trim and limit while keeping UTF-8 encoding safe
+                $trimmedPhrase = trim($randomPhrase);
+
+                // Truncate the string safely for UTF-8
                 $answer = [
-                    'answer' => Str::limit(trim($randomPhrase), $maxlength - 3),//consider ellipsis
+                    'answer' => mb_strimwidth($trimmedPhrase, 0, $maxlength - 3, '', 'UTF-8'),
                     'was_jumped' => false
                 ];
                 break;
