@@ -189,6 +189,9 @@ class ProjectMappingControllerTest extends TestCase
         }
     }
 
+    /**
+     * @dataProvider multipleRunProvider
+     */
     public function test_existing_mapping_is_updated()
     {
         //get mapping
@@ -198,9 +201,8 @@ class ProjectMappingControllerTest extends TestCase
         $this->assertCount(1, $projectMappings);
 
         //duplicate it and save it to the db
-        // dd($projectMappings);
         $projectMappings[] = [
-            'name' => 'Random name',
+            'name' => 'Random Name',
             'forms' => $projectMappings[0]['forms'],
             'map_index' => 1,
             'is_default' => false
@@ -217,67 +219,18 @@ class ProjectMappingControllerTest extends TestCase
         $projectMappings = json_decode($projectStructures->project_mapping, true);
         $this->assertCount(2, $projectMappings);
 
-        // Loop through the main array
-        foreach ($projectMappings[1]['forms'] as $formRef => $inputRefs) {
-            // Check if the value is an array
-            if (is_array($inputRefs)) {
-                // Loop through the nested array
-                foreach ($inputRefs as $inputRef => $input) {
-                    // Check if "map_to" key exists in the nested array
-                    if (isset($input['map_to'])) {
-                        //update original map_to to a valid value
-                        $projectMappings[1]['forms'][$formRef][$inputRef]['map_to'] = $this->faker->unique()->regexify('^[A-Za-z0-9\_]{1,20}$');
-
-                        //update possible answers map_to, if any
-                        $possibleAnswers = $projectMappings[1]['forms'][$formRef][$inputRef]['possible_answers'];
-                        if (sizeof($possibleAnswers) > 0) {
-                            foreach ($possibleAnswers as $answerRef => $possibleAnswer) {
-                                $mapTo = $this->faker->unique()->regexify('^[A-Za-z0-9\_]{1,20}$');
-                                $projectMappings[1]['forms'][$formRef][$inputRef]['possible_answers'][$answerRef]['map_to'] = $mapTo;
-                            }
-                        }
-                    }
-
-                    //if is branch, update the branch questions map_to
-                    if (sizeof($input['branch']) > 0) {
-                        foreach ($input['branch'] as $branchRef => $branchInput) {
-                            $projectMappings[1]['forms'][$formRef][$inputRef]['branch'][$branchRef]['map_to'] = $this->faker->unique()->regexify('^[A-Za-z0-9\_]{1,20}$');
-                            $possibleAnswers = $projectMappings[1]['forms'][$formRef][$inputRef]['branch'][$branchRef]['possible_answers'];
-                            if (sizeof($possibleAnswers) > 0) {
-                                foreach ($possibleAnswers as $answerRef => $possibleAnswer) {
-                                    $mapTo = $this->faker->unique()->regexify('^[A-Za-z0-9\_]{1,20}$');
-                                    $projectMappings[1]['forms'][$formRef][$inputRef]['branch'][$branchRef]['possible_answers'][$answerRef]['map_to'] = $mapTo;
-                                }
-                            }
-                        }
-                    }
-
-                    //if is group, update the group questions map_to
-                    if (sizeof($input['group']) > 0) {
-                        foreach ($input['group'] as $groupRef => $groupInput) {
-                            $projectMappings[1]['forms'][$formRef][$inputRef]['group'][$groupRef]['map_to'] = $this->faker->unique()->regexify('^[A-Za-z0-9\_]{1,20}$');
-                            $possibleAnswers = $projectMappings[1]['forms'][$formRef][$inputRef]['group'][$groupRef]['possible_answers'];
-                            if (sizeof($possibleAnswers) > 0) {
-                                foreach ($possibleAnswers as $answerRef => $possibleAnswer) {
-                                    $mapTo = $this->faker->unique()->regexify('^[A-Za-z0-9\_]{1,20}$');
-                                    $projectMappings[1]['forms'][$formRef][$inputRef]['group'][$groupRef]['possible_answers'][$answerRef]['map_to'] = $mapTo;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        $modifiedMapping = $this->getModifiedMapping($projectMappings[1]);
 
         $params = [
             'action' => 'update',
             'map_index' => 1,
-            'mapping' => $projectMappings[1]
+            'mapping' => $modifiedMapping
         ];
 
         //post updated mapping
         $response = [];
         try {
+            $jsonResponse = [];
             $response[] = $this->actingAs($this->user)
                 ->post('myprojects/' . $this->project->slug . '/mapping-data/update', $params);
             $response[0]->assertStatus(200);
@@ -294,9 +247,19 @@ class ProjectMappingControllerTest extends TestCase
 
             //assert mapping is updated in the response
             $jsonResponse = json_decode($response[0]->getContent(), true);
+            //get the latest mappings which should have the changes
+            $projectStructures = ProjectStructure::where('project_id', $this->project->id)
+                ->first();
+            $projectMappings = json_decode($projectStructures->project_mapping, true);
+            //compare against the modified mapping
             $this->assertEquals(
                 $projectMappings[1]['forms'],
                 $jsonResponse['data']['mapping'][1]['forms']
+            );
+
+            $this->assertEquals(
+                $projectMappings[1],
+                $modifiedMapping
             );
 
             //assert mapping is updated in the db
