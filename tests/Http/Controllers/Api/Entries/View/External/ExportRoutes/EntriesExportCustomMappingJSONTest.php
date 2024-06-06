@@ -1,6 +1,6 @@
 <?php
 
-namespace Http\Controllers\Api\Entries\View\External\ExportRoutes;
+namespace Tests\Http\Controllers\Api\Entries\View\External\ExportRoutes;
 
 use ec5\DTO\ProjectMappingDTO;
 use ec5\Models\Entries\BranchEntry;
@@ -607,7 +607,12 @@ class EntriesExportCustomMappingJSONTest extends ViewEntriesBaseControllerTest
         }
     }
 
-    public function test_entries_export_endpoint_form_0_single_entry_custom_mapping_modified_branches_count()
+    /**
+     * @param $index
+     * @return void
+     * @dataProvider multipleRunProvider
+     */
+    public function test_entries_export_endpoint_form_0_single_entry_custom_mapping_modified_branches_count($index)
     {
         $mapIndex = 1;
         //set project as public so the endpoint is accessible without auth
@@ -711,6 +716,8 @@ class EntriesExportCustomMappingJSONTest extends ViewEntriesBaseControllerTest
         $queryString = '?form_ref=' . $formRef;
         $queryString .= '&map_index=' . $mapIndex;
         $response = [];
+        $mappedInputs = [];
+        $inputsFlattened = [];
         try {
             $response[] = $this->actingAs($this->user)
                 ->get($this->endpoint . $this->project->slug . $queryString);
@@ -767,67 +774,8 @@ class EntriesExportCustomMappingJSONTest extends ViewEntriesBaseControllerTest
                 $entryFromResponse['uploaded_at']);
         } catch (Exception $e) {
             $this->logTestError($e, $response);
+            //dd($e->getMessage(), $e->getTraceAsString(), $mappedInputs, $inputsFlattened);
+
         }
     }
-
-
-    private function getModifiedMapping($mapping)
-    {
-        //regex to generate a valid map_to (avoiding '0' as that could cause errors)
-        $regex = '^[A-Za-z1-9\_]{1,20}$';
-
-        foreach ($mapping['forms'] as $formRef => $inputRefs) {
-            // Check if the value is an array
-            if (is_array($inputRefs)) {
-                // Loop through the nested array
-                foreach ($inputRefs as $inputRef => $input) {
-                    // Check if "map_to" key exists in the nested array
-                    if (isset($input['map_to'])) {
-                        //update original map_to to a valid value
-                        $mapping['forms'][$formRef][$inputRef]['map_to'] = $this->faker->unique()->regexify($regex);
-
-                        //update possible answers map_to, if any
-                        $possibleAnswers = $mapping['forms'][$formRef][$inputRef]['possible_answers'];
-                        if (sizeof($possibleAnswers) > 0) {
-                            foreach ($possibleAnswers as $answerRef => $possibleAnswer) {
-                                $mapTo = $this->faker->unique()->regexify($regex);
-                                $mapping['forms'][$formRef][$inputRef]['possible_answers'][$answerRef]['map_to'] = $mapTo;
-                            }
-                        }
-                    }
-
-                    //if is branch, update the branch questions map_to
-                    if (sizeof($input['branch']) > 0) {
-                        foreach ($input['branch'] as $branchRef => $branchInput) {
-                            $mapping['forms'][$formRef][$inputRef]['branch'][$branchRef]['map_to'] = $this->faker->unique()->regexify($regex);
-                            $possibleAnswers = $mapping['forms'][$formRef][$inputRef]['branch'][$branchRef]['possible_answers'];
-                            if (sizeof($possibleAnswers) > 0) {
-                                foreach ($possibleAnswers as $answerRef => $possibleAnswer) {
-                                    $mapTo = $this->faker->unique()->regexify($regex);
-                                    $mapping['forms'][$formRef][$inputRef]['branch'][$branchRef]['possible_answers'][$answerRef]['map_to'] = $mapTo;
-                                }
-                            }
-                        }
-                    }
-
-                    //if is group, update the group questions map_to
-                    if (sizeof($input['group']) > 0) {
-                        foreach ($input['group'] as $groupRef => $groupInput) {
-                            $mapping['forms'][$formRef][$inputRef]['group'][$groupRef]['map_to'] = $this->faker->unique()->regexify($regex);
-                            $possibleAnswers = $mapping['forms'][$formRef][$inputRef]['group'][$groupRef]['possible_answers'];
-                            if (sizeof($possibleAnswers) > 0) {
-                                foreach ($possibleAnswers as $answerRef => $possibleAnswer) {
-                                    $mapTo = $this->faker->unique()->regexify($regex);
-                                    $mapping['forms'][$formRef][$inputRef]['group'][$groupRef]['possible_answers'][$answerRef]['map_to'] = $mapTo;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return $mapping;
-    }
-
 }
