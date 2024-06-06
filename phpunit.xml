@@ -8,8 +8,16 @@
          convertWarningsToExceptions="true"
          processIsolation="false"
          stopOnFailure="false">
+    <listeners>
+        <listener class="Tests\MemoryLoggerListener"/>
+    </listeners>
     <testsuites>
-        <testsuite name="Application Test Suite">
+        <!--Running a cleanup first, to remove leftover rows from failures-->
+        <testsuite name="Database Cleanup">
+            <file>Tests/CleanUp.php</file>
+        </testsuite>
+        <!--Running all the tests (unit + integrations)-->
+        <testsuite name="Application Tests">
             <directory suffix="Test.php">./tests</directory>
             <exclude>./tests/Browser/</exclude>
         </testsuite>
