@@ -138,7 +138,7 @@ class RuleUpload extends ValidationBase
             $this->errors['validation'] = ['ec5_323'];
             return false;
         }
-        
+
 
         $projectExtra = $project->getProjectExtra();
 
@@ -184,7 +184,6 @@ class RuleUpload extends ValidationBase
         // Do additional checks on all entry types
         $validator->additionalChecks($project, $entryStructure);
         if ($validator->hasErrors()) {
-            Log::error('Upload additional checks failed', $validator->errors());
             $this->errors = $validator->errors();
             return false;
         }
