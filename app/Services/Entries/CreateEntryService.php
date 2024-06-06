@@ -22,6 +22,7 @@ class CreateEntryService
     {
         $entry = [];
         $mediaTypes = array_keys(config('epicollect.strings.media_input_types'));
+        $entryData = [];
 
         try {
             DB::beginTransaction();
@@ -34,6 +35,7 @@ class CreateEntryService
             // EDITABLE FIELDS - fields that we want to update if we have an edit and add if we have a new entry
             // These will override the original values of an existing entry
             $entry['entry_data'] = json_encode($entryData);
+
             // Add geolocation field if available
             if ($entryStructure->hasGeoLocation()) {
                 //to make the dataviewer pie chart markers
@@ -126,6 +128,7 @@ class CreateEntryService
             DB::commit();
             return true;
         } catch (Exception $e) {
+            Log::error(json_last_error_msg(), ['$entryData' => $entryData]);
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             $this->errors['create-entry-service'] = ['ec5_45'];
             DB::rollBack();
