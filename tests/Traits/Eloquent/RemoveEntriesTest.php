@@ -7,15 +7,16 @@ use ec5\Models\Entries\BranchEntryArchive;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Entries\EntryArchive;
 use ec5\Models\Project\Project;
+use ec5\Models\Project\ProjectStats;
 use ec5\Models\User\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
-class ArchiveEntriesTest extends TestCase
+class RemoveEntriesTest extends TestCase
 {
     use DatabaseTransactions;
 
-    public function test_it_archives_entries_and_updates_stats()
+    public function test_it_delete_entries_chunk_and_updates_stats()
     {
         $repeatCount = 10; // Number of times to repeat the test case
 
@@ -71,8 +72,8 @@ class ArchiveEntriesTest extends TestCase
             $this->assertEquals($entriesToArchive->count(), Entry::where('project_id', $project->id)->count());
             $this->assertEquals($numOfEntries * $numOfBranchEntries, BranchEntry::where('project_id', $project->id)->count());
 
-            // Run the archiveEntries function
-            $result = $this->app->call('ec5\Http\Controllers\Web\Project\ProjectDeleteEntriesController@archiveEntries', [
+            // Run the function
+            $result = $this->app->call('ec5\Http\Controllers\Api\Entries\DeleteController@removeEntriesChunk', [
                 'projectId' => $project->id,
                 'projectRef' => $project->ref
             ]);
@@ -80,17 +81,16 @@ class ArchiveEntriesTest extends TestCase
             // Assert that the function returned true
             $this->assertTrue($result);
 
-            // Assert that the entries and branch entries have been moved to their respective archive tables
+            // Assert that the entries and branch entries have been deleted (less than 10000)
             $this->assertEquals(0, Entry::where('project_id', $project->id)->count());
             $this->assertEquals(0, BranchEntry::where('project_id', $project->id)->count());
-            $this->assertEquals($numOfEntries, EntryArchive::where('project_id', $project->id)->count());
-            $this->assertEquals($numOfEntries * $numOfBranchEntries, BranchEntryArchive::where('project_id', $project->id)->count());
 
-            // Assert that the additional entries and branch are still present
+            // Assert that the additional entries and branch entries are still present
             $this->assertEquals($numOfAdditionalEntries, Entry::where('project_id', $additionalProject->id)->count());
             $this->assertEquals($numOfAdditionalEntries * $numOfAdditionalBranchEntries, BranchEntry::where('project_id', $additionalProject->id)->count());
-            $this->assertEquals(0, EntryArchive::where('project_id', $additionalProject->id)->count());
-            $this->assertEquals(0, BranchEntryArchive::where('project_id', $additionalProject->id)->count());
+
+            //assert stats are updated
+            $this->assertEquals(0, ProjectStats::where('project_id', $project->id)->value('total_entries'));
         }
     }
 }
