@@ -1,8 +1,9 @@
 <?php
 
-namespace Http\Controllers\Api\Entries\Upload\External\PublicRoutes\Media;
+namespace Tests\Http\Controllers\Api\Entries\Upload\External\PublicRoutes\Media;
 
 use ec5\Libraries\Utilities\Common;
+use ec5\Libraries\Utilities\DateFormatConverter;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
@@ -903,6 +904,10 @@ class UploadAppControllerPhotoTest extends TestCase
                 'project_extra' => json_encode($projectExtra),
             ]);
 
+            //upload payload with the new project version (in Javascript ISO8601 format UTC like 2024-05-30 12:47:47)
+            $projectStructure = ProjectStructure::where('project_id', $this->project->id)->first();
+            $payload['data']['file_entry']['project_version'] = $projectStructure->updated_at->format('Y-m-d H:i:s');
+
             //multipart upload from app with json encoded string and file (Cordova FileTransfer)
             $response[] = $this->post($this->endpoint . $this->project->slug,
                 ['data' => json_encode($payload['data']), 'name' => $payload['name']],
@@ -927,5 +932,4 @@ class UploadAppControllerPhotoTest extends TestCase
             $this->logTestError($e, $response);
         }
     }
-
 }
