@@ -8,6 +8,8 @@ use ec5\DTO\ProjectMappingDTO;
 use ec5\Libraries\Utilities\GpointConverter;
 use ec5\Models\User\User;
 use Exception;
+use Log;
+use Monolog\Handler\LogEntriesHandler;
 
 class DataMappingService
 {
@@ -157,6 +159,7 @@ class DataMappingService
 
                 switch ($input['type']) {
                     case 'location':
+
                         $locationAnswer = $this->parseAnswer('csv-location', $answer, $input);
                         $output[] = $locationAnswer[0] ?? '';
                         $output[] = $locationAnswer[1] ?? '';
@@ -422,7 +425,7 @@ class DataMappingService
             case 'csv-location':
                 try {
                     if ($answer['latitude'] && $answer['longitude']) {
-                        $converter->setLongLat($answer['longitude'], $$answer['latitude']);
+                        $converter->setLongLat($answer['longitude'], $answer['latitude']);
                         $converter->convertLLtoTM(null);
 
                         $parsedAnswer = [
@@ -444,6 +447,7 @@ class DataMappingService
                         ];
                     }
                 } catch (Exception $e) {
+                    Log::debug(__METHOD__ . ' failed | csv-location', ['exception' => $e->getMessage()]);
                     //we get here when there is not an answer?
                     $parsedAnswer = [
                         '',
