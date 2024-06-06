@@ -35,7 +35,8 @@
     "symfony/css-selector": "2.8.*|3.0.*",
     "symfony/dom-crawler": "2.8.*|3.0.*",
     "xethron/migrations-generator": "dev-l5",
-    "way/generators": "dev-feature/laravel-five-stable"
+    "way/generators": "dev-feature/laravel-five-stable",
+    "ext-mbstring": "*"
   },
   "autoload": {
     "classmap": [
