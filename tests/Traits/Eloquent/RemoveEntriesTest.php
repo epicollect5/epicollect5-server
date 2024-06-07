@@ -3,9 +3,7 @@
 namespace Tests\Traits\Eloquent;
 
 use ec5\Models\Entries\BranchEntry;
-use ec5\Models\Entries\BranchEntryArchive;
 use ec5\Models\Entries\Entry;
-use ec5\Models\Entries\EntryArchive;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectStats;
 use ec5\Models\User\User;

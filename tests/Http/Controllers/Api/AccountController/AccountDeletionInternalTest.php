@@ -5,9 +5,7 @@ namespace Tests\Http\Controllers\Api\AccountController;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Mail\UserAccountDeletionConfirmation;
 use ec5\Models\Entries\BranchEntry;
-use ec5\Models\Entries\BranchEntryArchive;
 use ec5\Models\Entries\Entry;
-use ec5\Models\Entries\EntryArchive;
 use ec5\Models\OAuth\OAuthClientProject;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectRole;
@@ -437,9 +435,7 @@ class AccountDeletionInternalTest extends TestCase
             ->count());
         //assert entries & branch entries were NOT archived
         $this->assertEquals($numOfEntries, Entry::where('project_id', $project->id)->count());
-        $this->assertEquals(0, EntryArchive::where('project_id', $project->id)->count());
         $this->assertEquals($numOfEntries * $numOfBranchEntries, BranchEntry::where('project_id', $project->id)->count());
-        $this->assertEquals(0, BranchEntryArchive::where('project_id', $project->id)->count());
 
         //assert media are NOT touched
         $photos = Storage::disk('entry_original')->files($project->ref);
@@ -572,9 +568,7 @@ class AccountDeletionInternalTest extends TestCase
             ->count());
         //assert entries & branch entries were NOT archived
         $this->assertEquals($numOfEntries, Entry::where('project_id', $project->id)->count());
-        $this->assertEquals(0, EntryArchive::where('project_id', $project->id)->count());
         $this->assertEquals($numOfEntries * $numOfBranchEntries, BranchEntry::where('project_id', $project->id)->count());
-        $this->assertEquals(0, BranchEntryArchive::where('project_id', $project->id)->count());
 
         //assert media files are not touched
         $photos = Storage::disk('entry_original')->files($project->ref);
@@ -707,9 +701,7 @@ class AccountDeletionInternalTest extends TestCase
             ->count());
         //assert entries & branch entries were NOT archived
         $this->assertEquals($numOfEntries, Entry::where('project_id', $project->id)->count());
-        $this->assertEquals(0, EntryArchive::where('project_id', $project->id)->count());
         $this->assertEquals($numOfEntries * $numOfBranchEntries, BranchEntry::where('project_id', $project->id)->count());
-        $this->assertEquals(0, BranchEntryArchive::where('project_id', $project->id)->count());
 
         //assert media files are not touched
         $photos = Storage::disk('entry_original')->files($project->ref);
@@ -843,9 +835,7 @@ class AccountDeletionInternalTest extends TestCase
             ->count());
         //assert entries & branch entries were NOT archived
         $this->assertEquals($numOfEntries, Entry::where('project_id', $project->id)->count());
-        $this->assertEquals(0, EntryArchive::where('project_id', $project->id)->count());
         $this->assertEquals($numOfEntries * $numOfBranchEntries, BranchEntry::where('project_id', $project->id)->count());
-        $this->assertEquals(0, BranchEntryArchive::where('project_id', $project->id)->count());
 
         //assert media files are not touched
         $photos = Storage::disk('entry_original')->files($project->ref);

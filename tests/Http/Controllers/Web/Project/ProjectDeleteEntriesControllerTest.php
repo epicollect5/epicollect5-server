@@ -4,10 +4,6 @@ namespace Tests\Http\Controllers\Web\Project;
 
 use Auth;
 use ec5\DTO\ProjectDTO;
-use ec5\Models\Entries\BranchEntry;
-use ec5\Models\Entries\BranchEntryArchive;
-use ec5\Models\Entries\Entry;
-use ec5\Models\Entries\EntryArchive;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;

@@ -6,9 +6,7 @@ namespace Tests\Http\Controllers\Api\AccountController;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Mail\UserAccountDeletionConfirmation;
 use ec5\Models\Entries\BranchEntry;
-use ec5\Models\Entries\BranchEntryArchive;
 use ec5\Models\Entries\Entry;
-use ec5\Models\Entries\EntryArchive;
 use ec5\Models\OAuth\OAuthClientProject;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectRole;
@@ -118,7 +116,7 @@ class AccountDeletionExternalTest extends TestCase
         );
         //user must have creator role in at least one project
         $projectRoles = ProjectRole::where('user_id', $user->id)->first();
-        $this->assertEquals(1, sizeOf($projectRoles));
+        $this->assertNotNull($projectRoles);
         $this->assertEquals($role, $projectRoles['role']);
 
         //assert project is present before archiving
@@ -258,7 +256,8 @@ class AccountDeletionExternalTest extends TestCase
         );
         //user must have creator role in at least one project
         $projectRoles = ProjectRole::where('user_id', $user->id)->first();
-        $this->assertEquals(1, sizeOf($projectRoles));
+        $this->assertNotNull($projectRoles);
+
         $this->assertEquals($role, $projectRoles['role']);
 
         //assert project is present before archiving
@@ -422,9 +421,7 @@ class AccountDeletionExternalTest extends TestCase
 
         //assert entries & branch entries were NOT archived
         $this->assertEquals($numOfEntries, Entry::where('project_id', $project->id)->count());
-        $this->assertEquals(0, EntryArchive::where('project_id', $project->id)->count());
         $this->assertEquals($numOfEntries * $numOfBranchEntries, BranchEntry::where('project_id', $project->id)->count());
-        $this->assertEquals(0, BranchEntryArchive::where('project_id', $project->id)->count());
 
         //assert media are NOT touched
         $photos = Storage::disk('entry_original')->files($project->ref);
@@ -560,9 +557,7 @@ class AccountDeletionExternalTest extends TestCase
             ->count());
         //assert entries & branch entries were NOT archived
         $this->assertEquals($numOfEntries, Entry::where('project_id', $project->id)->count());
-        $this->assertEquals(0, EntryArchive::where('project_id', $project->id)->count());
         $this->assertEquals($numOfEntries * $numOfBranchEntries, BranchEntry::where('project_id', $project->id)->count());
-        $this->assertEquals(0, BranchEntryArchive::where('project_id', $project->id)->count());
 
         //assert media files are not touched
         $photos = Storage::disk('entry_original')->files($project->ref);
@@ -698,9 +693,7 @@ class AccountDeletionExternalTest extends TestCase
             ->count());
         //assert entries & branch entries were NOT archived
         $this->assertEquals($numOfEntries, Entry::where('project_id', $project->id)->count());
-        $this->assertEquals(0, EntryArchive::where('project_id', $project->id)->count());
         $this->assertEquals($numOfEntries * $numOfBranchEntries, BranchEntry::where('project_id', $project->id)->count());
-        $this->assertEquals(0, BranchEntryArchive::where('project_id', $project->id)->count());
 
         //assert media files are not touched
         $photos = Storage::disk('entry_original')->files($project->ref);
@@ -836,9 +829,7 @@ class AccountDeletionExternalTest extends TestCase
             ->count());
         //assert entries & branch entries were NOT archived
         $this->assertEquals($numOfEntries, Entry::where('project_id', $project->id)->count());
-        $this->assertEquals(0, EntryArchive::where('project_id', $project->id)->count());
         $this->assertEquals($numOfEntries * $numOfBranchEntries, BranchEntry::where('project_id', $project->id)->count());
-        $this->assertEquals(0, BranchEntryArchive::where('project_id', $project->id)->count());
 
         //assert media files are not touched
         $photos = Storage::disk('entry_original')->files($project->ref);
