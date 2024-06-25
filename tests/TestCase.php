@@ -141,7 +141,7 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
     public function multipleRunProvider(): array
     {
         // Define how many times you want to run the test
-        $runs = 1;
+        $runs = 2;
         $testCases = [];
 
         for ($i = 0; $i < $runs; $i++) {

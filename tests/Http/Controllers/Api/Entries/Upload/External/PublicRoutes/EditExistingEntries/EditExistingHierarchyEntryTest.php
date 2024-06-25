@@ -2001,6 +2001,7 @@ class EditExistingHierarchyEntryTest extends TestCase
             $this->assertEquals($entryFromDB->user_id, $editedEntryFromDB->user_id);
 
         } catch (Exception $e) {
+
             $this->logTestError($e, $response);
         }
     }

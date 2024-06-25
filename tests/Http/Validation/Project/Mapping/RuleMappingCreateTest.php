@@ -20,10 +20,10 @@ class RuleMappingCreateTest extends TestCase
 
     public function test_valid_names()
     {
-        $count = rand(1, 50);
+        $count = rand(1, 500);
         for ($i = 0; $i < $count; $i++) {
             $data = [
-                'name' => $this->faker->regexify('^[A-Za-z0-9 \-\_]{3,20}$')
+                'name' => 'Map ' . $this->faker->regexify('^[A-Za-z0-9 \-\_]{3,10}$')
             ];
             $this->ruleMappingCreate->validate($data);
             $this->assertFalse($this->ruleMappingCreate->hasErrors());

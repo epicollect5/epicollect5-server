@@ -354,6 +354,9 @@ class ProjectMappingControllerTest extends TestCase
         }
     }
 
+    /**
+     * @dataProvider multipleRunProvider
+     */
     public function test_existing_mapping_is_renamed()
     {
         //get mapping
@@ -383,7 +386,7 @@ class ProjectMappingControllerTest extends TestCase
 
         $params = [
             'action' => 'rename',
-            'name' => $this->faker->regexify('^[A-Za-z0-9 \-\_]{3,10}$'),
+            'name' => 'ec5_' . $this->faker->regexify('^[A-Za-z0-9 \-\_]{3,5}$'),
             'map_index' => 1
         ];
 

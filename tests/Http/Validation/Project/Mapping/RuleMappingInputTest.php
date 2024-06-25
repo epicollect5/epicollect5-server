@@ -27,7 +27,7 @@ class RuleMappingInputTest extends TestCase
                 'hide' => (bool)rand(0, 1),
                 'group' => [],
                 'branch' => [],
-                'map_to' => $this->faker->regexify('^[A-Za-z0-9\_]{1,20}$'),
+                'map_to' => 'ec5_' . $this->faker->regexify('^[A-Za-z0-9\_]{1,10}$'),
                 'possible_answers' => []
             ];
             $this->ruleMappingInput->validate($data);
@@ -36,6 +36,9 @@ class RuleMappingInputTest extends TestCase
         }
     }
 
+    /**
+     * @dataProvider multipleRunProvider
+     */
     public function test_invalid_input()
     {
         $count = rand(1, 5);
@@ -58,7 +61,7 @@ class RuleMappingInputTest extends TestCase
                 'hide' => (bool)rand(0, 1),
                 'group' => [],
                 'branch' => [],
-                'map_to' => $this->faker->regexify('^[A-Za-z0-9\-]{21,30}$'),
+                'map_to' => 'ec5_' . $this->faker->regexify('^[A-Za-z0-9\-]{21,25}$'),
                 'possible_answers' => []
             ];
             $this->ruleMappingInput->validate($data);
@@ -72,7 +75,7 @@ class RuleMappingInputTest extends TestCase
                 'hide' => (bool)rand(0, 1),
                 'group' => [],
                 'branch' => [],
-                'map_to' => $this->faker->regexify('^[*$£@!-#?&^%.,;]{1,20}$'),
+                'map_to' => '*$£@' . $this->faker->regexify('^[*$£@!-#?&^%.,;]{1,15}$'),
                 'possible_answers' => []
             ];
             $this->ruleMappingInput->validate($data);

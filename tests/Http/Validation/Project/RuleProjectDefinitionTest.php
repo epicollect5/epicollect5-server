@@ -646,10 +646,10 @@ class RuleProjectDefinitionTest extends TestCase
 
         $branchRef = $projectMock['forms'][0]['inputs'][0]['branch'][0]['ref'];
 
-        //override to nested group type
+        //override to the nested group type
         $projectMock['forms'][0]['inputs'][0]['branch'][0]['type'] = 'group';
 
-        //add max inputs to nested group
+        //add max inputs to the nested group
         for ($i = 0; $i < ($this->inputs_limit - 1); $i++) {
             $projectMock['forms'][0]['inputs'][0]['branch'][0]['group'][$i] = $this->getInputMock($branchRef);
         }
@@ -662,6 +662,6 @@ class RuleProjectDefinitionTest extends TestCase
 
         $this->validator->validate($project);
         $this->assertTrue($this->validator->hasErrors());
-        $this->assertEquals($this->validator->errors['validation'][0], 'ec5_262');
+        $this->assertEquals('ec5_262', $this->validator->errors['validation'][0]);
     }
 }

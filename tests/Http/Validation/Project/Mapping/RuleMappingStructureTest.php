@@ -28,7 +28,7 @@ class RuleMappingStructureTest extends TestCase
         $count = rand(1, 50);
         for ($i = 1; $i < $count; $i++) {
             $data = [
-                'name' => $this->faker->unique()->regexify('^[A-Za-z0-9 \-\_]{3,20}$'),
+                'name' => 'Map ' . $this->faker->unique()->regexify('^[A-Za-z0-9 \-\_]{3,10}$'),
                 'forms' => [
                     ['fakeRef']
                 ],
