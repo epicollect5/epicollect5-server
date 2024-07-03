@@ -157,7 +157,6 @@ class ProjectService
             if ($projectRole) {
                 $role = $projectRole->role;
             }
-
         }
         // Set the project role and return
         $projectRoleUser->setRole($user, $projectId, $role);

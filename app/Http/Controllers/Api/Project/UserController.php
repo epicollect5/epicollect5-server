@@ -186,10 +186,12 @@ class UserController
             if (!$ruleBulkImportUsers->hasErrors()) {
                 if (!$projectService->addOrUpdateUserRole(
                     $userToAdd->id,
-                    $this->requestedProjectRole(),
+                    $this->requestedProject()->getId(),
                     $payload['role']
                 )) {
-                    $validationErrors[] = ['db' => ['ec5_104']];
+                    $validationErrors[] = ['db' => 'ec5_104'];
+                    //exit at the first error
+                    break;
                 }
             }
         }
