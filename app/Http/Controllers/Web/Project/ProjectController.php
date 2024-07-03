@@ -20,7 +20,7 @@ class ProjectController
 
         // If the project is trashed, redirect to error page
         if ($this->requestedProject()->status == config('epicollect.strings.project_status.trashed')) {
-            return view('errors.gen_error')->withErrors(['view' => 'ec5_202']);
+            return view('errors.gen_error')->withErrors(['view' => 'ec5_11']);
         }
 
         /**
@@ -94,7 +94,7 @@ class ProjectController
         $params = [];
         // If the project is trashed, redirect to error page
         if ($this->requestedProject()->status === config('epicollect.strings.project_status.trashed')) {
-            return view('errors.gen_error')->withErrors(['view' => 'ec5_202']);
+            return view('errors.gen_error')->withErrors(['view' => 'ec5_11']);
         }
 
         return view('project.project_open', $params);
