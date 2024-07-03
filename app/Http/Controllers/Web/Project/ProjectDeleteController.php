@@ -60,6 +60,7 @@ class ProjectDeleteController
                     ->withErrors(['ec5_104']);
             }
         } else {
+            //if the project has entries, soft delete it (set as archived as well)
             if ($this->softDelete($projectId, $projectSlug)) {
                 return redirect('myprojects')->with('message', 'ec5_114');
             } else {
