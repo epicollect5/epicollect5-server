@@ -169,10 +169,10 @@ class UserService
         }
     }
 
-    public function updateGoogleUserDetails($googleUser): bool
+    public static function updateGoogleUserDetails($googleUser): bool
     {
         try {
-            $user = $this->amendUserDetailsGoogle($googleUser);
+            $user = self::amendUserDetailsGoogle($googleUser);
             return $user->save();
         } catch (Exception $e) {
             Log::error('Error updating Google user details', [
