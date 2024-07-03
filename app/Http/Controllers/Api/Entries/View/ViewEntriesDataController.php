@@ -236,14 +236,21 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
         $columns = ['title', 'entry_data', 'user_id', 'uploaded_at'];
         $project = $this->requestedProject();
 
-        $query = $this->runQueryBranch($params, $columns);
+        $branchEntries = $this->runQueryBranch($params, $columns);
 
         //get the newest and oldest dates of this subset (before pagination occurs)
         //and set the format to be like the one from JS for consistency
-        $oldest = str_replace(' ', 'T', $query->min('created_at')) . '.000Z';
-        $newest = str_replace(' ', 'T', $query->max('created_at')) . '.000Z';
+        if ($branchEntries->first() !== null) {
+            $oldest = str_replace(' ', 'T', $branchEntries->min('created_at')) . '.000Z';
+            $newest = str_replace(' ', 'T', $branchEntries->max('created_at')) . '.000Z';
+        } else {
+            //no entries, return today's date as ISO string
+            $now = Carbon::now()->toIso8601String();
+            $oldest = str_replace('+00:00', '.000Z', $now);
+            $newest = str_replace('+00:00', '.000Z', $now);
+        }
 
-        $entryData = $query->paginate($params['per_page']);
+        $branchEntriesPaginated = $branchEntries->paginate($params['per_page']);
 
         $data = [
             'id' => $project->slug,
@@ -252,10 +259,9 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
         ];
         // todo: can this be optimised?
         // Loop and json decode the json data from the db
-        foreach ($entryData as $row) {
+        foreach ($branchEntriesPaginated as $row) {
             // Add to the json
             $entry = json_decode($row->entry_data, true);
-
             // Map the entries?
             if ($map) {
                 $data['entries'][] = json_decode(
@@ -278,10 +284,10 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
         }
 
         // Append the required options to the LengthAwarePaginator
-        $this->appendOptions($entryData, $params);
+        $this->appendOptions($branchEntriesPaginated, $params);
         // Get Meta and Links
-        $meta = $this->getMeta($entryData, $newest, $oldest);
-        $links = $this->getLinks($entryData);
+        $meta = $this->getMeta($branchEntriesPaginated, $newest, $oldest);
+        $links = $this->getLinks($branchEntriesPaginated);
 
         return Response::apiData($data, $meta, $links);
     }
