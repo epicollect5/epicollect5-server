@@ -26,7 +26,7 @@
             </td>
             <td>
                 @if($requestAttributes->requestedProject->access === 'public')
-                    <a href="https://five.epicollect.net/api/export/project/{{$requestAttributes->requestedProject->slug}}"
+                    <a href="{{url('/')}}/api/export/project/{{$requestAttributes->requestedProject->slug}}"
                        target="_blank"
                     >
                         {{url('/')}}/api/export/project/{{$requestAttributes->requestedProject->slug}}
