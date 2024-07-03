@@ -122,6 +122,57 @@ class ProjectControllerTest extends TestCase
             ->assertStatus(200);
     }
 
+    public function test_public_project_home_error_project_trashed()
+    {
+        //create mock user
+        $user = factory(User::class)->create();
+
+        //create a fake project with that user
+        $project = factory(Project::class)->create([
+            'created_by' => $user->id,
+            'access' => config('epicollect.strings.project_access.public'),
+            'status' => config('epicollect.strings.project_status.trashed')
+        ]);
+
+        //assign the user to that project with the CREATOR role
+        $role = config('epicollect.strings.project_roles.creator');
+        $projectRole = factory(ProjectRole::class)->create([
+            'user_id' => $user->id,
+            'project_id' => $project->id,
+            'role' => $role
+        ]);
+
+        //set up project stats and project structures (to make R&A middleware work, to be removed)
+        //because they are using a repository with joins
+        factory(ProjectStats::class)->create(
+            [
+                'project_id' => $project->id,
+                'total_entries' => 0
+            ]
+        );
+        factory(ProjectStructure::class)->create(
+            ['project_id' => $project->id]
+        );
+
+        $response = $this
+            ->get('project/' . $project->slug)
+            ->assertStatus(200);
+        $this->assertEquals('errors.gen_error', $response->original->getName());
+        // Assert that there is an error message with key 'ec5_11'
+        $this->assertArrayHasKey('errors', $response->original->getData());
+        // Assert that the view has an 'errors' variable
+        $this->assertTrue($response->original->offsetExists('errors'));
+        // Access the MessageBag and assert specific errors
+        $errors = $response->original->offsetGet('errors');
+        // Ensure that the 'view' key exists in the MessageBag
+        $this->assertTrue($errors->has('view'));
+        // Access the 'errors' array directly
+        $errorsArray = $errors->get('view');
+        // Assert that it is an array and contains 'ec5_11'
+        $this->assertInternalType('array', $errorsArray);
+        $this->assertEquals('ec5_11', $errorsArray[0]);
+    }
+
     public function test_public_project_home_page_renders_correctly_logged_in()
     {
         //create mock user
@@ -691,6 +742,57 @@ class ProjectControllerTest extends TestCase
             ->assertStatus(200);
     }
 
+    public function test_open_project_page_renders_error_because_trashed()
+    {
+        //create mock user
+        $user = factory(User::class)->create();
+
+        //create a fake project with that user
+        $project = factory(Project::class)->create([
+            'created_by' => $user->id,
+            'access' => config('epicollect.strings.project_access.public'),
+            'status' => config('epicollect.strings.project_status.trashed')
+        ]);
+
+        //assign the user to that project with the CREATOR role
+        $role = config('epicollect.strings.project_roles.creator');
+        $projectRole = factory(ProjectRole::class)->create([
+            'user_id' => $user->id,
+            'project_id' => $project->id,
+            'role' => $role
+        ]);
+
+        //set up project stats and project structures (to make R&A middleware work, to be removed)
+        //because they are using a repository with joins
+        factory(ProjectStats::class)->create(
+            [
+                'project_id' => $project->id,
+                'total_entries' => 0
+            ]
+        );
+        factory(ProjectStructure::class)->create(
+            ['project_id' => $project->id]
+        );
+
+        $response = $this
+            ->get('open/project/' . $project->slug)
+            ->assertStatus(200);
+        $this->assertEquals('errors.gen_error', $response->original->getName());
+        // Assert that there is an error message with key 'ec5_11'
+        $this->assertArrayHasKey('errors', $response->original->getData());
+        // Assert that the view has an 'errors' variable
+        $this->assertTrue($response->original->offsetExists('errors'));
+        // Access the MessageBag and assert specific errors
+        $errors = $response->original->offsetGet('errors');
+        // Ensure that the 'view' key exists in the MessageBag
+        $this->assertTrue($errors->has('view'));
+        // Access the 'errors' array directly
+        $errorsArray = $errors->get('view');
+        // Assert that it is an array and contains 'ec5_11'
+        $this->assertInternalType('array', $errorsArray);
+        $this->assertEquals('ec5_11', $errorsArray[0]);
+    }
+
     public function test_open_project_page_renders_correctly_public_logged_in()
     {
         //create mock user
@@ -798,4 +900,6 @@ class ProjectControllerTest extends TestCase
             ->get('open/project/' . $project->slug)
             ->assertStatus(200);
     }
+
+
 }
