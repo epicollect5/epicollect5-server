@@ -369,8 +369,8 @@ class ProjectDeleteControllerTest extends TestCase
         $this->assertGreaterThan(0, OAuthClientProject::where('project_id', $project->id)
             ->count());
 
-        //assert roles are NOT dropped
-        $this->assertEquals(1, ProjectRole::where('project_id', $project->id)->count());
+        //assert roles are dropped; otherwise the project would still appear to other users
+        $this->assertEquals(0, ProjectRole::where('project_id', $project->id)->count());
         // You can also check for messages in the session
         $response->assertSessionHas('message', 'ec5_114');
 

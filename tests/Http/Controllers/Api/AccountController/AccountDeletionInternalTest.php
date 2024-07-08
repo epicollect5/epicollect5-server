@@ -135,6 +135,23 @@ class AccountDeletionInternalTest extends TestCase
             'role' => $role
         ]);
 
+        //assign a few random project members with other roles (not creator)
+        $numOfMembers = mt_rand(2, 100);
+        $roles = [
+            config('epicollect.strings.project_roles.manager'),
+            config('epicollect.strings.project_roles.curator'),
+            config('epicollect.strings.project_roles.collector'),
+            config('epicollect.strings.project_roles.viewer'),
+        ];
+        for ($i = 0; $i < $numOfMembers; $i++) {
+            $member = factory(User::class)->create();
+            factory(ProjectRole::class)->create([
+                'user_id' => $member->id,
+                'project_id' => $project->id,
+                'role' => $roles[array_rand($roles)]
+            ]);
+        }
+
         //add fake stats
         factory(ProjectStats::class)->create([
             'project_id' => $project->id,
@@ -144,7 +161,7 @@ class AccountDeletionInternalTest extends TestCase
         //assert the project is present before archiving
         $this->assertEquals(1, Project::where('id', $project->id)->count());
         //assert the user role is CREATOR
-        $this->assertEquals(1, ProjectRole::where('project_id', $project->id)->count());
+        $this->assertEquals(1 + $numOfMembers, ProjectRole::where('project_id', $project->id)->count());
         $this->assertEquals(1, ProjectRole::where('user_id', $user->id)->count());
         $this->assertEquals($role, ProjectRole::where('project_id', $project->id)->where('user_id', $user->id)->value('role'));
         // 3 - add mock entries & branch entries to mock project
@@ -201,6 +218,11 @@ class AccountDeletionInternalTest extends TestCase
         $this->assertEquals(1, Project::where('id', $project->id)
             ->where('status', 'archived')
             ->count());
+
+        //assert roles were dropped
+        $this->assertEquals(0, ProjectRole::where('project_id', $project->id)->count());
+
+
         //assert entries & branch entries are NOT touched
         $this->assertEquals($numOfEntries, Entry::where('project_id', $project->id)->count());
         $this->assertEquals($numOfBranchEntries * $numOfEntries, BranchEntry::where('project_id', $project->id)->count());
@@ -924,6 +946,27 @@ class AccountDeletionInternalTest extends TestCase
             'role' => $role
         ]);
 
+        //assign other users with lower roles to those projects
+        $numOfMembers = mt_rand(2, 10);
+        $roles = [
+            config('epicollect.strings.project_roles.manager'),
+            config('epicollect.strings.project_roles.curator'),
+            config('epicollect.strings.project_roles.collector'),
+            config('epicollect.strings.project_roles.viewer'),
+        ];
+        for ($i = 0; $i < $numOfMembers; $i++) {
+            $member = factory(User::class)->create();
+            factory(ProjectRole::class)->create([
+                'user_id' => $member->id,
+                'project_id' => $projectRoleCreatorOne->id,
+                'role' => $roles[array_rand($roles)]
+            ]);
+            factory(ProjectRole::class)->create([
+                'user_id' => $member->id,
+                'project_id' => $projectRoleCreatorTwo->id,
+                'role' => $roles[array_rand($roles)]
+            ]);
+        }
         //add fake stats
         factory(ProjectStats::class)->create([
             'project_id' => $projectRoleCreatorOne->id,
@@ -959,7 +1002,7 @@ class AccountDeletionInternalTest extends TestCase
                 'role' => $otherRole
             ]);
 
-            //assert project is present
+            //assert the project is present
             $this->assertEquals(1, Project::where('id', $project->id)->count());
             //assert user roles for that project
             $this->assertEquals(2, ProjectRole::where('project_id', $project->id)->count());
@@ -992,7 +1035,7 @@ class AccountDeletionInternalTest extends TestCase
                 //video
                 Storage::disk('video')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
             }
-            //secondly, entries by other role (aside from viewer)
+            //secondly, entries by the other roles (aside from viewer)
             if ($otherRole !== 'viewer') {
                 $entriesByOtherRole = factory(Entry::class, $numOfEntries)->create([
                     'project_id' => $project->id,
@@ -1024,7 +1067,7 @@ class AccountDeletionInternalTest extends TestCase
                 $this->assertEquals(2 * ($numOfEntries * $numOfBranchEntries), BranchEntry::where('project_id', $project->id)
                     ->count());
 
-                //assert files exist (2x, as by creator and by other role)
+                //assert files exist (2x, as by creator and by the other roles)
                 $photos = Storage::disk('entry_original')->files($project->ref);
                 $this->assertGreaterThan(0, count($photos));
                 $this->assertCount(2 * $numOfEntries, $photos);
@@ -1037,11 +1080,11 @@ class AccountDeletionInternalTest extends TestCase
                 $this->assertGreaterThan(0, count($videos));
                 $this->assertCount(2 * $numOfEntries, $videos);
 
-                // Assert entries by other role
+                // Assert entries by creator
                 $this->assertEquals($numOfEntries, Entry::where('project_id', $project->id)
                     ->where('user_id', $user->id)
                     ->count());
-                //assert entries by creator
+                //assert entries by other roles
                 $this->assertEquals($numOfEntries, Entry::where('project_id', $project->id)
                     ->where('user_id', $anotherUser->id)
                     ->count());
@@ -1071,8 +1114,9 @@ class AccountDeletionInternalTest extends TestCase
 
         //assert projects are present
         $this->assertEquals(1, Project::where('id', $project->id)->count());
-        $this->assertEquals(1, ProjectRole::where('project_id', $projectRoleCreatorOne->id)->count());
-        $this->assertEquals(1, ProjectRole::where('project_id', $projectRoleCreatorTwo->id)->count());
+        //assert all roles are present
+        $this->assertEquals(1 + $numOfMembers, ProjectRole::where('project_id', $projectRoleCreatorOne->id)->count());
+        $this->assertEquals(1 + $numOfMembers, ProjectRole::where('project_id', $projectRoleCreatorTwo->id)->count());
         //user should be a member of 6 projects, 2 with role creator and 4 with the other roles
         $this->assertEquals(6, ProjectRole::where('user_id', $user->id)->count());
         $this->assertEquals($role, ProjectRole::where('project_id', $projectRoleCreatorOne->id)->where('user_id', $user->id)->value('role'));
@@ -1159,15 +1203,22 @@ class AccountDeletionInternalTest extends TestCase
             ->where('status', 'archived')
             ->count());
 
-        //assert entries by CREATOR are not touched, we just archive the projects created by the user when its account is deleted
+        //assert all roles were dropped for those projects
+        $this->assertEquals(
+            0,
+            ProjectRole::where('project_id', $projectRoleCreatorOne->id)->count()
+        );
+
+        $this->assertEquals(
+            0,
+            ProjectRole::where('project_id', $projectRoleCreatorTwo->id)->count()
+        );
+
+        //assert entries by CREATOR are not touched; we just archive the projects created by the user when its account is archived
         $this->assertEquals($numOfEntries, Entry::where('project_id', $projectRoleCreatorOne->id)->count());
         $this->assertEquals($numOfBranchEntries * $numOfEntries, BranchEntry::where('project_id', $projectRoleCreatorOne->id)->count());
         $this->assertEquals($numOfEntries, Entry::where('project_id', $projectRoleCreatorTwo->id)->count());
         $this->assertEquals($numOfBranchEntries * $numOfEntries, BranchEntry::where('project_id', $projectRoleCreatorTwo->id)->count());
-
-        //assert all CREATOR roles are dropped
-        $this->assertEquals(0, ProjectRole::where('project_id', $projectRoleCreatorOne->id)->count());
-        $this->assertEquals(0, ProjectRole::where('project_id', $projectRoleCreatorTwo->id)->count());
 
         foreach ($projectsWithOtherRoles as $projectWithOtherRole) {
             //assert projects with other roles are NOT archived

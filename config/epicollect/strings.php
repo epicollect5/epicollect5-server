@@ -37,7 +37,8 @@ return [
     'user_state' => [
         'active' => 'active',
         'disabled' => 'disabled',
-        'unverified' => 'unverified'
+        'unverified' => 'unverified',
+        'archived' => 'archived'
     ],
     'state' => 'state',
     'server_role' => 'server_role',

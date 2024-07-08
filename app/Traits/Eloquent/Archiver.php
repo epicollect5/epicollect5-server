@@ -21,6 +21,9 @@ use Storage;
 trait Archiver
 {
     /* Archive a project by setting its row as archived.
+
+    All roles are deleted from the project_roles table
+
     All the other tables with the project_id constraint are left untouched
 
     A scheduled task can remove archived projects one at a time
@@ -39,20 +42,22 @@ trait Archiver
 
             $project->status = config('epicollect.strings.project_status.archived');
             //set name and slug to a unique string (we use a project ref) to avoid duplicates with new projects
-            $ref = Generators::projectRef();
-            $project->name = $ref;
-            $project->slug = $ref;
+            $meaninglessUniqueString = Generators::projectRef();
+            $project->name = $meaninglessUniqueString;
+            $project->slug = $meaninglessUniqueString;
             //reset all other columns to generic values
             $project->small_description = 'Project was archived';
             $project->description = '';
             $project->logo_url = '';
             $project->access = config('epicollect.strings.project_access.private');
             $project->visibility = config('epicollect.strings.project_visibility.hidden');
-            $project->category = config('epicollect.mappings.categories_icons.general');
+            $project->category = config('epicollect.strings.project_categories.general');
             $project->can_bulk_upload = config('epicollect.strings.can_bulk_upload.nobody');
 
+            //remove all the roles, otherwise the project would still appear for non-creator roles
+            $rolesDeleted = ProjectRole::where('project_id', $projectId)->delete();
 
-            if ($project->save()) {
+            if ($project->save() && $rolesDeleted) {
                 DB::commit();
                 return true;
             } else {
@@ -96,8 +101,9 @@ trait Archiver
             $user->last_name = '-';
             //assign a fake unique value to email field(email has a unique index constraint)
             $user->email = Generators::archivedUserEmail();
-            $user->remember_token = ' ';
-            $user->api_token = ' ';
+            $user->remember_token = '';//it will get hashed
+            $user->avatar = '';
+            $user->api_token = '';
 
             if ($user->save() && $areRolesDeleted && $areProvidersDeleted) {
                 DB::commit();

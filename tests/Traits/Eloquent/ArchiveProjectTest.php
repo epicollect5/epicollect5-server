@@ -3,6 +3,7 @@
 namespace Tests\Traits\Eloquent;
 
 use ec5\Models\Project\Project;
+use ec5\Models\Project\ProjectRole;
 use ec5\Models\User\User;
 use Faker\Factory as Faker;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -19,15 +20,26 @@ class ArchiveProjectTest extends TestCase
         // Create a Faker instance
         $faker = Faker::create();
 
+
         for ($i = 0; $i < $repeatCount; $i++) {
+
+            $userId = rand(1, 100);
             // Create a test project
             $name = 'EC5 Unit Test ' . $i;
             $slug = Str::slug($name);
             $project = factory(Project::class)->create([
                 'name' => $name,
                 'slug' => $slug,
-                'created_by' => User::where('email', config('testing.SUPER_ADMIN_EMAIL'))->first()['id']
+                'created_by' => $userId
             ]);
+
+            //assign user as creator
+            factory(ProjectRole::class)->create([
+                'project_id' => $project->id,
+                'user_id' => $userId,
+                'role' => config('epicollect.strings.project_roles.creator')
+            ]);
+
             //assert project is present before archiving
             $this->assertEquals(1, Project::where('id', $project->id)->count());
             // imp: run the archiveProject trait by calling a controller which uses it
@@ -46,6 +58,10 @@ class ArchiveProjectTest extends TestCase
                 ->count());
 
             $this->assertEquals(0, Project::where('name', $name)
+                ->count());
+
+            //assert roles are dropped
+            $this->assertEquals(0, ProjectRole::where('project_id', $project->id)
                 ->count());
         }
     }
