@@ -35,8 +35,12 @@ $(document).ready(function () {
 
         wrapper.on('keyup', '#project-name', function (e) {
             e.preventDefault();
-            // If the project name is correct, enable submit button
-            $('.btn-delete-entries').attr('disabled', !(projectName.trim() === $(this).val().trim()));
+            // If the project name is correct, enable the delete button
+            if (projectName.replace(/\s+/g, ' ') === $(this).val()) {
+                $('.btn-delete-entries').prop('disabled', false);
+            } else {
+                $('.btn-delete-entries').prop('disabled', true);
+            }
         });
 
         // Define a function that handles the beforeunload event
