@@ -118,9 +118,15 @@ class Project extends Model
 
     public static function creatorEmail($projectId)
     {
-        return Project::join(config('epicollect.tables.users'), 'projects.created_by', config('epicollect.tables.users') . '.id')
-            ->where('projects.id', $projectId)
-            ->first()->email;
+        $email = 'n/a';
+        try {
+            return Project::join(config('epicollect.tables.users'), 'projects.created_by', config('epicollect.tables.users') . '.id')
+                ->where('projects.id', $projectId)
+                ->first()->email;
+        } catch (Exception $e) {
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
+            return $email;
+        }
     }
 
     public static function version($slug)
