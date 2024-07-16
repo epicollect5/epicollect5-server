@@ -3,7 +3,8 @@
 @section('page-name', Route::getCurrentRoute()->uri())
 @section('content')
 
-    <div class='container-fluid page-entries-deletion'>
+    <div class='container-fluid page-entries-deletion'
+         data-chunk-size="{{config('epicollect.setup.bulk_deletion.chunk_size')}}">
         @include('modals/modal_deletion')
 
         <div class="row">

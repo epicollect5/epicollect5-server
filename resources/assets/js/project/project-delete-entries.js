@@ -1,13 +1,16 @@
 $(document).ready(function () {
-    //enable only on page-entries-deletion
-    if ($('.page-entries-deletion').length > 0) {
 
-        var projectName = $('.page-entries-deletion').find('.project-name').text();
+    var page = $('.page-entries-deletion');
+
+    //enable only on page-entries-deletion
+    if (page.length > 0) {
+
+        var projectName = page.find('.project-name').text();
         var wrapper = $('.delete-entries-wrapper');
         var counterWrapper = $('.counter-wrapper');
         var modal = $('#modal-deletion');
         var backURL = $('.btn-cancel-deletion').attr('href');
-        var chunkSize = 10000;//to be adjusted as needed
+        var chunkSize = page.data('chunk-size');
 
         wrapper.on('click', '.btn-delete-entries', function (e) {
             // Don't allow user to submit if the project

@@ -65,7 +65,7 @@ trait Remover
             DB::beginTransaction();
 
             Entry::where('project_id', $projectId)
-                ->limit(10000)
+                ->limit(config('epicollect.setup.bulk_deletion.chunk_size'))
                 ->delete();
             if (!$projectStats->updateProjectStats($projectId)) {
                 throw new Exception('Failed to count entries after archive');
@@ -88,9 +88,11 @@ trait Remover
             Log::info("Final Memory Usage: " . $finalMemoryUsage);
             Log::info("Memory Used: " . $memoryUsed);
             Log::info("Peak Memory Usage: " . $peakMemoryUsage);
+
+            //commit after each batch to release resources
             DB::commit();
-            // Pause for a second to avoid overloading the database
-            sleep(1);
+            // Pause for a few seconds to avoid overloading/locking the database
+            sleep(3);
 
             //if we have 0 entries left, delete all media files
             $totalEntries = ProjectStats::where('project_id', $projectId)->value('total_entries');

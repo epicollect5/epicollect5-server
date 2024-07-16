@@ -45,6 +45,9 @@ return [
         'bind_dn' => env('LDAP_BIND_DN'), // Bind DN
         'bind_dn_password' => env('LDAP_BIND_DN_PASSWORD'), // Bind DN Password
         'user_name_attribute' => env('LDAP_USER_NAME_ATTRIBUTE'), // The attribute containing user detail to store ie uid, mail, sAMAccountName
+    ],
+    'bulk_deletion' => [
+        'chunk_size' => env('BULK_DELETION_CHUNK_SIZE', 100),
     ]
 ];
 
