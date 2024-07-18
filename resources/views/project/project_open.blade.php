@@ -18,7 +18,7 @@
                         </div>
                     </div>
                     <div class="panel-body">
-                        <div class="col-xs-12 col-sm-offset-3 col-sm-6 col-md-offset-3 col-md-6 project-open__action-btns text-center">
+                        <div class="col-xs-12 col-sm-12 col-md-offset-2 col-md-8 project-open__action-btns text-center">
                             <div>Get the App to join</div>
 
                             <div class="panel-body project-open__project-name">
