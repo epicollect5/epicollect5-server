@@ -70,13 +70,11 @@
 
                     @endif
 
-
-
                     @foreach($mappings as $mapIndex => $mapping)
                         @unless($mapping['is_default'])
 
                             @include('project.developers.tab_panel_endpoint_entries_link', [
-                            'project' => $project,
+                            'project' => $requestAttributes->requestedProject,
                             'mapIndex' => $mapIndex,
                             'mapName' => $mapping['name'],
                             'formRef' => $form['details']['ref']
