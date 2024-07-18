@@ -49,128 +49,125 @@ class AppleController extends AuthController
             return redirect()->route('login')->withErrors(['ec5_382']);
         }
 
-        //catching error when email and email_verified are missing from payload
-        //happens for instance when users change their Apple ID email
-        if (!isset($parsed_id_token['email_verified'])) {
+        //catching error when email is missing from payload
+        if (!isset($parsed_id_token['email'])) {
+            Log::error(__METHOD__ . ' failed.', ['Apple Sign In' => 'email missing in payload']);
             return redirect()->route('login')->withErrors(['ec5_386']);
         }
 
-        if ($parsed_id_token['email_verified'] === 'true') {
-            if ($parsed_id_token['nonce'] === $nonce) {
-                //get Apple user email, always sent in the token
-                $email = $parsed_id_token['email'];
-                //look for the user
-                $userModel = new User();
-                $user = $userModel->where('email', $email)->first();
+        if ($parsed_id_token['nonce'] === $nonce) {
+            //get Apple user email, always sent in the token
+            $email = $parsed_id_token['email'];
+            //look for the user
+            $userModel = new User();
+            $user = $userModel->where('email', $email)->first();
 
-                //let's see if we have a user object
-                //Apple sends this only on fist authentication attempt
-                try {
-                    $appleUser = json_decode($params['user'], true); //decode to array by passing "true"
-                    $appleUserFirstName = $appleUser['name']['firstName'];
-                    $appleUserLastName = $appleUser['name']['lastName'];
-                } catch (Exception $e) {
-                    Log::error('Apple user object exception', ['exception' => $e->getMessage()]);
-                    //if no user name found, default to Apple User
-                    $appleUserFirstName = config('epicollect.mappings.user_placeholder.apple_first_name');
-                    $appleUserLastName = config('epicollect.mappings.user_placeholder.apple_last_name');
-                }
+            //let's see if we have a user object
+            //Apple sends this only on fist authentication attempt
+            try {
+                $appleUser = json_decode($params['user'], true); //decode to array by passing "true"
+                $appleUserFirstName = $appleUser['name']['firstName'];
+                $appleUserLastName = $appleUser['name']['lastName'];
+            } catch (Exception $e) {
+                Log::error('Apple user object exception', ['exception' => $e->getMessage()]);
+                //if no user name found, default to Apple User
+                $appleUserFirstName = config('epicollect.mappings.user_placeholder.apple_first_name');
+                $appleUserLastName = config('epicollect.mappings.user_placeholder.apple_last_name');
+            }
 
-                if (!$user) {
+            if (!$user) {
 
-                    /**
-                     * If no Epicollect5 user for this email is not found,
-                     * create the user as new with the Apple provider
-                     * and return it
-                     */
-                    $user = UserService::createAppleUser($appleUserFirstName, $appleUserLastName, $email);
-                }
-
-                //if the user is disabled, kick him out
-                if ($user->state === config('epicollect.strings.user_state.disabled')) {
-                    return redirect()->route('login')->withErrors(['ec5_212']);
-                }
                 /**
-                 * if we have a user with unverified state,
-                 * it means the user was added to a project
-                 * before having an account.
-                 *
-                 * Update the current user as active
-                 * and add the Apple provider
-                 *
-                 * the user gets verified via Apple
+                 * If no Epicollect5 user for this email is not found,
+                 * create the user as new with the Apple provider
+                 * and return it
                  */
-                if ($user->state === config('epicollect.strings.user_state.unverified')) {
-                    if (!UserService::updateAppleUser($appleUserFirstName, $appleUserLastName, $email, true)) {
+                $user = UserService::createAppleUser($appleUserFirstName, $appleUserLastName, $email);
+            }
 
+            //if the user is disabled, kick him out
+            if ($user->state === config('epicollect.strings.user_state.disabled')) {
+                return redirect()->route('login')->withErrors(['ec5_212']);
+            }
+            /**
+             * if we have a user with unverified state,
+             * it means the user was added to a project
+             * before having an account.
+             *
+             * Update the current user as active
+             * and add the Apple provider
+             *
+             * the user gets verified via Apple
+             */
+            if ($user->state === config('epicollect.strings.user_state.unverified')) {
+                if (!UserService::updateAppleUser($appleUserFirstName, $appleUserLastName, $email, true)) {
+
+                    return redirect()->route('login')->withErrors(['ec5_45']);
+                }
+
+                //set user as active since it was verified correctly
+                $user->state = config('epicollect.strings.user_state.active');
+            }
+
+            /**
+             * User was found and active, does this user have an Apple provider?
+             */
+            if ($user->state === config('epicollect.strings.user_state.active')) {
+
+                $userProviders = UserProvider::where('email', $email)
+                    ->pluck('provider')->toArray();
+
+                //if the user is local redirect to admin/staff login
+                if (in_array($this->localProviderLabel, $userProviders)) {
+                    switch ($user->server_role) {
+
+                        case config('epicollect.strings.server_roles.superadmin'):
+                        case config('epicollect.strings.server_roles.admin'):
+                            return redirect()->route('login-admin')->withErrors(['ec5_384']);
+                        default:
+                            if ($isLocalAuthEnabled) {
+                                //redirect to staff login
+                                return redirect()->route('login-staff')->withErrors(['ec5_384']);
+                            } else {
+                                //redirect to public login asking login via email
+                                return redirect()->route('login')->withErrors(['ec5_391']);
+                            }
+                    }
+                }
+
+                if (!in_array($this->appleProviderLabel, $userProviders)) {
+                    /**
+                     * if the user is active but the Apple provider is not found,
+                     * this user created an account with another provider (apple or passwordless)
+                     *
+                     * Ask the user to connect the Apple account from the profile page
+                     * for verification
+                     */
+
+                    //redirect to code confirm page
+                    return redirect()->route('verification-code')->with(
+                        [
+                            'email' => $user->email,
+                            'provider' => $this->appleProviderLabel,
+                            'name' => $appleUserFirstName,
+                            'last_name' => $appleUserLastName
+                        ]
+                    );
+                }
+
+                //Update exiting user name and last name when a user object is received
+                if ($appleUser) {
+                    if (!UserService::updateAppleUser($appleUserFirstName, $appleUserLastName, $email, false)) {
                         return redirect()->route('login')->withErrors(['ec5_45']);
                     }
-
-                    //set user as active since it was verified correctly
-                    $user->state = config('epicollect.strings.user_state.active');
                 }
-
-                /**
-                 * User was found and active, does this user have an Apple provider?
-                 */
-                if ($user->state === config('epicollect.strings.user_state.active')) {
-
-                    $userProviders = UserProvider::where('email', $email)
-                        ->pluck('provider')->toArray();
-
-                    //if the user is local redirect to admin/staff login
-                    if (in_array($this->localProviderLabel, $userProviders)) {
-                        switch ($user->server_role) {
-
-                            case config('epicollect.strings.server_roles.superadmin'):
-                            case config('epicollect.strings.server_roles.admin'):
-                                return redirect()->route('login-admin')->withErrors(['ec5_384']);
-                                break;
-                            default:
-                                if ($isLocalAuthEnabled) {
-                                    //redirect to staff login
-                                    return redirect()->route('login-staff')->withErrors(['ec5_384']);
-                                } else {
-                                    //redirect to public login asking login via email
-                                    return redirect()->route('login')->withErrors(['ec5_391']);
-                                }
-                        }
-                    }
-
-                    if (!in_array($this->appleProviderLabel, $userProviders)) {
-                        /**
-                         * if the user is active but the Apple provider is not found,
-                         * this user created an account with another provider (apple or passwordless)
-                         *
-                         * Ask the user to connect the Apple account from the profile page
-                         * for verification
-                         */
-
-                        //redirect to code confirm page
-                        return redirect()->route('verification-code')->with(
-                            [
-                                'email' => $user->email,
-                                'provider' => $this->appleProviderLabel,
-                                'name' => $appleUserFirstName,
-                                'last_name' => $appleUserLastName
-                            ]
-                        );
-                    }
-
-                    //Update exiting user name and last name when a user object is received
-                    if ($appleUser) {
-                        if (!UserService::updateAppleUser($appleUserFirstName, $appleUserLastName, $email, false)) {
-                            return redirect()->route('login')->withErrors(['ec5_45']);
-                        }
-                    }
-                }
-                //Login user
-                session()->forget('nonce');
-                Auth::login($user, false);
-                $request->session()->regenerate();
-
-                return redirect()->route('my-projects');
             }
+            //Login user
+            session()->forget('nonce');
+            Auth::login($user, false);
+            $request->session()->regenerate();
+
+            return redirect()->route('my-projects');
         }
 
         //we get here when there is any validation error
@@ -203,7 +200,7 @@ class AppleController extends AuthController
 
         //Does the email exists?
         if ($userPasswordless === null) {
-            Log::error('Error validating passworless code', ['error' => 'Email does not exist']);
+            Log::error('Error validating passwordless code', ['error' => 'Email does not exist']);
             return redirect()->route('verification-code')
                 ->with([
                     'email' => $email,
@@ -214,7 +211,7 @@ class AppleController extends AuthController
 
         //check if the code is valid
         if (!$userPasswordless->isValidCode($code)) {
-            Log::error('Error validating passworless code', ['error' => 'Code not valid']);
+            Log::error('Error validating passwordless code', ['error' => 'Code not valid']);
             return redirect()->route('verification-code')
                 ->with([
                     'email' => $email,

@@ -39,7 +39,6 @@ class AppleController extends AuthController
      */
     public function authUser(Request $request)
     {
-        //todo: validate request
         //check if local logins are enabled
         $appleUser = null;
 
@@ -57,7 +56,7 @@ class AppleController extends AuthController
                 return Response::apiErrorCode(400, $error);
             }
 
-            //catching error when email and email_verified are missing from payload
+            //catching error when email is missing from payload
             //happens for instance when users change their Apple ID email
             if (!isset($parsed_id_token['email'])) {
                 //return api error
