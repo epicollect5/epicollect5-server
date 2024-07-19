@@ -202,57 +202,61 @@ class ProfileController extends Controller
 
             $parsed_id_token = (array)$parsed_id_token;
 
-            if ($parsed_id_token['email_verified'] === 'true') {
-                if ($parsed_id_token['nonce'] === $nonce) {
-                    //get Apple user email, always sent in the token
-                    $appleUserEmail = $parsed_id_token['email'];
+            //catching error when email is missing from payload
+            if (!isset($parsed_id_token['email'])) {
+                Log::error(__METHOD__ . ' failed.', ['Apple Connect' => 'email missing in payload']);
+                return redirect()->route('profile')->withErrors(['ec5_386']);
+            }
 
-                    //check email is the same to the logged in user
-                    if ($appleUserEmail === $this->user->email) {
+            if ($parsed_id_token['nonce'] === $nonce) {
+                //get Apple user email, always sent in the token
+                $appleUserEmail = $parsed_id_token['email'];
 
-                        //add Apple provider to allow loggin in with this method
-                        $appleProvider = new UserProvider();
-                        $appleProvider->email = $this->user->email;
-                        $appleProvider->user_id = $this->user->id;
-                        $appleProvider->provider = config('epicollect.strings.providers.apple');
-                        $appleProvider->save();
+                //check email is the same to the logged in user
+                if ($appleUserEmail === $this->user->email) {
 
-                        //let's see if we have a user object
-                        //Apple sends this only on fist authentication attempt
-                        try {
-                            $appleUser = json_decode($params['user'], true); //decode to array by passing "true"
-                            $appleUserFirstName = $appleUser['name']['firstName'];
-                            $appleUserLastName = $appleUser['name']['lastName'];
-                        } catch (Exception $e) {
-                            Log::info('Apple user object exception, existing user, use defaults', ['exception' => $e->getMessage()]);
-                            //if no user name found, default to Apple User
-                            $appleUserFirstName = config('epicollect.mappings.user_placeholder.apple_first_name');
-                            $appleUserLastName = config('epicollect.mappings.user_placeholder.apple_last_name');
-                        }
+                    //add Apple provider to allow loggin in with this method
+                    $appleProvider = new UserProvider();
+                    $appleProvider->email = $this->user->email;
+                    $appleProvider->user_id = $this->user->id;
+                    $appleProvider->provider = config('epicollect.strings.providers.apple');
+                    $appleProvider->save();
 
-                        //if user object and the current user does not have a name, update
-                        if ($this->user->name === config('epicollect.mappings.user_placeholder.passwordless_first_name')) {
-                            if ($appleUser) {
-                                $this->updateUserDetailsWithApple($appleUserFirstName, $appleUserLastName);
-                            }
-                        }
-
-                        if ($this->user->name === config('epicollect.mappings.user_placeholder.apple_first_name')) {
-                            if ($appleUser) {
-                                $this->updateUserDetailsWithApple($appleUserFirstName, $appleUserLastName);
-                            }
-                        }
-
-                        //redirect with a success message
-                        session()->forget('nonce');
-                        return redirect()->route('profile')
-                            ->with([
-                                'message' => 'ec5_388',
-                            ]);
+                    //let's see if we have a user object
+                    //Apple sends this only on fist authentication attempt
+                    try {
+                        $appleUser = json_decode($params['user'], true); //decode to array by passing "true"
+                        $appleUserFirstName = $appleUser['name']['firstName'];
+                        $appleUserLastName = $appleUser['name']['lastName'];
+                    } catch (Exception $e) {
+                        Log::info('Apple user object exception, existing user, use defaults', ['exception' => $e->getMessage()]);
+                        //if no user name found, default to Apple User
+                        $appleUserFirstName = config('epicollect.mappings.user_placeholder.apple_first_name');
+                        $appleUserLastName = config('epicollect.mappings.user_placeholder.apple_last_name');
                     }
-                    //users do not match, error
-                    return redirect()->route('profile')->withErrors(['ec5_387']);
+
+                    //if user object and the current user does not have a name, update
+                    if ($this->user->name === config('epicollect.mappings.user_placeholder.passwordless_first_name')) {
+                        if ($appleUser) {
+                            $this->updateUserDetailsWithApple($appleUserFirstName, $appleUserLastName);
+                        }
+                    }
+
+                    if ($this->user->name === config('epicollect.mappings.user_placeholder.apple_first_name')) {
+                        if ($appleUser) {
+                            $this->updateUserDetailsWithApple($appleUserFirstName, $appleUserLastName);
+                        }
+                    }
+
+                    //redirect with a success message
+                    session()->forget('nonce');
+                    return redirect()->route('profile')
+                        ->with([
+                            'message' => 'ec5_388',
+                        ]);
                 }
+                //users do not match, error
+                return redirect()->route('profile')->withErrors(['ec5_387']);
             }
         } catch (Exception $e) {
             Log::error('Apple Connect Web Exception: ', [
