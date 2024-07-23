@@ -335,5 +335,6 @@ return [
     "ec5_398" => "Token revoked",
     "ec5_399" => "Invalid project name",
     "ec5_400" => "Chunk entries deleted successfully.",
-    "ec5_401" => "Chunk branch entries deleted successfully."
+    "ec5_401" => "Chunk branch entries deleted successfully.",
+    "ec5_402" => "Session expired. Please export your form(s) and login again."
 ];

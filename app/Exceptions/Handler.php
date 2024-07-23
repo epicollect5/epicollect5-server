@@ -84,7 +84,15 @@ class Handler extends ExceptionHandler
 
         // Handle token mismatch exceptions
         if ($e instanceof TokenMismatchException) {
-            // todo: redirect to login?
+            //post request?
+            if ($request->isMethod('POST')) {
+                // Check if the request is coming from the formbuilder store route
+                $routeName = $request->route() ? $request->route()->getName() : null;
+                if ($routeName === 'formbuilder-store') {
+                    // Return a session expired response for the formbuilder store route, better UX
+                    return $this->middlewareErrorResponse($request, 'csrf exception', 'ec5_402', 422);
+                }
+            }
             return $this->middlewareErrorResponse($request, 'csrf exception', 'ec5_116', 422);
         }
 

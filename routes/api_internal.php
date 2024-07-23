@@ -97,7 +97,7 @@ Route::group(['middleware' => ['project.permissions.required.role']], function (
     // Formbuilder expects all users to be authenticated with a project role of at least MANAGER
     Route::get('api/internal/formbuilder/{project_slug}', ['uses' => 'Api\Project\ProjectController@show']);
 
-    Route::post('api/internal/formbuilder/{project_slug}', ['uses' => 'Api\Project\FormBuilderController@store']);
+    Route::post('api/internal/formbuilder/{project_slug}', ['uses' => 'Api\Project\FormBuilderController@store'])->name('formbuilder-store');
 
     //update can_bulk_upload settings
     Route::post('api/internal/can-bulk-upload/{project_slug}', ['uses' => 'Api\Project\ProjectController@updateCanBulkUpload']);
