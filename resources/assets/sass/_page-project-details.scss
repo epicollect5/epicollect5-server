@@ -241,4 +241,11 @@
       color: $deep-purple;
     }
   }
+  .well-deeplink {
+    padding-left: 0;
+  }
+
+  #qrcode-download {
+    width: 256px;
+  }
 }

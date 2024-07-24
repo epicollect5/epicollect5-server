@@ -5,9 +5,7 @@ window.EC5.projectDetails = window.EC5.projectDetails || {};
 (function projectDetails(module) {
 
     module.statusPairs = {
-        trashed: ['restore', 'delete'],
-        locked: ['unlock'],
-        active: ['trashed', 'locked']
+        trashed: ['restore', 'delete'], locked: ['unlock'], active: ['trashed', 'locked']
     };
 
     module.currentSettingsValue = function (which) {
@@ -110,6 +108,25 @@ $(document).ready(function () {
         category: project_details.attr('data-js-category'),
         slug: project_details.attr('data-js-slug')
     };
+
+    //generate QR Code
+    var qrCodeWrapper = $('#qrcode');
+    var qrcode = new window.QRCode('qrcode', {
+        text: qrCodeWrapper.data('url'),
+        width: 256,
+        height: 256,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+    });
+
+    //download QR code
+    $('#qrcode-download').on('click', function () {
+        // Find the image inside the #qrcode div
+        var image = qrCodeWrapper.find('img');
+        // Copy that to the download link
+        $(this).attr('href', image.attr('src'));
+    })
 
     $('.btn-settings-submit').on('click', function () {
 
