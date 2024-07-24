@@ -17,10 +17,11 @@ class RemoveEntriesTest extends TestCase
     public function test_it_delete_entries_chunk_and_updates_stats()
     {
         $repeatCount = 10; // Number of times to repeat the test case
+        $chunkSize = config('epicollect.setup.bulk_deletion.chunk_size');
 
         for ($i = 0; $i < $repeatCount; $i++) {
 
-            $numOfEntries = mt_rand(1, 5);
+            $numOfEntries = mt_rand(1, $chunkSize - 1);
             $numOfAdditionalEntries = mt_rand(1, 5);
             $numOfBranchEntries = mt_rand(1, 5);
             $numOfAdditionalBranchEntries = mt_rand(1, 5);
@@ -79,7 +80,7 @@ class RemoveEntriesTest extends TestCase
             // Assert that the function returned true
             $this->assertTrue($result);
 
-            // Assert that the entries and branch entries have been deleted (less than 10000)
+            // Assert that the entries and branch entries have been deleted (less than the chunk size)
             $this->assertEquals(0, Entry::where('project_id', $project->id)->count());
             $this->assertEquals(0, BranchEntry::where('project_id', $project->id)->count());
 

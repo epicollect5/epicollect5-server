@@ -235,8 +235,9 @@ class DeleteControllerEntriesTest extends TestCase
     public function test_it_should_delete_entries_chunk_and_leave_media()
     {
         $formRef = $this->projectDefinition['data']['project']['forms'][0]['ref'];
+        $chunkSize = config('epicollect.setup.bulk_deletion.chunk_size');
 
-        $numOfEntries = 20000;
+        $numOfEntries = rand(20000, 50000);
         $mediaUuids = [];
         for ($i = 0; $i < $numOfEntries; $i++) {
             $entry = factory(Entry::class)->create(
@@ -288,6 +289,7 @@ class DeleteControllerEntriesTest extends TestCase
         ];
         $response = [];
         try {
+            //delete a chunk of entries
             $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $payload);
             $response[0]->assertStatus(200);
             $response[0]->assertExactJson([
@@ -296,14 +298,14 @@ class DeleteControllerEntriesTest extends TestCase
                     "title" => "Chunk entries deleted successfully."
                 ]
             ]);
-            $this->assertCount(10000, Entry::where('project_id', $this->project->id)->get());
-            $this->assertEquals(10000,
+            $this->assertCount($numOfEntries - $chunkSize, Entry::where('project_id', $this->project->id)->get());
+            $this->assertEquals($numOfEntries - $chunkSize,
                 ProjectStats::where('project_id', $this->project->id)
                     ->value('total_entries'));
 
             $formCounts = json_decode(ProjectStats::where('project_id', $this->project->id)
                 ->value('form_counts'), true);
-            $this->assertEquals(10000, $formCounts[$formRef]['count']);
+            $this->assertEquals($numOfEntries - $chunkSize, $formCounts[$formRef]['count']);
 
             //assert media files are not touched
             $photos = Storage::disk('entry_original')->files($this->project->ref);
