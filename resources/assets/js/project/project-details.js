@@ -109,24 +109,25 @@ $(document).ready(function () {
         slug: project_details.attr('data-js-slug')
     };
 
-    //generate QR Code
-    var qrCodeWrapper = $('#qrcode');
-    var qrcode = new window.QRCode('qrcode', {
-        text: qrCodeWrapper.data('url'),
-        width: 256,
-        height: 256,
-        colorDark: "#000000",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
-    });
-
-    //download QR code
-    $('#qrcode-download').on('click', function () {
-        // Find the image inside the #qrcode div
-        var image = qrCodeWrapper.find('img');
-        // Copy that to the download link
-        $(this).attr('href', image.attr('src'));
-    })
+    //generate QR Code on project details page only
+    if ($('.deeplink-btn-panel').length > 0) {
+        var qrCodeWrapper = $('#qrcode');
+        var qrcode = new window.QRCode('qrcode', {
+            text: qrCodeWrapper.data('url'),
+            width: 256,
+            height: 256,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+        //download QR code
+        $('#qrcode-download').on('click', function () {
+            // Find the image inside the #qrcode div
+            var image = qrCodeWrapper.find('img');
+            // Copy that to the download link
+            $(this).attr('href', image.attr('src'));
+        })
+    }
 
     $('.btn-settings-submit').on('click', function () {
 

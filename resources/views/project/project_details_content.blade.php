@@ -290,6 +290,7 @@
                         {{ url('/open/project/'.$requestAttributes->requestedProject->slug) }}
                     </a>
                 </p>
+                <p>Likewise, scanning the barcode below will load the project</p>
                 <div id="qrcode"
                      data-url=" {{ url('/open/project/'.$requestAttributes->requestedProject->slug) }}">
                 </div>
