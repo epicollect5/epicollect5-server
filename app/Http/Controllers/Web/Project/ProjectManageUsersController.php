@@ -20,7 +20,7 @@ use Log;
 use Response;
 use Throwable;
 
-class ManageUsersController
+class ProjectManageUsersController
 {
     use RequestAttributes;
 

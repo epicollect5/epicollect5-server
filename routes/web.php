@@ -194,9 +194,9 @@ Route::group(['middleware' => 'auth'], function () {
         //        Route::post('myprojects/{project_slug}/datasets/download', 'Web\Project\ProjectDatasetsController@download');
 
         // Project user management
-        Route::get('myprojects/{project_slug}/manage-users', 'Web\Project\ManageUsersController@index')->name('manage-users');
-        Route::post('myprojects/{project_slug}/add-{role}', 'Web\Project\ManageUsersController@addUserRole');
-        Route::post('myprojects/{project_slug}/remove-role', 'Web\Project\ManageUsersController@removeUserRole');
+        Route::get('myprojects/{project_slug}/manage-users', 'Web\Project\ProjectManageUsersController@index')->name('manage-users');
+        Route::post('myprojects/{project_slug}/add-{role}', 'Web\Project\ProjectManageUsersController@addUserRole');
+        Route::post('myprojects/{project_slug}/remove-role', 'Web\Project\ProjectManageUsersController@removeUserRole');
 
         // Project deletion
         Route::get('myprojects/{project_slug}/delete', 'Web\Project\ProjectDeleteController@show');
