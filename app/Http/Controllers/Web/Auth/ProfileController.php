@@ -212,10 +212,10 @@ class ProfileController extends Controller
                 //get Apple user email, always sent in the token
                 $appleUserEmail = $parsed_id_token['email'];
 
-                //check email is the same to the logged in user
+                //check email is the same to the logged-in user
                 if ($appleUserEmail === $this->user->email) {
 
-                    //add Apple provider to allow loggin in with this method
+                    //add Apple provider to allow login in with this method
                     $appleProvider = new UserProvider();
                     $appleProvider->email = $this->user->email;
                     $appleProvider->user_id = $this->user->id;

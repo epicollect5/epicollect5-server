@@ -226,7 +226,7 @@ class EntriesExportPrivateArchivedUserTest extends TestCase
                 'projectDefinition' => $projectDefinition
             ]);
 
-            //assert the single entry response
+            //assert single entry response
             $entryFromResponse = $jsonResponse['data']['entries'][0];
             //dd($entryFromResponse);
             $this->assertEquals($entryFromDB->uuid, $entryFromResponse['ec5_uuid']);
