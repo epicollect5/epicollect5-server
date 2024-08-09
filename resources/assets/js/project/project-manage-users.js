@@ -269,17 +269,19 @@ $(document).ready(function () {
 
     // Bind on click to add existing user from modal
     $('.manage-project-users__existing-user-add-form').on('submit', function (e) {
-
         e.preventDefault();
-
         // Retrieve form data
         var formData = $(this).serializeArray();
-
         // Get action url
         var url = $(this).attr('action');
-
-        // Get current page name
-        var pageName = formData[1].value ? 'page-' + formData[1].value : 'page-creator';
+        // Get current page name to focus on the right tab (by role) after adding user
+        var pageName = 'page-creator';
+        formData.forEach(function (formItem) {
+            if (formItem.name === 'role') {
+                pageName = formItem.value ? 'page-' + formItem.value : 'page-creator';
+                return false;
+            }
+        });
 
         window.EC5.project_users.addUserProjectRole(url, formData, pageName, function () {
             // Clear email
@@ -287,7 +289,6 @@ $(document).ready(function () {
             // Close this modal
             $('#ec5ModalExistingUser').modal('hide');
         });
-
     });
 
     // Bind on click to add new user from modal
