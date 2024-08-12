@@ -1,6 +1,6 @@
 <?php
 
-namespace Http\Controllers\Api\Entries;
+namespace Tests\Http\Controllers\Api\Entries;
 
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;

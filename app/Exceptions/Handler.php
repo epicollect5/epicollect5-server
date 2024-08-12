@@ -42,6 +42,18 @@ class Handler extends ExceptionHandler
     }
 
     /**
+     * Convert a validation exception into a JSON response.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param \Illuminate\Validation\ValidationException $exception
+     * @return \Illuminate\Http\JsonResponse
+     */
+    protected function invalidJson($request, ValidationException $exception): \Illuminate\Http\JsonResponse
+    {
+        return response()->json($exception->errors(), $exception->status);
+    }
+
+    /**
      * Report or log an exception.
      *
      * This is a great spot to send exceptions to Sentry, Bugsnag, etc.

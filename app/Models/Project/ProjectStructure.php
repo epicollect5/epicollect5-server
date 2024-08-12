@@ -2,6 +2,7 @@
 
 namespace ec5\Models\Project;
 
+use Carbon\Carbon;
 use ec5\DTO\ProjectDTO;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
@@ -18,8 +19,16 @@ use Log;
 class ProjectStructure extends Model
 {
     protected $table = 'project_structures';
-    public $timestamps = ['updated_at']; //only want to use updated_at column
-    const CREATED_AT = null; //and created_at by default null set
+    public $timestamps = false; // Disable automatic handling of both timestamps
+    const CREATED_AT = null;    // Disable created_at
+    const UPDATED_AT = 'updated_at'; // Only handle updated_at manually
+
+    //Cast 'updated_at' to datetime (to get a Carbon instance instead of string)
+    protected $casts = [
+        'updated_at' => 'datetime',
+    ];
+
+
     public $guarded = [];
 
     public static function updateStructures(ProjectDTO $project, $setUpdatedAt = false): bool
@@ -33,17 +42,27 @@ class ProjectStructure extends Model
             // Set updated_at field when needed
             //imp: we skip this for status updates for example,
             // as that should not trigger a project update on the app
-            // therefore timestamps gets disabled in that case
             // updated_at is the value we use for project versioning
+//            if ($setUpdatedAt) {
+//                $currentStructure->updated_at = date('Y-m-d H:i:s');
+//                return $currentStructure->save();
+//            } else {
+//                $currentStructure->timestamps = false;
+//                $wasSaved = $currentStructure->save();
+//                $currentStructure->timestamps = true;
+//                return $wasSaved;
+//            }
+
+            // Set updated_at field when needed
             if ($setUpdatedAt) {
-                $currentStructure->updated_at = date('Y-m-d H:i:s');
-                return $currentStructure->save();
-            } else {
-                $currentStructure->timestamps = false;
-                $wasSaved = $currentStructure->save();
-                $currentStructure->timestamps = true;
-                return $wasSaved;
+                $currentStructure->updated_at = Carbon::now(); // Set updated_at to the current time
+                // Alternatively, use the 'touch' method:
+                // $currentStructure->touch();
             }
+
+            return $currentStructure->save();
+
+
         } catch (Exception $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             return false;

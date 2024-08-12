@@ -8,9 +8,6 @@
          convertWarningsToExceptions="true"
          processIsolation="false"
          stopOnFailure="false">
-    <listeners>
-        <listener class="Tests\MemoryLoggerListener"/>
-    </listeners>
     <testsuites>
         <!--Running a cleanup first, to remove leftover rows from failures-->
         <testsuite name="Database Cleanup">

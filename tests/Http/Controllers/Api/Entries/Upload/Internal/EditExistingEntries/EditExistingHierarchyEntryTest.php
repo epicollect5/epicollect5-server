@@ -1,6 +1,6 @@
 <?php
 
-namespace Http\Controllers\Api\Entries\Upload\Internal\EditExistingEntries;
+namespace Tests\Http\Controllers\Api\Entries\Upload\Internal\EditExistingEntries;
 
 use Auth;
 use ec5\Libraries\Utilities\Common;

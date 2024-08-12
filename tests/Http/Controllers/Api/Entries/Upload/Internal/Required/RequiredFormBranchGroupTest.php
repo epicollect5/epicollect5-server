@@ -1,6 +1,6 @@
 <?php
 
-namespace Http\Controllers\Api\Entries\Upload\Internal\Required;
+namespace Tests\Http\Controllers\Api\Entries\Upload\Internal\Required;
 
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;

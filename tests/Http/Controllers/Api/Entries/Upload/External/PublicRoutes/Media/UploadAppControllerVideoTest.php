@@ -1,6 +1,6 @@
 <?php
 
-namespace Http\Controllers\Api\Entries\Upload\External\PublicRoutes\Media;
+namespace Tests\Http\Controllers\Api\Entries\Upload\External\PublicRoutes\Media;
 
 use ec5\Libraries\Utilities\Common;
 use ec5\Models\Entries\BranchEntry;

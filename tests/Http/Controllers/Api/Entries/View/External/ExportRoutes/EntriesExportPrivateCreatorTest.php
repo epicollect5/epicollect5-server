@@ -1,6 +1,6 @@
 <?php
 
-namespace Http\Controllers\Api\Entries\View\External\ExportRoutes;
+namespace Tests\Http\Controllers\Api\Entries\View\External\ExportRoutes;
 
 use Auth;
 use ec5\Models\Entries\Entry;
@@ -116,8 +116,19 @@ class EntriesExportPrivateCreatorTest extends TestCase
             ]);
 
             $obj = json_decode($tokenResponse->getBody());
-            $token = $obj->access_token;
 
+            // Perform assertions
+            $this->assertObjectHasAttribute('token_type', $obj);
+            $this->assertObjectHasAttribute('expires_in', $obj);
+            $this->assertObjectHasAttribute('access_token', $obj);
+
+            $this->assertEquals('Bearer', $obj->token_type);
+            $this->assertInternalType('int', $obj->expires_in);
+            $this->assertInternalType('string', $obj->access_token);
+            $this->assertGreaterThan(0, $obj->expires_in); // Ensure expires_in is positive
+            $this->assertNotEmpty($obj->access_token);
+
+            $token = $obj->access_token;
             //send params to the @depends test
             return [
                 'token' => $token,
@@ -154,6 +165,12 @@ class EntriesExportPrivateCreatorTest extends TestCase
         $projectDefinition = $params['projectDefinition'];
         $entryGenerator = $params['entryGenerator'];
         $dataMappingService = new DataMappingService();
+
+        //assert project exists
+        $this->assertDatabaseHas('projects', [
+            'id' => $project->id,
+            // Add other attributes here if needed
+        ]);
 
 
         //generate entries by that manager

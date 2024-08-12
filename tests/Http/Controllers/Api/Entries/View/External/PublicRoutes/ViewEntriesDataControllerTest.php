@@ -1,6 +1,6 @@
 <?php
 
-namespace Http\Controllers\Api\Entries\View\External\PublicRoutes;
+namespace Tests\Http\Controllers\Api\Entries\View\External\PublicRoutes;
 
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;

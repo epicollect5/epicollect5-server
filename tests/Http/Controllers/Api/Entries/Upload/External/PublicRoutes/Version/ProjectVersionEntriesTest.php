@@ -2,6 +2,7 @@
 
 namespace Tests\Http\Controllers\Api\Entries\Upload\External\PublicRoutes\Version;
 
+use Carbon\Carbon;
 use ec5\Libraries\Utilities\Common;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
@@ -131,6 +132,7 @@ class ProjectVersionEntriesTest extends TestCase
         ProjectStructure::where('project_id', $this->project->id)->update([
             'project_definition' => json_encode($this->projectDefinition['data']),
             'project_extra' => json_encode($projectExtra),
+            'updated_at' => Carbon::now()
         ]);
 
         $response = [];
@@ -206,6 +208,7 @@ class ProjectVersionEntriesTest extends TestCase
             ProjectStructure::where('project_id', $this->project->id)->update([
                 'project_definition' => json_encode($this->projectDefinition['data']),
                 'project_extra' => json_encode($projectExtra),
+                'updated_at' => Carbon::now()
             ]);
 
             //multipart upload from app with json encoded string and file (Cordova FileTransfer)
@@ -289,6 +292,7 @@ class ProjectVersionEntriesTest extends TestCase
             ProjectStructure::where('project_id', $this->project->id)->update([
                 'project_definition' => json_encode($this->projectDefinition['data']),
                 'project_extra' => json_encode($projectExtra),
+                'updated_at' => Carbon::now()
             ]);
 
             //multipart upload from app with json encoded string and file (Cordova FileTransfer)
@@ -371,6 +375,7 @@ class ProjectVersionEntriesTest extends TestCase
             ProjectStructure::where('project_id', $this->project->id)->update([
                 'project_definition' => json_encode($this->projectDefinition['data']),
                 'project_extra' => json_encode($projectExtra),
+                'updated_at' => Carbon::now()
             ]);
 
             //multipart upload from app with json encoded string and file (Cordova FileTransfer)

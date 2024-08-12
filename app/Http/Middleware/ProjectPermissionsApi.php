@@ -86,6 +86,7 @@ class ProjectPermissionsApi extends RequestAttributesMiddleware
             $doesClientExist = OAuthClientProject::doesExist($clientId, $this->requestedProject->getId());
             if (!$doesClientExist) {
                 // Unauthorized error
+                Log::error(__METHOD__ . ' failed.', ['exception' => 'ec5_257']);
                 $this->error = 'ec5_257';
                 return false;
             }

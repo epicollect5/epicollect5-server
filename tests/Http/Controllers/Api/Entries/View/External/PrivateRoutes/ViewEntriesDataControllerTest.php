@@ -1,6 +1,6 @@
 <?php
 
-namespace Http\Controllers\Api\Entries\View\External\PrivateRoutes;
+namespace Tests\Http\Controllers\Api\Entries\View\External\PrivateRoutes;
 
 use Auth;
 use ec5\Models\Entries\BranchEntry;
