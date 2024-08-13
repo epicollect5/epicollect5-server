@@ -8,21 +8,21 @@
   "license": "MIT",
   "type": "project",
   "require": {
-    "php": ">=7.1",
-    "laravel/framework": "5.8.*",
-    "firebase/php-jwt": "3.0",
+    "php": ">=7.2",
+    "laravel/framework": "^6.0",
+    "firebase/php-jwt": "5.0",
     "webpatser/laravel-uuid": "2.*",
     "intervention/image": "^2",
     "doctrine/dbal": "v2.5.4",
-    "laravel/socialite": "3.0.x-dev",
-    "laravel/passport": "^7.0",
+    "laravel/passport": "^9.3.2",
     "league/csv": "^9.5",
     "ext-json": "*",
     "ext-pdo": "*",
     "ext-zlib": "*",
     "ext-zip": "*",
     "ext-fileinfo": "*",
-    "laravolt/avatar": "2.2.0"
+    "laravel/socialite": "5.0.0",
+    "laravolt/avatar": "^3.2"
   },
   "require-dev": {
     "fzaninotto/faker": "~1.4",
@@ -30,8 +30,6 @@
     "phpunit/phpunit": "^7.0",
     "symfony/css-selector": "2.8.*|3.0.*",
     "symfony/dom-crawler": "2.8.*|3.0.*",
-    "xethron/migrations-generator": "dev-l5",
-    "way/generators": "dev-feature/laravel-five-stable",
     "ext-mbstring": "*",
     "filp/whoops": "~2.0"
   },
