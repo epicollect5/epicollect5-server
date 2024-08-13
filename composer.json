@@ -9,7 +9,7 @@
   "type": "project",
   "require": {
     "php": ">=7.1",
-    "laravel/framework": "5.7.*",
+    "laravel/framework": "5.8.*",
     "firebase/php-jwt": "3.0",
     "webpatser/laravel-uuid": "2.*",
     "intervention/image": "^2",
@@ -22,8 +22,7 @@
     "ext-zlib": "*",
     "ext-zip": "*",
     "ext-fileinfo": "*",
-    "laravolt/avatar": "2.2.0",
-    "laravel/nexmo-notification-channel": "1.0"
+    "laravolt/avatar": "2.2.0"
   },
   "require-dev": {
     "fzaninotto/faker": "~1.4",

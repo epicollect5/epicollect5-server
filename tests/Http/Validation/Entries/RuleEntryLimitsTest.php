@@ -13,7 +13,7 @@ class RuleEntryLimitsTest extends TestCase
     private $ruleEntryLimits;
     private $payload;
 
-    public function setUp()
+    public function setUp(): void
     {
         // This method will automatically be called prior to any of your test cases
         parent::setUp();
@@ -40,7 +40,7 @@ class RuleEntryLimitsTest extends TestCase
         ];
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         parent::tearDown();
         $this->ruleEntryLimits->resetErrors();

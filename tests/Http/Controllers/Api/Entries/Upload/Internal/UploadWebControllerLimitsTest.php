@@ -30,7 +30,7 @@ class UploadWebControllerLimitsTest extends TestCase
 
     private $endpoint = 'api/internal/web-upload/';
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->faker = Faker::create();

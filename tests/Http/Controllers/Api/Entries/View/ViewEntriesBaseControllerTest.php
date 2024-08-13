@@ -35,7 +35,7 @@ abstract class ViewEntriesBaseControllerTest extends TestCase
     protected $locationInputRefs;
     protected $dataMappingService;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

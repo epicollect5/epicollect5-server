@@ -12,7 +12,7 @@ class CommonTest extends TestCase
 {
     use Assertions;
 
-    public function setUp()
+    public function setUp():void
     {
         parent::setUp();
     }

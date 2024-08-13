@@ -14,14 +14,14 @@ class RuleImportRequestTest extends TestCase
 
     private $ruleImportRequest;
 
-    public function setUp()
+    public function setUp(): void
     {
         // This method will automatically be called prior to any of your test cases
         parent::setUp();
         $this->ruleImportRequest = new RuleImportRequest();
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         parent::tearDown();
         $this->ruleImportRequest->resetErrors();

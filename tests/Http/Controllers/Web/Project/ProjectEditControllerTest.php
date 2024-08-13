@@ -21,7 +21,7 @@ class ProjectEditControllerTest extends TestCase
     private $user;
     private $project;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

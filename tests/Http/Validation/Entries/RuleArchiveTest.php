@@ -13,7 +13,7 @@ class RuleArchiveTest extends TestCase
     private $ruleArchive;
     private $payload;
 
-    public function setUp()
+    public function setUp(): void
     {
         // This method will automatically be called prior to any of your test cases
         parent::setUp();
@@ -39,7 +39,7 @@ class RuleArchiveTest extends TestCase
         ];
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         parent::tearDown();
         $this->ruleArchive->resetErrors();

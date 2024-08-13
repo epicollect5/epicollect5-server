@@ -23,7 +23,7 @@ class ProjectControllerTest extends TestCase
     private $projectStructure;
     const DRIVER = 'web';
 
-    public function setup()
+    public function setup(): void
     {
         parent::setUp();
 

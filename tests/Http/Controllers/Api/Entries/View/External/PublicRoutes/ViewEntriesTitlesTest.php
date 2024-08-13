@@ -25,7 +25,7 @@ class ViewEntriesTitlesTest extends TestCase
 
     private $endpoint = 'api/entries/';
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         //remove leftovers

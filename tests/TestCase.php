@@ -122,7 +122,7 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
         }
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
 //        // Remove properties defined during the test
 //        $refl = new \ReflectionObject($this);

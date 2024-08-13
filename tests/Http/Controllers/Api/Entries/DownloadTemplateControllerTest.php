@@ -26,7 +26,7 @@ class DownloadTemplateControllerTest extends TestCase
     private $projectDefinition;
     private $project;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

@@ -23,7 +23,7 @@ class RequiredFormBranchGroupTest extends TestCase
 {
     use DatabaseTransactions, Assertions;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         //remove leftovers

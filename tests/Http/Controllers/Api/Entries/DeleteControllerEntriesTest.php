@@ -23,7 +23,7 @@ class DeleteControllerEntriesTest extends TestCase
 
     private $endpoint = 'api/internal/deletion/entries/';
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

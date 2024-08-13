@@ -27,7 +27,7 @@ class ProjectAppsControllerTest extends TestCase
     private $project;
     private $projectDefinition;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         //create fake user for testing

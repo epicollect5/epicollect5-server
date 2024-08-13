@@ -20,12 +20,12 @@ class ProjectLeaveControllerTest extends TestCase
 
     const DRIVER = 'web';
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         Mockery::close();
         parent::tearDown();

@@ -27,7 +27,7 @@ abstract class InputTest extends TestCase
     protected $jumps = [];
     protected $possibleAnswers = [];
 
-    public function setUp()
+    public function setUp():void
     {
         // This method will automatically be called prior to any of your test cases
         parent::setUp();

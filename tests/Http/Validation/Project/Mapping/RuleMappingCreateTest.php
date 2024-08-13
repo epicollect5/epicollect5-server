@@ -11,7 +11,7 @@ class RuleMappingCreateTest extends TestCase
     protected $ruleMappingCreate;
     private $faker;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->faker = Faker::create();

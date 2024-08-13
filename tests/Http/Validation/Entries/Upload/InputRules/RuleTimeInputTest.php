@@ -22,7 +22,7 @@ class RuleTimeInputTest extends TestCase
 
     protected $type;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

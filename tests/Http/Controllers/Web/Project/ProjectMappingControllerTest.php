@@ -26,7 +26,7 @@ class ProjectMappingControllerTest extends TestCase
     private $project;
     private $faker;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

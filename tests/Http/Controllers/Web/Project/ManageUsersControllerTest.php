@@ -23,7 +23,7 @@ class ManageUsersControllerTest extends TestCase
     private $project;
     private $projectDefinition;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

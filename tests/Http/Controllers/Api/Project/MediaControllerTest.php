@@ -21,7 +21,7 @@ class MediaControllerTest extends TestCase
 
     use DatabaseTransactions;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

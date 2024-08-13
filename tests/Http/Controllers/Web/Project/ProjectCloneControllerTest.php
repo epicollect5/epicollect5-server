@@ -28,7 +28,7 @@ class ProjectCloneControllerTest extends TestCase
     private $projectExtra;
     private $projectMapping;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

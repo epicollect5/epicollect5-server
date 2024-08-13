@@ -41,7 +41,7 @@ class UploadWebControllerMultipleTest extends TestCase
     private $faker;
     private $entryGenerator;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $user = factory(User::class)->create();

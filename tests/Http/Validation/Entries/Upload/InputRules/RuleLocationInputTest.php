@@ -13,7 +13,7 @@ class RuleLocationInputTest extends TestCase
     protected $validator;
     protected $inputDetails;
 
-    public function setUp()
+    public function setUp(): void
     {
         // This method will automatically be called prior to any of your test cases
         parent::setUp();

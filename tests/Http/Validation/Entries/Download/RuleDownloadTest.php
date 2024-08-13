@@ -12,14 +12,14 @@ class RuleDownloadTest extends TestCase
 
     private $ruleDownload;
 
-    public function setUp()
+    public function setUp(): void
     {
         // This method will automatically be called prior to any of your test cases
         parent::setUp();
         $this->ruleDownload = new RuleDownload();
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         parent::tearDown();
         $this->ruleDownload->resetErrors();

@@ -27,7 +27,7 @@ class EditExistingHierarchyEntryTest extends TestCase
 
     private $endpoint = 'api/internal/web-upload/';
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         //remove leftovers

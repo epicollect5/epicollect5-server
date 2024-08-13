@@ -18,7 +18,7 @@ class RuleDropdownInputTest extends TestCase
     protected $inputDetails;
     protected $type;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

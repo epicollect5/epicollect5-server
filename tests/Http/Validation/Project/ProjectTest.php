@@ -9,7 +9,7 @@ class ProjectTest extends TestCase
 {
     protected $validator;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->validator = new RuleCreateRequest();
