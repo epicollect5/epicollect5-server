@@ -78,7 +78,7 @@
   }
 </script>
 
-@if(Route::currentRouteName() === 'login' OR Route::currentRouteName() === 'profile')
+@if(Route::currentRouteName() === 'login' || Route::currentRouteName() === 'profile')
 
     <meta name="appleid-signin-scope" content="name email">
     @if(Route::currentRouteName() === 'login')

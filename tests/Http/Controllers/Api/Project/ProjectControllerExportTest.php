@@ -130,6 +130,18 @@ class ProjectControllerExportTest extends TestCase
 
             $body = $tokenResponse->getBody();
             $obj = json_decode($body);
+
+            // Perform assertions
+            $this->assertObjectHasAttribute('token_type', $obj);
+            $this->assertObjectHasAttribute('expires_in', $obj);
+            $this->assertObjectHasAttribute('access_token', $obj);
+
+            $this->assertEquals('Bearer', $obj->token_type);
+            $this->assertIsInt($obj->expires_in);
+            $this->assertIsString($obj->access_token);
+            $this->assertGreaterThan(0, $obj->expires_in); // Ensure expires_in is positive
+            $this->assertNotEmpty($obj->access_token);
+
             $token = $obj->access_token;
 
             //send params to the @depends test

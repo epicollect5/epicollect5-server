@@ -38,6 +38,7 @@ class ProjectEntriesControllerTest extends TestCase
         $slug = config('testing.WEB_UPLOAD_CONTROLLER_PROJECT.slug');
         $email = config('testing.UNIT_TEST_RANDOM_EMAIL');
 
+
         $response = [];
         try {
             //create fake user for testing

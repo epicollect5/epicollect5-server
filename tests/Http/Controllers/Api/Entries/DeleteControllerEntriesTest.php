@@ -23,9 +23,11 @@ class DeleteControllerEntriesTest extends TestCase
 
     private $endpoint = 'api/internal/deletion/entries/';
 
-    protected function setUp()
+    public function setUp()
     {
         parent::setUp();
+
+        $this->clearDatabase([]);
 
         $user = factory(User::class)->create();
         $projectDefinition = ProjectDefinitionGenerator::createProject(5);

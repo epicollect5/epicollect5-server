@@ -19,6 +19,8 @@ use Log;
 
 class TestCase extends \Illuminate\Foundation\Testing\TestCase
 {
+
+
     /**
      * The base URL to use while testing the application.
      *
@@ -91,11 +93,9 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
         $clientId = $params['client_id'] ?? null;
 
         try {
-
             // Delete users with an email that ends with '@example.com'
             User::where('email', 'like', '%@example.com')->delete();
             User::where('email', 'like', '%random@unit.tests%')->delete();
-
             if ($user) {
                 User::where('id', $user->id)->delete();
                 UserProvider::where('id', $user->id)->delete();

@@ -123,8 +123,8 @@ class EntriesExportPrivateCreatorTest extends TestCase
             $this->assertObjectHasAttribute('access_token', $obj);
 
             $this->assertEquals('Bearer', $obj->token_type);
-            $this->assertInternalType('int', $obj->expires_in);
-            $this->assertInternalType('string', $obj->access_token);
+            $this->assertIsInt($obj->expires_in);
+            $this->assertIsString($obj->access_token);
             $this->assertGreaterThan(0, $obj->expires_in); // Ensure expires_in is positive
             $this->assertNotEmpty($obj->access_token);
 

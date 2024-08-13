@@ -308,7 +308,8 @@ $factory->define(ProjectStructure::class, function (Faker\Generator $faker, $par
             ],
             'map_index' => 0,
             'is_default' => true
-        ]])
+        ]]),
+        'updated_at' => Carbon::now(),
     ];
 });
 
