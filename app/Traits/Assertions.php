@@ -29,8 +29,8 @@ trait Assertions
 
     protected function assertArrayHasExactKeys($jsonResponse, $expectedKeys)
     {
-        $this->assertIsArray($jsonResponse);
-        $this->assertIsArray($expectedKeys);
+        Assert::assertIsArray($jsonResponse);
+        Assert::assertIsArray($expectedKeys);
 
         foreach ($expectedKeys as $key) {
             $this->assertArrayHasKey(
@@ -60,14 +60,10 @@ trait Assertions
         }
     }
 
-    public function assertIsArray($actual, $message = '')
-    {
-        Assert::assertInternalType('array', $actual, $message);
-    }
 
     public function assertIsArrayNotEmpty($data)
     {
-        self::assertIsArray($data);
+        Assert::assertIsArray($data);
         Assert::assertNotEmpty($data);
     }
 
@@ -420,9 +416,9 @@ trait Assertions
             $this->assertArrayHasKey('mapping', $response['data']);
 
             // Check the structure of 'entries'
-            $this->assertIsArray($response['data']['entries']);
+            Assert::assertIsArray($response['data']['entries']);
             foreach ($response['data']['entries'] as $entry) {
-                $this->assertIsArray($entry);
+                Assert::assertIsArray($entry);
                 //assert created_by since the project is private when using Guzzle
                 $this->assertArrayHasKey('created_by', $entry);
             }

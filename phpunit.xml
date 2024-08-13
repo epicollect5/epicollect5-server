@@ -24,8 +24,8 @@
             <directory suffix=".php">./app</directory>
             <exclude>
                 <file>./app/Http/routes.php</file>
+                <directory>./tests/Browser/</directory>
             </exclude>
-            <exclude>./tests/Browser/</exclude>
         </whitelist>
     </filter>
     <php>

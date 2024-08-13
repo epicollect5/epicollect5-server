@@ -9,27 +9,25 @@
   "type": "project",
   "require": {
     "php": ">=7.1",
-    "laravel/framework": "5.5.*",
+    "laravel/framework": "5.6.*",
     "firebase/php-jwt": "3.0",
     "webpatser/laravel-uuid": "2.*",
     "intervention/image": "^2",
     "doctrine/dbal": "v2.5.4",
     "laravel/socialite": "3.0.x-dev",
-    "barryvdh/laravel-debugbar": "^2.3",
-    "deployer/deployer": "^4.2",
-    "laravel/passport": "^v3.0.0",
-    "laravolt/avatar": "2.2",
+    "laravel/passport": "^6.0",
     "league/csv": "^9.5",
     "ext-json": "*",
     "ext-pdo": "*",
     "ext-zlib": "*",
     "ext-zip": "*",
-    "ext-fileinfo": "*"
+    "ext-fileinfo": "*",
+    "laravolt/avatar": "2.2.0"
   },
   "require-dev": {
     "fzaninotto/faker": "~1.4",
     "mockery/mockery": "0.9.*",
-    "phpunit/phpunit": "~6.0",
+    "phpunit/phpunit": "^7.0",
     "symfony/css-selector": "2.8.*|3.0.*",
     "symfony/dom-crawler": "2.8.*|3.0.*",
     "xethron/migrations-generator": "dev-l5",
@@ -58,12 +56,10 @@
       "php artisan key:generate"
     ],
     "post-install-cmd": [
-      "Illuminate\\Foundation\\ComposerScripts::postInstall",
-      "php artisan optimize"
+      "Illuminate\\Foundation\\ComposerScripts::postInstall"
     ],
     "post-update-cmd": [
-      "Illuminate\\Foundation\\ComposerScripts::postUpdate",
-      "php artisan optimize"
+      "Illuminate\\Foundation\\ComposerScripts::postUpdate"
     ],
     "test": [
       "vendor/bin/phpunit"

@@ -198,8 +198,6 @@ return [
         ec5\Libraries\Ldap\LdapServiceProvider::class,
         // Image Intervention
         Intervention\Image\ImageServiceProvider::class,
-        // Debugbar
-        Barryvdh\Debugbar\ServiceProvider::class,
         // Laravel Passport
         Laravel\Passport\PassportServiceProvider::class,
         //Avatar
@@ -253,7 +251,6 @@ return [
         'Ldap' => ec5\Libraries\Ldap\Ldap::class,
         'Uuid' => Webpatser\Uuid\Uuid::class,
         'Image' => Intervention\Image\Facades\Image::class,
-        'Debugbar' => Barryvdh\Debugbar\Facade::class,
         'Avatar' => Laravolt\Avatar\Facade::class,
         'Notification' => Illuminate\Support\Facades\Notification::class,
         'Common' => ec5\Libraries\Utilities\Common::class

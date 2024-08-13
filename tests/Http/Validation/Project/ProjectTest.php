@@ -17,5 +17,6 @@ class ProjectTest extends TestCase
 
     public function test_request()
     {
+        $this->assertTrue(true);
     }
 }

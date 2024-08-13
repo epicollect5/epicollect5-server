@@ -125,8 +125,7 @@ class AuthController extends Controller
     {
         return $this->limiter()->tooManyAttempts(
             $this->throttleKey($request),
-            5,
-            10
+            5
         );
     }
 }
