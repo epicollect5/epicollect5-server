@@ -22,7 +22,8 @@
     "ext-zip": "*",
     "ext-fileinfo": "*",
     "laravel/socialite": "5.0.0",
-    "laravolt/avatar": "^3.2"
+    "laravolt/avatar": "^3.2",
+    "laravel/helpers": "^1.7"
   },
   "require-dev": {
     "fzaninotto/faker": "~1.4",
