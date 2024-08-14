@@ -8,7 +8,7 @@ use Config;
 class RuleSwitchUserRole extends ValidationBase
 {
     protected $rules = [
-        'email' => 'required|email'
+        'email' => 'required|email:filter'
     ];
 
     /**

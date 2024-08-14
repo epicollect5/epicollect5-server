@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use Countable;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use ec5\Models\OAuth\OAuthAccessToken;
@@ -48,6 +49,7 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
         $actual = '';
 
         echo "\e[0;31m" . $e->getMessage() . "\e[0m" . PHP_EOL;
+
         // Get the expected and actual values from the ComparisonFailure object
         if (method_exists($e, 'getComparisonFailure') && $e->getComparisonFailure() !== null) {
             $expected = print_r($e->getComparisonFailure()->getExpected(), true) . PHP_EOL;
@@ -56,12 +58,17 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
 
         echo 'Expected: ', $expected ?? PHP_EOL;
         echo 'Actual: ' . $actual ?? PHP_EOL;
-        if (is_array($response)) {
+
+        // Ensure $response is an array or a Countable object before using sizeof()
+        if (is_array($response) || $response instanceof Countable) {
             if (sizeof($response) > 0) {
-                $response = $response[0];
+                if (is_array($response)) {
+                    $response = $response[0];
+                }
             }
         }
-        if (sizeof($response) > 0) {
+
+        if (is_array($response) || is_object($response)) {
             if (isset($response->baseResponse)) {
                 $jsonResponse = $response->baseResponse->exception === null
                     ? json_encode(['response' => $response])
@@ -77,12 +84,11 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
 
         // Mark the test as failed with expected and actual values
         $filePath = str_replace(base_path(), '', $e->getFile());
-        // Get the full stack trace as a string
         $stackTrace = $e->getTraceAsString();
-        // Convert the stack trace into an array of lines
         $stackTraceLines = explode("\n", $stackTrace);
-        //log error for failed assertion
-        $this->fail("Error in {$stackTraceLines}:\n\n{$e->getMessage()}");
+
+        // Log error for failed assertion
+        $this->fail("Error in {$filePath}:\n\n{$e->getMessage()}");
     }
 
     //clear database manually as we are not using database transactions

@@ -19,7 +19,7 @@ abstract class UploadControllerBase
     protected $isBulkUpload;
     protected $entriesUploadService;
     protected $entryStructure;
-    protected $errors;
+    protected $errors = [];
     protected $ruleUpload;
 
     /**

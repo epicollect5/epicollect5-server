@@ -83,13 +83,13 @@ class UploadWebController extends UploadControllerBase
                 foreach ($groupInputs as $groupInputRef) {
                     $groupInput = $projectExtra->getInputData($groupInputRef);
                     $this->moveFile($rootFolder, $groupInput);
-                    if (count($this->errors) > 0) {
+                    if (sizeof($this->errors) > 0) {
                         return Response::apiErrorCode(400, $this->errors);
                     }
                 }
             } else {
                 $this->moveFile($rootFolder, $input);
-                if (count($this->errors) > 0) {
+                if (sizeof($this->errors) > 0) {
                     return Response::apiErrorCode(400, $this->errors);
                 }
             }

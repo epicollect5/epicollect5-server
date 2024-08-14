@@ -76,7 +76,7 @@ class DeleteController extends Controller
         // Check this $entryUuid belongs to this project
         // todo check that the entry exists given parent_uuid, branch_owner etc etc
         $entry = $entryModel->getEntry($this->requestedProject()->getId(), $params)->first();
-        if (count($entry) == 0) {
+        if ($entry === null) {
             return Response::apiErrorCode(400, ['deletion-entries' => ['ec5_239']]);
         }
 

@@ -32,12 +32,19 @@ class RuleSearchMultipleInput extends RuleInputBase
      */
     public function additionalChecks($inputDetails, $answer, ProjectDTO $project, EntryStructureDTO $entryStructure)
     {
-        if (!empty($answer) && count($answer) > 0) {
 
-            if (!is_array($answer)) {
-                $this->errors[$inputDetails['ref']] = ['ec5_25'];
-                return $answer;
-            }
+        if (empty($answer)) {
+            // Always default empty checkbox answer to []
+            $answer = [];
+        }
+
+        if (!is_array($answer)) {
+            $this->errors[$inputDetails['ref']] = ['ec5_25'];
+            return false;
+        }
+
+
+        if (count($answer) > 0) {
 
             $possibles = Common::getPossibleAnswers($inputDetails);
 
@@ -86,9 +93,6 @@ class RuleSearchMultipleInput extends RuleInputBase
                     }
                 }
             }
-        } else {
-            // Always default empty checkbox answer to []
-            $answer = [];
         }
 
         return $answer;

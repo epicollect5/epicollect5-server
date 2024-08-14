@@ -34,6 +34,7 @@ class ProjectEntriesControllerTest extends TestCase
         parent::setUp();
         $this->faker = Faker::create();
         $this->limitTo = rand(1, 100);
+        $this->clearDatabase([]);
         $name = config('testing.WEB_UPLOAD_CONTROLLER_PROJECT.name');
         $slug = config('testing.WEB_UPLOAD_CONTROLLER_PROJECT.slug');
         $email = config('testing.UNIT_TEST_RANDOM_EMAIL');
