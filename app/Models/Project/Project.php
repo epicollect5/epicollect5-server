@@ -18,6 +18,11 @@ class Project extends Model
     protected $projectStatsTable = 'project_stats';
     protected $fillable = ['slug'];
 
+    protected $casts = [
+        'created_at' => 'datetime:Y-m-d H:i:s',
+        'updated_at' => 'datetime:Y-m-d H:i:s',
+    ];
+
     //used to init ProjectDTO, returns a bundle with data from multiple tables
     public static function findBySlug($slug)
     {
@@ -137,10 +142,14 @@ class Project extends Model
 
     public static function version($slug)
     {
-        return Project::join(config('epicollect.tables.project_structures'), 'projects.id', '=', config('epicollect.tables.project_structures') . '.project_id')
+        $updatedAt = Project::join(config('epicollect.tables.project_structures'), 'projects.id', '=', config('epicollect.tables.project_structures') . '.project_id')
             ->where('projects.slug', $slug)
-            ->pluck('project_structures.updated_at')
+            //imp: this nis needed to drop the milliseconds (pre Laravel 7 behaviour)
+            ->select(DB::raw("DATE_FORMAT(project_structures.updated_at, '%Y-%m-%d %H:%i:%s') as updated_at"))
+            ->pluck('updated_at')
             ->first();
+        //cast to ISO string since it is a Carbon instance now
+        return (string)$updatedAt;
     }
 
     public function admin($perPage, $params = [])

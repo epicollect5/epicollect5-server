@@ -179,7 +179,9 @@ class PasswordlessControllerTest extends TestCase
         $response = $this->post('/login/passwordless/verification', [
             'email' => $email,
             'code' => strval(Generators::randomNumber(6, 1))
-        ], [])->assertStatus(200);
+        ], []);
+
+        $response->assertStatus(200);
         $this->assertEquals('auth.verification_passwordless', $response->original->getName());
         $this->assertEquals(['ec5_378'], $response->original->getData()['errors']->all());
 

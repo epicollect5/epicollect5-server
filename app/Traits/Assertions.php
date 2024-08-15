@@ -653,7 +653,7 @@ trait Assertions
     {
         foreach ($links as $link) {
             if ($link !== null) {
-                $this->assertRegExp('/^(?:\w+:\/{2})?\w+(?:\.\w+)*(?:\/[^\s]*)?$/', $link);
+                $this->assertMatchesRegularExpression('/^(?:\w+:\/{2})?\w+(?:\.\w+)*(?:\/[^\s]*)?$/', $link);
             } else {
                 $this->assertNull($link);
             }
@@ -665,7 +665,7 @@ trait Assertions
         foreach ($array as $key => $value) {
             if ($key === 'newest' || $key === 'oldest') {
                 // Assert that the value is an ISO 8601 date-time string
-                $this->assertRegExp('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/', $value);
+                $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/', $value);
             } else {
                 // Assert that the value is an integer
                 $this->assertIsInt($value);
@@ -983,5 +983,19 @@ trait Assertions
 
         return $possibleAnswers;
     }
+
+    public function assertArraySubset(array $expectedSubset, array $actualArray)
+    {
+        foreach ($expectedSubset as $key => $value) {
+            $this->assertArrayHasKey($key, $actualArray);
+
+            if (is_array($value)) {
+                $this->assertArraySubset($value, $actualArray[$key]);
+            } else {
+                $this->assertEquals($value, $actualArray[$key]);
+            }
+        }
+    }
+
 
 }

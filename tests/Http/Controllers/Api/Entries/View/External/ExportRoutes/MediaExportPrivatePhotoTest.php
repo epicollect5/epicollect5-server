@@ -119,9 +119,9 @@ class MediaExportPrivatePhotoTest extends TestCase
             $obj = json_decode($tokenResponse->getBody());
 
             // Perform assertions
-            $this->assertObjectHasAttribute('token_type', $obj);
-            $this->assertObjectHasAttribute('expires_in', $obj);
-            $this->assertObjectHasAttribute('access_token', $obj);
+            $this->assertObjectHasProperty('token_type', $obj);
+            $this->assertObjectHasProperty('expires_in', $obj);
+            $this->assertObjectHasProperty('access_token', $obj);
 
             $this->assertEquals('Bearer', $obj->token_type);
             $this->assertIsInt($obj->expires_in);
@@ -248,7 +248,7 @@ class MediaExportPrivatePhotoTest extends TestCase
             $this->assertEquals(config('epicollect.media.content_type.photo'), $headers['Content-Type'][0]);
 
             // Assert that the content type is as expected
-            $this->assertContains('image', $response->getHeaderLine('Content-Type'));
+            $this->assertStringContainsString('image', $response->getHeaderLine('Content-Type'));
             // Assert that the content length is greater than 0
             $this->assertGreaterThan(0, $response->getBody()->getSize());
 

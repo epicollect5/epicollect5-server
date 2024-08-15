@@ -609,8 +609,10 @@ class DataMappingService
         return $flattenBranchInputs;
     }
 
+    //convert a MYSQL date (2024-08-15 17:37:46.000) to Javascript equivalent
+    //imp: we are also dropping milliseconds (pre Laravel 7 behaviour)
     private function convertMYSQLDateToISO($mysqlDate): string
     {
-        return Carbon::createFromFormat('Y-m-d H:i:s', $mysqlDate)->format('Y-m-d\TH:i:s.000\Z');
+        return Carbon::parse($mysqlDate)->format('Y-m-d\TH:i:s.000\Z');
     }
 }

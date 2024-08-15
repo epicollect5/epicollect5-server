@@ -19,6 +19,18 @@ class VerifyCsrfToken extends BaseVerifier
     ];
 
     /**
+     * @return true
+     *
+     * imp: to make it work like pre Laravel 7
+     * without this, X-CSRF toksn from Ajax post requests
+     * stop working
+     */
+    public static function serialized(): bool
+    {
+        return true;
+    }
+
+    /**
      * Add the CSRF token to the response cookies.
      *
      * @param \Illuminate\Http\Request $request

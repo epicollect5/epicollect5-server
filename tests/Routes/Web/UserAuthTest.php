@@ -49,7 +49,7 @@ class UserAuthTest extends TestCase
         //$response = $this->get(route('users.index'));
         $response = $this->get('redirect/google');
 
-        $this->assertContains('https://accounts.google.com/o/oauth2/', $response->getTargetUrl());
+        $this->assertStringContainsString('https://accounts.google.com/o/oauth2/', $response->getTargetUrl());
     }
 
     /** @test */

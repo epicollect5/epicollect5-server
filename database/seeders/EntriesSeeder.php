@@ -1,5 +1,8 @@
 <?php
 
+namespace Database\Seeders;
+
+
 use ec5\Models\Entries\Entry;
 use Illuminate\Database\Seeder;
 

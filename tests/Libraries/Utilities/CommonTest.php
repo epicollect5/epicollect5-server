@@ -12,7 +12,7 @@ class CommonTest extends TestCase
 {
     use Assertions;
 
-    public function setUp():void
+    public function setUp(): void
     {
         parent::setUp();
     }
@@ -96,7 +96,7 @@ class CommonTest extends TestCase
         $this->assertIsArray($result);
         // Perform additional assertions
         // For example, you can check if the old ref is replaced with the new ref
-        $this->assertNotContains($existingRef, json_encode($result));
-        $this->assertContains($newRef, json_encode($result));
+        $this->assertStringNotContainsString($existingRef, json_encode($result));
+        $this->assertStringContainsString($newRef, json_encode($result));
     }
 }

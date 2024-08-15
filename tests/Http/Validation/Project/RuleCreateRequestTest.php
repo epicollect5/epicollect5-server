@@ -5,13 +5,14 @@ namespace Tests\Http\Validation\Project;
 use ec5\Http\Validation\Project\RuleCreateRequest;
 use ec5\Models\Project\Project;
 use ec5\Models\User\User;
+use ec5\Traits\Assertions;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Ramsey\Uuid\Uuid;
 use Tests\TestCase;
 
 class RuleCreateRequestTest extends TestCase
 {
-    use DatabaseTransactions;
+    use DatabaseTransactions, Assertions;
 
     private $ruleCreateRequest;
 

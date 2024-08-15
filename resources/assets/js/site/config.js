@@ -40,7 +40,6 @@ $(document).ready(function () {
         return token;
     };
 
-
     $.ajaxSetup({
         headers: {
             'X-XSRF-TOKEN': getXsrfToken()

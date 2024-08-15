@@ -20,6 +20,7 @@ use Faker\Factory as Faker;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use Monolog\Handler\LogEntriesHandler;
 use Ramsey\Uuid\Uuid;
 
 class EntryGenerator
@@ -289,6 +290,7 @@ class EntryGenerator
 
         $title = implode(' ', $titles);
         $title = $title === '' ? $uuid : $title;
+
 
         return [
             'data' => [

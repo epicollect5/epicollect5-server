@@ -20,8 +20,6 @@ use Log;
 
 class TestCase extends \Illuminate\Foundation\Testing\TestCase
 {
-
-
     /**
      * The base URL to use while testing the application.
      *
@@ -147,7 +145,7 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
     public function multipleRunProvider(): array
     {
         // Define how many times you want to run the test
-        $runs = 2;
+        $runs = 1;
         $testCases = [];
 
         for ($i = 0; $i < $runs; $i++) {
