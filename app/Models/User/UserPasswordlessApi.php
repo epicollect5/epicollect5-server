@@ -3,11 +3,14 @@
 namespace ec5\Models\User;
 
 use Carbon\Carbon;
+use DateTimeInterface;
+use ec5\Traits\Models\SerializeDates;
 use Hash;
 use Illuminate\Database\Eloquent\Model;
 
 class UserPasswordlessApi extends Model
 {
+    use SerializeDates;
 
     const UPDATED_AT = null;
 
@@ -17,7 +20,6 @@ class UserPasswordlessApi extends Model
      * @var string
      */
     protected $table = 'users_passwordless_api';
-
     protected $fillable = [];
 
     public function isValidCode($code)
@@ -27,7 +29,7 @@ class UserPasswordlessApi extends Model
             //is the code timestamp still valid?
             if (Carbon::parse($this->attributes['expires_at'])->greaterThan(Carbon::now())) {
                 //are there any attempts left
-                if($this->attributes['attempts'] > 0) {
+                if ($this->attributes['attempts'] > 0) {
                     return true;
                 }
             }

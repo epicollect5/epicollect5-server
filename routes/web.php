@@ -8,6 +8,7 @@
 | Here we specify 'web' route middleware for all web requests.
 |
 */
+
 Route::get('/', 'Web\HomeController@index')->name('home');
 //Tell me more routes
 Route::get('more-create', 'Web\MorePages\MoreCreateController@index');

@@ -5,6 +5,7 @@ namespace Tests\Routes\Web;
 use ec5\Models\User\User;
 use ec5\Models\User\UserProvider;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 use Mockery;
 use Tests\TestCase;
@@ -106,7 +107,7 @@ class UserAuthTest extends TestCase
             ->shouldReceive('getId')
             ->andReturn(rand())
             ->shouldReceive('getName')
-            ->andReturn(str_random(10))
+            ->andReturn(Str::random(10))
             ->shouldReceive('getEmail')
             ->andReturn('test' . '@ncsu.edu')
             ->shouldReceive('getAvatar')

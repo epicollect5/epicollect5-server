@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Auth;
 use Tests\Generators\EntryGenerator;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
+use Illuminate\Support\Arr;
 
 /* We cannot do multiple post requests in the same test method,
    as the app boots only once, and we are going to have side effects

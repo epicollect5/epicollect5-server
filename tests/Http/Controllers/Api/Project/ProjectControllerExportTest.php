@@ -13,6 +13,7 @@ use ec5\Traits\Assertions;
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Passport\ClientRepository;
 use Tests\Generators\ProjectDefinitionGenerator;

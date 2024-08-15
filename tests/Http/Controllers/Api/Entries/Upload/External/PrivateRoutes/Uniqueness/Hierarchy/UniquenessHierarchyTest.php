@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Auth;
 use Tests\Generators\EntryGenerator;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
+use Illuminate\Support\Arr;
 
 class UniquenessHierarchyTest extends TestCase
 {

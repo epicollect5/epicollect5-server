@@ -15,6 +15,7 @@ use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
 use ec5\Services\Mapping\ProjectMappingService;
 use Hash;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Assert;
 
@@ -667,7 +668,7 @@ trait Assertions
                 $this->assertRegExp('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/', $value);
             } else {
                 // Assert that the value is an integer
-                $this->assertInternalType('int', $value);
+                $this->assertIsInt($value);
             }
         }
     }
@@ -944,8 +945,8 @@ trait Assertions
         $this->assertEquals($locationAnswer['latitude'], $geoJsonFeature['geometry']['coordinates'][1]);
         $this->assertEquals($locationAnswer['accuracy'], $geoJsonFeature['properties']['accuracy']);
 
-        $this->assertInternalType('float', $geoJsonFeature['geometry']['coordinates'][0]);
-        $this->assertInternalType('float', $geoJsonFeature['geometry']['coordinates'][1]);
+        $this->assertIsFloat($geoJsonFeature['geometry']['coordinates'][0]);
+        $this->assertIsFloat($geoJsonFeature['geometry']['coordinates'][1]);
         $this->assertEquals(round($locationAnswer['longitude'], 6), $geoJsonFeature['geometry']['coordinates'][0]);
         $this->assertEquals(round($locationAnswer['latitude'], 6), $geoJsonFeature['geometry']['coordinates'][1]);
 

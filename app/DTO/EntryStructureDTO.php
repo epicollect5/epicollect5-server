@@ -2,6 +2,7 @@
 
 namespace ec5\DTO;
 
+use Carbon\Carbon;
 use Hash;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -203,7 +204,13 @@ class EntryStructureDTO
          * is the current date, otherwise it will be saved as 0000... in the db
          * since we are returning an empty string
          * */
-        return $this->getEntry()['created_at'] ?? date('Y-m-d H:i:s');
+        if (isset($this->getEntry()['created_at'])) {
+            //hack due to Laravel 7 adding unwanted .000 (milliseconds)
+            // return Carbon::parse($this->getEntry()['created_at'])->format('Y-m-d H:i:s');
+            return $this->getEntry()['created_at'];
+        } else {
+            return date('Y-m-d H:i:s');
+        }
     }
 
     public function getDeviceId(): ?string

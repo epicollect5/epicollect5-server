@@ -2,8 +2,10 @@
 
 namespace ec5\Providers;
 
+use Illuminate\Support\Carbon;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Blade;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,6 +24,7 @@ class AppServiceProvider extends ServiceProvider
 //        }
 
         Paginator::useBootstrapThree();
+        Blade::withoutComponentTags();
     }
 
     /**

@@ -2,13 +2,17 @@
 
 namespace ec5\Models\Counters;
 
+use DateTimeInterface;
 use DB;
 use ec5\DTO\EntryStructureDTO;
 use ec5\DTO\ProjectDTO;
+use ec5\Traits\Models\SerializeDates;
 use Illuminate\Database\Eloquent\Model;
 
 class BranchEntryCounter extends Model
 {
+    use SerializeDates;
+
     protected $table = 'branch_entries';
     //disable eloquent timestamps because we are using "uploaded_at"
     public $timestamps = false;

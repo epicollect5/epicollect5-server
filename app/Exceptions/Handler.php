@@ -17,6 +17,7 @@ use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Illuminate\Session\TokenMismatchException;
 use Redirect;
 use App;
+use Throwable;
 
 
 class Handler extends ExceptionHandler
@@ -62,7 +63,7 @@ class Handler extends ExceptionHandler
      * @return void
      * @throws Exception
      */
-    public function report(Exception $e)
+    public function report(Throwable $e)
     {
         parent::report($e);
     }
@@ -74,7 +75,7 @@ class Handler extends ExceptionHandler
      * @param Exception $e
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse|\Illuminate\Http\Response|\Symfony\Component\HttpFoundation\Response
      */
-    public function render($request, Exception $e)
+    public function render($request, Throwable $e)
     {
 
         // Handle not found exceptions

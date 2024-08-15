@@ -2,12 +2,14 @@
 
 namespace ec5\Models\System;
 
+use DateTimeInterface;
 use ec5\Traits\Eloquent\System\EntriesStats;
+use ec5\Traits\Models\SerializeDates;
 use Illuminate\Database\Eloquent\Model;
 
 class BranchEntriesTotals extends Model
 {
-    use EntriesStats;
+    use EntriesStats, SerializeDates;
 
     protected $table = 'branch_entries';
     public $timestamps = false;

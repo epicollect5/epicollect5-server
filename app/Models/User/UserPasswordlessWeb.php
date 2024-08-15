@@ -3,6 +3,8 @@
 namespace ec5\Models\User;
 
 use Carbon\Carbon;
+use DateTimeInterface;
+use ec5\Traits\Models\SerializeDates;
 use Exception;
 use Firebase\JWT\JWT as FirebaseJWT;
 use Hash;
@@ -11,6 +13,7 @@ use Log;
 
 class UserPasswordlessWeb extends Model
 {
+    use SerializeDates;
 
     const UPDATED_AT = null;
 

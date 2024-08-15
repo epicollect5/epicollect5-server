@@ -11,9 +11,9 @@ use Illuminate\Http\Request;
 use Config;
 
 use Illuminate\Contracts\Cookie\QueueingFactory as CookieJar;
+use Illuminate\Support\Str;
 use RuntimeException;
 use Cookie;
-use Str;
 use Route;
 
 class JwtGuard implements Guard

@@ -2,6 +2,7 @@
 
 namespace ec5\Libraries\Utilities;
 
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
 class Common

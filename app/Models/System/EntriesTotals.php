@@ -2,7 +2,9 @@
 
 namespace ec5\Models\System;
 
+use DateTimeInterface;
 use ec5\Traits\Eloquent\System\EntriesStats;
+use ec5\Traits\Models\SerializeDates;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -11,7 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class EntriesTotals extends Model
 {
-    use EntriesStats;
+    use EntriesStats, SerializeDates;
 
     /**
      * The table associated with the model.

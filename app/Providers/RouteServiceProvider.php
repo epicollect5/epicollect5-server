@@ -31,7 +31,7 @@ class RouteServiceProvider extends ServiceProvider
             if (!Arr::has($route->getAction(), 'guard')) {
                 return;
             }
-            $routeGuard = Arr::get($route->getAction(), 'guard');
+            $routeGuard = array_get($route->getAction(), 'guard');
             $this->app['auth']->resolveUsersUsing(function ($guard = null) use ($routeGuard) {
                 return $this->app['auth']->guard($routeGuard)->user();
             });

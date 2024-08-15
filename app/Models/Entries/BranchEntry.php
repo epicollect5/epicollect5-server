@@ -2,8 +2,10 @@
 
 namespace ec5\Models\Entries;
 
+use DateTimeInterface;
 use DB;
 use ec5\Traits\Eloquent\Entries;
+use ec5\Traits\Models\SerializeDates;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
 
@@ -26,7 +28,7 @@ use Illuminate\Database\Query\Builder;
  */
 class BranchEntry extends Model
 {
-    use Entries;
+    use Entries, SerializeDates;
 
     /**
      * @var mixed
@@ -34,6 +36,17 @@ class BranchEntry extends Model
     protected $table = 'branch_entries';
     //disable eloquent timestamps because we are using "uploaded_at"
     public $timestamps = false;
+
+    /**
+     * Casting to a datetime ISO 8601 without milliseconds
+     * due to legacy reasons
+     *
+     * @var array
+     */
+    protected $casts = [
+        'created_at' => 'datetime:Y-m-d H:i:s',
+        'uploaded_at' => 'datetime:Y-m-d H:i:s',
+    ];
 
     /**
      * @param $projectId

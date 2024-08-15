@@ -14,7 +14,9 @@ use Log;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Response;
-use Zend\Diactoros\Response as Psr7Response;
+
+//use Zend\Diactoros\Response as Psr7Response;
+use Nyholm\Psr7\Response as Psr7Response;
 
 class OAuthController
 {

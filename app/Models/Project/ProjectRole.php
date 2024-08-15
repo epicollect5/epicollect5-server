@@ -2,8 +2,10 @@
 
 namespace ec5\Models\Project;
 
+use DateTimeInterface;
 use DB;
 use ec5\Models\User\User;
+use ec5\Traits\Models\SerializeDates;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -14,6 +16,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class ProjectRole extends Model
 {
+    use SerializeDates;
+
     protected $table = 'project_roles';
     protected $fillable = ['project_id', 'user_id', 'role'];
 

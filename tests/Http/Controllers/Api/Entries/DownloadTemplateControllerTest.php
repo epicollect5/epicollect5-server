@@ -17,6 +17,7 @@ use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Str;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
+use Illuminate\Support\Arr;
 
 class DownloadTemplateControllerTest extends TestCase
 {

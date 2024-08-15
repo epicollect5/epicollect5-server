@@ -2,6 +2,8 @@
 
 namespace ec5\Models\OAuth;
 
+use DateTimeInterface;
+use ec5\Traits\Models\SerializeDates;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -15,5 +17,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class OAuthClient extends Model
 {
+    use SerializeDates;
+
     protected $table = 'oauth_clients';
 }

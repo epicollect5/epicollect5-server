@@ -2,13 +2,16 @@
 
 namespace ec5\Models\System;
 
+use DateTimeInterface;
+use ec5\Traits\Models\SerializeDates;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Log;
 
 class SystemStats extends Model
 {
-    //
+    use SerializeDates;
+
     protected $table = 'system_stats';
     public $timestamps = false;
     private $dailyStats;

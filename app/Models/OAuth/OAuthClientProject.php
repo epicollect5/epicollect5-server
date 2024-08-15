@@ -2,7 +2,9 @@
 
 namespace ec5\Models\OAuth;
 
+use DateTimeInterface;
 use DB;
+use ec5\Traits\Models\SerializeDates;
 use Illuminate\Database\Eloquent\Model;
 use Log;
 
@@ -15,6 +17,8 @@ use Log;
  */
 class OAuthClientProject extends Model
 {
+    use SerializeDates;
+
     protected $table = 'oauth_client_projects';
 
     public static function getApps($projectId)

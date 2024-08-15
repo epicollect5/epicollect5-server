@@ -3,13 +3,15 @@
 namespace ec5\Models\System;
 
 use Carbon\Carbon;
+use DateTimeInterface;
 use DB;
 use ec5\Traits\Eloquent\System\ProjectsStats;
+use ec5\Traits\Models\SerializeDates;
 use Illuminate\Database\Eloquent\Model;
 
 class ProjectsTotals extends Model
 {
-    use ProjectsStats;
+    use ProjectsStats, SerializeDates;
 
     protected $table = 'projects';
     protected $fillable = ['slug'];

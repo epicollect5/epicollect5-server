@@ -9,6 +9,7 @@ use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 use Image;
 use Tests\Generators\ProjectDefinitionGenerator;

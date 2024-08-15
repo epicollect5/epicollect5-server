@@ -2,7 +2,10 @@
 
 namespace ec5\Http\Controllers\Api\Entries\View;
 
+use ec5\Libraries\Utilities\DateFormatConverter;
 use Exception;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\JsonResponse;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Response;
@@ -125,15 +128,7 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
         //get the newest and oldest dates of this subset (before pagination occurs)
         //and set the format to be like the one from JS for consistency
         //like 2020-12-10T11:31:30.000Z
-        if ($query->first() !== null) {
-            $oldest = str_replace(' ', 'T', $query->min('created_at')) . '.000Z';
-            $newest = str_replace(' ', 'T', $query->max('created_at')) . '.000Z';
-        } else {
-            //no entries, return today's date as ISO string
-            $now = Carbon::now()->toIso8601String();
-            $oldest = str_replace('+00:00', '.000Z', $now);
-            $newest = str_replace('+00:00', '.000Z', $now);
-        }
+        $dates = DateFormatConverter::getNewestAndOldestFormatted($query);
 
         $entryData = $query->paginate($options['per_page']);
 
@@ -175,7 +170,7 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
         // Append the required options to the LengthAwarePaginator
         $this->appendOptions($entryData, $options);
         // Get Meta and Links
-        $meta = $this->getMeta($entryData, $newest, $oldest);
+        $meta = $this->getMeta($entryData, $dates['newest'], $dates['oldest']);
         $links = $this->getLinks($entryData);
 
         return Response::apiData($data, $meta, $links);
@@ -183,7 +178,6 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
 
     /**
      * @param array $params
-     * @return JsonResponse|StreamedResponse
      */
     private function sendEntriesCSV(array $params)
     {
@@ -240,15 +234,7 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
 
         //get the newest and oldest dates of this subset (before pagination occurs)
         //and set the format to be like the one from JS for consistency
-        if ($branchEntries->first() !== null) {
-            $oldest = str_replace(' ', 'T', $branchEntries->min('created_at')) . '.000Z';
-            $newest = str_replace(' ', 'T', $branchEntries->max('created_at')) . '.000Z';
-        } else {
-            //no entries, return today's date as ISO string
-            $now = Carbon::now()->toIso8601String();
-            $oldest = str_replace('+00:00', '.000Z', $now);
-            $newest = str_replace('+00:00', '.000Z', $now);
-        }
+        $dates = DateFormatConverter::getNewestAndOldestFormatted($branchEntries);
 
         $branchEntriesPaginated = $branchEntries->paginate($params['per_page']);
 
@@ -286,7 +272,7 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
         // Append the required options to the LengthAwarePaginator
         $this->appendOptions($branchEntriesPaginated, $params);
         // Get Meta and Links
-        $meta = $this->getMeta($branchEntriesPaginated, $newest, $oldest);
+        $meta = $this->getMeta($branchEntriesPaginated, $dates['newest'], $dates['oldest']);
         $links = $this->getLinks($branchEntriesPaginated);
 
         return Response::apiData($data, $meta, $links);
@@ -294,7 +280,7 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
 
     /**
      * @param array $params
-     * @return JsonResponse|StreamedResponse
+     * @return Application|ResponseFactory|JsonResponse|\Illuminate\Http\Response
      */
     private function sendBranchEntriesCSV(array $params)
     {

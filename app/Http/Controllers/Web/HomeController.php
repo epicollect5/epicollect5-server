@@ -7,7 +7,9 @@ use ec5\Libraries\Utilities\Common;
 use ec5\Models\Project\Project;
 use ec5\Models\System\SystemStats;
 use Exception;
+use Illuminate\Contracts\View\Factory;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 use Log;
 
 class HomeController extends Controller
@@ -31,8 +33,7 @@ class HomeController extends Controller
     /**
      * Show home page (available to all users)
      *
-     * @param Request $request
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @return Factory|View
      */
     public function index()
     {

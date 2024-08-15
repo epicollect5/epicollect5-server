@@ -11,6 +11,7 @@ use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use Faker\Factory as Faker;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use League\Csv\Exception;
 use Tests\Generators\ProjectDefinitionGenerator;

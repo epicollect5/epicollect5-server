@@ -3,11 +3,15 @@
 namespace ec5\Models\System;
 
 use Carbon\Carbon;
+use DateTimeInterface;
 use DB;
+use ec5\Traits\Models\SerializeDates;
 use Illuminate\Database\Eloquent\Model;
 
 class UsersTotals extends Model
 {
+    use SerializeDates;
+
     protected $table = 'users';
 
     public function getTotal(): \Illuminate\Support\Collection

@@ -2,14 +2,18 @@
 
 namespace ec5\Models\Project;
 
+use DateTimeInterface;
 use DB;
 use ec5\DTO\ProjectDTO;
+use ec5\Traits\Models\SerializeDates;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Log;
 
 class Project extends Model
 {
+    use SerializeDates;
+
     protected $table = 'projects';
     protected $projectStatsTable = 'project_stats';
     protected $fillable = ['slug'];
@@ -41,7 +45,9 @@ class Project extends Model
             'project_stats.id AS stats_id',
             'project_stats.*',
             'project_structures.*',
-            'project_structures.updated_at as structure_last_updated',
+            DB::raw('DATE_FORMAT(project_structures.updated_at, "%Y-%m-%d %H:%i:%s") as structure_last_updated'),
+            DB::raw('DATE_FORMAT(projects.created_at, "%Y-%m-%d %H:%i:%s") as created_at'),
+            DB::raw('DATE_FORMAT(projects.updated_at, "%Y-%m-%d %H:%i:%s") as updated_at'),
             'project_structures.id as structure_id'
         );
 

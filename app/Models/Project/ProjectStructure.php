@@ -3,7 +3,9 @@
 namespace ec5\Models\Project;
 
 use Carbon\Carbon;
+use DateTimeInterface;
 use ec5\DTO\ProjectDTO;
+use ec5\Traits\Models\SerializeDates;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Log;
@@ -18,6 +20,8 @@ use Log;
  */
 class ProjectStructure extends Model
 {
+    use SerializeDates;
+
     protected $table = 'project_structures';
     public $timestamps = false; // Disable automatic handling of both timestamps
     const CREATED_AT = null;    // Disable created_at
@@ -27,7 +31,6 @@ class ProjectStructure extends Model
     protected $casts = [
         'updated_at' => 'datetime',
     ];
-
 
     public $guarded = [];
 

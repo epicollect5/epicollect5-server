@@ -28,7 +28,6 @@ $(document).ready(function () {
      * @returns {string}
      */
     var getXsrfToken = function () {
-
         var cookies = document.cookie.split(';');
         var token = '';
 
@@ -40,6 +39,7 @@ $(document).ready(function () {
         }
         return token;
     };
+
 
     $.ajaxSetup({
         headers: {

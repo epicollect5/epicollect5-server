@@ -18,6 +18,7 @@ use ec5\Traits\Assertions;
 use Exception;
 use Faker\Factory as Faker;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Ramsey\Uuid\Uuid;
 
@@ -342,9 +343,8 @@ class EntryGenerator
                     $sampleAudioFilePath,  // Path to the temporary file
                     $filename,   // File name
                     config('epicollect.media.content_type.audio'),   // MIME type
-                    filesize($sampleAudioFilePath),
                     null,
-                    true// Test mode (set to true)
+                    true
                 );
                 break;
             case config('epicollect.strings.inputs_type.photo'):

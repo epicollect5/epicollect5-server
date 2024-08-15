@@ -10,6 +10,7 @@ use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use ec5\Traits\Assertions;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Arr;
 use League\Csv\Exception;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;

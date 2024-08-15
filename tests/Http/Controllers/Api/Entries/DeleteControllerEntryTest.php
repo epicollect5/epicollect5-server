@@ -16,6 +16,7 @@ use Ramsey\Uuid\Uuid;
 use Tests\Generators\EntryGenerator;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
+use Illuminate\Support\Arr;
 
 class DeleteControllerEntryTest extends TestCase
 {

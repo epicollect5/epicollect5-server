@@ -3,11 +3,14 @@
 namespace ec5\Models\User;
 
 use Carbon\Carbon;
+use DateTimeInterface;
+use ec5\Traits\Models\SerializeDates;
 use Hash;
 use Illuminate\Database\Eloquent\Model;
 
 class UserVerify extends Model
 {
+    use SerializeDates;
 
     const UPDATED_AT = null;
 

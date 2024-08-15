@@ -2,9 +2,12 @@
 
 namespace ec5\Models\Project;
 
+use DateTimeInterface;
 use DB;
+use ec5\Traits\Models\SerializeDates;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Log;
 
 /**
@@ -17,6 +20,8 @@ use Log;
  */
 class ProjectStats extends Model
 {
+    use SerializeDates;
+
     protected $table = 'project_stats';
     public $timestamps = false;
     public $guarded = [];
@@ -88,8 +93,8 @@ class ProjectStats extends Model
         //loop each form and get the overall total
         foreach ($stats as $stat) {
 
-            $firstEntryCreated = $stat->first_entry_created;
-            $lastEntryCreated = $stat->last_entry_created;
+            $firstEntryCreated = Carbon::parse($stat->first_entry_created)->format('Y-m-d H:i:s');
+            $lastEntryCreated = Carbon::parse($stat->last_entry_created)->format('Y-m-d H:i:s');
 
             $totalCount += $stat->total_entries;
             $statsCount[$stat->form_ref] = [
@@ -124,10 +129,14 @@ class ProjectStats extends Model
 
         $statsCount = [];
         foreach ($stats as $stat) {
+
+            $firstEntryCreated = Carbon::parse($stat->first_entry_created)->format('Y-m-d H:i:s');
+            $lastEntryCreated = Carbon::parse($stat->last_entry_created)->format('Y-m-d H:i:s');
+
             $statsCount[$stat->owner_input_ref] = [
                 'count' => $stat->total_entries,
-                'first_entry_created' => $stat->first_entry_created,
-                'last_entry_created' => $stat->last_entry_created
+                'first_entry_created' => $firstEntryCreated,
+                'last_entry_created' => $lastEntryCreated
             ];
         }
 

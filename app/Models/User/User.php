@@ -2,6 +2,8 @@
 
 namespace ec5\Models\User;
 
+use DateTimeInterface;
+use ec5\Traits\Models\SerializeDates;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
@@ -17,7 +19,7 @@ class User extends Model implements
     CanResetPasswordContract,
     AuthenticatableContract
 {
-    use Authenticatable, Authorizable, CanResetPassword, HasApiTokens, Notifiable;
+    use Authenticatable, Authorizable, CanResetPassword, HasApiTokens, Notifiable, SerializeDates;
 
     protected $table = 'users';
     protected $fillable = ['name', 'last_name', 'email', 'password', 'avatar', 'state', 'server_role'];

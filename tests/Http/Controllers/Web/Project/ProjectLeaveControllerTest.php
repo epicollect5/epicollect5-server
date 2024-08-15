@@ -72,7 +72,7 @@ class ProjectLeaveControllerTest extends TestCase
         // Access the 'errors' array directly
         $errorsArray = $errors->get('errors');
         // Assert that it is an array and contains 'ec5_91'
-        $this->assertInternalType('array', $errorsArray);
+        $this->assertIsArray($errorsArray);
         $this->assertEquals('ec5_91', $errorsArray[0]);
     }
 

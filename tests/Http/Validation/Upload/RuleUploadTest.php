@@ -40,7 +40,7 @@ use Tests\TestCase;
 
 class RuleUploadTest extends TestCase
 {
-    public function setUp():void
+    public function setUp(): void
     {
         parent::setUp();
         //create fake user for testing
