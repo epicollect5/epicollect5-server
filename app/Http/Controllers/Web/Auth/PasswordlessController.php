@@ -17,6 +17,7 @@ use ec5\Services\User\UserService;
 use ec5\Traits\Auth\ReCaptchaValidation;
 use Exception;
 use Firebase\JWT\JWT as FirebaseJwt;
+use Firebase\JWT\Key;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Log;
@@ -254,7 +255,10 @@ class PasswordlessController extends AuthController
         $decoded = null;
 
         try {
-            $decoded = (array)FirebaseJwt::decode($token, $secretKey, array('HS256'));
+            $decoded = (array)FirebaseJwt::decode(
+                $token,
+                new Key($secretKey, 'HS256')
+            );
         } catch (Exception $e) {
             Log::error('Error decoding jwt-passwordless token to login', ['exception' => $e->getMessage()]);
         }

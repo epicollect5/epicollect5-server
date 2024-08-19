@@ -47,7 +47,7 @@ class Kernel extends HttpKernel
      *
      * @var array
      */
-    protected $routeMiddleware = [
+    protected $middlewareAliases = [
         'auth' => \ec5\Http\Middleware\Authenticate::class,
         'unverified' => \ec5\Http\Middleware\Unverified::class,
         'guest' => \ec5\Http\Middleware\RedirectIfAuthenticated::class,

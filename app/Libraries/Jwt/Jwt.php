@@ -1,5 +1,6 @@
 <?php namespace ec5\Libraries\Jwt;
 
+use Firebase\JWT\Key;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 
 use Firebase\JWT\JWT as FirebaseJwt;
@@ -136,8 +137,8 @@ class Jwt
      * Verify a JWT token.
      *
      * @param $token
-     * @param $returnClaim
-     * @return bool|string
+     * @param bool $returnClaim
+     * @return array|bool
      */
     public function verifyToken($token, $returnClaim = false)
     {
@@ -155,8 +156,10 @@ class Jwt
 
         // Attempt to decode the jwt token
         try {
-
-            $decodedToken = FirebaseJwt::decode($token, $secretKey, ['HS256']);
+            $decodedToken = (array)FirebaseJwt::decode(
+                $token,
+                new Key($secretKey, 'HS256')
+            );
 
             // token verified
             if ($returnClaim) {

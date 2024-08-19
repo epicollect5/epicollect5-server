@@ -7,6 +7,7 @@ use DateTimeInterface;
 use ec5\Traits\Models\SerializeDates;
 use Exception;
 use Firebase\JWT\JWT as FirebaseJWT;
+use Firebase\JWT\Key;
 use Illuminate\Database\Eloquent\Model;
 use Log;
 
@@ -32,7 +33,10 @@ class UserResetPassword extends Model
         $secretKey = $jwtConfig['secret_key'];
 
         try {
-            $decodedStored = (array)FirebaseJwt::decode($this->attributes['token'], $secretKey, array('HS256'));
+            $decodedStored = (array)FirebaseJwt::decode(
+                $this->attributes['token'],
+                new Key($secretKey, 'HS256')
+            );
         } catch (Exception $e) {
             Log::error('Error decoding jwt-forgot', ['exception' => $e->getMessage()]);
             return false;
