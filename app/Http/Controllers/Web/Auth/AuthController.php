@@ -94,7 +94,7 @@ class AuthController extends Controller
         //if we are logging out from the dataviewer, send user back there
         // 1 - private project -> login + dataviewer
         // 2 - public project -> dataviewer (without add entry button)
-        $parts = explode('/', $backlink);
+        $parts = explode('/', $backlink ?? '');
         //check for dataviewer url segments
         if (end($parts) === 'data' || end($parts) === 'data?restore=1') {
             array_pop($parts);

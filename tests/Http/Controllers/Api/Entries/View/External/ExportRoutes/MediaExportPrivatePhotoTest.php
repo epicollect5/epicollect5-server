@@ -214,7 +214,7 @@ class MediaExportPrivatePhotoTest extends TestCase
         // Encode the image as JPEG or other formats
         $imageData = (string)$image->encode('jpg');
         Storage::disk('entry_original')->put($project->ref . '/' . $filename, $imageData);
-        $imagePath = Storage::disk('entry_original')->getAdapter()->getPathPrefix() . $project->ref . '/' . $filename;
+        $imagePath = Storage::disk('entry_original')->path('') . $project->ref . '/' . $filename;
 
         //assert row is created
         $this->assertCount(

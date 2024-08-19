@@ -69,7 +69,7 @@ class UploadWebController extends UploadControllerBase
         }
 
         $disk = Storage::disk('temp');
-        $rootFolder = $disk->getDriver()->getAdapter()->getPathPrefix();
+        $rootFolder = $disk->path('');
 
         // Get all media for this particular entry by looping the inputs
         foreach ($inputs as $inputRef) {

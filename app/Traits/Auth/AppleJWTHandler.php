@@ -19,7 +19,7 @@ trait AppleJWTHandler
         $jwks = ['keys' => $keys];
 
         //get kid from jwy header
-        $header_base_64 = explode('.', $identityToken)[0];
+        $header_base_64 = explode('.', $identityToken ?? '')[0];
         $kid = JWTApple::jsonDecode(JWTApple::urlsafeB64Decode($header_base_64));
         $kid = $kid->kid;
 

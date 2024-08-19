@@ -512,7 +512,7 @@ class DownloadTemplateControllerTest extends TestCase
 
     private function assertCSVContentForm($content, $mapIndex, $form)
     {
-        $headers = explode(',', $content);
+        $headers = explode(',', $content ?? '');
         //get mapping
         $projectStructure = ProjectStructure::where('project_id', $this->project->id)->first();
         $mapping = json_decode($projectStructure->project_mapping, true);
@@ -523,7 +523,7 @@ class DownloadTemplateControllerTest extends TestCase
 
     private function assertCSVContentBranch($content, $mapIndex, $form, $branchRef, $branchIndex)
     {
-        $headers = explode(',', $content);
+        $headers = explode(',', $content ?? '');
         //get mapping
         $projectStructure = ProjectStructure::where('project_id', $this->project->id)->first();
         $mapping = json_decode($projectStructure->project_mapping, true);

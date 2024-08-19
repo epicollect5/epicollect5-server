@@ -56,8 +56,8 @@ class RuleTimeInput extends RuleInputBase
         //Let's check if Y-m-d is actually a valid date in the history of time
         $timePart = '';
         try {
-            $timePart = explode('T', $answer)[1];
-            $timePart = explode('.', $timePart)[0];
+            $timePart = explode('T', $answer ?? '')[1];
+            $timePart = explode('.', $timePart ?? '')[0];
         } catch (\Exception $e) {
             Log::error('Time wrong format uploaded - validateTime failed', [
                 'project slug' => $project->slug,

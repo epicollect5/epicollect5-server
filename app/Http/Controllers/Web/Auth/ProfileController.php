@@ -185,7 +185,7 @@ class ProfileController extends Controller
             $jwks = ['keys' => $keys];
 
             //get kid from jwy header
-            $header_base_64 = explode('.', $token)[0];
+            $header_base_64 = explode('.', $token ?? '')[0];
             $kid = JWTApple::jsonDecode(JWTApple::urlsafeB64Decode($header_base_64));
             $kid = $kid->kid;
 

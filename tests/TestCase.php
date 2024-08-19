@@ -83,7 +83,7 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
         // Mark the test as failed with expected and actual values
         $filePath = str_replace(base_path(), '', $e->getFile());
         $stackTrace = $e->getTraceAsString();
-        $stackTraceLines = explode("\n", $stackTrace);
+        $stackTraceLines = explode("\n", $stackTrace ?? '');
 
         // Log error for failed assertion
         $this->fail("Error in {$filePath}:\n\n{$e->getMessage()}");

@@ -224,7 +224,6 @@ class JwtGuard implements Guard
     /**
      * Get the jwt header in the Authorization header format
      *
-     * @return string
      */
     public function authorizationResponse()
     {
@@ -549,4 +548,9 @@ class JwtGuard implements Guard
 
     }
 
+    public function hasUser()
+    {
+        // Return true if a user is authenticated
+        return !is_null($this->user);
+    }
 }

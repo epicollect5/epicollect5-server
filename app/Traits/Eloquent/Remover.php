@@ -42,8 +42,7 @@ trait Remover
             foreach ($drivers as $driver) {
                 // Get disk, path prefix and all directories for this driver
                 $disk = Storage::disk($driver);
-                $pathPrefix = $disk->getDriver()->getAdapter()->getPathPrefix();
-                // \Log::info('delete path ->' . $pathPrefix . $projectRef);
+                $pathPrefix = $disk->path('');
                 // Note: need to use File facade here, as Storage doesn't delete
                 File::deleteDirectory($pathPrefix . $projectRef);
             }
@@ -102,7 +101,7 @@ trait Remover
                 foreach ($drivers as $driver) {
                     // Get disk, path prefix and all directories for this driver
                     $disk = Storage::disk($driver);
-                    $pathPrefix = $disk->getDriver()->getAdapter()->getPathPrefix();
+                    $pathPrefix = $disk->path('');
                     // Note: need to use File facade here, as Storage doesn't delete
                     File::deleteDirectory($pathPrefix . $projectRef);
                 }

@@ -15,6 +15,7 @@ use ec5\Traits\Assertions;
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Passport\ClientRepository;
 use Tests\Generators\EntryGenerator;
@@ -228,7 +229,7 @@ class MediaExportPrivateAudioTest extends TestCase
         ]);
 
         $queryString = '?type=audio&name=' . $filename . '&format=audio';
-
+        Log::info(__METHOD__, ['uri' => $entriesURL . $project->slug . $queryString]);
         try {
             $response = $entriesClient->request('GET', $entriesURL . $project->slug . $queryString);
 

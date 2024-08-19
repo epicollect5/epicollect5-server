@@ -27,7 +27,7 @@ class RuleBulkImportUsers extends ValidationBase
         );
         $this->messages['in'] = 'ec5_98';
         //role must be known by the system
-        $this->rules['role'] = 'required|in:' . implode($roles, ',');
+        $this->rules['role'] = 'required|in:' . implode(',', $roles);
     }
 
     /**

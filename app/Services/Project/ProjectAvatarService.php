@@ -30,8 +30,8 @@ class ProjectAvatarService
     {
         try {
             //get thumb and mobile path
-            $thumbPathPrefix = Storage::disk('project_thumb')->getAdapter()->getPathPrefix();
-            $mobilePathPrefix = Storage::disk('project_mobile_logo')->getAdapter()->getPathPrefix();
+            $thumbPathPrefix = Storage::disk('project_thumb')->path('');
+            $mobilePathPrefix = Storage::disk('project_mobile_logo')->path('');
             //create folder for this project ref
             Storage::disk($this->drivers['project_thumb'])->makeDirectory($projectRef);
             Storage::disk($this->drivers['project_mobile_logo'])->makeDirectory($projectRef);

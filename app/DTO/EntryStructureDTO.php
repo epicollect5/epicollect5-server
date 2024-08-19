@@ -4,6 +4,7 @@ namespace ec5\DTO;
 
 use Carbon\Carbon;
 use Hash;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class EntryStructureDTO
@@ -360,6 +361,9 @@ class EntryStructureDTO
      */
     public function addPossibleAnswer($possibleAnswer)
     {
+        if (!is_string($possibleAnswer)) {
+            throw new \InvalidArgumentException('The possible answer_ref must be a string.');
+        }
         $this->possibleAnswers[$possibleAnswer] = 1;
     }
 

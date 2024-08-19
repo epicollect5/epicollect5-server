@@ -92,7 +92,7 @@ class DownloadController
     {
         // Setup storage
         $storage = Storage::disk('entries_zip');
-        $storagePrefix = $storage->getDriver()->getAdapter()->getPathPrefix();
+        $storagePrefix = $storage->path('');
         $projectDir = $storagePrefix . $this->requestedProject()->ref;
         //append user ID to handle concurrency -> MUST be logged in to download!
         return $projectDir . '/' . $user->id;

@@ -126,7 +126,7 @@ class DeleteEntryService
         foreach ($drivers as $driver) {
             // Get disk, path prefix and all directories for this driver
             $disk = Storage::disk($driver);
-            $pathPrefix = $disk->getDriver()->getAdapter()->getPathPrefix();
+            $pathPrefix = $disk->path('');
 
             try {
                 $directory = new DirectoryIterator($pathPrefix . $projectRef);

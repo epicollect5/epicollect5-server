@@ -15,7 +15,7 @@ class RuleProjectRole extends ValidationBase
         // Allowed roles that can be added for a user
         // imp: 'creator' is not a role that can be assigned after project creation
         $roles = config('epicollect.permissions.projects.roles.creator');
-        $this->rules['role'] = 'required|in:' . implode($roles, ',');
+        $this->rules['role'] = 'required|in:' . implode(',', $roles);
     }
 
     /**

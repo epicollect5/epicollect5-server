@@ -66,5 +66,6 @@ deleted_files=$(comm -23 <(echo "$before_files" | sort) <(echo "$after_files" | 
 print_message "$BLUE" "Deleted files:"
 echo "$deleted_files"
 
+
 # Log end time
 print_message "$GREEN" "Cache clearing process completed at $(date)"

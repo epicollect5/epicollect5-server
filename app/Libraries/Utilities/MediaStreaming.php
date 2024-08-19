@@ -42,7 +42,7 @@ class MediaStreaming
         ob_get_clean();
 
         //set either audio or video
-        header("Content-Type: ".$this->type."/mp4");
+        header("Content-Type: " . $this->type . "/mp4");
 
         header("Cache-Control: max-age=2592000, public");
         header("Expires: " . gmdate('D, d M Y H:i:s', time() + 2592000) . ' GMT');
@@ -57,7 +57,7 @@ class MediaStreaming
             $c_start = $this->start;
             $c_end = $this->end;
 
-            list(, $range) = explode('=', $_SERVER['HTTP_RANGE'], 2);
+            list(, $range) = explode('=', $_SERVER['HTTP_RANGE'] ?? '', 2);
             if (strpos($range, ',') !== false) {
                 header('HTTP/1.1 416 Requested Range Not Satisfiable');
                 header("Content-Range: bytes $this->start-$this->end/$this->size");
@@ -66,7 +66,7 @@ class MediaStreaming
             if ($range == '-') {
                 $c_start = $this->size - substr($range, 1);
             } else {
-                $range = explode('-', $range);
+                $range = explode('-', $range ?? '');
                 $c_start = $range[0];
 
                 $c_end = (isset($range[1]) && is_numeric($range[1])) ? $range[1] : $c_end;

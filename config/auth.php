@@ -155,7 +155,7 @@ return [
     | Supported: "local", "google", "ldap", "apple", "passwordless"
     */
 
-    'auth_methods' => explode(',', env('AUTH_METHODS')),
+    'auth_methods' => explode(',', env('AUTH_METHODS') ?? ''),
 
 
     /**
@@ -172,7 +172,7 @@ return [
      */
     'auth_web_enabled' => env('AUTH_WEB_ENABLED', true),
 
-    'ip_whitelist' => explode(',', env('IP_WHITELIST')),
+    'ip_whitelist' => explode(',', env('IP_WHITELIST') ?? ''),
 
     'bcrypt_rounds' => env('BCRYPT_ROUNDS', 12),
 

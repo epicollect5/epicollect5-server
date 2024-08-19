@@ -128,13 +128,11 @@ class DownloadSubsetController
 
         //get handle of empty file just created
         $CSVfilepath = Storage::disk('temp')
-                ->getAdapter()
-                ->getPathPrefix()
+                ->path('')
             . 'subset/' . $projectRef . '/' . $csvFilename;
 
         $zipFilepath = Storage::disk('temp')
-                ->getAdapter()
-                ->getPathPrefix()
+                ->path('')
             . 'subset/' . $projectRef . '/' . $zipFilename;
 
         //create empty zip file

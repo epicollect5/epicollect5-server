@@ -61,11 +61,7 @@ class EntryGenerator
                     $numberOfWords = mt_rand(1, 10);
                     $randomPhrase = '';
                     for ($i = 0; $i < $numberOfWords; $i++) {
-                        if ($this->randomLocale !== 'de_DE') {
-                            $randomPhrase .= ' ' . $this->faker->catchPhrase;
-                        } else {
-                            $randomPhrase .= ' ' . $this->faker->sentence;
-                        }
+                        $randomPhrase .= ' ' . $this->faker->sentence;
                     }
                     $randomPhrase .= ' ' . self::SYMBOLS[mt_rand(0, count(self::SYMBOLS) - 1)];
                     $randomPhrase = str_replace('>', '\ufe65', $randomPhrase);

@@ -71,15 +71,22 @@ class MediaController
             // Attempt to retrieve media
             try {
                 // Use the provided 'format' as the driver
-                $file = Storage::disk($format)->get($this->requestedProject()->ref . '/' . $params['name']);
+                $path = $this->requestedProject()->ref . '/' . $params['name'];
+                // Check if the path exists
+                if (!Storage::disk($format)->exists($path)) {
+                    throw new FileNotFoundException("File does not exist at path: " . $path);
+                }
+                $file = Storage::disk($format)->get($path);
                 //get storage real path
-                $filepath = Storage::disk($format)->getAdapter()->getPathPrefix();
+                $storageBasePath = Storage::disk($format)->path('');
                 //get file real path
-                $filepath = $filepath . $this->requestedProject()->ref . '/' . $params['name'];
+                $realFilepath = $storageBasePath . $this->requestedProject()->ref . '/' . $params['name'];
+
+
                 //stream only audio and video
                 if ($inputType !== config('epicollect.strings.inputs_type.photo')) {
                     //serve as 206  partial response
-                    $stream = new MediaStreaming($filepath, $inputType);
+                    $stream = new MediaStreaming($realFilepath, $inputType);
                     $stream->start();
                 } else {
                     //photo response is the usual 200
@@ -97,6 +104,7 @@ class MediaController
                 }
 
                 //File not found i.e., not synced yet, send 404 for audio and video
+
                 $error['api-media-controller'] = ['ec5_69'];
                 return Response::apiErrorCode(404, $error);
             } catch (Exception $e) {
@@ -148,7 +156,7 @@ class MediaController
                 // Use the provided 'format' as the driver
                 $file = Storage::disk('temp')->get($inputType . '/' . $this->requestedProject()->ref . '/' . $params['name']);
                 //get storage real path
-                $filepath = Storage::disk('temp')->getAdapter()->getPathPrefix();
+                $filepath = Storage::disk('temp')->path('');
                 //get file real path
                 $filepath = $filepath . $inputType . '/' . $this->requestedProject()->ref . '/' . $params['name'];
                 //stream only audio and video (not in unit tests!)

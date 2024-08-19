@@ -104,6 +104,7 @@ class PasswordlessController extends AuthController
         try {
             Mail::to($email)->send(new UserPasswordlessApiMail($code));
         } catch (Exception $e) {
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             return redirect()->back()->withErrors([
                 'exception' => $e->getMessage(),
                 'passwordless-request-code' => ['ec5_116']

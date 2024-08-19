@@ -416,18 +416,15 @@ class SearchToolsController extends Controller
 
         //get handle of empty file just created
         $CSVfilepathOver = Storage::disk('debug')
-                ->getAdapter()
-                ->getPathPrefix()
+                ->path('')
             . $csvFilenameOver;
 
         $CSVfilepathUnder = Storage::disk('debug')
-                ->getAdapter()
-                ->getPathPrefix()
+                ->path('')
             . $csvFilenameUnder;
 
         $CSVfilepathOverall = Storage::disk('debug')
-                ->getAdapter()
-                ->getPathPrefix()
+                ->path('')
             . $csvFilenameOverall;
 
         //write to file one row at a time to keep memory usage low
@@ -778,8 +775,7 @@ class SearchToolsController extends Controller
         $zipFilename = 'storage-info.zip';
         $zip = new ZipArchive();
         $pathDebugDir = Storage::disk('debug')
-            ->getAdapter()
-            ->getPathPrefix();
+            ->path('');
         $zipFilepath = $pathDebugDir . $zipFilename;
 
         //create empty zip file

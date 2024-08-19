@@ -54,7 +54,7 @@ class ImageToolsController extends Controller
                 }
 
                 // Get the file source path
-                $fileSourcePath = $rootDisk->getDriver()->getAdapter()->getPathPrefix() . $filePath;
+                $fileSourcePath = $rootDisk->path('') . $filePath;
 
                 // Get the image width/height
                 list($width, $height) = getimagesize($fileSourcePath);
@@ -145,10 +145,10 @@ class ImageToolsController extends Controller
                     $disk = Storage::disk($driver);
 
                     // Get the file source path
-                    $fileSourcePath = $rootDisk->getDriver()->getAdapter()->getPathPrefix() . $filePath;
+                    $fileSourcePath = $rootDisk->path('') . $filePath;
 
                     // Get the file destination path
-                    $fileDestPath = $disk->getDriver()->getAdapter()->getPathPrefix() . $filePath;
+                    $fileDestPath = $disk->path('') . $filePath;
 
                     // Get original image
                     $imageOriginal = new UploadedFile($fileSourcePath, $fileName);
