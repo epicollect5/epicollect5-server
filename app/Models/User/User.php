@@ -2,7 +2,6 @@
 
 namespace ec5\Models\User;
 
-use DateTimeInterface;
 use ec5\Traits\Models\SerializeDates;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\Passwords\CanResetPassword;

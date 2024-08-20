@@ -19,7 +19,7 @@ use Tests\Generators\EntryGenerator;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 
-abstract class ViewEntriesBaseControllerTest extends TestCase
+class ViewEntriesBaseControllerTest extends TestCase
 {
     use DatabaseTransactions, Assertions;
 

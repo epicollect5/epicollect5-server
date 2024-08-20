@@ -27,7 +27,8 @@ print_message "$GREEN" "Starting cache clearing process at $(date)"
 
 # Log the status of each command and file operations
 
-print_message "$YELLOW" "Skipping composer dump-autoload - Run manually if needed, check permissions in framework/cache for any folder with root instead of www-data ownership"
+print_message "$YELLOW" "Running composer dump-autoload"
+composer dump-autoload
 
 print_message "$YELLOW" "Running php artisan clear-compiled..."
 php artisan clear-compiled

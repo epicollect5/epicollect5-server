@@ -10,8 +10,8 @@ use Illuminate\Support\Facades\App;
 use Response;
 use Storage;
 use Log;
-use ec5\Libraries\Utilities\MediaStreaming;
 use ec5\Traits\Requests\RequestAttributes;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class MediaController
 {
@@ -29,8 +29,7 @@ class MediaController
 
     /**
      * @param ruleMedia $ruleMedia
-     * @return JsonResponse|\Illuminate\Http\Response
-     * @throws FileNotFoundException
+     * @return JsonResponse|\Illuminate\Http\Response|StreamedResponse|null
      */
     public function getMedia(RuleMedia $ruleMedia)
     {
@@ -78,16 +77,15 @@ class MediaController
                 }
                 $file = Storage::disk($format)->get($path);
                 //get storage real path
-                $storageBasePath = Storage::disk($format)->path('');
+                $storagePathPrefix = Storage::disk($format)->path('');
                 //get file real path
-                $realFilepath = $storageBasePath . $this->requestedProject()->ref . '/' . $params['name'];
+                $realFilepath = $storagePathPrefix . $this->requestedProject()->ref . '/' . $params['name'];
 
 
                 //stream only audio and video
                 if ($inputType !== config('epicollect.strings.inputs_type.photo')) {
-                    //serve as 206  partial response
-                    $stream = new MediaStreaming($realFilepath, $inputType);
-                    $stream->start();
+                    //serve as 206  partial response to load file faster
+                    return Response::toMediaStream(request(), $realFilepath, $inputType);
                 } else {
                     //photo response is the usual 200
                     $response = Response::make($file);
@@ -104,7 +102,6 @@ class MediaController
                 }
 
                 //File not found i.e., not synced yet, send 404 for audio and video
-
                 $error['api-media-controller'] = ['ec5_69'];
                 return Response::apiErrorCode(404, $error);
             } catch (Exception $e) {
@@ -158,13 +155,11 @@ class MediaController
                 //get storage real path
                 $filepath = Storage::disk('temp')->path('');
                 //get file real path
-                $filepath = $filepath . $inputType . '/' . $this->requestedProject()->ref . '/' . $params['name'];
+                $realFilepath = $filepath . $inputType . '/' . $this->requestedProject()->ref . '/' . $params['name'];
                 //stream only audio and video (not in unit tests!)
-                if ($inputType !== config('epicollect.strings.inputs_type.photo') && !(App::environment() === 'testing')) {
+                if ($inputType !== config('epicollect.strings.inputs_type.photo')) {
                     //in tests, just return a 200 response as there are issue with headers()
-                    //todo: re-assess after updating laravel and phpunit
-                    $stream = new MediaStreaming($filepath, $inputType);
-                    $stream->start();
+                    return Response::toMediaStream(request(), $realFilepath, $inputType);
                 } else {
                     //photo response is as usual
                     $response = Response::make($file);

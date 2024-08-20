@@ -1,11 +1,8 @@
 <?php namespace ec5\Libraries\Jwt;
 
 use Firebase\JWT\Key;
-use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
-
 use Firebase\JWT\JWT as FirebaseJwt;
 use Exception;
-use Config;
 
 class Jwt
 {

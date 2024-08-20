@@ -25,7 +25,7 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
      *
      * @var string
      */
-    protected $baseUrl = 'http://localhost';
+    protected string $baseUrl = 'http://localhost';
 
     /**
      * Creates the application.
@@ -142,7 +142,7 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
         gc_collect_cycles(); // Invoke garbage collection
     }
 
-    public function multipleRunProvider(): array
+    public static function multipleRunProvider(): array
     {
         // Define how many times you want to run the test
         $runs = 1;

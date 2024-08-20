@@ -8,8 +8,6 @@ use Illuminate\Contracts\Auth\Guard;
 use ec5\Libraries\Jwt\JwtUserProvider as UserProvider;
 
 use Illuminate\Http\Request;
-use Config;
-
 use Illuminate\Contracts\Cookie\QueueingFactory as CookieJar;
 use Illuminate\Support\Str;
 use RuntimeException;

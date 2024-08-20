@@ -12,6 +12,7 @@ use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 use Image;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 
@@ -546,11 +547,9 @@ class MediaControllerTest extends TestCase
         $queryString = '?type=audio&name=' . $filename . '&format=audio';
 
         $response = $this->get('api/internal/media/' . $this->project->slug . $queryString);
-        //this is needed to close the streaming response
-        //https://stackoverflow.com/questions/38400305/phpunit-help-needed-about-risky-tests
-        ob_start();
 
-        $response->assertStatus(200);//
+        // Assert the response is a partial response
+        $response->assertStatus(206);//
         $response->assertHeader('Content-Type', config('epicollect.media.content_type.audio'));
         //delete fake files
         Storage::disk('audio')->deleteDirectory($this->project->ref);
@@ -576,11 +575,8 @@ class MediaControllerTest extends TestCase
         $queryString = '?type=video&name=' . $filename . '&format=video';
 
         $response = $this->get('api/internal/media/' . $this->project->slug . $queryString);
-        //this is needed to close the streaming response
-        //https://stackoverflow.com/questions/38400305/phpunit-help-needed-about-risky-tests
-        ob_start();
-
-        $response->assertStatus(200);//
+        // Assert the response is a partial response
+        $response->assertStatus(206);
         $response->assertHeader('Content-Type', config('epicollect.media.content_type.video'));
         //delete fake files
         Storage::disk('audio')->deleteDirectory($this->project->ref);
@@ -996,11 +992,8 @@ class MediaControllerTest extends TestCase
         $queryString = '?type=audio&name=' . $filename . '&format=audio';
 
         $response = $this->get('api/internal/temp-media/' . $this->project->slug . $queryString);
-        //this is needed to close the streaming response (when testing it)
-        //https://stackoverflow.com/questions/38400305/phpunit-help-needed-about-risky-tests
-        //  ob_start();
 
-        $response->assertStatus(200);//
+        $response->assertStatus(206);//
         $response->assertHeader('Content-Type', config('epicollect.media.content_type.audio'));
         //delete fake files
         Storage::disk('temp')->deleteDirectory('audio/' . $this->project->ref);
@@ -1026,11 +1019,8 @@ class MediaControllerTest extends TestCase
         $queryString = '?type=video&name=' . $filename . '&format=video';
 
         $response = $this->get('api/internal/temp-media/' . $this->project->slug . $queryString);
-        //this is needed to close the streaming response (when testing it)
-        //https://stackoverflow.com/questions/38400305/phpunit-help-needed-about-risky-tests
-        //  ob_start();
 
-        $response->assertStatus(200);//
+        $response->assertStatus(206);//
         $response->assertHeader('Content-Type', config('epicollect.media.content_type.video'));
         //delete fake files
         Storage::disk('temp')->deleteDirectory('video/' . $this->project->ref);
