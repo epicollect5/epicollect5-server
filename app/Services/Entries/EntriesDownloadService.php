@@ -17,9 +17,9 @@ use ZipArchive;
 
 class EntriesDownloadService
 {
-    protected $project;
-    protected $dataMappingService;
-    protected $errors = [];
+    protected ProjectDTO $project;
+    protected DataMappingService $dataMappingService;
+    protected array $errors = [];
 
     public function __construct(DataMappingService $dataMappingService)
     {
@@ -111,7 +111,7 @@ class EntriesDownloadService
         return true;
     }
 
-    private function buildZipArchive($projectDir, $projectSlug, $format)
+    private function buildZipArchive($projectDir, $projectSlug, $format): void
     {
         $zip = new ZipArchive();
         $zipFileName = $projectSlug . '-' . $format . '.zip';
@@ -229,12 +229,12 @@ class EntriesDownloadService
                             $count++;
                             // Write row to file
                             fwrite($file, $this->dataMappingService->getMappedEntryJSON(
-                                    $entry->entry_data,
-                                    $entry->user_id,
-                                    $entry->title,
-                                    $entry->uploaded_at,
-                                    $entry->branch_counts ?? null
-                                ) . $append);
+                                $entry->entry_data,
+                                $entry->user_id,
+                                $entry->title,
+                                $entry->uploaded_at,
+                                $entry->branch_counts ?? null
+                            ) . $append);
                         }
                     }
                 );

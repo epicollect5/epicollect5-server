@@ -2,7 +2,6 @@
 
 namespace ec5\Services\Entries;
 
-
 use DB;
 use ec5\DTO\EntryStructureDTO;
 use ec5\DTO\ProjectDTO;
@@ -11,13 +10,17 @@ use ec5\Models\Counters\EntryCounter;
 use ec5\Traits\Eloquent\Entries;
 use Exception;
 use Log;
+use Throwable;
 
 class CreateEntryService
 {
     use Entries;
 
-    public $errors;
+    public array $errors;
 
+    /**
+     * @throws Throwable
+     */
     public function create(ProjectDTO $project, EntryStructureDTO $entryStructure, $isBulkUpload = false): bool
     {
         $entry = [];
@@ -103,13 +106,12 @@ class CreateEntryService
                     $entry['owner_entry_id'] = $entryStructure->getOwnerEntryID();
                     $entry['owner_uuid'] = $entryStructure->getOwnerUuid();
                     $entry['owner_input_ref'] = $entryStructure->getOwnerInputRef();
-                    $entryRowId = $this->storeEntry($entryStructure, $entry);
                 } else {
                     // Add additional keys/values for hierarchy entries
                     $entry['parent_uuid'] = $entryStructure->getParentUuid();
                     $entry['parent_form_ref'] = $entryStructure->getParentFormRef();
-                    $entryRowId = $this->storeEntry($entryStructure, $entry);
                 }
+                $entryRowId = $this->storeEntry($entryStructure, $entry);
             }
 
             if (!$entryRowId) {

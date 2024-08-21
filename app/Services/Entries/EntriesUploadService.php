@@ -8,15 +8,17 @@ use ec5\Models\Counters\BranchEntryCounter;
 use ec5\Models\Counters\EntryCounter;
 use ec5\Traits\Requests\RequestAttributes;
 use Log;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 
 class EntriesUploadService
 {
     use RequestAttributes;
 
-    public $errors;
-    public $entryStructure;
-    private $isBulkUpload;
-    private $ruleUpload;
+    public array $errors;
+    public EntryStructureDTO $entryStructure;
+    private bool $isBulkUpload;
+    private RuleUpload $ruleUpload;
 
     public function __construct(EntryStructureDTO $entryStructure, RuleUpload $ruleUpload, $isBulkUpload = false)
     {
@@ -27,7 +29,13 @@ class EntriesUploadService
 
     public function upload(): bool
     {
-        $payload = request()->get('data');
+        try {
+            $payload = request()->get('data');
+        } catch (NotFoundExceptionInterface|ContainerExceptionInterface $e) {
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
+            $this->errors = ['upload-controller' => ['ec5_53']];
+            return false;
+        }
         /* UPLOAD VALIDATION */
 
         // 1 - Validate the api upload request

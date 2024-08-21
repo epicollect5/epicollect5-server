@@ -68,11 +68,12 @@ class DeleteEntryService
     }
 
     /**
-     * @param $projectId
-     * @param $formRef
+     * @param ProjectDTO $project
      * @param $branchEntryUuid - branch entry uuid we need to archive
+     * @param $entryStructure
      * @param bool $reuseExistingTransaction
      * @return bool
+     * @throws \Throwable
      */
     public function deleteBranchEntry(ProjectDTO $project, $branchEntryUuid, $entryStructure, bool $reuseExistingTransaction = false): bool
     {
@@ -141,7 +142,7 @@ class DeleteEntryService
                 }
                 // Check if the file starts with the specified prefix
                 foreach ($uuids as $uuid) {
-                    if (strpos($file->getFilename(), $uuid) === 0) {
+                    if (str_starts_with($file->getFilename(), $uuid)) {
                         // Get the full path of the file
                         $filePath = $file->getPathname();
                         // Delete the file

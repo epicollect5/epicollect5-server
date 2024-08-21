@@ -12,18 +12,11 @@ class EntriesUniquenessService
     use Entries;
 
     /**
-     * Function for checking whether an answer for an input is unique
+     * Function for checking whether an answer for a question is unique
      * We will check this against any parent form entries, if required
      *
-     * @param EntryStructureDTO $entryStructure
-     * @param string $uniquenessType
-     * @param string|int $inputRef
-     * @param string|int $answer
-     * @param null $inputType
-     * @param null $datetimeFormat
-     * @return bool
      */
-    public function isUnique(EntryStructureDTO $entryStructure, string $uniquenessType, $inputRef, $answer, $inputType = null, $datetimeFormat = null): bool
+    public function isUnique(EntryStructureDTO $entryStructure, string $uniquenessType, string $inputRef, string $answer, $inputType = null, $datetimeFormat = null): bool
     {
         //set table based on whether is an entry or branch_entry
         $table = config('epicollect.tables.entries');
