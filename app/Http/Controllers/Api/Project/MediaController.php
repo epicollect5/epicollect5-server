@@ -3,6 +3,7 @@
 namespace ec5\Http\Controllers\Api\Project;
 
 use ec5\Http\Validation\Media\RuleMedia;
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Exception;
 use Response;
@@ -10,9 +11,11 @@ use Storage;
 use Log;
 use ec5\Traits\Requests\RequestAttributes;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Throwable;
 
 class MediaController
 {
+
     /*
     |--------------------------------------------------------------------------
     | Media Controller
@@ -70,13 +73,14 @@ class MediaController
                 $path = $this->requestedProject()->ref . '/' . $params['name'];
                 // Check if the path exists
                 if (!Storage::disk($format)->exists($path)) {
-                    throw new Exception("File does not exist at path: " . $path);
+                    throw new FileNotFoundException("File does not exist at path: " . $path);
                 }
                 $file = Storage::disk($format)->get($path);
                 //get storage real path
                 $storagePathPrefix = Storage::disk($format)->path('');
                 //get file real path
                 $realFilepath = $storagePathPrefix . $this->requestedProject()->ref . '/' . $params['name'];
+
 
                 //stream only audio and video
                 if ($inputType !== config('epicollect.strings.inputs_type.photo')) {
@@ -88,7 +92,7 @@ class MediaController
                     $response->header('Content-Type', $contentType);
                     return $response;
                 }
-            } catch (\Throwable $e) {
+            } catch (FileNotFoundException $e) {
                 if ($inputType === config('epicollect.strings.inputs_type.photo')) {
                     //Return default placeholder image for photo questions
                     $file = Storage::disk('public')->get($defaultName);
@@ -100,6 +104,8 @@ class MediaController
                 //File not found i.e., not synced yet, send 404 for audio and video
                 $error['api-media-controller'] = ['ec5_69'];
                 return Response::apiErrorCode(404, $error);
+            } catch (Throwable $e) {
+                Log::error('Cannot get media file', ['exception' => $e]);
             }
         }
 
@@ -144,12 +150,6 @@ class MediaController
             try {
                 // Use the provided 'format' as the driver
                 $file = Storage::disk('temp')->get($inputType . '/' . $this->requestedProject()->ref . '/' . $params['name']);
-
-                // Check if the file exists
-                if (!Storage::disk('temp')->exists($file)) {
-                    throw new Exception("File does not exist at path: " . $file);
-                }
-
                 //get storage real path
                 $filepath = Storage::disk('temp')->path('');
                 //get file real path
@@ -164,7 +164,7 @@ class MediaController
                     $response->header('Content-Type', $contentType);
                     return $response;
                 }
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 Log::error('Streaming error', ['exception' => $e->getMessage()]);
                 // If the file is not found, see if we have it in the non-temp folders
                 return $this->getMedia($ruleMedia);
