@@ -61,7 +61,7 @@ class ProjectControllerExportTest extends TestCase
             $this->assertEquals($projectDefinition, $projectResponse);
 
             $this->clearDatabase(['user' => $this->user, 'project' => $this->project]);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
             $this->clearDatabase(['user' => $this->user, 'project' => $this->project]);
         }

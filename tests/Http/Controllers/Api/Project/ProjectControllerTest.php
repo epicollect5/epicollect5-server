@@ -343,7 +343,7 @@ class ProjectControllerTest extends TestCase
                 ]);
             $jsonResponse = json_decode($response[0]->getContent(), true);
             $this->assertProjectResponse($jsonResponse);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

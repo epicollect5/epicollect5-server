@@ -87,7 +87,7 @@ class ProjectEditControllerTest extends TestCase
                 //assert project extra
                 $this->assertEquals($accessValue, $projectExtra['project']['details']['access']);
 
-            } catch (Exception $e) {
+            } catch (\Throwable $e) {
                 $this->logTestError($e, $response);
             }
         }
@@ -117,7 +117,7 @@ class ProjectEditControllerTest extends TestCase
                 //assert project extra
                 $this->assertEquals($statusValue, $projectExtra['project']['details']['status']);
 
-            } catch (Exception $e) {
+            } catch (\Throwable $e) {
                 $this->logTestError($e, $response);
             }
         }
@@ -148,7 +148,7 @@ class ProjectEditControllerTest extends TestCase
                 $this->assertEquals($visibilityValue, $projectDefinition['project']['visibility']);
                 //assert project extra
                 $this->assertEquals($visibilityValue, $projectExtra['project']['details']['visibility']);
-            } catch (Exception $e) {
+            } catch (\Throwable $e) {
                 $this->logTestError($e, $response);
             }
         }
@@ -178,7 +178,7 @@ class ProjectEditControllerTest extends TestCase
                 $this->assertEquals($category, $projectDefinition['project']['category']);
                 //assert project extra
                 $this->assertEquals($category, $projectExtra['project']['details']['category']);
-            } catch (Exception $e) {
+            } catch (\Throwable $e) {
                 $this->logTestError($e, $response);
             }
         }

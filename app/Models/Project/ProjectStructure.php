@@ -66,7 +66,7 @@ class ProjectStructure extends Model
             return $currentStructure->save();
 
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             return false;
         }

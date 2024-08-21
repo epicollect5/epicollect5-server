@@ -83,7 +83,7 @@ class AppleController extends AuthController
                 if (empty($appleUserLastName)) {
                     $appleUserLastName = config('epicollect.mappings.user_placeholder.apple_last_name');
                 }
-            } catch (Exception $e) {
+            } catch (\Throwable $e) {
                 Log::error('Apple user object exception', ['exception' => $e->getMessage()]);
                 //if no user name found, default to Apple User
                 $appleUserFirstName = config('epicollect.mappings.user_placeholder.apple_first_name');
@@ -197,7 +197,7 @@ class AppleController extends AuthController
             ];
             // Return JWT response
             return Response::apiData($data, $meta);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             // If any exceptions, return error response: could not authenticate
             Log::error('Apple Login JWT Exception: ', [
                 'exception' => $e
@@ -276,7 +276,7 @@ class AppleController extends AuthController
                 $user->last_name = $appleUserLastName;
                 $user->save();
             }
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Apple user object exception', ['exception' => $e->getMessage()]);
         }
         // Log user in

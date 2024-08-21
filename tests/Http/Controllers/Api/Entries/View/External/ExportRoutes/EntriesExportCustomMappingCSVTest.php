@@ -146,7 +146,7 @@ class EntriesExportCustomMappingCSVTest extends ViewEntriesBaseControllerTest
             $this->assertEquals(
                 str_replace(' ', 'T', $entryFromDB->uploaded_at) . '.000Z',
                 $entryFromResponse['uploaded_at']);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -286,7 +286,7 @@ class EntriesExportCustomMappingCSVTest extends ViewEntriesBaseControllerTest
             $this->assertEquals(
                 str_replace(' ', 'T', $entryFromDB->uploaded_at) . '.000Z',
                 $entryFromResponse['uploaded_at']);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -411,7 +411,7 @@ class EntriesExportCustomMappingCSVTest extends ViewEntriesBaseControllerTest
             );
 
             $this->assertCount($numOfEntries, $response[0]['data']['entries']);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -584,7 +584,7 @@ class EntriesExportCustomMappingCSVTest extends ViewEntriesBaseControllerTest
             $this->assertEquals(
                 str_replace(' ', 'T', $childEntryFromDB->uploaded_at) . '.000Z',
                 $entryFromResponse['uploaded_at']);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -778,7 +778,7 @@ class EntriesExportCustomMappingCSVTest extends ViewEntriesBaseControllerTest
             //assert branch owner row ID
             $ownerEntry = Entry::where('uuid', $branchEntryFromDB->owner_uuid)->first();
             $this->assertEquals($branchEntryFromDB->owner_entry_id, $ownerEntry->id);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1002,7 +1002,7 @@ class EntriesExportCustomMappingCSVTest extends ViewEntriesBaseControllerTest
             $this->assertEquals(
                 str_replace(' ', 'T', $entryFromDB->uploaded_at) . '.000Z',
                 $entryFromResponse['uploaded_at']);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

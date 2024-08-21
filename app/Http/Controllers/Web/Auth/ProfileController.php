@@ -146,7 +146,7 @@ class ProfileController extends Controller
         } catch (InvalidStateException $e) {
             Log::error('Google Login Web Exception: ', ['exception' => [$e]]);
             return redirect()->route('profile')->withErrors(['ec5_369']);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Google Connect Web Exception: ', [
                 'exception' => $e->getMessage()
             ]);
@@ -194,7 +194,7 @@ class ProfileController extends Controller
                 $public_key = JWKApple::parseKeySet($jwks);
                 $public_key = $public_key[$kid];
                 $parsed_id_token = JWTApple::decode($token, $public_key, ['RS256']);
-            } catch (Exception $e) {
+            } catch (\Throwable $e) {
                 Log::error('Apple Sign In JWT Error', ['exception' => $e->getMessage()]);
                 //we get here when there is any validation error
                 return redirect()->route('profile')->withErrors(['ec5_382']);
@@ -228,7 +228,7 @@ class ProfileController extends Controller
                         $appleUser = json_decode($params['user'], true); //decode to array by passing "true"
                         $appleUserFirstName = $appleUser['name']['firstName'];
                         $appleUserLastName = $appleUser['name']['lastName'];
-                    } catch (Exception $e) {
+                    } catch (\Throwable $e) {
                         Log::info('Apple user object exception, existing user, use defaults', ['exception' => $e->getMessage()]);
                         //if no user name found, default to Apple User
                         $appleUserFirstName = config('epicollect.mappings.user_placeholder.apple_first_name');
@@ -258,7 +258,7 @@ class ProfileController extends Controller
                 //users do not match, error
                 return redirect()->route('profile')->withErrors(['ec5_387']);
             }
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Apple Connect Web Exception: ', [
                 'exception' => $e->getMessage()
             ]);

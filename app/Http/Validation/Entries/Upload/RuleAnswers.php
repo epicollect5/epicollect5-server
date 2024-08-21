@@ -174,7 +174,7 @@ class RuleAnswers extends ValidationBase
             try {
                 // Retrieve the answer returned from the additional checks
                 $answer = $this->validateAnswer($input, $answerData['answer'], $project, $entryStructure);
-            } catch (Exception $e) {
+            } catch (\Throwable $e) {
                 Log::error('error', ['exception' => $e->getMessage()]);
                 Log::error(
                     'Exception thrown, something wrong with input answer' . $inputRef,

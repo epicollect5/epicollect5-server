@@ -229,7 +229,7 @@ class EntriesExportPrivateDeniedTest extends TestCase
                     'project' => $project,
                 ]
             );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->clearDatabase($params);
             $this->logTestError($e, []);
             return false;

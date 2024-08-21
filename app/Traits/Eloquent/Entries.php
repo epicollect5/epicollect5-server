@@ -96,7 +96,7 @@ trait Entries
                 $table = config('epicollect.tables.branch_entries');
             }
             return DB::table($table)->insertGetId($entry);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             return 0;
         }

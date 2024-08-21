@@ -42,7 +42,7 @@ class AdminUserRolesController extends Controller
             ProjectRole::where('user_id', $adminUser->id)
                 ->where('project_id', $projectId)
                 ->delete();
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             if (request()->ajax()) {
                 return Response::apiErrorCode(400, ['update-admin-project-role' => ['ec5_104']]);

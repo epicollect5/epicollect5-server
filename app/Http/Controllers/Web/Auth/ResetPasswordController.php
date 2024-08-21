@@ -113,7 +113,7 @@ class ResetPasswordController extends Controller
             Log::error('Error password reset', ['exception' => $e->getMessage()]);
             DB::rollBack();
             return redirect()->back()->withErrors(['ec5_104']);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Error password reset', ['exception' => $e]);
             DB::rollBack();
             return redirect()->back()->withErrors(['ec5_104']);

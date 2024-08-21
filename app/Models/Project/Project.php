@@ -134,7 +134,7 @@ class Project extends Model
             return Project::join(config('epicollect.tables.users'), 'projects.created_by', config('epicollect.tables.users') . '.id')
                 ->where('projects.id', $projectId)
                 ->first()->email;
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             return $email;
         }
@@ -249,7 +249,7 @@ class Project extends Model
             } else {
                 throw new Exception('Could not update project tables');
             }
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             DB::rollBack();
             return false;

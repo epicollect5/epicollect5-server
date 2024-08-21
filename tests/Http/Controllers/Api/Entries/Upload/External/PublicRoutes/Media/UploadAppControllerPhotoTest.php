@@ -172,7 +172,7 @@ class UploadAppControllerPhotoTest extends TestCase
             Storage::disk('entry_original')->deleteDirectory($this->project->ref);
             Storage::disk('entry_thumb')->deleteDirectory($this->project->ref);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -283,7 +283,7 @@ class UploadAppControllerPhotoTest extends TestCase
             Storage::disk('entry_original')->deleteDirectory($this->project->ref);
             Storage::disk('entry_thumb')->deleteDirectory($this->project->ref);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -359,7 +359,7 @@ class UploadAppControllerPhotoTest extends TestCase
             Storage::disk('entry_original')->deleteDirectory($this->project->ref);
             Storage::disk('entry_thumb')->deleteDirectory($this->project->ref);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -435,7 +435,7 @@ class UploadAppControllerPhotoTest extends TestCase
             Storage::disk('entry_original')->deleteDirectory($this->project->ref);
             Storage::disk('entry_thumb')->deleteDirectory($this->project->ref);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -508,7 +508,7 @@ class UploadAppControllerPhotoTest extends TestCase
             Storage::disk('entry_original')->deleteDirectory($this->project->ref);
             Storage::disk('entry_thumb')->deleteDirectory($this->project->ref);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -636,7 +636,7 @@ class UploadAppControllerPhotoTest extends TestCase
 
             Storage::disk('entry_original')->deleteDirectory($this->project->ref);
             Storage::disk('entry_thumb')->deleteDirectory($this->project->ref);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -764,7 +764,7 @@ class UploadAppControllerPhotoTest extends TestCase
             $this->assertCount(0, $photos);
             $photos = Storage::disk('entry_thumb')->files($this->project->ref);
             $this->assertCount(0, $photos);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -837,7 +837,7 @@ class UploadAppControllerPhotoTest extends TestCase
             $this->assertCount(0, $photos);
             $photos = Storage::disk('entry_thumb')->files($this->project->ref);
             $this->assertCount(0, $photos);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -928,7 +928,7 @@ class UploadAppControllerPhotoTest extends TestCase
             $this->assertCount(0, $photos);
             $photos = Storage::disk('entry_thumb')->files($this->project->ref);
             $this->assertCount(0, $photos);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

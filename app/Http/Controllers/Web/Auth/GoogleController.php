@@ -172,7 +172,7 @@ class GoogleController extends AuthController
         } catch (InvalidStateException $e) {
             Log::error('Google Login Web Exception: ', ['exception' => [$e]]);
             return redirect()->route('login')->withErrors(['ec5_213']);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Google Login Web Exception: ', ['exception' => $e->getMessage()]);
             return redirect()->route('login')->withErrors(['ec5_31']);
         }
@@ -251,7 +251,7 @@ class GoogleController extends AuthController
         //try to update user details 
         try {
             $this->updateUserDetails($params, $user);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             //imp:log in user even if details not updated
             Log::error('Google user object exception', ['exception' => $e->getMessage()]);
         }

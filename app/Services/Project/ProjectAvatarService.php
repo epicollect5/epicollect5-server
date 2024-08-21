@@ -55,7 +55,7 @@ class ProjectAvatarService
                 );
 
             return true;
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             \Log::error('Error creating project avatar', ['exception' => $e]);
             return false;
         }

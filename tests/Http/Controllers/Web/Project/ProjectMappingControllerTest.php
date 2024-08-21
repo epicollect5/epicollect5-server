@@ -103,7 +103,7 @@ class ProjectMappingControllerTest extends TestCase
                 ->get('myprojects/' . $this->project->slug . '/mapping-data');
 
             $response[0]->assertStatus(200);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -185,7 +185,7 @@ class ProjectMappingControllerTest extends TestCase
                 $projectMappings[1]['is_default'],
                 $params['is_default']
             );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -270,7 +270,7 @@ class ProjectMappingControllerTest extends TestCase
                 $projectMappings[1]['forms'],
                 $jsonResponse['data']['mapping'][1]['forms']
             );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -347,7 +347,7 @@ class ProjectMappingControllerTest extends TestCase
             $this->assertTrue(
                 $projectMappings[1]['is_default']
             );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -423,7 +423,7 @@ class ProjectMappingControllerTest extends TestCase
             $this->assertFalse(
                 $projectMappings[1]['is_default']
             );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -488,7 +488,7 @@ class ProjectMappingControllerTest extends TestCase
                 $projectMappings,
                 $jsonResponse['data']['mapping']
             );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -564,7 +564,7 @@ class ProjectMappingControllerTest extends TestCase
                         ]
                     ]
                 ]);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -637,7 +637,7 @@ class ProjectMappingControllerTest extends TestCase
                         ]
                     ]
                 ]);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -680,7 +680,7 @@ class ProjectMappingControllerTest extends TestCase
                         ]
                     ]
                 ]);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -750,7 +750,7 @@ class ProjectMappingControllerTest extends TestCase
                         ]
                     ]
                 ]);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

@@ -113,7 +113,7 @@ class EntriesExportDefaultMappingTest extends ViewEntriesBaseControllerTest
             $this->assertEquals(
                 str_replace(' ', 'T', $entryFromDB->uploaded_at) . '.000Z',
                 $entryFromResponse['uploaded_at']);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -183,7 +183,7 @@ class EntriesExportDefaultMappingTest extends ViewEntriesBaseControllerTest
 
             $json = json_decode($response[0]->getContent(), true);
             $this->assertCount($numOfEntries, $json['data']['entries']);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -294,7 +294,7 @@ class EntriesExportDefaultMappingTest extends ViewEntriesBaseControllerTest
                 $entryFromResponse['uploaded_at']);
 
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -423,7 +423,7 @@ class EntriesExportDefaultMappingTest extends ViewEntriesBaseControllerTest
             //assert branch owner row ID
             $ownerEntry = Entry::where('uuid', $branchEntryFromDB->owner_uuid)->first();
             $this->assertEquals($branchEntryFromDB->owner_entry_id, $ownerEntry->id);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

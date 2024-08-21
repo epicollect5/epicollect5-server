@@ -215,7 +215,7 @@ class EditExistingBranchEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($branchEntryFromDB->user_id, $editedBranchEntryFromDB->user_id);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -342,7 +342,7 @@ class EditExistingBranchEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($branchEntryFromDB->user_id, $editedBranchEntryFromDB->user_id);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -469,7 +469,7 @@ class EditExistingBranchEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($branchEntryFromDB->user_id, $editedBranchEntryFromDB->user_id);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -596,7 +596,7 @@ class EditExistingBranchEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($branchEntryFromDB->user_id, $editedBranchEntryFromDB->user_id);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -723,7 +723,7 @@ class EditExistingBranchEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($branchEntryFromDB->user_id, $editedBranchEntryFromDB->user_id);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -850,7 +850,7 @@ class EditExistingBranchEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($branchEntryFromDB->user_id, $editedBranchEntryFromDB->user_id);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -977,7 +977,7 @@ class EditExistingBranchEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($branchEntryFromDB->user_id, $editedBranchEntryFromDB->user_id);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1104,7 +1104,7 @@ class EditExistingBranchEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($branchEntryFromDB->user_id, $editedBranchEntryFromDB->user_id);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1231,7 +1231,7 @@ class EditExistingBranchEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($branchEntryFromDB->user_id, $editedBranchEntryFromDB->user_id);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1368,7 +1368,7 @@ class EditExistingBranchEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($branchEntryFromDB->user_id, $editedBranchEntryFromDB->user_id);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1505,7 +1505,7 @@ class EditExistingBranchEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($branchEntryFromDB->user_id, $editedBranchEntryFromDB->user_id);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1633,7 +1633,7 @@ class EditExistingBranchEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($branchEntryFromDB->user_id, $editedBranchEntryFromDB->user_id);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1761,7 +1761,7 @@ class EditExistingBranchEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($branchEntryFromDB->user_id, $editedBranchEntryFromDB->user_id);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1889,7 +1889,7 @@ class EditExistingBranchEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($branchEntryFromDB->user_id, $editedBranchEntryFromDB->user_id);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -2017,7 +2017,7 @@ class EditExistingBranchEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($branchEntryFromDB->user_id, $editedBranchEntryFromDB->user_id);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -2145,7 +2145,7 @@ class EditExistingBranchEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($branchEntryFromDB->user_id, $editedBranchEntryFromDB->user_id);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -2273,7 +2273,7 @@ class EditExistingBranchEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($branchEntryFromDB->user_id, $editedBranchEntryFromDB->user_id);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -2412,7 +2412,7 @@ class EditExistingBranchEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($branchEntryFromDB->user_id, $editedBranchEntryFromDB->user_id);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -2551,7 +2551,7 @@ class EditExistingBranchEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($branchEntryFromDB->user_id, $editedBranchEntryFromDB->user_id);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -2691,7 +2691,7 @@ class EditExistingBranchEntryTest extends TestCase
             $this->assertEquals($branchEntryFromDB->user_id, $editedBranchEntryFromDB->user_id);
             //assert user is collector
             $this->assertEquals($branchEntryFromDB->user_id, $collector->id);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -2839,7 +2839,7 @@ class EditExistingBranchEntryTest extends TestCase
             //assert entry belongs to collector A
             $this->assertEquals($editedBranchEntryFromDB->user_id, $branchEntryFromDB->user_id);
             $this->assertEquals($editedBranchEntryFromDB->user_id, $collectorA->id);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -2971,7 +2971,7 @@ class EditExistingBranchEntryTest extends TestCase
             //assert no user was assigned
             $this->assertEquals(0, $entryFromDB->user_id);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -3107,7 +3107,7 @@ class EditExistingBranchEntryTest extends TestCase
             //assert no user was assigned
             $this->assertEquals(0, $entryFromDB->user_id);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -3245,7 +3245,7 @@ class EditExistingBranchEntryTest extends TestCase
             //assert the user ID was updated
             $this->assertEquals($collector->id, $editedBranchEntryFromDB->user_id);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

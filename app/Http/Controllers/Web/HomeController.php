@@ -6,19 +6,14 @@ use ec5\Http\Controllers\Controller;
 use ec5\Libraries\Utilities\Common;
 use ec5\Models\Project\Project;
 use ec5\Models\System\SystemStats;
-use Exception;
 use Illuminate\Contracts\View\Factory;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Log;
 
 class HomeController extends Controller
 {
-    /**
-     * @var
-     */
-    private $projectModel;
-    private $dailySystemStats;
+    private Project $projectModel;
+    private SystemStats $dailySystemStats;
 
     /**
      * ProjectsController constructor.
@@ -44,7 +39,7 @@ class HomeController extends Controller
             $projectsFirstRow = $allFeaturedProjects->splice(0, 3);
             //second row with 4 projects
             $projectsSecondRow = $allFeaturedProjects->splice(0, 4);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             $projectsFirstRow = [];
             $projectsSecondRow = [];
@@ -64,7 +59,7 @@ class HomeController extends Controller
             $totalEntries = $entriesStats->public + $entriesStats->private;
             $totalBranchEntries = $branchEntriesStats->public + $branchEntriesStats->private;
             $totalAllEntries = Common::roundNumber($totalEntries + $totalBranchEntries, 0);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Failed to get system stats, maybe brand new instance?', ['exception' => $e->getMessage()]);
             $users = 0;
             $totalProjects = 0;

@@ -163,7 +163,7 @@ class MediaExportPrivateVideoDeniedTest extends TestCase
                     'project' => $project,
                 ]
             );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Storage::disk('audio')->deleteDirectory($project->ref);
             $this->clearDatabase(
                 [

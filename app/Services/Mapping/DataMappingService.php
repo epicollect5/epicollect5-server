@@ -105,7 +105,7 @@ class DataMappingService
         try {
             $JSONEntry = json_decode($JSONEntryString, true);
             $JSONBranchCounts = json_decode($branchCountsString, true);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             return $output;
         }
 
@@ -213,7 +213,7 @@ class DataMappingService
         try {
             $JSONEntry = json_decode($JSONEntryString, true);
             $JSONBranchCounts = json_decode($branchCountsString, true);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             return '';
         }
 
@@ -446,7 +446,7 @@ class DataMappingService
                             ''
                         ];
                     }
-                } catch (Exception $e) {
+                } catch (\Throwable $e) {
                     Log::debug(__METHOD__ . ' failed | csv-location', ['exception' => $e->getMessage()]);
                     //we get here when there is not an answer?
                     $parsedAnswer = [
@@ -483,7 +483,7 @@ class DataMappingService
                             'UTM_Zone' => ''
                         ];
                     }
-                } catch (Exception $e) {
+                } catch (\Throwable $e) {
                     $parsedAnswer = [
                         'latitude' => '',
                         'longitude' => '',

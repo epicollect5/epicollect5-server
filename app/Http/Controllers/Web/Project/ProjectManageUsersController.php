@@ -265,7 +265,7 @@ class ProjectManageUsersController
             ProjectRole::where('user_id', $user->id)
                 ->where('project_id', $this->requestedProject()->getId())
                 ->delete();
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             if (request()->ajax()) {
                 return Response::apiErrorCode(400, ['manage-user' => ['ec5_104']]);

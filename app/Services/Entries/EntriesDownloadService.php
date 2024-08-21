@@ -104,7 +104,7 @@ class EntriesDownloadService
         }
         try {
             $this->buildZipArchive($projectDir, $project->slug, $format);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('buildZipArchive failed', ['exception' => $e->getMessage()]);
             return false;
         }
@@ -200,7 +200,7 @@ class EntriesDownloadService
             }
             fclose($file);
             return true;
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('writeCSV failed', ['exception' => $e->getMessage()]);
             return false;
         }
@@ -229,12 +229,12 @@ class EntriesDownloadService
                             $count++;
                             // Write row to file
                             fwrite($file, $this->dataMappingService->getMappedEntryJSON(
-                                $entry->entry_data,
-                                $entry->user_id,
-                                $entry->title,
-                                $entry->uploaded_at,
-                                $entry->branch_counts ?? null
-                            ) . $append);
+                                    $entry->entry_data,
+                                    $entry->user_id,
+                                    $entry->title,
+                                    $entry->uploaded_at,
+                                    $entry->branch_counts ?? null
+                                ) . $append);
                         }
                     }
                 );
@@ -247,7 +247,7 @@ class EntriesDownloadService
             }
             fclose($file);
             return true;
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('writeJSON failed', ['exception' => $e->getMessage()]);
             return false;
         }

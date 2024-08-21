@@ -21,7 +21,7 @@ class SystemStats extends Model
     {
         try {
             $this->dailyStats = $this->latest()->first();
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Failed init system stats', ['exception' => $e]);
             $this->dailyStats = [];
         }

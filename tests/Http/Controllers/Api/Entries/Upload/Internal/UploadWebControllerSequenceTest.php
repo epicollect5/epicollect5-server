@@ -155,7 +155,7 @@ class UploadWebControllerSequenceTest extends TestCase
                 'project' => $project,
                 'entryGenerator' => $entryGenerator
             ];
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project
@@ -210,7 +210,7 @@ class UploadWebControllerSequenceTest extends TestCase
                 'project' => $project,
                 'entryGenerator' => $entryGenerator
             ];
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project
@@ -271,7 +271,7 @@ class UploadWebControllerSequenceTest extends TestCase
                 'project' => $project,
                 'entryGenerator' => $entryGenerator
             ];
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project
@@ -338,7 +338,7 @@ class UploadWebControllerSequenceTest extends TestCase
                 'project' => $project,
                 'entryGenerator' => $entryGenerator
             ];
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project
@@ -408,7 +408,7 @@ class UploadWebControllerSequenceTest extends TestCase
                 'project' => $project,
                 'entryGenerator' => $entryGenerator
             ];
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project
@@ -499,7 +499,7 @@ class UploadWebControllerSequenceTest extends TestCase
                 'project' => $project,
                 'entryGenerator' => $entryGenerator
             ];
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project
@@ -585,7 +585,7 @@ class UploadWebControllerSequenceTest extends TestCase
                 'project' => $project,
                 'entryGenerator' => $entryGenerator
             ];
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project
@@ -671,7 +671,7 @@ class UploadWebControllerSequenceTest extends TestCase
                 'project' => $project,
                 'entryGenerator' => $entryGenerator
             ];
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project
@@ -756,7 +756,7 @@ class UploadWebControllerSequenceTest extends TestCase
                 'project' => $project,
                 'entryGenerator' => $entryGenerator
             ];
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project
@@ -831,7 +831,7 @@ class UploadWebControllerSequenceTest extends TestCase
                 'user' => $user,
                 'project' => $project
             ]);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project

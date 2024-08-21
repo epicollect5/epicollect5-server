@@ -358,7 +358,7 @@ class ManageUsersControllerTest extends TestCase
                     ->where('user_id', $manager->id)
                     ->value('role')
             );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -571,7 +571,7 @@ class ManageUsersControllerTest extends TestCase
                     ->where('user_id', $viewer->id)
                     ->value('role')
             );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             echo $e->getMessage() . PHP_EOL;
             if ($response[0]->baseResponse->exception === null) {
                 echo json_encode(['response' => $response[0]]) . PHP_EOL;
@@ -630,7 +630,7 @@ class ManageUsersControllerTest extends TestCase
                     ->where('user_id', $this->user->id)
                     ->value('role')
             );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -698,7 +698,7 @@ class ManageUsersControllerTest extends TestCase
                     ->where('user_id', $manager->id)
                     ->value('role')
             );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -744,7 +744,7 @@ class ManageUsersControllerTest extends TestCase
                     ->where('user_id', $manager->id)
                     ->count()
             );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -790,7 +790,7 @@ class ManageUsersControllerTest extends TestCase
                     ->where('user_id', $curator->id)
                     ->count()
             );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -836,7 +836,7 @@ class ManageUsersControllerTest extends TestCase
                     ->where('user_id', $collector->id)
                     ->count()
             );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -882,7 +882,7 @@ class ManageUsersControllerTest extends TestCase
                     ->where('user_id', $viewer->id)
                     ->count()
             );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -935,7 +935,7 @@ class ManageUsersControllerTest extends TestCase
                     ->where('user_id', $curator->id)
                     ->count()
             );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -988,7 +988,7 @@ class ManageUsersControllerTest extends TestCase
                     ->where('user_id', $collector->id)
                     ->count()
             );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1041,7 +1041,7 @@ class ManageUsersControllerTest extends TestCase
                     ->where('user_id', $viewer->id)
                     ->count()
             );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1093,7 +1093,7 @@ class ManageUsersControllerTest extends TestCase
                     ->value('role')
             );
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1174,7 +1174,7 @@ class ManageUsersControllerTest extends TestCase
                     ->value('role')
             );
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

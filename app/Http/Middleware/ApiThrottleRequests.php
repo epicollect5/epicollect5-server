@@ -42,7 +42,7 @@ class ApiThrottleRequests
 
         try {
             $this->limiter->hit($key, $decayMinutes);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Rate limiter hit() exception', ['message' => $e->getMessage()]);
             Mail::to(config('epicollect.setup.system.email'))->send(new ExceptionNotificationMail($e->getMessage()));
         }

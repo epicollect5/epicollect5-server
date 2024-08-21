@@ -66,7 +66,7 @@ class PasswordlessController extends AuthController
             return Response::apiErrorCode(400, [
                 'passwordless-request-code' => ['ec5_104']
             ]);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Error generating password access code via api');
             DB::rollBack();
 
@@ -78,7 +78,7 @@ class PasswordlessController extends AuthController
         //send email with verification token
         try {
             Mail::to($email)->send(new UserPasswordlessApiMail($code));
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             return Response::apiErrorCode(400, [
                 'passwordless-request-code' => ['ec5_116']
             ]);

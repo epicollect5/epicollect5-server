@@ -180,7 +180,7 @@ class EditExistingHierarchyEntryGroupTest extends TestCase
             //assert user matches
             $this->assertEquals($entryFromDB->user_id, $editedEntryFromDB->user_id);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -274,7 +274,7 @@ class EditExistingHierarchyEntryGroupTest extends TestCase
             //assert user matches
             $this->assertEquals($entryFromDB->user_id, $editedEntryFromDB->user_id);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -368,7 +368,7 @@ class EditExistingHierarchyEntryGroupTest extends TestCase
             //assert user matches
             $this->assertEquals($entryFromDB->user_id, $editedEntryFromDB->user_id);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -462,7 +462,7 @@ class EditExistingHierarchyEntryGroupTest extends TestCase
             //assert user matches
             $this->assertEquals($entryFromDB->user_id, $editedEntryFromDB->user_id);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -556,7 +556,7 @@ class EditExistingHierarchyEntryGroupTest extends TestCase
             //assert user matches
             $this->assertEquals($entryFromDB->user_id, $editedEntryFromDB->user_id);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -650,7 +650,7 @@ class EditExistingHierarchyEntryGroupTest extends TestCase
             //assert user matches
             $this->assertEquals($entryFromDB->user_id, $editedEntryFromDB->user_id);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -744,7 +744,7 @@ class EditExistingHierarchyEntryGroupTest extends TestCase
             //assert user matches
             $this->assertEquals($entryFromDB->user_id, $editedEntryFromDB->user_id);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -838,7 +838,7 @@ class EditExistingHierarchyEntryGroupTest extends TestCase
             //assert user matches
             $this->assertEquals($entryFromDB->user_id, $editedEntryFromDB->user_id);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -932,7 +932,7 @@ class EditExistingHierarchyEntryGroupTest extends TestCase
             //assert user matches
             $this->assertEquals($entryFromDB->user_id, $editedEntryFromDB->user_id);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1026,7 +1026,7 @@ class EditExistingHierarchyEntryGroupTest extends TestCase
             //assert user matches
             $this->assertEquals($entryFromDB->user_id, $editedEntryFromDB->user_id);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1120,7 +1120,7 @@ class EditExistingHierarchyEntryGroupTest extends TestCase
             //assert user matches
             $this->assertEquals($entryFromDB->user_id, $editedEntryFromDB->user_id);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1214,7 +1214,7 @@ class EditExistingHierarchyEntryGroupTest extends TestCase
             //assert user matches
             $this->assertEquals($entryFromDB->user_id, $editedEntryFromDB->user_id);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1308,7 +1308,7 @@ class EditExistingHierarchyEntryGroupTest extends TestCase
             //assert user matches
             $this->assertEquals($entryFromDB->user_id, $editedEntryFromDB->user_id);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1402,7 +1402,7 @@ class EditExistingHierarchyEntryGroupTest extends TestCase
             //assert user matches
             $this->assertEquals($entryFromDB->user_id, $editedEntryFromDB->user_id);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1496,7 +1496,7 @@ class EditExistingHierarchyEntryGroupTest extends TestCase
             //assert user matches
             $this->assertEquals($entryFromDB->user_id, $editedEntryFromDB->user_id);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1590,7 +1590,7 @@ class EditExistingHierarchyEntryGroupTest extends TestCase
             //assert user matches
             $this->assertEquals($entryFromDB->user_id, $editedEntryFromDB->user_id);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1684,7 +1684,7 @@ class EditExistingHierarchyEntryGroupTest extends TestCase
             //assert user matches
             $this->assertEquals($entryFromDB->user_id, $editedEntryFromDB->user_id);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

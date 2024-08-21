@@ -112,7 +112,7 @@ class ForgotPasswordController extends Controller
                     $secretKey, // The signing key
                     'HS256' // The signing algorithm
                 );
-            } catch (Exception $e) {
+            } catch (\Throwable $e) {
                 return redirect()->back()->withErrors([
                     'exception' => $e->getMessage(),
                     'forgot-password' => ['ec5_104']
@@ -139,7 +139,7 @@ class ForgotPasswordController extends Controller
                 Log::error('Error generating password reset token');
                 DB::rollBack();
                 return redirect()->back()->withErrors(['forgot-password' => ['ec5_104']]);
-            } catch (Exception $e) {
+            } catch (\Throwable $e) {
                 Log::error('Error generating password reset token');
                 DB::rollBack();
                 return redirect()->back()->withErrors(['forgot-password' => ['ec5_104']]);
@@ -150,7 +150,7 @@ class ForgotPasswordController extends Controller
                     $user->name,
                     $token
                 ));
-            } catch (Exception $e) {
+            } catch (\Throwable $e) {
                 return redirect()->back()->withErrors(['forgot-password' => ['ec5_116']]);
             }
         }

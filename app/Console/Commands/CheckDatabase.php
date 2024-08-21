@@ -35,7 +35,7 @@ class CheckDatabase extends Command
         try {
             DB::connection()->getPdo();
             $this->info('Database is running');
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->error('MYSQL is currently down!');
             Mail::raw('MYSQL is currently down!', function ($message) {
                 $message->from(config('mail.from.address'), config('mail.from.name'));

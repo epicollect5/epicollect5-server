@@ -91,7 +91,7 @@ class PasswordlessController extends AuthController
                 'exception' => $e->getMessage(),
                 'passwordless-request-code' => ['ec5_104']
             ]);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Error generating passwordless access code web');
             DB::rollBack();
 
@@ -104,7 +104,7 @@ class PasswordlessController extends AuthController
         //send email with verification code
         try {
             Mail::to($email)->send(new UserPasswordlessApiMail($code));
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             return redirect()->back()->withErrors([
                 'exception' => $e->getMessage(),
@@ -259,7 +259,7 @@ class PasswordlessController extends AuthController
                 $token,
                 new Key($secretKey, 'HS256')
             );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Error decoding jwt-passwordless token to login', ['exception' => $e->getMessage()]);
         }
         return $decoded;

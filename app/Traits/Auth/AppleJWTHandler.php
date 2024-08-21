@@ -28,7 +28,7 @@ trait AppleJWTHandler
             $public_key = JWKApple::parseKeySet($jwks);
             $public_key = $public_key[$kid];
             $parsed_id_token = JWTApple::decode($identityToken, $public_key, ['RS256']);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Apple Sign In JWT Error', ['exception' => $e->getMessage()]);
             //we get here when there is any validation error
             return null;

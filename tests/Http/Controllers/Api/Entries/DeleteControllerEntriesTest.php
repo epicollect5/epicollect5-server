@@ -93,7 +93,7 @@ class DeleteControllerEntriesTest extends TestCase
             $this->project = $project;
             $this->projectDefinition = $projectDefinition;
             $this->entryGenerator = $entryGenerator;
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -119,7 +119,7 @@ class DeleteControllerEntriesTest extends TestCase
                     ]
                 ]
             ]);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
 
@@ -148,7 +148,7 @@ class DeleteControllerEntriesTest extends TestCase
                     ]
                 ]
             ]);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -229,7 +229,7 @@ class DeleteControllerEntriesTest extends TestCase
 
             $videos = Storage::disk('video')->files($this->project->ref);
             $this->assertCount(0, $videos);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -321,7 +321,7 @@ class DeleteControllerEntriesTest extends TestCase
             Storage::disk('entry_original')->deleteDirectory($this->project->ref);
             Storage::disk('audio')->deleteDirectory($this->project->ref);
             Storage::disk('video')->deleteDirectory($this->project->ref);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -433,7 +433,7 @@ class DeleteControllerEntriesTest extends TestCase
             $videos = Storage::disk('video')->files($this->project->ref);
             $this->assertCount(0, $videos);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -533,7 +533,7 @@ class DeleteControllerEntriesTest extends TestCase
             $this->assertCount(0, $audios);
             $videos = Storage::disk('video')->files($this->project->ref);
             $this->assertCount(0, $videos);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

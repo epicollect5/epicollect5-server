@@ -82,7 +82,7 @@ class LdapController extends AuthController
                 // Return JWT response
                 Log::info('LDAP Login successful: ' . $credentials['username']);
                 return Response::apiData($data, $meta);
-            } catch (Exception $e) {
+            } catch (\Throwable $e) {
                 // If any exceptions, return error response: could not authenticate
                 Log::error('LDAP Login failed - exception thrown: ', null, [json_encode($e)]);
             }

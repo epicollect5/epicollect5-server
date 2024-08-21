@@ -65,7 +65,7 @@ class ProjectStats extends Model
             $this->updateBranchEntryCounters($projectId);
             DB::commit();
             return true;
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error(__METHOD__ . ' failed', [
                 'project_id' => $projectId,
                 'exception' => $e->getMessage()

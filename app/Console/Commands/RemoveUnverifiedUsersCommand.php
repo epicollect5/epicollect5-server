@@ -54,7 +54,7 @@ class RemoveUnverifiedUsersCommand extends Command
         } catch (PDOException $e) {
             Log::error('failed to remove unverified users', ['exception' => $e]);
             DB::rollBack();
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('failed to remove unverified users', ['exception' => $e]);
             DB::rollBack();
         }

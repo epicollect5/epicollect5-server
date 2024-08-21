@@ -37,7 +37,7 @@ class UserResetPassword extends Model
                 $this->attributes['token'],
                 new Key($secretKey, 'HS256')
             );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Error decoding jwt-forgot', ['exception' => $e->getMessage()]);
             return false;
         }

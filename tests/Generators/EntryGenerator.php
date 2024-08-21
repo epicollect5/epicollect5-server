@@ -577,7 +577,7 @@ class EntryGenerator
             if ($currentForm === '') {
                 throw new Exception('This project does not have child forms');
             }
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             echo $e->getMessage();
             return [];
         }

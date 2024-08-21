@@ -193,7 +193,7 @@ class ProjectEntriesControllerTest extends TestCase
             $projectStructure = ProjectStructure::where('project_id', $this->project->id)->first();
             $projectDefinition = json_decode($projectStructure->project_definition, true);
             $this->assertEquals($projectDefinition['project']['entries_limits'], $this->entriesLimits);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -243,7 +243,7 @@ class ProjectEntriesControllerTest extends TestCase
             $projectStructure = ProjectStructure::where('project_id', $this->project->id)->first();
             $projectDefinition = json_decode($projectStructure->project_definition, true);
             $this->assertEquals($projectDefinition['project']['entries_limits'], $this->entriesLimits);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -294,7 +294,7 @@ class ProjectEntriesControllerTest extends TestCase
             $projectStructure = ProjectStructure::where('project_id', $this->project->id)->first();
             $projectDefinition = json_decode($projectStructure->project_definition, true);
             $this->assertEquals($projectDefinition['project']['entries_limits'], $this->entriesLimits);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -326,7 +326,7 @@ class ProjectEntriesControllerTest extends TestCase
             $projectStructure = ProjectStructure::where('project_id', $this->project->id)->first();
             $projectDefinition = json_decode($projectStructure->project_definition, true);
             $this->assertEquals($projectDefinition['project']['entries_limits'], []);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

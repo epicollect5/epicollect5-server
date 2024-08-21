@@ -72,7 +72,7 @@ class ProjectImportController
         // Decode json file contents into array
         try {
             $data = json_decode(File::get($file->getRealPath()), true);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $request->flash();
             return Redirect::to('myprojects/create')
                 ->withErrors(['file' => ['ec5_69']])
@@ -109,7 +109,7 @@ class ProjectImportController
                 $projectDefinitionData,
                 $projectDefinitionValidator
             );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $request->flash();
             return Redirect::to('myprojects/create')
                 ->withErrors($projectDefinitionValidator->errors())

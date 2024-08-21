@@ -52,7 +52,7 @@ class ProjectController
             if (empty($userAvatar)) {
                 $userAvatar = config('app.url') . '/images/avatar-placeholder.png';
             }
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             //
             $userName = 'User';
             $userAvatar = config('app.url') . '/images/avatar-placeholder.png';

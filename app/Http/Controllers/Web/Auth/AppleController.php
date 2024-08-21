@@ -68,7 +68,7 @@ class AppleController extends AuthController
                 $appleUser = json_decode($params['user'], true); //decode to array by passing "true"
                 $appleUserFirstName = $appleUser['name']['firstName'];
                 $appleUserLastName = $appleUser['name']['lastName'];
-            } catch (Exception $e) {
+            } catch (\Throwable $e) {
                 Log::error('Apple user object exception', ['exception' => $e->getMessage()]);
                 //if no user name found, default to Apple User
                 $appleUserFirstName = config('epicollect.mappings.user_placeholder.apple_first_name');
@@ -259,7 +259,7 @@ class AppleController extends AuthController
                 $user->last_name = $appleUserLastName;
                 $user->save();
             }
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             //imp:log in user even if details not updated
             Log::error('Apple user object exception', ['exception' => $e->getMessage()]);
         }

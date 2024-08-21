@@ -38,7 +38,7 @@ class UserService
                 throw new Exception('$isUserSaved && $isProviderSaved is false');
             }
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             DB::rollBack();
             Log::error('Error creating/updating social user after login', ['exception' => $e->getMessage()]);
         }
@@ -68,7 +68,7 @@ class UserService
             DB::commit();
 
             return $user;
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             DB::rollBack();
             Log::error('Error creating Apple user after login', ['exception' => $e->getMessage()]);
         }
@@ -101,7 +101,7 @@ class UserService
             } else {
                 throw new Exception('createPasswordlessUser() transaction failed');
             }
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             DB::rollBack();
             Log::error('Error creating new passwordless user after login', ['exception' => $e->getMessage()]);
             return null;
@@ -134,7 +134,7 @@ class UserService
             } else {
                 throw new Exception('updatePasswordlessUser() transaction failed');
             }
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             DB::rollBack();
             Log::error('Error updating unverified passwordless user after login', ['exception' => $e->getMessage()]);
             return false;
@@ -162,7 +162,7 @@ class UserService
                 throw new Exception('updateGoogleUser() failed');
             }
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Error updating Google user after login', ['exception' => $e->getMessage()]);
             DB::rollBack();
             return false;
@@ -174,7 +174,7 @@ class UserService
         try {
             $user = self::amendUserDetailsGoogle($googleUser);
             return $user->save();
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Error updating Google user details', [
                 'exception' => $e->getMessage()
             ]);
@@ -208,7 +208,7 @@ class UserService
             }
             throw new Exception('updateAppleUser failed');
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Error updating Apple user after login', ['exception' => $e->getMessage()]);
             DB::rollBack();
             return false;

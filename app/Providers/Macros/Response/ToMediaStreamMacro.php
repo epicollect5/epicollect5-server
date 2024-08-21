@@ -56,7 +56,7 @@ class ToMediaStreamMacro extends ServiceProvider
 
                 return $response;
 
-            } catch (Exception $e) {
+            } catch (\Throwable $e) {
                 Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
                 $error['api-media-controller'] = ['ec5_103'];
                 return Response::apiErrorCode(404, $error);

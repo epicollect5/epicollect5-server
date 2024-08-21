@@ -172,7 +172,7 @@ class GoogleController extends AuthController
                     // Return JWT response
                     return Response::apiData($data, $meta);
                 }
-            } catch (Exception $e) {
+            } catch (\Throwable $e) {
                 // If any exceptions, return error response: could not authenticate
                 Log::error('Google Login JWT Exception: ', [
                     'exception' => $e
@@ -243,7 +243,7 @@ class GoogleController extends AuthController
         //try to update user details 
         try {
             $this->updateUserDetails($params, $user);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Google user object exception', ['exception' => $e->getMessage()]);
         }
         // Log user in

@@ -121,7 +121,7 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
 
             //also remove leftover users from other tests or failures
             User::where('email', 'LIKE', '%@example.org%')->delete();
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
         }
     }

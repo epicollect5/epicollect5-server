@@ -867,7 +867,7 @@ class FormbuilderControllerTest extends TestCase
                 $jsonResponse['meta']['project_stats']['structure_last_updated']
             );
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
 
@@ -886,7 +886,7 @@ class FormbuilderControllerTest extends TestCase
                 (string)strtotime($afterUpdatedAt),
                 $jsonResponse['data']['attributes']['version']
             );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

@@ -157,7 +157,7 @@ class UploadWebController extends UploadControllerBase
                 mime_content_type($filePath),
                 filesize($filePath)
             );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             // File doesn't exist
             $this->errors['web upload'] = ['ec5_231'];
             return;
@@ -263,7 +263,7 @@ class UploadWebController extends UploadControllerBase
             if (!$entryCounter->updateCounters($this->requestedProject(), $this->entryStructure)) {
                 throw new Exception('Cannot update branch entries counters after leftover deletion');
             }
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Could not delete leftover branches', [
                 'owner_uuid' => $this->entryStructure->getEntryUuid(),
                 'owner_input_ref(s)' => $skippedBranchRefs,

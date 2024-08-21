@@ -47,7 +47,7 @@ trait Remover
                 File::deleteDirectory($pathPrefix . $projectRef);
             }
             return true;
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error(__METHOD__ . ' failed.', [
                 'exception' => $e->getMessage()
             ]);
@@ -108,7 +108,7 @@ trait Remover
             }
 
             return true;
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error(__METHOD__ . ' failed.', [
                 'exception' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()

@@ -157,7 +157,7 @@ class AccountController extends Controller
             }
             DB::commit();
             return true;
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Error archiveProjectsCreatedByUser()', ['exception' => $e->getMessage()]);
             DB::rollBack();
             return false;
@@ -169,7 +169,7 @@ class AccountController extends Controller
         //send confirmation email to user
         try {
             Mail::to($email)->send(new UserAccountDeletionConfirmation());
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             return Response::apiErrorCode(400, [
                 'account-deletion' => ['ec5_103']
             ]);
@@ -200,7 +200,7 @@ class AccountController extends Controller
                 return false;
             }
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             DB::rollBack();
             return false;
         }

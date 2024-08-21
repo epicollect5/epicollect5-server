@@ -212,7 +212,7 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
                     throw new Exception('Error writing file');
                 }
             }
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             return Response::apiErrorCode(400, ['entries-export-csv' => ['ec5_232']]);
         }
@@ -317,7 +317,7 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
                     throw new Exception('Error writing file');
                 }
             }
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             return Response::apiErrorCode(400, ['entries-export-csv' => ['ec5_232']]);
         }

@@ -22,7 +22,7 @@ trait ProjectTools
                 Project::where('id', $projectId)->delete();
                 //error generating project avatar, handle it!
                 return ['avatar' => ['ec5_348']];
-            } catch (Exception $e) {
+            } catch (\Throwable $e) {
                 Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
                 return ['db' => ['ec5_104']];
             }

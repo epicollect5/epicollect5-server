@@ -157,7 +157,7 @@ class DownloadSubsetController
                 //   \LOG::error('Usage: ' . Common::formatBytes(memory_get_usage()));
                 //     \LOG::error('Peak Usage: ' . Common::formatBytes(memory_get_peak_usage()));
             });
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             // Error writing to file
             Log::error('createSubsetArchive failure', [
                 'exception' => $e->getMessage()

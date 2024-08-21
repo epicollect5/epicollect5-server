@@ -150,7 +150,7 @@ class ProjectVersionEntriesTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -234,7 +234,7 @@ class ProjectVersionEntriesTest extends TestCase
             $this->assertCount(0, $photos);
             $photos = Storage::disk('entry_thumb')->files($this->project->ref);
             $this->assertCount(0, $photos);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -317,7 +317,7 @@ class ProjectVersionEntriesTest extends TestCase
             $audios = Storage::disk('audio')->files($this->project->ref);
             $this->assertCount(0, $audios);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -399,7 +399,7 @@ class ProjectVersionEntriesTest extends TestCase
             //assert file is NOT uploaded
             $videos = Storage::disk('video')->files($this->project->ref);
             $this->assertCount(0, $videos);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

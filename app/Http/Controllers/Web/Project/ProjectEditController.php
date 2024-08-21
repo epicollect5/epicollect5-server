@@ -98,7 +98,7 @@ class ProjectEditController
                 throw new Exception('Cannot update project settings');
             }
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             DB::rollBack();
             return Response::apiErrorCode(400, ['errors' => ['ec5_45']]);

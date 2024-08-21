@@ -116,7 +116,7 @@ class PHPToolsController
         try {
             Mail::to(config('epicollect.setup.super_admin_user.email'))->send(new DebugEmailSending());
             return 'Mail sent.';
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             return 'Failed -> ' . $e->getMessage();
         }
     }
@@ -127,7 +127,7 @@ class PHPToolsController
         try {
             Mail::to(config('epicollect.setup.system.email'))->send(new DebugEmailSending());
             return 'Mail sent.';
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             return 'Failed -> ' . $e->getMessage();
         }
     }

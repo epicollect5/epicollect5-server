@@ -112,7 +112,7 @@ trait Archiver
                 DB::rollBack();
                 return false;
             }
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             DB::rollBack();
             return false;

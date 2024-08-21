@@ -21,7 +21,7 @@ class FormBuilderController
         //unpack posted project definition which is gzipped and base64 encoded
         try {
             $requestContent = json_decode(gzdecode(base64_decode(request()->getContent())), true);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Formbuilder decoding failed', [
                 'exception' => $e->getMessage()
             ]);

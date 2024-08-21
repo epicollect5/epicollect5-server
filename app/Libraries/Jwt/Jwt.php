@@ -84,7 +84,7 @@ class Jwt
 
             return $token;
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->errors = ['ec5_50'];
         }
 
@@ -122,7 +122,7 @@ class Jwt
 
             return $token;
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->errors = ['ec5_50'];
         }
 
@@ -164,7 +164,7 @@ class Jwt
             }
             return true;
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
 
             // Token invalid:
             // Signature not valid, jwt token expired or altered

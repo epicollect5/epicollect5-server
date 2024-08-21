@@ -111,7 +111,7 @@ class DeleteEntryService
             if (!$reuseExistingTransaction) {
                 DB::commit();
             }
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             DB::rollBack();
             return false;
@@ -131,7 +131,7 @@ class DeleteEntryService
 
             try {
                 $directory = new DirectoryIterator($pathPrefix . $projectRef);
-            } catch (Exception $e) {
+            } catch (\Throwable $e) {
                 //directory not found, so no media files, can skip safely
                 continue;
             }

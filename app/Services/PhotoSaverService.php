@@ -43,7 +43,7 @@ class PhotoSaverService
                 file_get_contents($imageRealPath)
             );
             return true;
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Cannot save image', ['exception' => $e]);
             return false;
         }
@@ -82,7 +82,7 @@ class PhotoSaverService
             );
 
             return true;
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Cannot save image', ['exception' => $e]);
             return false;
         }

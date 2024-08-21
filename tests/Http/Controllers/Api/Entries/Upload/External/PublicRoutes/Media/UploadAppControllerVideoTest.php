@@ -167,7 +167,7 @@ class UploadAppControllerVideoTest extends TestCase
             $this->assertCount(1, $videos);
             //clean up
             Storage::disk('video')->deleteDirectory($this->project->ref);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -273,7 +273,7 @@ class UploadAppControllerVideoTest extends TestCase
             $this->assertCount(1, $videos);
             //clean up
             Storage::disk('video')->deleteDirectory($this->project->ref);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -347,7 +347,7 @@ class UploadAppControllerVideoTest extends TestCase
             //assert file is not uploaded
             $videos = Storage::disk('video')->files($this->project->ref);
             $this->assertCount(0, $videos);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -472,7 +472,7 @@ class UploadAppControllerVideoTest extends TestCase
             $this->assertCount(1, $videos);
             //clean up
             Storage::disk('video')->deleteDirectory($this->project->ref);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -599,7 +599,7 @@ class UploadAppControllerVideoTest extends TestCase
             //assert file is uploaded
             $videos = Storage::disk('video')->files($this->project->ref);
             $this->assertCount(0, $videos);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -671,7 +671,7 @@ class UploadAppControllerVideoTest extends TestCase
             //assert file is not uploaded
             $videos = Storage::disk('video')->files($this->project->ref);
             $this->assertCount(0, $videos);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -758,7 +758,7 @@ class UploadAppControllerVideoTest extends TestCase
             //assert file is not uploaded
             $videos = Storage::disk('video')->files($this->project->ref);
             $this->assertCount(0, $videos);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
