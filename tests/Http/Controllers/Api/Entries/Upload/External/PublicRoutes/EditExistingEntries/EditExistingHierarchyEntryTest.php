@@ -16,6 +16,7 @@ use ec5\Traits\Assertions;
 use Exception;
 use Faker\Factory as Faker;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Ramsey\Uuid\Uuid;
 use Tests\Generators\EntryGenerator;
 use Tests\Generators\ProjectDefinitionGenerator;
@@ -95,9 +96,8 @@ class EditExistingHierarchyEntryTest extends TestCase
     /**
      * @param $index
      * @return void
-     * @dataProvider multipleRunProvider
      */
-    public function test_edit_existing_entry_text_by_app_upload_same_user($index)
+    #[DataProvider('multipleRunProvider')] public function test_edit_existing_entry_text_by_app_upload_same_user($index)
     {
         //get project definition
         $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
@@ -192,9 +192,8 @@ class EditExistingHierarchyEntryTest extends TestCase
     /**
      * @param $index
      * @return void
-     * @dataProvider multipleRunProvider
      */
-    public function test_edit_existing_entry_integer_by_app_upload_same_user($index)
+    #[DataProvider('multipleRunProvider')] public function test_edit_existing_entry_integer_by_app_upload_same_user($index)
     {
         //get project definition
         $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
@@ -286,9 +285,8 @@ class EditExistingHierarchyEntryTest extends TestCase
     /**
      * @param $index
      * @return void
-     * @dataProvider multipleRunProvider
      */
-    public function test_edit_existing_entry_decimal_by_app_upload_same_user($index)
+    #[DataProvider('multipleRunProvider')] public function test_edit_existing_entry_decimal_by_app_upload_same_user($index)
     {
         //get project definition
         $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
@@ -380,9 +378,8 @@ class EditExistingHierarchyEntryTest extends TestCase
     /**
      * @param $index
      * @return void
-     * @dataProvider multipleRunProvider
      */
-    public function test_edit_existing_entry_phone_by_app_upload_same_user($index)
+    #[DataProvider('multipleRunProvider')] public function test_edit_existing_entry_phone_by_app_upload_same_user($index)
     {
         //get project definition
         $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
@@ -474,9 +471,8 @@ class EditExistingHierarchyEntryTest extends TestCase
     /**
      * @param $index
      * @return void
-     * @dataProvider multipleRunProvider
      */
-    public function test_edit_existing_entry_date_by_app_upload_same_user($index)
+    #[DataProvider('multipleRunProvider')] public function test_edit_existing_entry_date_by_app_upload_same_user($index)
     {
         //get project definition
         $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
@@ -568,9 +564,8 @@ class EditExistingHierarchyEntryTest extends TestCase
     /**
      * @param $index
      * @return void
-     * @dataProvider multipleRunProvider
      */
-    public function test_edit_existing_entry_time_by_app_upload_same_user($index)
+    #[DataProvider('multipleRunProvider')] public function test_edit_existing_entry_time_by_app_upload_same_user($index)
     {
         //get project definition
         $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
@@ -662,9 +657,8 @@ class EditExistingHierarchyEntryTest extends TestCase
     /**
      * @param $index
      * @return void
-     * @dataProvider multipleRunProvider
      */
-    public function test_edit_existing_entry_dropdown_by_app_upload_same_user($index)
+    #[DataProvider('multipleRunProvider')] public function test_edit_existing_entry_dropdown_by_app_upload_same_user($index)
     {
         //get project definition
         $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
@@ -756,9 +750,8 @@ class EditExistingHierarchyEntryTest extends TestCase
     /**
      * @param $index
      * @return void
-     * @dataProvider multipleRunProvider
      */
-    public function test_edit_existing_entry_radio_by_app_upload_same_user($index)
+    #[DataProvider('multipleRunProvider')] public function test_edit_existing_entry_radio_by_app_upload_same_user($index)
     {
         //get project definition
         $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
@@ -850,9 +843,8 @@ class EditExistingHierarchyEntryTest extends TestCase
     /**
      * @param $index
      * @return void
-     * @dataProvider multipleRunProvider
      */
-    public function test_edit_existing_entry_checkbox_by_app_upload_same_user($index)
+    #[DataProvider('multipleRunProvider')] public function test_edit_existing_entry_checkbox_by_app_upload_same_user($index)
     {
         //get project definition
         $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
@@ -944,9 +936,8 @@ class EditExistingHierarchyEntryTest extends TestCase
     /**
      * @param $index
      * @return void
-     * @dataProvider multipleRunProvider
      */
-    public function test_edit_existing_entry_searchsingle_by_app_upload_same_user($index)
+    #[DataProvider('multipleRunProvider')] public function test_edit_existing_entry_searchsingle_by_app_upload_same_user($index)
     {
         //get project definition
         $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
@@ -1038,9 +1029,8 @@ class EditExistingHierarchyEntryTest extends TestCase
     /**
      * @param $index
      * @return void
-     * @dataProvider multipleRunProvider
      */
-    public function test_edit_existing_entry_searchmultiple_by_app_upload_same_user($index)
+    #[DataProvider('multipleRunProvider')] public function test_edit_existing_entry_searchmultiple_by_app_upload_same_user($index)
     {
         //get project definition
         $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
@@ -1132,9 +1122,8 @@ class EditExistingHierarchyEntryTest extends TestCase
     /**
      * @param $index
      * @return void
-     * @dataProvider multipleRunProvider
      */
-    public function test_edit_existing_entry_textbox_by_app_upload_same_user($index)
+    #[DataProvider('multipleRunProvider')] public function test_edit_existing_entry_textbox_by_app_upload_same_user($index)
     {
         //get project definition
         $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
@@ -1226,9 +1215,8 @@ class EditExistingHierarchyEntryTest extends TestCase
     /**
      * @param $index
      * @return void
-     * @dataProvider multipleRunProvider
      */
-    public function test_edit_existing_entry_location_by_app_upload_same_user($index)
+    #[DataProvider('multipleRunProvider')] public function test_edit_existing_entry_location_by_app_upload_same_user($index)
     {
         //get project definition
         $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
@@ -1320,9 +1308,8 @@ class EditExistingHierarchyEntryTest extends TestCase
     /**
      * @param $index
      * @return void
-     * @dataProvider multipleRunProvider
      */
-    public function test_edit_existing_entry_photo_by_app_upload_same_user($index)
+    #[DataProvider('multipleRunProvider')] public function test_edit_existing_entry_photo_by_app_upload_same_user($index)
     {
         //get project definition
         $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
@@ -1414,9 +1401,8 @@ class EditExistingHierarchyEntryTest extends TestCase
     /**
      * @param $index
      * @return void
-     * @dataProvider multipleRunProvider
      */
-    public function test_edit_existing_entry_audio_by_app_upload_same_user($index)
+    #[DataProvider('multipleRunProvider')] public function test_edit_existing_entry_audio_by_app_upload_same_user($index)
     {
         //get project definition
         $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
@@ -1508,9 +1494,8 @@ class EditExistingHierarchyEntryTest extends TestCase
     /**
      * @param $index
      * @return void
-     * @dataProvider multipleRunProvider
      */
-    public function test_edit_existing_entry_video_by_app_upload_same_user($index)
+    #[DataProvider('multipleRunProvider')] public function test_edit_existing_entry_video_by_app_upload_same_user($index)
     {
         //get project definition
         $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
@@ -1602,9 +1587,8 @@ class EditExistingHierarchyEntryTest extends TestCase
     /**
      * @param $index
      * @return void
-     * @dataProvider multipleRunProvider
      */
-    public function test_edit_existing_entry_barcode_by_app_upload_same_user($index)
+    #[DataProvider('multipleRunProvider')] public function test_edit_existing_entry_barcode_by_app_upload_same_user($index)
     {
         //get project definition
         $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
@@ -1696,9 +1680,8 @@ class EditExistingHierarchyEntryTest extends TestCase
     /**
      * @param $index
      * @return void
-     * @dataProvider multipleRunProvider
      */
-    public function test_edit_existing_entry_text_by_app_upload_another_user_with_manager_role($index)
+    #[DataProvider('multipleRunProvider')] public function test_edit_existing_entry_text_by_app_upload_another_user_with_manager_role($index)
     {
         //add a manager to the project
         $manager = factory(User::class)->create();
@@ -1800,9 +1783,8 @@ class EditExistingHierarchyEntryTest extends TestCase
     /**
      * @param $index
      * @return void
-     * @dataProvider multipleRunProvider
      */
-    public function test_edit_existing_entry_text_by_app_upload_another_user_with_curator_role($index)
+    #[DataProvider('multipleRunProvider')] public function test_edit_existing_entry_text_by_app_upload_another_user_with_curator_role($index)
     {
         //add a curator to the project
         $curator = factory(User::class)->create();
@@ -1904,9 +1886,8 @@ class EditExistingHierarchyEntryTest extends TestCase
     /**
      * @param $index
      * @return void
-     * @dataProvider multipleRunProvider
      */
-    public function test_edit_existing_entry_text_by_app_upload_same_collector($index)
+    #[DataProvider('multipleRunProvider')] public function test_edit_existing_entry_text_by_app_upload_same_collector($index)
     {
         //add a collector to the project
         $collector = factory(User::class)->create();
@@ -2009,9 +1990,8 @@ class EditExistingHierarchyEntryTest extends TestCase
     /**
      * @param $index
      * @return void
-     * @dataProvider multipleRunProvider
      */
-    public function test_edit_existing_entry_text_by_app_upload_different_collector_must_fail($index)
+    #[DataProvider('multipleRunProvider')] public function test_edit_existing_entry_text_by_app_upload_different_collector_must_fail($index)
     {
         //add a collectorA to the project
         $collectorA = factory(User::class)->create();
@@ -2122,9 +2102,8 @@ class EditExistingHierarchyEntryTest extends TestCase
     /**
      * @param $index
      * @return void
-     * @dataProvider multipleRunProvider
      */
-    public function test_edit_existing_entry_text_by_app_upload_same_device($index)
+    #[DataProvider('multipleRunProvider')] public function test_edit_existing_entry_text_by_app_upload_same_device($index)
     {
         //get project definition
         $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
@@ -2219,9 +2198,8 @@ class EditExistingHierarchyEntryTest extends TestCase
     /**
      * @param $index
      * @return void
-     * @dataProvider multipleRunProvider
      */
-    public function test_edit_existing_entry_text_by_app_upload_different_device_fails($index)
+    #[DataProvider('multipleRunProvider')] public function test_edit_existing_entry_text_by_app_upload_different_device_fails($index)
     {
         //get project definition
         $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
@@ -2322,9 +2300,8 @@ class EditExistingHierarchyEntryTest extends TestCase
     /**
      * @param $index
      * @return void
-     * @dataProvider multipleRunProvider
      */
-    public function test_edit_existing_entry_text_by_app_upload_same_device_logged_in_collector($index)
+    #[DataProvider('multipleRunProvider')] public function test_edit_existing_entry_text_by_app_upload_same_device_logged_in_collector($index)
     {
         $collector = factory(User::class)->create();
         factory(ProjectRole::class)->create([

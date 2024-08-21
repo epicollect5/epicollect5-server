@@ -100,4 +100,9 @@ class ViewEntriesBaseControllerTest extends TestCase
         $this->locationInputRefs = Common::getLocationInputRefs($projectDefinition);
     }
 
+    public function test_to_remove_warning()
+    {
+        $this->assertTrue(true);
+    }
+
 }

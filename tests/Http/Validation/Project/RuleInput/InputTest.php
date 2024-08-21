@@ -56,4 +56,9 @@ class InputTest extends TestCase
 
         $this->parentRef = 'xxx';
     }
+    
+    public function test_to_remove_warning()
+    {
+        $this->assertTrue(true);
+    }
 }

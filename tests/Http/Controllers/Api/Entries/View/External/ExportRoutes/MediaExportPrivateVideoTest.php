@@ -17,6 +17,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Passport\ClientRepository;
+use PHPUnit\Framework\Attributes\Depends;
 use Tests\Generators\EntryGenerator;
 use Tests\Generators\MediaGenerator;
 use Tests\Generators\ProjectDefinitionGenerator;
@@ -154,10 +155,7 @@ class MediaExportPrivateVideoTest extends TestCase
         }
     }
 
-    /**
-     * @depends test_getting_OAuth2_token
-     */
-    public function test_videos_export_endpoint_private($params)
+    #[Depends('test_getting_OAuth2_token')] public function test_videos_export_endpoint_private($params)
     {
         $token = $params['token'];
         $user = $params['user'];

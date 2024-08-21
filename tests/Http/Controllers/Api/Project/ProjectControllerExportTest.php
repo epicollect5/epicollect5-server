@@ -16,6 +16,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Passport\ClientRepository;
+use PHPUnit\Framework\Attributes\Depends;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 
@@ -165,10 +166,7 @@ class ProjectControllerExportTest extends TestCase
         }
     }
 
-    /**
-     * @depends test_should_get_token_OAuth2
-     */
-    public function test_should_use_token_to_export_private_project($params)
+    #[Depends('test_should_get_token_OAuth2')] public function test_should_use_token_to_export_private_project($params)
     {
         $token = $params['token'];
         $project = $params['project'];
@@ -201,10 +199,7 @@ class ProjectControllerExportTest extends TestCase
         }
     }
 
-    /**
-     * @depends test_should_use_token_to_export_private_project
-     */
-    public function test_should_fail_to_export_different_private_project($params)
+    #[Depends('test_should_use_token_to_export_private_project')] public function test_should_fail_to_export_different_private_project($params)
     {
         $token = $params['token'];
         $user = $params['user'];

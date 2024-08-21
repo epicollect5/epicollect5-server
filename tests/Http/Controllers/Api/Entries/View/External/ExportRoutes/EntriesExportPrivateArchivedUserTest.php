@@ -17,6 +17,7 @@ use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Laravel\Passport\ClientRepository;
+use PHPUnit\Framework\Attributes\Depends;
 use Tests\Generators\EntryGenerator;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
@@ -153,10 +154,7 @@ class EntriesExportPrivateArchivedUserTest extends TestCase
         }
     }
 
-    /**
-     * @depends test_getting_OAuth2_token
-     */
-    public function test_entries_export_endpoint_private($params)
+    #[Depends('test_getting_OAuth2_token')] public function test_entries_export_endpoint_private($params)
     {
         $token = $params['token'];
         $user = $params['user'];

@@ -8,7 +8,6 @@ use ec5\Models\Counters\BranchEntryCounter;
 use ec5\Models\Counters\EntryCounter;
 use ec5\Traits\Requests\RequestAttributes;
 use Log;
-use Monolog\Handler\LogEntriesHandler;
 
 class EntriesUploadService
 {
@@ -87,7 +86,8 @@ class EntriesUploadService
             if (!$createEntryService->create(
                 $this->requestedProject(),
                 $this->entryStructure,
-                $this->isBulkUpload)
+                $this->isBulkUpload
+            )
             ) {
                 Log::error(__METHOD__ . ' failed.', [
                     'error' => $this->errors,
@@ -153,8 +153,8 @@ class EntriesUploadService
 
     public function isProjectVersionValid(EntryStructureDTO $entryStructure): bool
     {
-        Log::error(__METHOD__ . ' failed.', ['project version' => $this->requestedProject()->getProjectStats()->structure_last_updated]);
-        Log::error(__METHOD__ . ' failed.', ['entry version' => $entryStructure->getProjectVersion()]);
+        // Log::debug(__METHOD__ . ' failed.', ['project version' => $this->requestedProject()->getProjectStats()->structure_last_updated]);
+        //Log::debug(__METHOD__ . ' failed.', ['entry version' => $entryStructure->getProjectVersion()]);
 
         if ($this->requestedProject()->getProjectStats()->structure_last_updated !== $entryStructure->getProjectVersion()) {
             return false;

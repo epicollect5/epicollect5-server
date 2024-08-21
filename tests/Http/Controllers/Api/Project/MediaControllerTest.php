@@ -9,10 +9,9 @@ use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 use Image;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 
@@ -65,10 +64,7 @@ class MediaControllerTest extends TestCase
         $this->project = $project;
     }
 
-    /**
-     * @dataProvider multipleRunProvider
-     */
-    public function test_should_give_private_project_error()
+    #[DataProvider('multipleRunProvider')] public function test_should_give_private_project_error()
     {
         $this->project->access = config('epicollect.strings.project_access.private');
         $this->project->save();
@@ -87,10 +83,7 @@ class MediaControllerTest extends TestCase
 
     //assert getMedia
 
-    /**
-     * @dataProvider multipleRunProvider
-     */
-    public function test_missing_params_in_request()
+    #[DataProvider('multipleRunProvider')] public function test_missing_params_in_request()
     {
         $response = $this->json('GET', 'api/internal/media/' . $this->project->slug);
         $response->assertStatus(400)
@@ -125,10 +118,7 @@ class MediaControllerTest extends TestCase
             );
     }
 
-    /**
-     * @dataProvider multipleRunProvider
-     */
-    public function test_wrong_type_in_request()
+    #[DataProvider('multipleRunProvider')] public function test_wrong_type_in_request()
     {
         $response = $this->json('GET', 'api/internal/media/' . $this->project->slug . '?type=wrong&name=filename&format=entry_thumb')
             ->assertStatus(400)
@@ -154,10 +144,7 @@ class MediaControllerTest extends TestCase
             );
     }
 
-    /**
-     * @dataProvider multipleRunProvider
-     */
-    public function test_missing_params_in_photo_request()
+    #[DataProvider('multipleRunProvider')] public function test_missing_params_in_photo_request()
     {
         $response = $this->json('GET', 'api/internal/media/' . $this->project->slug . '?type=photo')
             ->assertStatus(400)
@@ -187,10 +174,7 @@ class MediaControllerTest extends TestCase
             );
     }
 
-    /**
-     * @dataProvider multipleRunProvider
-     */
-    public function test_missing_name_in_photo_entry_original_request()
+    #[DataProvider('multipleRunProvider')] public function test_missing_name_in_photo_entry_original_request()
     {
         $response = $this->json('GET', 'api/internal/media/' . $this->project->slug . '?type=photo&format=entry_original')
             ->assertStatus(400)
@@ -215,10 +199,7 @@ class MediaControllerTest extends TestCase
             );
     }
 
-    /**
-     * @dataProvider multipleRunProvider
-     */
-    public function test_missing_name_in_photo_entry_thumb_request()
+    #[DataProvider('multipleRunProvider')] public function test_missing_name_in_photo_entry_thumb_request()
     {
         $response = $this->json('GET', 'api/internal/media/' . $this->project->slug . '?type=photo&format=entry_thumb')
             ->assertStatus(400)
@@ -243,10 +224,7 @@ class MediaControllerTest extends TestCase
             );
     }
 
-    /**
-     * @dataProvider multipleRunProvider
-     */
-    public function test_missing_params_in_audio_request()
+    #[DataProvider('multipleRunProvider')] public function test_missing_params_in_audio_request()
     {
         $response = $this->json('GET', 'api/internal/media/' . $this->project->slug . '?type=audio')
             ->assertStatus(400)
@@ -276,10 +254,7 @@ class MediaControllerTest extends TestCase
             );
     }
 
-    /**
-     * @dataProvider multipleRunProvider
-     */
-    public function test_audio_file_not_found()
+    #[DataProvider('multipleRunProvider')] public function test_audio_file_not_found()
     {
         $response = $this->json('GET', 'api/internal/media/' . $this->project->slug . '?type=audio&name=ciao&format=audio')
             ->assertStatus(404)
@@ -304,10 +279,7 @@ class MediaControllerTest extends TestCase
             );
     }
 
-    /**
-     * @dataProvider multipleRunProvider
-     */
-    public function test_video_file_not_found()
+    #[DataProvider('multipleRunProvider')] public function test_video_file_not_found()
     {
         $response = $this->json('GET', 'api/internal/media/' . $this->project->slug . '?type=audio&name=ciao&format=video')
             ->assertStatus(404)
@@ -332,10 +304,7 @@ class MediaControllerTest extends TestCase
             );
     }
 
-    /**
-     * @dataProvider multipleRunProvider
-     */
-    public function test_missing_params_in_video_request()
+    #[DataProvider('multipleRunProvider')] public function test_missing_params_in_video_request()
     {
         $response = $this->json('GET', 'api/internal/media/' . $this->project->slug . '?type=video')
             ->assertStatus(400)
@@ -365,10 +334,7 @@ class MediaControllerTest extends TestCase
             );
     }
 
-    /**
-     * @dataProvider multipleRunProvider
-     */
-    public function test_photo_placeholder_is_returned()
+    #[DataProvider('multipleRunProvider')] public function test_photo_placeholder_is_returned()
     {
         $response = $this->get('api/internal/media/' . $this->project->slug . '?type=photo&name=ciao&format=entry_original')
             ->assertStatus(200);
@@ -388,10 +354,7 @@ class MediaControllerTest extends TestCase
         $response->assertHeader('Content-Type', config('epicollect.media.content_type.photo'));
     }
 
-    /**
-     * @dataProvider multipleRunProvider
-     */
-    public function test_photo_file_is_returned_landscape()
+    #[DataProvider('multipleRunProvider')] public function test_photo_file_is_returned_landscape()
     {
         //create a fake entry
         $entry = factory(Entry::class)->create([
@@ -449,10 +412,7 @@ class MediaControllerTest extends TestCase
         Storage::disk('entry_thumb')->deleteDirectory($this->project->ref);
     }
 
-    /**
-     * @dataProvider multipleRunProvider
-     */
-    public function test_photo_file_is_returned_portrait_size_original()
+    #[DataProvider('multipleRunProvider')] public function test_photo_file_is_returned_portrait_size_original()
     {
         //create a fake entry
         $entry = factory(Entry::class)->create([
@@ -489,10 +449,7 @@ class MediaControllerTest extends TestCase
         Storage::disk('entry_original')->deleteDirectory($this->project->ref);
     }
 
-    /**
-     * @dataProvider multipleRunProvider
-     */
-    public function test_photo_file_is_returned_portrait_size_thumb()
+    #[DataProvider('multipleRunProvider')] public function test_photo_file_is_returned_portrait_size_thumb()
     {
         //create a fake entry
         $entry = factory(Entry::class)->create([
@@ -529,10 +486,7 @@ class MediaControllerTest extends TestCase
     }
 
 
-    /**
-     * @dataProvider multipleRunProvider
-     */
-    public function test_audio_file_is_returned_using_streamed_response()
+    #[DataProvider('multipleRunProvider')] public function test_audio_file_is_returned_using_streamed_response()
     {
         //create a fake entry
         $entry = factory(Entry::class)->create([
@@ -555,10 +509,7 @@ class MediaControllerTest extends TestCase
         Storage::disk('audio')->deleteDirectory($this->project->ref);
     }
 
-    /**
-     * @dataProvider multipleRunProvider
-     */
-    public function test_video_file_is_returned_using_streamed_response()
+    #[DataProvider('multipleRunProvider')] public function test_video_file_is_returned_using_streamed_response()
     {
         //create a fake entry
         $entry = factory(Entry::class)->create([
@@ -584,10 +535,7 @@ class MediaControllerTest extends TestCase
 
     //assert getTempMedia method
 
-    /**
-     * @dataProvider multipleRunProvider
-     */
-    public function test_missing_params_in_request_temp()
+    #[DataProvider('multipleRunProvider')] public function test_missing_params_in_request_temp()
     {
         $response = $this->json('GET', 'api/internal/temp-media/' . $this->project->slug)
             ->assertStatus(400)
@@ -622,10 +570,7 @@ class MediaControllerTest extends TestCase
             );
     }
 
-    /**
-     * @dataProvider multipleRunProvider
-     */
-    public function test_wrong_type_in_request_temp()
+    #[DataProvider('multipleRunProvider')] public function test_wrong_type_in_request_temp()
     {
         $response = $this->json('GET', 'api/internal/temp-media/' . $this->project->slug . '?type=wrong&name=filename&format=entry_thumb')
             ->assertStatus(400)
@@ -651,10 +596,7 @@ class MediaControllerTest extends TestCase
             );
     }
 
-    /**
-     * @dataProvider multipleRunProvider
-     */
-    public function test_missing_params_in_photo_request_temp()
+    #[DataProvider('multipleRunProvider')] public function test_missing_params_in_photo_request_temp()
     {
         $response = $this->json('GET', 'api/internal/temp-media/' . $this->project->slug . '?type=photo')
             ->assertStatus(400)
@@ -684,10 +626,7 @@ class MediaControllerTest extends TestCase
             );
     }
 
-    /**
-     * @dataProvider multipleRunProvider
-     */
-    public function test_missing_name_in_photo_entry_original_request_temp()
+    #[DataProvider('multipleRunProvider')] public function test_missing_name_in_photo_entry_original_request_temp()
     {
         $response = $this->json('GET', 'api/internal/temp-media/' . $this->project->slug . '?type=photo&format=entry_original')
             ->assertStatus(400)
@@ -712,9 +651,7 @@ class MediaControllerTest extends TestCase
             );
     }
 
-    /**
-     * @dataProvider multipleRunProvider
-     */
+    #[DataProvider('multipleRunProvider')]
     public function test_missing_name_in_photo_entry_thumb_request_temp()
     {
         $response = $this->json('GET', 'api/internal/temp-media/' . $this->project->slug . '?type=photo&format=entry_thumb')
@@ -740,10 +677,7 @@ class MediaControllerTest extends TestCase
             );
     }
 
-    /**
-     * @dataProvider multipleRunProvider
-     */
-    public function test_missing_params_in_audio_request_temp()
+    #[DataProvider('multipleRunProvider')] public function test_missing_params_in_audio_request_temp()
     {
         $response = $this->json('GET', 'api/internal/temp-media/' . $this->project->slug . '?type=audio')
             ->assertStatus(400)
@@ -773,10 +707,7 @@ class MediaControllerTest extends TestCase
             );
     }
 
-    /**
-     * @dataProvider multipleRunProvider
-     */
-    public function test_audio_file_not_found_temp()
+    #[DataProvider('multipleRunProvider')] public function test_audio_file_not_found_temp()
     {
         $response = $this->json('GET', 'api/internal/temp-media/' . $this->project->slug . '?type=audio&name=ciao&format=audio')
             ->assertStatus(404)
@@ -801,10 +732,7 @@ class MediaControllerTest extends TestCase
             );
     }
 
-    /**
-     * @dataProvider multipleRunProvider
-     */
-    public function test_video_file_not_found_temp()
+    #[DataProvider('multipleRunProvider')] public function test_video_file_not_found_temp()
     {
         $response = $this->json('GET', 'api/internal/temp-media/' . $this->project->slug . '?type=audio&name=ciao&format=video')
             ->assertStatus(404)
@@ -829,10 +757,7 @@ class MediaControllerTest extends TestCase
             );
     }
 
-    /**
-     * @dataProvider multipleRunProvider
-     */
-    public function test_missing_params_in_video_request_temp()
+    #[DataProvider('multipleRunProvider')] public function test_missing_params_in_video_request_temp()
     {
         $response = $this->json('GET', 'api/internal/temp-media/' . $this->project->slug . '?type=video')
             ->assertStatus(400)
@@ -862,9 +787,7 @@ class MediaControllerTest extends TestCase
             );
     }
 
-    /**
-     * @dataProvider multipleRunProvider
-     */
+    #[DataProvider('multipleRunProvider')]
     public function test_photo_placeholder_is_returned_temp()
     {
         $response = $this->get('api/internal/temp-media/' . $this->project->slug . '?type=photo&name=ciao&format=entry_original')
@@ -885,9 +808,7 @@ class MediaControllerTest extends TestCase
         $response->assertHeader('Content-Type', config('epicollect.media.content_type.photo'));
     }
 
-    /**
-     * @dataProvider multipleRunProvider
-     */
+    #[DataProvider('multipleRunProvider')]
     public function test_photo_file_is_returned_landscape_temp()
     {
         //create a fake entry
@@ -925,10 +846,7 @@ class MediaControllerTest extends TestCase
         Storage::disk('temp')->deleteDirectory('photo/' . $this->project->ref);
     }
 
-    /**
-     * @dataProvider multipleRunProvider
-     */
-    public function test_photo_file_is_returned_portrait_temp()
+    #[DataProvider('multipleRunProvider')] public function test_photo_file_is_returned_portrait_temp()
     {
         //create project
         $project = factory(Project::class)->create(
@@ -972,10 +890,7 @@ class MediaControllerTest extends TestCase
         Storage::disk('temp')->deleteDirectory('photo/' . $this->project->ref);
     }
 
-    /**
-     * @dataProvider multipleRunProvider
-     */
-    public function test_audio_file_is_returned_using_streamed_response_temp()
+    #[DataProvider('multipleRunProvider')] public function test_audio_file_is_returned_using_streamed_response_temp()
     {
         //create a fake entry
         $entry = factory(Entry::class)->create([
@@ -999,10 +914,7 @@ class MediaControllerTest extends TestCase
         Storage::disk('temp')->deleteDirectory('audio/' . $this->project->ref);
     }
 
-    /**
-     * @dataProvider multipleRunProvider
-     */
-    public function test_video_file_is_returned_using_streamed_response_temp()
+    #[DataProvider('multipleRunProvider')] public function test_video_file_is_returned_using_streamed_response_temp()
     {
         //create a fake entry
         $entry = factory(Entry::class)->create([

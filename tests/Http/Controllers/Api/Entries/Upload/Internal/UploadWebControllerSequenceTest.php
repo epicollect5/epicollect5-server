@@ -11,6 +11,7 @@ use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use Exception;
 use Faker\Factory as Faker;
+use PHPUnit\Framework\Attributes\Depends;
 use Tests\Generators\EntryGenerator;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
@@ -117,10 +118,7 @@ class UploadWebControllerSequenceTest extends TestCase
         }
     }
 
-    /**
-     * @depends test_should_create_fake_project
-     */
-    public function test_it_should_upload_a_top_hierarchy_entry($params)
+    #[Depends('test_should_create_fake_project')] public function test_it_should_upload_a_top_hierarchy_entry($params)
     {
         $response = [];
         try {
@@ -167,10 +165,7 @@ class UploadWebControllerSequenceTest extends TestCase
         }
     }
 
-    /**
-     * @depends test_it_should_upload_a_top_hierarchy_entry
-     */
-    public function test_it_should_upload_a_child_entry_level_1($params)
+    #[Depends('test_it_should_upload_a_top_hierarchy_entry')] public function test_it_should_upload_a_child_entry_level_1($params)
     {
         $response = [];
         try {
@@ -224,10 +219,7 @@ class UploadWebControllerSequenceTest extends TestCase
         }
     }
 
-    /**
-     * @depends test_it_should_upload_a_child_entry_level_1
-     */
-    public function test_it_should_upload_a_child_entry_level_2($params)
+    #[Depends('test_it_should_upload_a_child_entry_level_1')] public function test_it_should_upload_a_child_entry_level_2($params)
     {
         $response = [];
         try {
@@ -289,10 +281,7 @@ class UploadWebControllerSequenceTest extends TestCase
         }
     }
 
-    /**
-     * @depends test_it_should_upload_a_child_entry_level_2
-     */
-    public function test_it_should_upload_a_child_entry_level_3($params)
+    #[Depends('test_it_should_upload_a_child_entry_level_2')] public function test_it_should_upload_a_child_entry_level_3($params)
     {
         $response = [];
         try {
@@ -358,10 +347,7 @@ class UploadWebControllerSequenceTest extends TestCase
         }
     }
 
-    /**
-     * @depends test_it_should_upload_a_child_entry_level_3
-     */
-    public function test_it_should_upload_a_child_entry_level_4($params)
+    #[Depends('test_it_should_upload_a_child_entry_level_3')] public function test_it_should_upload_a_child_entry_level_4($params)
     {
         $response = [];
         try {
@@ -431,10 +417,7 @@ class UploadWebControllerSequenceTest extends TestCase
         }
     }
 
-    /**
-     * @depends test_it_should_upload_a_child_entry_level_4
-     */
-    public function test_it_should_upload_branch_entry_0($params)
+    #[Depends('test_it_should_upload_a_child_entry_level_4')] public function test_it_should_upload_branch_entry_0($params)
     {
         $response = [];
         try {
@@ -525,10 +508,7 @@ class UploadWebControllerSequenceTest extends TestCase
         }
     }
 
-    /**
-     * @depends test_it_should_upload_branch_entry_0
-     */
-    public function test_it_should_upload_branch_entry_1($params)
+    #[Depends('test_it_should_upload_branch_entry_0')] public function test_it_should_upload_branch_entry_1($params)
     {
         $entry = $params['entry'];
         $childEntry1 = $params['childEntry1'];
@@ -614,10 +594,7 @@ class UploadWebControllerSequenceTest extends TestCase
         }
     }
 
-    /**
-     * @depends test_it_should_upload_branch_entry_1
-     */
-    public function test_it_should_upload_branch_entry_2($params)
+    #[Depends('test_it_should_upload_branch_entry_1')] public function test_it_should_upload_branch_entry_2($params)
     {
         $entry = $params['entry'];
         $childEntry1 = $params['childEntry1'];
@@ -703,10 +680,7 @@ class UploadWebControllerSequenceTest extends TestCase
         }
     }
 
-    /**
-     * @depends test_it_should_upload_branch_entry_2
-     */
-    public function test_it_should_upload_branch_entry_3($params)
+    #[Depends('test_it_should_upload_branch_entry_2')] public function test_it_should_upload_branch_entry_3($params)
     {
         $entry = $params['entry'];
         $childEntry1 = $params['childEntry1'];
@@ -791,10 +765,7 @@ class UploadWebControllerSequenceTest extends TestCase
         }
     }
 
-    /**
-     * @depends test_it_should_upload_branch_entry_3
-     */
-    public function test_it_should_upload_branch_entry_4($params)
+    #[Depends('test_it_should_upload_branch_entry_3')] public function test_it_should_upload_branch_entry_4($params)
     {
         $childEntry4 = $params['childEntry4'];
         $user = $params['user'];

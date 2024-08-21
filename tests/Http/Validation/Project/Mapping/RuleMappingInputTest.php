@@ -3,6 +3,7 @@
 namespace Tests\Http\Validation\Project\Mapping;
 
 use Faker\Factory as Faker;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 use ec5\Http\Validation\Project\Mapping\RuleMappingInput;
 
@@ -36,10 +37,7 @@ class RuleMappingInputTest extends TestCase
         }
     }
 
-    /**
-     * @dataProvider multipleRunProvider
-     */
-    public function test_invalid_input()
+    #[DataProvider('multipleRunProvider')] public function test_invalid_input()
     {
         $count = rand(1, 5);
         for ($i = 1; $i < $count; $i++) {

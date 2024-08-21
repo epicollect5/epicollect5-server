@@ -12,6 +12,7 @@ use ec5\Traits\Assertions;
 use Exception;
 use Faker\Factory as Faker;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 
@@ -189,10 +190,7 @@ class ProjectMappingControllerTest extends TestCase
         }
     }
 
-    /**
-     * @dataProvider multipleRunProvider
-     */
-    public function test_existing_mapping_is_updated()
+    #[DataProvider('multipleRunProvider')] public function test_existing_mapping_is_updated()
     {
         //get mapping
         $projectStructures = ProjectStructure::where('project_id', $this->project->id)
@@ -354,10 +352,7 @@ class ProjectMappingControllerTest extends TestCase
         }
     }
 
-    /**
-     * @dataProvider multipleRunProvider
-     */
-    public function test_existing_mapping_is_renamed()
+    #[DataProvider('multipleRunProvider')] public function test_existing_mapping_is_renamed()
     {
         //get mapping
         $projectStructures = ProjectStructure::where('project_id', $this->project->id)

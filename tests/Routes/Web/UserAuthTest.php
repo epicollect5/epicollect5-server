@@ -5,12 +5,9 @@ namespace Tests\Routes\Web;
 use ec5\Models\User\User;
 use ec5\Models\User\UserProvider;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 use Mockery;
 use Tests\TestCase;
-
-//use Laravel\Socialite\Contracts\Factory as Socialite;
 
 class UserAuthTest extends TestCase
 {
@@ -18,9 +15,6 @@ class UserAuthTest extends TestCase
 
     /**
      * Mock the Socialite Factory, so we can hijack the OAuth Request.
-     * @param string $email
-     * @param string $token
-     * @param int $id
      * @return void
      */
     // public function mockSocialiteFacade($email = 'foo@bar.com', $token = 'abc', $id = 1)
@@ -51,20 +45,6 @@ class UserAuthTest extends TestCase
 
         $this->assertStringContainsString('https://accounts.google.com/o/oauth2/', $response->getTargetUrl());
     }
-
-    /** @test */
-    // public function testAuthGoogleCallback()
-    // {
-    //     // Mock the Facade and return a User Object with the email 'foo@bar.com'
-    //     $this->mockSocialiteFacade('foo@bar.com');
-
-    //     $response = $this->get('handle/google');
-    //     $response->assertStatus(302);
-
-    //     $this->seeInDatabase('users', [
-    //         'email' => 'foo@bar.com',
-    //     ]);
-    // }
 
 
     public function testSocialiteGoogleLogin()

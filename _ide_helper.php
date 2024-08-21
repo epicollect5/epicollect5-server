@@ -5,7 +5,7 @@
 
 /**
  * A helper file for Laravel, to provide autocomplete information to your IDE
- * Generated for Laravel 11.20.0.
+ * Generated for Laravel 11.21.0.
  *
  * This file should not be included in your code, only analyzed by your IDE!
  *
@@ -1364,6 +1364,17 @@ namespace Illuminate\Support\Facades {
                         return $instance->build($concrete);
         }
                     /**
+         * Resolve a dependency based on an attribute.
+         *
+         * @param \ReflectionAttribute $attribute
+         * @return mixed 
+         * @static 
+         */        public static function resolveFromAttribute($attribute)
+        {            //Method inherited from \Illuminate\Container\Container         
+                        /** @var \Illuminate\Foundation\Application $instance */
+                        return $instance->resolveFromAttribute($attribute);
+        }
+                    /**
          * Register a new before resolving callback for all types.
          *
          * @param \Closure|string $abstract
@@ -1410,6 +1421,18 @@ namespace Illuminate\Support\Facades {
         {            //Method inherited from \Illuminate\Container\Container         
                         /** @var \Illuminate\Foundation\Application $instance */
                         $instance->afterResolvingAttribute($attribute, $callback);
+        }
+                    /**
+         * Fire all of the after resolving attribute callbacks.
+         *
+         * @param \ReflectionAttribute[] $abstract
+         * @param mixed $object
+         * @return void 
+         * @static 
+         */        public static function fireAfterResolvingAttributeCallbacks($attributes, $object)
+        {            //Method inherited from \Illuminate\Container\Container         
+                        /** @var \Illuminate\Foundation\Application $instance */
+                        $instance->fireAfterResolvingAttributeCallbacks($attributes, $object);
         }
                     /**
          * Get the container's bindings.
@@ -5286,8 +5309,8 @@ namespace Illuminate\Support\Facades {
                     /**
          * Register an event listener with the dispatcher.
          *
-         * @param \Closure|string|array $events
-         * @param \Closure|string|array|null $listener
+         * @param \Illuminate\Events\Queued\Closure|\Closure|string|array $events
+         * @param \Illuminate\Events\Queued\Closure|\Closure|string|array|null $listener
          * @return void 
          * @static 
          */        public static function listen($events, $listener = null)

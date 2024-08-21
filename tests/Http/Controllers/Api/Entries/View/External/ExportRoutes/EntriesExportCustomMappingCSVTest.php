@@ -9,6 +9,7 @@ use ec5\Models\Project\ProjectStructure;
 use ec5\Traits\Assertions;
 use Exception;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Http\Controllers\Api\Entries\View\ViewEntriesBaseControllerTest;
 use League\Csv\Reader;
 
@@ -792,9 +793,8 @@ class EntriesExportCustomMappingCSVTest extends ViewEntriesBaseControllerTest
     /**
      * Test method to be run multiple times.
      *
-     * @dataProvider multipleRunProvider
      */
-    public function test_entries_export_endpoint_form_0_single_entry_custom_mapping_modified_branches_count_csv($index)
+    #[DataProvider('multipleRunProvider')] public function test_entries_export_endpoint_form_0_single_entry_custom_mapping_modified_branches_count_csv($index)
     {
         $mapIndex = 1;
         //set project as public so the endpoint is accessible without auth
