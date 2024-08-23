@@ -5,7 +5,6 @@ namespace ec5\Http\Controllers\Api\Project;
 use ec5\Http\Validation\Media\RuleMedia;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Http\JsonResponse;
-use Exception;
 use Response;
 use Storage;
 use Log;
@@ -15,7 +14,6 @@ use Throwable;
 
 class MediaController
 {
-
     /*
     |--------------------------------------------------------------------------
     | Media Controller
@@ -24,7 +22,6 @@ class MediaController
     | This controller serves media files
     |
     */
-
     use RequestAttributes;
 
     /**
@@ -81,7 +78,6 @@ class MediaController
                 //get file real path
                 $realFilepath = $storagePathPrefix . $this->requestedProject()->ref . '/' . $params['name'];
 
-
                 //stream only audio and video
                 if ($inputType !== config('epicollect.strings.inputs_type.photo')) {
                     //serve as 206  partial response to load file faster
@@ -92,7 +88,7 @@ class MediaController
                     $response->header('Content-Type', $contentType);
                     return $response;
                 }
-            } catch (FileNotFoundException $e) {
+            } catch (FileNotFoundException) {
                 if ($inputType === config('epicollect.strings.inputs_type.photo')) {
                     //Return default placeholder image for photo questions
                     $file = Storage::disk('public')->get($defaultName);
@@ -149,31 +145,29 @@ class MediaController
             // Attempt to retrieve media
             try {
                 // Use the provided 'format' as the driver
-                $file = Storage::disk('temp')->get($inputType . '/' . $this->requestedProject()->ref . '/' . $params['name']);
-                //get storage real path
-                $filepath = Storage::disk('temp')->path('');
+                $filepathPrefix = Storage::disk('temp')->path('');
                 //get file real path
-                $realFilepath = $filepath . $inputType . '/' . $this->requestedProject()->ref . '/' . $params['name'];
+                $realFilepath = $filepathPrefix . $inputType . '/' . $this->requestedProject()->ref . '/' . $params['name'];
                 //stream only audio and video (not in unit tests!)
                 if ($inputType !== config('epicollect.strings.inputs_type.photo')) {
                     //in tests, just return a 200 response as there are issue with headers()
                     return Response::toMediaStream(request(), $realFilepath, $inputType);
                 } else {
                     //photo response is as usual
-                    $response = Response::make($file);
+                    $response = Response::make($realFilepath);
                     $response->header('Content-Type', $contentType);
                     return $response;
                 }
             } catch (Throwable $e) {
-                Log::error('Streaming error', ['exception' => $e->getMessage()]);
+                Log::error('Temp media error', ['exception' => $e->getMessage()]);
                 // If the file is not found, see if we have it in the non-temp folders
                 return $this->getMedia($ruleMedia);
             }
         }
 
         // Otherwise return default placeholder media
-        $file = Storage::disk('public')->get($defaultName);
-        $response = Response::make($file);
+        $filepath = Storage::disk('public')->get($defaultName);
+        $response = Response::make($filepath);
         $response->header('Content-Type', $contentType);
 
         return $response;

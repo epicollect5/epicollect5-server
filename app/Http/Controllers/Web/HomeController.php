@@ -9,6 +9,7 @@ use ec5\Models\System\SystemStats;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\View\View;
 use Log;
+use Throwable;
 
 class HomeController extends Controller
 {
@@ -39,7 +40,7 @@ class HomeController extends Controller
             $projectsFirstRow = $allFeaturedProjects->splice(0, 3);
             //second row with 4 projects
             $projectsSecondRow = $allFeaturedProjects->splice(0, 4);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             $projectsFirstRow = [];
             $projectsSecondRow = [];
@@ -59,7 +60,7 @@ class HomeController extends Controller
             $totalEntries = $entriesStats->public + $entriesStats->private;
             $totalBranchEntries = $branchEntriesStats->public + $branchEntriesStats->private;
             $totalAllEntries = Common::roundNumber($totalEntries + $totalBranchEntries, 0);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error('Failed to get system stats, maybe brand new instance?', ['exception' => $e->getMessage()]);
             $users = 0;
             $totalProjects = 0;

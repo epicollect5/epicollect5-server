@@ -3,7 +3,6 @@
 namespace ec5\Http\Controllers\Api\OAuth;
 
 use ec5\Models\OAuth\OAuthAccessToken;
-use Exception;
 use Illuminate\Http\JsonResponse;
 use Laravel\Passport\Http\Controllers\HandlesOAuthErrors;
 use Laravel\Passport\TokenRepository;
@@ -17,6 +16,7 @@ use Response;
 
 //use Zend\Diactoros\Response as Psr7Response;
 use Nyholm\Psr7\Response as Psr7Response;
+use Throwable;
 
 class OAuthController
 {
@@ -79,7 +79,7 @@ class OAuthController
                 OAuthAccessToken::where('client_id', $payload['client_id'])->delete();
             }
             // return a new access token
-            return $this->server->respondToAccessTokenRequest($request, new Psr7Response);
+            return $this->server->respondToAccessTokenRequest($request, new Psr7Response());
         } catch (OAuthServerException $e) {
 
             // Switch on OAuthServerException error type
@@ -94,7 +94,7 @@ class OAuthController
                     // Use default error code
             }
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // Use default error code
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
         }

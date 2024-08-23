@@ -3,17 +3,13 @@
 namespace ec5\Http\Controllers\Api\Project;
 
 use Auth;
-use DB;
 use ec5\Http\Validation\Entries\Upload\RuleCanBulkUpload;
 use ec5\Http\Validation\Project\RuleName;
 use ec5\Models\Project\Project;
-use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
 use ec5\Traits\Requests\RequestAttributes;
-use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
-use Log;
 use Response;
 
 class ProjectController
