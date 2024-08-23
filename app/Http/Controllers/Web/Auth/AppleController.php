@@ -5,17 +5,19 @@ namespace ec5\Http\Controllers\Web\Auth;
 use Auth;
 use ec5\Http\Validation\Auth\RulePasswordlessApiLogin;
 use ec5\Models\User\User;
-use ec5\Models\User\UserPasswordlessApi;
 use ec5\Models\User\UserProvider;
 use ec5\Services\User\UserService;
 use ec5\Traits\Auth\AppleJWTHandler;
-use Exception;
+use ec5\Traits\Auth\AppleUserUpdater;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Log;
+use Throwable;
 
 class AppleController extends AuthController
 {
     use AppleJWTHandler;
+    use AppleUserUpdater;
 
     /*
     |--------------------------------------------------------------------------
@@ -68,7 +70,7 @@ class AppleController extends AuthController
                 $appleUser = json_decode($params['user'], true); //decode to array by passing "true"
                 $appleUserFirstName = $appleUser['name']['firstName'];
                 $appleUserLastName = $appleUser['name']['lastName'];
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 Log::error('Apple user object exception', ['exception' => $e->getMessage()]);
                 //if no user name found, default to Apple User
                 $appleUserFirstName = config('epicollect.mappings.user_placeholder.apple_first_name');
@@ -195,76 +197,17 @@ class AppleController extends AuthController
         $email = $inputs['email'];
         $provider = $this->appleProviderLabel;
 
-        //get token from db for comparison
-        $userPasswordless = UserPasswordlessApi::where('email', $email)->first();
-
-        //Does the email exists?
-        if ($userPasswordless === null) {
-            Log::error('Error validating passwordless code', ['error' => 'Email does not exist']);
-            return redirect()->route('verification-code')
-                ->with([
-                    'email' => $email,
-                    'provider' => $provider
-                ])
-                ->withErrors(['ec5_378']);
+        $result = $this->validateAppleOrGoogleUserWeb($email, $code, $provider);
+        if ($result instanceof RedirectResponse) {
+            return $result;
         }
 
-        //check if the code is valid
-        if (!$userPasswordless->isValidCode($code)) {
-            Log::error('Error validating passwordless code', ['error' => 'Code not valid']);
-            return redirect()->route('verification-code')
-                ->with([
-                    'email' => $email,
-                    'provider' => $provider
-                ])
-                ->withErrors(['ec5_378']);
-        }
+        $user = $result;
 
-        //code is valid, remove it
-        $userPasswordless->delete();
+        //try to update the Apple user detail (name, surname)
+        $this->updateAppleUserDetails($user, $inputs);
 
-        //find the existing user
-        $user = User::where('email', $email)->first();
-        if ($user === null) {
-            //this should never happen, but no harm in checking
-            return redirect()->route('verification-code')
-                ->with([
-                    'email' => $email,
-                    'provider' => $provider
-                ])
-                ->withErrors(['ec5_34']);
-        }
-
-        //add the apple provider so next time no verification is needed
-        $userProvider = new UserProvider();
-        $userProvider->email = $user->email;
-        $userProvider->user_id = $user->id;
-        $userProvider->provider = $this->appleProviderLabel;
-        $userProvider->save();
-
-        //update user details (if a user object is available)
-        try {
-            $appleUser = $inputs['user']; //decode to array by passing "true"
-            $appleUserFirstName = $appleUser['givenName'];
-            $appleUserLastName = $appleUser['familyName'];
-
-            //update user name and last name only when they are still placeholders
-            if ($user->name === config('epicollect.mappings.user_placeholder.apple_first_name')) {
-                $user->name = $appleUserFirstName;
-                $user->last_name = $appleUserLastName;
-                $user->save();
-            }
-            if ($user->name === config('epicollect.mappings.user_placeholder.passwordless_first_name')) {
-                $user->name = $appleUserFirstName;
-                $user->last_name = $appleUserLastName;
-                $user->save();
-            }
-        } catch (\Throwable $e) {
-            //imp:log in user even if details not updated
-            Log::error('Apple user object exception', ['exception' => $e->getMessage()]);
-        }
-
-        // Login user at this point
+        //Login user at this point
         Auth::login($user, false);
         return $this->sendLoginResponse($request);
     }
