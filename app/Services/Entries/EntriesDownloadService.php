@@ -7,12 +7,12 @@ use ec5\Libraries\Utilities\Common;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use ec5\Services\Mapping\DataMappingService;
-use Exception;
 use File;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Log;
 use Storage;
+use Throwable;
 use ZipArchive;
 
 class EntriesDownloadService
@@ -104,7 +104,7 @@ class EntriesDownloadService
         }
         try {
             $this->buildZipArchive($projectDir, $project->slug, $format);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error('buildZipArchive failed', ['exception' => $e->getMessage()]);
             return false;
         }
@@ -153,6 +153,7 @@ class EntriesDownloadService
         return false;
     }
 
+    /** @noinspection PhpInconsistentReturnPointsInspection */
     public function writeCSV(Builder $query, $outputFile): bool
     {
         //check memory consumption
@@ -200,7 +201,7 @@ class EntriesDownloadService
             }
             fclose($file);
             return true;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error('writeCSV failed', ['exception' => $e->getMessage()]);
             return false;
         }
@@ -247,7 +248,7 @@ class EntriesDownloadService
             }
             fclose($file);
             return true;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error('writeJSON failed', ['exception' => $e->getMessage()]);
             return false;
         }

@@ -129,7 +129,7 @@ class CreateEntryService
             // All good
             DB::commit();
             return true;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error(json_last_error_msg(), ['$entryData' => $entryData]);
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             $this->errors['create-entry-service'] = ['ec5_45'];

@@ -28,7 +28,7 @@ class DeleteController extends Controller
 
     use RequestAttributes;
 
-    protected $errors = [];
+    protected array $errors = [];
     protected $request;
 
     /**

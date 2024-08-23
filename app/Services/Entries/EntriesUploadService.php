@@ -10,6 +10,7 @@ use ec5\Traits\Requests\RequestAttributes;
 use Log;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use Throwable;
 
 class EntriesUploadService
 {
@@ -27,6 +28,9 @@ class EntriesUploadService
         $this->ruleUpload = $ruleUpload;
     }
 
+    /**
+     * @throws Throwable
+     */
     public function upload(): bool
     {
         try {
