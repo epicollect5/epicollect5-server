@@ -18,3 +18,4 @@ resources/assets/data-admin/node_modules/
 *.csv
 /.history
 /.phpstorm.meta.php
+/.phpunit.result.cache
