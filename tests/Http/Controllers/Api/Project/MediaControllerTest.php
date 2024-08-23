@@ -17,10 +17,9 @@ use Tests\TestCase;
 
 class MediaControllerTest extends TestCase
 {
-    private $user;
-    private $project;
-
     use DatabaseTransactions;
+    private User $user;
+    private Project $project;
 
     public function setUp(): void
     {
@@ -96,7 +95,8 @@ class MediaControllerTest extends TestCase
                     ]
                 ]
             ])
-            ->assertExactJson([
+            ->assertExactJson(
+                [
                     "errors" => [
                         [
                             "code" => "ec5_21",
@@ -131,7 +131,8 @@ class MediaControllerTest extends TestCase
                     ]
                 ]
             ])
-            ->assertExactJson([
+            ->assertExactJson(
+                [
                     "errors" => [
                         [
                             "code" => "ec5_29",
@@ -157,7 +158,8 @@ class MediaControllerTest extends TestCase
                     ]
                 ]
             ])
-            ->assertExactJson([
+            ->assertExactJson(
+                [
                     "errors" => [
                         [
                             "code" => "ec5_21",
@@ -187,7 +189,8 @@ class MediaControllerTest extends TestCase
                     ]
                 ]
             ])
-            ->assertExactJson([
+            ->assertExactJson(
+                [
                     "errors" => [
                         [
                             "code" => "ec5_21",
@@ -212,7 +215,8 @@ class MediaControllerTest extends TestCase
                     ]
                 ]
             ])
-            ->assertExactJson([
+            ->assertExactJson(
+                [
                     "errors" => [
                         [
                             "code" => "ec5_21",
@@ -237,7 +241,8 @@ class MediaControllerTest extends TestCase
                     ]
                 ]
             ])
-            ->assertExactJson([
+            ->assertExactJson(
+                [
                     "errors" => [
                         [
                             "code" => "ec5_21",
@@ -267,7 +272,8 @@ class MediaControllerTest extends TestCase
                     ]
                 ]
             ])
-            ->assertExactJson([
+            ->assertExactJson(
+                [
                     "errors" => [
                         [
                             "code" => "ec5_69",
@@ -292,7 +298,8 @@ class MediaControllerTest extends TestCase
                     ]
                 ]
             ])
-            ->assertExactJson([
+            ->assertExactJson(
+                [
                     "errors" => [
                         [
                             "code" => "ec5_69",
@@ -317,7 +324,8 @@ class MediaControllerTest extends TestCase
                     ]
                 ]
             ])
-            ->assertExactJson([
+            ->assertExactJson(
+                [
                     "errors" => [
                         [
                             "code" => "ec5_21",
@@ -548,7 +556,8 @@ class MediaControllerTest extends TestCase
                     ]
                 ]
             ])
-            ->assertExactJson([
+            ->assertExactJson(
+                [
                     "errors" => [
                         [
                             "code" => "ec5_21",
@@ -583,7 +592,8 @@ class MediaControllerTest extends TestCase
                     ]
                 ]
             ])
-            ->assertExactJson([
+            ->assertExactJson(
+                [
                     "errors" => [
                         [
                             "code" => "ec5_29",
@@ -609,7 +619,8 @@ class MediaControllerTest extends TestCase
                     ]
                 ]
             ])
-            ->assertExactJson([
+            ->assertExactJson(
+                [
                     "errors" => [
                         [
                             "code" => "ec5_21",
@@ -639,7 +650,8 @@ class MediaControllerTest extends TestCase
                     ]
                 ]
             ])
-            ->assertExactJson([
+            ->assertExactJson(
+                [
                     "errors" => [
                         [
                             "code" => "ec5_21",
@@ -665,7 +677,8 @@ class MediaControllerTest extends TestCase
                     ]
                 ]
             ])
-            ->assertExactJson([
+            ->assertExactJson(
+                [
                     "errors" => [
                         [
                             "code" => "ec5_21",
@@ -690,7 +703,8 @@ class MediaControllerTest extends TestCase
                     ]
                 ]
             ])
-            ->assertExactJson([
+            ->assertExactJson(
+                [
                     "errors" => [
                         [
                             "code" => "ec5_21",
@@ -720,7 +734,8 @@ class MediaControllerTest extends TestCase
                     ]
                 ]
             ])
-            ->assertExactJson([
+            ->assertExactJson(
+                [
                     "errors" => [
                         [
                             "code" => "ec5_69",
@@ -745,7 +760,8 @@ class MediaControllerTest extends TestCase
                     ]
                 ]
             ])
-            ->assertExactJson([
+            ->assertExactJson(
+                [
                     "errors" => [
                         [
                             "code" => "ec5_69",
@@ -770,7 +786,8 @@ class MediaControllerTest extends TestCase
                     ]
                 ]
             ])
-            ->assertExactJson([
+            ->assertExactJson(
+                [
                     "errors" => [
                         [
                             "code" => "ec5_21",

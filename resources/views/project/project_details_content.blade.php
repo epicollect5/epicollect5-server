@@ -1,3 +1,6 @@
+@php
+    $updatedAt = $requestAttributes->requestedProject->getUpdatedAt();
+@endphp
 {{-- Success Message --}}
 @if (session('projectCreated') && session('tab') === 'create')
     @include('modals/modal_project_not_ready')
@@ -335,7 +338,7 @@
                         <p>Project Id : {{ $requestAttributes->requestedProject->getId() }}</p>
                         <p>Project Ref : {{ $requestAttributes->requestedProject->ref }}</p>
                         <p>Created By : {{ $creatorEmail }}</p>
-                        <p>Updated at : {{ $requestAttributes->requestedProject->getUpdatedAt() }}</p>
+                        <p>Updated at : {{ $updatedAt }}</p>
                     </div>
                     <p>
                         <strong>

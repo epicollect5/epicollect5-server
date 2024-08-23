@@ -109,7 +109,7 @@ Route::group(['middleware' => 'auth'], function () {
     // Check a project name exists
     Route::get('api/internal/exists/{project_slug}', 'Api\Project\ProjectController@exists');
 
-    // Proxies. 
+    // Proxies.
     Route::get('api/proxies/opencage/{search}', 'Api\Proxies\OpenCageController@fetchAPI');
 });
 
