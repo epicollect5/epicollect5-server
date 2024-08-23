@@ -5,20 +5,19 @@ namespace ec5\DTO;
 class ProjectStatsDTO
 {
     // Coming from project_structures table (updated_at)
-    public $structure_last_updated;
+    public string $structure_last_updated;
     // Own public properties, reflecting those in 'project_stats' db table
-    public $total_entries = 0;
-    public $total_users = 0;
-    public $form_counts = [];
-    public $branch_counts = [];
+    public int $total_entries = 0;
+    public int $total_users = 0;
+    public array|string $form_counts = [];
+    public array|string $branch_counts = [];
 
     /**
      * Behaves differently to other DTOs
      * Properties are class properties rather
      * than contained within a 'data' property
-     *
      */
-    public function init($params)
+    public function init($params): void
     {
         $this->total_entries = $params['total_entries'] ?? 0;
         $this->total_users = $params['total_users'] ?? 0;

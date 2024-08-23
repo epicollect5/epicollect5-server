@@ -2,20 +2,22 @@
 
 namespace ec5\DTO;
 
+use ec5\Models\User\User;
+
 class ProjectRoleDTO
 {
-    protected $user;
-    protected $role;
-    protected $projectId;
+    protected User|null $user;
+    protected string|null $role;
+    protected int $projectId;
 
-    public function setRole($user, $projectId, $role)
+    public function setRole($user, $projectId, $role): void
     {
         $this->user = $user ?? null;
         $this->projectId = $projectId;
         $this->role = $role;
     }
 
-    public function getRole()
+    public function getRole(): ?string
     {
         return $this->role;
     }
@@ -58,7 +60,6 @@ class ProjectRoleDTO
 
     /**
      * Only creator and manager can delete all the entries at once
-     * @uses canDeleteEntries
      */
     public function canDeleteEntries(): bool
     {
@@ -111,7 +112,7 @@ class ProjectRoleDTO
         return $this->isCreator() || $this->isManager();
     }
 
-    public function getUser()
+    public function getUser(): ?User
     {
         return $this->user;
     }

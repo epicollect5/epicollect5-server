@@ -14,7 +14,7 @@ use ec5\Libraries\Utilities\Arrays;
 
 class ProjectExtraDTO extends ProjectDTOBase
 {
-    public function create(array $data)
+    public function create(array $data): void
     {
         // Retrieve project extra template
         $projectExtraStructure = config('epicollect.structures.project_extra');
@@ -25,7 +25,7 @@ class ProjectExtraDTO extends ProjectDTOBase
         $this->data = Arrays::merge($projectExtraStructure, $data);
     }
 
-    public function reset()
+    public function reset(): void
     {
         // Retrieve project extra (keys only) template
         $projectExtraStructure = config('epicollect.structures.project_extra_reset');
@@ -33,7 +33,7 @@ class ProjectExtraDTO extends ProjectDTOBase
     }
 
     /* PROJECT */
-    public function addProjectDetails(array $data)
+    public function addProjectDetails(array $data): void
     {
         $this->data['project']['details'] = $data;
         $this->data['project']['forms'] = [];
@@ -43,7 +43,7 @@ class ProjectExtraDTO extends ProjectDTOBase
      * Update project details, if the same keys exist
      * in $this->data and $data
      */
-    public function updateProjectDetails(array $data)
+    public function updateProjectDetails(array $data): void
     {
         foreach ($data as $key => $value) {
             if (isset($this->data['project']['details'][$key])) {
@@ -59,11 +59,11 @@ class ProjectExtraDTO extends ProjectDTOBase
     }
 
     /**
-     * Add form, form_ref and add details from data
-     * data should contain things like name, ref etc
+     * Add form, form_ref and add details from data.
+     * data should contain things like name, ref etc.
      * update counts
      */
-    public function addFormDetails($formRef, $data)
+    public function addFormDetails($formRef, $data): void
     {
         $this->data['project']['forms'][] = $formRef;
         $this->data['forms'][$formRef]['details'] = $data;
@@ -81,11 +81,7 @@ class ProjectExtraDTO extends ProjectDTOBase
         $this->data['forms'][$formRef]['group'] = [];
     }
 
-    /**
-     * Get ALL FORMS otherwise empty array
-     *
-     * @return array
-     **/
+    /** @noinspection PhpUnused */
     public function getForms(): array
     {
         return $this->data['forms'] ?? [];
@@ -99,13 +95,13 @@ class ProjectExtraDTO extends ProjectDTOBase
         return $this->data['forms'][$formRef] ?? [];
     }
 
-    public function addBranch($formRef, $inputRef)
+    public function addBranch($formRef, $inputRef): void
     {
         $type = config('epicollect.strings.inputs_type.branch');
         $this->data['forms'][$formRef][$type][$inputRef] = [];
     }
 
-    public function addGroup($formRef, $inputRef)
+    public function addGroup($formRef, $inputRef): void
     {
         $type = config('epicollect.strings.inputs_type.group');
         $this->data['forms'][$formRef][$type][$inputRef] = [];
@@ -155,7 +151,7 @@ class ProjectExtraDTO extends ProjectDTOBase
         return $this->data['inputs'][$inputRef]['data'][$which] ?? '';
     }
 
-    public function addTopLevelRef($formRef, $inputRef)
+    public function addTopLevelRef($formRef, $inputRef): void
     {
         if (!isset($this->data['forms'][$formRef])) {
             return;
@@ -163,7 +159,7 @@ class ProjectExtraDTO extends ProjectDTOBase
         $this->data['forms'][$formRef]['inputs'][] = $inputRef;
     }
 
-    public function addInput($formRef, $inputRef, $input, $branchRef = null)
+    public function addInput($formRef, $inputRef, $input, $branchRef = null): void
     {
         $this->data['inputs'][$inputRef]['data'] = $input;
         $this->addInputExtraLists($formRef, $inputRef, $input, $branchRef);
@@ -175,7 +171,7 @@ class ProjectExtraDTO extends ProjectDTOBase
      * Lists of multiple choice and location questions
      * to be used by dataviewer
      */
-    private function addInputExtraLists($formRef, $inputRef, $input, $branchRef)
+    private function addInputExtraLists($formRef, $inputRef, $input, $branchRef): void
     {
         switch ($input['type']) {
             //the following types have all possible answers
@@ -218,13 +214,13 @@ class ProjectExtraDTO extends ProjectDTOBase
         }
     }
 
-    public function addBranchInput($formRef, $ownerRef, $inputRef)
+    public function addBranchInput($formRef, $ownerRef, $inputRef): void
     {
         $type = config('epicollect.strings.inputs_type.branch');
         $this->data['forms'][$formRef][$type][$ownerRef][] = $inputRef;
     }
 
-    public function addGroupInput($formRef, $ownerRef, $inputRef)
+    public function addGroupInput($formRef, $ownerRef, $inputRef): void
     {
         $type = config('epicollect.strings.inputs_type.group');
         $this->data['forms'][$formRef][$type][$ownerRef][] = $inputRef;
@@ -254,7 +250,7 @@ class ProjectExtraDTO extends ProjectDTOBase
         if (isset($this->data['forms'][$formRef]['branch'])) {
 
             // Loop each branch
-            foreach ($this->data['forms'][$formRef]['branch'] as $branchRef => $branchInputRefs) {
+            foreach ($this->data['forms'][$formRef]['branch'] as $branchInputRefs) {
 
                 if (is_array($branchInputRefs)) {
                     // Then loop each of the branch's inputs
@@ -262,7 +258,7 @@ class ProjectExtraDTO extends ProjectDTOBase
                         // If we have a match, then this input belongs in a branch
                         if ($inputRef == $branchInputRef) {
                             return true;
-                        } else if (isset($this->data['forms'][$formRef]['group'][$branchInputRef])) {
+                        } elseif (isset($this->data['forms'][$formRef]['group'][$branchInputRef])) {
                             // Check if the input is inside a group in a branch
 
                             // Loop each group
@@ -305,7 +301,7 @@ class ProjectExtraDTO extends ProjectDTOBase
      * Add extra form, details, ie, has location, has jumps
      *
      **/
-    public function addExtraFormDetails($formRef, $data)
+    public function addExtraFormDetails($formRef, $data): void
     {
         foreach ($data as $key => $value) {
             $this->data['forms'][$formRef]['details'][$key] = $value;

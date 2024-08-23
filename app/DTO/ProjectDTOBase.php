@@ -12,17 +12,12 @@ namespace ec5\DTO;
 
 abstract class ProjectDTOBase
 {
-    /**
-     * @var $data
-     */
-    protected $data;
+    protected array|string $data;
 
     /**
      * Initialise from existing data
-     *
-     * @param $data
      */
-    public function init($data)
+    public function init(array|string $data): void
     {
         // Load array or json decode string into array
         $this->data = is_array($data) ? $data : json_decode($data, true);
@@ -31,30 +26,26 @@ abstract class ProjectDTOBase
     /**
      * Create new from data
      *
-     * @param $data
      */
     public function create(array $data)
     {
         //
     }
 
-    /**
-     * @return mixed
-     */
-    public function getData()
+    public function getData(): array
     {
         return $this->data;
     }
 
-    public function setData($data)
+    public function setData($data): void
     {
         $this->data = $data;
     }
 
-    public function getJsonData()
+    public function getJsonData(): false|string
     {
         return json_encode($this->data);
     }
 
-    abstract function updateProjectDetails(array $data);
+    abstract public function updateProjectDetails(array $data);
 }

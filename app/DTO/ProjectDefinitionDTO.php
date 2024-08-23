@@ -14,10 +14,7 @@ use ec5\Libraries\Utilities\Arrays;
 
 class ProjectDefinitionDTO extends ProjectDTOBase
 {
-    /**
-     * @param array $data
-     */
-    public function create(array $data)
+    public function create(array $data): void
     {
         // Retrieve project definition template
         $projectDefinitionStructure = [
@@ -50,15 +47,7 @@ class ProjectDefinitionDTO extends ProjectDTOBase
         $this->data = Arrays::merge($projectDefinitionStructure, $data);
     }
 
-    /**
-     * @return string
-     */
-    public function getProjectRef(): string
-    {
-        return $this->data['project']['ref'] ?? '';
-    }
-
-    public function updateProjectDetails(array $data)
+    public function updateProjectDetails(array $data): void
     {
         foreach ($data as $key => $value) {
             if (isset($this->data['project'][$key])) {
@@ -100,44 +89,22 @@ class ProjectDefinitionDTO extends ProjectDTOBase
         return $inputs;
     }
 
-    public function getBranchesByFormRef($formRef): array
-    {
-        $forms = $this->data['project']['forms'];
-        $inputs = [];
-
-        foreach ($forms as $form) {
-            if ($form['ref'] === $formRef) {
-                $inputs = $form['inputs'];
-                break;
-            }
-        }
-
-        $branches = [];
-        foreach ($inputs as $input) {
-            if ($input['type'] === config('epicollect.strings.branch')) {
-                $branches[] = $input;
-            }
-        }
-
-        return $branches;
-    }
-
     public function getEntriesLimit($ref): ?int
     {
         return $this->data['project']['entries_limits'][$ref] ?? null;
     }
 
-    public function setEntriesLimit($ref, $limitTo)
+    public function setEntriesLimit($ref, $limitTo): void
     {
         $this->data['project']['entries_limits'][$ref] = $limitTo;
     }
 
-    public function clearEntriesLimits()
+    public function clearEntriesLimits(): void
     {
         $this->data['project']['entries_limits'] = [];
     }
 
-    public function addEntriesLimits($entriesLimits)
+    public function addEntriesLimits($entriesLimits): void
     {
         $this->data['project']['entries_limits'] = $entriesLimits;
     }
