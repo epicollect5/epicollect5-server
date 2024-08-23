@@ -45,7 +45,8 @@
     "fakerphp/faker": "^1.23",
     "barryvdh/laravel-ide-helper": "^3.1",
     "deployer/deployer": "^7.4",
-    "laravel/pint": "^1.17"
+    "laravel/pint": "^1.17",
+    "squizlabs/php_codesniffer": "^3.10"
   },
   "autoload": {
     "psr-4": {
