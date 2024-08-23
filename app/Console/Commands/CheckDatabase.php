@@ -4,9 +4,9 @@ namespace ec5\Console\Commands;
 
 use Illuminate\Console\Command;
 use DB;
-use Illuminate\Support\Facades\Config;
+use Log;
 use Mail;
-use Exception;
+use Throwable;
 
 class CheckDatabase extends Command
 {
@@ -27,15 +27,15 @@ class CheckDatabase extends Command
     /**
      * Execute the console command.
      *
-     * @return mixed
      */
-    public function handle()
+    public function handle(): void
     {
         // Test database connection
         try {
             DB::connection()->getPdo();
             $this->info('Database is running');
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             $this->error('MYSQL is currently down!');
             Mail::raw('MYSQL is currently down!', function ($message) {
                 $message->from(config('mail.from.address'), config('mail.from.name'));

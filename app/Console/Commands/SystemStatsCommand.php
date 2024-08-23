@@ -8,6 +8,8 @@ use ec5\Models\System\ProjectsTotals;
 use ec5\Models\System\SystemStats as SystemStatsModel;
 use ec5\Models\System\UsersTotals;
 use Illuminate\Console\Command;
+use Log;
+use Throwable;
 
 class SystemStatsCommand extends Command
 {
@@ -28,9 +30,8 @@ class SystemStatsCommand extends Command
     /**
      * Execute the console command.
      *
-     * @return mixed
      */
-    public function handle()
+    public function handle(): void
     {
         $systemStatsModel = new SystemStatsModel();
         $usersTotals = new UsersTotals();
@@ -51,8 +52,8 @@ class SystemStatsCommand extends Command
             $systemStatsModel->branch_entries_stats = json_encode($branchEntriesStats);
 
             $systemStatsModel->save();
-        } catch (\Exception $e) {
-            \Log::error('Failed to fetch system stats', ['exception' => $e]);
+        } catch (Throwable $e) {
+            Log::error('Failed to fetch system stats', ['exception' => $e]);
         }
     }
 }
