@@ -10,10 +10,11 @@ use ec5\Models\User\UserPasswordlessApi;
 use ec5\Models\User\UserProvider;
 use ec5\Services\User\UserService;
 use ec5\Traits\Auth\AppleJWTHandler;
-use Exception;
+use ec5\Traits\Auth\AppleUserUpdater;
 use Illuminate\Http\Request;
 use Log;
 use Response;
+use Throwable;
 
 class AppleController extends AuthController
 {
@@ -28,6 +29,7 @@ class AppleController extends AuthController
     */
 
     use AppleJWTHandler;
+    use AppleUserUpdater;
 
     public function __construct(JwtUserProvider $provider)
     {
@@ -36,12 +38,10 @@ class AppleController extends AuthController
 
     /**
      * Login Apple users
+     * @noinspection PhpPossiblePolymorphicInvocationInspection
      */
     public function authUser(Request $request)
     {
-        //check if local logins are enabled
-        $appleUser = null;
-
         try {
             //get Apple jwt
             $params = $request->all();
@@ -83,7 +83,7 @@ class AppleController extends AuthController
                 if (empty($appleUserLastName)) {
                     $appleUserLastName = config('epicollect.mappings.user_placeholder.apple_last_name');
                 }
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 Log::error('Apple user object exception', ['exception' => $e->getMessage()]);
                 //if no user name found, default to Apple User
                 $appleUserFirstName = config('epicollect.mappings.user_placeholder.apple_first_name');
@@ -143,7 +143,7 @@ class AppleController extends AuthController
                      * for verification
                      */
 
-                    //if the user is local and local auth is enabled, user must povide password
+                    //if the user is local and local auth is enabled, user must provide password
                     if ($this->isAuthApiLocalEnabled) {
                         if (in_array($this->localProviderLabel, $userProviders)) {
                             $error['api-login-apple'] = ['ec5_390'];
@@ -197,7 +197,7 @@ class AppleController extends AuthController
             ];
             // Return JWT response
             return Response::apiData($data, $meta);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // If any exceptions, return error response: could not authenticate
             Log::error('Apple Login JWT Exception: ', [
                 'exception' => $e
@@ -214,31 +214,32 @@ class AppleController extends AuthController
      *
      * IMP:Local users are asked to enter the password when they login using a different provider
      * IMP:they are not verified here, local auth has its own verification controller
+     * @noinspection PhpPossiblePolymorphicInvocationInspection
      */
     public function verifyUserEmail(Request $request, RulePasswordlessApiLogin $validator)
     {
         //validate request
-        $inputs = $request->all();
-        $validator->validate($inputs);
+        $payload = $request->all();
+        $validator->validate($payload);
         if ($validator->hasErrors()) {
             return Response::apiErrorCode(400, $validator->errors());
         }
 
-        $code = $inputs['code'];
-        $email = $inputs['email'];
+        $code = $payload['code'];
+        $email = $payload['email'];
 
         //get token from db for comparison
         $userPasswordless = UserPasswordlessApi::where('email', $email)->first();
 
         //Does the email exists?
         if ($userPasswordless === null) {
-            Log::error('Error validating passworless code', ['error' => 'Email does not exist']);
+            Log::error('Error validating passwordless code', ['error' => 'Email does not exist']);
             return Response::apiErrorCode(400, ['api-login-apple' => ['ec5_378']]);
         }
 
         //check if the code is valid
         if (!$userPasswordless->isValidCode($code)) {
-            Log::error('Error validating passworless code', ['error' => 'Code not valid']);
+            Log::error('Error validating passwordless code', ['error' => 'Code not valid']);
             return Response::apiErrorCode(400, ['api-login-apple' => ['ec5_378']]);
         }
 
@@ -252,45 +253,10 @@ class AppleController extends AuthController
             return Response::apiErrorCode(400, ['api-login-apple' => ['ec5_34']]);
         }
 
-        //add the apple provider so next time no verification is needed
-        $userProvider = new UserProvider();
-        $userProvider->email = $user->email;
-        $userProvider->user_id = $user->id;
-        $userProvider->provider = $this->appleProviderLabel;
-        $userProvider->save();
-
-        //update user details (if a user object is available)
-        try {
-            $appleUser = $inputs['user']; //decode to array by passing "true"
-            $appleUserFirstName = $appleUser['givenName'];
-            $appleUserLastName = $appleUser['familyName'];
-
-            //update user name and last name only when they are still placeholders
-            if ($user->name === config('epicollect.mappings.user_placeholder.apple_first_name')) {
-                $user->name = $appleUserFirstName;
-                $user->last_name = $appleUserLastName;
-                $user->save();
-            }
-            if ($user->name === config('epicollect.mappings.user_placeholder.passwordless_first_name')) {
-                $user->name = $appleUserFirstName;
-                $user->last_name = $appleUserLastName;
-                $user->save();
-            }
-        } catch (\Throwable $e) {
-            Log::error('Apple user object exception', ['exception' => $e->getMessage()]);
-        }
+        //try to update the Apple user detail (name, surname)
+        $this->updateAppleUserDetails($user, $payload);
         // Log user in
         Auth::guard()->login($user);
-        // JWT
-//        $apiResponse->setData(Auth::guard()->authorizationResponse());
-//        // User name, email in meta
-//        $apiResponse->setMeta([
-//            'user' => [
-//                'name' => Auth::user()->fresh()->name,
-//                'email' => Auth::user()->fresh()->email
-//            ]
-//        ]);
-
         // Return JWT response
         return Response::apiData(
             Auth::guard()->authorizationResponse(),
