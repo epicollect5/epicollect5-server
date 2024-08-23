@@ -11,10 +11,10 @@ use ec5\Traits\Requests\RequestAttributes;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
 use Response;
+use Throwable;
 
 class ProjectController
 {
-
     use RequestAttributes;
 
     /**
@@ -48,7 +48,7 @@ class ProjectController
             if (empty($userAvatar)) {
                 $userAvatar = config('app.url') . '/images/avatar-placeholder.png';
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable) {
             //
             $userName = 'User';
             $userAvatar = config('app.url') . '/images/avatar-placeholder.png';
@@ -203,7 +203,7 @@ class ProjectController
             $project = Project::find($this->requestedProject()->getId());
             $project->can_bulk_upload = $canBulkUpload;
             $project->save();
-        } catch (\Exception $e) {
+        } catch (Throwable) {
             $errors = ['ec5_361'];
             return Response::apiErrorCode(400, ['errors' => $errors]);
         }

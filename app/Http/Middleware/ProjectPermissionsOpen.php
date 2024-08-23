@@ -2,12 +2,8 @@
 
 namespace ec5\Http\Middleware;
 
-use Illuminate\Http\Request;
-use Closure;
-
 class ProjectPermissionsOpen extends RequestAttributesMiddleware
 {
-
     /*
     |--------------------------------------------------------------------------
     | ProjectPermissionsOpen Middleware

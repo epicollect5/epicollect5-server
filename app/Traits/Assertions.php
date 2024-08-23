@@ -2,33 +2,23 @@
 
 namespace ec5\Traits;
 
-use ec5\DTO\EntryStructureDTO;
-use ec5\DTO\ProjectDefinitionDTO;
-use ec5\DTO\ProjectDTO;
-use ec5\DTO\ProjectExtraDTO;
-use ec5\DTO\ProjectMappingDTO;
-use ec5\DTO\ProjectRoleDTO;
-use ec5\DTO\ProjectStatsDTO;
 use ec5\Libraries\Utilities\DateFormatConverter;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
-use ec5\Models\Project\Project;
-use ec5\Services\Mapping\ProjectMappingService;
 use Hash;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Assert;
 
 trait Assertions
 {
-    protected function assertJsonResponseHasKeys($jsonResponse, array $expectedKeys)
+    protected function assertJsonResponseHasKeys($jsonResponse, array $expectedKeys): void
     {
         foreach ($expectedKeys as $key) {
             $this->assertArrayHasKey($key, $jsonResponse, 'Key ' . $key . ' is missing in JSON response');
         }
     }
 
-    protected function assertArrayHasExactKeys($jsonResponse, $expectedKeys)
+    protected function assertArrayHasExactKeys($jsonResponse, $expectedKeys): void
     {
         Assert::assertIsArray($jsonResponse);
         Assert::assertIsArray($expectedKeys);
@@ -62,13 +52,13 @@ trait Assertions
     }
 
 
-    public function assertIsArrayNotEmpty($data)
+    public function assertIsArrayNotEmpty($data): void
     {
         Assert::assertIsArray($data);
         Assert::assertNotEmpty($data);
     }
 
-    public function assertProjectResponse($jsonResponse)
+    public function assertProjectResponse($jsonResponse): void
     {
         $this->assertIsArrayNotEmpty($jsonResponse['meta']['project_extra']);
         $this->assertIsArrayNotEmpty($jsonResponse['meta']['project_user']);
@@ -196,7 +186,7 @@ trait Assertions
         }
     }
 
-    public function assertAvatarCreated($project)
+    public function assertAvatarCreated($project): void
     {
         //assert avatar is created
         $filename = config('epicollect.media.project_avatar.filename');
@@ -210,11 +200,13 @@ trait Assertions
 
         $this->assertEquals(
             $project->ref . '/' . $filename,
-            $avatarMobile[0]);
+            $avatarMobile[0]
+        );
 
         $this->assertEquals(
             $project->ref . '/' . $filename,
-            $avatarThumb[0]);
+            $avatarThumb[0]
+        );
 
         //delete fake avatar files
         Storage::disk('project_mobile_logo')->deleteDirectory($project->ref);
@@ -445,7 +437,8 @@ trait Assertions
                     ],
                     'meta',
                     'links'
-                ]);
+                ]
+            );
         }
 
         $this->assertMeta($json['meta']);
@@ -751,10 +744,12 @@ trait Assertions
         if (sizeof($entryPayload['data']['relationships']['parent']) > 0) {
             $this->assertEquals(
                 $entryPayload['data']['relationships']['parent']['data']['parent_entry_uuid'],
-                $entryStored->parent_uuid);
+                $entryStored->parent_uuid
+            );
             $this->assertEquals(
                 $entryPayload['data']['relationships']['parent']['data']['parent_form_ref'],
-                $entryStored->parent_form_ref);
+                $entryStored->parent_form_ref
+            );
         } else {
             $this->assertEquals('', $entryStored->parent_uuid);
             $this->assertEquals('', $entryStored->parent_form_ref);
@@ -771,9 +766,11 @@ trait Assertions
         }
 
         //assert timestamps are equal (converted as the format is different JS/MYSQL)
-        $this->assertTrue(DateFormatConverter::areTimestampsEqual(
-            $entryStructure->getDateCreated(),
-            $entryStored->created_at)
+        $this->assertTrue(
+            DateFormatConverter::areTimestampsEqual(
+                $entryStructure->getDateCreated(),
+                $entryStored->created_at
+            )
         );
 
         $this->assertEquals(0, $entryStored->child_counts);
@@ -790,7 +787,8 @@ trait Assertions
         foreach ($inputs as $input) {
             if (in_array(
                 $input['type'],
-                config('epicollect.strings.multiple_choice_question_types'))) {
+                config('epicollect.strings.multiple_choice_question_types')
+            )) {
                 $multipleChoiceInputRefs[] = $input['ref'];
             }
             //imp: skip group and readme
@@ -806,7 +804,8 @@ trait Assertions
 
                     if (in_array(
                         $groupInput['type'],
-                        config('epicollect.strings.multiple_choice_question_types'))) {
+                        config('epicollect.strings.multiple_choice_question_types')
+                    )) {
                         $multipleChoiceInputRefs[] = $groupInput['ref'];
                     }
                 }
@@ -873,7 +872,8 @@ trait Assertions
         foreach ($branchInputs as $branchInput) {
             if (in_array(
                 $branchInput['type'],
-                config('epicollect.strings.multiple_choice_question_types'))) {
+                config('epicollect.strings.multiple_choice_question_types')
+            )) {
                 $multipleChoiceBranchInputRefs[] = $branchInput['ref'];
             }
             //imp: skip group and readme
@@ -889,7 +889,8 @@ trait Assertions
 
                     if (in_array(
                         $groupInput['type'],
-                        config('epicollect.strings.multiple_choice_question_types'))) {
+                        config('epicollect.strings.multiple_choice_question_types')
+                    )) {
                         $multipleChoiceBranchInputRefs[] = $groupInput['ref'];
                     }
                 }
@@ -957,7 +958,8 @@ trait Assertions
         //Actual: 2024-02-07
         $this->assertEquals(
             date('Y-m-d', strtotime($entryFromPayload['created_at'])),
-            $geoJsonFeature['properties']['created_at']);
+            $geoJsonFeature['properties']['created_at']
+        );
         if ($possibleAnswers) {
             $this->assertEquals($possibleAnswers, $geoJsonFeature['properties']['possible_answers']);
         }

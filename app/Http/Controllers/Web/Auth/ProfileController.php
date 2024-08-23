@@ -6,19 +6,24 @@ use Auth;
 use ec5\Http\Controllers\Controller;
 use ec5\Libraries\JwtApple\JWK as JWKApple;
 use ec5\Libraries\JwtApple\JWT as JWTApple;
+use ec5\Models\User\User;
 use ec5\Models\User\UserProvider;
-use Exception;
+use ec5\Traits\Auth\AppleJWTHandler;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\InvalidStateException;
 use Log;
+use Throwable;
 
 class ProfileController extends Controller
 {
-    protected $providers;
-    protected $user;
-    protected $appleProviderLabel;
-    protected $googleProviderLabel;
+    use AppleJWTHandler;
+
+    protected array $providers;
+    protected User $user;
+    protected string $appleProviderLabel;
+    protected string $googleProviderLabel;
 
     public function __construct()
     {
@@ -52,8 +57,6 @@ class ProfileController extends Controller
     }
 
     /**
-     * @param Request $request
-     * @return \Illuminate\Http\RedirectResponse
      *
      * Log out users so they can reset their password
      */
@@ -67,7 +70,7 @@ class ProfileController extends Controller
         return redirect()->route('forgot-show');
     }
 
-    public function connectGoogle(Request $request)
+    public function connectGoogle()
     {
         //local users cannot connect Google
         if ($this->isLocal($this->user)) {
@@ -101,10 +104,9 @@ class ProfileController extends Controller
     }
 
     /**
-     * @param Request $request
-     * @return $this|\Illuminate\Http\RedirectResponse
+     * @return RedirectResponse
      */
-    public function handleGoogleConnectCallback(Request $request)
+    public function handleGoogleConnectCallback()
     {
         try {
             // Find the Google user
@@ -114,9 +116,9 @@ class ProfileController extends Controller
 
             // If we found a Google user
             if ($googleUser) {
-                //check email is the same to the logged in user
+                //check email is the same to the logged-in user
                 if ($googleUser->email === $this->user->email) {
-                    //add google provider, to allow loggin in with both methods
+                    //add google provider, to allow logging in with both methods
                     $googleProvider = new UserProvider();
                     $googleProvider->email = $this->user->email;
                     $googleProvider->user_id = $this->user->id;
@@ -146,7 +148,7 @@ class ProfileController extends Controller
         } catch (InvalidStateException $e) {
             Log::error('Google Login Web Exception: ', ['exception' => [$e]]);
             return redirect()->route('profile')->withErrors(['ec5_369']);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error('Google Connect Web Exception: ', [
                 'exception' => $e->getMessage()
             ]);
@@ -174,27 +176,15 @@ class ProfileController extends Controller
             $params = $request->all();
             $token = $params['id_token'];
 
-            // Log::error('Apple request', ['$params' => $params]);
-
             //get public keys from Apple endpoint
-            $apple_jwk_keys = json_decode(file_get_contents(config('auth.apple.public_keys_endpoint')), null, 512, JSON_OBJECT_AS_ARRAY);
-            $keys = array();
-            foreach ($apple_jwk_keys->keys as $key) {
-                $keys[] = (array)$key;
-            }
-            $jwks = ['keys' => $keys];
+            list($jwks, $kid) = $this->getPublicKeysFromAppleEndpoint($token);
 
-            //get kid from jwy header
-            $header_base_64 = explode('.', $token ?? '')[0];
-            $kid = JWTApple::jsonDecode(JWTApple::urlsafeB64Decode($header_base_64));
-            $kid = $kid->kid;
-
-            //build jwt publick key using keys from Apple endpoint (using JWK)
+            //build jwt public key using keys from Apple endpoint (using JWK)
             try {
                 $public_key = JWKApple::parseKeySet($jwks);
                 $public_key = $public_key[$kid];
                 $parsed_id_token = JWTApple::decode($token, $public_key, ['RS256']);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 Log::error('Apple Sign In JWT Error', ['exception' => $e->getMessage()]);
                 //we get here when there is any validation error
                 return redirect()->route('profile')->withErrors(['ec5_382']);
@@ -228,7 +218,7 @@ class ProfileController extends Controller
                         $appleUser = json_decode($params['user'], true); //decode to array by passing "true"
                         $appleUserFirstName = $appleUser['name']['firstName'];
                         $appleUserLastName = $appleUser['name']['lastName'];
-                    } catch (\Throwable $e) {
+                    } catch (Throwable $e) {
                         Log::info('Apple user object exception, existing user, use defaults', ['exception' => $e->getMessage()]);
                         //if no user name found, default to Apple User
                         $appleUserFirstName = config('epicollect.mappings.user_placeholder.apple_first_name');
@@ -258,7 +248,7 @@ class ProfileController extends Controller
                 //users do not match, error
                 return redirect()->route('profile')->withErrors(['ec5_387']);
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error('Apple Connect Web Exception: ', [
                 'exception' => $e->getMessage()
             ]);
@@ -266,14 +256,14 @@ class ProfileController extends Controller
         return redirect()->route('profile')->withErrors(['ec5_386']);
     }
 
-    //after 5 failed login attempts, users need to wait 10 minutes
-    protected function hasTooManyLoginAttempts(Request $request)
-    {
-        return $this->limiter()->tooManyAttempts(
-            $this->throttleKey($request),
-            5
-        );
-    }
+    //    //after 5 failed login attempts, users need to wait 10 minutes
+    //    protected function hasTooManyLoginAttempts(Request $request)
+    //    {
+    //        return $this->limiter()->tooManyAttempts(
+    //            $this->throttleKey($request),
+    //            5
+    //        );
+    //    }
 
     private function isLocal($user)
     {

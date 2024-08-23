@@ -14,16 +14,16 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 abstract class ViewEntriesControllerBase
 {
-    use RequestAttributes, ResponseTools;
+    use RequestAttributes;
+    use ResponseTools;
 
-    protected $dataMappingService;
-    protected $entriesViewService;
+    protected DataMappingService $dataMappingService;
+    protected EntriesViewService $entriesViewService;
 
     public function __construct(
         DataMappingService $dataMappingService,
         EntriesViewService $entriesViewService
-    )
-    {
+    ) {
         $this->dataMappingService = $dataMappingService;
         $this->entriesViewService = $entriesViewService;
     }

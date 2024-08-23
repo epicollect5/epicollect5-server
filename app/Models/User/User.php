@@ -18,7 +18,12 @@ class User extends Model implements
     CanResetPasswordContract,
     AuthenticatableContract
 {
-    use Authenticatable, Authorizable, CanResetPassword, HasApiTokens, Notifiable, SerializeDates;
+    use Authenticatable;
+    use Authorizable;
+    use CanResetPassword;
+    use HasApiTokens;
+    use Notifiable;
+    use SerializeDates;
 
     protected $table = 'users';
     protected $fillable = ['name', 'last_name', 'email', 'password', 'avatar', 'state', 'server_role'];

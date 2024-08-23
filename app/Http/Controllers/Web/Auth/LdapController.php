@@ -8,7 +8,6 @@ use ec5\Services\User\UserService;
 use Illuminate\Http\Request;
 use Ldap;
 
-
 class LdapController extends AuthController
 {
     /*
@@ -23,10 +22,8 @@ class LdapController extends AuthController
     }
 
     /**
-     * Handle an ldap login request to the application.
+     * Handle a ldap login request to the application.
      *
-     * @param Request $request
-     * @return \Illuminate\Http\Response
      */
     public function authenticate(Request $request)
     {

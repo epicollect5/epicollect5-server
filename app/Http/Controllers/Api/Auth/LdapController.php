@@ -6,10 +6,10 @@ use ec5\Libraries\Jwt\JwtUserProvider;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use ec5\Libraries\Ldap\Ldap;
-use Exception;
 use Auth;
 use Log;
 use Response;
+use Throwable;
 
 class LdapController extends AuthController
 {
@@ -20,7 +20,7 @@ class LdapController extends AuthController
     |
     | This controller handles the authentication of local users via the api.
     | Returns a generated JWT token
-    | LOcal users have a password
+    | Local users have a password
     */
 
     public function __construct(JwtUserProvider $provider)
@@ -29,7 +29,7 @@ class LdapController extends AuthController
     }
 
     /**
-     * Handle an ldap login api request to the application.
+     * Handle a ldap login api request to the application.
      *
      * @param Request $request
      * @return JsonResponse
@@ -82,9 +82,9 @@ class LdapController extends AuthController
                 // Return JWT response
                 Log::info('LDAP Login successful: ' . $credentials['username']);
                 return Response::apiData($data, $meta);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 // If any exceptions, return error response: could not authenticate
-                Log::error('LDAP Login failed - exception thrown: ', null, [json_encode($e)]);
+                Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             }
 
             Log::error('LDAP Login failed: ' . $credentials['username']);

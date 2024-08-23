@@ -2,25 +2,19 @@
 
 namespace ec5\Services;
 
-use Exception;
 use Illuminate\Support\Facades\Storage;
 use Image;
 use Log;
+use Throwable;
 
 class PhotoSaverService
 {
     /**
      * Save a photo to specific dimensions
      *
-     * @param $projectRef
-     * @param $image
-     * @param $fileName
-     * @param $driver
      * @param array $dimensions (width, height)
-     * @param int $quality
-     * @return bool
      */
-    public static function saveImage($projectRef, $image, $fileName, $driver, array $dimensions = [], $quality = 50): bool
+    public static function saveImage($projectRef, $image, $fileName, $driver, array $dimensions = [], int $quality = 50): bool
     {
         try {
             $imageRealPath = $image->getRealPath();
@@ -28,7 +22,7 @@ class PhotoSaverService
             // Crop and resize image
             if (count($dimensions) > 0) {
                 $width = $dimensions[0];
-                $height = isset($dimensions[1]) ? $dimensions[1] : null;
+                $height = $dimensions[1] ?? null;
                 $img->fit($width, $height);
             }
 
@@ -43,7 +37,7 @@ class PhotoSaverService
                 file_get_contents($imageRealPath)
             );
             return true;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error('Cannot save image', ['exception' => $e]);
             return false;
         }
@@ -60,14 +54,14 @@ class PhotoSaverService
      * @param int $quality
      * @return bool
      */
-    public static function storeImage($projectRef, $imagePath, $fileName, $driver, array $dimensions = [], $quality = 50): bool
+    public static function storeImage($projectRef, $imagePath, $fileName, $driver, array $dimensions = [], int $quality = 50): bool
     {
         try {
             $img = Image::make($imagePath);
             // Crop and resize image
             if (count($dimensions) > 0) {
                 $width = $dimensions[0];
-                $height = isset($dimensions[1]) ? $dimensions[1] : null;
+                $height = $dimensions[1] ?? null;
                 $img->fit($width, $height);
             }
             $img->encode('jpg', $quality);
@@ -82,7 +76,7 @@ class PhotoSaverService
             );
 
             return true;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error('Cannot save image', ['exception' => $e]);
             return false;
         }

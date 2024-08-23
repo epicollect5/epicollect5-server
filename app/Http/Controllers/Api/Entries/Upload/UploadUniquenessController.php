@@ -8,15 +8,17 @@ use ec5\Http\Validation\Entries\Upload\RuleUniqueness;
 use ec5\Services\Entries\EntriesUniquenessService;
 use Illuminate\Http\JsonResponse;
 use Log;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Response;
 
 class UploadUniquenessController extends UploadControllerBase
 {
     /**
-     * @param RuleUniqueness $ruleUniqueness
-     * @return JsonResponse
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
      */
-    public function index(RuleUniqueness $ruleUniqueness)
+    public function index(RuleUniqueness $ruleUniqueness): JsonResponse
     {
         /* VALIDATION */
         $data = request()->get('data');

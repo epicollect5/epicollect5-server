@@ -5,12 +5,12 @@ namespace ec5\Http\Middleware;
 use Closure;
 use Carbon\Carbon;
 use ec5\Mail\ExceptionNotificationMail;
-use Exception;
 use Illuminate\Cache\RateLimiter;
 use Log;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Mail;
 use ec5\Traits\Middleware\MiddlewareTools;
+use Throwable;
 
 class ApiThrottleRequests
 {
@@ -19,7 +19,7 @@ class ApiThrottleRequests
     /**
      * The rate limiter instance.
      */
-    protected $limiter;
+    protected RateLimiter $limiter;
 
     /**
      * ApiThrottleRequests constructor.
@@ -42,7 +42,7 @@ class ApiThrottleRequests
 
         try {
             $this->limiter->hit($key, $decayMinutes);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error('Rate limiter hit() exception', ['message' => $e->getMessage()]);
             Mail::to(config('epicollect.setup.system.email'))->send(new ExceptionNotificationMail($e->getMessage()));
         }

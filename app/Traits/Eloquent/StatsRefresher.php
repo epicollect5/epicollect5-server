@@ -8,7 +8,7 @@ use ec5\Models\Project\ProjectStats;
 
 trait StatsRefresher
 {
-    public function refreshProjectStats(ProjectDTO $requestedProject)
+    public function refreshProjectStats(ProjectDTO $requestedProject): void
     {
         $projectStats = new ProjectStats();
         $projectStats->updateProjectStats($requestedProject->getId());

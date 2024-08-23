@@ -4,25 +4,23 @@ namespace ec5\Services\Mapping;
 
 use Carbon\Carbon;
 use ec5\DTO\ProjectDTO;
-use ec5\DTO\ProjectMappingDTO;
 use ec5\Libraries\Utilities\GpointConverter;
 use ec5\Models\User\User;
-use Exception;
 use Log;
-use Monolog\Handler\LogEntriesHandler;
+use Throwable;
 
 class DataMappingService
 {
-    protected $project;
-    protected $forms;
-    protected $format;
-    protected $type;
-    protected $inputsFlattened;
-    protected $map;
-    protected $mappingEC5Keys;
-    protected $parentFormMap = [];
-    protected $isTopHierarchyForm = false;
-    protected $datetimeFormatsPHP;
+    protected ProjectDTO $project;
+    protected array $forms;
+    protected string $format;
+    protected string $type;
+    protected array $inputsFlattened;
+    protected array $map;
+    protected array $mappingEC5Keys;
+    protected array $parentFormMap = [];
+    protected bool $isTopHierarchyForm = false;
+    protected array $datetimeFormatsPHP;
 
     public function __construct()
     {
@@ -32,7 +30,7 @@ class DataMappingService
         // todo: implementations for writing to file - csvFileWriter and jsonFileWriter
     }
 
-    public function init(ProjectDTO $project, $format, $type, $formRef, $branchRef, $mapIndex)
+    public function init(ProjectDTO $project, $format, $type, $formRef, $branchRef, $mapIndex): void
     {
         $this->project = $project;
         $this->forms = $project->getProjectDefinition()->getData()['project']['forms'];
@@ -105,7 +103,7 @@ class DataMappingService
         try {
             $JSONEntry = json_decode($JSONEntryString, true);
             $JSONBranchCounts = json_decode($branchCountsString, true);
-        } catch (\Throwable $e) {
+        } catch (Throwable) {
             return $output;
         }
 
@@ -207,13 +205,13 @@ class DataMappingService
         return $out;
     }
 
-    public function getMappedEntryJSON($JSONEntryString, $userId, $title, $uploaded_at, $branchCountsString = '')
+    public function getMappedEntryJSON($JSONEntryString, $userId, $title, $uploaded_at, $branchCountsString = ''): false|array|string
     {
         $output = [];
         try {
             $JSONEntry = json_decode($JSONEntryString, true);
             $JSONBranchCounts = json_decode($branchCountsString, true);
-        } catch (\Throwable $e) {
+        } catch (Throwable) {
             return '';
         }
 
@@ -336,11 +334,8 @@ class DataMappingService
      * Get custom or default mapping and inputs in order for swap
      * Groups are added to the top level for ease of access
      */
-    private function setupMapping($formRef, $branchRef, $mapIndex)
+    private function setupMapping($formRef, $branchRef, $mapIndex): void
     {
-        /**
-         * @var $projectMapping ProjectMappingDTO
-         */
         $projectMapping = $this->project->getProjectMapping();
         $selectedMapping = $projectMapping->getMap($mapIndex, $formRef);
 
@@ -394,7 +389,7 @@ class DataMappingService
                     foreach ($answer as $value) {
                         $parsedAnswer = $this->getPossibleAnswerMapTo($input, $value);
                         //if $parsedAnswer contains commas, wrap in quotes as per csv specs.
-                        if (strpos($parsedAnswer, ',') !== false) {
+                        if (str_contains($parsedAnswer, ',')) {
                             $parsedAnswer = '"' . $parsedAnswer . '"';
                         }
                         $temp[] = $parsedAnswer;
@@ -446,7 +441,7 @@ class DataMappingService
                             ''
                         ];
                     }
-                } catch (\Throwable $e) {
+                } catch (Throwable $e) {
                     Log::debug(__METHOD__ . ' failed | csv-location', ['exception' => $e->getMessage()]);
                     //we get here when there is not an answer?
                     $parsedAnswer = [
@@ -483,7 +478,7 @@ class DataMappingService
                             'UTM_Zone' => ''
                         ];
                     }
-                } catch (\Throwable $e) {
+                } catch (Throwable) {
                     $parsedAnswer = [
                         'latitude' => '',
                         'longitude' => '',
@@ -575,7 +570,7 @@ class DataMappingService
         return $flattenInputs;
     }
 
-    /* This function returns a flat list of inputs and nested group inputs, 
+    /* This function returns a flat list of inputs and nested group inputs,
     * dropping the group inputs owner
     */
     public function getBranchInputsFlattened($forms, $formRef, $branchInputRef): array

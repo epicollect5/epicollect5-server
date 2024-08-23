@@ -22,26 +22,9 @@ class OAuthController
 {
     use HandlesOAuthErrors;
 
-    /**
-     * The authorization server.
-     *
-     * @var AuthorizationServer
-     */
-    protected $server;
-
-    /**
-     * The token repository instance.
-     *
-     * @var TokenRepository
-     */
-    protected $tokens;
-
-    /**
-     * The JWT parser instance.
-     *
-     * @var JwtParser
-     */
-    protected $jwt;
+    protected AuthorizationServer $server;
+    protected TokenRepository $tokens;
+    protected JwtParser $jwt;
 
     /**
      * OAuthController constructor
@@ -54,8 +37,7 @@ class OAuthController
         AuthorizationServer $server,
         TokenRepository     $tokens,
         JwtParser           $jwt
-    )
-    {
+    ) {
         $this->jwt = $jwt;
         $this->server = $server;
         $this->tokens = $tokens;

@@ -3,7 +3,6 @@
 namespace ec5\Traits\Eloquent;
 
 use ec5\Libraries\Utilities\Common;
-use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectStats;
@@ -12,6 +11,7 @@ use File;
 use Illuminate\Support\Facades\DB;
 use Log;
 use Storage;
+use Throwable;
 
 trait Remover
 {
@@ -23,8 +23,8 @@ trait Remover
                 ->first();
             $project->delete();
             return true;
-        } catch (\Exception $e) {
-            \Log::error('Error removeProject()', ['exception' => $e->getMessage()]);
+        } catch (Throwable $e) {
+            Log::error('Error removeProject()', ['exception' => $e->getMessage()]);
             return false;
         }
     }
@@ -47,7 +47,7 @@ trait Remover
                 File::deleteDirectory($pathPrefix . $projectRef);
             }
             return true;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed.', [
                 'exception' => $e->getMessage()
             ]);
@@ -55,6 +55,9 @@ trait Remover
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function removeEntriesChunk($projectId, $projectRef): bool
     {
         $initialMemoryUsage = memory_get_usage();
@@ -108,7 +111,7 @@ trait Remover
             }
 
             return true;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed.', [
                 'exception' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
@@ -118,4 +121,3 @@ trait Remover
         }
     }
 }
-

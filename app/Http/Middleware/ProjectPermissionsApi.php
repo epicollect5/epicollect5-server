@@ -14,7 +14,6 @@ use Laminas\Diactoros\StreamFactory;
 use Laminas\Diactoros\UploadedFileFactory;
 use Laminas\Diactoros\ServerRequestFactory;
 
-
 class ProjectPermissionsApi extends RequestAttributesMiddleware
 {
     /*
@@ -29,9 +28,8 @@ class ProjectPermissionsApi extends RequestAttributesMiddleware
     /**
      * The Resource Server instance.
      *
-     * @var ResourceServer
      */
-    private $server;
+    private ResourceServer $server;
 
     /**
      * ProjectPermissionsApi constructor
@@ -40,11 +38,11 @@ class ProjectPermissionsApi extends RequestAttributesMiddleware
      * @param Request $request
      * @param ProjectDTO $requestedProject
      */
-    public function __construct(ResourceServer $server,
-                                Request        $request,
-                                ProjectDTO     $requestedProject
-    )
-    {
+    public function __construct(
+        ResourceServer $server,
+        Request        $request,
+        ProjectDTO     $requestedProject
+    ) {
         $this->server = $server;
 
         parent::__construct($request, $requestedProject);

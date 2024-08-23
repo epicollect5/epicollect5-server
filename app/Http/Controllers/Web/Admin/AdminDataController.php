@@ -6,10 +6,9 @@ use ec5\Http\Controllers\Controller;
 use ec5\Models\System\SystemStats;
 use Response;
 
-
 class AdminDataController extends Controller
 {
-    private $dailySystemStats;
+    private SystemStats $dailySystemStats;
 
     public function __construct(SystemStats $systemStats)
     {

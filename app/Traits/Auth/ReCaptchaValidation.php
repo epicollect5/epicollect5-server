@@ -4,12 +4,13 @@ namespace ec5\Traits\Auth;
 
 use ec5\Http\Validation\Auth\RuleRecaptcha;
 use GuzzleHttp\Client;
-use Illuminate\Support\Facades\Config;
-use Log;
-use Exception;
+use GuzzleHttp\Exception\GuzzleException;
 
 trait ReCaptchaValidation
 {
+    /**
+     * @throws GuzzleException
+     */
     public function getAnyRecaptchaErrors($recaptchaResponse): array
     {
         $client = new Client(); //GuzzleHttp\Client

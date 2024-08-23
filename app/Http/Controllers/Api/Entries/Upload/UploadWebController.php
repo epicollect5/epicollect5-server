@@ -12,9 +12,12 @@ use ec5\Models\Entries\Entry;
 use Exception;
 use File;
 use Log;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Response;
 use Storage;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Throwable;
 
 class UploadWebController extends UploadControllerBase
 {
@@ -27,6 +30,11 @@ class UploadWebController extends UploadControllerBase
     |
     */
 
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws Throwable
+     * @throws NotFoundExceptionInterface
+     */
     public function store()
     {
         //try to upload the entry
@@ -157,7 +165,7 @@ class UploadWebController extends UploadControllerBase
                 mime_content_type($filePath),
                 filesize($filePath)
             );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // File doesn't exist
             $this->errors['web upload'] = ['ec5_231'];
             return;

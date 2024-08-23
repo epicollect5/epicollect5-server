@@ -2,18 +2,19 @@
 
 namespace ec5\Services\Project;
 
-use Exception;
 use Laravolt\Avatar\Facade as Avatar;
+use Log;
 use Storage;
+use Throwable;
 
 class ProjectAvatarService
 {
-    protected $width;
-    protected $height;
-    protected $quality;
-    protected $filename;
-    protected $drivers;
-    protected $fontSize;
+    protected array $width;
+    protected array $height;
+    protected int $quality;
+    protected string $filename;
+    protected array $drivers;
+    protected array $fontSize;
 
     public function __construct()
     {
@@ -26,7 +27,7 @@ class ProjectAvatarService
     }
 
 
-    public function generate($projectRef, $projectName)
+    public function generate($projectRef, $projectName): bool
     {
         try {
             //get thumb and mobile path
@@ -55,8 +56,8 @@ class ProjectAvatarService
                 );
 
             return true;
-        } catch (\Throwable $e) {
-            \Log::error('Error creating project avatar', ['exception' => $e]);
+        } catch (Throwable $e) {
+            Log::error('Error creating project avatar', ['exception' => $e]);
             return false;
         }
     }

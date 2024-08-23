@@ -7,10 +7,10 @@ use Exception;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\JsonResponse;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Response;
 use Log;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Throwable;
 
 class ViewEntriesDataController extends ViewEntriesControllerBase
 {
@@ -83,6 +83,7 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
                     // Form
                     return $this->sendEntriesCSV($params);
                 }
+                // no break
             default:
                 // Branch
                 if ($params['branch_ref'] != '') {
@@ -178,46 +179,14 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
 
     /**
      * @param array $params
+     * @return ResponseFactory|\Illuminate\Foundation\Application|JsonResponse|\Illuminate\Http\Response
      */
     private function sendEntriesCSV(array $params)
     {
         $columns = ['title', 'entry_data', 'branch_counts', 'child_counts', 'user_id', 'uploaded_at', 'created_at'];
         $query = $this->runQueryHierarchy($params, $columns);
 
-        // Open the output stream
-        $data = fopen('php://output', 'w');
-
-        // Start output buffering (to capture stream contents)
-        ob_start();
-
-        // Add csv headers
-        if ($params['headers'] == 'true') {
-            fputcsv($data, $this->dataMappingService->getHeaderRowCSV());
-        }
-
-        $entries = $query->paginate($params['per_page']);
-        try {
-            foreach ($entries as $entry) {
-                if (
-
-                    !fputcsv($data, $this->dataMappingService->getMappedEntryCSV(
-                        $entry->entry_data,
-                        $entry->user_id,
-                        $entry->title,
-                        $entry->uploaded_at,
-                        $entry->branch_counts ?? null
-                    ))
-                ) {
-                    // Error writing to file
-                    throw new Exception('Error writing file');
-                }
-            }
-        } catch (\Throwable $e) {
-            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
-            return Response::apiErrorCode(400, ['entries-export-csv' => ['ec5_232']]);
-        }
-
-        return Response::toCSVStream($data);
+        return $this->sendCSVResponse($query, $params);
     }
 
     /**
@@ -288,6 +257,11 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
 
         $query = $this->runQueryBranch($params, $columns);
 
+        return $this->sendCSVResponse($query, $params);
+    }
+
+    private function sendCSVResponse($query, $params)
+    {
         // Open the output stream
         $data = fopen('php://output', 'w');
 
@@ -317,7 +291,7 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
                     throw new Exception('Error writing file');
                 }
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             return Response::apiErrorCode(400, ['entries-export-csv' => ['ec5_232']]);
         }

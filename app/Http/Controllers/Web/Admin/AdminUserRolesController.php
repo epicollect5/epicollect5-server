@@ -5,9 +5,9 @@ namespace ec5\Http\Controllers\Web\Admin;
 use ec5\Http\Controllers\Controller;
 use ec5\Http\Validation\Admin\RuleProjectRole as ProjectRoleValidator;
 use ec5\Models\Project\ProjectRole;
-use Exception;
 use Log;
 use Response;
+use Throwable;
 
 class AdminUserRolesController extends Controller
 {
@@ -42,7 +42,7 @@ class AdminUserRolesController extends Controller
             ProjectRole::where('user_id', $adminUser->id)
                 ->where('project_id', $projectId)
                 ->delete();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             if (request()->ajax()) {
                 return Response::apiErrorCode(400, ['update-admin-project-role' => ['ec5_104']]);

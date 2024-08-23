@@ -11,7 +11,6 @@ use ec5\Mail\UserPasswordResetMail;
 use ec5\Models\User\User;
 use ec5\Models\User\UserResetPassword;
 use ec5\Traits\Auth\ReCaptchaValidation;
-use Exception;
 use Firebase\JWT\JWT as FirebaseJwt;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
@@ -19,6 +18,7 @@ use Log;
 use Mail;
 use PDOException;
 use Ramsey\Uuid\Uuid;
+use Throwable;
 
 class ForgotPasswordController extends Controller
 {
@@ -73,7 +73,7 @@ class ForgotPasswordController extends Controller
         //try to find local user
         //Google user cannot reset the password as they do not have one
         //If anyone has a local account first and later adds a Google Account with the
-        //same email, they are still local users who can login with both methods
+        //same email, they are still local users who can log in with both methods
         $user = User::where('email', $inputs['email'])
             ->where('provider', config('epicollect.strings.providers.local'))
             ->first();
@@ -137,9 +137,11 @@ class ForgotPasswordController extends Controller
                 DB::commit();
             } catch (PDOException $e) {
                 Log::error('Error generating password reset token');
+                Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
                 DB::rollBack();
                 return redirect()->back()->withErrors(['forgot-password' => ['ec5_104']]);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
+                Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
                 Log::error('Error generating password reset token');
                 DB::rollBack();
                 return redirect()->back()->withErrors(['forgot-password' => ['ec5_104']]);

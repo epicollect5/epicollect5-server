@@ -8,6 +8,7 @@ use ec5\Models\User\User;
 use ec5\Services\Project\ProjectService;
 use ec5\Services\User\UserService;
 use Illuminate\Http\Request;
+use Throwable;
 
 class AdminController extends Controller
 {
@@ -16,7 +17,7 @@ class AdminController extends Controller
     | Admin Controller
     |--------------------------------------------------------------------------
     */
-    protected $projectModel;
+    protected Project $projectModel;
 
     /**
      * Create a new admin controller instance.
@@ -24,13 +25,13 @@ class AdminController extends Controller
      */
     public function __construct(
         Project $projectModel
-    )
-    {
+    ) {
         $this->projectModel = $projectModel;
     }
 
     /**
      * Display a list of users, paginated, against an optional search/filter query
+     * @throws Throwable
      */
     public function showUsers(Request $request)
     {
@@ -64,6 +65,9 @@ class AdminController extends Controller
         return view('admin.admin', $params);
     }
 
+    /**
+     * @throws Throwable
+     */
     public function showProjects(Request $request, ProjectService $projectService)
     {
         $adminUser = $request->user();

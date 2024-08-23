@@ -23,8 +23,6 @@ use ec5\Http\Validation\Entries\Upload\InputRules\RuleVideoInput;
 use ec5\Http\Validation\Entries\Upload\RuleAnswers;
 use ec5\Http\Validation\Entries\View\RuleQueryString;
 use ec5\Traits\Requests\RequestAttributes;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\NotFoundExceptionInterface;
 
 class EntriesViewService
 {
@@ -59,13 +57,7 @@ class EntriesViewService
         $this->ruleQueryString = new RuleQueryString();
     }
 
-    /**
-     * @param $allowedKeys
-     * @param $perPage
-     * @return array
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     */
+
     public function getSanitizedQueryParams($allowedKeys, $perPage): array
     {
         $params = [];

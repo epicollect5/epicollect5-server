@@ -4,7 +4,11 @@ namespace ec5\Http\Controllers\Web\Auth;
 
 use Auth;
 use ec5\Http\Validation\Auth\RuleLogin as LoginValidator;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
+use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class AdminController extends AuthController
@@ -21,11 +25,6 @@ class AdminController extends AuthController
         parent::__construct();
     }
 
-    /**
-     * @param Request $request
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View|\View
-     * @override
-     */
     public function show()
     {
         return view('admin.login');
@@ -36,7 +35,7 @@ class AdminController extends AuthController
      *
      * @param Request $request
      * @param LoginValidator $validator
-     * @return $this|\Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     * @return Factory|View|Application|RedirectResponse|\Illuminate\View\View
      */
     public function authenticate(Request $request, LoginValidator $validator)
     {
@@ -69,7 +68,7 @@ class AdminController extends AuthController
             return redirect()->route('admin-stats');
         }
 
-        //attempt to login admin users
+        //attempt to log in admin users
         $credentials['server_role'] = 'admin';
         if ($this->attemptAdminLogin($credentials)) {
             // Redirect to admin page
@@ -77,15 +76,15 @@ class AdminController extends AuthController
         }
 
         // If the login attempt was unsuccessful we will increment the number of attempts
-        // to login and redirect the user back to the login form. Of course, when this
+        // to log in and redirect the user back to the login form. Of course, when this
         // user surpasses their maximum number of attempts they will get locked out.
         if (!$lockedOut) {
             $this->incrementLoginAttempts($request);
         }
 
-        return view('admin.login')
-            ->withInput($request->only('email', 'remember'))
-            ->withErrors(['ec5_36']);
+        return redirect()->route('admin.login')
+        ->withInput($request->only('email', 'remember'))
+        ->withErrors(['ec5_36']);
     }
 
     private function attemptAdminLogin($credentials)
@@ -98,7 +97,7 @@ class AdminController extends AuthController
                 Auth::logout();
                 return false;
             }
-            // Log admin or superdmin user in
+            // Log admin or superadmin user in
             Auth::login($user, false);
             // Redirect to admin page
             return true;

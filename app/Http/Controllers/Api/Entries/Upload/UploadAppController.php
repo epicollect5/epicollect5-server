@@ -5,8 +5,8 @@ namespace ec5\Http\Controllers\Api\Entries\Upload;
 use App;
 use ec5\Services\Entries\EntriesUploadService;
 use Illuminate\Http\JsonResponse;
-use Log;
 use Response;
+use Throwable;
 
 class UploadAppController extends UploadControllerBase
 {
@@ -21,6 +21,7 @@ class UploadAppController extends UploadControllerBase
 
     /**
      * @return JsonResponse
+     * @throws Throwable
      */
     public function postUpload()
     {
@@ -35,6 +36,9 @@ class UploadAppController extends UploadControllerBase
         return Response::apiSuccessCode('ec5_237');
     }
 
+    /**
+     * @throws Throwable
+     */
     public function postUploadBulk()
     {
         //kick out if in production, this route is only for debugging locally
@@ -45,6 +49,9 @@ class UploadAppController extends UploadControllerBase
         return $this->postUpload();
     }
 
+    /**
+     * @throws Throwable
+     */
     public function import()
     {
         $publicAccess = config('epicollect.strings.project_access.public');

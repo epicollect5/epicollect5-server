@@ -7,7 +7,6 @@ use Closure;
 
 class ProjectPermissionsViewerRole extends RequestAttributesMiddleware
 {
-
     /*
      |--------------------------------------------------------------------------
      | ProjectPermissionsViewerRole Middleware
@@ -19,9 +18,6 @@ class ProjectPermissionsViewerRole extends RequestAttributesMiddleware
      */
 
     /**
-     * @param Request $request
-     * @param Closure $next
-     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse|mixed
      *
      * imp: doing this to avoid duplicated parsing of multipart request
      * @see RequestAttributesMiddleware::getParsedJsonInMultipart();

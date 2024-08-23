@@ -14,11 +14,11 @@ use ec5\Models\User\User;
 use ec5\Models\User\UserPasswordlessApi;
 use ec5\Models\User\UserProvider;
 use ec5\Services\User\UserService;
-use Exception;
 use Log;
 use Mail;
 use PDOException;
 use Response;
+use Throwable;
 
 class PasswordlessController extends AuthController
 {
@@ -60,13 +60,13 @@ class PasswordlessController extends AuthController
 
             DB::commit();
         } catch (PDOException $e) {
-            Log::error('Error generating passwordless access code via appi');
+            Log::error('Error generating passwordless access code via api');
             DB::rollBack();
 
             return Response::apiErrorCode(400, [
                 'passwordless-request-code' => ['ec5_104']
             ]);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error('Error generating password access code via api');
             DB::rollBack();
 
@@ -109,13 +109,13 @@ class PasswordlessController extends AuthController
 
             //Does the email exists?
             if ($userPasswordless === null) {
-                Log::error('Error validating passworless code', ['error' => 'Email does not exist']);
+                Log::error('Error validating passwordless code', ['error' => 'Email does not exist']);
                 return Response::apiErrorCode(400, ['passwordless-api' => ['ec5_378']]);
             }
 
             //check if the code is valid
             if (!$userPasswordless->isValidCode($code)) {
-                Log::error('Error validating passworless code', ['error' => 'Code not valid']);
+                Log::error('Error validating passwordless code', ['error' => 'Code not valid']);
                 return Response::apiErrorCode(400, ['passwordless-api' => ['ec5_378']]);
             }
 
@@ -154,7 +154,7 @@ class PasswordlessController extends AuthController
             }
 
             /**
-             * if user exists and it is active, just log the user in.
+             * if user exists, and it is active, just log the user in.
              * This means the user owns the email used, if the user owns a Google and Apple account
              * matching the email, that will give the user access to those projects.
              * Apple and Google verify the email on their side so we are safe

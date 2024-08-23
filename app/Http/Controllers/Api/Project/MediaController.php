@@ -3,6 +3,7 @@
 namespace ec5\Http\Controllers\Api\Project;
 
 use ec5\Http\Validation\Media\RuleMedia;
+use File;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Response;
@@ -66,18 +67,16 @@ class MediaController
         if (!empty($params['name'])) {
             // Attempt to retrieve media
             try {
-                // Use the provided 'format' as the driver
-                $path = $this->requestedProject()->ref . '/' . $params['name'];
-                // Check if the path exists
-                if (!Storage::disk($format)->exists($path)) {
-                    throw new FileNotFoundException("File does not exist at path: " . $path);
-                }
-                $file = Storage::disk($format)->get($path);
-                //get storage real path
+                //get storage prefix
                 $storagePathPrefix = Storage::disk($format)->path('');
                 //get file real path
                 $realFilepath = $storagePathPrefix . $this->requestedProject()->ref . '/' . $params['name'];
+                // Check if the file exists using real (absolute) path
+                if (!File::exists($realFilepath)) {
+                    throw new FileNotFoundException("File does not exist at path: " . $realFilepath);
+                }
 
+                $file = File::get($realFilepath);
                 //stream only audio and video
                 if ($inputType !== config('epicollect.strings.inputs_type.photo')) {
                     //serve as 206  partial response to load file faster
@@ -139,7 +138,6 @@ class MediaController
             default:
                 $contentType = config('epicollect.media.content_type.photo');
         }
-        $defaultName = config('epicollect.media.photo_placeholder.filename');
         // If a name was supplied, attempt to find file
         if (!empty($params['name'])) {
             // Attempt to retrieve media
@@ -148,9 +146,14 @@ class MediaController
                 $filepathPrefix = Storage::disk('temp')->path('');
                 //get file real path
                 $realFilepath = $filepathPrefix . $inputType . '/' . $this->requestedProject()->ref . '/' . $params['name'];
+
+                // Check if the file exists using absolute path
+                if (!File::exists($realFilepath)) {
+                    throw new FileNotFoundException("File does not exist at path: " . $realFilepath);
+                }
+
                 //stream only audio and video (not in unit tests!)
                 if ($inputType !== config('epicollect.strings.inputs_type.photo')) {
-                    //in tests, just return a 200 response as there are issue with headers()
                     return Response::toMediaStream(request(), $realFilepath, $inputType);
                 } else {
                     //photo response is as usual
@@ -160,16 +163,13 @@ class MediaController
                 }
             } catch (Throwable $e) {
                 Log::error('Temp media error', ['exception' => $e->getMessage()]);
-                // If the file is not found, see if we have it in the non-temp folders
+                //imp: If the file is not found, see if we have it in the non-temp folders
+                //imp: this covers the case when a user is editing an existing web entry
+                //imp: We display the stored file, if no temp file available yet
                 return $this->getMedia($ruleMedia);
             }
         }
 
-        // Otherwise return default placeholder media
-        $filepath = Storage::disk('public')->get($defaultName);
-        $response = Response::make($filepath);
-        $response->header('Content-Type', $contentType);
-
-        return $response;
+        return Response::apiErrorCode(400, ['temp-media-controller' => ['ec5_69']]);
     }
 }

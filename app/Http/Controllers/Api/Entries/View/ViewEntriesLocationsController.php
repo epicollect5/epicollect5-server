@@ -2,7 +2,6 @@
 
 namespace ec5\Http\Controllers\Api\Entries\View;
 
-use Carbon\Carbon;
 use ec5\Http\Validation\Entries\View\RuleQueryStringLocations;
 use ec5\Libraries\Utilities\DateFormatConverter;
 use ec5\Models\Entries\BranchEntry;

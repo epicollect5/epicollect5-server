@@ -12,6 +12,10 @@ use ec5\Traits\Eloquent\Remover;
 use ec5\Traits\Requests\RequestAttributes;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Response;
+use Log;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
+use Throwable;
 
 class DeleteController extends Controller
 {
@@ -29,12 +33,17 @@ class DeleteController extends Controller
     use RequestAttributes;
 
     protected array $errors = [];
-    protected $request;
 
     /**
      * Delete an entry
      *
+     * @param RuleDelete $ruleDelete
+     * @param EntryStructureDTO $entryStructure
+     * @param DeleteEntryService $deleteEntryService
      * @return JsonResponse
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     * @throws Throwable
      */
     public function deleteEntry(RuleDelete $ruleDelete, EntryStructureDTO $entryStructure, DeleteEntryService $deleteEntryService)
     {
@@ -91,7 +100,8 @@ class DeleteController extends Controller
                 $this->requestedProject(),
                 $entryStructure->getEntryUuid(),
                 $entryStructure,
-                false)) {
+                false
+            )) {
                 return Response::apiErrorCode(400, ['deletion-entries-branch' => ['ec5_96']]);
             }
         } else {
@@ -106,6 +116,8 @@ class DeleteController extends Controller
      * Delete a chunk of entries
      *
      * @return JsonResponse
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
      */
     public function deleteEntries()
     {
@@ -141,8 +153,8 @@ class DeleteController extends Controller
             }
             // Success!
             return Response::apiSuccessCode('ec5_400');
-        } catch (\Exception $e) {
-            \Log::error('Error deletion() entries', ['exception' => $e->getMessage()]);
+        } catch (Throwable $e) {
+            Log::error('Error deletion() entries', ['exception' => $e->getMessage()]);
             return Response::apiErrorCode(400, ['errors' => ['ec5_104']]);
         }
     }

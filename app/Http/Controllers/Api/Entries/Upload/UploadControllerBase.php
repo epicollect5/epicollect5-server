@@ -12,15 +12,14 @@ use ec5\Traits\Requests\RequestAttributes;
 
 abstract class UploadControllerBase
 {
-
     use RequestAttributes;
 
-    protected $ruleFileEntry;
-    protected $isBulkUpload;
-    protected $entriesUploadService;
-    protected $entryStructure;
-    protected $errors = [];
-    protected $ruleUpload;
+    protected RuleFileEntry $ruleFileEntry;
+    protected bool $isBulkUpload;
+    protected EntriesUploadService $entriesUploadService;
+    protected EntryStructureDTO $entryStructure;
+    protected array $errors = [];
+    protected RuleUpload $ruleUpload;
 
     /**
      * @param EntryStructureDTO $entryStructure
@@ -31,8 +30,7 @@ abstract class UploadControllerBase
         EntryStructureDTO $entryStructure,
         RuleFileEntry     $ruleFileEntry,
         RuleUpload        $ruleUpload
-    )
-    {
+    ) {
         $this->ruleFileEntry = $ruleFileEntry;
         $this->entryStructure = $entryStructure;
         $this->ruleUpload = $ruleUpload;

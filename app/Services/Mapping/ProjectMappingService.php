@@ -2,10 +2,9 @@
 
 namespace ec5\Services\Mapping;
 
-
 class ProjectMappingService
 {
-    private $inputCounter;
+    private int $inputCounter;
 
     public function createEC5AUTOMapping(array $projectExtra): array
     {
@@ -37,6 +36,7 @@ class ProjectMappingService
     /**
      * Map a set of inputs
      *
+     * @param $projectExtra
      * @param $formRef
      * @param array $inputRefs
      * @return array
@@ -94,7 +94,7 @@ class ProjectMappingService
                 }
                 break;
 
-            //map possible answers for those input types which have them
+                //map possible answers for those input types which have them
             case 'dropdown':
             case 'radio':
             case 'checkbox':
@@ -126,6 +126,7 @@ class ProjectMappingService
      * @param $index
      * @param $question
      * @return string
+     * @noinspection RegExpSimplifiable
      */
     private function generateMapTo($index, $question): string
     {
