@@ -24,8 +24,8 @@ use ec5\Http\Validation\Entries\Upload\InputRules\RuleTimeInput;
 use ec5\Http\Validation\Entries\Upload\InputRules\RuleVideoInput;
 use ec5\Http\Validation\ValidationBase;
 use ec5\Services\Entries\EntriesUniquenessService;
-use Exception;
 use Log;
+use Throwable;
 
 class RuleAnswers extends ValidationBase
 {
@@ -49,25 +49,25 @@ class RuleAnswers extends ValidationBase
      *
      * @var string
      */
-    protected $inputRef = '';
-    protected $ruleIntegerInput,
-        $ruleDecimalInput,
-        $ruleRadioInput,
-        $ruleTextInput,
-        $ruleTextareaInput,
-        $ruleDateInput,
-        $ruleTimeInput,
-        $ruleLocationInput,
-        $ruleCheckboxInput,
-        $ruleDropdownInput,
-        $rulePhotoInput,
-        $ruleVideoInput,
-        $ruleAudioInput,
-        $ruleBranchInput,
-        $ruleGroupInput,
-        $rulePhoneInput,
-        $ruleSearchsingleInput,
-        $ruleSearchmultipleInput;
+    protected string $inputRef = '';
+    protected RuleIntegerInput $ruleIntegerInput;
+    protected RuleDecimalInput $ruleDecimalInput;
+    protected RuleRadioInput $ruleRadioInput;
+    protected RuleTextInput $ruleTextInput;
+    protected RuleTextareaInput $ruleTextareaInput;
+    protected RuleDateInput $ruleDateInput;
+    protected RuleTimeInput $ruleTimeInput;
+    protected RuleLocationInput $ruleLocationInput;
+    protected RuleCheckboxInput $ruleCheckboxInput;
+    protected RuleDropdownInput $ruleDropdownInput;
+    protected RulePhotoInput $rulePhotoInput;
+    protected RuleVideoInput $ruleVideoInput;
+    protected RuleAudioInput $ruleAudioInput;
+    protected RuleBranchInput $ruleBranchInput;
+    protected RuleGroupInput $ruleGroupInput;
+    protected RulePhoneInput $rulePhoneInput;
+    protected RuleSearchSingleInput $ruleSearchsingleInput;
+    protected RuleSearchMultipleInput $ruleSearchmultipleInput;
 
     /**
      * @param RuleIntegerInput $ruleIntegerInput
@@ -108,8 +108,7 @@ class RuleAnswers extends ValidationBase
         RulePhoneInput          $rulePhoneInput,
         RuleSearchSingleInput   $ruleSearchSingleInput,
         RuleSearchMultipleInput $ruleSearchMultipleInput
-    )
-    {
+    ) {
         $this->ruleIntegerInput = $ruleIntegerInput;
         $this->ruleDecimalInput = $ruleDecimalInput;
         $this->ruleRadioInput = $ruleRadioInput;
@@ -140,7 +139,7 @@ class RuleAnswers extends ValidationBase
      * @param $answerData
      * @param $inputRef
      */
-    public function additionalChecks(ProjectDTO $project, EntryStructureDTO $entryStructure, $answerData, $inputRef)
+    public function additionalChecks(ProjectDTO $project, EntryStructureDTO $entryStructure, $answerData, $inputRef): void
     {
         $projectExtra = $project->getProjectExtra();
 
@@ -174,7 +173,7 @@ class RuleAnswers extends ValidationBase
             try {
                 // Retrieve the answer returned from the additional checks
                 $answer = $this->validateAnswer($input, $answerData['answer'], $project, $entryStructure);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 Log::error('error', ['exception' => $e->getMessage()]);
                 Log::error(
                     'Exception thrown, something wrong with input answer' . $inputRef,
@@ -207,7 +206,7 @@ class RuleAnswers extends ValidationBase
      * @param EntryStructureDTO|null $entryStructure
      * @return mixed
      */
-    public function validateAnswer($input, $answer, ProjectDTO $project, EntryStructureDTO $entryStructure = null)
+    public function validateAnswer($input, $answer, ProjectDTO $project, EntryStructureDTO $entryStructure = null): mixed
     {
         // todo use reflection here instead? or switch?
         // Construct dynamic variable name, base on input type
@@ -247,7 +246,7 @@ class RuleAnswers extends ValidationBase
      */
     private function checkRequired($isRequired, $answer): bool
     {
-        // If the answer is 'required', check it's not empty
+        // If the answer is 'required', check it's not empty.
         // empty means no null, not an empty string and not an empty array
         if ($isRequired && ($answer === null || $answer === '' || $answer === [])) {
             $this->errors[$this->inputRef] = ['ec5_21'];

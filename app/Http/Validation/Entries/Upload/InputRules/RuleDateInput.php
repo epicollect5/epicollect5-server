@@ -6,16 +6,16 @@ use DateTime;
 use ec5\DTO\EntryStructureDTO;
 use ec5\DTO\ProjectDTO;
 use Log;
+use Throwable;
 
 class RuleDateInput extends RuleInputBase
 {
-
     /**
      * @param $inputDetails
      * @param string|array $answer
      * @param ProjectDTO $project
      */
-    public function setRules($inputDetails, $answer, ProjectDTO $project)
+    public function setRules($inputDetails, $answer, ProjectDTO $project): void
     {
         // Set rules based on the input details
         // Source will be the input ref
@@ -28,7 +28,7 @@ class RuleDateInput extends RuleInputBase
 
     }
 
-    public function additionalChecks($inputDetails, $answer, ProjectDTO $project, EntryStructureDTO $entryStructure)
+    public function additionalChecks($inputDetails, $answer, ProjectDTO $project, EntryStructureDTO $entryStructure): array|string|null
     {
 
         //if this question is not required, skip extra checks
@@ -59,10 +59,11 @@ class RuleDateInput extends RuleInputBase
         $datePart = '';
         try {
             $datePart = explode('T', $answer ?? '')[0];
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
             Log::error('Date wrong format uploaded - validateDate failed', [
                 'project slug' => $project->slug,
-                'date' => $answer
+                'date' => $answer,
+                'exception' => $e->getMessage()
             ]);
             $this->errors[$inputDetails['ref']] = ['ec5_79'];
         }
@@ -79,7 +80,7 @@ class RuleDateInput extends RuleInputBase
     }
 
     //see t.ly/YEox
-    private function validateDate($date, $format = 'Y-m-d')
+    private function validateDate($date, $format = 'Y-m-d'): bool
     {
         $d = DateTime::createFromFormat($format, $date);
         return $d && $d->format($format) == $date;

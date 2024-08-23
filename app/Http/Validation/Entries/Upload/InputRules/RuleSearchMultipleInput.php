@@ -9,13 +9,12 @@ use Illuminate\Support\Str;
 
 class RuleSearchMultipleInput extends RuleInputBase
 {
-
     /**
      * @param $inputDetails
      * @param string|array $answer
      * @param ProjectDTO $project
      */
-    public function setRules($inputDetails, $answer, ProjectDTO $project)
+    public function setRules($inputDetails, $answer, ProjectDTO $project): void
     {
         // Set rules based on the input details
         // Source will be the input ref
@@ -23,14 +22,7 @@ class RuleSearchMultipleInput extends RuleInputBase
 
     }
 
-    /**
-     * @param $inputDetails
-     * @param $answer
-     * @param ProjectDTO $project
-     * @param EntryStructureDTO $entryStructure
-     * @return mixed
-     */
-    public function additionalChecks($inputDetails, $answer, ProjectDTO $project, EntryStructureDTO $entryStructure)
+    public function additionalChecks($inputDetails, $answer, ProjectDTO $project, EntryStructureDTO $entryStructure): array|string|null
     {
 
         if (empty($answer)) {
@@ -57,9 +49,9 @@ class RuleSearchMultipleInput extends RuleInputBase
              */
 
             // If the answer contains anything not in the structure possible answers, error
-//            if (count(array_diff($answer, $possibles)) > 0) {
-//                $this->errors[$inputDetails['ref']] = ['ec5_25'];
-//            }
+            //            if (count(array_diff($answer, $possibles)) > 0) {
+            //                $this->errors[$inputDetails['ref']] = ['ec5_25'];
+            //            }
 
 
             //uploading duplicate refs? (bul upload)
@@ -70,7 +62,7 @@ class RuleSearchMultipleInput extends RuleInputBase
 
             //uploading invalid values? (bulk upload, the apps do not allow them)
             //For bulk uploads, wrong values are wrapped with '-' to trigger an error
-            foreach ($answer as $key => $value) {
+            foreach ($answer as $value) {
                 if (Str::contains($value, '-')) {
                     $this->errors[$inputDetails['ref']] = ['ec5_29'];
                 }
@@ -80,7 +72,7 @@ class RuleSearchMultipleInput extends RuleInputBase
                 // Loop each given answer
                 foreach ($answer as $answerRef) {
 
-                    //any null anwer refs? Coming from bulk upload
+                    //any null answer refs? Coming from bulk upload
                     if ($answerRef === null) {
                         $this->errors[$inputDetails['ref']] = ['ec5_25'];
                         break;

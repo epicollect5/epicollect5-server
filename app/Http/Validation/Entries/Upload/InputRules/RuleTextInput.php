@@ -11,12 +11,12 @@ class RuleTextInput extends RuleInputBase
      * @param string|array $answer
      * @param ProjectDTO $project
      */
-    public function setRules($inputDetails, $answer, ProjectDTO $project)
+    public function setRules($inputDetails, $answer, ProjectDTO $project): void
     {
         // Set rules based on the input details
         // Source will be the input ref
         $this->rules[$inputDetails['ref']] = ['string'];
-        
+
         // If we have a regex set, add to rules
         if ($inputDetails['regex']) {
             $this->rules[$inputDetails['ref']][] = 'regex:' . '/' . $inputDetails['regex'] . '/';

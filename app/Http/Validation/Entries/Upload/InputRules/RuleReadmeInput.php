@@ -6,13 +6,12 @@ use ec5\DTO\ProjectDTO;
 
 class RuleReadmeInput extends RuleInputBase
 {
-
     /**
      * @param $inputDetails
      * @param string|array $answer
      * @param ProjectDTO $project
      */
-    public function setRules($inputDetails, $answer, ProjectDTO $project)
+    public function setRules($inputDetails, $answer, ProjectDTO $project): void
     {
         // Set rules based on the input details
         // Source will be the input ref

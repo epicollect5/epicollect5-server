@@ -6,6 +6,7 @@ use DateTime;
 use ec5\DTO\EntryStructureDTO;
 use ec5\DTO\ProjectDTO;
 use Log;
+use Throwable;
 
 class RuleTimeInput extends RuleInputBase
 {
@@ -14,7 +15,7 @@ class RuleTimeInput extends RuleInputBase
      * @param string|array $answer
      * @param ProjectDTO $project
      */
-    public function setRules($inputDetails, $answer, ProjectDTO $project)
+    public function setRules($inputDetails, $answer, ProjectDTO $project): void
     {
         // Set rules based on the input details
         // Source will be the input ref
@@ -27,7 +28,7 @@ class RuleTimeInput extends RuleInputBase
         parent::setRules($inputDetails, $answer, $project);
     }
 
-    public function additionalChecks($inputDetails, $answer, ProjectDTO $project, EntryStructureDTO $entryStructure)
+    public function additionalChecks($inputDetails, $answer, ProjectDTO $project, EntryStructureDTO $entryStructure): array|string|null
     {
         //if this question is not required, skip extra checks
         if ($inputDetails['is_required'] === false && $answer === '') {
@@ -58,10 +59,11 @@ class RuleTimeInput extends RuleInputBase
         try {
             $timePart = explode('T', $answer ?? '')[1];
             $timePart = explode('.', $timePart ?? '')[0];
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
             Log::error('Time wrong format uploaded - validateTime failed', [
                 'project slug' => $project->slug,
-                'time' => $timePart
+                'time' => $timePart,
+                'exception' => $e->getMessage()
             ]);
             $this->errors[$inputDetails['ref']] = ['ec5_79'];
         }
@@ -78,7 +80,7 @@ class RuleTimeInput extends RuleInputBase
     }
 
     //see t.ly/YEox
-    private function validateTime($time, $format = 'H:i:s')
+    private function validateTime($time, $format = 'H:i:s'): bool
     {
         $d = DateTime::createFromFormat($format, $time);
         return $d && $d->format($format) == $time;
