@@ -51,7 +51,12 @@ class EntriesUploadService
 
         // 2 - Check project status
         if (!$this->isProjectActive()) {
-            $this->errors = ['upload-controller' => ['ec5_202']];
+            if($this->requestedProject()->isLocked()) {
+                $this->errors = ['upload-controller' => ['ec5_202']];
+            }
+            if($this->requestedProject()->isTrashed()) {
+                $this->errors = ['upload-controller' => ['ec5_11']];
+            }
             return false;
         }
 
@@ -181,6 +186,7 @@ class EntriesUploadService
         }
         return true;
     }
+
 
     public function canUserUploadEntries(): bool
     {

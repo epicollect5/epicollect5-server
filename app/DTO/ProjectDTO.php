@@ -437,6 +437,16 @@ class ProjectDTO
         return $this->access === config('epicollect.strings.project_access.public');
     }
 
+    public function isLocked(): bool
+    {
+        return $this->status === config('epicollect.strings.project_status.locked');
+    }
+
+    public function isTrashed(): bool
+    {
+        return $this->status === config('epicollect.strings.project_status.trashed');
+    }
+
     public function canBulkUpload(): string
     {
         return $this->can_bulk_upload;
