@@ -34,7 +34,6 @@ class CheckForMaintenanceMode
     public function handle($request, Closure $next)
     {
         if ($this->app->isDownForMaintenance()) {
-
             if ($this->isJsonRequest($request)) {
                 $errors = ['maintenance.mode' => ['ec5_252']];
                 return Response::apiErrorCode(404, $errors);

@@ -7,21 +7,21 @@ use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
-use Exception;
 use Faker\Factory as Faker;
+use Faker\Generator;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
+use Throwable;
 
-
-class ManageUsersControllerTest extends TestCase
+class UsersControllerTest extends TestCase
 {
     use DatabaseTransactions;
 
-    private $faker;
-    private $user;
-    private $project;
-    private $projectDefinition;
+    private Generator $faker;
+    private User $user;
+    private Project $project;
+    private array $projectDefinition;
 
     public function setUp(): void
     {
@@ -75,11 +75,10 @@ class ManageUsersControllerTest extends TestCase
             $response[] = $this->get('myprojects/' . $this->project->slug . '/manage-users');
             $response[0]->assertStatus(302);
             $response[0]->assertRedirect(Route('login'));
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
-
 
     public function test_manage_users_page_renders_correctly()
     {
@@ -87,7 +86,7 @@ class ManageUsersControllerTest extends TestCase
         try {
             $response[] = $this->actingAs($this->user)->get('myprojects/' . $this->project->slug . '/manage-users');
             $response[0]->assertStatus(200);
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -122,7 +121,7 @@ class ManageUsersControllerTest extends TestCase
                 2,
                 ProjectRole::where('project_id', $this->project->id)->count()
             );
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
 
@@ -174,7 +173,7 @@ class ManageUsersControllerTest extends TestCase
                 2,
                 ProjectRole::where('project_id', $this->project->id)->count()
             );
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -209,7 +208,7 @@ class ManageUsersControllerTest extends TestCase
                 2,
                 ProjectRole::where('project_id', $this->project->id)->count()
             );
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
 
@@ -245,7 +244,7 @@ class ManageUsersControllerTest extends TestCase
                 2,
                 ProjectRole::where('project_id', $this->project->id)->count()
             );
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
 
@@ -281,7 +280,7 @@ class ManageUsersControllerTest extends TestCase
                 2,
                 ProjectRole::where('project_id', $this->project->id)->count()
             );
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
 
@@ -323,7 +322,8 @@ class ManageUsersControllerTest extends TestCase
                         ]
                     ]
                 ])
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_344",
@@ -358,7 +358,7 @@ class ManageUsersControllerTest extends TestCase
                     ->where('user_id', $manager->id)
                     ->value('role')
             );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -399,7 +399,8 @@ class ManageUsersControllerTest extends TestCase
                         ]
                     ]
                 ])
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_91",
@@ -429,7 +430,7 @@ class ManageUsersControllerTest extends TestCase
                     ->where('user_id', $curator->id)
                     ->value('role')
             );
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -470,7 +471,8 @@ class ManageUsersControllerTest extends TestCase
                         ]
                     ]
                 ])
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_91",
@@ -500,7 +502,7 @@ class ManageUsersControllerTest extends TestCase
                     ->where('user_id', $collector->id)
                     ->value('role')
             );
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -541,7 +543,8 @@ class ManageUsersControllerTest extends TestCase
                         ]
                     ]
                 ])
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_91",
@@ -571,7 +574,7 @@ class ManageUsersControllerTest extends TestCase
                     ->where('user_id', $viewer->id)
                     ->value('role')
             );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             echo $e->getMessage() . PHP_EOL;
             if ($response[0]->baseResponse->exception === null) {
                 echo json_encode(['response' => $response[0]]) . PHP_EOL;
@@ -608,7 +611,8 @@ class ManageUsersControllerTest extends TestCase
                         ]
                     ]
                 ])
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_217",
@@ -630,7 +634,7 @@ class ManageUsersControllerTest extends TestCase
                     ->where('user_id', $this->user->id)
                     ->value('role')
             );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -670,7 +674,8 @@ class ManageUsersControllerTest extends TestCase
                         ]
                     ]
                 ])
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_217",
@@ -698,7 +703,7 @@ class ManageUsersControllerTest extends TestCase
                     ->where('user_id', $manager->id)
                     ->value('role')
             );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -744,7 +749,7 @@ class ManageUsersControllerTest extends TestCase
                     ->where('user_id', $manager->id)
                     ->count()
             );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -790,7 +795,7 @@ class ManageUsersControllerTest extends TestCase
                     ->where('user_id', $curator->id)
                     ->count()
             );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -836,7 +841,7 @@ class ManageUsersControllerTest extends TestCase
                     ->where('user_id', $collector->id)
                     ->count()
             );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -882,7 +887,7 @@ class ManageUsersControllerTest extends TestCase
                     ->where('user_id', $viewer->id)
                     ->count()
             );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -935,7 +940,7 @@ class ManageUsersControllerTest extends TestCase
                     ->where('user_id', $curator->id)
                     ->count()
             );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -988,7 +993,7 @@ class ManageUsersControllerTest extends TestCase
                     ->where('user_id', $collector->id)
                     ->count()
             );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1041,7 +1046,7 @@ class ManageUsersControllerTest extends TestCase
                     ->where('user_id', $viewer->id)
                     ->count()
             );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1071,7 +1076,8 @@ class ManageUsersControllerTest extends TestCase
                         ]
                     ]
                 ])
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_217",
@@ -1093,7 +1099,7 @@ class ManageUsersControllerTest extends TestCase
                     ->value('role')
             );
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1140,7 +1146,8 @@ class ManageUsersControllerTest extends TestCase
                         ]
                     ]
                 ])
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_344",
@@ -1174,10 +1181,262 @@ class ManageUsersControllerTest extends TestCase
                     ->value('role')
             );
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
-}
+    public function test_should_add_users_in_bulk_as_new()
+    {
+        $payload = [
+            'role' => config('epicollect.strings.project_roles.collector'),
+            'emails' => [
+                $this->faker->email(),
+                $this->faker->email(),
+                $this->faker->email()
+            ]
+        ];
+        $response = [];
+        try {
+            $response[] = $this->actingAs($this->user)
+                ->post(
+                    'api/internal/project-users/' . $this->project->slug . '/add-users-bulk',
+                    $payload,
+                    ['X-Requested-With' => 'XMLHttpRequest']
+                );
 
+            $response[0]->assertStatus(200)
+                            ->assertJsonStructure([
+                                'data' => [
+                                    'message'
+                                    ]
+                            ])
+                            ->assertExactJson(
+                                [
+                                    "data" => [
+                                        "message" => "Users with collector role added!"
+                                    ]
+                                ]
+                            );
+            //the project should have only 4 members now
+            $this->assertEquals(
+                4,
+                ProjectRole::where('project_id', $this->project->id)->count()
+            );
+            $this->assertEquals(
+                config('epicollect.strings.project_roles.creator'),
+                ProjectRole::where('project_id', $this->project->id)
+                    ->where('user_id', $this->user->id)
+                    ->value('role')
+            );
+
+            foreach ($payload['emails'] as $email) {
+                $userId = User::where('email', $email)->value('id');
+                $this->assertEquals(
+                    config('epicollect.strings.project_roles.collector'),
+                    ProjectRole::where('project_id', $this->project->id)
+                        ->where('user_id', $userId)
+                        ->value('role')
+                );
+            }
+        } catch (Throwable $e) {
+            $this->logTestError($e, $response);
+        }
+    }
+
+    public function test_should_catch_invalid_email_when_adding_users_in_bulk_as_new()
+    {
+        $payload = [
+            'role' => config('epicollect.strings.project_roles.viewer'),
+            'emails' => [
+                'a wrong email'
+            ]
+        ];
+        $response = [];
+        try {
+            $response[] = $this->actingAs($this->user)
+                ->post(
+                    'api/internal/project-users/' . $this->project->slug . '/add-users-bulk',
+                    $payload,
+                    ['X-Requested-With' => 'XMLHttpRequest']
+                );
+
+            $response[0]->assertStatus(400)
+                ->assertJsonStructure([
+                    'errors' => [
+                        '*' => [
+                            'code',
+                            'title',
+                            'source',
+                        ]
+                    ]
+                ])
+                ->assertExactJson(
+                    [
+                        "errors" => [
+                            [
+                                "code" => "ec5_42",
+                                "title" => "Email address is not correct.",
+                                "source" => "emails.0"
+                            ],
+                        ]
+                    ]
+                );
+
+        } catch (Throwable $e) {
+            $this->logTestError($e, $response);
+        }
+    }
+
+    public function test_should_switch_existing_user_roles_in_bulk()
+    {
+        //create 3 managers and add them to the project
+        $manager1 = factory(User::class)->create();
+        factory(ProjectRole::class)->create([
+            'user_id' => $manager1->id,
+            'project_id' => $this->project->id,
+            'role' => config('epicollect.strings.project_roles.manager')
+        ]);
+
+        $manager2 = factory(User::class)->create();
+        factory(ProjectRole::class)->create([
+            'user_id' => $manager2->id,
+            'project_id' => $this->project->id,
+            'role' => config('epicollect.strings.project_roles.manager')
+        ]);
+
+        $manager3 = factory(User::class)->create();
+        factory(ProjectRole::class)->create([
+            'user_id' => $manager3->id,
+            'project_id' => $this->project->id,
+            'role' => config('epicollect.strings.project_roles.manager')
+        ]);
+
+        //the project should have only 4 members now
+        $this->assertEquals(
+            4,
+            ProjectRole::where('project_id', $this->project->id)->count()
+        );
+
+        //members should be 1 creator and 3 managers
+        $this->assertEquals(
+            config('epicollect.strings.project_roles.creator'),
+            ProjectRole::where('user_id', $this->user->id)->value('role')
+        );
+        $this->assertEquals(
+            config('epicollect.strings.project_roles.manager'),
+            ProjectRole::where('user_id', $manager1->id)->value('role')
+        );
+        $this->assertEquals(
+            config('epicollect.strings.project_roles.manager'),
+            ProjectRole::where('user_id', $manager2->id)->value('role')
+        );
+        $this->assertEquals(
+            config('epicollect.strings.project_roles.manager'),
+            ProjectRole::where('user_id', $manager3->id)->value('role')
+        );
+
+        //now upload the manager emails but as curator role
+        $payload = [
+            'role' => config('epicollect.strings.project_roles.curator'),
+            'emails' => [
+                $manager1->email,
+                $manager2->email,
+                $manager3->email
+            ]
+        ];
+        $response = [];
+        try {
+            $response[] = $this->actingAs($this->user)
+                ->post(
+                    'api/internal/project-users/' . $this->project->slug . '/add-users-bulk',
+                    $payload,
+                    ['X-Requested-With' => 'XMLHttpRequest']
+                );
+
+            $response[0]->assertStatus(200)
+                ->assertJsonStructure([
+                    'data' => [
+                        'message'
+                    ]
+                ])
+                ->assertExactJson(
+                    [
+                        "data" => [
+                            "message" => "Users with curator role added!"
+                        ]
+                    ]
+                );
+            //the project should still have only 4 members now
+            $this->assertEquals(
+                4,
+                ProjectRole::where('project_id', $this->project->id)->count()
+            );
+            $this->assertEquals(
+                config('epicollect.strings.project_roles.creator'),
+                ProjectRole::where('project_id', $this->project->id)
+                    ->where('user_id', $this->user->id)
+                    ->value('role')
+            );
+
+            //now the managers became curators
+            foreach ($payload['emails'] as $email) {
+                $userId = User::where('email', $email)->value('id');
+                $this->assertEquals(
+                    config('epicollect.strings.project_roles.curator'),
+                    ProjectRole::where('project_id', $this->project->id)
+                        ->where('user_id', $userId)
+                        ->value('role')
+                );
+            }
+        } catch (Throwable $e) {
+            $this->logTestError($e, $response);
+        }
+    }
+
+    public function test_should_catch_creator_role_email_when_adding_users_in_bulk()
+    {
+        $payload = [
+            'role' => config('epicollect.strings.project_roles.collector'),
+            'emails' => [
+                $this->user->email,
+                $this->faker->email(),
+                $this->faker->email(),
+                $this->faker->email()
+            ]
+        ];
+        $response = [];
+        try {
+            $response[] = $this->actingAs($this->user)
+                ->post(
+                    'api/internal/project-users/' . $this->project->slug . '/add-users-bulk',
+                    $payload,
+                    ['X-Requested-With' => 'XMLHttpRequest']
+                );
+
+            $response[0]->assertStatus(400)
+                ->assertJsonStructure([
+                    'errors' => [
+                        '*' => [
+                            'code',
+                            'title',
+                            'source',
+                        ]
+                    ]
+                ])
+                ->assertExactJson(
+                    [
+                        "errors" => [
+                            [
+                                "code" => "ec5_217",
+                                "title" => "You cannot change your own project role.",
+                                "source" => "user"
+                            ],
+                        ]
+                    ]
+                );
+        } catch (Throwable $e) {
+            $this->logTestError($e, $response);
+        }
+    }
+}

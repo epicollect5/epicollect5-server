@@ -82,13 +82,13 @@ Route::group(['middleware' => ['project.permissions']], function () {
     //User management
     //used to export the users to csv
     //todo missing type and id in the response
-    Route::get('api/internal/project-users/{project_slug}', 'Api\Project\UserController@all');
+    Route::get('api/internal/project-users/{project_slug}', 'Api\Project\UsersController@all');
 
-    Route::post('api/internal/project-users/{project_slug}/remove-by-role', 'Api\Project\UserController@removeByRole');
+    Route::post('api/internal/project-users/{project_slug}/remove-by-role', 'Api\Project\UsersController@removeByRole');
 
-    Route::post('api/internal/project-users/{project_slug}/switch-role', 'Api\Project\UserController@switchRole');
+    Route::post('api/internal/project-users/{project_slug}/switch-role', 'Api\Project\UsersController@switchRole');
 
-    Route::post('api/internal/project-users/{project_slug}/add-users-bulk', 'Api\Project\UserController@addUsersBulk');
+    Route::post('api/internal/project-users/{project_slug}/add-users-bulk', 'Api\Project\UsersController@addUsersBulk');
 });
 
 // Required roles

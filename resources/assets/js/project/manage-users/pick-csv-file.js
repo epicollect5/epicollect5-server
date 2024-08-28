@@ -20,8 +20,7 @@ window.EC5.project_users = window.EC5.project_users || {};
                 $.each(error.responseJSON.errors, function (index, error) {
                     parsedErrors += error.title + '<br/>';
                 });
-            }
-            else {
+            } else {
                 parsedErrors = error;
             }
             return parsedErrors;
@@ -54,9 +53,12 @@ window.EC5.project_users = window.EC5.project_users || {};
         var reader = new FileReader();
 
         reader.onload = function (e) {
-
             var content = e.target.result;
-            var json = Papa.parse(content, { header: true, delimiter: ',' });
+            var json = Papa.parse(content, {
+                header: true,
+                delimiter: ',',
+                skipEmptyLines: 'greedy'
+            });
             var headers = json.meta.fields;
             var modal = $('#ec5ModalImportUsers');
 
@@ -161,8 +163,7 @@ window.EC5.project_users = window.EC5.project_users || {};
                                 if (config.invalidEmailAddresses.length > 0) {
                                     window.EC5.toast.showWarning(config.messages.warning.SOME_USERS_NOT_IMPORTED);
                                     window.EC5.toast.showError(config.messages.error.INVALID_EMAILS + ': <br/>' + config.invalidEmailAddresses.join('<br/>'));
-                                }
-                                else {
+                                } else {
                                     window.EC5.toast.showSuccess(config.messages.success.USERS_IMPORTED);
                                 }
                             }, function () {
