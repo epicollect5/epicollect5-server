@@ -9,7 +9,8 @@ use Illuminate\Queue\SerializesModels;
 
 class UserPasswordlessApiMail extends Mailable
 {
-    use Queueable, SerializesModels;
+    use Queueable;
+    use SerializesModels;
 
     public $code;
     public $expireAt;

@@ -1,4 +1,6 @@
-<?php namespace ec5\Libraries\Ldap;
+<?php
+
+namespace ec5\Libraries\Ldap;
 
 use Illuminate\Contracts\Auth\Authenticatable as Authenticatable;
 
@@ -199,4 +201,8 @@ class LdapUser implements Authenticatable
         return 'id';
     }
 
+    public function getAuthPasswordName()
+    {
+        // TODO: Implement getAuthPasswordName() method.
+    }
 }

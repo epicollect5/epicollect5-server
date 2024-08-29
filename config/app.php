@@ -156,12 +156,7 @@ return [
         Illuminate\Filesystem\FilesystemServiceProvider::class,
         Illuminate\Foundation\Providers\FoundationServiceProvider::class,
         Illuminate\Hashing\HashServiceProvider::class,
-
-        //Override default provider to fix 404 domain not found mailgun
-        // see t.ly/OYMqD
-        //Illuminate\Mail\MailServiceProvider::class,
-        ec5\Mail\Transports\MailServiceProvider::class,
-
+        Illuminate\Mail\MailServiceProvider::class,
         Illuminate\Pagination\PaginationServiceProvider::class,
         Illuminate\Pipeline\PipelineServiceProvider::class,
         Illuminate\Queue\QueueServiceProvider::class,

@@ -29,8 +29,8 @@
     "guzzlehttp/guzzle": "^7.3",
     "laravel/legacy-factories": "^1.4",
     "laminas/laminas-diactoros": "^2.14",
-    "symfony/mailgun-mailer": "^7.0",
-    "symfony/http-client": "^6.4",
+    "symfony/mailgun-mailer": "^7.1",
+    "symfony/http-client": "^7.1",
     "ext-xdebug": "*",
     "ext-posix": "*",
     "laravolt/avatar": "^5.1"
