@@ -66,6 +66,7 @@ trait Remover
         try {
             DB::beginTransaction();
 
+            //imp: branch entries are removed by FK constraint ON DELETE CASCADE
             Entry::where('project_id', $projectId)
                 ->limit(config('epicollect.setup.bulk_deletion.chunk_size'))
                 ->delete();

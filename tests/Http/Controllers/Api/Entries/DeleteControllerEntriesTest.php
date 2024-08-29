@@ -9,7 +9,6 @@ use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
-use Exception;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Storage;
 use Ramsey\Uuid\Uuid;
@@ -21,7 +20,7 @@ class DeleteControllerEntriesTest extends TestCase
 {
     use DatabaseTransactions;
 
-    private $endpoint = 'api/internal/deletion/entries/';
+    private string $endpoint = 'api/internal/deletion/entries/';
 
     public function setUp(): void
     {
@@ -77,11 +76,15 @@ class DeleteControllerEntriesTest extends TestCase
         $response = [];
         try {
             $response[] = $this->actingAs($user)
-                ->call('POST', 'api/internal/formbuilder/' . $project->slug,
+                ->call(
+                    'POST',
+                    'api/internal/formbuilder/' . $project->slug,
                     [],
                     [],
                     [],
-                    [], $base64EncodedData);
+                    [],
+                    $base64EncodedData
+                );
 
             $response[0]->assertStatus(200);
             $this->assertSame(json_decode($response[0]->getContent(), true), $projectDefinition);
@@ -191,9 +194,13 @@ class DeleteControllerEntriesTest extends TestCase
 
 
         $this->assertCount($numOfEntries, Entry::where('project_id', $this->project->id)->get());
-        $this->assertEquals($numOfEntries,
+        $this->assertEquals(
+            $numOfEntries,
             ProjectStats::where('project_id', $this->project->id)
-                ->value('total_entries'));
+                ->value('total_entries')
+        );
+
+        $totalNumberOfEntriesBefore = Entry::count();
 
         //hit the delete endpoint
         $payload = [
@@ -212,9 +219,14 @@ class DeleteControllerEntriesTest extends TestCase
                 ]
             ]);
             $this->assertCount(0, Entry::where('project_id', $this->project->id)->get());
-            $this->assertEquals(0,
+            $this->assertEquals(
+                0,
                 ProjectStats::where('project_id', $this->project->id)
-                    ->value('total_entries'));
+                    ->value('total_entries')
+            );
+
+            //assert we only deleted the entries for the selected project
+            $this->assertEquals($totalNumberOfEntriesBefore - $numOfEntries, Entry::count());
 
             $formCounts = json_decode(ProjectStats::where('project_id', $this->project->id)
                 ->value('form_counts'), true);
@@ -279,9 +291,11 @@ class DeleteControllerEntriesTest extends TestCase
 
 
         $this->assertCount($numOfEntries, Entry::where('project_id', $this->project->id)->get());
-        $this->assertEquals($numOfEntries,
+        $this->assertEquals(
+            $numOfEntries,
             ProjectStats::where('project_id', $this->project->id)
-                ->value('total_entries'));
+                ->value('total_entries')
+        );
 
         //hit the delete endpoint
         $payload = [
@@ -301,9 +315,11 @@ class DeleteControllerEntriesTest extends TestCase
                 ]
             ]);
             $this->assertCount($numOfEntries - $chunkSize, Entry::where('project_id', $this->project->id)->get());
-            $this->assertEquals($numOfEntries - $chunkSize,
+            $this->assertEquals(
+                $numOfEntries - $chunkSize,
                 ProjectStats::where('project_id', $this->project->id)
-                    ->value('total_entries'));
+                    ->value('total_entries')
+            );
 
             $formCounts = json_decode(ProjectStats::where('project_id', $this->project->id)
                 ->value('form_counts'), true);
@@ -413,9 +429,11 @@ class DeleteControllerEntriesTest extends TestCase
                 ]
             ]);
             $this->assertCount(0, Entry::where('project_id', $this->project->id)->get());
-            $this->assertEquals(0,
+            $this->assertEquals(
+                0,
                 ProjectStats::where('project_id', $this->project->id)
-                    ->value('total_entries'));
+                    ->value('total_entries')
+            );
 
             $formCounts = json_decode(ProjectStats::where('project_id', $this->project->id)
                 ->value('form_counts'), true);

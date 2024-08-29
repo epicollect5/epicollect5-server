@@ -145,7 +145,6 @@ class DeleteController extends Controller
             return Response::apiErrorCode(400, ['deletion-entries' => ['ec5_91']]);
         }
 
-
         // Attempt to remove a chuck of entries
         try {
             if (!$this->removeEntriesChunk($this->requestedProject()->getId(), $this->requestedProject()->ref)) {

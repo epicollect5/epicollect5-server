@@ -14,10 +14,14 @@ use Exception;
 use File;
 use Log;
 use Storage;
+use Throwable;
 
 class DeleteEntryService
 {
     //imp: branch entries get deleted by FK constraint ON DELETE CASCADE
+    /**
+     * @throws Throwable
+     */
     public function deleteHierarchyEntry(ProjectDTO $project, $entryStructure): bool
     {
         $entryUuid = $entryStructure->getEntryUuid();
@@ -51,7 +55,7 @@ class DeleteEntryService
             }
 
             //5. Delete media files
-            //imp: merge hierarchy uuids with barcnh entries uuids
+            //imp: merge hierarchy uuids with branch entries uuids
             if (!$this->deleteMediaFiles($project->ref, array_merge($entryUuids, $branchEntryUuids))) {
                 throw new Exception('Cannot delete media files');
             }
@@ -59,8 +63,7 @@ class DeleteEntryService
             // Now finally commit
             DB::commit();
             return true;
-        } catch
-        (Exception $e) {
+        } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             DB::rollBack();
             return false;
@@ -73,7 +76,7 @@ class DeleteEntryService
      * @param $entryStructure
      * @param bool $reuseExistingTransaction
      * @return bool
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function deleteBranchEntry(ProjectDTO $project, $branchEntryUuid, $entryStructure, bool $reuseExistingTransaction = false): bool
     {
@@ -111,7 +114,7 @@ class DeleteEntryService
             if (!$reuseExistingTransaction) {
                 DB::commit();
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             DB::rollBack();
             return false;
@@ -131,7 +134,7 @@ class DeleteEntryService
 
             try {
                 $directory = new DirectoryIterator($pathPrefix . $projectRef);
-            } catch (\Throwable $e) {
+            } catch (Throwable) {
                 //directory not found, so no media files, can skip safely
                 continue;
             }

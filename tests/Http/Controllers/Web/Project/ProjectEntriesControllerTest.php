@@ -20,7 +20,7 @@ class ProjectEntriesControllerTest extends TestCase
 {
     use DatabaseTransactions;
 
-    const DRIVER = 'web';
+    public const string DRIVER = 'web';
 
     private $user;
     private $project;
@@ -106,11 +106,15 @@ class ProjectEntriesControllerTest extends TestCase
 
             //see https://github.com/laravel/framework/issues/46455
             $response[] = $this->actingAs($user)
-                ->call('POST', 'api/internal/formbuilder/' . $project->slug,
+                ->call(
+                    'POST',
+                    'api/internal/formbuilder/' . $project->slug,
                     [],
                     [],
                     [],
-                    [], $base64EncodedData);
+                    [],
+                    $base64EncodedData
+                );
 
             $response[0]->assertStatus(200);
             $this->assertSame(json_decode($response[0]->getContent(), true), $projectDefinition);
@@ -182,7 +186,8 @@ class ProjectEntriesControllerTest extends TestCase
         $response = [];
         try {
             $response[] = $this->actingAs($this->user)
-                ->post('myprojects/' . $this->project->slug . '/manage-entries',
+                ->post(
+                    'myprojects/' . $this->project->slug . '/manage-entries',
                     $payload
                 );
             $response[0]->assertStatus(302);
@@ -232,7 +237,8 @@ class ProjectEntriesControllerTest extends TestCase
         $response = [];
         try {
             $response[] = $this->actingAs($this->user)
-                ->post('myprojects/' . $this->project->slug . '/manage-entries',
+                ->post(
+                    'myprojects/' . $this->project->slug . '/manage-entries',
                     $payload
                 );
             $response[0]->assertStatus(302);
@@ -283,7 +289,8 @@ class ProjectEntriesControllerTest extends TestCase
         $response = [];
         try {
             $response[] = $this->actingAs($this->user)
-                ->post('myprojects/' . $this->project->slug . '/manage-entries',
+                ->post(
+                    'myprojects/' . $this->project->slug . '/manage-entries',
                     $payload
                 );
             $response[0]->assertStatus(302);
@@ -315,7 +322,8 @@ class ProjectEntriesControllerTest extends TestCase
         $response = [];
         try {
             $response[] = $this->actingAs($this->user)
-                ->post('myprojects/' . $this->project->slug . '/manage-entries',
+                ->post(
+                    'myprojects/' . $this->project->slug . '/manage-entries',
                     $payload
                 );
             $response[0]->assertStatus(302);

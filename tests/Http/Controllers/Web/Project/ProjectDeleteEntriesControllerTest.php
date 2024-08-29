@@ -17,7 +17,7 @@ class ProjectDeleteEntriesControllerTest extends TestCase
 {
     use DatabaseTransactions;
 
-    const DRIVER = 'web';
+    public const string DRIVER = 'web';
 
     public function setUp(): void
     {
@@ -353,5 +353,6 @@ class ProjectDeleteEntriesControllerTest extends TestCase
         $this->assertEquals('ec5_91', $errorsArray[0]);
     }
 
-}
 
+
+}
