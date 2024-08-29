@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-
 use ec5\Models\Entries\Entry;
 use Illuminate\Database\Seeder;
 
@@ -11,14 +10,19 @@ class EntriesSeeder extends Seeder
     /**
      * Run the database seeds.
      *
+     * imp: php artisan db:seed --class=EntriesSeeder
+     *
      * @return void
      */
-    public function run()
+    public function run(): void
     {
         //add entries to project with id 7(Bestpint)
         // Specify the number of entries to add
-        $numberOfEntries = 1;
+        $numberOfEntries = 249780;
         $projectId = 7;//Bestpint
+
+        // Get the console output instance
+        $output = $this->command->getOutput();
 
         // Loop to insert the specified number of entries
         for ($i = 0; $i < $numberOfEntries; $i++) {
@@ -29,6 +33,14 @@ class EntriesSeeder extends Seeder
                 'parent_form_ref' => '',
                 'child_counts' => 0//should be zero for last form but does not matter for testing
             ]);
+
+            // Show progress every 100 entries
+            if ($i % 100 == 0) {
+                $output->write("\rInserted $i entries...    ");
+            }
         }
+
+        // Final message
+        $output->writeln("All done.");
     }
 }
