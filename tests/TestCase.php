@@ -16,6 +16,7 @@ use ec5\Models\User\User;
 use ec5\Models\User\UserProvider;
 use Exception;
 use Faker\Factory as Faker;
+use Illuminate\Foundation\Application;
 use Log;
 
 class TestCase extends \Illuminate\Foundation\Testing\TestCase
@@ -30,9 +31,8 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
     /**
      * Creates the application.
      *
-     * @return \Illuminate\Foundation\Application
      */
-    public function createApplication()
+    public function createApplication(): Application
     {
         $app = require __DIR__ . '/../bootstrap/app.php';
 
@@ -41,7 +41,7 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
         return $app;
     }
 
-    public function logTestError(Exception $e, $response)
+    public function logTestError(Exception $e, $response): void
     {
         $expected = '';
         $actual = '';
@@ -90,7 +90,7 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
     }
 
     //clear database manually as we are not using database transactions
-    public function clearDatabase($params)
+    public function clearDatabase($params): void
     {
         $user = $params['user'] ?? null;
         $project = $params['project'] ?? null;
@@ -98,7 +98,7 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
 
         try {
             // Delete users with an email that ends with '@example.com'
-            User::where('email', 'like', '%@example.com')->delete();
+            User::where('email', 'like', '%@example.%')->delete();
             User::where('email', 'like', '%random@unit.tests%')->delete();
             if ($user) {
                 User::where('id', $user->id)->delete();
@@ -128,14 +128,14 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
 
     protected function tearDown(): void
     {
-//        // Remove properties defined during the test
-//        $refl = new \ReflectionObject($this);
-//        foreach ($refl->getProperties() as $prop) {
-//            if (!$prop->isStatic() && 0 !== strpos($prop->getDeclaringClass()->getName(), 'PHPUnit_')) {
-//                $prop->setAccessible(true);
-//                $prop->setValue($this, null);
-//            }
-//        }
+        //        // Remove properties defined during the test
+        //        $refl = new \ReflectionObject($this);
+        //        foreach ($refl->getProperties() as $prop) {
+        //            if (!$prop->isStatic() && 0 !== strpos($prop->getDeclaringClass()->getName(), 'PHPUnit_')) {
+        //                $prop->setAccessible(true);
+        //                $prop->setValue($this, null);
+        //            }
+        //        }
 
         // Clean up your resources here
         parent::tearDown();

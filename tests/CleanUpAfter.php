@@ -1,8 +1,10 @@
 <?php
 
+namespace Tests;
+
 use ec5\Models\User\User;
 
-class CleanUp extends \Tests\TestCase
+class CleanUpAfter extends TestCase
 {
     public function setUp(): void
     {
