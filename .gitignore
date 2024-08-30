@@ -19,3 +19,5 @@ resources/assets/data-admin/node_modules/
 /.history
 /.phpstorm.meta.php
 /.phpunit.result.cache
+/_ide_helper_models.php
+/_ide_helper.php
