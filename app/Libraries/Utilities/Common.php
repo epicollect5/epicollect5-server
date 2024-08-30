@@ -2,7 +2,6 @@
 
 namespace ec5\Libraries\Utilities;
 
-use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
 class Common
@@ -219,5 +218,10 @@ class Common
 
         // Trim to desired length
         return substr($hex, 0, $length);
+    }
+
+    public static function getMonthName($monthNumber): string
+    {
+        return date("M", mktime(0, 0, 0, $monthNumber, 1));
     }
 }

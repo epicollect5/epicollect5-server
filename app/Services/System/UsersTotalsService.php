@@ -1,20 +1,17 @@
 <?php
 
-namespace ec5\Models\System;
+namespace ec5\Services\System;
 
 use Carbon\Carbon;
-use DateTimeInterface;
 use DB;
-use ec5\Traits\Models\SerializeDates;
-use Illuminate\Database\Eloquent\Model;
+use ec5\Libraries\Utilities\Common;
+use Illuminate\Support\Collection;
 
-class UsersTotals extends Model
+class UsersTotalsService
 {
-    use SerializeDates;
+    protected string $table = 'users';
 
-    protected $table = 'users';
-
-    public function getTotal(): \Illuminate\Support\Collection
+    public function getTotal(): Collection
     {
         //count in sql is faster than eloquent, use raw!
         return DB::table($this->table)
@@ -22,7 +19,7 @@ class UsersTotals extends Model
             ->get();
     }
 
-    public function getYesterday(): \Illuminate\Support\Collection
+    public function getYesterday(): Collection
     {
         //count in sql is faster than eloquent, use raw!
         return DB::table($this->table)
@@ -31,7 +28,7 @@ class UsersTotals extends Model
             ->get();
     }
 
-    public function getWeek(): \Illuminate\Support\Collection
+    public function getWeek(): Collection
     {
         //count in sql is faster than eloquent, use raw!
         return DB::table($this->table)
@@ -41,7 +38,7 @@ class UsersTotals extends Model
             ->get();
     }
 
-    public function getMonth(): \Illuminate\Support\Collection
+    public function getMonth(): Collection
     {
         //count in sql is faster than eloquent, use raw!
         return DB::table($this->table)
@@ -50,7 +47,7 @@ class UsersTotals extends Model
             ->get();
     }
 
-    public function getYear(): \Illuminate\Support\Collection
+    public function getYear(): Collection
     {
         //count in sql is faster than eloquent, use raw!
         return DB::table($this->table)
@@ -60,7 +57,7 @@ class UsersTotals extends Model
             ->get();
     }
 
-    public function yearByMonth(): \Illuminate\Support\Collection
+    public function yearByMonth(): Collection
     {
         //count in sql is faster than eloquent, use raw!
         return DB::table($this->table)
@@ -83,7 +80,7 @@ class UsersTotals extends Model
 
         foreach ($yearByMonth as $currentMonth) {
             $distributionByMonth[] = array(
-                $this->getMonthName($currentMonth->month) => $currentMonth->users_total
+                Common::getMonthName($currentMonth->month) => $currentMonth->users_total
             );
         }
 
@@ -95,10 +92,5 @@ class UsersTotals extends Model
             "year" => $year[0]->users_total,
             "by_month" => $distributionByMonth
         );
-    }
-
-    private function getMonthName($monthNumber)
-    {
-        return date("M", mktime(0, 0, 0, $monthNumber, 1));
     }
 }

@@ -2,11 +2,11 @@
 
 namespace ec5\Console\Commands;
 
-use ec5\Models\System\BranchEntriesTotals;
-use ec5\Models\System\EntriesTotals;
-use ec5\Models\System\ProjectsTotals;
 use ec5\Models\System\SystemStats as SystemStatsModel;
-use ec5\Models\System\UsersTotals;
+use ec5\Services\System\BranchEntriesTotalsService;
+use ec5\Services\System\EntriesTotalsService;
+use ec5\Services\System\ProjectsTotalsService;
+use ec5\Services\System\UsersTotalsService;
 use Illuminate\Console\Command;
 use Log;
 use Throwable;
@@ -16,14 +16,12 @@ class SystemStatsCommand extends Command
     /**
      * The name and signature of the console command.
      *
-     * @var string
      */
     protected $signature = 'system-stats';
 
     /**
      * The console command description.
      *
-     * @var string
      */
     protected $description = 'Query system stats (users, projects, entries)';
 
@@ -34,10 +32,10 @@ class SystemStatsCommand extends Command
     public function handle(): void
     {
         $systemStatsModel = new SystemStatsModel();
-        $usersTotals = new UsersTotals();
-        $projectsTotals = new ProjectsTotals();
-        $entry = new EntriesTotals();
-        $branchEntry = new BranchEntriesTotals();
+        $usersTotals = new UsersTotalsService();
+        $projectsTotals = new ProjectsTotalsService();
+        $entry = new EntriesTotalsService();
+        $branchEntry = new BranchEntriesTotalsService();
 
         //get the daily stats and save it to the db
         try {
@@ -53,7 +51,7 @@ class SystemStatsCommand extends Command
 
             $systemStatsModel->save();
         } catch (Throwable $e) {
-            Log::error('Failed to fetch system stats', ['exception' => $e]);
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
         }
     }
 }

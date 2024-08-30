@@ -1,22 +1,20 @@
 <?php
 
-namespace ec5\Models\System;
+namespace ec5\Services\System;
 
 use Carbon\Carbon;
-use DateTimeInterface;
 use DB;
+use ec5\Libraries\Utilities\Common;
 use ec5\Traits\Eloquent\System\ProjectsStats;
-use ec5\Traits\Models\SerializeDates;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 
-class ProjectsTotals extends Model
+class ProjectsTotalsService
 {
-    use ProjectsStats, SerializeDates;
+    use ProjectsStats;
 
-    protected $table = 'projects';
-    protected $fillable = ['slug'];
+    protected string $table = 'projects';
 
-    public function getTotal()
+    public function getTotal(): Collection
     {
         //count in sql is faster than eloquent, use raw!
         return DB::table($this->table)
@@ -25,56 +23,56 @@ class ProjectsTotals extends Model
             ->get();
     }
 
-    public function getTotalBelow10()
+    public function getTotalBelow10(): int
     {
         $lowerThreshold = 0;
         $upperThreshold = 10;
         return $this->getProjectTotalByThreshold($lowerThreshold, $upperThreshold);
     }
 
-    public function getTotalBelow100()
+    public function getTotalBelow100(): int
     {
         $lowerThreshold = 11;
         $upperThreshold = 100;
         return $this->getProjectTotalByThreshold($lowerThreshold, $upperThreshold);
     }
 
-    public function getTotalBelow1000()
+    public function getTotalBelow1000(): int
     {
         $lowerThreshold = 101;
         $upperThreshold = 1000;
         return $this->getProjectTotalByThreshold($lowerThreshold, $upperThreshold);
     }
 
-    public function getTotalBelow10000()
+    public function getTotalBelow10000(): int
     {
         $lowerThreshold = 1001;
         $upperThreshold = 10000;
         return $this->getProjectTotalByThreshold($lowerThreshold, $upperThreshold);
     }
 
-    public function getTotalBelow25000()
+    public function getTotalBelow25000(): int
     {
         $lowerThreshold = 10001;
         $upperThreshold = 25000;
         return $this->getProjectTotalByThreshold($lowerThreshold, $upperThreshold);
     }
 
-    public function getTotalBelow50000()
+    public function getTotalBelow50000(): int
     {
         $lowerThreshold = 25001;
         $upperThreshold = 50000;
         return $this->getProjectTotalByThreshold($lowerThreshold, $upperThreshold);
     }
 
-    public function getTotalAbove50000()
+    public function getTotalAbove50000(): int
     {
         $lowerThreshold = 50000;
         $upperThreshold = 4294967295; //max INT value possible
         return $this->getProjectTotalByThreshold($lowerThreshold, $upperThreshold);
     }
 
-    public function getYesterday()
+    public function getYesterday(): Collection
     {
         //count in sql is faster than eloquent, use raw!
         return DB::table($this->table)
@@ -84,7 +82,7 @@ class ProjectsTotals extends Model
             ->get();
     }
 
-    public function getWeek()
+    public function getWeek(): Collection
     {
         //count in sql is faster than eloquent, use raw!
         return DB::table($this->table)
@@ -95,7 +93,7 @@ class ProjectsTotals extends Model
             ->get();
     }
 
-    public function getMonth()
+    public function getMonth(): Collection
     {
         //count in sql is faster than eloquent, use raw!
         return DB::table($this->table)
@@ -105,7 +103,7 @@ class ProjectsTotals extends Model
             ->get();
     }
 
-    public function getYear()
+    public function getYear(): Collection
     {
         //count in sql is faster than eloquent, use raw!
         return DB::table($this->table)
@@ -116,7 +114,7 @@ class ProjectsTotals extends Model
             ->get();
     }
 
-    public function yearByMonth()
+    public function yearByMonth(): Collection
     {
         //count in sql is faster than eloquent, use raw!
         return DB::table($this->table)
@@ -126,7 +124,7 @@ class ProjectsTotals extends Model
             ->get();
     }
 
-    public function getStats()
+    public function getStats(): array
     {
         $total = $this->getTotal();
         $today = $this->getYesterday();
@@ -138,11 +136,8 @@ class ProjectsTotals extends Model
         //convert $yearByMonth to associative array of "month=>total" pairs
         $distributionByMonth = [];
         foreach ($yearByMonth as $currentMonth) {
-            array_push(
-                $distributionByMonth,
-                array(
-                    $this->getMonthName($currentMonth->month) => $currentMonth->projects_total
-                )
+            $distributionByMonth[] = array(
+                Common::getMonthName($currentMonth->month) => $currentMonth->projects_total
             );
         }
 
@@ -208,12 +203,6 @@ class ProjectsTotals extends Model
                 "above50000" => $this->getTotalAbove50000()
             )
         );
-    }
-
-    //get month name passing number
-    private function getMonthName($monthNumber)
-    {
-        return date("M", mktime(0, 0, 0, $monthNumber, 1));
     }
 
     //get projects total based on access and visibility
