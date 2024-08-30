@@ -2,7 +2,6 @@
 
 namespace ec5\Models\OAuth;
 
-use DateTimeInterface;
 use ec5\Traits\Models\SerializeDates;
 use Illuminate\Database\Eloquent\Model;
 

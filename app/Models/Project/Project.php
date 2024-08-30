@@ -2,22 +2,46 @@
 
 namespace ec5\Models\Project;
 
-use DateTimeInterface;
+use Carbon\Carbon;
 use DB;
 use ec5\DTO\ProjectDTO;
 use ec5\Traits\Models\SerializeDates;
 use Exception;
+use Illuminate\Contracts\Pagination\Paginator;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Log;
+use Throwable;
 
 class Project extends Model
 {
+    /**
+     * @property int $id
+     * @property string $name
+     * @property string $slug
+     * @property string $ref
+     * @property string $description
+     * @property string $small_description
+     * @property string $logo_url
+     * @property string $access
+     * @property string $visibility
+     * @property string $category
+     * @property int $created_by
+     * @property Carbon $created_at
+     * @property Carbon $updated_at
+     * @property string $status
+     * @property string $can_bulk_upload
+     */
     use SerializeDates;
 
     protected $table = 'projects';
-    protected $projectStatsTable = 'project_stats';
+    protected string $projectStatsTable = 'project_stats';
     protected $fillable = ['slug'];
 
+    /**
+     * Casting to a datetime ISO 8601 without milliseconds
+     * due to legacy reasons
+     */
     protected $casts = [
         'created_at' => 'datetime:Y-m-d H:i:s',
         'updated_at' => 'datetime:Y-m-d H:i:s',
@@ -59,7 +83,7 @@ class Project extends Model
         return $query->first();
     }
 
-    public function myProjects($perPage, $userId, $params)
+    public function myProjects($perPage, $userId, $params): Paginator
     {
         return DB::table($this->getTable())
             ->leftJoin(config('epicollect.tables.project_roles'), $this->getQualifiedKeyName(), '=', 'project_roles.project_id')
@@ -79,7 +103,7 @@ class Project extends Model
             ->simplePaginate($perPage);
     }
 
-    public function publicAndListed($category = null, $params = [])
+    public function publicAndListed($category = null, $params = []): Paginator
     {
         // Define constants
         $trashedStatus = config('epicollect.strings.project_status.trashed');
@@ -120,7 +144,7 @@ class Project extends Model
         return $query->simplePaginate($projectsPerPage);
     }
 
-    public function featured()
+    public function featured(): Collection|array
     {
         return Project::join(config('epicollect.tables.projects_featured'), 'projects.id', '=', config('epicollect.tables.projects_featured') . '.project_id')
             ->orderBy('projects_featured.id', 'asc')
@@ -134,13 +158,13 @@ class Project extends Model
             return Project::join(config('epicollect.tables.users'), 'projects.created_by', config('epicollect.tables.users') . '.id')
                 ->where('projects.id', $projectId)
                 ->first()->email;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             return $email;
         }
     }
 
-    public static function version($slug)
+    public static function version($slug): string
     {
         $updatedAt = Project::join(config('epicollect.tables.project_structures'), 'projects.id', '=', config('epicollect.tables.project_structures') . '.project_id')
             ->where('projects.slug', $slug)
@@ -152,7 +176,7 @@ class Project extends Model
         return (string)$updatedAt;
     }
 
-    public function admin($perPage, $params = [])
+    public function admin($perPage, $params = []): Paginator|array
     {
         return $this->distinct()
             ->join($this->projectStatsTable, $this->getTable() . '.id', '=', $this->projectStatsTable . '.project_id')
@@ -176,6 +200,9 @@ class Project extends Model
             ->simplePaginate($perPage);
     }
 
+    /**
+     * @throws Throwable
+     */
     public function transferOwnership($projectId, $creatorId, $managerId): bool
     {
         try {
@@ -200,9 +227,9 @@ class Project extends Model
             });
 
             return true;
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
             // If any exceptions, log
-            \Log::error('Transfer ownership failed: ', [
+            Log::error('Transfer ownership failed: ', [
                 'exception' => $e->getMessage(),
                 'project' => $this->requestedProject->name
             ]);
@@ -220,7 +247,7 @@ class Project extends Model
      *
      * Trashed or archived projects are skipped
      */
-    public static function startsWith($name, $columns = ['*'])
+    public static function startsWith($name, $columns = ['*']): Collection|array
     {
         $trashedStatus = config('epicollect.strings.project_status.trashed');
         $archivedStatus = config('epicollect.strings.project_status.archived');
@@ -234,6 +261,9 @@ class Project extends Model
             ->get();
     }
 
+    /**
+     * @throws Throwable
+     */
     public static function updateAllTables(ProjectDTO $project, $params, $setUpdatedAt = false): bool
     {
         try {
@@ -249,7 +279,7 @@ class Project extends Model
             } else {
                 throw new Exception('Could not update project tables');
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             DB::rollBack();
             return false;

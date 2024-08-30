@@ -2,13 +2,12 @@
 
 namespace ec5\Models\Project;
 
-use DateTimeInterface;
 use DB;
 use ec5\Traits\Models\SerializeDates;
-use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Log;
+use Throwable;
 
 /**
  * @property int $id
@@ -56,6 +55,7 @@ class ProjectStats extends Model
      *
      * @param int $projectId
      * @return bool
+     * @throws Throwable
      */
     public function updateProjectStats(int $projectId): bool
     {
@@ -65,7 +65,7 @@ class ProjectStats extends Model
             $this->updateBranchEntryCounters($projectId);
             DB::commit();
             return true;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed', [
                 'project_id' => $projectId,
                 'exception' => $e->getMessage()
@@ -78,7 +78,7 @@ class ProjectStats extends Model
     /* Update the total entries and
        form counts
      */
-    public function updateEntryCounters($projectId)
+    public function updateEntryCounters($projectId): void
     {
         //find total entries per each form
         $entriesTable = config('epicollect.tables.entries');
@@ -118,7 +118,7 @@ class ProjectStats extends Model
     /*
      * Update the branch counts
      */
-    public function updateBranchEntryCounters($projectId)
+    public function updateBranchEntryCounters($projectId): void
     {
         $branchEntriesTable = config('epicollect.tables.branch_entries');
         $stats = DB::table($branchEntriesTable)

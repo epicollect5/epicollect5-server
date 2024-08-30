@@ -2,11 +2,12 @@
 
 namespace ec5\Models\Project;
 
-use DateTimeInterface;
 use DB;
 use ec5\Models\User\User;
 use ec5\Traits\Models\SerializeDates;
 use Illuminate\Database\Eloquent\Model;
+use Log;
+use Throwable;
 
 /**
  * @property int $id
@@ -24,26 +25,24 @@ class ProjectRole extends Model
     public $timestamps = false;
 
     /**
-     * Delete all rows having the passed role but skipping the current logged in user
+     * Delete all rows having the passed role but skipping the current logged-in user
      * Useful when a manager wants to remove all the other managers but not himself
      *
      * @param $projectId
      * @param $role
      * @param $user
-     * @return bool|int
+     * @return int
      */
-    public function deleteByRole($projectId, $role, $user)
+    public function deleteByRole($projectId, $role, $user): int
     {
         try {
-            $affectedRows = DB::table($this->table)
+            return DB::table($this->table)
                 ->where('project_id', '=', $projectId)
                 ->where('user_id', '<>', $user->id)
                 ->where('role', '=', $role)
                 ->delete();
-
-            return $affectedRows;
-        } catch (\Exception $e) {
-            \Log::error('Exception removing users by role in bulk', [
+        } catch (Throwable $e) {
+            Log::error('Exception removing users by role in bulk', [
                 'projectId' => $projectId,
                 'exception' => $e
             ]);
@@ -55,15 +54,13 @@ class ProjectRole extends Model
     public function switchUserRole($projectId, $user, $currentRole, $newRole): int
     {
         try {
-            $affectedRows = DB::table($this->table)
+            return DB::table($this->table)
                 ->where('project_id', '=', $projectId)
                 ->where('user_id', '=', $user->id)
                 ->where('role', '=', $currentRole)
                 ->update(['role' => $newRole]);
-
-            return $affectedRows;
-        } catch (\Exception $e) {
-            \Log::error('Exception switching user role', [
+        } catch (Throwable $e) {
+            Log::error('Exception switching user role', [
                 'projectId' => $projectId,
                 'exception' => $e
             ]);

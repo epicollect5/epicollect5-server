@@ -2,7 +2,6 @@
 
 namespace ec5\Models\Entries;
 
-use DateTimeInterface;
 use DB;
 use ec5\Services\Entries\EntriesViewService;
 use ec5\Traits\Eloquent\Entries;
@@ -30,17 +29,20 @@ use Illuminate\Database\Query\Builder;
  */
 class Entry extends Model
 {
-    use Entries, SerializeDates;
+    use Entries;
+    use SerializeDates;
 
     protected $table = 'entries';
-    //disable eloquent timestamps because we are using "uploaded_at"
+    /**
+     *  Disable eloquent timestamps because we are using
+     * "uploaded_at" -> when entry is uploaded or edited
+     * "created_at" -> copied from the entry created_at (mobile) or set when entry is saved (web)
+     */
     public $timestamps = false;
 
     /**
      * Casting to a datetime ISO 8601 without milliseconds
      * due to legacy reasons
-     *
-     * @var array
      */
     protected $casts = [
         'created_at' => 'datetime:Y-m-d H:i:s',
@@ -53,7 +55,7 @@ class Entry extends Model
      * @param array $columns
      * @return Builder
      */
-    public function getEntry($projectId, $options, $columns = array('*')): Builder
+    public function getEntry($projectId, $options, array $columns = array('*')): Builder
     {
         $q = DB::table($this->table)->select($columns)
             ->where('project_id', '=', $projectId)
@@ -106,7 +108,7 @@ class Entry extends Model
      * @param array $columns
      * @return Builder
      */
-    public function getChildEntriesForParent($projectId, $options, $columns = array('*'))
+    public function getChildEntriesForParent($projectId, $options, array $columns = array('*')): Builder
     {
         $q = DB::table($this->table)
             ->where('project_id', '=', $projectId)
@@ -163,7 +165,7 @@ class Entry extends Model
      * @param array $columns
      * @return Builder
      */
-    public function getEntries($projectId, $options, $columns = array('*'))
+    public function getEntries($projectId, $options, array $columns = array('*')): Builder
     {
         $q = DB::table($this->table)
             ->where('project_id', '=', $projectId)
@@ -183,7 +185,7 @@ class Entry extends Model
         return $this->sortAndFilterEntries($q, $options);
     }
 
-    public static function getEntriesByForm($projectId, $params, $columns = array('*')): \Illuminate\Database\Query\Builder
+    public static function getEntriesByForm($projectId, $params, $columns = array('*')): Builder
     {
         $q = DB::table(config('epicollect.tables.entries'))
             ->where('project_id', '=', $projectId)
@@ -206,7 +208,7 @@ class Entry extends Model
      * @param $parentFormRef
      * @return mixed
      */
-    public function getParentEntry($parentEntryUuid, $parentFormRef)
+    public function getParentEntry($parentEntryUuid, $parentFormRef): mixed
     {
         return DB::table($this->table)
             ->where('uuid', '=', $parentEntryUuid)

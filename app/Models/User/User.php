@@ -2,6 +2,7 @@
 
 namespace ec5\Models\User;
 
+use Carbon\Carbon;
 use ec5\Traits\Models\SerializeDates;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\Passwords\CanResetPassword;
@@ -18,6 +19,21 @@ class User extends Model implements
     CanResetPasswordContract,
     AuthenticatableContract
 {
+    /**
+     * @property int $id
+     * @property string $name
+     * @property string $last_name
+     * @property string $email
+     * @property string $password
+     * @property string $avatar
+     * @property string $remember_token
+     * @property string $server_role
+     * @property Carbon $created_at
+     * @property Carbon $updated_at
+     * @property string $state
+     * @property string $api_token
+     */
+
     use Authenticatable;
     use Authorizable;
     use CanResetPassword;

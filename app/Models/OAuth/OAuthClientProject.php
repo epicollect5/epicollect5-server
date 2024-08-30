@@ -2,11 +2,12 @@
 
 namespace ec5\Models\OAuth;
 
-use DateTimeInterface;
 use DB;
 use ec5\Traits\Models\SerializeDates;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Log;
+use Throwable;
 
 /**
  * @property int $id
@@ -21,10 +22,14 @@ class OAuthClientProject extends Model
 
     protected $table = 'oauth_client_projects';
 
-    public static function getApps($projectId)
+    public static function getApps($projectId): Collection|array
     {
-        return self::join(config('epicollect.tables.oauth_clients'),
-            'oauth_client_projects.client_id', '=', 'oauth_clients.id')
+        return self::join(
+            config('epicollect.tables.oauth_clients'),
+            'oauth_client_projects.client_id',
+            '=',
+            'oauth_clients.id'
+        )
             ->where('oauth_client_projects.project_id', '=', $projectId)
             ->select([
                 'oauth_clients.name',
@@ -34,6 +39,9 @@ class OAuthClientProject extends Model
             ])->get();
     }
 
+    /**
+     * @throws Throwable
+     */
     public static function removeApp($projectId, $clientId): bool
     {
         try {
@@ -50,7 +58,7 @@ class OAuthClientProject extends Model
 
             DB::commit();
             return true;
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             DB::rollBack();
             return false;

@@ -3,9 +3,7 @@
 namespace ec5\Models\User;
 
 use Carbon\Carbon;
-use DateTimeInterface;
 use ec5\Traits\Models\SerializeDates;
-use Exception;
 use Firebase\JWT\JWT as FirebaseJWT;
 use Firebase\JWT\Key;
 use Illuminate\Database\Eloquent\Model;
@@ -15,7 +13,7 @@ class UserResetPassword extends Model
 {
     use SerializeDates;
 
-    const UPDATED_AT = null;
+    public const null UPDATED_AT = null;
 
     /**
      * The table associated with the model.
@@ -26,7 +24,7 @@ class UserResetPassword extends Model
 
     protected $fillable = [];
 
-    public function isValidToken($decodedSent)
+    public function isValidToken($decodedSent): bool
     {
         //decode
         $jwtConfig = config('auth.jwt-forgot');
@@ -52,5 +50,3 @@ class UserResetPassword extends Model
         return false;
     }
 }
-
-
