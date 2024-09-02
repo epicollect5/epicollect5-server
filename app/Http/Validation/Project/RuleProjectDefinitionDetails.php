@@ -3,7 +3,6 @@
 namespace ec5\Http\Validation\Project;
 
 use ec5\Http\Validation\ValidationBase;
-use Config;
 use ec5\Libraries\Utilities\Common;
 
 class RuleProjectDefinitionDetails extends ValidationBase
@@ -23,7 +22,9 @@ class RuleProjectDefinitionDetails extends ValidationBase
         'mimes' => 'ec5_81',
         'description.between' => 'ec5_393',
         'small_description.between' => 'ec5_394',
-        'ec5_no_html' => 'ec5_220'
+        'ec5_no_html' => 'ec5_220',
+        'logo_width.max' => 'ec5_332',
+        'logo_height.max' => 'ec5_332'
     ];
 
     public function __construct()

@@ -163,7 +163,7 @@ Route::group(['middleware' => 'auth'], function () {
 
         Route::post('myprojects/{project_slug}/settings/{action?}', 'Web\Project\ProjectEditController@settings');
 
-        Route::post('myprojects/{project_slug}/details', 'Web\Project\ProjectEditController@details');
+        Route::post('myprojects/{project_slug}/details', 'Web\Project\ProjectEditController@updateDetails');
 
         Route::get('myprojects/{project_slug}/download-project-definition', 'Web\Project\ProjectController@downloadProjectDefinition');
 
@@ -249,7 +249,3 @@ Route::group(['middleware' => 'project.permissions.open'], function () {
     Route::get('open/project/{project_slug?}', 'Web\Project\ProjectController@open')
         ->name('project-open');
 });
-
-
-
-
