@@ -7,6 +7,8 @@ use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
+use Faker\Factory as Faker;
+use Faker\Generator;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\UploadedFile;
 use Storage;
@@ -22,6 +24,7 @@ class ProjectEditControllerTest extends TestCase
 
     private User $user;
     private Project $project;
+    private Generator $faker;
 
     public function setUp(): void
     {
@@ -65,6 +68,8 @@ class ProjectEditControllerTest extends TestCase
 
         $this->user = $user;
         $this->project = $project;
+        $this->faker = Faker::create();
+
     }
 
     public function test_should_update_access()
@@ -220,9 +225,11 @@ class ProjectEditControllerTest extends TestCase
             );
 
         $response[0]->assertStatus(302);
+
         // Assert that the session contains the specific error messages
         $response[0]->assertSessionHasErrors([
-            'logo_url' => 'ec5_206'
+            'logo_url' => "Logo file size too large. Max file size is 5M"
+
         ]);
     }
 
@@ -330,6 +337,68 @@ class ProjectEditControllerTest extends TestCase
         ]);
     }
 
+    public function test_should_detect_description_too_long()
+    {
+        // Fake the local storage for project_thumb and project_mobile_logo
+        Storage::fake('project_thumb');
+        Storage::fake('project_mobile_logo');
+
+        // Create a fake image file (100x100 pixels, 200 KB)
+        $file = UploadedFile::fake()->image('logo.jpg', 300, 300)->size(500);
+
+        $payload = [
+            '_token' => csrf_token(),
+            'small_description' => 'This is a project small description',
+            'description' => $this->generateStringOfLength(config('epicollect.limits.project.description.max') + 1),
+            'data' => [],
+            'logo_url' => $file
+        ];
+
+        $response[] = $this->actingAs($this->user)
+            ->post(
+                'myprojects/' . $this->project->slug . '/details',
+                $payload
+            );
+
+        $response[0]->assertStatus(302);
+
+        // Assert that the session contains the specific error messages
+        $response[0]->assertSessionHasErrors([
+            'description' => 'Project description must be between 3 to 3000 chars long'
+        ]);
+    }
+
+    public function test_should_detect_description_too_short()
+    {
+        // Fake the local storage for project_thumb and project_mobile_logo
+        Storage::fake('project_thumb');
+        Storage::fake('project_mobile_logo');
+
+        // Create a fake image file (100x100 pixels, 200 KB)
+        $file = UploadedFile::fake()->image('logo.jpg', 300, 300)->size(500);
+
+        $payload = [
+            '_token' => csrf_token(),
+            'small_description' => 'This is a project small description',
+            'description' => $this->generateStringOfLength(config('epicollect.limits.project.description.min') - 1),
+            'data' => [],
+            'logo_url' => $file
+        ];
+
+        $response[] = $this->actingAs($this->user)
+            ->post(
+                'myprojects/' . $this->project->slug . '/details',
+                $payload
+            );
+
+        $response[0]->assertStatus(302);
+
+        // Assert that the session contains the specific error messages
+        $response[0]->assertSessionHasErrors([
+            'description' => 'Project description must be between 3 to 3000 chars long'
+        ]);
+    }
+
     public function test_should_update_project_details()
     {
         // Fake the local storage for project_thumb and project_mobile_logo
@@ -359,11 +428,90 @@ class ProjectEditControllerTest extends TestCase
             );
 
         $response[0]->assertStatus(302);
-        // Assert that the session contains the specific error messages
+        // Assert that the session contains the specific success messages
         $response[0]->assertSessionHas('message', 'ec5_123');
 
         // Assert that the image was stored in the correct directories
         Storage::disk('project_thumb')->assertExists($this->project->ref . '/logo.jpg');
         Storage::disk('project_mobile_logo')->assertExists($this->project->ref . '/logo.jpg');
+
+        //assert small desc and description were updated
+        $projectAfterUpdate = Project::find($this->project->id);
+        $this->assertEquals($projectAfterUpdate->small_description, $payload['small_description']);
+        $this->assertEquals($projectAfterUpdate->description, $payload['description']);
+        $this->assertNotEmpty($projectAfterUpdate->logo_url);
     }
+
+    public function test_should_detect_small_description_too_long()
+    {
+        // Fake the local storage for project_thumb and project_mobile_logo
+        Storage::fake('project_thumb');
+        Storage::fake('project_mobile_logo');
+
+        // Create a fake image file within the limits
+        $file = UploadedFile::fake()->image(
+            'logo.jpg',
+            config('epicollect.limits.project.logo.width'),
+            config('epicollect.limits.project.logo.height')
+        )
+            ->size(config('epicollect.limits.project.logo.size'));
+
+        $payload = [
+            '_token' => csrf_token(),
+            'small_description' => $this->generateStringOfLength(config('epicollect.limits.project.small_desc.max') + 1),
+            'description' => 'This is a project long description about the project content and data',
+            'data' => [],
+            'logo_url' => $file
+        ];
+
+        $response[] = $this->actingAs($this->user)
+            ->post(
+                'myprojects/' . $this->project->slug . '/details',
+                $payload
+            );
+
+        $response[0]->assertStatus(302);
+
+        // Assert that the session contains the specific error messages
+        $response[0]->assertSessionHasErrors([
+            'small_description' => 'Project small description must be between 15 to 100 chars long'
+        ]);
+    }
+
+    public function test_should_detect_small_description_too_short()
+    {
+        // Fake the local storage for project_thumb and project_mobile_logo
+        Storage::fake('project_thumb');
+        Storage::fake('project_mobile_logo');
+
+        // Create a fake image file within the limits
+        $file = UploadedFile::fake()->image(
+            'logo.jpg',
+            config('epicollect.limits.project.logo.width'),
+            config('epicollect.limits.project.logo.height')
+        )
+            ->size(config('epicollect.limits.project.logo.size'));
+
+        $payload = [
+            '_token' => csrf_token(),
+            'small_description' => $this->generateStringOfLength(config('epicollect.limits.project.small_desc.min') - 1),
+            'description' => 'This is a project long description about the project content and data',
+            'data' => [],
+            'logo_url' => $file
+        ];
+
+        $response[] = $this->actingAs($this->user)
+            ->post(
+                'myprojects/' . $this->project->slug . '/details',
+                $payload
+            );
+
+        $response[0]->assertStatus(302);
+
+        // Assert that the session contains the specific error messages
+        $response[0]->assertSessionHasErrors([
+            'small_description' => 'Project small description must be between 15 to 100 chars long'
+        ]);
+    }
+
 }
