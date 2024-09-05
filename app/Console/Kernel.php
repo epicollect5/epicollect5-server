@@ -2,7 +2,12 @@
 
 namespace ec5\Console;
 
+use ec5\Console\Commands\CheckDatabase;
 use ec5\Console\Commands\CheckStorageAvailableDiskSpace;
+use ec5\Console\Commands\RemoveUnverifiedUsersCommand;
+use ec5\Console\Commands\SeedEntriesCommand;
+use ec5\Console\Commands\SeedMediaCommand;
+use ec5\Console\Commands\SystemStatsCommand;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use Illuminate\Support\Facades\App;
@@ -15,10 +20,12 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        Commands\SystemStatsCommand::class,
-        Commands\RemoveUnverifiedUsersCommand::class,
-        Commands\CheckDatabase::class,
-        CheckStorageAvailableDiskSpace::class
+        SystemStatsCommand::class,
+        RemoveUnverifiedUsersCommand::class,
+        CheckDatabase::class,
+        CheckStorageAvailableDiskSpace::class,
+        SeedEntriesCommand::class,
+        SeedMediaCommand::class,
     ];
 
     /**

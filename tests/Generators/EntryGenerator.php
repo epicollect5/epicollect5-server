@@ -18,18 +18,15 @@ use ec5\Traits\Assertions;
 use Exception;
 use Faker\Factory as Faker;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
-use Monolog\Handler\LogEntriesHandler;
 use Ramsey\Uuid\Uuid;
 
 class EntryGenerator
 {
     use Assertions;
 
-    const SYMBOLS = ['!', '@', '€', '£', '#', '$', '%', '^', '&', '*', '"', '{', ',', '.', '?', '|', '<', '>', '~', '`'];
-    const LOCALES = ['it_IT', 'en_US', 'de_DE', 'es_ES', 'en_GB', 'fr_FR'];
-    const PLATFORMS = ['Android', 'iOS'];
+    public const SYMBOLS = ['!', '@', '€', '£', '#', '$', '%', '^', '&', '*', '"', '{', ',', '.', '?', '|', '<', '>', '~', '`'];
+    public const LOCALES = ['it_IT', 'en_US', 'de_DE', 'es_ES', 'en_GB', 'fr_FR'];
+    public const PLATFORMS = ['Android', 'iOS'];
 
 
     private $faker;
@@ -259,6 +256,7 @@ class EntryGenerator
         $titles = [];
 
         $forms = array_get($this->projectDefinition, 'data.project.forms');
+
         $currentForm = '';
         foreach ($forms as $form) {
             if ($form['ref'] === $formRef) {
@@ -460,7 +458,8 @@ class EntryGenerator
         // If we received no errors, continue to insert answers and entry
         $createEntryService->create(
             $requestedProject,
-            $entryStructure);
+            $entryStructure
+        );
 
         return [
             'projectDefinition' => $projectDefinition,
@@ -548,7 +547,8 @@ class EntryGenerator
         // If we received no errors, continue to insert answers and entry
         $createEntryService->create(
             $requestedProject,
-            $entryStructure);
+            $entryStructure
+        );
 
         return [
             'projectDefinition' => $projectDefinition,
@@ -786,7 +786,8 @@ class EntryGenerator
         // If we received no errors, continue to insert answers and entry
         $createEntryService->create(
             $requestedProject,
-            $entryStructure);
+            $entryStructure
+        );
 
         return [
             'projectDefinition' => $projectDefinition,
@@ -797,7 +798,7 @@ class EntryGenerator
         ];
     }
 
-    private function generateMediaFilename($uuid, $type): string
+    public function generateMediaFilename($uuid, $type): string
     {
         $ext = '.';
         switch ($type) {

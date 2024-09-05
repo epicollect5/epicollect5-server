@@ -100,18 +100,11 @@ trait Remover
             //if we have 0 entries left, delete all media files
             $totalEntries = ProjectStats::where('project_id', $projectId)->value('total_entries');
             if ($totalEntries === 0) {
-                //remove all the entries media folders
-                $drivers = config('epicollect.media.entries_deletable');
-                foreach ($drivers as $driver) {
-                    // Get disk, path prefix and all directories for this driver
-                    $disk = Storage::disk($driver);
-                    $pathPrefix = $disk->path('');
-                    // Note: need to use File facade here, as Storage doesn't delete
-                    File::deleteDirectory($pathPrefix . $projectRef);
-                }
+                $this->removeAllTheEntriesMediaFolders($projectRef);
             }
 
             return true;
+
         } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed.', [
                 'exception' => $e->getMessage(),
@@ -119,6 +112,19 @@ trait Remover
             ]);
             DB::rollBack();
             return false;
+        }
+    }
+
+    public function removeAllTheEntriesMediaFolders($projectRef): void
+    {
+        //remove all the entries media folders
+        $drivers = config('epicollect.media.entries_deletable');
+        foreach ($drivers as $driver) {
+            // Get disk, path prefix and all directories for this driver
+            $disk = Storage::disk($driver);
+            $pathPrefix = $disk->path('');
+            // Note: need to use File facade here, as Storage doesn't delete
+            File::deleteDirectory($pathPrefix . $projectRef);
         }
     }
 }
