@@ -26,9 +26,11 @@ use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use ec5\Models\User\UserPasswordlessApi;
 use ec5\Models\User\UserPasswordlessWeb;
+use ec5\Models\User\UserProvider;
+use Illuminate\Database\Eloquent\Factory;
 use Illuminate\Support\Str;
 
-/** @var \Illuminate\Database\Eloquent\Factory $factory */
+/** @var Factory $factory */
 
 $factory->define(User::class, function (Faker\Generator $faker) {
 
@@ -45,7 +47,7 @@ $factory->define(User::class, function (Faker\Generator $faker) {
     ];
 });
 
-$factory->define(\ec5\Models\User\UserProvider::class, function (Faker\Generator $faker, $params) {
+$factory->define(UserProvider::class, function (Faker\Generator $faker, $params) {
     return [
         'user_id' => $params['user_id'],
         'email' => $params['email'],
@@ -69,7 +71,7 @@ $factory->define(UserPasswordlessWeb::class, function (Faker\Generator $faker, $
     ];
 });
 
-$factory->define(ProjectRole::class, function (Faker\Generator $faker) {
+$factory->define(ProjectRole::class, function () {
     return [
         'user_id' => $this->faker->randomElement(User::pluck('id')->all()),
         'project_id' => $this->faker->randomElement(Project::pluck('id')->all()),
@@ -121,7 +123,7 @@ $factory->define(ProjectDTO::class, function (Faker\Generator $faker) {
         'access' => 'public',
         'visibility' => 'listed',
         'category' => 'general',
-        'created_by' => User::where('email', env('SUPER_ADMIN_EMAIL'))->first()['id'],
+        'created_by' => User::where('email', config('testing.SUPER_ADMIN_EMAIL'))->first()['id'],
         'status' => 'active'
     ];
 });
@@ -313,7 +315,7 @@ $factory->define(ProjectStructure::class, function (Faker\Generator $faker, $par
     ];
 });
 
-$factory->define(Entry::class, function (Faker\Generator $faker, $params) {
+$factory->define(Entry::class, function (Faker\Generator $faker) {
     return [
         'project_id' => 0,
         'uuid' => $faker->uuid(),
@@ -333,7 +335,7 @@ $factory->define(Entry::class, function (Faker\Generator $faker, $params) {
     ];
 });
 
-$factory->define(BranchEntry::class, function (Faker\Generator $faker, $params) {
+$factory->define(BranchEntry::class, function (Faker\Generator $faker) {
     return [
         'project_id' => null,
         'uuid' => $faker->uuid(),
@@ -350,7 +352,7 @@ $factory->define(BranchEntry::class, function (Faker\Generator $faker, $params) 
     ];
 });
 
-$factory->define(ProjectStats::class, function (Faker\Generator $faker) {
+$factory->define(ProjectStats::class, function () {
     return [
         'project_id' => null,
         'total_entries' => 0,
@@ -360,7 +362,7 @@ $factory->define(ProjectStats::class, function (Faker\Generator $faker) {
     ];
 });
 
-$factory->define(ProjectFeatured::class, function (Faker\Generator $faker) {
+$factory->define(ProjectFeatured::class, function () {
     return [
         'project_id' => null,
     ];

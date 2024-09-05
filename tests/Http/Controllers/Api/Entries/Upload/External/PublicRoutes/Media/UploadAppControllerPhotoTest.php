@@ -3,7 +3,6 @@
 namespace Tests\Http\Controllers\Api\Entries\Upload\External\PublicRoutes\Media;
 
 use ec5\Libraries\Utilities\Common;
-use ec5\Libraries\Utilities\DateFormatConverter;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
@@ -30,9 +29,10 @@ use Tests\TestCase;
 
 class UploadAppControllerPhotoTest extends TestCase
 {
-    use DatabaseTransactions, Assertions;
+    use DatabaseTransactions;
+    use Assertions;
 
-    private $endpoint = 'api/upload/';
+    private string $endpoint = 'api/upload/';
 
     public function setUp(): void
     {
@@ -44,7 +44,8 @@ class UploadAppControllerPhotoTest extends TestCase
         User::where(
             'email',
             'like',
-            '%example.net%')
+            '%example.net%'
+        )
             ->delete();
 
         $this->faker = Faker::create();
@@ -149,13 +150,15 @@ class UploadAppControllerPhotoTest extends TestCase
             );
 
             //multipart upload from app with json encoded string and file (Cordova FileTransfer)
-            $response[] = $this->post($this->endpoint . $this->project->slug,
+            $response[] = $this->post(
+                $this->endpoint . $this->project->slug,
                 ['data' => json_encode($payload['data']), 'name' => $payload['name']],
                 ['Content-Type' => 'multipart/form-data']
             );
 
             $response[0]->assertStatus(200)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "data" => [
                             "code" => "ec5_237",
                             "title" => "Entry successfully uploaded."
@@ -258,13 +261,15 @@ class UploadAppControllerPhotoTest extends TestCase
             ];
 
             //multipart upload from app with json encoded string and file (Cordova FileTransfer)
-            $response[] = $this->post($this->endpoint . $this->project->slug,
+            $response[] = $this->post(
+                $this->endpoint . $this->project->slug,
                 ['data' => json_encode($payload['data']), 'name' => $payload['name']],
                 ['Content-Type' => 'multipart/form-data']
             );
 
             $response[0]->assertStatus(200)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "data" => [
                             "code" => "ec5_237",
                             "title" => "Entry successfully uploaded."
@@ -336,13 +341,15 @@ class UploadAppControllerPhotoTest extends TestCase
             );
 
             //multipart upload from app with json encoded string and file (Cordova FileTransfer)
-            $response[] = $this->post($this->endpoint . $this->project->slug,
+            $response[] = $this->post(
+                $this->endpoint . $this->project->slug,
                 ['data' => json_encode($payload['data']), 'name' => $payload['name']],
                 ['Content-Type' => 'multipart/form-data']
             );
 
             $response[0]->assertStatus(200)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "data" => [
                             "code" => "ec5_237",
                             "title" => "Entry successfully uploaded."
@@ -412,13 +419,15 @@ class UploadAppControllerPhotoTest extends TestCase
             );
 
             //multipart upload from app with json encoded string and file (Cordova FileTransfer)
-            $response[] = $this->post($this->endpoint . $this->project->slug,
+            $response[] = $this->post(
+                $this->endpoint . $this->project->slug,
                 ['data' => json_encode($payload['data']), 'name' => $payload['name']],
                 ['Content-Type' => 'multipart/form-data']
             );
 
             $response[0]->assertStatus(200)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "data" => [
                             "code" => "ec5_237",
                             "title" => "Entry successfully uploaded."
@@ -488,13 +497,15 @@ class UploadAppControllerPhotoTest extends TestCase
             );
 
             //multipart upload from app with json encoded string and file (Cordova FileTransfer)
-            $response[] = $this->post($this->endpoint . $this->project->slug,
+            $response[] = $this->post(
+                $this->endpoint . $this->project->slug,
                 ['data' => json_encode($payload['data']), 'name' => $payload['name']],
                 ['Content-Type' => 'multipart/form-data']
             );
 
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_81",
@@ -614,13 +625,15 @@ class UploadAppControllerPhotoTest extends TestCase
             ];
 
             //multipart upload from app with json encoded string and file (Cordova FileTransfer)
-            $response[] = $this->post($this->endpoint . $this->project->slug,
+            $response[] = $this->post(
+                $this->endpoint . $this->project->slug,
                 ['data' => json_encode($payload['data']), 'name' => $payload['name']],
                 ['Content-Type' => 'multipart/form-data']
             );
 
             $response[0]->assertStatus(200)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "data" => [
                             "code" => "ec5_237",
                             "title" => "Entry successfully uploaded."
@@ -745,13 +758,15 @@ class UploadAppControllerPhotoTest extends TestCase
             BranchEntry::where('uuid', $branchEntryUuid)->delete();
 
             //multipart upload from app with json encoded string and file (Cordova FileTransfer)
-            $response[] = $this->post($this->endpoint . $this->project->slug,
+            $response[] = $this->post(
+                $this->endpoint . $this->project->slug,
                 ['data' => json_encode($payload['data']), 'name' => $payload['name']],
                 ['Content-Type' => 'multipart/form-data']
             );
 
             $response[0]->assertStatus(200)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "data" => [
                             "code" => "ec5_237",
                             "title" => "Entry successfully uploaded."
@@ -818,13 +833,15 @@ class UploadAppControllerPhotoTest extends TestCase
             Entry::where('uuid', $entryUuid)->delete();
 
             //multipart upload from app with json encoded string and file (Cordova FileTransfer)
-            $response[] = $this->post($this->endpoint . $this->project->slug,
+            $response[] = $this->post(
+                $this->endpoint . $this->project->slug,
                 ['data' => json_encode($payload['data']), 'name' => $payload['name']],
                 ['Content-Type' => 'multipart/form-data']
             );
 
             $response[0]->assertStatus(200)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "data" => [
                             "code" => "ec5_237",
                             "title" => "Entry successfully uploaded."
@@ -909,13 +926,15 @@ class UploadAppControllerPhotoTest extends TestCase
             $payload['data']['file_entry']['project_version'] = $projectStructure->updated_at->format('Y-m-d H:i:s');
 
             //multipart upload from app with json encoded string and file (Cordova FileTransfer)
-            $response[] = $this->post($this->endpoint . $this->project->slug,
+            $response[] = $this->post(
+                $this->endpoint . $this->project->slug,
                 ['data' => json_encode($payload['data']), 'name' => $payload['name']],
                 ['Content-Type' => 'multipart/form-data']
             );
 
             $response[0]->assertStatus(200)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "data" => [
                             "code" => "ec5_237",
                             "title" => "Entry successfully uploaded."

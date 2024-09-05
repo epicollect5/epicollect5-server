@@ -30,9 +30,6 @@ class BranchEntry extends Model
     use Entries;
     use SerializeDates;
 
-    /**
-     * @var mixed
-     */
     protected $table = 'branch_entries';
     /**
      *  Disable eloquent timestamps because we are using

@@ -11,13 +11,13 @@ use ec5\Models\User\User;
 use ec5\Services\Mapping\ProjectMappingService;
 use ec5\Services\Project\ProjectExtraService;
 use ec5\Traits\Assertions;
-use Exception;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Storage;
 use Tests\Generators\EntryGenerator;
 use Tests\Generators\MediaGenerator;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
+use Throwable;
 
 class MediaExportPrivatePhotoDeniedTest extends TestCase
 {
@@ -30,7 +30,8 @@ class MediaExportPrivatePhotoDeniedTest extends TestCase
         User::where(
             'email',
             'like',
-            '%example.net%')
+            '%example.net%'
+        )
             ->delete();
 
 
@@ -111,10 +112,9 @@ class MediaExportPrivatePhotoDeniedTest extends TestCase
             );
         }
 
-        //add the fake audio
+        //add the fake photo
         $filename = $photoAnswers[0]['answer'];
-
-        //create a fake audio for the entry
+        //create a fake photo for the entry
         $photoContent = MediaGenerator::getFakePhotoContentBase64();
         Storage::disk('video')->put($project->ref . '/' . $filename, $photoContent);
 
@@ -137,7 +137,8 @@ class MediaExportPrivatePhotoDeniedTest extends TestCase
                     'headers' => [
                         'X-Requested-With' => 'XMLHttpRequest'
                     ]
-                ]);
+                ]
+            );
 
             $content = $response[0]->getBody()->getContents();
 
@@ -163,7 +164,7 @@ class MediaExportPrivatePhotoDeniedTest extends TestCase
                     'project' => $project,
                 ]
             );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Storage::disk('audio')->deleteDirectory($project->ref);
             $this->clearDatabase(
                 [
