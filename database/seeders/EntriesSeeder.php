@@ -65,11 +65,15 @@ class EntriesSeeder extends Seeder
         $entryGenerator = new EntryGenerator($projectDefinition);
 
         $formRef = array_get($projectDefinition, 'data.project.forms.0.ref');
+        //get any branch inputs
+        $branches = $this->getFormBranches($projectDefinition, 0);
 
         // Get the console output instance
         $output = $this->command->getOutput();
 
         // Loop to insert the specified number of entries
+        $entryPayloads = [];
+        $branchEntryPayloads = [];
         for ($i = 0; $i < $numOfEntries; $i++) {
             $entryPayloads[$i] = $entryGenerator->createParentEntryPayload($formRef);
             $entryGenerator->createParentEntryRow(
@@ -82,7 +86,34 @@ class EntriesSeeder extends Seeder
             // Show progress
             $num = $i + 1;
             $output->write("\rInserted $num entries...    ");
+
+            //if any branch, generate x branch entries
+            $numOfBranchEntries = rand(2, 5);
+            for ($j = 0; $j < $numOfBranchEntries; $j++) {
+                foreach ($branches as $ownerInputRef => $branchInputs) {
+                    $branchEntryPayloads[$j] = $entryGenerator->createBranchEntryPayload(
+                        $formRef,
+                        $branchInputs,
+                        $entryPayloads[$i]['data']['id'],
+                        $ownerInputRef
+                    );
+                    $entryGenerator->createBranchEntryRow(
+                        User::find($project->created_by),
+                        $project,
+                        config('epicollect.strings.project_roles.creator'),
+                        $projectDefinition,
+                        $branchEntryPayloads[$j]
+                    );
+                }
+            }
         }
+
+
+
+        //loop all the child forms
+        //todo:
+
+
 
         $proceed = strtolower($this->command->ask("Generate media files? (y/n)", 'n'));
         if ($proceed === 'y') {
@@ -94,5 +125,18 @@ class EntriesSeeder extends Seeder
 
         // Final message
         $output->writeln("All done.");
+    }
+
+    private function getFormBranches($projectDefinition, $formIndex): array
+    {
+        $inputs = array_get($projectDefinition, 'data.project.forms.'.$formIndex.'.inputs');
+        $branches = [];
+
+        foreach ($inputs as $index => $input) {
+            if ($input['type'] === config('epicollect.strings.inputs_type.branch')) {
+                $branches[$input['ref']] = $input['branch'];
+            }
+        }
+        return $branches;
     }
 }

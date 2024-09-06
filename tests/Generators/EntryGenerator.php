@@ -17,6 +17,7 @@ use ec5\Services\Mapping\ProjectMappingService;
 use ec5\Traits\Assertions;
 use Exception;
 use Faker\Factory as Faker;
+use Faker\Generator;
 use Illuminate\Http\UploadedFile;
 use Ramsey\Uuid\Uuid;
 
@@ -24,15 +25,15 @@ class EntryGenerator
 {
     use Assertions;
 
-    public const SYMBOLS = ['!', '@', '€', '£', '#', '$', '%', '^', '&', '*', '"', '{', ',', '.', '?', '|', '<', '>', '~', '`'];
-    public const LOCALES = ['it_IT', 'en_US', 'de_DE', 'es_ES', 'en_GB', 'fr_FR'];
-    public const PLATFORMS = ['Android', 'iOS'];
+    public const array SYMBOLS = ['!', '@', '€', '£', '#', '$', '%', '^', '&', '*', '"', '{', ',', '.', '?', '|', '<', '>', '~', '`'];
+    public const array LOCALES = ['it_IT', 'en_US', 'de_DE', 'es_ES', 'en_GB', 'fr_FR'];
+    public const array PLATFORMS = ['Android', 'iOS'];
 
 
-    private $faker;
+    private Generator $faker;
     private $randomLocale;
-    private $projectDefinition;
-    private $multipleChoiceQuestionTypes;
+    private array $projectDefinition;
+    private array $multipleChoiceQuestionTypes;
     private $multipleChoiceInputRefs;
 
     public function __construct(array $projectDefinition)
