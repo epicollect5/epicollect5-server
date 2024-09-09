@@ -4,84 +4,89 @@ namespace Tests\Generators;
 
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Facades\Image;
-use Psr\Http\Message\StreamInterface;
 
 class MediaGenerator
 {
-    public static function generateEntryOriginal($format = 'jpg'): StreamInterface
+    public static function generateAndStorePhotoFiles($projectRef, $filename, $format = 'jpg'): void
     {
-        // pick a random background
+        // Pick a random background
         $backgrounds = ['#673C90', '#87C7A6', '#C159B3'];
         $background = $backgrounds[array_rand($backgrounds)];
 
+        // Create the canvas
         $img = Image::canvas(
             config('epicollect.media.entry_original_landscape')[0],
             config('epicollect.media.entry_original_landscape')[1],
             $background
         );
-        // Generate a random shape
-        $shapes = ['circle', 'rectangle', 'ellipse'];
-        $shape = $shapes[array_rand($shapes)];
 
-        switch ($shape) {
-            case 'circle':
-                $img->circle(rand(50, 200), rand(100, 800), rand(100, 800), function ($draw) {
-                    $draw->background('#' . dechex(rand(0x000000, 0xFFFFFF)));
-                });
-                break;
-            case 'rectangle':
-                $img->rectangle(rand(100, 400), rand(100, 400), rand(500, 800), rand(500, 800), function ($draw) {
-                    $draw->background('#' . dechex(rand(0x000000, 0xFFFFFF)));
-                });
-                break;
-            case 'ellipse':
-                $img->ellipse(rand(100, 400), rand(100, 400), rand(100, 800), rand(100, 800), function ($draw) {
-                    $draw->background('#' . dechex(rand(0x000000, 0xFFFFFF)));
-                });
-                break;
+        // Generate a random number of stars (1 to 3)
+        $numStars = rand(1, 7);
+
+        for ($i = 0; $i < $numStars; $i++) {
+            // Randomize star size, position, and rotation
+            $centerX = rand(100, 800);
+            $centerY = rand(100, 800);
+            $outerRadius = rand(50, 250); // Outer radius
+            $innerRadius = $outerRadius / 2; // Inner radius for the star
+            $rotation = rand(0, 90); // Random rotation angle
+
+            // Generate points for a 5-point star
+            $points = [];
+            $numPoints = rand(5, 7);
+            for ($j = 0; $j < $numPoints * 2; $j++) {
+                $angle = deg2rad($j * 360 / ($numPoints * 2)); // Convert angle to radians
+                $radius = ($j % 2 === 0) ? $outerRadius : $innerRadius; // Alternate between outer and inner radius
+                $x = $centerX + $radius * cos($angle);
+                $y = $centerY + $radius * sin($angle);
+
+                // Apply rotation around the center of the star
+                $rotatedPoint = self::rotatePoint($x, $y, $centerX, $centerY, $rotation);
+                $points[] = $rotatedPoint['x'];
+                $points[] = $rotatedPoint['y'];
+            }
+
+            // Draw the star polygon
+            $img->polygon($points, function ($draw) {
+                $draw->background('#' . dechex(rand(0x000000, 0xFFFFFF)));
+            });
         }
 
-        // return the image to a stream
-        return $img->stream($format);
-    }
+        // Create entry_original stream
+        $entryOriginalStream = $img->stream($format);
 
-    public static function generateEntryThumb($imageStream, $format = 'jpg'): StreamInterface
-    {
-        $image =  Image::make($imageStream)->resize(
+        // Create entry_thumb stream by cropping and resizing from the center
+        $entryThumbStream = Image::make($entryOriginalStream)->fit(
             config('epicollect.media.entry_thumb')[0],
             config('epicollect.media.entry_thumb')[1]
         );
 
-        return $image->stream('jpg'); // Return the thumbnail image stream in jpg format
+        // Store both entry_original and entry_thumb
+        Storage::disk('entry_original')->put($projectRef . '/' . $filename, $entryOriginalStream);
+        Storage::disk('entry_thumb')->put($projectRef . '/' . $filename, $entryThumbStream->stream($format));
     }
 
-    public static function generateTempAudioFromBase64(): string
+    /**
+     * Rotate a point around a center by a given angle.
+     */
+    public static function rotatePoint($x, $y, $centerX, $centerY, $angle): array
     {
-        // Decode the base64 string
-        $audioContent = base64_decode(self::getFakeAudioContentBase64());
+        // Convert angle to radians
+        $angleRad = deg2rad($angle);
 
-        // Generate a temporary file path
-        $tempFilePath = tempnam(sys_get_temp_dir(), 'audio_') . '.mp4';
+        // Translate point back to origin
+        $translatedX = $x - $centerX;
+        $translatedY = $y - $centerY;
 
-        // Save the audio content to the temporary file
-        file_put_contents($tempFilePath, $audioContent);
+        // Rotate the point
+        $rotatedX = $translatedX * cos($angleRad) - $translatedY * sin($angleRad);
+        $rotatedY = $translatedX * sin($angleRad) + $translatedY * cos($angleRad);
 
-        // Return the temporary file path
-        return $tempFilePath;
-    }
-
-
-    public static function generateAudioStreamFromBase64()
-    {
-        // Decode the base64 string into binary data
-        $audioContent = base64_decode(self::getFakeAudioContentBase64());
-
-        // Create a stream in memory from the binary data
-        $audioStream = fopen('php://memory', 'r+');
-        fwrite($audioStream, $audioContent);
-        rewind($audioStream);
-
-        return $audioStream;
+        // Translate the point back to its original position
+        return [
+            'x' => $rotatedX + $centerX,
+            'y' => $rotatedY + $centerY,
+        ];
     }
 
     public static function generateAndStoreAudioFile(string $projectRef, string $filename): void

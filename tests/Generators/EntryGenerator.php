@@ -31,10 +31,10 @@ class EntryGenerator
 
 
     private Generator $faker;
-    private $randomLocale;
+    private string $randomLocale;
     private array $projectDefinition;
     private array $multipleChoiceQuestionTypes;
-    private $multipleChoiceInputRefs;
+    private array $multipleChoiceInputRefs;
 
     public function __construct(array $projectDefinition)
     {

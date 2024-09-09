@@ -85,7 +85,7 @@ class EntriesSeeder extends Seeder
             );
             // Show progress
             $num = $i + 1;
-            $output->write("\rInserted $num entries...    ");
+            $output->write("\rInserted $num parent entries...    ");
 
             //if any branch, generate x branch entries
             $numOfBranchEntries = rand(2, 5);
@@ -104,16 +104,68 @@ class EntriesSeeder extends Seeder
                         $projectDefinition,
                         $branchEntryPayloads[$j]
                     );
+                    $output->writeln("\rInserted branch entries...    ");
                 }
             }
         }
 
+        //loop all the child forms, if any
+        $forms = array_get($projectDefinition, 'data.project.forms');
+        foreach ($forms as $formIndex => $form) {
+            if($formIndex > 0) {
 
+                $output->writeln("\rAdding child entries for form level $formIndex...    ");
 
-        //loop all the child forms
-        //todo:
+                //for each parent entry, add some child entries
+                $parentFormRef = array_get($forms, $formIndex - 1)['ref'];
+                $childFormRef = $form['ref'];
+                $parentEntries = Entry::where('project_id', $project->id)
+                    ->where('form_ref', $parentFormRef)
+                    ->get();
 
+                //get any branch inputs
+                $childBranches = $this->getFormBranches($projectDefinition, $formIndex);
+                $numOfChildEntries = rand(1, 2);
+                foreach ($parentEntries as $parentEntry) {
+                    for ($x = 0; $x < $numOfChildEntries; $x++) {
 
+                        $childEntryPayload = $entryGenerator->createChildEntryPayload($childFormRef, $parentFormRef, $parentEntry->uuid);
+                        $entryGenerator->createChildEntryRow(
+                            User::find($project->created_by),
+                            $project,
+                            config('epicollect.strings.project_roles.creator'),
+                            $projectDefinition,
+                            $childEntryPayload
+                        );
+                        // Show progress
+                        $numChildren = $x + 1;
+                        $output->write("\rInserted $numChildren child entries level $formIndex...    ");
+
+                        //if any branch in the child form, generate x branch entries
+                        $numOfChildBranchEntries = rand(1, 2);
+                        for ($j = 0; $j < $numOfChildBranchEntries; $j++) {
+                            foreach ($childBranches as $ownerInputRef => $childBranchInputs) {
+                                $branchEntryPayload = $entryGenerator->createBranchEntryPayload(
+                                    $childFormRef,
+                                    $childBranchInputs,
+                                    $childEntryPayload['data']['id'],
+                                    $ownerInputRef
+                                );
+                                $entryGenerator->createBranchEntryRow(
+                                    User::find($project->created_by),
+                                    $project,
+                                    config('epicollect.strings.project_roles.creator'),
+                                    $projectDefinition,
+                                    $branchEntryPayload
+                                );
+
+                                $output->writeln("\rInserted branch entries...    ");
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         $proceed = strtolower($this->command->ask("Generate media files? (y/n)", 'n'));
         if ($proceed === 'y') {
@@ -132,7 +184,7 @@ class EntriesSeeder extends Seeder
         $inputs = array_get($projectDefinition, 'data.project.forms.'.$formIndex.'.inputs');
         $branches = [];
 
-        foreach ($inputs as $index => $input) {
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.branch')) {
                 $branches[$input['ref']] = $input['branch'];
             }

@@ -8,7 +8,6 @@ use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectStructure;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Storage;
 use Tests\Generators\MediaGenerator;
 
 class MediaSeeder extends Seeder
@@ -19,8 +18,8 @@ class MediaSeeder extends Seeder
      * imp: php artisan db:seed --class=MediaSeeder
      * imp: php artisan seed:media
      *
+     * @param null $projectId
      * @return void
-     * @noinspection DuplicatedCode
      */
     public function run($projectId = null): void
     {
@@ -36,7 +35,6 @@ class MediaSeeder extends Seeder
         }
 
         $project = Project::find($projectId);
-
         if ($project === null) {
             $this->command->error('Project not found.');
             return;
@@ -45,7 +43,7 @@ class MediaSeeder extends Seeder
         // Confirm project name?
         $projectName = $project->name;
         if(!$skipProjectNameConfirm) {
-            $proceed = strtolower($this->command->ask("The project name is '{$projectName}'. Proceed? (y/n)", 'n'));
+            $proceed = strtolower($this->command->ask("The project name is '$projectName'. Proceed? (y/n)", 'n'));
 
             if ($proceed !== 'y') {
                 $this->command->warn('Operation aborted.');
@@ -93,6 +91,22 @@ class MediaSeeder extends Seeder
                         ])) {
                             $mediaQuestions[$branchInput['ref']] = $type;
                         }
+
+                        //get all media questions in nested group(s)
+                        if($type === config('epicollect.strings.inputs_type.group')) {
+                            $nestedGroupInputs = $branchInput['group'];
+                            foreach ($nestedGroupInputs as $nestedGroupInput) {
+                                $type = $nestedGroupInput['type'];
+
+                                if (in_array($type, [
+                                    config('epicollect.strings.inputs_type.audio'),
+                                    config('epicollect.strings.inputs_type.photo'),
+                                    config('epicollect.strings.inputs_type.video')
+                                ])) {
+                                    $mediaQuestions[$nestedGroupInput['ref']] = $type;
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -135,22 +149,7 @@ class MediaSeeder extends Seeder
                     $percentage = ($processedEntries / $totalEntries) * 100;
                     $output->write("\rProgress: " . number_format($percentage, 2) . "% ($processedEntries of $totalEntries entries)");
 
-                    if ($mediaQuestions[$ref] === config('epicollect.strings.inputs_type.audio')) {
-                        MediaGenerator::generateAndStoreAudioFile($project->ref, $filename);
-                        $audioCount++;
-                    }
-                    if ($mediaQuestions[$ref] === config('epicollect.strings.inputs_type.video')) {
-                        MediaGenerator::generateAndStoreVideoFile($project->ref, $filename);
-                        $videoCount++;
-                    }
-                    if ($mediaQuestions[$ref] === config('epicollect.strings.inputs_type.photo')) {
-                        // Save entry_original format
-                        $entryOriginalStream = MediaGenerator::generateEntryOriginal();
-                        $entryThumbStream = MediaGenerator::generateEntryThumb($entryOriginalStream);
-                        Storage::disk('entry_original')->put($project->ref . '/' . $filename, $entryOriginalStream);
-                        Storage::disk('entry_thumb')->put($project->ref . '/' . $filename, $entryThumbStream);
-                        $photoCount++;
-                    }
+                    list($audioCount, $videoCount, $photoCount) = $this->generateAndStoreMediaFiles($mediaQuestions[$ref], $project, $filename, $audioCount, $videoCount, $photoCount);
                 }
             }
 
@@ -164,9 +163,9 @@ class MediaSeeder extends Seeder
 
         // Show entries progress
         $output->writeln("\nDone processing entries:");
-        $output->writeln("Added $photoCount photo files");
-        $output->writeln("Added $audioCount audio files");
-        $output->writeln("Added $videoCount video files");
+        $output->writeln("Added $photoCount photo files to entries");
+        $output->writeln("Added $audioCount audio files to entries");
+        $output->writeln("Added $videoCount video files to entries");
 
         $output->writeln('...');
 
@@ -195,22 +194,7 @@ class MediaSeeder extends Seeder
                     $percentage = ($processedEntries / $totalBranchEntries) * 100;
                     $output->write("\rProgress: " . number_format($percentage, 2) . "% ($processedEntries of $totalBranchEntries branch entries)");
 
-                    if ($mediaQuestions[$ref] === config('epicollect.strings.inputs_type.audio')) {
-                        MediaGenerator::generateAndStoreAudioFile($project->ref, $filename);
-                        $audioCount++;
-                    }
-                    if ($mediaQuestions[$ref] === config('epicollect.strings.inputs_type.video')) {
-                        MediaGenerator::generateAndStoreVideoFile($project->ref, $filename);
-                        $videoCount++;
-                    }
-                    if ($mediaQuestions[$ref] === config('epicollect.strings.inputs_type.photo')) {
-                        // Save entry_original format
-                        $entryOriginalStream = MediaGenerator::generateEntryOriginal();
-                        $entryThumbStream = MediaGenerator::generateEntryThumb($entryOriginalStream);
-                        Storage::disk('entry_original')->put($project->ref . '/' . $filename, $entryOriginalStream);
-                        Storage::disk('entry_thumb')->put($project->ref . '/' . $filename, $entryThumbStream);
-                        $photoCount++;
-                    }
+                    list($audioCount, $videoCount, $photoCount) = $this->generateAndStoreMediaFiles($mediaQuestions[$ref], $project, $filename, $audioCount, $videoCount, $photoCount);
                 }
             }
 
@@ -224,11 +208,28 @@ class MediaSeeder extends Seeder
 
         // Show branches progress
         $output->writeln("\nDone processing branch entries:");
-        $output->writeln("Added $photoCount photo files");
-        $output->writeln("Added $audioCount audio files");
-        $output->writeln("Added $videoCount video files");
+        $output->writeln("Added $photoCount photo files to branch entries");
+        $output->writeln("Added $audioCount audio files to branch entries");
+        $output->writeln("Added $videoCount video files to branch entries");
 
         // Final message
         $output->writeln("All done.");
+    }
+
+    private function generateAndStoreMediaFiles($mediaQuestions, Project $project, mixed $filename, int $audioCount, int $videoCount, int $photoCount): array
+    {
+        if ($mediaQuestions === config('epicollect.strings.inputs_type.audio')) {
+            MediaGenerator::generateAndStoreAudioFile($project->ref, $filename);
+            $audioCount++;
+        }
+        if ($mediaQuestions === config('epicollect.strings.inputs_type.video')) {
+            MediaGenerator::generateAndStoreVideoFile($project->ref, $filename);
+            $videoCount++;
+        }
+        if ($mediaQuestions === config('epicollect.strings.inputs_type.photo')) {
+            MediaGenerator::generateAndStorePhotoFiles($project->ref, $filename);
+            $photoCount++;
+        }
+        return array($audioCount, $videoCount, $photoCount);
     }
 }
