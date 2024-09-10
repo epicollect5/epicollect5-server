@@ -15,7 +15,8 @@ return [
         'password' => env('SUPER_ADMIN_PASSWORD')
     ],
     'system' => [
-        'email' => env('SYSTEM_EMAIL')
+        'email' => env('SYSTEM_EMAIL'),
+        'app_link_enabled' => (bool) env('APP_LINK_ENABLED', false)
     ],
     'opencage' => [
         'endpoint' => env('OPENCAGE_ENDPOINT'),
@@ -50,4 +51,3 @@ return [
         'chunk_size' => env('BULK_DELETION_CHUNK_SIZE', 100),
     ]
 ];
-
