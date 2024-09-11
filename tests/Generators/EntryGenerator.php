@@ -20,6 +20,7 @@ use Faker\Factory as Faker;
 use Faker\Generator;
 use Illuminate\Http\UploadedFile;
 use Ramsey\Uuid\Uuid;
+use Throwable;
 
 class EntryGenerator
 {
@@ -73,7 +74,7 @@ class EntryGenerator
                 $randomPhrase = preg_replace('/[^\x00-\x7F]/u', '', $randomPhrase);
 
                 // Remove potential leading 'b' character
-                if (strpos($randomPhrase, 'b') === 0) {
+                if (str_starts_with($randomPhrase, 'b')) {
                     $randomPhrase = substr($randomPhrase, 1);
                 }
 
@@ -386,6 +387,9 @@ class EntryGenerator
         ];
     }
 
+    /**
+     * @throws Throwable
+     */
     public function createParentEntryRow($user, $project, $role, $projectDefinition, $entryPayload): array
     {
         $entryStructure = new EntryStructureDTO();
@@ -471,6 +475,9 @@ class EntryGenerator
         ];
     }
 
+    /**
+     * @throws Throwable
+     */
     public function createChildEntryRow($user, $project, $role, $projectDefinition, $childEntryPayload): array
     {
         $entryStructure = new EntryStructureDTO();
@@ -578,7 +585,7 @@ class EntryGenerator
             if ($currentForm === '') {
                 throw new Exception('This project does not have child forms');
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             echo $e->getMessage();
             return [];
         }
@@ -696,6 +703,9 @@ class EntryGenerator
         ];
     }
 
+    /**
+     * @throws Throwable
+     */
     public function createBranchEntryRow($user, $project, $role, $projectDefinition, $branchEntryPayload): array
     {
         $ownerInputRef = $branchEntryPayload['data']['relationships']['branch']['data']['owner_input_ref'];
@@ -824,7 +834,7 @@ class EntryGenerator
         return str_replace(['<', '>', '='], '', $randomString);
     }
 
-    private function addPossibleAnswers($entryStructure, $input, $answer)
+    private function addPossibleAnswers($entryStructure, $input, $answer): void
     {
         //need to add the possible answer, so they later added to the geojson object
         if (in_array($input['type'], $this->multipleChoiceQuestionTypes)) {
@@ -841,7 +851,7 @@ class EntryGenerator
         }
     }
 
-    private function addGeoJsonIfNeeded($entryStructure, $input, $answer)
+    private function addGeoJsonIfNeeded($entryStructure, $input, $answer): void
     {
         if ($input['type'] === config('epicollect.strings.inputs_type.location')) {
             $entryStructure->addGeoJsonObject($input, $answer['answer']);

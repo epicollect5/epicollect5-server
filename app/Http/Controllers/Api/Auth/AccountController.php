@@ -45,7 +45,7 @@ class AccountController extends Controller
         if ($routeName === 'internalAccountDelete') {
             if (sizeof($userProjectRoles) === 0) {
                 //user is not a member of any projects so remove it directly
-                //(user ID for entries added to public projects is never considered)
+                //(imp: the user ID for entries added to public projects is never considered)
                 if ($this->removeUser($email, $userId)) {
                     $this->logoutUser();
                     return $this->sendResponseSuccess($email);
