@@ -6,10 +6,9 @@ use Carbon\Carbon;
 use DB;
 use ec5\Models\User\User;
 use ec5\Models\User\UserVerify;
-use Exception;
 use Illuminate\Console\Command;
 use Log;
-use PDOException;
+use Throwable;
 
 class RemoveUnverifiedUsersCommand extends Command
 {
@@ -30,9 +29,8 @@ class RemoveUnverifiedUsersCommand extends Command
     /**
      * Execute the console command.
      *
-     * @return mixed
      */
-    public function handle()
+    public function handle(): void
     {
         /**
          * Get unverified and local users older than the settings (usually 7 days)
@@ -51,12 +49,13 @@ class RemoveUnverifiedUsersCommand extends Command
                 ->delete();
 
             DB::commit();
-        } catch (PDOException $e) {
+        } catch (Throwable $e) {
             Log::error('failed to remove unverified users', ['exception' => $e]);
-            DB::rollBack();
-        } catch (Exception $e) {
-            Log::error('failed to remove unverified users', ['exception' => $e]);
-            DB::rollBack();
+            try {
+                DB::rollBack();
+            } catch (Throwable $e) {
+                Log::error('failed to rollback -> remove unverified users', ['exception' => $e]);
+            }
         }
     }
 }

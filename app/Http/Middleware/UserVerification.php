@@ -4,17 +4,14 @@ namespace ec5\Http\Middleware;
 
 use Closure;
 use ec5\Exceptions\UserNotVerifiedException;
-use Config;
 
 class UserVerification
 {
     /**
      * Check local user account for verification
      * Google Account are verified by Google
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param \Closure $next
-     * @return mixed
+     * @noinspection PhpUndefinedFieldInspection
+     * @throws UserNotVerifiedException
      */
     public function handle($request, Closure $next)
     {
@@ -22,7 +19,7 @@ class UserVerification
 
             //not verified? Check only if "local" user
             if ($request->user()->provider === config('epicollect.strings.providers.local')) {
-                throw new UserNotVerifiedException;
+                throw new UserNotVerifiedException();
             }
         }
 

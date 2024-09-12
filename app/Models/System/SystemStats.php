@@ -2,23 +2,34 @@
 
 namespace ec5\Models\System;
 
-use Exception;
+use ec5\Traits\Models\SerializeDates;
 use Illuminate\Database\Eloquent\Model;
 use Log;
+use Throwable;
 
 class SystemStats extends Model
 {
-    //
+    /**
+     * @property int $id
+     * @property string|null $user_stats
+     * @property string|null $project_stats
+     * @property string|null $entries_stats
+     * @property string|null $branch_entries_stats
+     * @property string $created_at
+     */
+
+    use SerializeDates;
+
     protected $table = 'system_stats';
     public $timestamps = false;
     private $dailyStats;
 
     //get daily stats to initialise the model
-    public function initDailyStats()
+    public function initDailyStats(): void
     {
         try {
             $this->dailyStats = $this->latest()->first();
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             Log::error('Failed init system stats', ['exception' => $e]);
             $this->dailyStats = [];
         }

@@ -6,6 +6,7 @@ use Closure;
 use ec5\DTO\ProjectDTO;
 use ec5\DTO\ProjectRoleDTO;
 use ec5\Models\Project\Project;
+use ec5\Models\User\User;
 use ec5\Services\Project\ProjectService;
 use ec5\Traits\Middleware\MiddlewareTools;
 use Illuminate\Http\Request;
@@ -17,15 +18,11 @@ abstract class RequestAttributesMiddleware
 {
     use MiddlewareTools;
 
-    protected $request;
-    protected $search;
-    protected $error;
-    protected $requestedProject;
-    protected $requestedUser;
-    /**
-     * @var ProjectRoleDTO
-     */
-    protected $requestedProjectRole;
+    protected Request $request;
+    protected string $error;
+    protected ProjectDTO $requestedProject;
+    protected User|null $requestedUser;
+    protected ProjectRoleDTO $requestedProjectRole;
 
     /*
     |--------------------------------------------------------------------------
@@ -37,9 +34,6 @@ abstract class RequestAttributesMiddleware
     */
 
     /**
-     * ProjectPermissionsBase constructor.
-     * @param Request $request
-     * @param ProjectDTO $requestedProject
      */
     public function __construct(Request $request, ProjectDTO $requestedProject)
     {
@@ -124,9 +118,9 @@ abstract class RequestAttributesMiddleware
      *
      * @return bool
      */
-    public abstract function hasPermission();
+    abstract public function hasPermission(): bool;
 
-    private function setRequestedProject($slug)
+    private function setRequestedProject($slug): void
     {
         $project = Project::findBySlug($slug);
         if ($project) {
@@ -136,7 +130,7 @@ abstract class RequestAttributesMiddleware
         }
     }
 
-    protected function setRequestedUser(Request $request)
+    protected function setRequestedUser(Request $request): void
     {
         // Grab user from the request
         $this->requestedUser = $request->user();
@@ -144,8 +138,9 @@ abstract class RequestAttributesMiddleware
 
     /**
      *
+     * @noinspection PhpConditionAlreadyCheckedInspection
      */
-    protected function setRequestedProjectRole()
+    protected function setRequestedProjectRole(): void
     {
         $projectService = new ProjectService();
         // Retrieve user role
@@ -161,7 +156,7 @@ abstract class RequestAttributesMiddleware
 
     private function isMultipartRequest(Request $request): bool
     {
-        return strpos($request->header('Content-Type'), 'multipart/form-data') !== false;
+        return str_contains($request->header('Content-Type'), 'multipart/form-data');
     }
 
     private function getParsedJsonInMultipart(Request $request): array

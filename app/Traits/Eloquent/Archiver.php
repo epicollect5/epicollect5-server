@@ -2,21 +2,14 @@
 
 namespace ec5\Traits\Eloquent;
 
-use ec5\Libraries\Utilities\Common;
 use ec5\Libraries\Utilities\Generators;
-use ec5\Models\Entries\BranchEntry;
-use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectRole;
-use ec5\Models\Project\ProjectStats;
 use ec5\Models\User\User;
 use ec5\Models\User\UserProvider;
-use Exception;
-use File;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Response;
 use Log;
-use Storage;
+use Throwable;
 
 trait Archiver
 {
@@ -32,6 +25,9 @@ trait Archiver
 
     Needs to be tested on a production server
     */
+    /**
+     * @throws Throwable
+     */
     public function archiveProject($projectId, $projectSlug): bool
     {
         try {
@@ -64,13 +60,16 @@ trait Archiver
                 DB::rollBack();
                 return false;
             }
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
             Log::error('Error archiveProject()', ['exception' => $e->getMessage()]);
             DB::rollBack();
             return false;
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function archiveUser($email, $userId): bool
     {
         try {
@@ -112,7 +111,7 @@ trait Archiver
                 DB::rollBack();
                 return false;
             }
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             DB::rollBack();
             return false;

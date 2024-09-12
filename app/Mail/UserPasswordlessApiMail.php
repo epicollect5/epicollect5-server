@@ -9,10 +9,11 @@ use Illuminate\Queue\SerializesModels;
 
 class UserPasswordlessApiMail extends Mailable
 {
-    use Queueable, SerializesModels;
+    use Queueable;
+    use SerializesModels;
 
-    public $code;
-    public $expireAt;
+    public string $code;
+    public string $expireAt;
 
     /**
      * Create a new message instance.
@@ -34,7 +35,7 @@ class UserPasswordlessApiMail extends Mailable
      *
      * @return $this
      */
-    public function build()
+    public function build(): static
     {
         return $this->from(config('mail.from.address'), config('mail.from.name'))
             ->subject(trans('site.login_passwordless'))

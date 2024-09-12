@@ -14,7 +14,7 @@ abstract class EntryValidationBase extends ValidationBase
      * This class contains common functions for entry/branch_entry uploads
     */
 
-    protected $ruleAnswers;
+    protected RuleAnswers $ruleAnswers;
 
     public function __construct(RuleAnswers $ruleAnswers)
     {
@@ -27,14 +27,14 @@ abstract class EntryValidationBase extends ValidationBase
      * @param ProjectDTO $project
      * @param EntryStructureDTO $entryStructure
      */
-    public abstract function additionalChecks(ProjectDTO $project, EntryStructureDTO $entryStructure);
+    abstract public function additionalChecks(ProjectDTO $project, EntryStructureDTO $entryStructure);
 
     /**
      * @param ProjectDTO $project
      * @param EntryStructureDTO $entryStructure
      * @param $inputs - maybe form or branch entry inputs
      */
-    protected function validateAnswers(ProjectDTO $project, EntryStructureDTO $entryStructure, $inputs)
+    protected function validateAnswers(ProjectDTO $project, EntryStructureDTO $entryStructure, $inputs): void
     {
         $projectExtra = $project->getProjectExtra();
         $entryAnswers = $entryStructure->getAnswers();
@@ -95,7 +95,7 @@ abstract class EntryValidationBase extends ValidationBase
      * @param $answerData
      * @param $inputRef
      */
-    private function validateAnswer(ProjectDTO $project, EntryStructureDTO $entryStructure, $answerData, $inputRef)
+    private function validateAnswer(ProjectDTO $project, EntryStructureDTO $entryStructure, $answerData, $inputRef): void
     {
         $projectExtra = $project->getProjectExtra();
 
@@ -114,7 +114,6 @@ abstract class EntryValidationBase extends ValidationBase
         $this->ruleAnswers->additionalChecks($project, $entryStructure, $answerData, $inputRef);
         if ($this->ruleAnswers->hasErrors()) {
             $this->errors = $this->ruleAnswers->errors();
-            return;
         }
     }
 

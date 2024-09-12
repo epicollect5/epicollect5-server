@@ -4,6 +4,7 @@ namespace ec5\Libraries\Jwt;
 
 use ec5\Models\User\User;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use Illuminate\Contracts\Auth\Authenticatable as UserContract;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Contracts\Hashing\Hasher as HasherContract;
 use Illuminate\Support\Str;
@@ -14,7 +15,7 @@ class JwtUserProvider implements UserProvider
     /**
      * The hasher implementation.
      *
-     * @var \Illuminate\Contracts\Hashing\Hasher
+     *
      */
     protected $hasher;
 
@@ -178,6 +179,19 @@ class JwtUserProvider implements UserProvider
     public function findUserByEmail($email)
     {
         return $this->retrieveByCredentials(['email' => $email]);
+    }
+
+    //imp: this method is here just to make it compile, never used
+    //copied from Illuminate\Auth\EloquentUserProvider
+    public function rehashPasswordIfRequired(UserContract $user, #[\SensitiveParameter] array $credentials, bool $force = false)
+    {
+        if (!$this->hasher->needsRehash($user->getAuthPassword()) && !$force) {
+            return;
+        }
+
+        $user->forceFill([
+            $user->getAuthPasswordName() => $this->hasher->make($credentials['password']),
+        ])->save();
     }
 
 }

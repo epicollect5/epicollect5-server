@@ -54,10 +54,10 @@ class JWT
     /**
      * Decodes a JWT string into a PHP object.
      *
-     * @param string                    $jwt            The JWT
-     * @param string|array|resource     $key            The key, or map of keys.
+     * @param string $jwt The JWT
+     * @param string|array|resource $key The key, or map of keys.
      *                                                  If the algorithm used is asymmetric, this is the public key
-     * @param array                     $allowed_algs   List of supported verification algorithms
+     * @param array $allowed_algs List of supported verification algorithms
      *                                                  Supported algorithms are 'ES256', 'HS256', 'HS384', 'HS512', 'RS256', 'RS384', and 'RS512'
      *
      * @return object The JWT's payload as a PHP object
@@ -78,7 +78,7 @@ class JWT
         if (empty($key)) {
             throw new InvalidArgumentException('Key may not be empty');
         }
-        $tks = \explode('.', $jwt);
+        $tks = \explode('.', $jwt ?? '');
         if (\count($tks) != 3) {
             throw new UnexpectedValueException('Wrong number of segments');
         }
@@ -150,13 +150,13 @@ class JWT
     /**
      * Converts and signs a PHP object or array into a JWT string.
      *
-     * @param object|array  $payload    PHP object or array
-     * @param string        $key        The secret key.
+     * @param object|array $payload PHP object or array
+     * @param string $key The secret key.
      *                                  If the algorithm used is asymmetric, this is the private key
-     * @param string        $alg        The signing algorithm.
+     * @param string $alg The signing algorithm.
      *                                  Supported algorithms are 'ES256', 'HS256', 'HS384', 'HS512', 'RS256', 'RS384', and 'RS512'
-     * @param mixed         $keyId
-     * @param array         $head       An array with header elements to attach
+     * @param mixed $keyId
+     * @param array $head An array with header elements to attach
      *
      * @return string A signed JWT
      *
@@ -186,9 +186,9 @@ class JWT
     /**
      * Sign a string with a given key and algorithm.
      *
-     * @param string            $msg    The message to sign
-     * @param string|resource   $key    The secret key
-     * @param string            $alg    The signing algorithm.
+     * @param string $msg The message to sign
+     * @param string|resource $key The secret key
+     * @param string $alg The signing algorithm.
      *                                  Supported algorithms are 'ES256', 'HS256', 'HS384', 'HS512', 'RS256', 'RS384', and 'RS512'
      *
      * @return string An encrypted message
@@ -222,10 +222,10 @@ class JWT
      * Verify a signature with the message, key and method. Not all methods
      * are symmetric, so we must have a separate verify and sign method.
      *
-     * @param string            $msg        The original message (header and body)
-     * @param string            $signature  The original signature
-     * @param string|resource   $key        For HS*, a string key works. for RS*, must be a resource of an openssl public key
-     * @param string            $alg        The algorithm
+     * @param string $msg The original message (header and body)
+     * @param string $signature The original signature
+     * @param string|resource $key For HS*, a string key works. for RS*, must be a resource of an openssl public key
+     * @param string $alg The algorithm
      *
      * @return bool
      *
@@ -290,8 +290,8 @@ class JWT
              * manually detect large ints in the JSON string and quote them (thus converting
              *them to strings) before decoding, hence the preg_replace() call.
              */
-            $max_int_length = \strlen((string) PHP_INT_MAX) - 1;
-            $json_without_bigints = \preg_replace('/:\s*(-?\d{'.$max_int_length.',})/', ': "$1"', $input);
+            $max_int_length = \strlen((string)PHP_INT_MAX) - 1;
+            $json_without_bigints = \preg_replace('/:\s*(-?\d{' . $max_int_length . ',})/', ': "$1"', $input);
             $obj = \json_decode($json_without_bigints);
         }
 
@@ -370,8 +370,8 @@ class JWT
         );
         throw new DomainException(
             isset($messages[$errno])
-            ? $messages[$errno]
-            : 'Unknown JSON error: ' . $errno
+                ? $messages[$errno]
+                : 'Unknown JSON error: ' . $errno
         );
     }
 
@@ -393,13 +393,13 @@ class JWT
     /**
      * Convert an ECDSA signature to an ASN.1 DER sequence
      *
-     * @param   string $sig The ECDSA signature to convert
+     * @param string $sig The ECDSA signature to convert
      * @return  string The encoded DER object
      */
     private static function signatureToDER($sig)
     {
         // Separate the signature into r-value and s-value
-        list($r, $s) = \str_split($sig, (int) (\strlen($sig) / 2));
+        list($r, $s) = \str_split($sig, (int)(\strlen($sig) / 2));
 
         // Trim leading zeros
         $r = \ltrim($r, "\x00");
@@ -424,8 +424,8 @@ class JWT
     /**
      * Encodes a value into a DER object.
      *
-     * @param   int     $type DER tag
-     * @param   string  $value the value to encode
+     * @param int $type DER tag
+     * @param string $value the value to encode
      * @return  string  the encoded object
      */
     private static function encodeDER($type, $value)
@@ -447,8 +447,8 @@ class JWT
     /**
      * Encodes signature from a DER object.
      *
-     * @param   string  $der binary signature in DER format
-     * @param   int     $keySize the number of bits in the key
+     * @param string $der binary signature in DER format
+     * @param int $keySize the number of bits in the key
      * @return  string  the signature
      */
     private static function signatureFromDER($der, $keySize)

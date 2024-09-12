@@ -1,6 +1,6 @@
 <?php
 
-namespace Http\Controllers\Api\Entries\Upload\Internal;
+namespace Tests\Http\Controllers\Api\Entries\Upload\Internal;
 
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
@@ -41,7 +41,7 @@ class UploadWebControllerMultipleTest extends TestCase
     private $faker;
     private $entryGenerator;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $user = factory(User::class)->create();
@@ -109,7 +109,7 @@ class UploadWebControllerMultipleTest extends TestCase
             $this->projectDefinition = $projectDefinition;
             $this->entryGenerator = $entryGenerator;
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -140,7 +140,7 @@ class UploadWebControllerMultipleTest extends TestCase
                     ->where('uuid', $entry['data']['id'])
                     ->get()
             );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             //dd($e->getMessage(), $response, json_encode($entry), json_encode($projectDefinition));
             $this->logTestError($e, $response);
         }
@@ -194,7 +194,7 @@ class UploadWebControllerMultipleTest extends TestCase
                 Entry::where('project_id', $this->project->id)
                     ->get()
             );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             //dd($e->getMessage(), $response, json_encode($entry), json_encode($projectDefinition));
             $this->logTestError($e, $response);
         }
@@ -247,7 +247,7 @@ class UploadWebControllerMultipleTest extends TestCase
                 Entry::where('project_id', $this->project->id)
                     ->get()
             );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

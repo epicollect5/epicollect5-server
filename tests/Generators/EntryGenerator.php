@@ -17,24 +17,25 @@ use ec5\Services\Mapping\ProjectMappingService;
 use ec5\Traits\Assertions;
 use Exception;
 use Faker\Factory as Faker;
+use Faker\Generator;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Str;
 use Ramsey\Uuid\Uuid;
+use Throwable;
 
 class EntryGenerator
 {
     use Assertions;
 
-    const SYMBOLS = ['!', '@', '€', '£', '#', '$', '%', '^', '&', '*', '"', '{', ',', '.', '?', '|', '<', '>', '~', '`'];
-    const LOCALES = ['it_IT', 'en_US', 'de_DE', 'es_ES', 'en_GB', 'fr_FR'];
-    const PLATFORMS = ['Android', 'iOS'];
+    public const array SYMBOLS = ['!', '@', '€', '£', '#', '$', '%', '^', '&', '*', '"', '{', ',', '.', '?', '|', '<', '>', '~', '`'];
+    public const array LOCALES = ['it_IT', 'en_US', 'de_DE', 'es_ES', 'en_GB', 'fr_FR'];
+    public const array PLATFORMS = ['Android', 'iOS'];
 
 
-    private $faker;
-    private $randomLocale;
-    private $projectDefinition;
-    private $multipleChoiceQuestionTypes;
-    private $multipleChoiceInputRefs;
+    private Generator $faker;
+    private string $randomLocale;
+    private array $projectDefinition;
+    private array $multipleChoiceQuestionTypes;
+    private array $multipleChoiceInputRefs;
 
     public function __construct(array $projectDefinition)
     {
@@ -59,11 +60,7 @@ class EntryGenerator
                     $numberOfWords = mt_rand(1, 10);
                     $randomPhrase = '';
                     for ($i = 0; $i < $numberOfWords; $i++) {
-                        if ($this->randomLocale !== 'de_DE') {
-                            $randomPhrase .= ' ' . $this->faker->catchPhrase;
-                        } else {
-                            $randomPhrase .= ' ' . $this->faker->sentence;
-                        }
+                        $randomPhrase .= ' ' . $this->faker->sentence;
                     }
                     $randomPhrase .= ' ' . self::SYMBOLS[mt_rand(0, count(self::SYMBOLS) - 1)];
                     $randomPhrase = str_replace('>', '\ufe65', $randomPhrase);
@@ -77,7 +74,7 @@ class EntryGenerator
                 $randomPhrase = preg_replace('/[^\x00-\x7F]/u', '', $randomPhrase);
 
                 // Remove potential leading 'b' character
-                if (strpos($randomPhrase, 'b') === 0) {
+                if (str_starts_with($randomPhrase, 'b')) {
                     $randomPhrase = substr($randomPhrase, 1);
                 }
 
@@ -261,6 +258,7 @@ class EntryGenerator
         $titles = [];
 
         $forms = array_get($this->projectDefinition, 'data.project.forms');
+
         $currentForm = '';
         foreach ($forms as $form) {
             if ($form['ref'] === $formRef) {
@@ -288,6 +286,7 @@ class EntryGenerator
 
         $title = implode(' ', $titles);
         $title = $title === '' ? $uuid : $title;
+
 
         return [
             'data' => [
@@ -342,9 +341,8 @@ class EntryGenerator
                     $sampleAudioFilePath,  // Path to the temporary file
                     $filename,   // File name
                     config('epicollect.media.content_type.audio'),   // MIME type
-                    filesize($sampleAudioFilePath),
                     null,
-                    true// Test mode (set to true)
+                    true
                 );
                 break;
             case config('epicollect.strings.inputs_type.photo'):
@@ -389,6 +387,9 @@ class EntryGenerator
         ];
     }
 
+    /**
+     * @throws Throwable
+     */
     public function createParentEntryRow($user, $project, $role, $projectDefinition, $entryPayload): array
     {
         $entryStructure = new EntryStructureDTO();
@@ -462,7 +463,8 @@ class EntryGenerator
         // If we received no errors, continue to insert answers and entry
         $createEntryService->create(
             $requestedProject,
-            $entryStructure);
+            $entryStructure
+        );
 
         return [
             'projectDefinition' => $projectDefinition,
@@ -473,6 +475,9 @@ class EntryGenerator
         ];
     }
 
+    /**
+     * @throws Throwable
+     */
     public function createChildEntryRow($user, $project, $role, $projectDefinition, $childEntryPayload): array
     {
         $entryStructure = new EntryStructureDTO();
@@ -550,7 +555,8 @@ class EntryGenerator
         // If we received no errors, continue to insert answers and entry
         $createEntryService->create(
             $requestedProject,
-            $entryStructure);
+            $entryStructure
+        );
 
         return [
             'projectDefinition' => $projectDefinition,
@@ -579,7 +585,7 @@ class EntryGenerator
             if ($currentForm === '') {
                 throw new Exception('This project does not have child forms');
             }
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             echo $e->getMessage();
             return [];
         }
@@ -697,6 +703,9 @@ class EntryGenerator
         ];
     }
 
+    /**
+     * @throws Throwable
+     */
     public function createBranchEntryRow($user, $project, $role, $projectDefinition, $branchEntryPayload): array
     {
         $ownerInputRef = $branchEntryPayload['data']['relationships']['branch']['data']['owner_input_ref'];
@@ -788,7 +797,8 @@ class EntryGenerator
         // If we received no errors, continue to insert answers and entry
         $createEntryService->create(
             $requestedProject,
-            $entryStructure);
+            $entryStructure
+        );
 
         return [
             'projectDefinition' => $projectDefinition,
@@ -799,7 +809,7 @@ class EntryGenerator
         ];
     }
 
-    private function generateMediaFilename($uuid, $type): string
+    public function generateMediaFilename($uuid, $type): string
     {
         $ext = '.';
         switch ($type) {
@@ -824,7 +834,7 @@ class EntryGenerator
         return str_replace(['<', '>', '='], '', $randomString);
     }
 
-    private function addPossibleAnswers($entryStructure, $input, $answer)
+    private function addPossibleAnswers($entryStructure, $input, $answer): void
     {
         //need to add the possible answer, so they later added to the geojson object
         if (in_array($input['type'], $this->multipleChoiceQuestionTypes)) {
@@ -841,7 +851,7 @@ class EntryGenerator
         }
     }
 
-    private function addGeoJsonIfNeeded($entryStructure, $input, $answer)
+    private function addGeoJsonIfNeeded($entryStructure, $input, $answer): void
     {
         if ($input['type'] === config('epicollect.strings.inputs_type.location')) {
             $entryStructure->addGeoJsonObject($input, $answer['answer']);

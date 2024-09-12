@@ -13,7 +13,7 @@ class RuleMappingStructureTest extends TestCase
     protected $ruleMappingStructure;
     private $faker;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->faker = Faker::create();

@@ -8,7 +8,11 @@ use Illuminate\Http\Request;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use League\OAuth2\Server\ResourceServer;
 use Log;
-use Symfony\Bridge\PsrHttpMessage\Factory\DiactorosFactory;
+use Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory;
+use Laminas\Diactoros\ResponseFactory;
+use Laminas\Diactoros\StreamFactory;
+use Laminas\Diactoros\UploadedFileFactory;
+use Laminas\Diactoros\ServerRequestFactory;
 
 class ProjectPermissionsApi extends RequestAttributesMiddleware
 {
@@ -24,9 +28,8 @@ class ProjectPermissionsApi extends RequestAttributesMiddleware
     /**
      * The Resource Server instance.
      *
-     * @var ResourceServer
      */
-    private $server;
+    private ResourceServer $server;
 
     /**
      * ProjectPermissionsApi constructor
@@ -35,11 +38,11 @@ class ProjectPermissionsApi extends RequestAttributesMiddleware
      * @param Request $request
      * @param ProjectDTO $requestedProject
      */
-    public function __construct(ResourceServer $server,
-                                Request        $request,
-                                ProjectDTO     $requestedProject
-    )
-    {
+    public function __construct(
+        ResourceServer $server,
+        Request        $request,
+        ProjectDTO     $requestedProject
+    ) {
         $this->server = $server;
 
         parent::__construct($request, $requestedProject);
@@ -52,13 +55,18 @@ class ProjectPermissionsApi extends RequestAttributesMiddleware
      */
     public function hasPermission(): bool
     {
+        $responseFactory = new ResponseFactory();
+        $streamFactory = new StreamFactory();
+        $uploadedFileFactory = new UploadedFileFactory();
+        $serverRequestFactory = new ServerRequestFactory();
+
         // Only need to check for a permission if the project is private
         if ($this->requestedProject->access == config('epicollect.strings.project_access.private')) {
             // Taken from TokenGuard:
             // First, we will convert the Symfony request to a PSR-7 implementation which will
             // be compatible with the base OAuth2 library. The Symfony bridge can perform a
             // conversion for us to a Zend Diactoros implementation of the PSR-7 request.
-            $psr = (new DiactorosFactory)->createRequest($this->request);
+            $psr = (new PsrHttpFactory($serverRequestFactory, $streamFactory, $uploadedFileFactory, $responseFactory))->createRequest($this->request);
 
             try {
                 // Attempt to validate the client request
@@ -86,6 +94,7 @@ class ProjectPermissionsApi extends RequestAttributesMiddleware
             $doesClientExist = OAuthClientProject::doesExist($clientId, $this->requestedProject->getId());
             if (!$doesClientExist) {
                 // Unauthorized error
+                Log::error(__METHOD__ . ' failed.', ['exception' => 'ec5_257']);
                 $this->error = 'ec5_257';
                 return false;
             }

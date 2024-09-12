@@ -26,7 +26,7 @@ class VerifyGoogleUserExternalTest extends TestCase
     protected $publicProjectSlug;
     protected $endpoint;
 
-    public function setup()
+    public function setup(): void
     {
         parent::setUp();
         $this->privateProjectSlug = 'ec5-private';

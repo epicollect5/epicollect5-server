@@ -2,6 +2,7 @@
 
 namespace Tests\Http\Controllers\Api\Entries\Upload\Internal\Version;
 
+use Carbon\Carbon;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectRole;
@@ -11,28 +12,30 @@ use ec5\Models\User\User;
 use ec5\Services\Mapping\ProjectMappingService;
 use ec5\Services\Project\ProjectExtraService;
 use ec5\Traits\Assertions;
-use Exception;
 use Faker\Factory as Faker;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Storage;
 use Tests\Generators\EntryGenerator;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
+use Throwable;
 
 class ProjectVersionEntriesTest extends TestCase
 {
-    use DatabaseTransactions, Assertions;
+    use DatabaseTransactions;
+    use Assertions;
 
-    private $endpoint = 'api/internal/web-upload/';
+    private string $endpoint = 'api/internal/web-upload/';
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         //remove leftovers
         User::where(
             'email',
             'like',
-            '%example.net%')
+            '%example.net%'
+        )
             ->delete();
 
         $this->faker = Faker::create();
@@ -128,6 +131,7 @@ class ProjectVersionEntriesTest extends TestCase
         ProjectStructure::where('project_id', $this->project->id)->update([
             'project_definition' => json_encode($this->projectDefinition['data']),
             'project_extra' => json_encode($projectExtra),
+            'updated_at' => Carbon::now()
         ]);
 
         $response = [];
@@ -135,7 +139,8 @@ class ProjectVersionEntriesTest extends TestCase
             //perform an app upload
             $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $payload);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_201",
@@ -145,7 +150,7 @@ class ProjectVersionEntriesTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -203,16 +208,19 @@ class ProjectVersionEntriesTest extends TestCase
             ProjectStructure::where('project_id', $this->project->id)->update([
                 'project_definition' => json_encode($this->projectDefinition['data']),
                 'project_extra' => json_encode($projectExtra),
+                'updated_at' => Carbon::now()
             ]);
 
             //multipart upload from app with json encoded string and file (Cordova FileTransfer)
-            $response[] = $this->post($this->endpoint . $this->project->slug,
+            $response[] = $this->post(
+                $this->endpoint . $this->project->slug,
                 ['data' => json_encode($payload['data']), 'name' => $payload['name']],
                 ['Content-Type' => 'multipart/form-data']
             );
 
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_201",
@@ -228,7 +236,7 @@ class ProjectVersionEntriesTest extends TestCase
             $this->assertCount(0, $photos);
             $photos = Storage::disk('entry_thumb')->files($this->project->ref);
             $this->assertCount(0, $photos);
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -286,16 +294,19 @@ class ProjectVersionEntriesTest extends TestCase
             ProjectStructure::where('project_id', $this->project->id)->update([
                 'project_definition' => json_encode($this->projectDefinition['data']),
                 'project_extra' => json_encode($projectExtra),
+                'updated_at' => Carbon::now()
             ]);
 
             //multipart upload from app with json encoded string and file (Cordova FileTransfer)
-            $response[] = $this->post($this->endpoint . $this->project->slug,
+            $response[] = $this->post(
+                $this->endpoint . $this->project->slug,
                 ['data' => json_encode($payload['data']), 'name' => $payload['name']],
                 ['Content-Type' => 'multipart/form-data']
             );
 
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_201",
@@ -310,7 +321,7 @@ class ProjectVersionEntriesTest extends TestCase
             $audios = Storage::disk('audio')->files($this->project->ref);
             $this->assertCount(0, $audios);
 
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -368,16 +379,19 @@ class ProjectVersionEntriesTest extends TestCase
             ProjectStructure::where('project_id', $this->project->id)->update([
                 'project_definition' => json_encode($this->projectDefinition['data']),
                 'project_extra' => json_encode($projectExtra),
+                'updated_at' => Carbon::now()
             ]);
 
             //multipart upload from app with json encoded string and file (Cordova FileTransfer)
-            $response[] = $this->post($this->endpoint . $this->project->slug,
+            $response[] = $this->post(
+                $this->endpoint . $this->project->slug,
                 ['data' => json_encode($payload['data']), 'name' => $payload['name']],
                 ['Content-Type' => 'multipart/form-data']
             );
 
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_201",
@@ -391,7 +405,7 @@ class ProjectVersionEntriesTest extends TestCase
             //assert file is NOT uploaded
             $videos = Storage::disk('video')->files($this->project->ref);
             $this->assertCount(0, $videos);
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

@@ -14,7 +14,6 @@ class ProjectPermissionsBulkUpload extends RequestAttributesMiddleware
                 //bulk upload is disabled for all users
                 $this->error = 'ec5_360';
                 return false;
-                break;
             case config('epicollect.strings.can_bulk_upload.members'):
                 //check the user role for the current project
                 if (!$this->requestedProjectRole->canBulkUpload()) {
@@ -31,4 +30,3 @@ class ProjectPermissionsBulkUpload extends RequestAttributesMiddleware
         return true;
     }
 }
-

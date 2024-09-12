@@ -29,7 +29,7 @@ class ProjectCreateControllerTest extends TestCase
     protected $access;
     protected $projectNameMaxLength;
 
-    public function setUp()
+    public function setUp(): void
     {
         // This method will automatically be called prior to any of your test cases
         parent::setUp();
@@ -46,7 +46,7 @@ class ProjectCreateControllerTest extends TestCase
         $this->reset();
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         // Clear fake storage after each test
         Storage::fake('local');

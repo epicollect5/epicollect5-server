@@ -12,7 +12,7 @@ class ProjectTest extends TestCase
 {
     use DatabaseTransactions;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->clearDatabase([]);
@@ -39,14 +39,14 @@ class ProjectTest extends TestCase
         );
 
         //add creator role to that project
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $creator->id,
             'project_id' => $project->id,
             'role' => $creatorRole
         ]);
 
         //add manager role to that project
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $manager->id,
             'project_id' => $project->id,
             'role' => $managerRole
@@ -96,7 +96,7 @@ class ProjectTest extends TestCase
             ['created_by' => $creator->id]
         );
         //add the creator role to that project
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $creator->id,
             'project_id' => $project->id,
             'role' => $creatorRole

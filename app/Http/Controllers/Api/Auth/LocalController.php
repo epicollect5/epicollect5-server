@@ -16,7 +16,7 @@ class LocalController extends AuthController
     |
     | This controller handles the authentication of local users via the api.
     | Returns a generated JWT token
-    | LOcal users have a password
+    | Local users have a password
     */
 
     public function __construct(JwtUserProvider $provider)

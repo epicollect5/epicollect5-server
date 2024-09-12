@@ -3,7 +3,6 @@
 namespace ec5\Traits\Eloquent;
 
 use ec5\Libraries\Utilities\Common;
-use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectStats;
@@ -12,6 +11,7 @@ use File;
 use Illuminate\Support\Facades\DB;
 use Log;
 use Storage;
+use Throwable;
 
 trait Remover
 {
@@ -23,8 +23,8 @@ trait Remover
                 ->first();
             $project->delete();
             return true;
-        } catch (\Exception $e) {
-            \Log::error('Error removeProject()', ['exception' => $e->getMessage()]);
+        } catch (Throwable $e) {
+            Log::error('Error removeProject()', ['exception' => $e->getMessage()]);
             return false;
         }
     }
@@ -42,13 +42,12 @@ trait Remover
             foreach ($drivers as $driver) {
                 // Get disk, path prefix and all directories for this driver
                 $disk = Storage::disk($driver);
-                $pathPrefix = $disk->getDriver()->getAdapter()->getPathPrefix();
-                // \Log::info('delete path ->' . $pathPrefix . $projectRef);
+                $pathPrefix = $disk->path('');
                 // Note: need to use File facade here, as Storage doesn't delete
                 File::deleteDirectory($pathPrefix . $projectRef);
             }
             return true;
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed.', [
                 'exception' => $e->getMessage()
             ]);
@@ -56,6 +55,9 @@ trait Remover
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function removeEntriesChunk($projectId, $projectRef): bool
     {
         $initialMemoryUsage = memory_get_usage();
@@ -64,6 +66,7 @@ trait Remover
         try {
             DB::beginTransaction();
 
+            //imp: branch entries are removed by FK constraint ON DELETE CASCADE
             Entry::where('project_id', $projectId)
                 ->limit(config('epicollect.setup.bulk_deletion.chunk_size'))
                 ->delete();
@@ -97,19 +100,12 @@ trait Remover
             //if we have 0 entries left, delete all media files
             $totalEntries = ProjectStats::where('project_id', $projectId)->value('total_entries');
             if ($totalEntries === 0) {
-                //remove all the entries media folders
-                $drivers = config('epicollect.media.entries_deletable');
-                foreach ($drivers as $driver) {
-                    // Get disk, path prefix and all directories for this driver
-                    $disk = Storage::disk($driver);
-                    $pathPrefix = $disk->getDriver()->getAdapter()->getPathPrefix();
-                    // Note: need to use File facade here, as Storage doesn't delete
-                    File::deleteDirectory($pathPrefix . $projectRef);
-                }
+                $this->removeAllTheEntriesMediaFolders($projectRef);
             }
 
             return true;
-        } catch (Exception $e) {
+
+        } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed.', [
                 'exception' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
@@ -118,5 +114,17 @@ trait Remover
             return false;
         }
     }
-}
 
+    public function removeAllTheEntriesMediaFolders($projectRef): void
+    {
+        //remove all the entries media folders
+        $drivers = config('epicollect.media.entries_deletable');
+        foreach ($drivers as $driver) {
+            // Get disk, path prefix and all directories for this driver
+            $disk = Storage::disk($driver);
+            $pathPrefix = $disk->path('');
+            // Note: need to use File facade here, as Storage doesn't delete
+            File::deleteDirectory($pathPrefix . $projectRef);
+        }
+    }
+}

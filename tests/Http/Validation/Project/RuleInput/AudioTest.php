@@ -23,7 +23,7 @@ class AudioTest extends InputTest
 
     protected $parentRef;
 
-    public function setUp()
+    public function setUp():void
     {
         parent::setUp();
         $this->type = config('epicollect.strings.inputs_type.audio');

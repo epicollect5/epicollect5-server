@@ -98,7 +98,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
             $this->assertEquals(Project::version($this->project->slug), $entryFromResponse['entry']['project_version']);
             //user id
             $this->assertEquals($entryFromDB->user_id, $entryFromResponse['relationships']['user']['data']['id']);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -157,7 +157,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
             $this->assertEquals(Project::version($this->project->slug), $entryFromResponse['entry']['project_version']);
             //user id
             $this->assertEquals($entryFromDB->user_id, $entryFromResponse['relationships']['user']['data']['id']);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -252,7 +252,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
             //parent
             $this->assertEquals($childEntryFromDB->parent_uuid, $entryFromResponse['relationships']['parent']['data']['parent_entry_uuid']);
             $this->assertEquals($childEntryFromDB->parent_form_ref, $entryFromResponse['relationships']['parent']['data']['parent_form_ref']);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -301,7 +301,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
                 $entries
             );
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -377,7 +377,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
                 $entries
             );
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -450,7 +450,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
             //should be able to get all the entries ($this->user)
             $this->assertCount($numOfEntries * 2, $json['data']['entries']);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -523,7 +523,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
             //should be able to get all the entries ($this->user)
             $this->assertCount($numOfEntries * 2, $json['data']['entries']);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -596,7 +596,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
             //should be able to get all the entries ($this->user)
             $this->assertCount($numOfEntries * 2, $json['data']['entries']);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -669,7 +669,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
             //should be able to get all the entries ($this->user)
             $this->assertCount($numOfEntries * 2, $json['data']['entries']);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -779,7 +779,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
                 //should be able to get only collector entries
                 $this->assertTrue(in_array($entry['id'], $collectorEntriesUuids));
             }
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -881,7 +881,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
             //owner entry
             $this->assertEquals($branchEntryFromDB->owner_uuid, $entryFromResponse['relationships']['branch']['data']['owner_entry_uuid']);
             $this->assertEquals($branchEntryFromDB->owner_input_ref, $entryFromResponse['relationships']['branch']['data']['owner_input_ref']);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -974,7 +974,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
                 $numOfBranches,
                 $entries
             );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1082,7 +1082,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
                     $branchEntry['relationships']['branch']['data']['owner_entry_uuid']);
 
             }
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

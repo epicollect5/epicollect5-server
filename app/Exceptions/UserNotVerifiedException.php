@@ -9,7 +9,6 @@
 namespace ec5\Exceptions;
 
 use Exception;
-use Config;
 
 class UserNotVerifiedException extends Exception
 {

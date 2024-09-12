@@ -86,7 +86,7 @@ class ViewEntriesLocationsControllerTest extends ViewEntriesBaseControllerTest
                     ]
                 ]
             ]);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -185,7 +185,7 @@ class ViewEntriesLocationsControllerTest extends ViewEntriesBaseControllerTest
                     ]
                 ]
             ]);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

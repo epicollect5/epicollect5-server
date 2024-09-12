@@ -11,6 +11,7 @@ use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use Faker\Factory as Faker;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use League\Csv\Exception;
 use Tests\Generators\ProjectDefinitionGenerator;
@@ -26,7 +27,7 @@ class FormbuilderControllerTest extends TestCase
     private $project;
     private $faker;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -866,7 +867,7 @@ class FormbuilderControllerTest extends TestCase
                 $jsonResponse['meta']['project_stats']['structure_last_updated']
             );
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
 
@@ -885,7 +886,7 @@ class FormbuilderControllerTest extends TestCase
                 (string)strtotime($afterUpdatedAt),
                 $jsonResponse['data']['attributes']['version']
             );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

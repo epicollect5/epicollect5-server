@@ -7,13 +7,12 @@ use ec5\DTO\ProjectDTO;
 
 class RuleLocationInput extends RuleInputBase
 {
-
     /**
      * @param $inputDetails
      * @param string|array $answer
      * @param ProjectDTO $project
      */
-    public function setRules($inputDetails, $answer, ProjectDTO $project)
+    public function setRules($inputDetails, $answer, ProjectDTO $project): void
     {
         // Set rules based on the input details
         // Source will be the input ref
@@ -28,16 +27,16 @@ class RuleLocationInput extends RuleInputBase
      * @param $answer
      * @param ProjectDTO $project
      * @param EntryStructureDTO $entryStructure
-     * @return mixed
+     * @return array|string
      */
-    public function additionalChecks($inputDetails, $answer, ProjectDTO $project, EntryStructureDTO $entryStructure)
+    public function additionalChecks($inputDetails, $answer, ProjectDTO $project, EntryStructureDTO $entryStructure): array|string|null
     {
         if (count($answer) > 0) {
             // Check we have no extra keys
             if (count(array_merge(
-                    array_diff(array_keys($answer), array_keys(config('epicollect.strings.entry_location_keys'))),
-                    array_diff(array_keys(config('epicollect.strings.entry_location_keys')), array_keys($answer))
-                )) > 0
+                array_diff(array_keys($answer), array_keys(config('epicollect.strings.entry_location_keys'))),
+                array_diff(array_keys(config('epicollect.strings.entry_location_keys')), array_keys($answer))
+            )) > 0
             ) {
                 $this->errors[$inputDetails['ref']] = ['ec5_30'];
                 return false;

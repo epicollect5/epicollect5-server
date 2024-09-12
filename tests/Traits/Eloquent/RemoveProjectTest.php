@@ -14,10 +14,7 @@ class RemoveProjectTest extends TestCase
 {
     use DatabaseTransactions;
 
-    /**
-     * @test
-     */
-    public function it_removes_project()
+    public function test_it_removes_project()
     {
         $repeatCount = 100; // Number of times to repeat the test case
 

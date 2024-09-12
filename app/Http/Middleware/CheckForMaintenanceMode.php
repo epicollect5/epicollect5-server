@@ -4,13 +4,12 @@ namespace ec5\Http\Middleware;
 
 use Closure;
 use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Foundation\Http\Exceptions\MaintenanceModeException;
 use ec5\Traits\Middleware\MiddlewareTools;
 use Response;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class CheckForMaintenanceMode
 {
-
     use MiddlewareTools;
 
     /**
@@ -35,13 +34,12 @@ class CheckForMaintenanceMode
     public function handle($request, Closure $next)
     {
         if ($this->app->isDownForMaintenance()) {
-
             if ($this->isJsonRequest($request)) {
                 $errors = ['maintenance.mode' => ['ec5_252']];
                 return Response::apiErrorCode(404, $errors);
             } else {
                 $data = json_decode(file_get_contents($this->app->storagePath() . '/framework/down'), true);
-                throw new MaintenanceModeException($data['time'], $data['retry'], $data['message']);
+                throw new HttpException(503, $data['message'] ?? 'The site is currently under maintenance.', null, [], 0);
             }
         }
         return $next($request);

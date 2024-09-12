@@ -5,23 +5,24 @@ namespace Tests\Http\Validation\Project;
 use ec5\Http\Validation\Project\RuleImportRequest;
 use ec5\Models\Project\Project;
 use ec5\Models\User\User;
+use ec5\Traits\Assertions;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class RuleImportRequestTest extends TestCase
 {
-    use DatabaseTransactions;
+    use DatabaseTransactions, Assertions;
 
     private $ruleImportRequest;
 
-    public function setUp()
+    public function setUp(): void
     {
         // This method will automatically be called prior to any of your test cases
         parent::setUp();
         $this->ruleImportRequest = new RuleImportRequest();
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         parent::tearDown();
         $this->ruleImportRequest->resetErrors();

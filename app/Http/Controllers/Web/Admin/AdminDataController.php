@@ -6,10 +6,9 @@ use ec5\Http\Controllers\Controller;
 use ec5\Models\System\SystemStats;
 use Response;
 
-
 class AdminDataController extends Controller
 {
-    private $dailySystemStats;
+    private SystemStats $dailySystemStats;
 
     public function __construct(SystemStats $systemStats)
     {
@@ -30,7 +29,7 @@ class AdminDataController extends Controller
             "users" => $this->dailySystemStats->getUserStats()
         );
 
-        if (sizeof($stats['users']) === 0) {
+        if (sizeof((array)$stats['users']) === 0) {
             return Response::apiErrorCode(400, ['systems-stats' => 'ec5_356']);
         }
 
@@ -45,7 +44,8 @@ class AdminDataController extends Controller
             "projects" => $this->dailySystemStats->getProjectStats()
         );
 
-        if (sizeof($stats['projects']) === 0) {
+
+        if (sizeof((array)$stats['projects']) === 0) {
             return Response::apiErrorCode(400, ['systems-stats' => 'ec5_356']);
         }
 
@@ -61,7 +61,7 @@ class AdminDataController extends Controller
             "branch_entries" => $this->dailySystemStats->getBranchEntriesStats()
         );
 
-        if (sizeof($stats['entries']) === 0 && sizeOf($stats['branch_entries']) === 0) {
+        if (sizeof((array)$stats['entries']) === 0 && sizeOf((array)$stats['branch_entries']) === 0) {
             return Response::apiErrorCode(400, ['systems-stats' => 'ec5_356']);
         }
 

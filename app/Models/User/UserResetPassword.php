@@ -3,15 +3,17 @@
 namespace ec5\Models\User;
 
 use Carbon\Carbon;
-use Exception;
+use ec5\Traits\Models\SerializeDates;
 use Firebase\JWT\JWT as FirebaseJWT;
+use Firebase\JWT\Key;
 use Illuminate\Database\Eloquent\Model;
 use Log;
 
 class UserResetPassword extends Model
 {
+    use SerializeDates;
 
-    const UPDATED_AT = null;
+    public const null UPDATED_AT = null;
 
     /**
      * The table associated with the model.
@@ -22,15 +24,18 @@ class UserResetPassword extends Model
 
     protected $fillable = [];
 
-    public function isValidToken($decodedSent)
+    public function isValidToken($decodedSent): bool
     {
         //decode
         $jwtConfig = config('auth.jwt-forgot');
         $secretKey = $jwtConfig['secret_key'];
 
         try {
-            $decodedStored = (array)FirebaseJwt::decode($this->attributes['token'], $secretKey, array('HS256'));
-        } catch (Exception $e) {
+            $decodedStored = (array)FirebaseJwt::decode(
+                $this->attributes['token'],
+                new Key($secretKey, 'HS256')
+            );
+        } catch (\Throwable $e) {
             Log::error('Error decoding jwt-forgot', ['exception' => $e->getMessage()]);
             return false;
         }
@@ -45,5 +50,3 @@ class UserResetPassword extends Model
         return false;
     }
 }
-
-

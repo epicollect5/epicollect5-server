@@ -8,9 +8,9 @@ use ec5\Libraries\Utilities\Strings;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Services\Mapping\ProjectMappingService;
 use ec5\Traits\Requests\RequestAttributes;
-use Exception;
 use Log;
 use Response;
+use Throwable;
 
 class FormBuilderController
 {
@@ -21,7 +21,7 @@ class FormBuilderController
         //unpack posted project definition which is gzipped and base64 encoded
         try {
             $requestContent = json_decode(gzdecode(base64_decode(request()->getContent())), true);
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             Log::error('Formbuilder decoding failed', [
                 'exception' => $e->getMessage()
             ]);

@@ -27,7 +27,7 @@ class ProjectImportControllerTest extends TestCase
     protected $access;
     protected $projectNameMaxLength;
 
-    public function setUp()
+    public function setUp(): void
     {
         // This method will automatically be called prior to any of your test cases
         parent::setUp();

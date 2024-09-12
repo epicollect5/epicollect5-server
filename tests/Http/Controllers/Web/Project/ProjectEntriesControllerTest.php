@@ -20,7 +20,7 @@ class ProjectEntriesControllerTest extends TestCase
 {
     use DatabaseTransactions;
 
-    const DRIVER = 'web';
+    public const string DRIVER = 'web';
 
     private $user;
     private $project;
@@ -29,14 +29,16 @@ class ProjectEntriesControllerTest extends TestCase
     private $entriesLimits;
     private $limitTo;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->faker = Faker::create();
         $this->limitTo = rand(1, 100);
+        $this->clearDatabase([]);
         $name = config('testing.WEB_UPLOAD_CONTROLLER_PROJECT.name');
         $slug = config('testing.WEB_UPLOAD_CONTROLLER_PROJECT.slug');
         $email = config('testing.UNIT_TEST_RANDOM_EMAIL');
+
 
         $response = [];
         try {
@@ -104,11 +106,15 @@ class ProjectEntriesControllerTest extends TestCase
 
             //see https://github.com/laravel/framework/issues/46455
             $response[] = $this->actingAs($user)
-                ->call('POST', 'api/internal/formbuilder/' . $project->slug,
+                ->call(
+                    'POST',
+                    'api/internal/formbuilder/' . $project->slug,
                     [],
                     [],
                     [],
-                    [], $base64EncodedData);
+                    [],
+                    $base64EncodedData
+                );
 
             $response[0]->assertStatus(200);
             $this->assertSame(json_decode($response[0]->getContent(), true), $projectDefinition);
@@ -180,7 +186,8 @@ class ProjectEntriesControllerTest extends TestCase
         $response = [];
         try {
             $response[] = $this->actingAs($this->user)
-                ->post('myprojects/' . $this->project->slug . '/manage-entries',
+                ->post(
+                    'myprojects/' . $this->project->slug . '/manage-entries',
                     $payload
                 );
             $response[0]->assertStatus(302);
@@ -191,7 +198,7 @@ class ProjectEntriesControllerTest extends TestCase
             $projectStructure = ProjectStructure::where('project_id', $this->project->id)->first();
             $projectDefinition = json_decode($projectStructure->project_definition, true);
             $this->assertEquals($projectDefinition['project']['entries_limits'], $this->entriesLimits);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -230,7 +237,8 @@ class ProjectEntriesControllerTest extends TestCase
         $response = [];
         try {
             $response[] = $this->actingAs($this->user)
-                ->post('myprojects/' . $this->project->slug . '/manage-entries',
+                ->post(
+                    'myprojects/' . $this->project->slug . '/manage-entries',
                     $payload
                 );
             $response[0]->assertStatus(302);
@@ -241,7 +249,7 @@ class ProjectEntriesControllerTest extends TestCase
             $projectStructure = ProjectStructure::where('project_id', $this->project->id)->first();
             $projectDefinition = json_decode($projectStructure->project_definition, true);
             $this->assertEquals($projectDefinition['project']['entries_limits'], $this->entriesLimits);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -281,7 +289,8 @@ class ProjectEntriesControllerTest extends TestCase
         $response = [];
         try {
             $response[] = $this->actingAs($this->user)
-                ->post('myprojects/' . $this->project->slug . '/manage-entries',
+                ->post(
+                    'myprojects/' . $this->project->slug . '/manage-entries',
                     $payload
                 );
             $response[0]->assertStatus(302);
@@ -292,7 +301,7 @@ class ProjectEntriesControllerTest extends TestCase
             $projectStructure = ProjectStructure::where('project_id', $this->project->id)->first();
             $projectDefinition = json_decode($projectStructure->project_definition, true);
             $this->assertEquals($projectDefinition['project']['entries_limits'], $this->entriesLimits);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -313,7 +322,8 @@ class ProjectEntriesControllerTest extends TestCase
         $response = [];
         try {
             $response[] = $this->actingAs($this->user)
-                ->post('myprojects/' . $this->project->slug . '/manage-entries',
+                ->post(
+                    'myprojects/' . $this->project->slug . '/manage-entries',
                     $payload
                 );
             $response[0]->assertStatus(302);
@@ -324,7 +334,7 @@ class ProjectEntriesControllerTest extends TestCase
             $projectStructure = ProjectStructure::where('project_id', $this->project->id)->first();
             $projectDefinition = json_decode($projectStructure->project_definition, true);
             $this->assertEquals($projectDefinition['project']['entries_limits'], []);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

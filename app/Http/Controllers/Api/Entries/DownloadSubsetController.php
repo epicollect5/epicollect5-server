@@ -10,21 +10,21 @@ use ec5\Models\Entries\Entry;
 use ec5\Services\Entries\EntriesViewService;
 use ec5\Services\Mapping\DataMappingService;
 use ec5\Traits\Requests\RequestAttributes;
-use Exception;
 use Illuminate\Http\Request;
 use League\Csv\Writer;
 use Log;
 use Ramsey\Uuid\Uuid;
 use Response;
 use Storage;
+use Throwable;
 use ZipArchive;
 
 class DownloadSubsetController
 {
     use RequestAttributes;
 
-    protected $dataMappingService;
-    protected $errors;
+    protected DataMappingService $dataMappingService;
+    protected array $errors;
 
     public function __construct(DataMappingService $dataMappingService)
     {
@@ -128,21 +128,19 @@ class DownloadSubsetController
 
         //get handle of empty file just created
         $CSVfilepath = Storage::disk('temp')
-                ->getAdapter()
-                ->getPathPrefix()
+                ->path('')
             . 'subset/' . $projectRef . '/' . $csvFilename;
 
         $zipFilepath = Storage::disk('temp')
-                ->getAdapter()
-                ->getPathPrefix()
+                ->path('')
             . 'subset/' . $projectRef . '/' . $zipFilename;
 
-        //create empty zip file
-        $zip->open($zipFilepath, ZipArchive::CREATE);
-        //write to file one row at a time to keep memory usage low
-        $csv = Writer::createFromPath($CSVfilepath, 'w+');
-
         try {
+            //create empty zip file
+            $zip->open($zipFilepath, ZipArchive::CREATE);
+            //write to file one row at a time to keep memory usage low
+            $csv = Writer::createFromPath($CSVfilepath, 'w+');
+
             //write headers
             $csv->insertOne($this->dataMappingService->getHeaderRowCSV());
             //chuck feature keeps memory usage low
@@ -159,7 +157,7 @@ class DownloadSubsetController
                 //   \LOG::error('Usage: ' . Common::formatBytes(memory_get_usage()));
                 //     \LOG::error('Peak Usage: ' . Common::formatBytes(memory_get_peak_usage()));
             });
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             // Error writing to file
             Log::error('createSubsetArchive failure', [
                 'exception' => $e->getMessage()

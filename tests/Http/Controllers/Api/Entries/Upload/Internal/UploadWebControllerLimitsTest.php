@@ -30,7 +30,7 @@ class UploadWebControllerLimitsTest extends TestCase
 
     private $endpoint = 'api/internal/web-upload/';
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->faker = Faker::create();
@@ -187,7 +187,7 @@ class UploadWebControllerLimitsTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -214,7 +214,7 @@ class UploadWebControllerLimitsTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -241,7 +241,7 @@ class UploadWebControllerLimitsTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -268,7 +268,7 @@ class UploadWebControllerLimitsTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -295,7 +295,7 @@ class UploadWebControllerLimitsTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -336,7 +336,7 @@ class UploadWebControllerLimitsTest extends TestCase
                     ]
                 );
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -377,7 +377,7 @@ class UploadWebControllerLimitsTest extends TestCase
                     ]
                 );
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -418,7 +418,7 @@ class UploadWebControllerLimitsTest extends TestCase
                     ]
                 );
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -459,7 +459,7 @@ class UploadWebControllerLimitsTest extends TestCase
                     ]
                 );
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -500,7 +500,7 @@ class UploadWebControllerLimitsTest extends TestCase
                     ]
                 );
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

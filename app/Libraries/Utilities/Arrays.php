@@ -45,25 +45,20 @@ class Arrays
      */
     public static function implodeMulti(array $pieces, string $glue = '', array $to = []): string
     {
-        // Loop $pieces
         foreach ($pieces as $key => $value) {
-            // If array, call recursively
             if (is_array($value)) {
+                // Recursively implode arrays
                 $to[] = self::implodeMulti($value, $glue);
+            } elseif (is_scalar($value)) {
+                // Append scalar values (string, int, float, bool) to the array
+                $to[] = $value;
             } else {
-                try {
-                    if ((string)$value && $value !== '') {
-                        // Otherwise append, using glue
-                        $to[] = $value;
-
-                    }
-                } catch (\Exception $e) {
-                    // Not able to cast as string
-                }
-
+                // Skip objects and other non-scalar values
+                continue;
             }
         }
-        // Return a flattened array imploded
-        return implode($to, $glue);
+
+        // Implode the array into a string using the specified glue
+        return implode($glue, $to);
     }
 }

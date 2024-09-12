@@ -13,8 +13,10 @@ use ec5\Traits\Assertions;
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Passport\ClientRepository;
+use PHPUnit\Framework\Attributes\Depends;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 
@@ -28,7 +30,7 @@ class ProjectControllerExportTest extends TestCase
     private $projectStructure;
     const DRIVER = 'web';
 
-    public function setup()
+    public function setup(): void
     {
         parent::setUp();
     }
@@ -59,7 +61,7 @@ class ProjectControllerExportTest extends TestCase
             $this->assertEquals($projectDefinition, $projectResponse);
 
             $this->clearDatabase(['user' => $this->user, 'project' => $this->project]);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
             $this->clearDatabase(['user' => $this->user, 'project' => $this->project]);
         }
@@ -130,6 +132,18 @@ class ProjectControllerExportTest extends TestCase
 
             $body = $tokenResponse->getBody();
             $obj = json_decode($body);
+
+            // Perform assertions
+            $this->assertObjectHasProperty('token_type', $obj);
+            $this->assertObjectHasProperty('expires_in', $obj);
+            $this->assertObjectHasProperty('access_token', $obj);
+
+            $this->assertEquals('Bearer', $obj->token_type);
+            $this->assertIsInt($obj->expires_in);
+            $this->assertIsString($obj->access_token);
+            $this->assertGreaterThan(0, $obj->expires_in); // Ensure expires_in is positive
+            $this->assertNotEmpty($obj->access_token);
+
             $token = $obj->access_token;
 
             //send params to the @depends test
@@ -152,10 +166,7 @@ class ProjectControllerExportTest extends TestCase
         }
     }
 
-    /**
-     * @depends test_should_get_token_OAuth2
-     */
-    public function test_should_use_token_to_export_private_project($params)
+    #[Depends('test_should_get_token_OAuth2')] public function test_should_use_token_to_export_private_project($params)
     {
         $token = $params['token'];
         $project = $params['project'];
@@ -188,10 +199,7 @@ class ProjectControllerExportTest extends TestCase
         }
     }
 
-    /**
-     * @depends test_should_use_token_to_export_private_project
-     */
-    public function test_should_fail_to_export_different_private_project($params)
+    #[Depends('test_should_use_token_to_export_private_project')] public function test_should_fail_to_export_different_private_project($params)
     {
         $token = $params['token'];
         $user = $params['user'];

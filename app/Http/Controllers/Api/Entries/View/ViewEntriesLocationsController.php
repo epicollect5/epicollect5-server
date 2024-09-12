@@ -2,8 +2,8 @@
 
 namespace ec5\Http\Controllers\Api\Entries\View;
 
-use Carbon\Carbon;
 use ec5\Http\Validation\Entries\View\RuleQueryStringLocations;
+use ec5\Libraries\Utilities\DateFormatConverter;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use Illuminate\Http\JsonResponse;
@@ -50,15 +50,7 @@ class ViewEntriesLocationsController extends ViewEntriesControllerBase
 
         $entries = $entryModel->getGeoJsonData($this->requestedProject()->getId(), $params);
 
-        if ($entries->first() !== null) {
-            $oldest = str_replace(' ', 'T', $entries->min('created_at')) . '.000Z';
-            $newest = str_replace(' ', 'T', $entries->max('created_at')) . '.000Z';
-        } else {
-            //no entries, return today's date as ISO string
-            $now = Carbon::now()->toIso8601String();
-            $oldest = str_replace('+00:00', '.000Z', $now);
-            $newest = str_replace('+00:00', '.000Z', $now);
-        }
+        $dates = DateFormatConverter::getNewestAndOldestFormatted($entries);
 
         $entriesPaginated = $entries->paginate($params['per_page']);
 
@@ -83,7 +75,7 @@ class ViewEntriesLocationsController extends ViewEntriesControllerBase
         // Append the required options to the LengthAwarePaginator
         $this->appendOptions($entriesPaginated, $params);
         // Get Meta and Links
-        $meta = $this->getMeta($entriesPaginated, $newest, $oldest);
+        $meta = $this->getMeta($entriesPaginated, $dates['newest'], $dates['oldest']);
         $links = $this->getLinks($entriesPaginated);
 
         return Response::apiData($data, $meta, $links);

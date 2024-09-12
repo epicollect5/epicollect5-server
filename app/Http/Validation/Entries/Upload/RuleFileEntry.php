@@ -161,7 +161,7 @@ class RuleFileEntry extends EntryValidationBase
                 // Add to input array to be validated
                 $data['width'] = $width;
                 $data['height'] = $height;
-            } catch (Exception $e) {
+            } catch (\Throwable $e) {
                 $this->errors[$entryUuid] = ['ec5_83'];
                 return false;
             }

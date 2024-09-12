@@ -9,17 +9,12 @@ use Laravel\Socialite\Facades\Socialite;
 use Mockery;
 use Tests\TestCase;
 
-//use Laravel\Socialite\Contracts\Factory as Socialite;
-
 class UserAuthTest extends TestCase
 {
     use DatabaseTransactions;
 
     /**
      * Mock the Socialite Factory, so we can hijack the OAuth Request.
-     * @param string $email
-     * @param string $token
-     * @param int $id
      * @return void
      */
     // public function mockSocialiteFacade($email = 'foo@bar.com', $token = 'abc', $id = 1)
@@ -48,22 +43,9 @@ class UserAuthTest extends TestCase
         //$response = $this->get(route('users.index'));
         $response = $this->get('redirect/google');
 
-        $this->assertContains('https://accounts.google.com/o/oauth2/', $response->getTargetUrl());
+        $this->assertStringContainsString('https://accounts.google.com/o/oauth2/', $response->getTargetUrl());
     }
 
-    /** @test */
-    // public function testAuthGoogleCallback()
-    // {
-    //     // Mock the Facade and return a User Object with the email 'foo@bar.com'
-    //     $this->mockSocialiteFacade('foo@bar.com');
-
-    //     $response = $this->get('handle/google');
-    //     $response->assertStatus(302);
-
-    //     $this->seeInDatabase('users', [
-    //         'email' => 'foo@bar.com',
-    //     ]);
-    // }
 
     public function testSocialiteGoogleLogin()
     {
@@ -89,41 +71,8 @@ class UserAuthTest extends TestCase
             ->with('google')
             ->andReturn($provider);
 
-        //Socialite::shouldReceive('driver->user')->andReturn($abstractUser);
-
         $this->get('handle/google')
             ->assertStatus(302);
-        // ->assertRedirect(route('home'));
-    }
-
-    public function testAnother()
-    {
-        $mockSocialite = \Mockery::mock('Laravel\Socialite\Contracts\Factory');
-        $this->app['Laravel\Socialite\Contracts\Factory'] = $mockSocialite;
-
-        $abstractUser = Mockery::mock('Laravel\Socialite\Two\User');
-        $abstractUser
-            ->shouldReceive('getId')
-            ->andReturn(rand())
-            ->shouldReceive('getName')
-            ->andReturn(str_random(10))
-            ->shouldReceive('getEmail')
-            ->andReturn('test' . '@ncsu.edu')
-            ->shouldReceive('getAvatar')
-            ->andReturn('https://en.gravatar.com/userimage');
-
-        $provider = Mockery::mock('Laravel\Socialite\Contract\Provider');
-        $provider->shouldReceive('user')->andReturn($abstractUser);
-
-        $mockSocialite->shouldReceive('driver')->andReturn($provider);
-
-        $response = $this->get('/handle/google');
-
-
-        // $this->get('handle/google')
-        //     ->assertStatus(302);
-        // // ->assertRedirect(route('home'));
-        // dd($response);
     }
 
     /**

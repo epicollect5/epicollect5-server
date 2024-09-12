@@ -3,16 +3,18 @@
 namespace ec5\Models\User;
 
 use Carbon\Carbon;
-use Exception;
+use ec5\Traits\Models\SerializeDates;
 use Firebase\JWT\JWT as FirebaseJWT;
+use Firebase\JWT\Key;
 use Hash;
 use Illuminate\Database\Eloquent\Model;
 use Log;
 
 class UserPasswordlessWeb extends Model
 {
+    use SerializeDates;
 
-    const UPDATED_AT = null;
+    public const null UPDATED_AT = null;
 
     /**
      * The table associated with the model.
@@ -23,15 +25,18 @@ class UserPasswordlessWeb extends Model
 
     protected $fillable = [];
 
-    public function isValidToken($decodedSent)
+    public function isValidToken($decodedSent): bool
     {
         //decode
         $jwtConfig = config('auth.jwt-passwordless');
         $secretKey = $jwtConfig['secret_key'];
 
         try {
-            $decodedStored = (array)FirebaseJwt::decode($this->attributes['token'], $secretKey, array('HS256'));
-        } catch (Exception $e) {
+            $decodedStored = (array)FirebaseJwt::decode(
+                $this->attributes['token'],
+                new Key($secretKey, 'HS256')
+            );
+        } catch (\Throwable $e) {
             Log::error('Error decoding jwt-passwordless', ['exception' => $e->getMessage()]);
             return false;
         }
@@ -49,7 +54,7 @@ class UserPasswordlessWeb extends Model
         return false;
     }
 
-    public function isValidCode($code)
+    public function isValidCode($code): bool
     {
         //is the code the same?
         if (Hash::check($code, $this->attributes['token'])) {

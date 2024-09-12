@@ -4,7 +4,6 @@ namespace ec5\Http\Middleware;
 
 class ProjectPermissionsRequiredRole extends RequestAttributesMiddleware
 {
-
     /*
      |--------------------------------------------------------------------------
      | ProjectPermissionsRequiredRole Middleware
@@ -18,9 +17,8 @@ class ProjectPermissionsRequiredRole extends RequestAttributesMiddleware
     /**
      * Check the given user/role has permission to access
      *
-     * @return bool
      */
-    public function hasPermission()
+    public function hasPermission(): bool
     {
         // Always check for a user/role
         // If no user

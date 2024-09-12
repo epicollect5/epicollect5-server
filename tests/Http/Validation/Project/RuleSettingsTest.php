@@ -12,14 +12,14 @@ class RuleSettingsTest extends TestCase
 
     private $ruleSettings;
 
-    public function setUp()
+    public function setUp(): void
     {
         // This method will automatically be called prior to any of your test cases
         parent::setUp();
         $this->ruleSettings = new ruleSettings();
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         parent::tearDown();
         $this->ruleSettings->resetErrors();

@@ -20,7 +20,7 @@ class EntryTest extends TestCase
     protected $formRef;
     protected $superadmin;
 
-    public function setUp()
+    public function setUp():void
     {
         parent::setUp();
 

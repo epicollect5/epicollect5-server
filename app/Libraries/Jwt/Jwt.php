@@ -1,10 +1,8 @@
 <?php namespace ec5\Libraries\Jwt;
 
-use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
-
+use Firebase\JWT\Key;
 use Firebase\JWT\JWT as FirebaseJwt;
 use Exception;
-use Config;
 
 class Jwt
 {
@@ -86,7 +84,7 @@ class Jwt
 
             return $token;
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->errors = ['ec5_50'];
         }
 
@@ -124,7 +122,7 @@ class Jwt
 
             return $token;
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->errors = ['ec5_50'];
         }
 
@@ -136,8 +134,8 @@ class Jwt
      * Verify a JWT token.
      *
      * @param $token
-     * @param $returnClaim
-     * @return bool|string
+     * @param bool $returnClaim
+     * @return array|bool
      */
     public function verifyToken($token, $returnClaim = false)
     {
@@ -155,8 +153,10 @@ class Jwt
 
         // Attempt to decode the jwt token
         try {
-
-            $decodedToken = FirebaseJwt::decode($token, $secretKey, ['HS256']);
+            $decodedToken = (array)FirebaseJwt::decode(
+                $token,
+                new Key($secretKey, 'HS256')
+            );
 
             // token verified
             if ($returnClaim) {
@@ -164,7 +164,7 @@ class Jwt
             }
             return true;
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
 
             // Token invalid:
             // Signature not valid, jwt token expired or altered

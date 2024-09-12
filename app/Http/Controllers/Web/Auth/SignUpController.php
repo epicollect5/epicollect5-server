@@ -123,7 +123,7 @@ class SignUpController extends Controller
             Log::error('Error signup local user', ['exception' => $e->getMessage()]);
             DB::rollBack();
             return view('auth.signup')->withErrors(['ec5_376']);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Error signup local user', ['exception' => $e]);
             DB::rollBack();
             return view('auth.signup')->withErrors(['ec5_376']);

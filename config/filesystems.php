@@ -46,51 +46,145 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => public_path('images'),
+            'throw' => true,
+            'visibility' => 'public',
+            'directory_visibility' => 'public',
         ],
 
         'temp' => [
             'driver' => 'local',
             'root' => storage_path('app/temp'),
+            'throw' => true,
+            'visibility' => 'public',
+            'directory_visibility' => 'public',
         ],
 
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app'),
+            'throw' => true,
+            'permissions' => [
+                'file' => [
+                    'public' => 0644,
+                    'private' => 0600,
+                ],
+                'dir' => [
+                    'public' => 0775,
+                    'private' => 0700,
+                ],
+            ],
         ],
 
         'entry_original' => [
             'driver' => 'local',
             'root' => storage_path('app/entries/photo/entry_original'),
+            'throw' => true,
+            'permissions' => [
+                'file' => [
+                    'public' => 0644,
+                    'private' => 0600,
+                ],
+                'dir' => [
+                    'public' => 0775,
+                    'private' => 0700,
+                ],
+            ],
         ],
 
         'entry_thumb' => [
             'driver' => 'local',
             'root' => storage_path('app/entries/photo/entry_thumb'),
+            'throw' => true,
+            'permissions' => [
+                'file' => [
+                    'public' => 0644,
+                    'private' => 0600,
+                ],
+                'dir' => [
+                    'public' => 0775,
+                    'private' => 0700,
+                ],
+            ],
         ],
 
         'project_thumb' => [
             'driver' => 'local',
             'root' => storage_path('app/projects/project_thumb'),
+            'throw' => true,
+            'permissions' => [
+                'file' => [
+                    'public' => 0644,
+                    'private' => 0600,
+                ],
+                'dir' => [
+                    'public' => 0775,
+                    'private' => 0700,
+                ],
+            ],
         ],
 
         'project_mobile_logo' => [
             'driver' => 'local',
             'root' => storage_path('app/projects/project_mobile_logo'),
+            'throw' => true,
+            'permissions' => [
+                'file' => [
+                    'public' => 0644,
+                    'private' => 0600,
+                ],
+                'dir' => [
+                    'public' => 0775,
+                    'private' => 0700,
+                ],
+            ],
         ],
 
         'video' => [
             'driver' => 'local',
             'root' => storage_path('app/entries/video'),
+            'throw' => true,
+            'permissions' => [
+                'file' => [
+                    'public' => 0644,
+                    'private' => 0600,
+                ],
+                'dir' => [
+                    'public' => 0775,
+                    'private' => 0700,
+                ],
+            ],
         ],
 
         'audio' => [
             'driver' => 'local',
             'root' => storage_path('app/entries/audio'),
+            'throw' => true,
+            'permissions' => [
+                'file' => [
+                    'public' => 0644,
+                    'private' => 0600,
+                ],
+                'dir' => [
+                    'public' => 0775,
+                    'private' => 0700,
+                ],
+            ],
         ],
 
         'entries_zip' => [
             'driver' => 'local',
             'root' => storage_path('app/entries/zip'),
+            'throw' => true,
+            'permissions' => [
+                'file' => [
+                    'public' => 0644,
+                    'private' => 0600,
+                ],
+                'dir' => [
+                    'public' => 0775,
+                    'private' => 0700,
+                ],
+            ],
         ],
 
         /**
@@ -104,26 +198,81 @@ return [
         'orphan_entry_original' => [
             'driver' => 'local',
             'root' => storage_path('app/orphans/photo/entry_original'),
+            'throw' => true,
+            'permissions' => [
+                'file' => [
+                    'public' => 0644,
+                    'private' => 0600,
+                ],
+                'dir' => [
+                    'public' => 0775,
+                    'private' => 0700,
+                ],
+            ],
         ],
 
         'orphan_entry_thumb' => [
             'driver' => 'local',
             'root' => storage_path('app/orphans/photo/entry_thumb'),
+            'throw' => true,
+            'permissions' => [
+                'file' => [
+                    'public' => 0644,
+                    'private' => 0600,
+                ],
+                'dir' => [
+                    'public' => 0775,
+                    'private' => 0700,
+                ],
+            ],
         ],
 
         'orphan_video' => [
             'driver' => 'local',
             'root' => storage_path('app/orphans/video'),
+            'throw' => true,
+            'permissions' => [
+                'file' => [
+                    'public' => 0644,
+                    'private' => 0600,
+                ],
+                'dir' => [
+                    'public' => 0775,
+                    'private' => 0700,
+                ],
+            ],
         ],
 
         'orphan_audio' => [
             'driver' => 'local',
             'root' => storage_path('app/orphans/audio'),
+            'throw' => true,
+            'permissions' => [
+                'file' => [
+                    'public' => 0644,
+                    'private' => 0600,
+                ],
+                'dir' => [
+                    'public' => 0775,
+                    'private' => 0700,
+                ],
+            ],
         ],
 
         'debug' => [
             'driver' => 'local',
             'root' => storage_path('app/debug'),
+            'throw' => true,
+            'permissions' => [
+                'file' => [
+                    'public' => 0644,
+                    'private' => 0600,
+                ],
+                'dir' => [
+                    'public' => 0775,
+                    'private' => 0700,
+                ],
+            ],
         ],
 
         'ftp' => [

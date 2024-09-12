@@ -219,4 +219,9 @@ class Common
         // Trim to desired length
         return substr($hex, 0, $length);
     }
+
+    public static function getMonthName($monthNumber): string
+    {
+        return date("M", mktime(0, 0, 0, $monthNumber, 1));
+    }
 }

@@ -17,6 +17,7 @@ use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Laravel\Passport\ClientRepository;
+use PHPUnit\Framework\Attributes\Depends;
 use Tests\Generators\EntryGenerator;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
@@ -115,6 +116,18 @@ class EntriesExportPrivateArchivedUserTest extends TestCase
             ]);
 
             $obj = json_decode($tokenResponse->getBody());
+
+            // Perform assertions
+            $this->assertObjectHasProperty('token_type', $obj);
+            $this->assertObjectHasProperty('expires_in', $obj);
+            $this->assertObjectHasProperty('access_token', $obj);
+
+            $this->assertEquals('Bearer', $obj->token_type);
+            $this->assertIsInt($obj->expires_in);
+            $this->assertIsString($obj->access_token);
+            $this->assertGreaterThan(0, $obj->expires_in); // Ensure expires_in is positive
+            $this->assertNotEmpty($obj->access_token);
+
             $token = $obj->access_token;
 
             //send params to the @depends test
@@ -141,10 +154,7 @@ class EntriesExportPrivateArchivedUserTest extends TestCase
         }
     }
 
-    /**
-     * @depends test_getting_OAuth2_token
-     */
-    public function test_entries_export_endpoint_private($params)
+    #[Depends('test_getting_OAuth2_token')] public function test_entries_export_endpoint_private($params)
     {
         $token = $params['token'];
         $user = $params['user'];

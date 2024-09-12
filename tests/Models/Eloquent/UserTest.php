@@ -15,7 +15,7 @@ class UserTest extends TestCase
     protected $googleUser;
     protected $appleUser;
 
-    public function setUp()
+    public function setUp():void
     {
         parent::setUp();
     }

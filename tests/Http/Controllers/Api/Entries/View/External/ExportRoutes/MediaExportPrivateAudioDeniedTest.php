@@ -1,6 +1,6 @@
 <?php
 
-namespace Http\Controllers\Api\Entries\View\External\ExportRoutes;
+namespace Tests\Http\Controllers\Api\Entries\View\External\ExportRoutes;
 
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
@@ -163,7 +163,7 @@ class MediaExportPrivateAudioDeniedTest extends TestCase
                     'project' => $project,
                 ]
             );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Storage::disk('audio')->deleteDirectory($project->ref);
             $this->clearDatabase(
                 [

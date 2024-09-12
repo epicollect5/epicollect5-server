@@ -122,7 +122,7 @@ class VerificationController extends Controller
             Log::error('Error creating new code for user', ['exception' => $e->getMessage()]);
             DB::rollBack();
             return view('auth.verification')->withErrors(['ec5_376']);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Error creating new code for user', ['exception' => $e]);
             DB::rollBack();
             return view('auth.verification')->withErrors(['ec5_376']);
@@ -134,7 +134,7 @@ class VerificationController extends Controller
                 $user->name,
                 $code
             ));
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             return view('auth.verification')->withErrors(['ec5_116']);
         }
 

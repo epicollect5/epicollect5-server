@@ -1,6 +1,6 @@
 <?php
 
-namespace Http\Controllers\Api\Entries\Upload\Internal\Required;
+namespace Tests\Http\Controllers\Api\Entries\Upload\Internal\Required;
 
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
@@ -23,7 +23,7 @@ class RequiredFormBranchGroupTest extends TestCase
 {
     use DatabaseTransactions, Assertions;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         //remove leftovers
@@ -217,7 +217,7 @@ class RequiredFormBranchGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -351,7 +351,7 @@ class RequiredFormBranchGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -485,7 +485,7 @@ class RequiredFormBranchGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -619,7 +619,7 @@ class RequiredFormBranchGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -753,7 +753,7 @@ class RequiredFormBranchGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -887,7 +887,7 @@ class RequiredFormBranchGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1021,7 +1021,7 @@ class RequiredFormBranchGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1155,7 +1155,7 @@ class RequiredFormBranchGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1289,7 +1289,7 @@ class RequiredFormBranchGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1423,7 +1423,7 @@ class RequiredFormBranchGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1567,7 +1567,7 @@ class RequiredFormBranchGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1711,7 +1711,7 @@ class RequiredFormBranchGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1845,7 +1845,7 @@ class RequiredFormBranchGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

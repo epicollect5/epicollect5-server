@@ -40,30 +40,18 @@ class RuleInputBase extends ValidationBase
     /**
      * Set common rules used by all input type rules
      *
-     * @param $inputDetails
-     * @param string|array $answer
-     * @param ProjectDTO $project
      */
-    public function setRules($inputDetails, $answer, ProjectDTO $project)
+    public function setRules(array $inputDetails, string|array|null $answer, ProjectDTO $project): void
     {
         // Check the max length of this input answer has not been exceeded
         // If a limit exists for the input type
         if (config('epicollect.limits.entry_answer_limits.' . $inputDetails['type']) !== null) {
             $this->rules[$inputDetails['ref']][] = 'ec5_max_length:' . config('epicollect.limits.entry_answer_limits.' . $inputDetails['type']);
         }
-
     }
 
-    /**
-     * @param $inputDetails
-     * @param $answer
-     * @param ProjectDTO $project
-     * @param EntryStructureDTO $entryStructure
-     * @return mixed
-     */
-    public function additionalChecks($inputDetails, $answer, ProjectDTO $project, EntryStructureDTO $entryStructure)
+    public function additionalChecks(array $inputDetails, string|array|null $answer, ProjectDTO $project, EntryStructureDTO $entryStructure): array|string|null
     {
         return $answer;
     }
-
 }

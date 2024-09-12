@@ -1,6 +1,6 @@
 <?php
 
-namespace Http\Controllers\Api\Entries\View\External\ExportRoutes;
+namespace Tests\Http\Controllers\Api\Entries\View\External\ExportRoutes;
 
 use Auth;
 use ec5\Models\Entries\Entry;
@@ -18,6 +18,7 @@ use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Laravel\Passport\ClientRepository;
+use PHPUnit\Framework\Attributes\Depends;
 use Tests\Generators\EntryGenerator;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
@@ -116,8 +117,19 @@ class EntriesExportPrivateCreatorTest extends TestCase
             ]);
 
             $obj = json_decode($tokenResponse->getBody());
-            $token = $obj->access_token;
 
+            // Perform assertions
+            $this->assertObjectHasProperty('token_type', $obj);
+            $this->assertObjectHasProperty('expires_in', $obj);
+            $this->assertObjectHasProperty('access_token', $obj);
+
+            $this->assertEquals('Bearer', $obj->token_type);
+            $this->assertIsInt($obj->expires_in);
+            $this->assertIsString($obj->access_token);
+            $this->assertGreaterThan(0, $obj->expires_in); // Ensure expires_in is positive
+            $this->assertNotEmpty($obj->access_token);
+
+            $token = $obj->access_token;
             //send params to the @depends test
             return [
                 'token' => $token,
@@ -142,10 +154,7 @@ class EntriesExportPrivateCreatorTest extends TestCase
         }
     }
 
-    /**
-     * @depends test_getting_OAuth2_token
-     */
-    public function test_entries_export_endpoint_private($params)
+    #[Depends('test_getting_OAuth2_token')] public function test_entries_export_endpoint_private($params)
     {
         $token = $params['token'];
         $user = $params['user'];
@@ -154,6 +163,12 @@ class EntriesExportPrivateCreatorTest extends TestCase
         $projectDefinition = $params['projectDefinition'];
         $entryGenerator = $params['entryGenerator'];
         $dataMappingService = new DataMappingService();
+
+        //assert project exists
+        $this->assertDatabaseHas('projects', [
+            'id' => $project->id,
+            // Add other attributes here if needed
+        ]);
 
 
         //generate entries by that manager

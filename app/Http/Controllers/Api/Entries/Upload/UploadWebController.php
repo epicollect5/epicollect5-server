@@ -12,9 +12,12 @@ use ec5\Models\Entries\Entry;
 use Exception;
 use File;
 use Log;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Response;
 use Storage;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Throwable;
 
 class UploadWebController extends UploadControllerBase
 {
@@ -27,6 +30,11 @@ class UploadWebController extends UploadControllerBase
     |
     */
 
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws Throwable
+     * @throws NotFoundExceptionInterface
+     */
     public function store()
     {
         //try to upload the entry
@@ -69,7 +77,7 @@ class UploadWebController extends UploadControllerBase
         }
 
         $disk = Storage::disk('temp');
-        $rootFolder = $disk->getDriver()->getAdapter()->getPathPrefix();
+        $rootFolder = $disk->path('');
 
         // Get all media for this particular entry by looping the inputs
         foreach ($inputs as $inputRef) {
@@ -83,13 +91,13 @@ class UploadWebController extends UploadControllerBase
                 foreach ($groupInputs as $groupInputRef) {
                     $groupInput = $projectExtra->getInputData($groupInputRef);
                     $this->moveFile($rootFolder, $groupInput);
-                    if (count($this->errors) > 0) {
+                    if (sizeof($this->errors) > 0) {
                         return Response::apiErrorCode(400, $this->errors);
                     }
                 }
             } else {
                 $this->moveFile($rootFolder, $input);
-                if (count($this->errors) > 0) {
+                if (sizeof($this->errors) > 0) {
                     return Response::apiErrorCode(400, $this->errors);
                 }
             }
@@ -157,7 +165,7 @@ class UploadWebController extends UploadControllerBase
                 mime_content_type($filePath),
                 filesize($filePath)
             );
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             // File doesn't exist
             $this->errors['web upload'] = ['ec5_231'];
             return;
@@ -263,7 +271,7 @@ class UploadWebController extends UploadControllerBase
             if (!$entryCounter->updateCounters($this->requestedProject(), $this->entryStructure)) {
                 throw new Exception('Cannot update branch entries counters after leftover deletion');
             }
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Could not delete leftover branches', [
                 'owner_uuid' => $this->entryStructure->getEntryUuid(),
                 'owner_input_ref(s)' => $skippedBranchRefs,

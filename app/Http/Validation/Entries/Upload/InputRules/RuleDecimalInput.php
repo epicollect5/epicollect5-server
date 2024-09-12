@@ -6,13 +6,12 @@ use ec5\DTO\ProjectDTO;
 
 class RuleDecimalInput extends RuleInputBase
 {
-
     /**
      * @param $inputDetails
      * @param string|array $answer
      * @param ProjectDTO $project
      */
-    public function setRules($inputDetails, $answer, ProjectDTO $project)
+    public function setRules($inputDetails, $answer, ProjectDTO $project): void
     {
         // Override certain messages
         $this->messages['min'] = 'ec5_215';

@@ -9,7 +9,6 @@ use ec5\Http\Controllers\Controller;
 use ec5\Libraries\DirectoryGenerator\DirectoryGenerator;
 use ec5\Libraries\Utilities\Common;
 use ec5\Models\System\StorageStats;
-use Exception;
 use Illuminate\Support\Facades\File;
 use League\Csv\Writer;
 use RecursiveDirectoryIterator;
@@ -19,7 +18,6 @@ use ZipArchive;
 
 class SearchToolsController extends Controller
 {
-
     use DirectoryGenerator;
 
     public function findQuestionsWithTooManyJumps()
@@ -44,10 +42,10 @@ class SearchToolsController extends Controller
 
                     if ($input['type'] === 'dropdown' || $input['type'] === 'radio' || $input['type'] === 'checkbox') {
 
-                        array_push($wrongProjects, [
+                        $wrongProjects[] = [
                             'project' => $projectName,
                             'question' => $input['question']
-                        ]);
+                        ];
                     }
                 }
 
@@ -59,10 +57,10 @@ class SearchToolsController extends Controller
                         if (count($jumps) > count($possibleAnswers)) {
                             if ($input['type'] === 'dropdown' || $input['type'] === 'radio' || $input['type'] === 'checkbox') {
 
-                                array_push($wrongProjects, [
+                                $wrongProjects[] = [
                                     'project' => $projectName,
                                     'question' => $input['question']
-                                ]);
+                                ];
                             }
                         }
 
@@ -73,10 +71,10 @@ class SearchToolsController extends Controller
                                 $jumps = $groupInput['jumps'];
                                 if (count($jumps) > count($possibleAnswers)) {
                                     if ($input['type'] === 'dropdown' || $input['type'] === 'radio' || $input['type'] === 'checkbox') {
-                                        array_push($wrongProjects, [
+                                        $wrongProjects[] = [
                                             'project' => $projectName,
                                             'question' => $input['question']
-                                        ]);
+                                        ];
                                     }
                                 }
                             }
@@ -92,10 +90,10 @@ class SearchToolsController extends Controller
                         if (count($jumps) > count($possibleAnswers)) {
                             if ($input['type'] === 'dropdown' || $input['type'] === 'radio' || $input['type'] === 'checkbox') {
 
-                                array_push($wrongProjects, [
+                                $wrongProjects[] = [
                                     'project' => $projectName,
                                     'question' => $input['question']
-                                ]);
+                                ];
                             }
                         }
                     }
@@ -145,7 +143,7 @@ class SearchToolsController extends Controller
                         $photos = count(Storage::disk('entry_original')
                             ->allFiles($projectDefinition->project->ref));
 
-                        array_push($projectsWithMedia, [
+                        $projectsWithMedia[] = [
                             'files_total' => $audios + $photos + $videos,
                             'name' => $projectDefinition->project->name,
                             'id' => $project->id,
@@ -155,7 +153,7 @@ class SearchToolsController extends Controller
                                 'photo' => $photos,
                                 'video' => $videos
                             ]
-                        ]);
+                        ];
                         break 2;
                     }
                 }
@@ -190,10 +188,10 @@ class SearchToolsController extends Controller
 
                 if (count($jumps) > 0) {
 
-                    array_push($projectsWithJumps, [
+                    $projectsWithJumps[] = [
                         'project' => $projectName,
                         'jumps_found' => count($jumps)
-                    ]);
+                    ];
                 }
 
                 //                if ($input['type'] === 'branch') {
@@ -284,11 +282,11 @@ class SearchToolsController extends Controller
             }
 
             if ($inputsTotal > 100) {
-                array_push($projectsWithALotOfInputs, [
+                $projectsWithALotOfInputs[] = [
                     'project' => $projectName,
                     'inputs' => $inputsTotal,
                     'possible_answers' => $possibleAnswersTotal
-                ]);
+                ];
             }
         }
 
@@ -326,8 +324,8 @@ class SearchToolsController extends Controller
                 foreach ($inputs as $inputKey => $input) {
 
                     if ($input['type'] === 'time' && $input['uniqueness'] !== 'none') {
-                        array_push($projectsWithTimeUniqueness, $projectName);
-                        array_push($projectIds, $projectId);
+                        $projectsWithTimeUniqueness[] = $projectName;
+                        $projectIds[] = $projectId;
                         break 2;
                     }
 
@@ -336,8 +334,8 @@ class SearchToolsController extends Controller
                         foreach ($input['branch'] as $branchInput) {
 
                             if ($branchInput['type'] === 'time' && $branchInput['uniqueness'] !== 'none') {
-                                array_push($projectsWithTimeUniqueness, $projectName);
-                                array_push($projectIds, $projectId);
+                                $projectsWithTimeUniqueness[] = $projectName;
+                                $projectIds[] = $projectId;
                                 break 3;
                             }
 
@@ -346,8 +344,8 @@ class SearchToolsController extends Controller
                                 foreach ($input['group'] as $key => $groupInput) {
 
                                     if ($groupInput['type'] === 'time' && $groupInput['uniqueness'] !== 'none') {
-                                        array_push($projectsWithTimeUniqueness, $projectName);
-                                        array_push($projectIds, $projectId);
+                                        $projectsWithTimeUniqueness[] = $projectName;
+                                        $projectIds[] = $projectId;
                                         break 4;
                                     }
                                 }
@@ -358,8 +356,8 @@ class SearchToolsController extends Controller
                     if ($input['type'] === 'group') {
                         foreach ($input['group'] as $groupInput) {
                             if ($groupInput['type'] === 'time' && $groupInput['uniqueness'] !== 'none') {
-                                array_push($projectsWithTimeUniqueness, $projectName);
-                                array_push($projectIds, $projectId);
+                                $projectsWithTimeUniqueness[] = $projectName;
+                                $projectIds[] = $projectId;
                                 break 3;
                             }
                         }
@@ -416,18 +414,15 @@ class SearchToolsController extends Controller
 
         //get handle of empty file just created
         $CSVfilepathOver = Storage::disk('debug')
-                ->getAdapter()
-                ->getPathPrefix()
+                ->path('')
             . $csvFilenameOver;
 
         $CSVfilepathUnder = Storage::disk('debug')
-                ->getAdapter()
-                ->getPathPrefix()
+                ->path('')
             . $csvFilenameUnder;
 
         $CSVfilepathOverall = Storage::disk('debug')
-                ->getAdapter()
-                ->getPathPrefix()
+                ->path('')
             . $csvFilenameOverall;
 
         //write to file one row at a time to keep memory usage low
@@ -683,7 +678,7 @@ class SearchToolsController extends Controller
                         }
                         try {
                             $data = array_add($data, $projectRef, $size);
-                        } catch (Exception $e) {
+                        } catch (\Throwable $e) {
                             $data = array_add($data, $projectRef, $size);
                         }
 
@@ -693,7 +688,7 @@ class SearchToolsController extends Controller
                                     $project['storage'] = 0;
                                 }
                                 $project['storage'] += $size;
-                            } catch (Exception $e) {
+                            } catch (\Throwable $e) {
                                 // Log::info('No media files for ' . $projectName,  ['error' => $e->getMessage()]);
                             }
 
@@ -778,8 +773,7 @@ class SearchToolsController extends Controller
         $zipFilename = 'storage-info.zip';
         $zip = new ZipArchive();
         $pathDebugDir = Storage::disk('debug')
-            ->getAdapter()
-            ->getPathPrefix();
+            ->path('');
         $zipFilepath = $pathDebugDir . $zipFilename;
 
         //create empty zip file
@@ -805,7 +799,7 @@ class SearchToolsController extends Controller
         return $zipFilepath;
     }
 
-    function dirSize($directory)
+    public function dirSize($directory)
     {
         $size = 0;
         foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory)) as $file) {

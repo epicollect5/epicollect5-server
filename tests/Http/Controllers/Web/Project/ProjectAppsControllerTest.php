@@ -27,7 +27,7 @@ class ProjectAppsControllerTest extends TestCase
     private $project;
     private $projectDefinition;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         //create fake user for testing
@@ -107,7 +107,7 @@ class ProjectAppsControllerTest extends TestCase
             //assert rows are created
             $this->assertCount(1, OAuthClientProject::where('project_id', $this->project->id)->get());
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -137,7 +137,7 @@ class ProjectAppsControllerTest extends TestCase
                 ->assertSessionHas('message', 'ec5_399');
             //assert rows are removed
             $this->assertCount(0, OAuthClientProject::where('project_id', $this->project->id)->get());
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -190,7 +190,7 @@ class ProjectAppsControllerTest extends TestCase
             ]);
             //check access token entry is created
             $this->assertCount(1, OAuthAccessToken::where('client_id', $client->id)->get());
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -244,7 +244,7 @@ class ProjectAppsControllerTest extends TestCase
                 ->assertSessionHas('message', 'ec5_398');
             //check access token is deleted
             $this->assertCount(0, OAuthAccessToken::where('client_id', $client->id)->get());
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

@@ -9,6 +9,7 @@ use ec5\Models\Project\ProjectStructure;
 use ec5\Traits\Assertions;
 use Exception;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Http\Controllers\Api\Entries\View\ViewEntriesBaseControllerTest;
 use League\Csv\Reader;
 
@@ -145,7 +146,7 @@ class EntriesExportCustomMappingCSVTest extends ViewEntriesBaseControllerTest
             $this->assertEquals(
                 str_replace(' ', 'T', $entryFromDB->uploaded_at) . '.000Z',
                 $entryFromResponse['uploaded_at']);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -285,7 +286,7 @@ class EntriesExportCustomMappingCSVTest extends ViewEntriesBaseControllerTest
             $this->assertEquals(
                 str_replace(' ', 'T', $entryFromDB->uploaded_at) . '.000Z',
                 $entryFromResponse['uploaded_at']);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -410,7 +411,7 @@ class EntriesExportCustomMappingCSVTest extends ViewEntriesBaseControllerTest
             );
 
             $this->assertCount($numOfEntries, $response[0]['data']['entries']);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -583,7 +584,7 @@ class EntriesExportCustomMappingCSVTest extends ViewEntriesBaseControllerTest
             $this->assertEquals(
                 str_replace(' ', 'T', $childEntryFromDB->uploaded_at) . '.000Z',
                 $entryFromResponse['uploaded_at']);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -777,7 +778,7 @@ class EntriesExportCustomMappingCSVTest extends ViewEntriesBaseControllerTest
             //assert branch owner row ID
             $ownerEntry = Entry::where('uuid', $branchEntryFromDB->owner_uuid)->first();
             $this->assertEquals($branchEntryFromDB->owner_entry_id, $ownerEntry->id);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -792,9 +793,8 @@ class EntriesExportCustomMappingCSVTest extends ViewEntriesBaseControllerTest
     /**
      * Test method to be run multiple times.
      *
-     * @dataProvider multipleRunProvider
      */
-    public function test_entries_export_endpoint_form_0_single_entry_custom_mapping_modified_branches_count_csv($index)
+    #[DataProvider('multipleRunProvider')] public function test_entries_export_endpoint_form_0_single_entry_custom_mapping_modified_branches_count_csv($index)
     {
         $mapIndex = 1;
         //set project as public so the endpoint is accessible without auth
@@ -1002,7 +1002,7 @@ class EntriesExportCustomMappingCSVTest extends ViewEntriesBaseControllerTest
             $this->assertEquals(
                 str_replace(' ', 'T', $entryFromDB->uploaded_at) . '.000Z',
                 $entryFromResponse['uploaded_at']);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

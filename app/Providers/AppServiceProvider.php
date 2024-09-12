@@ -2,8 +2,10 @@
 
 namespace ec5\Providers;
 
+use Illuminate\Support\Carbon;
 use Illuminate\Support\ServiceProvider;
-use Laravel\Dusk\DuskServiceProvider;
+use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Blade;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -14,6 +16,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+//        //https://stackoverflow.com/questions/65003024/replicating-claims-as-headers-is-deprecated-and-will-removed-from-v4-0-laravel
+//        if (config('app.debug')) {
+//            error_reporting(E_ALL & ~E_USER_DEPRECATED);
+//        } else {
+//            error_reporting(0);
+//        }
+
+        Paginator::useBootstrapThree();
+        Blade::withoutComponentTags();
     }
 
     /**
@@ -23,8 +34,5 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        if ($this->app->environment('local', 'testing')) {
-            $this->app->register(DuskServiceProvider::class);
-        }
     }
 }

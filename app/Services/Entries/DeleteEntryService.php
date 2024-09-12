@@ -14,10 +14,14 @@ use Exception;
 use File;
 use Log;
 use Storage;
+use Throwable;
 
 class DeleteEntryService
 {
     //imp: branch entries get deleted by FK constraint ON DELETE CASCADE
+    /**
+     * @throws Throwable
+     */
     public function deleteHierarchyEntry(ProjectDTO $project, $entryStructure): bool
     {
         $entryUuid = $entryStructure->getEntryUuid();
@@ -51,7 +55,7 @@ class DeleteEntryService
             }
 
             //5. Delete media files
-            //imp: merge hierarchy uuids with barcnh entries uuids
+            //imp: merge hierarchy uuids with branch entries uuids
             if (!$this->deleteMediaFiles($project->ref, array_merge($entryUuids, $branchEntryUuids))) {
                 throw new Exception('Cannot delete media files');
             }
@@ -59,8 +63,7 @@ class DeleteEntryService
             // Now finally commit
             DB::commit();
             return true;
-        } catch
-        (Exception $e) {
+        } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             DB::rollBack();
             return false;
@@ -68,11 +71,12 @@ class DeleteEntryService
     }
 
     /**
-     * @param $projectId
-     * @param $formRef
+     * @param ProjectDTO $project
      * @param $branchEntryUuid - branch entry uuid we need to archive
+     * @param $entryStructure
      * @param bool $reuseExistingTransaction
      * @return bool
+     * @throws Throwable
      */
     public function deleteBranchEntry(ProjectDTO $project, $branchEntryUuid, $entryStructure, bool $reuseExistingTransaction = false): bool
     {
@@ -110,7 +114,7 @@ class DeleteEntryService
             if (!$reuseExistingTransaction) {
                 DB::commit();
             }
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             DB::rollBack();
             return false;
@@ -126,11 +130,11 @@ class DeleteEntryService
         foreach ($drivers as $driver) {
             // Get disk, path prefix and all directories for this driver
             $disk = Storage::disk($driver);
-            $pathPrefix = $disk->getDriver()->getAdapter()->getPathPrefix();
+            $pathPrefix = $disk->path('');
 
             try {
                 $directory = new DirectoryIterator($pathPrefix . $projectRef);
-            } catch (Exception $e) {
+            } catch (Throwable) {
                 //directory not found, so no media files, can skip safely
                 continue;
             }
@@ -141,7 +145,7 @@ class DeleteEntryService
                 }
                 // Check if the file starts with the specified prefix
                 foreach ($uuids as $uuid) {
-                    if (strpos($file->getFilename(), $uuid) === 0) {
+                    if (str_starts_with($file->getFilename(), $uuid)) {
                         // Get the full path of the file
                         $filePath = $file->getPathname();
                         // Delete the file

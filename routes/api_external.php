@@ -61,7 +61,7 @@ Route::group(['middleware' => ['throttle:600,1']], function () {
         //route for debugging, works only on localhost
         Route::post('api/bulk-upload/{project_slug}', 'Api\Entries\Upload\UploadAppController@postUploadBulk');
 
-        //Media Controller for access to media files (even via the browser, this is why we are not using the internl endpoint)
+        //Media Controller for access to media files (even via the browser, this is why we are not using the internal endpoint)
         Route::get('api/media/{project_slug}/', 'Api\Project\MediaController@getMedia');
 
         // Temp Media (used by PWA debug to get a temp file)

@@ -6,13 +6,7 @@ use ec5\DTO\ProjectDTO;
 
 class RuleIntegerInput extends RuleInputBase
 {
-
-    /**
-     * @param $inputDetails
-     * @param string|array $answer
-     * @param ProjectDTO $project
-     */
-    public function setRules($inputDetails, $answer, ProjectDTO $project)
+    public function setRules($inputDetails, $answer, ProjectDTO $project): void
     {
         // Override certain messages
         $this->messages['min'] = 'ec5_215';
@@ -21,7 +15,7 @@ class RuleIntegerInput extends RuleInputBase
 
         // Set rules based on the input details
         // Source will be the input ref
-        
+
         $this->rules[$inputDetails['ref']] = ['ec5_integer', 'numeric'];
 
         // If we have a min and max set, add to rules

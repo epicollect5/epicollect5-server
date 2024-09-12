@@ -19,7 +19,7 @@ use Tests\Generators\EntryGenerator;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 
-abstract class ViewEntriesBaseControllerTest extends TestCase
+class ViewEntriesBaseControllerTest extends TestCase
 {
     use DatabaseTransactions, Assertions;
 
@@ -35,7 +35,7 @@ abstract class ViewEntriesBaseControllerTest extends TestCase
     protected $locationInputRefs;
     protected $dataMappingService;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -98,6 +98,11 @@ abstract class ViewEntriesBaseControllerTest extends TestCase
 
         //get location inputs
         $this->locationInputRefs = Common::getLocationInputRefs($projectDefinition);
+    }
+
+    public function test_to_remove_warning()
+    {
+        $this->assertTrue(true);
     }
 
 }

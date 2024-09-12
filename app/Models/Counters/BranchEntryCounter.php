@@ -5,10 +5,31 @@ namespace ec5\Models\Counters;
 use DB;
 use ec5\DTO\EntryStructureDTO;
 use ec5\DTO\ProjectDTO;
+use ec5\Traits\Models\SerializeDates;
 use Illuminate\Database\Eloquent\Model;
 
 class BranchEntryCounter extends Model
 {
+    /**
+     * @property int $id
+     * @property int $project_id
+     * @property string $uuid
+     * @property int $owner_entry_id
+     * @property string $owner_uuid
+     * @property string $owner_input_ref
+     * @property string $form_ref
+     * @property int|null $user_id
+     * @property string $platform
+     * @property string $device_id
+     * @property string $created_at
+     * @property string $uploaded_at
+     * @property string $title
+     * @property string|null $entry_data
+     * @property string|null $geo_json_data
+     */
+
+    use SerializeDates;
+
     protected $table = 'branch_entries';
     //disable eloquent timestamps because we are using "uploaded_at"
     public $timestamps = false;
@@ -95,9 +116,9 @@ class BranchEntryCounter extends Model
      * @param $ownerEntryUuid
      * @return mixed
      */
-    public function getBranchEntryCounts($projectId, $formRef, $ownerInputRef, $ownerEntryUuid)
+    public function getBranchEntryCounts($projectId, $formRef, $ownerInputRef, $ownerEntryUuid): mixed
     {
-        $sql = DB::table($this->table)
+        DB::table($this->table)
             ->select(DB::raw("COUNT(*) as branch_entries_count"))
             ->where('project_id', '=', $projectId)
             ->where('form_ref', '=', $formRef)

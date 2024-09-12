@@ -6,7 +6,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 trait ResponseTools
 {
-
+    /** @noinspection PhpCastIsUnnecessaryInspection */
     public function getMeta(LengthAwarePaginator $entriesPaginator, $newest = null, $oldest = null): array
     {
         return [

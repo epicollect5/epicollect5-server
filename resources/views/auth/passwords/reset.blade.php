@@ -23,7 +23,7 @@
 
                                 <div class="col-md-6">
                                     <input id="email" type="email" class="form-control" name="email"
-                                           value="{{ $email or old('email') }}" required
+                                           value="{{ $email ?? old('email') }}" required
                                     >
 
                                     @if (strpos($errors->first('email'), 'ec5_') === false)

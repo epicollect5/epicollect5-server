@@ -3,13 +3,12 @@
 namespace ec5\Providers\Macros\Response;
 
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\ServiceProvider;
 
 class ApiErrorCodeMacro extends ServiceProvider
 {
-    public function boot()
+    public function boot(): void
     {
         Response::macro('apiErrorCode', function ($httpStatusCode, array $errors, array $extra = []) {
             $parsedErrors = [];
@@ -30,7 +29,7 @@ class ApiErrorCodeMacro extends ServiceProvider
                             // another ugly hack to get better error response (with parameters)
                             // does not translate if "ec5_" is not in the $errorValue string
                             // as it was already translated
-                            if (strpos($errorValue, 'ec5_') === false) {
+                            if (!str_contains($errorValue, 'ec5_')) {
                                 $tempArray['title'] = $errorValue;
                             } else {
                                 $tempArray['title'] = config('epicollect.codes.' . $errorValue);

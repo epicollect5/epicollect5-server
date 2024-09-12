@@ -4,8 +4,8 @@ namespace ec5\Services\Project;
 
 class ProjectExtraService
 {
-    private $formRefs = [];
-    private $inputsExtra = [];
+    private array $formRefs = [];
+    private array $inputsExtra = [];
 
     public function generateExtraStructure($projectDefinition): array
     {

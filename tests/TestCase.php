@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use Countable;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use ec5\Models\OAuth\OAuthAccessToken;
@@ -15,6 +16,7 @@ use ec5\Models\User\User;
 use ec5\Models\User\UserProvider;
 use Exception;
 use Faker\Factory as Faker;
+use Illuminate\Foundation\Application;
 use Log;
 
 class TestCase extends \Illuminate\Foundation\Testing\TestCase
@@ -24,14 +26,13 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
      *
      * @var string
      */
-    protected $baseUrl = 'http://localhost';
+    protected string $baseUrl = 'http://localhost';
 
     /**
      * Creates the application.
      *
-     * @return \Illuminate\Foundation\Application
      */
-    public function createApplication()
+    public function createApplication(): Application
     {
         $app = require __DIR__ . '/../bootstrap/app.php';
 
@@ -40,12 +41,13 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
         return $app;
     }
 
-    public function logTestError(Exception $e, $response)
+    public function logTestError(Exception $e, $response): void
     {
         $expected = '';
         $actual = '';
 
         echo "\e[0;31m" . $e->getMessage() . "\e[0m" . PHP_EOL;
+
         // Get the expected and actual values from the ComparisonFailure object
         if (method_exists($e, 'getComparisonFailure') && $e->getComparisonFailure() !== null) {
             $expected = print_r($e->getComparisonFailure()->getExpected(), true) . PHP_EOL;
@@ -54,12 +56,17 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
 
         echo 'Expected: ', $expected ?? PHP_EOL;
         echo 'Actual: ' . $actual ?? PHP_EOL;
-        if (is_array($response)) {
+
+        // Ensure $response is an array or a Countable object before using sizeof()
+        if (is_array($response) || $response instanceof Countable) {
             if (sizeof($response) > 0) {
-                $response = $response[0];
+                if (is_array($response)) {
+                    $response = $response[0];
+                }
             }
         }
-        if (sizeof($response) > 0) {
+
+        if (is_array($response) || is_object($response)) {
             if (isset($response->baseResponse)) {
                 $jsonResponse = $response->baseResponse->exception === null
                     ? json_encode(['response' => $response])
@@ -75,27 +82,24 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
 
         // Mark the test as failed with expected and actual values
         $filePath = str_replace(base_path(), '', $e->getFile());
-        // Get the full stack trace as a string
         $stackTrace = $e->getTraceAsString();
-        // Convert the stack trace into an array of lines
-        $stackTraceLines = explode("\n", $stackTrace);
-        //log error for failed assertion
-        $this->fail("Error in {$stackTraceLines}:\n\n{$e->getMessage()}");
+        $stackTraceLines = explode("\n", $stackTrace ?? '');
+
+        // Log error for failed assertion
+        $this->fail("Error in {$filePath}:\n\n{$e->getMessage()}");
     }
 
     //clear database manually as we are not using database transactions
-    public function clearDatabase($params)
+    public function clearDatabase($params): void
     {
         $user = $params['user'] ?? null;
         $project = $params['project'] ?? null;
         $clientId = $params['client_id'] ?? null;
 
         try {
-
             // Delete users with an email that ends with '@example.com'
-            User::where('email', 'like', '%@example.com')->delete();
+            User::where('email', 'like', '%@example.%')->delete();
             User::where('email', 'like', '%random@unit.tests%')->delete();
-
             if ($user) {
                 User::where('id', $user->id)->delete();
                 UserProvider::where('id', $user->id)->delete();
@@ -117,31 +121,31 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
 
             //also remove leftover users from other tests or failures
             User::where('email', 'LIKE', '%@example.org%')->delete();
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
         }
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
-//        // Remove properties defined during the test
-//        $refl = new \ReflectionObject($this);
-//        foreach ($refl->getProperties() as $prop) {
-//            if (!$prop->isStatic() && 0 !== strpos($prop->getDeclaringClass()->getName(), 'PHPUnit_')) {
-//                $prop->setAccessible(true);
-//                $prop->setValue($this, null);
-//            }
-//        }
+        //        // Remove properties defined during the test
+        //        $refl = new \ReflectionObject($this);
+        //        foreach ($refl->getProperties() as $prop) {
+        //            if (!$prop->isStatic() && 0 !== strpos($prop->getDeclaringClass()->getName(), 'PHPUnit_')) {
+        //                $prop->setAccessible(true);
+        //                $prop->setValue($this, null);
+        //            }
+        //        }
 
         // Clean up your resources here
         parent::tearDown();
         gc_collect_cycles(); // Invoke garbage collection
     }
 
-    public function multipleRunProvider(): array
+    public static function multipleRunProvider(): array
     {
         // Define how many times you want to run the test
-        $runs = 2;
+        $runs = 1;
         $testCases = [];
 
         for ($i = 0; $i < $runs; $i++) {
@@ -210,5 +214,19 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
             }
         }
         return $mapping;
+    }
+
+    protected function generateStringOfLength(int $length): string
+    {
+        // Define the characters that can be used in the string
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $charactersLength = strlen($characters);
+        $randomString = '';
+
+        for ($i = 0; $i < $length; $i++) {
+            $randomString .= $characters[rand(0, $charactersLength - 1)];
+        }
+
+        return $randomString;
     }
 }

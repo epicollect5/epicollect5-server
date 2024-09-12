@@ -4,6 +4,8 @@ namespace ec5\Providers;
 
 use Illuminate\Routing\Router;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Log;
 
 class RouteServiceProvider extends ServiceProvider
 {
@@ -26,7 +28,7 @@ class RouteServiceProvider extends ServiceProvider
         // Set particular guards on routes
         $this->app['router']->matched(function (\Illuminate\Routing\Events\RouteMatched $event) {
             $route = $event->route;
-            if (!array_has($route->getAction(), 'guard')) {
+            if (!Arr::has($route->getAction(), 'guard')) {
                 return;
             }
             $routeGuard = array_get($route->getAction(), 'guard');
@@ -42,7 +44,7 @@ class RouteServiceProvider extends ServiceProvider
     /**
      * Define the routes for the application.
      *
-     * @param  \Illuminate\Routing\Router  $router
+     * @param \Illuminate\Routing\Router $router
      * @return void
      */
     public function map(Router $router)
@@ -55,7 +57,7 @@ class RouteServiceProvider extends ServiceProvider
     /**
      * Define the "web" routes for the application.
      *
-     * @param  \Illuminate\Routing\Router  $router
+     * @param \Illuminate\Routing\Router $router
      * @return void
      */
     protected function mapWebRoutes(Router $router)
@@ -73,7 +75,7 @@ class RouteServiceProvider extends ServiceProvider
     /**
      * Define the "api internal" routes for the application.
      *
-     * @param  \Illuminate\Routing\Router  $router
+     * @param \Illuminate\Routing\Router $router
      * @return void
      */
     protected function mapApiInternalRoutes(Router $router)
@@ -100,7 +102,7 @@ class RouteServiceProvider extends ServiceProvider
     /**
      * Define the "api external" routes for the application.
      *
-     * @param  \Illuminate\Routing\Router  $router
+     * @param \Illuminate\Routing\Router $router
      * @return void
      */
     protected function mapApiExternalRoutes(Router $router)

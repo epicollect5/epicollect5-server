@@ -2,12 +2,20 @@
 
 namespace ec5\Traits\Auth;
 
+use ec5\Models\User\UserProvider;
 use Log;
 
 trait GoogleUserUpdater
 {
-    public function updateUserDetails($params, $user)
+    public function updateGoogleUserDetails($params, $user): void
     {
+        //add the Google provider so next time no verification is needed
+        $userProvider = new UserProvider();
+        $userProvider->email = $user->email;
+        $userProvider->user_id = $user->id;
+        $userProvider->provider = $this->googleProviderLabel;
+        $userProvider->save();
+
         $googleUser = $params['user']; //decode to array by passing "true"
         $googleUserFirstName = $googleUser['given_name'];
         $googleUserLastName = $googleUser['family_name'];

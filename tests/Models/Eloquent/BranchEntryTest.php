@@ -23,7 +23,7 @@ class BranchEntryTest extends TestCase
     protected $branchInputRef;
     protected $superadmin;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

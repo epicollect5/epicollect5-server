@@ -10,7 +10,7 @@ class RuleMappingDeleteTest extends TestCase
 {
     protected $ruleMappingCreate;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->ruleMappingDelete = new RuleMappingDelete();

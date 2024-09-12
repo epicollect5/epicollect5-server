@@ -3,22 +3,18 @@
 namespace ec5\Http\Controllers\Api\Project;
 
 use Auth;
-use DB;
 use ec5\Http\Validation\Entries\Upload\RuleCanBulkUpload;
 use ec5\Http\Validation\Project\RuleName;
 use ec5\Models\Project\Project;
-use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
 use ec5\Traits\Requests\RequestAttributes;
-use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
-use Log;
 use Response;
+use Throwable;
 
 class ProjectController
 {
-
     use RequestAttributes;
 
     /**
@@ -52,7 +48,7 @@ class ProjectController
             if (empty($userAvatar)) {
                 $userAvatar = config('app.url') . '/images/avatar-placeholder.png';
             }
-        } catch (Exception $e) {
+        } catch (Throwable) {
             //
             $userName = 'User';
             $userAvatar = config('app.url') . '/images/avatar-placeholder.png';
@@ -207,7 +203,7 @@ class ProjectController
             $project = Project::find($this->requestedProject()->getId());
             $project->can_bulk_upload = $canBulkUpload;
             $project->save();
-        } catch (\Exception $e) {
+        } catch (Throwable) {
             $errors = ['ec5_361'];
             return Response::apiErrorCode(400, ['errors' => $errors]);
         }

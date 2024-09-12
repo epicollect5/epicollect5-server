@@ -4,9 +4,13 @@ namespace ec5\Http\Controllers\Web\Auth;
 
 use Auth;
 use ec5\Http\Controllers\Controller;
+use ec5\Models\User\User;
+use ec5\Models\User\UserPasswordlessApi;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Log;
 use View;
 
 class AuthController extends Controller
@@ -19,15 +23,15 @@ class AuthController extends Controller
 
     use AuthenticatesUsers;
 
-    protected $redirectTo = '/';
-    protected $authMethods = [];
-    protected $appleProviderLabel;
-    protected $googleProviderLabel;
-    protected $localProviderLabel;
-    protected $ldapProviderlabel;
-    protected $passwordlessProviderLabel;
-    protected $isAuthWebEnabled;
-    protected $isAuthApiLocalEnabled;
+    protected string $redirectTo = '/';
+    protected mixed $authMethods = [];
+    protected string $appleProviderLabel;
+    protected string $googleProviderLabel;
+    protected string $localProviderLabel;
+    protected string $ldapProviderlabel;
+    protected string $passwordlessProviderLabel;
+    protected bool $isAuthWebEnabled;
+    protected bool $isAuthApiLocalEnabled;
 
     public function __construct()
     {
@@ -60,7 +64,7 @@ class AuthController extends Controller
     public function show()
     {
         if ($this->isAuthWebEnabled) {
-            //get intended url for redirection 
+            //get intended url for redirection
             //(skip passwordless token/web routes as they are post only)
             switch (url()->previous()) {
                 case route('passwordless-auth-web'):
@@ -94,7 +98,7 @@ class AuthController extends Controller
         //if we are logging out from the dataviewer, send user back there
         // 1 - private project -> login + dataviewer
         // 2 - public project -> dataviewer (without add entry button)
-        $parts = explode('/', $backlink);
+        $parts = explode('/', $backlink ?? '');
         //check for dataviewer url segments
         if (end($parts) === 'data' || end($parts) === 'data?restore=1') {
             array_pop($parts);
@@ -125,8 +129,52 @@ class AuthController extends Controller
     {
         return $this->limiter()->tooManyAttempts(
             $this->throttleKey($request),
-            5,
-            10
+            5
         );
+    }
+
+    protected function validateAppleOrGoogleUserWeb($email, $code, $provider): User|RedirectResponse
+    {
+        //get token from db for comparison
+        $userPasswordless = UserPasswordlessApi::where('email', $email)->first();
+
+        //Does the email exists?
+        if ($userPasswordless === null) {
+            Log::error('Error validating passwordless code', ['error' => 'Email does not exist']);
+            return redirect()->route('verification-code')
+                ->with([
+                    'email' => $email,
+                    'provider' => $provider
+                ])
+                ->withErrors(['ec5_378']);
+        }
+
+        //check if the code is valid
+        if (!$userPasswordless->isValidCode($code)) {
+            Log::error('Error validating passwordless code', ['error' => 'Code not valid']);
+            return redirect()->route('verification-code')
+                ->with([
+                    'email' => $email,
+                    'provider' => $provider
+                ])
+                ->withErrors(['ec5_378']);
+        }
+
+        //code is valid, remove it
+        $userPasswordless->delete();
+
+        //find the existing user
+        $user = User::where('email', $email)->first();
+        if ($user === null) {
+            //this should never happen, but no harm in checking
+            return redirect()->route('verification-code')
+                ->with([
+                    'email' => $email,
+                    'provider' => $provider
+                ])
+                ->withErrors(['ec5_34']);
+        }
+
+        return $user;
     }
 }

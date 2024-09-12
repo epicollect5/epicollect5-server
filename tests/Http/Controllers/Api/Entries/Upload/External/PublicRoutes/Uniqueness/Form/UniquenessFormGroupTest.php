@@ -24,7 +24,7 @@ class UniquenessFormGroupTest extends TestCase
 
     private $endpoint = 'api/upload/';
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         //remove leftovers
@@ -188,7 +188,7 @@ class UniquenessFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             echo print_r($this->projectDefinition, true);
             $this->logTestError($e, $response);
         }
@@ -288,7 +288,7 @@ class UniquenessFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -385,7 +385,7 @@ class UniquenessFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -482,7 +482,7 @@ class UniquenessFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -585,7 +585,7 @@ class UniquenessFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -688,7 +688,7 @@ class UniquenessFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -791,7 +791,7 @@ class UniquenessFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -894,7 +894,7 @@ class UniquenessFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -997,7 +997,7 @@ class UniquenessFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1102,7 +1102,7 @@ class UniquenessFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1207,7 +1207,7 @@ class UniquenessFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1312,7 +1312,7 @@ class UniquenessFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1417,7 +1417,7 @@ class UniquenessFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1522,7 +1522,7 @@ class UniquenessFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1619,7 +1619,7 @@ class UniquenessFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1716,7 +1716,7 @@ class UniquenessFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

@@ -4,8 +4,10 @@ namespace ec5\Exceptions;
 
 use ec5\Traits\Middleware\MiddlewareTools;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Exception;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -17,7 +19,7 @@ use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Illuminate\Session\TokenMismatchException;
 use Redirect;
 use App;
-
+use Throwable;
 
 class Handler extends ExceptionHandler
 {
@@ -42,15 +44,21 @@ class Handler extends ExceptionHandler
     }
 
     /**
+     * Convert a validation exception into a JSON response.
+     */
+    protected function invalidJson($request, ValidationException $exception): JsonResponse
+    {
+        return response()->json($exception->errors(), $exception->status);
+    }
+
+    /**
      * Report or log an exception.
      *
      * This is a great spot to send exceptions to Sentry, Bugsnag, etc.
      *
-     * @param \Exception $e
-     * @return void
-     * @throws Exception
+     * @throws Throwable
      */
-    public function report(Exception $e)
+    public function report(Throwable $e): void
     {
         parent::report($e);
     }
@@ -58,13 +66,10 @@ class Handler extends ExceptionHandler
     /**
      * Render an exception into an HTTP response.
      *
-     * @param \Illuminate\Http\Request $request
-     * @param Exception $e
-     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse|\Illuminate\Http\Response|\Symfony\Component\HttpFoundation\Response
+     * @throws Throwable
      */
-    public function render($request, Exception $e)
+    public function render($request, Throwable $e): \Illuminate\Http\Response|JsonResponse|\Symfony\Component\HttpFoundation\Response|RedirectResponse
     {
-
         // Handle not found exceptions
         if ($e instanceof NotFoundHttpException) {
 
@@ -108,11 +113,12 @@ class Handler extends ExceptionHandler
     /**
      * Convert an authentication exception into an unauthenticated response.
      *
-     * @param \Illuminate\Http\Request $request
-     * @param \Illuminate\Auth\AuthenticationException $exception
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @param AuthenticationException $exception
+     * @return Response|JsonResponse|RedirectResponse
+     * @throws BindingResolutionException
      */
-    protected function unauthenticated($request, AuthenticationException $exception)
+    protected function unauthenticated($request, AuthenticationException $exception): Response|JsonResponse|RedirectResponse
     {
         return $this->middlewareErrorResponse($request, 'unauthenticated', 'ec5_70', 422);
     }
@@ -122,9 +128,10 @@ class Handler extends ExceptionHandler
      * @param $type
      * @param $errorCode
      * @param $httpStatusCode
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse|\Illuminate\Http\Response
+     * @return Response|JsonResponse|RedirectResponse
+     * @throws BindingResolutionException
      */
-    private function middlewareErrorResponse(Request $request, $type, $errorCode, $httpStatusCode)
+    private function middlewareErrorResponse(Request $request, $type, $errorCode, $httpStatusCode): \Illuminate\Http\Response|JsonResponse|RedirectResponse
     {
 
         $errors = [$type => [$errorCode]];

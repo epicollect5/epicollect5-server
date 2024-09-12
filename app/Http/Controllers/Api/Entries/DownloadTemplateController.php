@@ -8,6 +8,7 @@ use ec5\Http\Validation\Entries\Upload\RuleUploadHeaders;
 use ec5\Libraries\Utilities\Common;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Traits\Requests\RequestAttributes;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Str;
@@ -24,6 +25,9 @@ class DownloadTemplateController
 
     use RequestAttributes;
 
+    /**
+     * @throws BindingResolutionException
+     */
     public function sendTemplateFileCSV(Request $request, RuleDownloadTemplate $ruleUploadTemplate)
     {
         $projectId = $this->requestedProject()->getId();
@@ -136,9 +140,8 @@ class DownloadTemplateController
         $formRef = $projectDefinition['project']['forms'][$formIndex]['ref'];
         $mapTos = [];
         //are we looking for a branch template?
+        $inputs = $projectDefinition['project']['forms'][$formIndex]['inputs'];
         if ($branchRef !== '') {
-            $inputs = $projectDefinition['project']['forms'][$formIndex]['inputs'];
-
             //find the branch inputs
             $branchFound = false;
             foreach ($inputs as $input) {
@@ -148,18 +151,15 @@ class DownloadTemplateController
                     break;
                 }
             }
-
-            //if the branch id not found return error
+            //if the branch is not found return error
             if (!$branchFound) {
                 return Response::apiErrorCode(400, ['upload-template' => ['ec5_99']]);
             }
 
             $selectedMapping = $projectMappings[$mapIndex]['forms'][$formRef][$branchRef]['branch'];
-
             $mapTos[] = 'ec5_branch_uuid';
         } else {
             //hierarchy template
-            $inputs = $projectDefinition['project']['forms'][$formIndex]['inputs'];
             $selectedMapping = $projectMappings[$mapIndex]['forms'][$formRef];
             $mapTos[] = 'ec5_uuid';
         }
@@ -168,7 +168,8 @@ class DownloadTemplateController
         $csvHeaders = Common::getTemplateHeaders(
             $inputs,
             $selectedMapping,
-            $mapTos);
+            $mapTos
+        );
 
         $content = ['headers' => $csvHeaders];
         //return json with the proper column headers

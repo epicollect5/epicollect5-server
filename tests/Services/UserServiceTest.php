@@ -15,7 +15,7 @@ class UserServiceTest extends TestCase
     protected $faker;
     protected $googleUser;
 
-    public function setUp()
+    public function setUp():void
     {
         parent::setUp();
         $this->faker = Faker::create();

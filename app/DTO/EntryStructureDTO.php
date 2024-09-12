@@ -2,27 +2,26 @@
 
 namespace ec5\DTO;
 
+use ec5\Models\Entries\BranchEntry;
+use ec5\Models\Entries\Entry;
 use Hash;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class EntryStructureDTO
 {
-    protected $data = [];
-    protected $answers = [];
-    protected $userId = 0;
-    protected $updateUserId = false;
-    protected $projectId = 0;
-    /**
-     * @var ProjectRoleDTO|null
-     */
-    protected $projectRole = null;
-    protected $geoJson = [];
-    protected $branchOwnerEntryRowId;
-    protected $possibleAnswers = [];
-    protected $existingEntry = null;
-    protected $file = null;
+    protected array $data = [];
+    protected array $answers = [];
+    protected int $userId = 0;
+    protected bool $updateUserId = false;
+    protected int $projectId = 0;
+    protected ProjectRoleDTO|null $projectRole = null;
+    protected array $geoJson = [];
+    protected int $branchOwnerEntryRowId;
+    protected array $possibleAnswers = [];
+    protected Entry|BranchEntry|null $existingEntry = null;
+    protected UploadedFile|null $file = null;
 
-    public function init($payload, $projectId, $requestedUser, $requestedProjectRole)
+    public function init($payload, $projectId, $requestedUser, $requestedProjectRole): void
     {
         // Get current user (from $requestedUser since we do not know what guard was used)
         $user = $requestedUser;
@@ -41,7 +40,7 @@ class EntryStructureDTO
     }
 
 
-    public function createStructure($payload)
+    public function createStructure($payload): void
     {
         /**
          * @var array $payload
@@ -131,12 +130,12 @@ class EntryStructureDTO
      *
      * @param $ownerId
      */
-    public function setOwnerEntryID($ownerId)
+    public function setOwnerEntryID($ownerId): void
     {
         $this->branchOwnerEntryRowId = $ownerId;
     }
 
-    public function setOwnerEntryUuid($ownerEntryUuid)
+    public function setOwnerEntryUuid($ownerEntryUuid): void
     {
         $this->data['relationships']['branch']['data']['owner_entry_uuid'] = $ownerEntryUuid;
     }
@@ -149,23 +148,17 @@ class EntryStructureDTO
     /**
      * @param $userId
      */
-    public function setUserId($userId)
+    public function setUserId($userId): void
     {
         $this->userId = $userId;
     }
 
-    /**
-     * @param $projectId
-     */
-    public function setProjectId($projectId)
+    public function setProjectId($projectId): void
     {
         $this->projectId = $projectId;
     }
 
-    /**
-     * @param ProjectRoleDTO $projectRole
-     */
-    public function setProjectRole(ProjectRoleDTO $projectRole)
+    public function setProjectRole(ProjectRoleDTO $projectRole): void
     {
         $this->projectRole = $projectRole;
     }
@@ -175,18 +168,12 @@ class EntryStructureDTO
         return $this->projectRole;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getUserId()
+    public function getUserId(): int
     {
         return $this->userId;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getProjectId()
+    public function getProjectId(): int
     {
         return $this->projectId;
     }
@@ -203,7 +190,13 @@ class EntryStructureDTO
          * is the current date, otherwise it will be saved as 0000... in the db
          * since we are returning an empty string
          * */
-        return $this->getEntry()['created_at'] ?? date('Y-m-d H:i:s');
+        if (isset($this->getEntry()['created_at'])) {
+            //hack due to Laravel 7 adding unwanted .000 (milliseconds)
+            // return Carbon::parse($this->getEntry()['created_at'])->format('Y-m-d H:i:s');
+            return $this->getEntry()['created_at'];
+        } else {
+            return date('Y-m-d H:i:s');
+        }
     }
 
     public function getDeviceId(): ?string
@@ -273,11 +266,7 @@ class EntryStructureDTO
         return $entry;
     }
 
-    /**
-     * @param $inputRef
-     * @param $answer
-     */
-    public function addValidatedAnswer($inputRef, $answer)
+    public function addValidatedAnswer(string $inputRef, array $answer): void
     {
         $this->answers[$inputRef] = $answer;
     }
@@ -287,11 +276,7 @@ class EntryStructureDTO
         return (count($this->answers) > 0 ? $this->answers : []);
     }
 
-    /**
-     * @param $inputRef
-     * @return mixed
-     */
-    public function getValidatedAnswer($inputRef)
+    public function getValidatedAnswer(string $inputRef)
     {
         return $this->answers[$inputRef];
     }
@@ -309,18 +294,12 @@ class EntryStructureDTO
         return in_array($this->getEntryType(), ['entry', 'branch_entry']);
     }
 
-    /**
-     * @return int
-     */
-    public function getEntryUuid()
+    public function getEntryUuid(): string
     {
         return $this->data['id'] ?? '';
     }
 
-    /**
-     * @return mixed
-     */
-    public function getGeoJson()
+    public function getGeoJson(): array
     {
         return $this->geoJson;
     }
@@ -348,18 +327,12 @@ class EntryStructureDTO
         return $this->data['relationships']['parent']['data']['parent_form_ref'] ?? '';
     }
 
-    /**
-     * @param $possibleAnswer
-     */
-    public function addPossibleAnswer($possibleAnswer)
+    public function addPossibleAnswer(string $possibleAnswer): void
     {
         $this->possibleAnswers[$possibleAnswer] = 1;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getPossibleAnswers()
+    public function getPossibleAnswers(): array
     {
         return $this->possibleAnswers;
     }
@@ -369,7 +342,7 @@ class EntryStructureDTO
      *
      * They are needed for the dataviewer pie charts
      */
-    public function addPossibleAnswersToGeoJson()
+    public function addPossibleAnswersToGeoJson(): void
     {
         foreach ($this->geoJson as $inputRef => $geo) {
             $this->geoJson[$inputRef]['properties']['possible_answers'] = $this->getPossibleAnswers();
@@ -381,23 +354,12 @@ class EntryStructureDTO
         return count($this->geoJson) > 0;
     }
 
-    public function setHasGeoLocation(): bool
-    {
-        return count($this->geoJson) > 0;
-    }
-
-    /**
-     * @param $entry
-     */
-    public function addExistingEntry($entry)
+    public function addExistingEntry($entry): void
     {
         $this->existingEntry = $entry;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getExisting()
+    public function getExisting(): BranchEntry|Entry|null
     {
         return $this->existingEntry;
     }
@@ -419,20 +381,15 @@ class EntryStructureDTO
         return isset($this->getEntry()['title']) && !empty($this->getEntry()['title']) ? $this->getEntry()['title'] : $this->getEntryUuid();
     }
 
-    /**
-     * @return mixed|string
-     */
-    public function getProjectVersion()
+    public function getProjectVersion(): string
     {
         return $this->getEntry()['project_version'] ?? '';
     }
 
     /**
      * Load an uploaded file into the entry structure
-     *
-     * @param UploadedFile $file
      */
-    public function setFile(UploadedFile $file)
+    public function setFile(UploadedFile $file): void
     {
         $this->file = $file;
     }
@@ -440,7 +397,7 @@ class EntryStructureDTO
     /**
      * @return UploadedFile|null
      */
-    public function getFile(): ?UploadedFile
+    public function getFile(): UploadedFile|null
     {
         return $this->file ?? null;
     }
@@ -507,7 +464,7 @@ class EntryStructureDTO
      *      'accuracy': '---'
      *  }
      */
-    public function addGeoJsonObject($inputDetails, $locationAnswer)
+    public function addGeoJsonObject(array $inputDetails, array $locationAnswer): void
     {
         $geoJson = [];
         $geoJson['type'] = 'Feature';
@@ -532,7 +489,7 @@ class EntryStructureDTO
         $this->geoJson[$inputDetails['ref']] = $geoJson;
     }
 
-    public function addAnswerToEntry($input, $answerData)
+    public function addAnswerToEntry(array $input, array $answerData): void
     {
         // Filter out types which don't need an answer
         if (!in_array($input['type'], array_keys(config('epicollect.strings.inputs_without_answers')))) {

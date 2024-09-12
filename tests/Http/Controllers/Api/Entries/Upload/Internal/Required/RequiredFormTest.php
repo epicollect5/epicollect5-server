@@ -22,7 +22,7 @@ class RequiredFormTest extends TestCase
 {
     use DatabaseTransactions, Assertions;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         //remove leftovers
@@ -132,7 +132,7 @@ class RequiredFormTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -180,7 +180,7 @@ class RequiredFormTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -230,7 +230,7 @@ class RequiredFormTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -280,7 +280,7 @@ class RequiredFormTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -330,7 +330,7 @@ class RequiredFormTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -380,7 +380,7 @@ class RequiredFormTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -430,7 +430,7 @@ class RequiredFormTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -480,7 +480,7 @@ class RequiredFormTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -530,7 +530,7 @@ class RequiredFormTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -582,7 +582,7 @@ class RequiredFormTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -632,7 +632,7 @@ class RequiredFormTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -682,7 +682,7 @@ class RequiredFormTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -732,7 +732,7 @@ class RequiredFormTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

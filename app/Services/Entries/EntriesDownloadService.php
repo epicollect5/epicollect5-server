@@ -7,19 +7,19 @@ use ec5\Libraries\Utilities\Common;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use ec5\Services\Mapping\DataMappingService;
-use Exception;
 use File;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Log;
 use Storage;
+use Throwable;
 use ZipArchive;
 
 class EntriesDownloadService
 {
-    protected $project;
-    protected $dataMappingService;
-    protected $errors = [];
+    protected ProjectDTO $project;
+    protected DataMappingService $dataMappingService;
+    protected array $errors = [];
 
     public function __construct(DataMappingService $dataMappingService)
     {
@@ -104,14 +104,14 @@ class EntriesDownloadService
         }
         try {
             $this->buildZipArchive($projectDir, $project->slug, $format);
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             Log::error('buildZipArchive failed', ['exception' => $e->getMessage()]);
             return false;
         }
         return true;
     }
 
-    private function buildZipArchive($projectDir, $projectSlug, $format)
+    private function buildZipArchive($projectDir, $projectSlug, $format): void
     {
         $zip = new ZipArchive();
         $zipFileName = $projectSlug . '-' . $format . '.zip';
@@ -153,6 +153,7 @@ class EntriesDownloadService
         return false;
     }
 
+    /** @noinspection PhpInconsistentReturnPointsInspection */
     public function writeCSV(Builder $query, $outputFile): bool
     {
         //check memory consumption
@@ -200,7 +201,7 @@ class EntriesDownloadService
             }
             fclose($file);
             return true;
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             Log::error('writeCSV failed', ['exception' => $e->getMessage()]);
             return false;
         }
@@ -247,7 +248,7 @@ class EntriesDownloadService
             }
             fclose($file);
             return true;
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             Log::error('writeJSON failed', ['exception' => $e->getMessage()]);
             return false;
         }

@@ -2,6 +2,8 @@
 
 namespace ec5\Models\User;
 
+use Carbon\Carbon;
+use ec5\Traits\Models\SerializeDates;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
@@ -17,7 +19,27 @@ class User extends Model implements
     CanResetPasswordContract,
     AuthenticatableContract
 {
-    use Authenticatable, Authorizable, CanResetPassword, HasApiTokens, Notifiable;
+    /**
+     * @property int $id
+     * @property string $name
+     * @property string $last_name
+     * @property string $email
+     * @property string $password
+     * @property string $avatar
+     * @property string $remember_token
+     * @property string $server_role
+     * @property Carbon $created_at
+     * @property Carbon $updated_at
+     * @property string $state
+     * @property string $api_token
+     */
+
+    use Authenticatable;
+    use Authorizable;
+    use CanResetPassword;
+    use HasApiTokens;
+    use Notifiable;
+    use SerializeDates;
 
     protected $table = 'users';
     protected $fillable = ['name', 'last_name', 'email', 'password', 'avatar', 'state', 'server_role'];

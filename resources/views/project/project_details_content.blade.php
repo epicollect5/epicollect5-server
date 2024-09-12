@@ -1,3 +1,6 @@
+@php
+    $updatedAt = $requestAttributes->requestedProject->getUpdatedAt();
+@endphp
 {{-- Success Message --}}
 @if (session('projectCreated') && session('tab') === 'create')
     @include('modals/modal_project_not_ready')
@@ -265,17 +268,19 @@
 
 </div><!-- end row -->
 
-<div class="row">
-    <div class="col-sm-12 col-md-12 col-lg-12">
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <div class="panel-title">App Link</div>
-            </div>
-            <div class="panel-body deeplink-btn-panel">
-                <p>On any device with the Epicollect5 app installed, tapping the link below will automatically add the
-                    project.
-                    <span class="deeplink-copy-btn"
-                          data-url="{{ url('/open/project') . '/' . $requestAttributes->requestedProject->slug }}">
+@if(config('epicollect.setup.system.app_link_enabled'))
+    <div class="row">
+        <div class="col-sm-12 col-md-12 col-lg-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <div class="panel-title">App Link</div>
+                </div>
+                <div class="panel-body deeplink-btn-panel">
+                    <p>On any device with the Epicollect5 app installed, tapping the link below will automatically add
+                        the
+                        project.
+                        <span class="deeplink-copy-btn"
+                              data-url="{{ url('/open/project') . '/' . $requestAttributes->requestedProject->slug }}">
                         Copy App Link
                         <i class="material-icons" data-toggle="tooltip" data-placement="top"
                            title="Copied!"
@@ -283,28 +288,30 @@
                             content_copy
                         </i>
                     </span>
-                </p>
+                    </p>
 
-                <p>
-                    <a href="{{ url('/open/project/'.$requestAttributes->requestedProject->slug) }}" target="_blank">
-                        {{ url('/open/project/'.$requestAttributes->requestedProject->slug) }}
-                    </a>
-                </p>
-                <p>Likewise, scanning the barcode below will load the project</p>
-                <div id="qrcode"
-                     data-url=" {{ url('/open/project/'.$requestAttributes->requestedProject->slug) }}">
+                    <p>
+                        <a href="{{ url('/open/project/'.$requestAttributes->requestedProject->slug) }}"
+                           target="_blank">
+                            {{ url('/open/project/'.$requestAttributes->requestedProject->slug) }}
+                        </a>
+                    </p>
+                    <p>Likewise, scanning the barcode below will load the project</p>
+                    <div id="qrcode"
+                         data-url=" {{ url('/open/project/'.$requestAttributes->requestedProject->slug) }}">
+                    </div>
+
+                    <a class="btn btn-action margin-top-sm" id="qrcode-download" href="#"
+                       download={{$requestAttributes->requestedProject->slug.'.qr.png'}}>Download QR Code</a>
+
+
+                    {{--                @include('project.share.share_links')--}}
                 </div>
-
-                <a class="btn btn-action margin-top-sm" id="qrcode-download" href="#"
-                   download={{$requestAttributes->requestedProject->slug.'.qr.png'}}>Download QR Code</a>
-
-
-                {{--                @include('project.share.share_links')--}}
             </div>
-        </div>
 
+        </div>
     </div>
-</div>
+@endif
 
 <div class="row">
     <div class="col-sm-12 col-md-12 col-lg-12">
@@ -335,7 +342,7 @@
                         <p>Project Id : {{ $requestAttributes->requestedProject->getId() }}</p>
                         <p>Project Ref : {{ $requestAttributes->requestedProject->ref }}</p>
                         <p>Created By : {{ $creatorEmail }}</p>
-                        <p>Updated at : {{ $requestAttributes->requestedProject->getUpdatedAt() }}</p>
+                        <p>Updated at : {{ $updatedAt }}</p>
                     </div>
                     <p>
                         <strong>

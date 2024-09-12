@@ -99,7 +99,7 @@ class ProjectCreateController
         try {
             // Create everything for this project
             $this->project->create($newProjectRef, $payload);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $request->flash();
             return Redirect::to('myprojects/create')
                 ->withErrors(['db' => ['ec5_224']])

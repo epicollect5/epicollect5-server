@@ -5,15 +5,12 @@ namespace ec5\Traits\Eloquent;
 use Carbon\Carbon;
 use DB;
 use ec5\DTO\EntryStructureDTO;
-use ec5\Http\Validation\Entries\Upload\RuleAnswers;
-use Exception;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Http\Request;
 use Log;
+use Throwable;
 
 trait Entries
 {
-
     /**
      * Search for entries based on answers
      *
@@ -96,7 +93,7 @@ trait Entries
                 $table = config('epicollect.tables.branch_entries');
             }
             return DB::table($table)->insertGetId($entry);
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             return 0;
         }

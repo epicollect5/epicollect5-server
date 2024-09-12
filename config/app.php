@@ -156,12 +156,7 @@ return [
         Illuminate\Filesystem\FilesystemServiceProvider::class,
         Illuminate\Foundation\Providers\FoundationServiceProvider::class,
         Illuminate\Hashing\HashServiceProvider::class,
-
-        //Override default provider to fix 404 domain not found mailgun
-        // see t.ly/OYMqD
-        //Illuminate\Mail\MailServiceProvider::class,
-        ec5\Mail\Transports\MailServiceProvider::class,
-
+        Illuminate\Mail\MailServiceProvider::class,
         Illuminate\Pagination\PaginationServiceProvider::class,
         Illuminate\Pipeline\PipelineServiceProvider::class,
         Illuminate\Queue\QueueServiceProvider::class,
@@ -188,6 +183,7 @@ return [
         ec5\Providers\Macros\Response\ToCSVStreamMacro::class,
         ec5\Providers\Macros\Response\ToCSVFileMacro::class,
         ec5\Providers\Macros\Response\ToJSONFileMacro::class,
+        ec5\Providers\Macros\Response\ToMediaStreamMacro::class,
 
         /**
          * Custom Service Providers
@@ -198,12 +194,10 @@ return [
         ec5\Libraries\Ldap\LdapServiceProvider::class,
         // Image Intervention
         Intervention\Image\ImageServiceProvider::class,
-        // Debugbar
-        Barryvdh\Debugbar\ServiceProvider::class,
         // Laravel Passport
         Laravel\Passport\PassportServiceProvider::class,
         //Avatar
-        Laravolt\Avatar\ServiceProvider::class,
+        Laravolt\Avatar\ServiceProvider::class
     ],
 
     /*
@@ -253,7 +247,6 @@ return [
         'Ldap' => ec5\Libraries\Ldap\Ldap::class,
         'Uuid' => Webpatser\Uuid\Uuid::class,
         'Image' => Intervention\Image\Facades\Image::class,
-        'Debugbar' => Barryvdh\Debugbar\Facade::class,
         'Avatar' => Laravolt\Avatar\Facade::class,
         'Notification' => Illuminate\Support\Facades\Notification::class,
         'Common' => ec5\Libraries\Utilities\Common::class

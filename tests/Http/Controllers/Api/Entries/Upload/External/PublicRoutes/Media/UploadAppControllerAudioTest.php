@@ -1,6 +1,6 @@
 <?php
 
-namespace Http\Controllers\Api\Entries\Upload\External\PublicRoutes\Media;
+namespace Tests\Http\Controllers\Api\Entries\Upload\External\PublicRoutes\Media;
 
 use ec5\Libraries\Utilities\Common;
 use ec5\Models\Entries\BranchEntry;
@@ -33,7 +33,7 @@ class UploadAppControllerAudioTest extends TestCase
 
     private $endpoint = 'api/upload/';
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->faker = Faker::create();
@@ -168,7 +168,7 @@ class UploadAppControllerAudioTest extends TestCase
 
             Storage::disk('audio')->deleteDirectory($this->project->ref);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -274,7 +274,7 @@ class UploadAppControllerAudioTest extends TestCase
 
             //deleted the file
             Storage::disk('audio')->deleteDirectory($this->project->ref);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -348,7 +348,7 @@ class UploadAppControllerAudioTest extends TestCase
             Storage::disk('audio')->deleteDirectory($this->project->ref);
 
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -421,7 +421,7 @@ class UploadAppControllerAudioTest extends TestCase
             Storage::disk('audio')->deleteDirectory($this->project->ref);
 
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -548,7 +548,7 @@ class UploadAppControllerAudioTest extends TestCase
 
             Storage::disk('audio')->deleteDirectory($this->project->ref);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -675,7 +675,7 @@ class UploadAppControllerAudioTest extends TestCase
             $audios = Storage::disk('audio')->files($this->project->ref);
             $this->assertCount(0, $audios);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -747,7 +747,7 @@ class UploadAppControllerAudioTest extends TestCase
             $audios = Storage::disk('audio')->files($this->project->ref);
             $this->assertCount(0, $audios);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -833,7 +833,7 @@ class UploadAppControllerAudioTest extends TestCase
             //assert file is not saved
             $audios = Storage::disk('audio')->files($this->project->ref);
             $this->assertCount(0, $audios);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

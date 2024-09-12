@@ -12,21 +12,23 @@ use ec5\Traits\Assertions;
 use Exception;
 use Faker\Factory as Faker;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 
 class ProjectMappingControllerTest extends TestCase
 {
-    use DatabaseTransactions, Assertions;
+    use DatabaseTransactions;
+    use Assertions;
 
-    const DRIVER = 'web';
+    public const DRIVER = 'web';
 
     private $user;
     private $projectDefinition;
     private $project;
     private $faker;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -75,11 +77,15 @@ class ProjectMappingControllerTest extends TestCase
 
         //see https://github.com/laravel/framework/issues/46455
         $response = $this->actingAs($user)
-            ->call('POST', 'api/internal/formbuilder/' . $project->slug,
+            ->call(
+                'POST',
+                'api/internal/formbuilder/' . $project->slug,
                 [],
                 [],
                 [],
-                [], $base64EncodedData);
+                [],
+                $base64EncodedData
+            );
         try {
             $response->assertStatus(200);
         } catch (Exception $exception) {
@@ -102,7 +108,7 @@ class ProjectMappingControllerTest extends TestCase
                 ->get('myprojects/' . $this->project->slug . '/mapping-data');
 
             $response[0]->assertStatus(200);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -184,15 +190,12 @@ class ProjectMappingControllerTest extends TestCase
                 $projectMappings[1]['is_default'],
                 $params['is_default']
             );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
-    /**
-     * @dataProvider multipleRunProvider
-     */
-    public function test_existing_mapping_is_updated()
+    #[DataProvider('multipleRunProvider')] public function test_existing_mapping_is_updated()
     {
         //get mapping
         $projectStructures = ProjectStructure::where('project_id', $this->project->id)
@@ -209,7 +212,8 @@ class ProjectMappingControllerTest extends TestCase
         ];
 
         //update it
-        ProjectStructure::where('project_id', $this->project->id)->update([
+        ProjectStructure::where('project_id', $this->project->id)->update(
+            [
                 'project_mapping' => json_encode($projectMappings)
             ]
         );
@@ -272,7 +276,7 @@ class ProjectMappingControllerTest extends TestCase
                 $projectMappings[1]['forms'],
                 $jsonResponse['data']['mapping'][1]['forms']
             );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -295,7 +299,8 @@ class ProjectMappingControllerTest extends TestCase
         ];
 
         //update it
-        ProjectStructure::where('project_id', $this->project->id)->update([
+        ProjectStructure::where('project_id', $this->project->id)->update(
+            [
                 'project_mapping' => json_encode($projectMappings)
             ]
         );
@@ -349,15 +354,12 @@ class ProjectMappingControllerTest extends TestCase
             $this->assertTrue(
                 $projectMappings[1]['is_default']
             );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
-    /**
-     * @dataProvider multipleRunProvider
-     */
-    public function test_existing_mapping_is_renamed()
+    #[DataProvider('multipleRunProvider')] public function test_existing_mapping_is_renamed()
     {
         //get mapping
         $projectStructures = ProjectStructure::where('project_id', $this->project->id)
@@ -374,7 +376,8 @@ class ProjectMappingControllerTest extends TestCase
         ];
 
         //update it
-        ProjectStructure::where('project_id', $this->project->id)->update([
+        ProjectStructure::where('project_id', $this->project->id)->update(
+            [
                 'project_mapping' => json_encode($projectMappings)
             ]
         );
@@ -428,7 +431,7 @@ class ProjectMappingControllerTest extends TestCase
             $this->assertFalse(
                 $projectMappings[1]['is_default']
             );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -450,7 +453,8 @@ class ProjectMappingControllerTest extends TestCase
         ];
 
         //update it
-        ProjectStructure::where('project_id', $this->project->id)->update([
+        ProjectStructure::where('project_id', $this->project->id)->update(
+            [
                 'project_mapping' => json_encode($projectMappings)
             ]
         );
@@ -493,7 +497,7 @@ class ProjectMappingControllerTest extends TestCase
                 $projectMappings,
                 $jsonResponse['data']['mapping']
             );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -529,7 +533,8 @@ class ProjectMappingControllerTest extends TestCase
 
 
         //update it
-        ProjectStructure::where('project_id', $this->project->id)->update([
+        ProjectStructure::where('project_id', $this->project->id)->update(
+            [
                 'project_mapping' => json_encode($projectMappings)
             ]
         );
@@ -568,8 +573,9 @@ class ProjectMappingControllerTest extends TestCase
                             "source" => "mapping"
                         ]
                     ]
-                ]);
-        } catch (Exception $e) {
+                ]
+            );
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -602,7 +608,8 @@ class ProjectMappingControllerTest extends TestCase
         ];
 
         //update it
-        ProjectStructure::where('project_id', $this->project->id)->update([
+        ProjectStructure::where('project_id', $this->project->id)->update(
+            [
                 'project_mapping' => json_encode($projectMappings)
             ]
         );
@@ -641,8 +648,9 @@ class ProjectMappingControllerTest extends TestCase
                             "source" => "mapping"
                         ]
                     ]
-                ]);
-        } catch (Exception $e) {
+                ]
+            );
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -684,8 +692,9 @@ class ProjectMappingControllerTest extends TestCase
                             "source" => "mapping"
                         ]
                     ]
-                ]);
-        } catch (Exception $e) {
+                ]
+            );
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -708,7 +717,8 @@ class ProjectMappingControllerTest extends TestCase
         ];
 
         //update it
-        ProjectStructure::where('project_id', $this->project->id)->update([
+        ProjectStructure::where('project_id', $this->project->id)->update(
+            [
                 'project_mapping' => json_encode($projectMappings)
             ]
         );
@@ -754,8 +764,9 @@ class ProjectMappingControllerTest extends TestCase
                             "source" => $wrongFormRef
                         ]
                     ]
-                ]);
-        } catch (Exception $e) {
+                ]
+            );
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

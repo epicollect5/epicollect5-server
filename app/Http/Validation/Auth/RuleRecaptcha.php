@@ -19,7 +19,7 @@ class RuleRecaptcha extends ValidationBase
         $this->messages['*.*'] = 'ec5_380';
     }
 
-    public function additionalChecks($inputs)
+    public function additionalChecks($inputs): void
     {
         if ($inputs['success'] !== true) {
             $this->addAdditionalError('captcha', 'ec5_380');

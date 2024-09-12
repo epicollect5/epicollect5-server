@@ -14,6 +14,7 @@ use ec5\Traits\Assertions;
 use Exception;
 use Faker\Factory as Faker;
 use Illuminate\Support\Facades\Auth;
+use PHPUnit\Framework\Attributes\Depends;
 use Tests\Generators\EntryGenerator;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
@@ -30,7 +31,7 @@ class UploadAppControllerSequenceTest extends TestCase
 
     private $endpoint = 'api/upload/';
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->faker = Faker::create();
@@ -123,10 +124,7 @@ class UploadAppControllerSequenceTest extends TestCase
         }
     }
 
-    /**
-     * @depends test_should_create_fake_project
-     */
-    public function test_it_should_catch_user_not_logged_in($params)
+    #[Depends('test_should_create_fake_project')] public function test_it_should_catch_user_not_logged_in($params)
     {
         $user = $params['user'];
         $projectDefinition = $params['projectDefinition'];
@@ -158,7 +156,7 @@ class UploadAppControllerSequenceTest extends TestCase
                 'project' => $project,
                 'entryGenerator' => $entryGenerator
             ];
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project
@@ -168,10 +166,7 @@ class UploadAppControllerSequenceTest extends TestCase
         }
     }
 
-    /**
-     * @depends test_it_should_catch_user_not_logged_in
-     */
-    public function test_it_should_catch_user_logged_in_but_not_a_member($params)
+    #[Depends('test_it_should_catch_user_not_logged_in')] public function test_it_should_catch_user_logged_in_but_not_a_member($params)
     {
         $notAMember = factory(User::class)->create();
         $user = $params['user'];
@@ -204,7 +199,7 @@ class UploadAppControllerSequenceTest extends TestCase
                 'project' => $project,
                 'entryGenerator' => $entryGenerator
             ];
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project
@@ -214,9 +209,7 @@ class UploadAppControllerSequenceTest extends TestCase
         }
     }
 
-    /**
-     * @depends test_it_should_catch_user_logged_in_but_not_a_member
-     */
+    #[Depends('test_it_should_catch_user_logged_in_but_not_a_member')]
     public function test_it_should_upload_a_top_hierarchy_entry($params)
     {
         $response = [];
@@ -272,7 +265,7 @@ class UploadAppControllerSequenceTest extends TestCase
                 'project' => $project,
                 'entryGenerator' => $entryGenerator
             ];
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project
@@ -282,10 +275,7 @@ class UploadAppControllerSequenceTest extends TestCase
         }
     }
 
-    /**
-     * @depends test_it_should_upload_a_top_hierarchy_entry
-     */
-    public function test_it_should_upload_a_child_entry_level_1($params)
+    #[Depends('test_it_should_upload_a_top_hierarchy_entry')] public function test_it_should_upload_a_child_entry_level_1($params)
     {
         $entry = $params['entry'];
         $user = $params['user'];
@@ -345,7 +335,7 @@ class UploadAppControllerSequenceTest extends TestCase
                 'project' => $project,
                 'entryGenerator' => $entryGenerator
             ];
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project
@@ -354,10 +344,7 @@ class UploadAppControllerSequenceTest extends TestCase
         }
     }
 
-    /**
-     * @depends test_it_should_upload_a_child_entry_level_1
-     */
-    public function test_it_should_upload_a_child_entry_level_2($params)
+    #[Depends('test_it_should_upload_a_child_entry_level_1')] public function test_it_should_upload_a_child_entry_level_2($params)
     {
         $response = [];
         try {
@@ -423,7 +410,7 @@ class UploadAppControllerSequenceTest extends TestCase
                 'project' => $project,
                 'entryGenerator' => $entryGenerator
             ];
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project
@@ -433,10 +420,7 @@ class UploadAppControllerSequenceTest extends TestCase
         }
     }
 
-    /**
-     * @depends test_it_should_upload_a_child_entry_level_2
-     */
-    public function test_it_should_upload_a_child_entry_level_3($params)
+    #[Depends('test_it_should_upload_a_child_entry_level_2')] public function test_it_should_upload_a_child_entry_level_3($params)
     {
         $response = [];
         try {
@@ -507,7 +491,7 @@ class UploadAppControllerSequenceTest extends TestCase
                 'project' => $project,
                 'entryGenerator' => $entryGenerator
             ];
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project
@@ -516,10 +500,7 @@ class UploadAppControllerSequenceTest extends TestCase
         }
     }
 
-    /**
-     * @depends test_it_should_upload_a_child_entry_level_3
-     */
-    public function test_it_should_upload_a_child_entry_level_4($params)
+    #[Depends('test_it_should_upload_a_child_entry_level_3')] public function test_it_should_upload_a_child_entry_level_4($params)
     {
         $response = [];
         try {
@@ -594,7 +575,7 @@ class UploadAppControllerSequenceTest extends TestCase
                 'project' => $project,
                 'entryGenerator' => $entryGenerator
             ];
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project
@@ -603,10 +584,7 @@ class UploadAppControllerSequenceTest extends TestCase
         }
     }
 
-    /**
-     * @depends test_it_should_upload_a_child_entry_level_4
-     */
-    public function test_it_should_upload_branch_entry_0($params)
+    #[Depends('test_it_should_upload_a_child_entry_level_4')] public function test_it_should_upload_branch_entry_0($params)
     {
         $response = [];
         try {
@@ -702,7 +680,7 @@ class UploadAppControllerSequenceTest extends TestCase
                 'project' => $project,
                 'entryGenerator' => $entryGenerator
             ];
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project
@@ -711,10 +689,7 @@ class UploadAppControllerSequenceTest extends TestCase
         }
     }
 
-    /**
-     * @depends test_it_should_upload_branch_entry_0
-     */
-    public function test_it_should_upload_branch_entry_1($params)
+    #[Depends('test_it_should_upload_branch_entry_0')] public function test_it_should_upload_branch_entry_1($params)
     {
         $entry = $params['entry'];
         $childEntry1 = $params['childEntry1'];
@@ -806,7 +781,7 @@ class UploadAppControllerSequenceTest extends TestCase
                 'project' => $project,
                 'entryGenerator' => $entryGenerator
             ];
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project
@@ -815,10 +790,7 @@ class UploadAppControllerSequenceTest extends TestCase
         }
     }
 
-    /**
-     * @depends test_it_should_upload_branch_entry_1
-     */
-    public function test_it_should_upload_branch_entry_2($params)
+    #[Depends('test_it_should_upload_branch_entry_1')] public function test_it_should_upload_branch_entry_2($params)
     {
         $entry = $params['entry'];
         $childEntry1 = $params['childEntry1'];
@@ -909,7 +881,7 @@ class UploadAppControllerSequenceTest extends TestCase
                 'project' => $project,
                 'entryGenerator' => $entryGenerator
             ];
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project
@@ -918,10 +890,7 @@ class UploadAppControllerSequenceTest extends TestCase
         }
     }
 
-    /**
-     * @depends test_it_should_upload_branch_entry_2
-     */
-    public function test_it_should_upload_branch_entry_3($params)
+    #[Depends('test_it_should_upload_branch_entry_2')] public function test_it_should_upload_branch_entry_3($params)
     {
         $entry = $params['entry'];
         $childEntry1 = $params['childEntry1'];
@@ -1012,7 +981,7 @@ class UploadAppControllerSequenceTest extends TestCase
                 'project' => $project,
                 'entryGenerator' => $entryGenerator
             ];
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project
@@ -1021,10 +990,7 @@ class UploadAppControllerSequenceTest extends TestCase
         }
     }
 
-    /**
-     * @depends test_it_should_upload_branch_entry_3
-     */
-    public function test_it_should_upload_branch_entry_4($params)
+    #[Depends('test_it_should_upload_branch_entry_3')] public function test_it_should_upload_branch_entry_4($params)
     {
         $childEntry4 = $params['childEntry4'];
         $user = $params['user'];
@@ -1105,7 +1071,7 @@ class UploadAppControllerSequenceTest extends TestCase
                 'user' => $user,
                 'project' => $project
             ]);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project

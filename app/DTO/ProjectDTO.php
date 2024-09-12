@@ -25,45 +25,29 @@ use ec5\Services\Mapping\ProjectMappingService;
 
 class ProjectDTO
 {
-    /**
-     * @var ProjectDefinitionDTO
-     */
-    protected $projectDefinition;
-    /**
-     * @var ProjectExtraDTO
-     */
-    protected $projectExtra;
-    /**
-     * @var ProjectMappingDTO
-     */
-    protected $projectMapping;
-    /**
-     * @var ProjectStatsDTO
-     */
-    protected $projectStats;
-    // Null ids
-    protected $id = null;
-    protected $structure_id = null;
+    protected ProjectDefinitionDTO $projectDefinition;
+    protected ProjectExtraDTO $projectExtra;
+    protected ProjectMappingDTO $projectMapping;
+    protected ProjectStatsDTO $projectStats;
+    protected int|null $id = null;
+    protected int|null $structure_id = null;
     // Null timestamps
-    public $created_at = null;
-    protected $updated_at = null;
+    public string|null $created_at = null;
+    protected string|null $updated_at = null;
     // Own public properties, reflecting those in 'projects' db table which are mutable
-    public $name = '';
-    public $slug = '';
-    public $ref = '';
-    public $description = '';
-    public $small_description = '';
-    public $logo_url = '';
-    public $access = '';
-    public $visibility = '';
-    public $category = '';
-    public $created_by = '';
-    public $status = '';
-    public $can_bulk_upload = 'nobody';
-    /**
-     * @var ProjectMappingService
-     */
-    private $projectMappingService;
+    public string $name = '';
+    public string $slug = '';
+    public string $ref = '';
+    public string $description = '';
+    public string $small_description = '';
+    public string $logo_url = '';
+    public string $access = '';
+    public string $visibility = '';
+    public string $category = '';
+    public string $created_by = '';
+    public string $status = '';
+    public string $can_bulk_upload = 'nobody';
+    private ProjectMappingService $projectMappingService;
 
     public function __construct(
         ProjectDefinitionDTO  $projectDefinition,
@@ -71,8 +55,7 @@ class ProjectDTO
         ProjectMappingDTO     $projectMapping,
         ProjectStatsDTO       $projectStats,
         ProjectMappingService $projectMappingService
-    )
-    {
+    ) {
         $this->projectDefinition = $projectDefinition;
         $this->projectExtra = $projectExtra;
         $this->projectMapping = $projectMapping;
@@ -112,7 +95,7 @@ class ProjectDTO
      * "structure_id": 145096
      * }
      */
-    public function initAllDTOs(stdClass $data)
+    public function initAllDTOs(stdClass $data): void
     {
         $this->addProjectDefinition($data->project_definition ?? []);
         $this->addProjectExtra($data->project_extra ?? []);
@@ -145,7 +128,7 @@ class ProjectDTO
      * @param $projectDetails
      * @throws Exception
      */
-    public function create($projectRef, $projectDetails)
+    public function create($projectRef, $projectDetails): void
     {
         // Check we have the required project and form name data set
         if (!isset($projectDetails['name']) || !isset($projectDetails['form_name'])) {
@@ -208,8 +191,7 @@ class ProjectDTO
         $createdBy,
         $projectDefinitionData,
         RuleProjectDefinition $projectDefinitionValidator
-    )
-    {
+    ): void {
         // Take new name, slug, default logo_url
         $projectDefinitionData['project']['name'] = $projectName;
         $projectDefinitionData['project']['slug'] = Str::slug($projectName, '-');
@@ -237,7 +219,7 @@ class ProjectDTO
     /**
      * Clone from existing structure
      */
-    public function cloneProject($params)
+    public function cloneProject(array $params): void
     {
         $existingProjectRef = $this->ref;
         $newProjectRef = str_replace('-', '', Uuid::uuid4()->toString());
@@ -315,31 +297,19 @@ class ProjectDTO
         return $this;
     }
 
-    /**
-     * @param String | array $projectExtraData
-     * @return ProjectDTO
-     */
-    public function addProjectExtra($projectExtraData): ProjectDTO
+    public function addProjectExtra(array|string $projectExtraData): ProjectDTO
     {
         $this->projectExtra->init($projectExtraData);
         return $this;
     }
 
-    /**
-     * @param String | array $projectMappingData
-     * @return ProjectDTO
-     */
-    public function addProjectMapping($projectMappingData): ProjectDTO
+    public function addProjectMapping(array|string $projectMappingData): ProjectDTO
     {
         $this->projectMapping->init($projectMappingData);
         return $this;
     }
 
-    /**
-     * @param String | array $projectStatsData
-     * @return ProjectDTO
-     */
-    public function addProjectStats($projectStatsData): ProjectDTO
+    public function addProjectStats(array $projectStatsData): ProjectDTO
     {
         $this->projectStats->init($projectStatsData);
         return $this;
@@ -351,7 +321,7 @@ class ProjectDTO
      *
      * @param $data
      */
-    public function updateProjectDetails($data)
+    public function updateProjectDetails($data): void
     {
         // Detail keys that are allowed to be updated
         $updateOnly = array_keys(config('epicollect.structures.updatable_project_details'));
@@ -419,36 +389,34 @@ class ProjectDTO
         return $this->projectStats;
     }
 
-    /**
-     * @return
-     */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function setId($id)
+    public function setId($id): void
     {
         $this->id = $id;
     }
-
-    public function getUpdatedAt()
+    /** @noinspection PhpUnused */
+    //used in blade template
+    public function getUpdatedAt(): string
     {
         return $this->updated_at;
     }
 
-    public function getCreatedAt()
+    public function getCreatedAt(): ?string
     {
         return $this->created_at;
     }
 
-    public function getCanBulkUpload()
+    public function getCanBulkUpload(): string
     {
         return $this->can_bulk_upload;
     }
 
 
-    public function setEntriesLimits($entriesLimits)
+    public function setEntriesLimits($entriesLimits): void
     {
         $this->projectDefinition->clearEntriesLimits();
         foreach ($entriesLimits as $ref => $params) {
@@ -469,13 +437,18 @@ class ProjectDTO
         return $this->access === config('epicollect.strings.project_access.public');
     }
 
-    public function canBulkUpload()
+    public function isLocked(): bool
     {
-        return $this->can_bulk_upload;
+        return $this->status === config('epicollect.strings.project_status.locked');
     }
 
-    public function hasInputs()
+    public function isTrashed(): bool
     {
+        return $this->status === config('epicollect.strings.project_status.trashed');
+    }
 
+    public function canBulkUpload(): string
+    {
+        return $this->can_bulk_upload;
     }
 }

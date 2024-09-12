@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Auth;
 use Tests\Generators\EntryGenerator;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
+use Illuminate\Support\Arr;
 
 class UniquenessHierarchyTest extends TestCase
 {
@@ -26,7 +27,7 @@ class UniquenessHierarchyTest extends TestCase
 
     private $endpoint = 'api/upload/';
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         //remove leftovers
@@ -202,7 +203,7 @@ class UniquenessHierarchyTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -317,7 +318,7 @@ class UniquenessHierarchyTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -432,7 +433,7 @@ class UniquenessHierarchyTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -547,7 +548,7 @@ class UniquenessHierarchyTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -669,7 +670,7 @@ class UniquenessHierarchyTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -791,7 +792,7 @@ class UniquenessHierarchyTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -913,7 +914,7 @@ class UniquenessHierarchyTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1035,7 +1036,7 @@ class UniquenessHierarchyTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1157,7 +1158,7 @@ class UniquenessHierarchyTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1282,7 +1283,7 @@ class UniquenessHierarchyTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1407,7 +1408,7 @@ class UniquenessHierarchyTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1532,7 +1533,7 @@ class UniquenessHierarchyTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1657,7 +1658,7 @@ class UniquenessHierarchyTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1782,7 +1783,7 @@ class UniquenessHierarchyTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1897,7 +1898,7 @@ class UniquenessHierarchyTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -2012,7 +2013,7 @@ class UniquenessHierarchyTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

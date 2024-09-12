@@ -2,6 +2,7 @@
 
 namespace Tests\Http\Controllers\Api\Entries\Upload\External\PublicRoutes\Version;
 
+use Carbon\Carbon;
 use ec5\Libraries\Utilities\Common;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
@@ -26,7 +27,7 @@ class ProjectVersionEntriesTest extends TestCase
 
     private $endpoint = 'api/upload/';
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         //remove leftovers
@@ -131,6 +132,7 @@ class ProjectVersionEntriesTest extends TestCase
         ProjectStructure::where('project_id', $this->project->id)->update([
             'project_definition' => json_encode($this->projectDefinition['data']),
             'project_extra' => json_encode($projectExtra),
+            'updated_at' => Carbon::now()
         ]);
 
         $response = [];
@@ -148,7 +150,7 @@ class ProjectVersionEntriesTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -206,6 +208,7 @@ class ProjectVersionEntriesTest extends TestCase
             ProjectStructure::where('project_id', $this->project->id)->update([
                 'project_definition' => json_encode($this->projectDefinition['data']),
                 'project_extra' => json_encode($projectExtra),
+                'updated_at' => Carbon::now()
             ]);
 
             //multipart upload from app with json encoded string and file (Cordova FileTransfer)
@@ -231,7 +234,7 @@ class ProjectVersionEntriesTest extends TestCase
             $this->assertCount(0, $photos);
             $photos = Storage::disk('entry_thumb')->files($this->project->ref);
             $this->assertCount(0, $photos);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -289,6 +292,7 @@ class ProjectVersionEntriesTest extends TestCase
             ProjectStructure::where('project_id', $this->project->id)->update([
                 'project_definition' => json_encode($this->projectDefinition['data']),
                 'project_extra' => json_encode($projectExtra),
+                'updated_at' => Carbon::now()
             ]);
 
             //multipart upload from app with json encoded string and file (Cordova FileTransfer)
@@ -313,7 +317,7 @@ class ProjectVersionEntriesTest extends TestCase
             $audios = Storage::disk('audio')->files($this->project->ref);
             $this->assertCount(0, $audios);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -371,6 +375,7 @@ class ProjectVersionEntriesTest extends TestCase
             ProjectStructure::where('project_id', $this->project->id)->update([
                 'project_definition' => json_encode($this->projectDefinition['data']),
                 'project_extra' => json_encode($projectExtra),
+                'updated_at' => Carbon::now()
             ]);
 
             //multipart upload from app with json encoded string and file (Cordova FileTransfer)
@@ -394,7 +399,7 @@ class ProjectVersionEntriesTest extends TestCase
             //assert file is NOT uploaded
             $videos = Storage::disk('video')->files($this->project->ref);
             $this->assertCount(0, $videos);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

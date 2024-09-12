@@ -17,14 +17,14 @@ class ProjectDeleteEntriesControllerTest extends TestCase
 {
     use DatabaseTransactions;
 
-    const DRIVER = 'web';
+    public const string DRIVER = 'web';
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         Mockery::close();
         parent::tearDown();
@@ -115,7 +115,7 @@ class ProjectDeleteEntriesControllerTest extends TestCase
         // Access the 'errors' array directly
         $errorsArray = $errors->get('errors');
         // Assert that it is an array and contains 'ec5_91'
-        $this->assertInternalType('array', $errorsArray);
+        $this->assertIsArray($errorsArray);
         $this->assertEquals('ec5_91', $errorsArray[0]);
     }
 
@@ -251,7 +251,7 @@ class ProjectDeleteEntriesControllerTest extends TestCase
         // Access the 'errors' array directly
         $errorsArray = $errors->get('errors');
         // Assert that it is an array and contains 'ec5_91'
-        $this->assertInternalType('array', $errorsArray);
+        $this->assertIsArray($errorsArray);
         $this->assertEquals('ec5_91', $errorsArray[0]);
     }
 
@@ -300,7 +300,7 @@ class ProjectDeleteEntriesControllerTest extends TestCase
         // Access the 'errors' array directly
         $errorsArray = $errors->get('errors');
         // Assert that it is an array and contains 'ec5_91'
-        $this->assertInternalType('array', $errorsArray);
+        $this->assertIsArray($errorsArray);
         $this->assertEquals('ec5_91', $errorsArray[0]);
     }
 
@@ -349,9 +349,10 @@ class ProjectDeleteEntriesControllerTest extends TestCase
         // Access the 'errors' array directly
         $errorsArray = $errors->get('errors');
         // Assert that it is an array and contains 'ec5_91'
-        $this->assertInternalType('array', $errorsArray);
+        $this->assertIsArray($errorsArray);
         $this->assertEquals('ec5_91', $errorsArray[0]);
     }
 
-}
 
+
+}

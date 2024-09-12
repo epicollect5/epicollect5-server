@@ -18,14 +18,14 @@ class AuthController extends Controller
     |
     */
 
-    protected $provider;
-    protected $authMethods;
-    protected $appleProviderLabel;
-    protected $googleProviderLabel;
-    protected $localProviderLabel;
-    protected $ldapProviderlabel;
-    protected $passwordlessProviderLabel;
-    protected $isAuthApiLocalEnabled;
+    protected JwtUserProvider $provider;
+    protected array $authMethods;
+    protected string $appleProviderLabel;
+    protected string $googleProviderLabel;
+    protected string $localProviderLabel;
+    protected string $ldapProviderlabel;
+    protected string $passwordlessProviderLabel;
+    protected bool $isAuthApiLocalEnabled;
 
     public function __construct(JwtUserProvider $provider)
     {

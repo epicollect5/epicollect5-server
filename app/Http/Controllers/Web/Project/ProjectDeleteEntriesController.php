@@ -6,15 +6,14 @@ use ec5\Models\Project\ProjectStats;
 use ec5\Traits\Eloquent\Archiver;
 use ec5\Traits\Eloquent\StatsRefresher;
 use ec5\Traits\Requests\RequestAttributes;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Response;
 
 class ProjectDeleteEntriesController
 {
-    use RequestAttributes, Archiver, StatsRefresher;
+    use RequestAttributes;
+    use Archiver;
+    use StatsRefresher;
 
-    protected $errors = [];
+    protected array $errors = [];
 
     public function show()
     {

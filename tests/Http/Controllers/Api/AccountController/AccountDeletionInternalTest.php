@@ -23,10 +23,10 @@ class AccountDeletionInternalTest extends TestCase
     //to restore DB after tests
     use DatabaseTransactions;
 
-    //internal routes use the default 'web; guard
-    const DRIVER = 'web';
+    //internal routes use the default 'web' guard
+    public const string DRIVER = 'web';
 
-    public function setup()
+    public function setup(): void
     {
         parent::setUp();
     }
@@ -39,7 +39,7 @@ class AccountDeletionInternalTest extends TestCase
         //create mock user
         $user = factory(User::class)->create();
 
-        //account deletion request    
+        //account deletion request
         Mail::fake();
         $this->actingAs($user, self::DRIVER)
             ->json('POST', Route('internalAccountDelete'), [])
@@ -53,7 +53,7 @@ class AccountDeletionInternalTest extends TestCase
 
         // Assert a message was sent to the given users...
         Mail::assertSent(UserAccountDeletionConfirmation::class, function ($mail) use ($user) {
-            return $mail->hasTo($user->email);
+            return $mail->hasTo($user->email) && $mail->assertSeeInHtml($user->email);
         });
 
         //assert user was dropped
@@ -82,7 +82,7 @@ class AccountDeletionInternalTest extends TestCase
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
 
-        //account deletion    
+        //account deletion
         Mail::fake();
         $this->actingAs($user, self::DRIVER)
             ->json('POST', '/api/internal/profile/account-deletion-request', [])
@@ -96,7 +96,7 @@ class AccountDeletionInternalTest extends TestCase
 
         // Assert a message was sent to the given users...
         Mail::assertSent(UserAccountDeletionConfirmation::class, function ($mail) use ($user) {
-            return $mail->hasTo($user->email);
+            return $mail->hasTo($user->email) && $mail->assertSeeInHtml($user->email);
         });
 
         //assert user was dropped
@@ -106,7 +106,7 @@ class AccountDeletionInternalTest extends TestCase
 
     public function test_account_deletion_performed_with_role_creator_and_entries()
     {
-        //creator 
+        //creator
         $role = config('epicollect.strings.project_roles.creator');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
@@ -120,7 +120,7 @@ class AccountDeletionInternalTest extends TestCase
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
         //add a user provider
-        $provider = factory(UserProvider::class)->create([
+        factory(UserProvider::class)->create([
             'user_id' => $user->id,
             'email' => $user->email
         ]);
@@ -129,7 +129,7 @@ class AccountDeletionInternalTest extends TestCase
         $project = factory(Project::class)->create(['created_by' => $user->id]);
 
         //assign the user to that project with the CREATOR role
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
             'role' => $role
@@ -246,7 +246,7 @@ class AccountDeletionInternalTest extends TestCase
 
         // Assert a message was sent to the given users...
         Mail::assertSent(UserAccountDeletionConfirmation::class, function ($mail) use ($user) {
-            return $mail->hasTo($user->email);
+            return $mail->hasTo($user->email) && $mail->assertSeeInHtml($user->email);
         });
 
         //delete fake files
@@ -274,7 +274,7 @@ class AccountDeletionInternalTest extends TestCase
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
-        $provider = factory(UserProvider::class)->create([
+        factory(UserProvider::class)->create([
             'user_id' => $user->id,
             'email' => $user->email
         ]);
@@ -282,7 +282,7 @@ class AccountDeletionInternalTest extends TestCase
         $project = factory(Project::class)->create(['created_by' => $user->id]);
 
         //assign the user to that project with the CREATOR role
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
             'role' => $role
@@ -345,7 +345,7 @@ class AccountDeletionInternalTest extends TestCase
 
         // Assert a message was sent to the given users...
         Mail::assertSent(UserAccountDeletionConfirmation::class, function ($mail) use ($user) {
-            return $mail->hasTo($user->email);
+            return $mail->hasTo($user->email) && $mail->assertSeeInHtml($user->email);
         });
 
         //delete fake files
@@ -362,7 +362,7 @@ class AccountDeletionInternalTest extends TestCase
 
     public function test_account_deletion_performed_with_role_manager()
     {
-        //MANAGER 
+        //MANAGER
         $role = config('epicollect.strings.project_roles.manager');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
@@ -378,7 +378,7 @@ class AccountDeletionInternalTest extends TestCase
         $user->state = 'active';
         $user->save();
 
-        $provider = factory(UserProvider::class)->create([
+        factory(UserProvider::class)->create([
             'user_id' => $user->id,
             'email' => $user->email
         ]);
@@ -388,7 +388,7 @@ class AccountDeletionInternalTest extends TestCase
         $project = factory(Project::class)->create(['created_by' => $anotherUser->id]);
 
         //assign user to that project with the MANAGER role
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
             'role' => $role
@@ -478,7 +478,7 @@ class AccountDeletionInternalTest extends TestCase
 
         // Assert a message was sent to the given users...
         Mail::assertSent(UserAccountDeletionConfirmation::class, function ($mail) use ($user) {
-            return $mail->hasTo($user->email);
+            return $mail->hasTo($user->email) && $mail->assertSeeInHtml($user->email);
         });
 
         //delete fake files
@@ -494,7 +494,7 @@ class AccountDeletionInternalTest extends TestCase
 
     public function test_account_deletion_performed_with_role_curator()
     {
-        //CURATOR 
+        //CURATOR
         $role = config('epicollect.strings.project_roles.curator');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
@@ -510,7 +510,7 @@ class AccountDeletionInternalTest extends TestCase
         $user->state = 'active';
         $user->save();
 
-        $provider = factory(UserProvider::class)->create([
+        factory(UserProvider::class)->create([
             'user_id' => $user->id,
             'email' => $user->email
         ]);
@@ -520,7 +520,7 @@ class AccountDeletionInternalTest extends TestCase
         $project = factory(Project::class)->create(['created_by' => $anotherUser->id]);
 
         //assign user to that project with the CURATOR role
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
             'role' => $role
@@ -611,7 +611,7 @@ class AccountDeletionInternalTest extends TestCase
 
         // Assert a message was sent to the given users...
         Mail::assertSent(UserAccountDeletionConfirmation::class, function ($mail) use ($user) {
-            return $mail->hasTo($user->email);
+            return $mail->hasTo($user->email) && $mail->assertSeeInHtml($user->email);
         });
 
         //delete fake files
@@ -627,7 +627,7 @@ class AccountDeletionInternalTest extends TestCase
 
     public function test_account_deletion_performed_with_role_collector()
     {
-        //COLLECTOR 
+        //COLLECTOR
         $role = config('epicollect.strings.project_roles.collector');
         $numOfEntries = mt_rand(10, 100);
         $numOfBranchEntries = mt_rand(10, 100);
@@ -644,7 +644,7 @@ class AccountDeletionInternalTest extends TestCase
         $user->state = 'active';
         $user->save();
 
-        $provider = factory(UserProvider::class)->create([
+        factory(UserProvider::class)->create([
             'user_id' => $user->id,
             'email' => $user->email
         ]);
@@ -654,7 +654,7 @@ class AccountDeletionInternalTest extends TestCase
         $project = factory(Project::class)->create(['created_by' => $anotherUser->id]);
 
         //assign user to that project with the COLLECTOR role
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
             'role' => $role
@@ -744,7 +744,7 @@ class AccountDeletionInternalTest extends TestCase
 
         // Assert a message was sent to the given users...
         Mail::assertSent(UserAccountDeletionConfirmation::class, function ($mail) use ($user) {
-            return $mail->hasTo($user->email);
+            return $mail->hasTo($user->email) && $mail->assertSeeInHtml($user->email);
         });
 
         //delete fake files
@@ -777,7 +777,7 @@ class AccountDeletionInternalTest extends TestCase
         $user->state = 'active';
         $user->save();
 
-        $provider = factory(UserProvider::class)->create([
+        factory(UserProvider::class)->create([
             'user_id' => $user->id,
             'email' => $user->email
         ]);
@@ -787,7 +787,7 @@ class AccountDeletionInternalTest extends TestCase
         $project = factory(Project::class)->create(['created_by' => $anotherUser->id]);
 
         //assign user to that project with the COLLECTOR role
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
             'role' => $role
@@ -878,7 +878,7 @@ class AccountDeletionInternalTest extends TestCase
 
         // Assert a message was sent to the given users...
         Mail::assertSent(UserAccountDeletionConfirmation::class, function ($mail) use ($user) {
-            return $mail->hasTo($user->email);
+            return $mail->hasTo($user->email) && $mail->assertSeeInHtml($user->email);
         });
 
         //delete fake files
@@ -917,13 +917,13 @@ class AccountDeletionInternalTest extends TestCase
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
-        $provider = factory(UserProvider::class)->create([
+        factory(UserProvider::class)->create([
             'user_id' => $user->id,
             'email' => $user->email
         ]);
         //create another user
         $anotherUser = factory(User::class)->create();
-        $provider = factory(UserProvider::class)->create([
+        factory(UserProvider::class)->create([
             'user_id' => $anotherUser->id,
             'email' => $anotherUser->email
         ]);
@@ -1233,8 +1233,8 @@ class AccountDeletionInternalTest extends TestCase
                 $this->assertEquals(2 * $numOfEntries, Entry::where('project_id', $projectId)->count());
                 $this->assertEquals(2 * ($numOfBranchEntries * $numOfEntries), BranchEntry::where('project_id', $projectId)->count());
             } else {
-                $this->assertEquals(1 * $numOfEntries, Entry::where('project_id', $projectId)->count());
-                $this->assertEquals(1 * ($numOfBranchEntries * $numOfEntries), BranchEntry::where('project_id', $projectId)->count());
+                $this->assertEquals($numOfEntries, Entry::where('project_id', $projectId)->count());
+                $this->assertEquals($numOfBranchEntries * $numOfEntries, BranchEntry::where('project_id', $projectId)->count());
             }
 
             //assert all other roles are dropped, but not creator
@@ -1248,7 +1248,7 @@ class AccountDeletionInternalTest extends TestCase
 
         // Assert a message was sent to the given users...
         Mail::assertSent(UserAccountDeletionConfirmation::class, function ($mail) use ($user) {
-            return $mail->hasTo($user->email);
+            return $mail->hasTo($user->email) && $mail->assertSeeInHtml($user->email);
         });
 
         //assert files are not touched
@@ -1307,14 +1307,14 @@ class AccountDeletionInternalTest extends TestCase
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
         //add a user provider
-        $provider = factory(UserProvider::class)->create([
+        factory(UserProvider::class)->create([
             'user_id' => $user->id,
             'email' => $user->email
         ]);
         //create another user
         $anotherUser = factory(User::class)->create();
         //add a user provider
-        $provider = factory(UserProvider::class)->create([
+        factory(UserProvider::class)->create([
             'user_id' => $anotherUser->id,
             'email' => $anotherUser->email
         ]);
@@ -1421,7 +1421,7 @@ class AccountDeletionInternalTest extends TestCase
 
         // Assert a message was sent to the given users...
         Mail::assertSent(UserAccountDeletionConfirmation::class, function ($mail) use ($user) {
-            return $mail->hasTo($user->email);
+            return $mail->hasTo($user->email) && $mail->assertSeeInHtml($user->email);
         });
 
         //check counts

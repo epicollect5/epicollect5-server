@@ -188,7 +188,7 @@ class ProjectService
 
             DB::commit();
             return true;
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             DB::rollBack();
             return false;
@@ -211,6 +211,8 @@ class ProjectService
                 if (!$wasUserUpdated) {
                     throw new Exception('Cannot add or update user role ');
                 }
+                DB::commit();
+                return true;
 
             } else {
                 // Create the project role for this user
@@ -226,12 +228,10 @@ class ProjectService
                 DB::commit();
                 return true;
             }
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             DB::rollBack();
             return false;
         }
-
-        return true;
     }
 }

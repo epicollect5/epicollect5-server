@@ -18,8 +18,6 @@ php artisan config:cache;
 
 php artisan route:cache;
 
-php artisan optimize --force;
-
 php artisan cache:clear
 
 php artisan view:clear

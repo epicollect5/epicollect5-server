@@ -16,6 +16,7 @@ use Ramsey\Uuid\Uuid;
 use Tests\Generators\EntryGenerator;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
+use Illuminate\Support\Arr;
 
 class DeleteControllerEntryTest extends TestCase
 {
@@ -23,7 +24,7 @@ class DeleteControllerEntryTest extends TestCase
 
     private $endpoint = 'api/internal/deletion/entry/';
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -89,7 +90,7 @@ class DeleteControllerEntryTest extends TestCase
             $this->project = $project;
             $this->projectDefinition = $projectDefinition;
             $this->entryGenerator = $entryGenerator;
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -152,7 +153,7 @@ class DeleteControllerEntryTest extends TestCase
                 ProjectStats::where('project_id', $this->project->id)
                     ->value('total_entries'));
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -231,7 +232,7 @@ class DeleteControllerEntryTest extends TestCase
 
             $videos = Storage::disk('video')->files($this->project->ref);
             $this->assertCount(0, $videos);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -368,7 +369,7 @@ class DeleteControllerEntryTest extends TestCase
             Storage::disk('audio')->deleteDirectory($this->project->ref);
             Storage::disk('video')->deleteDirectory($this->project->ref);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -509,7 +510,7 @@ class DeleteControllerEntryTest extends TestCase
             $videos = Storage::disk('video')->files($this->project->ref);
             $this->assertCount(0, $videos);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -635,7 +636,7 @@ class DeleteControllerEntryTest extends TestCase
             Storage::disk('entry_original')->deleteDirectory($this->project->ref);
             Storage::disk('audio')->deleteDirectory($this->project->ref);
             Storage::disk('video')->deleteDirectory($this->project->ref);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -754,7 +755,7 @@ class DeleteControllerEntryTest extends TestCase
             Storage::disk('audio')->deleteDirectory($this->project->ref);
             Storage::disk('video')->deleteDirectory($this->project->ref);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

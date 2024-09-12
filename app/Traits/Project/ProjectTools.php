@@ -3,10 +3,9 @@
 namespace ec5\Traits\Project;
 
 use ec5\Models\Project\Project;
-use ec5\Services\Mapping\DataMappingService;
 use ec5\Services\Project\ProjectAvatarService;
-use Exception;
 use Log;
+use Throwable;
 
 trait ProjectTools
 {
@@ -22,7 +21,7 @@ trait ProjectTools
                 Project::where('id', $projectId)->delete();
                 //error generating project avatar, handle it!
                 return ['avatar' => ['ec5_348']];
-            } catch (Exception $e) {
+            } catch (Throwable $e) {
                 Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
                 return ['db' => ['ec5_104']];
             }

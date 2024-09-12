@@ -18,9 +18,10 @@ use Tests\TestCase;
 
 class ProjectCloneControllerTest extends TestCase
 {
-    use DatabaseTransactions, Assertions;
+    use DatabaseTransactions;
+    use Assertions;
 
-    const DRIVER = 'web';
+    public const DRIVER = 'web';
     private $faker;
     private $user;
     private $project;
@@ -28,7 +29,7 @@ class ProjectCloneControllerTest extends TestCase
     private $projectExtra;
     private $projectMapping;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -78,11 +79,15 @@ class ProjectCloneControllerTest extends TestCase
 
         //see https://github.com/laravel/framework/issues/46455
         $response = $this->actingAs($user)
-            ->call('POST', 'api/internal/formbuilder/' . $project->slug,
+            ->call(
+                'POST',
+                'api/internal/formbuilder/' . $project->slug,
                 [],
                 [],
                 [],
-                [], $base64EncodedData);
+                [],
+                $base64EncodedData
+            );
 
         $response->assertStatus(200);
 
@@ -121,7 +126,8 @@ class ProjectCloneControllerTest extends TestCase
         $projectName = Generators::projectRef();
         $response = $this
             ->actingAs($this->user, self::DRIVER)
-            ->post('myprojects/' . $this->project->slug . '/clone',
+            ->post(
+                'myprojects/' . $this->project->slug . '/clone',
                 [
                     '_token' => csrf_token(),
                     'name' => $projectName
@@ -144,7 +150,8 @@ class ProjectCloneControllerTest extends TestCase
         $this->assertCount(1, ProjectRole::where('project_id', $clonedProject->id)->get());
         $this->assertEquals(
             config('epicollect.strings.project_roles.creator'),
-            ProjectRole::where('project_id', $clonedProject->id)->value('role'));
+            ProjectRole::where('project_id', $clonedProject->id)->value('role')
+        );
 
         $clonedProjectStructures = ProjectStructure::where('project_id', $clonedProject->id)->first();
 
@@ -223,7 +230,8 @@ class ProjectCloneControllerTest extends TestCase
         $projectName = Generators::projectRef();
         $response = $this
             ->actingAs($this->user, self::DRIVER)
-            ->post('myprojects/' . $this->project->slug . '/clone',
+            ->post(
+                'myprojects/' . $this->project->slug . '/clone',
                 [
                     '_token' => csrf_token(),
                     'name' => $projectName,
@@ -247,7 +255,9 @@ class ProjectCloneControllerTest extends TestCase
         $this->assertCount(1 + $usersCount, ProjectRole::where('project_id', $clonedProject->id)->get());
         foreach ($projectMembers as $projectMember) {
             $this->assertCount(1, ProjectRole::where(
-                'project_id', $clonedProject->id)
+                'project_id',
+                $clonedProject->id
+            )
                 ->where('user_id', $projectMember['user_id'])
                 ->where('role', $projectMember['role'])
                 ->get());

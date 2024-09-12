@@ -17,6 +17,7 @@ use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Str;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
+use Illuminate\Support\Arr;
 
 class DownloadTemplateControllerTest extends TestCase
 {
@@ -26,7 +27,7 @@ class DownloadTemplateControllerTest extends TestCase
     private $projectDefinition;
     private $project;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -90,7 +91,7 @@ class DownloadTemplateControllerTest extends TestCase
             $this->user = $user;
             $this->project = $project;
             $this->projectDefinition = $projectDefinition;
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -475,7 +476,7 @@ class DownloadTemplateControllerTest extends TestCase
 
             $JSONResponse = json_decode($response[0]->getContent(), true);
             $this->assertJSONHeadersBranch($JSONResponse['data']['headers'], $mapIndex, $form, $branchRef, $branchIndex);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -511,7 +512,7 @@ class DownloadTemplateControllerTest extends TestCase
 
     private function assertCSVContentForm($content, $mapIndex, $form)
     {
-        $headers = explode(',', $content);
+        $headers = explode(',', $content ?? '');
         //get mapping
         $projectStructure = ProjectStructure::where('project_id', $this->project->id)->first();
         $mapping = json_decode($projectStructure->project_mapping, true);
@@ -522,7 +523,7 @@ class DownloadTemplateControllerTest extends TestCase
 
     private function assertCSVContentBranch($content, $mapIndex, $form, $branchRef, $branchIndex)
     {
-        $headers = explode(',', $content);
+        $headers = explode(',', $content ?? '');
         //get mapping
         $projectStructure = ProjectStructure::where('project_id', $this->project->id)->first();
         $mapping = json_decode($projectStructure->project_mapping, true);

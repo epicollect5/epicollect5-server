@@ -16,31 +16,28 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use Log;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Redirect;
+use Request;
 use Response;
+use Throwable;
 
 class ProjectEditController
 {
     use RequestAttributes;
 
-    protected $action = '';
-    protected $slug;
-    protected $allowedSettingActions = [];
-    protected $request;
-    protected $search;
-    protected $ruleProjectDefinitionDetails;
-    protected $ruleSettings;
+    protected string $action = '';
+    protected string|null $slug;
+    protected array $allowedSettingActions = [];
+    protected Request $request;
+    protected RuleProjectDefinitionDetails $ruleProjectDefinitionDetails;
+    protected RuleSettings $ruleSettings;
 
-    /**
-     * ProjectEditController constructor.
-     *
-     * @param RuleSettings $ruleSettings
-     * @param RuleProjectDefinitionDetails $ruleProjectDefinitionDetails
-     */
     public function __construct(
         RuleSettings                 $ruleSettings,
-        RuleProjectDefinitionDetails $ruleProjectDefinitionDetails)
-    {
+        RuleProjectDefinitionDetails $ruleProjectDefinitionDetails
+    ) {
         $this->ruleProjectDefinitionDetails = $ruleProjectDefinitionDetails;
         $this->ruleSettings = $ruleSettings;
         $this->allowedSettingActions = array_keys(config('epicollect.strings.edit_settings'));
@@ -52,6 +49,9 @@ class ProjectEditController
      * @param $slug //imp: used for routing segment, DO NOT remove
      * @param $action
      * @return JsonResponse
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     * @throws Throwable
      */
     public function settings($slug, $action)
     {
@@ -98,7 +98,7 @@ class ProjectEditController
                 throw new Exception('Cannot update project settings');
             }
 
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             DB::rollBack();
             return Response::apiErrorCode(400, ['errors' => ['ec5_45']]);
@@ -108,25 +108,26 @@ class ProjectEditController
     /**
      * @param $slug //imp: used for routing segment, DO NOT remove
      * @return Factory|Application|RedirectResponse|View
+     * @throws Throwable
      */
-    public function details($slug)
+    public function updateDetails($slug)
     {
         $this->slug = $slug; //only used for routing imp:do not remove
         $updateStructures = false;
         $this->action = last(request()->segments());
-
 
         if (!$this->requestedProjectRole()->canEditProject()) {
             return view('errors.gen_error')->withErrors(['errors' => 'ec5_91']);
         }
 
         $payload = request()->all();
+
         unset($payload['_token']);
 
         // If we have an image, validate the dimensions
         if (request()->file('logo_url')) {
             // Get the image width/height
-            list($width, $height) = getimagesize(request()->file('logo_url')->getRealPath());
+            list($width, $height) = getimagesize(request()->file('logo_url')->getPathname());
             // Add to be validated
             $payload['logo_width'] = $width;
             $payload['logo_height'] = $height;
@@ -155,7 +156,7 @@ class ProjectEditController
             }
             $params['logo_url'] = $this->requestedProject()->ref;
             // We want to trigger an update on the project_structures table,
-            // to signal to the app that this project has been updated
+            // to signal to the app that this project has been updated with a new logo
             $updateStructures = true;
         }
 
@@ -174,7 +175,13 @@ class ProjectEditController
      */
     private function saveLogos($driver): bool
     {
-        return PhotoSaverService::saveImage($this->requestedProject()->ref, request()->file('logo_url'), 'logo.jpg', $driver, config('epicollect.media.' . $driver));
+        return PhotoSaverService::saveImage(
+            $this->requestedProject()->ref,
+            request()->file('logo_url'),
+            'logo.jpg',
+            $driver,
+            config('epicollect.media.' . $driver)
+        );
     }
 
     /**

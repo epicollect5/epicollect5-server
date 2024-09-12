@@ -5,7 +5,6 @@ namespace ec5\Console\Commands;
 use ec5\Mail\ExceptionNotificationMail;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
@@ -37,10 +36,8 @@ class CheckStorageAvailableDiskSpace extends Command
 
     /**
      * Execute the console command.
-     *
-     * @return mixed
      */
-    public function handle()
+    public function handle(): void
     {
         $admins = [
             config('epicollect.setup.system.email'),

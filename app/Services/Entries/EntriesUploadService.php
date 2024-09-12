@@ -8,15 +8,18 @@ use ec5\Models\Counters\BranchEntryCounter;
 use ec5\Models\Counters\EntryCounter;
 use ec5\Traits\Requests\RequestAttributes;
 use Log;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
+use Throwable;
 
 class EntriesUploadService
 {
     use RequestAttributes;
 
-    public $errors;
-    public $entryStructure;
-    private $isBulkUpload;
-    private $ruleUpload;
+    public array $errors;
+    public EntryStructureDTO $entryStructure;
+    private bool $isBulkUpload;
+    private RuleUpload $ruleUpload;
 
     public function __construct(EntryStructureDTO $entryStructure, RuleUpload $ruleUpload, $isBulkUpload = false)
     {
@@ -25,9 +28,18 @@ class EntriesUploadService
         $this->ruleUpload = $ruleUpload;
     }
 
+    /**
+     * @throws Throwable
+     */
     public function upload(): bool
     {
-        $payload = request()->get('data');
+        try {
+            $payload = request()->get('data');
+        } catch (NotFoundExceptionInterface|ContainerExceptionInterface $e) {
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
+            $this->errors = ['upload-controller' => ['ec5_53']];
+            return false;
+        }
         /* UPLOAD VALIDATION */
 
         // 1 - Validate the api upload request
@@ -39,7 +51,12 @@ class EntriesUploadService
 
         // 2 - Check project status
         if (!$this->isProjectActive()) {
-            $this->errors = ['upload-controller' => ['ec5_202']];
+            if($this->requestedProject()->isLocked()) {
+                $this->errors = ['upload-controller' => ['ec5_202']];
+            }
+            if($this->requestedProject()->isTrashed()) {
+                $this->errors = ['upload-controller' => ['ec5_11']];
+            }
             return false;
         }
 
@@ -86,7 +103,8 @@ class EntriesUploadService
             if (!$createEntryService->create(
                 $this->requestedProject(),
                 $this->entryStructure,
-                $this->isBulkUpload)
+                $this->isBulkUpload
+            )
             ) {
                 Log::error(__METHOD__ . ' failed.', [
                     'error' => $this->errors,
@@ -152,6 +170,9 @@ class EntriesUploadService
 
     public function isProjectVersionValid(EntryStructureDTO $entryStructure): bool
     {
+        // Log::debug(__METHOD__ . ' failed.', ['project version' => $this->requestedProject()->getProjectStats()->structure_last_updated]);
+        //Log::debug(__METHOD__ . ' failed.', ['entry version' => $entryStructure->getProjectVersion()]);
+
         if ($this->requestedProject()->getProjectStats()->structure_last_updated !== $entryStructure->getProjectVersion()) {
             return false;
         }
@@ -165,6 +186,7 @@ class EntriesUploadService
         }
         return true;
     }
+
 
     public function canUserUploadEntries(): bool
     {

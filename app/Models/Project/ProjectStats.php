@@ -3,9 +3,11 @@
 namespace ec5\Models\Project;
 
 use DB;
-use Exception;
+use ec5\Traits\Models\SerializeDates;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Log;
+use Throwable;
 
 /**
  * @property int $id
@@ -17,6 +19,8 @@ use Log;
  */
 class ProjectStats extends Model
 {
+    use SerializeDates;
+
     protected $table = 'project_stats';
     public $timestamps = false;
     public $guarded = [];
@@ -51,6 +55,7 @@ class ProjectStats extends Model
      *
      * @param int $projectId
      * @return bool
+     * @throws Throwable
      */
     public function updateProjectStats(int $projectId): bool
     {
@@ -60,7 +65,7 @@ class ProjectStats extends Model
             $this->updateBranchEntryCounters($projectId);
             DB::commit();
             return true;
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed', [
                 'project_id' => $projectId,
                 'exception' => $e->getMessage()
@@ -73,7 +78,7 @@ class ProjectStats extends Model
     /* Update the total entries and
        form counts
      */
-    public function updateEntryCounters($projectId)
+    public function updateEntryCounters($projectId): void
     {
         //find total entries per each form
         $entriesTable = config('epicollect.tables.entries');
@@ -88,8 +93,8 @@ class ProjectStats extends Model
         //loop each form and get the overall total
         foreach ($stats as $stat) {
 
-            $firstEntryCreated = $stat->first_entry_created;
-            $lastEntryCreated = $stat->last_entry_created;
+            $firstEntryCreated = Carbon::parse($stat->first_entry_created)->format('Y-m-d H:i:s');
+            $lastEntryCreated = Carbon::parse($stat->last_entry_created)->format('Y-m-d H:i:s');
 
             $totalCount += $stat->total_entries;
             $statsCount[$stat->form_ref] = [
@@ -113,7 +118,7 @@ class ProjectStats extends Model
     /*
      * Update the branch counts
      */
-    public function updateBranchEntryCounters($projectId)
+    public function updateBranchEntryCounters($projectId): void
     {
         $branchEntriesTable = config('epicollect.tables.branch_entries');
         $stats = DB::table($branchEntriesTable)
@@ -124,10 +129,14 @@ class ProjectStats extends Model
 
         $statsCount = [];
         foreach ($stats as $stat) {
+
+            $firstEntryCreated = Carbon::parse($stat->first_entry_created)->format('Y-m-d H:i:s');
+            $lastEntryCreated = Carbon::parse($stat->last_entry_created)->format('Y-m-d H:i:s');
+
             $statsCount[$stat->owner_input_ref] = [
                 'count' => $stat->total_entries,
-                'first_entry_created' => $stat->first_entry_created,
-                'last_entry_created' => $stat->last_entry_created
+                'first_entry_created' => $firstEntryCreated,
+                'last_entry_created' => $lastEntryCreated
             ];
         }
 

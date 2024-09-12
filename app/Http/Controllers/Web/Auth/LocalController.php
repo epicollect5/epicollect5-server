@@ -2,11 +2,15 @@
 
 namespace ec5\Http\Controllers\Web\Auth;
 
-
 use Auth;
 use ec5\Http\Validation\Auth\RuleLogin as LoginValidator;
 use ec5\Models\User\User;
 use ec5\Models\User\UserProvider;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
+use Illuminate\Foundation\Application;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class LocalController extends AuthController
@@ -38,7 +42,7 @@ class LocalController extends AuthController
      *
      * @param Request $request
      * @param LoginValidator $validator
-     * @return $this|\Illuminate\Http\Response
+     * @return Factory|View|Application|JsonResponse|RedirectResponse|\Illuminate\View\View
      */
     public function authenticate(Request $request, LoginValidator $validator)
     {

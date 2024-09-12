@@ -8,42 +8,51 @@
   "license": "MIT",
   "type": "project",
   "require": {
-    "php": ">=7.1",
-    "laravel/framework": "5.4.*",
-    "firebase/php-jwt": "3.0",
-    "webpatser/laravel-uuid": "2.*",
-    "intervention/image": "dev-master",
-    "doctrine/dbal": "v2.5.4",
-    "laravel/socialite": "3.0.x-dev",
-    "barryvdh/laravel-debugbar": "^2.3",
-    "deployer/deployer": "^4.2",
-    "laravel/passport": "^2.0",
-    "laravel/dusk": "^1.1",
-    "laravolt/avatar": "2.2",
+    "php": ">=8.3",
+    "laravel/framework": "^11.0",
+    "firebase/php-jwt": "^6.0",
+    "webpatser/laravel-uuid": "^4.0",
+    "intervention/image": "^2",
+    "laravel/passport": "^12.0",
     "league/csv": "^9.5",
-    "madewithlove/license-checker": "0.10.0",
     "ext-json": "*",
     "ext-pdo": "*",
     "ext-zlib": "*",
     "ext-zip": "*",
-    "ext-fileinfo": "*"
+    "ext-fileinfo": "*",
+    "laravel/socialite": "^5.2",
+    "symfony/psr-http-message-bridge": "^6.0",
+    "nyholm/psr7": "^1.8",
+    "laravel/ui": "^4.0",
+    "laravel/helpers": "^1.7",
+    "carbon-cli/carbon-cli": "^1.2",
+    "guzzlehttp/guzzle": "^7.3",
+    "laravel/legacy-factories": "^1.4",
+    "laminas/laminas-diactoros": "^2.14",
+    "symfony/mailgun-mailer": "^7.1",
+    "symfony/http-client": "^7.1",
+    "ext-xdebug": "*",
+    "ext-posix": "*",
+    "laravolt/avatar": "^5.1"
   },
   "require-dev": {
-    "fzaninotto/faker": "~1.4",
-    "mockery/mockery": "0.9.*",
-    "phpunit/phpunit": "~4.0",
+    "mockery/mockery": "^1.4.1",
+    "phpunit/phpunit": "^11.0",
     "symfony/css-selector": "2.8.*|3.0.*",
     "symfony/dom-crawler": "2.8.*|3.0.*",
-    "xethron/migrations-generator": "dev-l5",
-    "way/generators": "dev-feature/laravel-five-stable",
-    "ext-mbstring": "*"
+    "ext-mbstring": "*",
+    "filp/whoops": "~2.0",
+    "fakerphp/faker": "^1.23",
+    "barryvdh/laravel-ide-helper": "^3.1",
+    "deployer/deployer": "^7.4",
+    "laravel/pint": "^1.17",
+    "squizlabs/php_codesniffer": "^3.10"
   },
   "autoload": {
-    "classmap": [
-      "database"
-    ],
     "psr-4": {
-      "ec5\\": "app/"
+      "ec5\\": "app/",
+      "Database\\Factories\\": "database/factories/",
+      "Database\\Seeders\\": "database/seeders/"
     }
   },
   "autoload-dev": {
@@ -59,25 +68,21 @@
       "php artisan key:generate"
     ],
     "post-install-cmd": [
-      "Illuminate\\Foundation\\ComposerScripts::postInstall",
-      "php artisan optimize"
+      "Illuminate\\Foundation\\ComposerScripts::postInstall"
     ],
     "post-update-cmd": [
       "Illuminate\\Foundation\\ComposerScripts::postUpdate",
-      "php artisan optimize"
+      "@php artisan ide-helper:generate",
+      "@php artisan ide-helper:meta"
     ],
     "test": [
       "vendor/bin/phpunit"
     ]
   },
   "config": {
+    "allow-plugins": {
+    },
     "preferred-install": "dist",
     "process-timeout": 0
-  },
-  "repositories": {
-    "repo-name": {
-      "type": "git",
-      "url": "git@github.com:jamisonvalenta/Laravel-4-Generators.git"
-    }
   }
 }

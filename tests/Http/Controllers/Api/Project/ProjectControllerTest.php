@@ -10,6 +10,7 @@ use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use ec5\Traits\Assertions;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Arr;
 use League\Csv\Exception;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
@@ -23,7 +24,7 @@ class ProjectControllerTest extends TestCase
     private $projectStructure;
     const DRIVER = 'web';
 
-    public function setup()
+    public function setup(): void
     {
         parent::setUp();
 
@@ -342,7 +343,7 @@ class ProjectControllerTest extends TestCase
                 ]);
             $jsonResponse = json_decode($response[0]->getContent(), true);
             $this->assertProjectResponse($jsonResponse);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

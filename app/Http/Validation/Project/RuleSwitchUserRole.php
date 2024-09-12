@@ -8,7 +8,7 @@ use Config;
 class RuleSwitchUserRole extends ValidationBase
 {
     protected $rules = [
-        'email' => 'required|email'
+        'email' => 'required|email:filter'
     ];
 
     /**
@@ -22,8 +22,8 @@ class RuleSwitchUserRole extends ValidationBase
 
         // Allowed roles that can be added for a user (note: 'creator' is not a role that can be assigned after project creation)
         $roles = config('epicollect.permissions.projects.roles.creator');
-        $this->rules['currentRole'] = 'required|in:' . implode($roles, ',');
-        $this->rules['newRole'] = 'required|in:' . implode($roles, ',');
+        $this->rules['currentRole'] = 'required|in:' . implode(',', $roles);
+        $this->rules['newRole'] = 'required|in:' . implode(',', $roles);
 
     }
 

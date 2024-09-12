@@ -1,6 +1,6 @@
 <?php
 
-namespace Http\Controllers\Api\Entries\View\External\ExportRoutes;
+namespace Tests\Http\Controllers\Api\Entries\View\External\ExportRoutes;
 
 use ec5\Models\Entries\Entry;
 use ec5\Models\OAuth\OAuthClientProject;
@@ -17,6 +17,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Passport\ClientRepository;
+use PHPUnit\Framework\Attributes\Depends;
 use Tests\Generators\EntryGenerator;
 use Tests\Generators\MediaGenerator;
 use Tests\Generators\ProjectDefinitionGenerator;
@@ -116,6 +117,18 @@ class MediaExportPrivateVideoTest extends TestCase
             ]);
 
             $obj = json_decode($tokenResponse->getBody());
+
+            // Perform assertions
+            $this->assertObjectHasProperty('token_type', $obj);
+            $this->assertObjectHasProperty('expires_in', $obj);
+            $this->assertObjectHasProperty('access_token', $obj);
+
+            $this->assertEquals('Bearer', $obj->token_type);
+            $this->assertIsInt($obj->expires_in);
+            $this->assertIsString($obj->access_token);
+            $this->assertGreaterThan(0, $obj->expires_in); // Ensure expires_in is positive
+            $this->assertNotEmpty($obj->access_token);
+
             $token = $obj->access_token;
 
             //send params to the @depends test
@@ -142,10 +155,7 @@ class MediaExportPrivateVideoTest extends TestCase
         }
     }
 
-    /**
-     * @depends test_getting_OAuth2_token
-     */
-    public function test_videos_export_endpoint_private($params)
+    #[Depends('test_getting_OAuth2_token')] public function test_videos_export_endpoint_private($params)
     {
         $token = $params['token'];
         $user = $params['user'];

@@ -28,6 +28,7 @@ class EntriesStatsTest extends TestCase
 
         //dd($response); // add this temporarily
 
+
         $response->assertStatus(200)
             ->assertHeader($apiContentTypeHeaderKey, $apiContentTypeHeaderValue)
             ->assertJsonStructure([

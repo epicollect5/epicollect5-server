@@ -8,6 +8,7 @@
 | Here we specify 'web' route middleware for all web requests.
 |
 */
+
 Route::get('/', 'Web\HomeController@index')->name('home');
 //Tell me more routes
 Route::get('more-create', 'Web\MorePages\MoreCreateController@index');
@@ -39,8 +40,8 @@ Route::group(['middleware' => ['guest']], function () {
 });
 
 
-//Passwordless routes, 5 requests max every 30 minutes
-$passwordlessMiddleware = App::isLocal() ? ['guest'] : ['guest', 'throttle:5,30'];
+//Passwordless routes, 5 requests max every 30 minutes (disabled for localhost and testing)
+$passwordlessMiddleware = in_array(App::environment(), ['local', 'testing']) ? ['guest'] : ['guest', 'throttle:5,30'];
 Route::group(['middleware' => $passwordlessMiddleware], function () use ($passwordlessMiddleware) {
     Route::post('login/passwordless/token', 'Web\Auth\PasswordlessController@sendCode')
         ->name('passwordless-token-web');
@@ -162,7 +163,7 @@ Route::group(['middleware' => 'auth'], function () {
 
         Route::post('myprojects/{project_slug}/settings/{action?}', 'Web\Project\ProjectEditController@settings');
 
-        Route::post('myprojects/{project_slug}/details', 'Web\Project\ProjectEditController@details');
+        Route::post('myprojects/{project_slug}/details', 'Web\Project\ProjectEditController@updateDetails');
 
         Route::get('myprojects/{project_slug}/download-project-definition', 'Web\Project\ProjectController@downloadProjectDefinition');
 
@@ -248,7 +249,3 @@ Route::group(['middleware' => 'project.permissions.open'], function () {
     Route::get('open/project/{project_slug?}', 'Web\Project\ProjectController@open')
         ->name('project-open');
 });
-
-
-
-

@@ -3,7 +3,6 @@
 namespace ec5\Http\Controllers\Api\OAuth;
 
 use ec5\Models\OAuth\OAuthAccessToken;
-use Exception;
 use Illuminate\Http\JsonResponse;
 use Laravel\Passport\Http\Controllers\HandlesOAuthErrors;
 use Laravel\Passport\TokenRepository;
@@ -14,32 +13,18 @@ use Log;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Response;
-use Zend\Diactoros\Response as Psr7Response;
+
+//use Zend\Diactoros\Response as Psr7Response;
+use Nyholm\Psr7\Response as Psr7Response;
+use Throwable;
 
 class OAuthController
 {
     use HandlesOAuthErrors;
 
-    /**
-     * The authorization server.
-     *
-     * @var AuthorizationServer
-     */
-    protected $server;
-
-    /**
-     * The token repository instance.
-     *
-     * @var TokenRepository
-     */
-    protected $tokens;
-
-    /**
-     * The JWT parser instance.
-     *
-     * @var JwtParser
-     */
-    protected $jwt;
+    protected AuthorizationServer $server;
+    protected TokenRepository $tokens;
+    protected JwtParser $jwt;
 
     /**
      * OAuthController constructor
@@ -52,8 +37,7 @@ class OAuthController
         AuthorizationServer $server,
         TokenRepository     $tokens,
         JwtParser           $jwt
-    )
-    {
+    ) {
         $this->jwt = $jwt;
         $this->server = $server;
         $this->tokens = $tokens;
@@ -77,7 +61,7 @@ class OAuthController
                 OAuthAccessToken::where('client_id', $payload['client_id'])->delete();
             }
             // return a new access token
-            return $this->server->respondToAccessTokenRequest($request, new Psr7Response);
+            return $this->server->respondToAccessTokenRequest($request, new Psr7Response());
         } catch (OAuthServerException $e) {
 
             // Switch on OAuthServerException error type
@@ -92,7 +76,7 @@ class OAuthController
                     // Use default error code
             }
 
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             // Use default error code
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
         }

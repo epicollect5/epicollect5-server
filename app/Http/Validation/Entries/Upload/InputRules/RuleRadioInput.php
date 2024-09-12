@@ -14,12 +14,7 @@ use ec5\Libraries\Utilities\Common;
  */
 class RuleRadioInput extends RuleInputBase
 {
-    /**
-     * @param $inputDetails
-     * @param string|array $answer
-     * @param ProjectDTO|null $project
-     */
-    public function setRules($inputDetails, $answer, ProjectDTO $project)
+    public function setRules(array $inputDetails, string|array|null $answer, ProjectDTO $project): void
     {
         // Validate against possible answers
         $possibles = Common::getPossibleAnswers($inputDetails);
@@ -32,16 +27,14 @@ class RuleRadioInput extends RuleInputBase
 
     }
 
-    /**
-     * @param $inputDetails
-     * @param $answer
-     * @param ProjectDTO $project
-     * @param EntryStructureDTO $entryStructure
-     * @return mixed
-     */
-    public function additionalChecks($inputDetails, $answer, ProjectDTO $project, EntryStructureDTO $entryStructure)
+    public function additionalChecks(array $inputDetails, string|array|null $answer, ProjectDTO $project, EntryStructureDTO $entryStructure): array|string|null
     {
         if (!empty($answer)) {
+
+            if(!is_string($answer)) {
+                $this->errors[$inputDetails['ref']] = ['ec5_25'];
+                return $answer;
+            }
             // Add possible answer to entry structure
             $entryStructure->addPossibleAnswer($answer);
         }

@@ -31,7 +31,7 @@ class UploadAppControllerLimitsTest extends TestCase
 
     private $endpoint = 'api/upload/';
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->faker = Faker::create();
@@ -108,11 +108,15 @@ class UploadAppControllerLimitsTest extends TestCase
 
             //see https://github.com/laravel/framework/issues/46455
             $response = $this->actingAs($user)
-                ->call('POST', 'api/internal/formbuilder/' . $project->slug,
+                ->call(
+                    'POST',
+                    'api/internal/formbuilder/' . $project->slug,
                     [],
                     [],
                     [],
-                    [], $base64EncodedData);
+                    [],
+                    $base64EncodedData
+                );
 
             $response->assertStatus(200);
             $this->assertSame(json_decode($response->getContent(), true), $projectDefinition);
@@ -180,7 +184,8 @@ class UploadAppControllerLimitsTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $entry);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_250",
@@ -190,7 +195,7 @@ class UploadAppControllerLimitsTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -207,7 +212,8 @@ class UploadAppControllerLimitsTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $entry);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_250",
@@ -217,7 +223,7 @@ class UploadAppControllerLimitsTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -234,7 +240,8 @@ class UploadAppControllerLimitsTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $entry);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_250",
@@ -244,7 +251,7 @@ class UploadAppControllerLimitsTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -261,7 +268,8 @@ class UploadAppControllerLimitsTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $entry);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_250",
@@ -271,7 +279,7 @@ class UploadAppControllerLimitsTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -288,7 +296,8 @@ class UploadAppControllerLimitsTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $entry);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_250",
@@ -298,7 +307,7 @@ class UploadAppControllerLimitsTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -328,7 +337,8 @@ class UploadAppControllerLimitsTest extends TestCase
             //post the branch entry
             $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $branchEntry);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_250",
@@ -339,7 +349,7 @@ class UploadAppControllerLimitsTest extends TestCase
                     ]
                 );
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -369,7 +379,8 @@ class UploadAppControllerLimitsTest extends TestCase
             //post the branch entry
             $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $branchEntry);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_250",
@@ -380,7 +391,7 @@ class UploadAppControllerLimitsTest extends TestCase
                     ]
                 );
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -410,7 +421,8 @@ class UploadAppControllerLimitsTest extends TestCase
             //post the branch entry
             $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $branchEntry);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_250",
@@ -421,7 +433,7 @@ class UploadAppControllerLimitsTest extends TestCase
                     ]
                 );
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -451,7 +463,8 @@ class UploadAppControllerLimitsTest extends TestCase
             //post the branch entry
             $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $branchEntry);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_250",
@@ -462,7 +475,7 @@ class UploadAppControllerLimitsTest extends TestCase
                     ]
                 );
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -492,7 +505,8 @@ class UploadAppControllerLimitsTest extends TestCase
             //post the branch entry
             $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $branchEntry);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_250",
@@ -503,7 +517,7 @@ class UploadAppControllerLimitsTest extends TestCase
                     ]
                 );
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

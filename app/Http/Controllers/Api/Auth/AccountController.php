@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpInconsistentReturnPointsInspection */
+
 namespace ec5\Http\Controllers\Api\Auth;
 
 use ec5\Http\Controllers\Controller;
@@ -17,13 +19,16 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Log;
 use Response;
+use Throwable;
 
 class AccountController extends Controller
 {
-    use Archiver, Remover;
+    use Archiver;
+    use Remover;
 
     /**
-     * @throws Exception
+     * @throws Throwable
+     * @noinspection PhpInconsistentReturnPointsInspection
      */
     public function handleDeletionRequest()
     {
@@ -40,7 +45,7 @@ class AccountController extends Controller
         if ($routeName === 'internalAccountDelete') {
             if (sizeof($userProjectRoles) === 0) {
                 //user is not a member of any projects so remove it directly
-                //(user ID for entries added to public projects is never considered)
+                //(imp: the user ID for entries added to public projects is never considered)
                 if ($this->removeUser($email, $userId)) {
                     $this->logoutUser();
                     return $this->sendResponseSuccess($email);
@@ -119,9 +124,6 @@ class AccountController extends Controller
         }
     }
 
-    /**
-     * @throws Exception
-     */
     protected function archiveProjectsCreatedByUser($projects, $userId)
     {
         try {
@@ -157,10 +159,14 @@ class AccountController extends Controller
             }
             DB::commit();
             return true;
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             Log::error('Error archiveProjectsCreatedByUser()', ['exception' => $e->getMessage()]);
-            DB::rollBack();
-            return false;
+            try {
+                DB::rollBack();
+                return false;
+            } catch (Throwable $e) {
+                Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
+            }
         }
     }
 
@@ -168,8 +174,9 @@ class AccountController extends Controller
     {
         //send confirmation email to user
         try {
-            Mail::to($email)->send(new UserAccountDeletionConfirmation());
-        } catch (Exception $e) {
+            Mail::to($email)->send(new UserAccountDeletionConfirmation($email));
+        } catch (Throwable $e) {
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             return Response::apiErrorCode(400, [
                 'account-deletion' => ['ec5_103']
             ]);
@@ -187,6 +194,9 @@ class AccountController extends Controller
         ]);
     }
 
+    /**
+     * @throws Throwable
+     */
     private function removeUser($email, $userId)
     {
         try {
@@ -200,7 +210,8 @@ class AccountController extends Controller
                 return false;
             }
 
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             DB::rollBack();
             return false;
         }

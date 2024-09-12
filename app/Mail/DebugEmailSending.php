@@ -5,11 +5,11 @@ namespace ec5\Mail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Config;
 
 class DebugEmailSending extends Mailable
 {
-    use Queueable, SerializesModels;
+    use Queueable;
+    use SerializesModels;
 
     /**
      * Create a new message instance.
@@ -28,8 +28,10 @@ class DebugEmailSending extends Mailable
     public function build()
     {
         return $this
-            ->from(config('mail.from.address'),
-                config('mail.from.name'))
+            ->from(
+                config('mail.from.address'),
+                config('mail.from.name')
+            )
             ->subject('This is a test email using Mailgun')
             ->view('emails.debug_email_sending');
     }

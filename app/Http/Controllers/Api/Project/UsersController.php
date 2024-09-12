@@ -11,7 +11,7 @@ use ec5\Services\Project\ProjectService;
 use ec5\Traits\Requests\RequestAttributes;
 use Response;
 
-class UserController
+class UsersController
 {
     use RequestAttributes;
 
@@ -93,8 +93,7 @@ class UserController
 
     public function switchRole(
         RuleSwitchUserRole $ruleSwitchUserRole
-    )
-    {
+    ) {
         // Only managers and up have access
         if (!$this->requestedProjectRole()->canManageUsers()) {
             //return error json
@@ -157,7 +156,7 @@ class UserController
         $ruleBulkImportUsers->validate($payload);
         if ($ruleBulkImportUsers->hasErrors()) {
             //kick user out if anything is invalid, teach him a lesson.
-            return Response::apiErrorCode(404, $ruleBulkImportUsers->errors());
+            return Response::apiErrorCode(400, $ruleBulkImportUsers->errors());
         }
 
         $emails = $payload['emails'];
@@ -176,10 +175,15 @@ class UserController
 
             // Additional checks on the user against the user performing the action,
             // using the new role passed in and user's existing role, if available
-            $ruleBulkImportUsers->additionalChecks($requestedUser, $userToAdd, $this->requestedProjectRole()->getRole(), $newRole,
-                $userProjectRole->getRole());
+            $ruleBulkImportUsers->additionalChecks(
+                $requestedUser,
+                $userToAdd,
+                $this->requestedProjectRole()->getRole(),
+                $newRole,
+                $userProjectRole->getRole()
+            );
             if ($ruleBulkImportUsers->hasErrors()) {
-                $validationErrors[] = $ruleBulkImportUsers->errors();
+                $validationErrors = $ruleBulkImportUsers->errors();
             }
 
             //Got here without any errors? Add the user role then ;)
@@ -189,7 +193,7 @@ class UserController
                     $this->requestedProject()->getId(),
                     $payload['role']
                 )) {
-                    $validationErrors[] = ['db' => 'ec5_104'];
+                    $validationErrors = ['db' => 'ec5_104'];
                     //exit at the first error
                     break;
                 }
@@ -201,7 +205,7 @@ class UserController
             $data = ['message' => Common::configWithParams('epicollect.codes.ec5_345', ['role' => $newRole])];
             return Response::apiData($data);
         } else {
-            //warn user about errors (manager roles which cannot be switched)
+            //warn user about any errors (manager roles which cannot be switched, etc.)
             return Response::apiErrorCode(400, $validationErrors);
         }
     }

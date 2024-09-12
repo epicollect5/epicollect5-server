@@ -64,11 +64,11 @@ return [
             'prefix' => '',
             'strict' => false,
             'engine' => null,
-            //  to use ssl, set the path to the certificate in the env file
-            'options' => array(
-                PDO::MYSQL_ATTR_SSL_CA => env('DB_SSL_CERTIFICATE', ''),
-                PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false
-            )
+//            //  to use ssl, set the path to the certificate in the env file
+//            'options' => array(
+//                PDO::MYSQL_ATTR_SSL_CA => env('DB_SSL_CERTIFICATE', ''),
+//                PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false
+//            )
         ],
 
         'pgsql' => [

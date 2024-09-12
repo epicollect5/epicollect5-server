@@ -28,9 +28,9 @@ class EntriesViewService
 {
     use RequestAttributes;
 
-    private $ruleQueryString;
-    private $ruleAnswers;
-    public $validationErrors;
+    private RuleQueryString $ruleQueryString;
+    private RuleAnswers $ruleAnswers;
+    public array $validationErrors;
 
     public function __construct()
     {
@@ -57,11 +57,7 @@ class EntriesViewService
         $this->ruleQueryString = new RuleQueryString();
     }
 
-    /**
-     * @param $allowedKeys
-     * @param $perPage
-     * @return array
-     */
+
     public function getSanitizedQueryParams($allowedKeys, $perPage): array
     {
         $params = [];

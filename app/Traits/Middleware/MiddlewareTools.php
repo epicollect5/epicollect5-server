@@ -15,7 +15,7 @@ trait MiddlewareTools
      * @param $httpStatusCode
      * @return JsonResponse|RedirectResponse
      */
-    public function middlewareErrorResponse(Request $request, $errorCode, $httpStatusCode)
+    public function middlewareErrorResponse(Request $request, $errorCode, $httpStatusCode): JsonResponse|RedirectResponse
     {
         $errors = ['middleware' => [$errorCode]];
         if ($this->isJsonRequest($request)) {
@@ -35,7 +35,7 @@ trait MiddlewareTools
      */
     public function isJsonRequest(Request $request): bool
     {
-        if ($request->isJson() || $request->wantsJson() || preg_match('#^/api#', $request->getPathInfo())) {
+        if ($request->isJson() || $request->wantsJson() || str_starts_with($request->getPathInfo(), '/api')) {
             return true;
         }
         return false;

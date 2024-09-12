@@ -1,4 +1,5 @@
 <?php
+
 return [
     'project' => [
         'id' => [
@@ -20,6 +21,11 @@ return [
         'description' => [
             'min' => 3,
             'max' => 3000
+        ],
+        'logo' => [
+            'width' => 4096,
+            'height' => 4096,
+            'size' => 5000
         ]
     ],
     'formsMaxCount' => 5,

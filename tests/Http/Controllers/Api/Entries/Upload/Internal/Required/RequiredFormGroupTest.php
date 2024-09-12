@@ -1,6 +1,6 @@
 <?php
 
-namespace Http\Controllers\Api\Entries\Upload\Internal\Required;
+namespace Tests\Http\Controllers\Api\Entries\Upload\Internal\Required;
 
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectRole;
@@ -21,7 +21,7 @@ class RequiredFormGroupTest extends TestCase
 {
     use DatabaseTransactions, Assertions;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         //remove leftovers
@@ -148,7 +148,7 @@ class RequiredFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             echo print_r($this->projectDefinition, true);
             $this->logTestError($e, $response);
         }
@@ -216,7 +216,7 @@ class RequiredFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             echo print_r($this->projectDefinition, true);
             $this->logTestError($e, $response);
         }
@@ -284,7 +284,7 @@ class RequiredFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             echo print_r($this->projectDefinition, true);
             $this->logTestError($e, $response);
         }
@@ -352,7 +352,7 @@ class RequiredFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             echo print_r($this->projectDefinition, true);
             $this->logTestError($e, $response);
         }
@@ -420,7 +420,7 @@ class RequiredFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             echo print_r($this->projectDefinition, true);
             $this->logTestError($e, $response);
         }
@@ -488,7 +488,7 @@ class RequiredFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             echo print_r($this->projectDefinition, true);
             $this->logTestError($e, $response);
         }
@@ -556,7 +556,7 @@ class RequiredFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             echo print_r($this->projectDefinition, true);
             $this->logTestError($e, $response);
         }
@@ -624,7 +624,7 @@ class RequiredFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             echo print_r($this->projectDefinition, true);
             $this->logTestError($e, $response);
         }
@@ -692,7 +692,7 @@ class RequiredFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             echo print_r($this->projectDefinition, true);
             $this->logTestError($e, $response);
         }
@@ -760,7 +760,7 @@ class RequiredFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             echo print_r($this->projectDefinition, true);
             $this->logTestError($e, $response);
         }
@@ -836,7 +836,7 @@ class RequiredFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             echo print_r($this->projectDefinition, true);
             $this->logTestError($e, $response);
         }
@@ -910,7 +910,7 @@ class RequiredFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             echo print_r($this->projectDefinition, true);
             $this->logTestError($e, $response);
         }
@@ -978,7 +978,7 @@ class RequiredFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             echo print_r($this->projectDefinition, true);
             $this->logTestError($e, $response);
         }

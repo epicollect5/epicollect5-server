@@ -2,35 +2,26 @@
 
 namespace ec5\Traits;
 
-use ec5\DTO\EntryStructureDTO;
-use ec5\DTO\ProjectDefinitionDTO;
-use ec5\DTO\ProjectDTO;
-use ec5\DTO\ProjectExtraDTO;
-use ec5\DTO\ProjectMappingDTO;
-use ec5\DTO\ProjectRoleDTO;
-use ec5\DTO\ProjectStatsDTO;
 use ec5\Libraries\Utilities\DateFormatConverter;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
-use ec5\Models\Project\Project;
-use ec5\Services\Mapping\ProjectMappingService;
 use Hash;
 use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Assert;
 
 trait Assertions
 {
-    protected function assertJsonResponseHasKeys($jsonResponse, array $expectedKeys)
+    protected function assertJsonResponseHasKeys($jsonResponse, array $expectedKeys): void
     {
         foreach ($expectedKeys as $key) {
             $this->assertArrayHasKey($key, $jsonResponse, 'Key ' . $key . ' is missing in JSON response');
         }
     }
 
-    protected function assertArrayHasExactKeys($jsonResponse, $expectedKeys)
+    protected function assertArrayHasExactKeys($jsonResponse, $expectedKeys): void
     {
-        $this->assertIsArray($jsonResponse);
-        $this->assertIsArray($expectedKeys);
+        Assert::assertIsArray($jsonResponse);
+        Assert::assertIsArray($expectedKeys);
 
         foreach ($expectedKeys as $key) {
             $this->assertArrayHasKey(
@@ -60,18 +51,14 @@ trait Assertions
         }
     }
 
-    public function assertIsArray($actual, $message = '')
-    {
-        Assert::assertInternalType('array', $actual, $message);
-    }
 
-    public function assertIsArrayNotEmpty($data)
+    public function assertIsArrayNotEmpty($data): void
     {
-        self::assertIsArray($data);
+        Assert::assertIsArray($data);
         Assert::assertNotEmpty($data);
     }
 
-    public function assertProjectResponse($jsonResponse)
+    public function assertProjectResponse($jsonResponse): void
     {
         $this->assertIsArrayNotEmpty($jsonResponse['meta']['project_extra']);
         $this->assertIsArrayNotEmpty($jsonResponse['meta']['project_user']);
@@ -199,7 +186,7 @@ trait Assertions
         }
     }
 
-    public function assertAvatarCreated($project)
+    public function assertAvatarCreated($project): void
     {
         //assert avatar is created
         $filename = config('epicollect.media.project_avatar.filename');
@@ -213,11 +200,13 @@ trait Assertions
 
         $this->assertEquals(
             $project->ref . '/' . $filename,
-            $avatarMobile[0]);
+            $avatarMobile[0]
+        );
 
         $this->assertEquals(
             $project->ref . '/' . $filename,
-            $avatarThumb[0]);
+            $avatarThumb[0]
+        );
 
         //delete fake avatar files
         Storage::disk('project_mobile_logo')->deleteDirectory($project->ref);
@@ -420,9 +409,9 @@ trait Assertions
             $this->assertArrayHasKey('mapping', $response['data']);
 
             // Check the structure of 'entries'
-            $this->assertIsArray($response['data']['entries']);
+            Assert::assertIsArray($response['data']['entries']);
             foreach ($response['data']['entries'] as $entry) {
-                $this->assertIsArray($entry);
+                Assert::assertIsArray($entry);
                 //assert created_by since the project is private when using Guzzle
                 $this->assertArrayHasKey('created_by', $entry);
             }
@@ -448,7 +437,8 @@ trait Assertions
                     ],
                     'meta',
                     'links'
-                ]);
+                ]
+            );
         }
 
         $this->assertMeta($json['meta']);
@@ -656,7 +646,7 @@ trait Assertions
     {
         foreach ($links as $link) {
             if ($link !== null) {
-                $this->assertRegExp('/^(?:\w+:\/{2})?\w+(?:\.\w+)*(?:\/[^\s]*)?$/', $link);
+                $this->assertMatchesRegularExpression('/^(?:\w+:\/{2})?\w+(?:\.\w+)*(?:\/[^\s]*)?$/', $link);
             } else {
                 $this->assertNull($link);
             }
@@ -668,10 +658,10 @@ trait Assertions
         foreach ($array as $key => $value) {
             if ($key === 'newest' || $key === 'oldest') {
                 // Assert that the value is an ISO 8601 date-time string
-                $this->assertRegExp('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/', $value);
+                $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/', $value);
             } else {
                 // Assert that the value is an integer
-                $this->assertInternalType('int', $value);
+                $this->assertIsInt($value);
             }
         }
     }
@@ -754,10 +744,12 @@ trait Assertions
         if (sizeof($entryPayload['data']['relationships']['parent']) > 0) {
             $this->assertEquals(
                 $entryPayload['data']['relationships']['parent']['data']['parent_entry_uuid'],
-                $entryStored->parent_uuid);
+                $entryStored->parent_uuid
+            );
             $this->assertEquals(
                 $entryPayload['data']['relationships']['parent']['data']['parent_form_ref'],
-                $entryStored->parent_form_ref);
+                $entryStored->parent_form_ref
+            );
         } else {
             $this->assertEquals('', $entryStored->parent_uuid);
             $this->assertEquals('', $entryStored->parent_form_ref);
@@ -774,9 +766,11 @@ trait Assertions
         }
 
         //assert timestamps are equal (converted as the format is different JS/MYSQL)
-        $this->assertTrue(DateFormatConverter::areTimestampsEqual(
-            $entryStructure->getDateCreated(),
-            $entryStored->created_at)
+        $this->assertTrue(
+            DateFormatConverter::areTimestampsEqual(
+                $entryStructure->getDateCreated(),
+                $entryStored->created_at
+            )
         );
 
         $this->assertEquals(0, $entryStored->child_counts);
@@ -793,7 +787,8 @@ trait Assertions
         foreach ($inputs as $input) {
             if (in_array(
                 $input['type'],
-                config('epicollect.strings.multiple_choice_question_types'))) {
+                config('epicollect.strings.multiple_choice_question_types')
+            )) {
                 $multipleChoiceInputRefs[] = $input['ref'];
             }
             //imp: skip group and readme
@@ -809,7 +804,8 @@ trait Assertions
 
                     if (in_array(
                         $groupInput['type'],
-                        config('epicollect.strings.multiple_choice_question_types'))) {
+                        config('epicollect.strings.multiple_choice_question_types')
+                    )) {
                         $multipleChoiceInputRefs[] = $groupInput['ref'];
                     }
                 }
@@ -876,7 +872,8 @@ trait Assertions
         foreach ($branchInputs as $branchInput) {
             if (in_array(
                 $branchInput['type'],
-                config('epicollect.strings.multiple_choice_question_types'))) {
+                config('epicollect.strings.multiple_choice_question_types')
+            )) {
                 $multipleChoiceBranchInputRefs[] = $branchInput['ref'];
             }
             //imp: skip group and readme
@@ -892,7 +889,8 @@ trait Assertions
 
                     if (in_array(
                         $groupInput['type'],
-                        config('epicollect.strings.multiple_choice_question_types'))) {
+                        config('epicollect.strings.multiple_choice_question_types')
+                    )) {
                         $multipleChoiceBranchInputRefs[] = $groupInput['ref'];
                     }
                 }
@@ -948,8 +946,8 @@ trait Assertions
         $this->assertEquals($locationAnswer['latitude'], $geoJsonFeature['geometry']['coordinates'][1]);
         $this->assertEquals($locationAnswer['accuracy'], $geoJsonFeature['properties']['accuracy']);
 
-        $this->assertInternalType('float', $geoJsonFeature['geometry']['coordinates'][0]);
-        $this->assertInternalType('float', $geoJsonFeature['geometry']['coordinates'][1]);
+        $this->assertIsFloat($geoJsonFeature['geometry']['coordinates'][0]);
+        $this->assertIsFloat($geoJsonFeature['geometry']['coordinates'][1]);
         $this->assertEquals(round($locationAnswer['longitude'], 6), $geoJsonFeature['geometry']['coordinates'][0]);
         $this->assertEquals(round($locationAnswer['latitude'], 6), $geoJsonFeature['geometry']['coordinates'][1]);
 
@@ -960,7 +958,8 @@ trait Assertions
         //Actual: 2024-02-07
         $this->assertEquals(
             date('Y-m-d', strtotime($entryFromPayload['created_at'])),
-            $geoJsonFeature['properties']['created_at']);
+            $geoJsonFeature['properties']['created_at']
+        );
         if ($possibleAnswers) {
             $this->assertEquals($possibleAnswers, $geoJsonFeature['properties']['possible_answers']);
         }
@@ -986,5 +985,19 @@ trait Assertions
 
         return $possibleAnswers;
     }
+
+    public function assertArraySubset(array $expectedSubset, array $actualArray)
+    {
+        foreach ($expectedSubset as $key => $value) {
+            $this->assertArrayHasKey($key, $actualArray);
+
+            if (is_array($value)) {
+                $this->assertArraySubset($value, $actualArray[$key]);
+            } else {
+                $this->assertEquals($value, $actualArray[$key]);
+            }
+        }
+    }
+
 
 }

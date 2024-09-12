@@ -3,13 +3,15 @@
 namespace ec5\Models\User;
 
 use Carbon\Carbon;
+use ec5\Traits\Models\SerializeDates;
 use Hash;
 use Illuminate\Database\Eloquent\Model;
 
 class UserVerify extends Model
 {
+    use SerializeDates;
 
-    const UPDATED_AT = null;
+    public const null UPDATED_AT = null;
 
     /**
      * The table associated with the model.
@@ -20,7 +22,7 @@ class UserVerify extends Model
 
     protected $guarded = [];
 
-    public function isValidCode($code)
+    public function isValidCode($code): bool
     {
         //is the code the same?
         if (Hash::check($code, $this->attributes['code'])) {
@@ -32,5 +34,3 @@ class UserVerify extends Model
         return false;
     }
 }
-
-

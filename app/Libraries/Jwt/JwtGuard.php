@@ -8,12 +8,10 @@ use Illuminate\Contracts\Auth\Guard;
 use ec5\Libraries\Jwt\JwtUserProvider as UserProvider;
 
 use Illuminate\Http\Request;
-use Config;
-
 use Illuminate\Contracts\Cookie\QueueingFactory as CookieJar;
+use Illuminate\Support\Str;
 use RuntimeException;
 use Cookie;
-use Str;
 use Route;
 
 class JwtGuard implements Guard
@@ -224,7 +222,6 @@ class JwtGuard implements Guard
     /**
      * Get the jwt header in the Authorization header format
      *
-     * @return string
      */
     public function authorizationResponse()
     {
@@ -549,4 +546,9 @@ class JwtGuard implements Guard
 
     }
 
+    public function hasUser()
+    {
+        // Return true if a user is authenticated
+        return !is_null($this->user);
+    }
 }

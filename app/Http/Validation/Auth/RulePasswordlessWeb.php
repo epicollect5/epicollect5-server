@@ -3,8 +3,6 @@
 namespace ec5\Http\Validation\Auth;
 
 use ec5\Http\Validation\ValidationBase;
-use Illuminate\Support\Str;
-use League\Csv\Reader;
 
 class RulePasswordlessWeb extends ValidationBase
 {

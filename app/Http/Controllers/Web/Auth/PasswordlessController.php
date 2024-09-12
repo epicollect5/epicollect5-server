@@ -17,6 +17,7 @@ use ec5\Services\User\UserService;
 use ec5\Traits\Auth\ReCaptchaValidation;
 use Exception;
 use Firebase\JWT\JWT as FirebaseJwt;
+use Firebase\JWT\Key;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Log;
@@ -90,7 +91,7 @@ class PasswordlessController extends AuthController
                 'exception' => $e->getMessage(),
                 'passwordless-request-code' => ['ec5_104']
             ]);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Error generating passwordless access code web');
             DB::rollBack();
 
@@ -103,7 +104,8 @@ class PasswordlessController extends AuthController
         //send email with verification code
         try {
             Mail::to($email)->send(new UserPasswordlessApiMail($code));
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             return redirect()->back()->withErrors([
                 'exception' => $e->getMessage(),
                 'passwordless-request-code' => ['ec5_116']
@@ -253,8 +255,11 @@ class PasswordlessController extends AuthController
         $decoded = null;
 
         try {
-            $decoded = (array)FirebaseJwt::decode($token, $secretKey, array('HS256'));
-        } catch (Exception $e) {
+            $decoded = (array)FirebaseJwt::decode(
+                $token,
+                new Key($secretKey, 'HS256')
+            );
+        } catch (\Throwable $e) {
             Log::error('Error decoding jwt-passwordless token to login', ['exception' => $e->getMessage()]);
         }
         return $decoded;

@@ -4,6 +4,7 @@ namespace ec5\Models\Entries;
 
 use DB;
 use ec5\Traits\Eloquent\Entries;
+use ec5\Traits\Models\SerializeDates;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
 
@@ -27,13 +28,24 @@ use Illuminate\Database\Query\Builder;
 class BranchEntry extends Model
 {
     use Entries;
+    use SerializeDates;
+
+    protected $table = 'branch_entries';
+    /**
+     *  Disable eloquent timestamps because we are using
+     * "uploaded_at" -> when entry is uploaded or edited
+     * "created_at" -> copied from the entry created_at (mobile) or set when entry is saved (web)
+     */
+    public $timestamps = false;
 
     /**
-     * @var mixed
+     * Casting to a datetime ISO 8601 without milliseconds
+     * due to legacy reasons
      */
-    protected $table = 'branch_entries';
-    //disable eloquent timestamps because we are using "uploaded_at"
-    public $timestamps = false;
+    protected $casts = [
+        'created_at' => 'datetime:Y-m-d H:i:s',
+        'uploaded_at' => 'datetime:Y-m-d H:i:s',
+    ];
 
     /**
      * @param $projectId
@@ -113,7 +125,7 @@ class BranchEntry extends Model
      * @param array $columns
      * @return Builder
      */
-    public function getBranchEntriesForBranchRefAndOwner($projectId, $options, $columns = array('*')): Builder
+    public function getBranchEntriesForBranchRefAndOwner($projectId, $options, array $columns = array('*')): Builder
     {
         $q = DB::table($this->table)
             ->where('project_id', '=', $projectId)

@@ -11,6 +11,7 @@ use ec5\Models\User\User;
 use ec5\Traits\Assertions;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Str;
+use PHPUnit\Framework\Assert;
 use Storage;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
@@ -122,8 +123,11 @@ class DownloadControllerTest extends TestCase
         // Get the Content-Disposition header
         $contentDisposition = $response->headers->get('Content-Disposition');
         // Extract the filename from the header
-        preg_match('/filename="(.+)"/', $contentDisposition, $matches);
-        $extractedFilename = $matches[1] ?? null;
+        if (preg_match('/filename[^;=\n]*=["\']?([^"\']*)["\']?/', $contentDisposition, $matches)) {
+            $extractedFilename = $matches[1];
+        } else {
+            $extractedFilename = null;
+        }
         $this->assertEquals($zipName, $extractedFilename);
         // Get the response content as a file
         $responseContent = $response->getFile();
@@ -182,8 +186,11 @@ class DownloadControllerTest extends TestCase
         // Get the Content-Disposition header
         $contentDisposition = $response->headers->get('Content-Disposition');
         // Extract the filename from the header
-        preg_match('/filename="(.+)"/', $contentDisposition, $matches);
-        $extractedFilename = $matches[1] ?? null;
+        if (preg_match('/filename[^;=\n]*=["\']?([^"\']*)["\']?/', $contentDisposition, $matches)) {
+            $extractedFilename = $matches[1];
+        } else {
+            $extractedFilename = null;
+        }
         $this->assertEquals($zipName, $extractedFilename);
         // Get the response content as a file
         $responseContent = $response->getFile();
@@ -242,8 +249,11 @@ class DownloadControllerTest extends TestCase
         // Get the Content-Disposition header
         $contentDisposition = $response->headers->get('Content-Disposition');
         // Extract the filename from the header
-        preg_match('/filename="(.+)"/', $contentDisposition, $matches);
-        $extractedFilename = $matches[1] ?? null;
+        if (preg_match('/filename[^;=\n]*=["\']?([^"\']*)["\']?/', $contentDisposition, $matches)) {
+            $extractedFilename = $matches[1];
+        } else {
+            $extractedFilename = null;
+        }
         $this->assertEquals($zipName, $extractedFilename);
         // Get the response content as a file
         $responseContent = $response->getFile();
@@ -302,8 +312,11 @@ class DownloadControllerTest extends TestCase
         // Get the Content-Disposition header
         $contentDisposition = $response->headers->get('Content-Disposition');
         // Extract the filename from the header
-        preg_match('/filename="(.+)"/', $contentDisposition, $matches);
-        $extractedFilename = $matches[1] ?? null;
+        if (preg_match('/filename[^;=\n]*=["\']?([^"\']*)["\']?/', $contentDisposition, $matches)) {
+            $extractedFilename = $matches[1];
+        } else {
+            $extractedFilename = null;
+        }
         $this->assertEquals($zipName, $extractedFilename);
         // Get the response content as a file
         $responseContent = $response->getFile();
@@ -391,8 +404,12 @@ class DownloadControllerTest extends TestCase
         // Get the Content-Disposition header
         $contentDisposition = $response->headers->get('Content-Disposition');
         // Extract the filename from the header
-        preg_match('/filename="(.+)"/', $contentDisposition, $matches);
-        $extractedFilename = $matches[1] ?? null;
+        // Extract the filename from the header
+        if (preg_match('/filename[^;=\n]*=["\']?([^"\']*)["\']?/', $contentDisposition, $matches)) {
+            $extractedFilename = $matches[1];
+        } else {
+            $extractedFilename = null;
+        }
         $this->assertEquals($zipName, $extractedFilename);
         // Get the response content as a file
         $responseContent = $response->getFile();
@@ -481,8 +498,11 @@ class DownloadControllerTest extends TestCase
         // Get the Content-Disposition header
         $contentDisposition = $response->headers->get('Content-Disposition');
         // Extract the filename from the header
-        preg_match('/filename="(.+)"/', $contentDisposition, $matches);
-        $extractedFilename = $matches[1] ?? null;
+        if (preg_match('/filename[^;=\n]*=["\']?([^"\']*)["\']?/', $contentDisposition, $matches)) {
+            $extractedFilename = $matches[1];
+        } else {
+            $extractedFilename = null;
+        }
         $this->assertEquals($zipName, $extractedFilename);
         // Get the response content as a file
         $responseContent = $response->getFile();

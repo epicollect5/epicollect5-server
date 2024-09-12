@@ -36,7 +36,7 @@ return [
     "ec5_43" => "Length too short",
     "ec5_44" => "Value too long",
     "ec5_45" => "Data could not be inserted into the database.",
-    "ec5_46" => "A required entry for a media file does not exist. Please try to unsync all your entries and upload again. This usually happens when the data entry for the file is not found on the server.",
+    "ec5_46" => "A required entry for a media file does not exist. Please try to un-sync all your entries and upload again. This usually happens when the data entry for the file is not found on the server.",
     "ec5_47" => "File format incorrect.",
     "ec5_48" => "Field not valid.",
     "ec5_49" => "User could not be updated.",
@@ -280,7 +280,7 @@ return [
     "ec5_343" => "All :role users removed from project.",
     "ec5_344" => "You can only manage users with a lower role",
     "ec5_345" => "Users with :role role added!",
-    "ec5_346" => "Email addresses limit excedeed: :limit",
+    "ec5_346" => "Email addresses limit exceeded: :limit",
     "ec5_347" => "No email address found",
     "ec5_348" => "Project avatar could not be created.",
     "ec5_349" => "Project name must be at least :min chars long!",
@@ -336,5 +336,6 @@ return [
     "ec5_399" => "Invalid project name",
     "ec5_400" => "Chunk entries deleted successfully.",
     "ec5_401" => "Chunk branch entries deleted successfully.",
-    "ec5_402" => "Session expired. Please export your form(s) and login again."
+    "ec5_402" => "Session expired. Please export your form(s) and login again.",
+    "ec5_403" => "Logo file size too large. Max file size is :max",
 ];
