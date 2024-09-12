@@ -2,7 +2,6 @@
 
 namespace Tests\Http\Controllers\Api\AccountController;
 
-
 use ec5\Libraries\Utilities\Generators;
 use ec5\Mail\UserAccountDeletionConfirmation;
 use ec5\Models\Entries\BranchEntry;
@@ -44,7 +43,7 @@ class AccountDeletionExternalTest extends TestCase
         $user = factory(User::class)->create(
             ['email' => config('testing.UNIT_TEST_RANDOM_EMAIL')]
         );
-        $provider = factory(UserProvider::class)->create([
+        factory(UserProvider::class)->create([
             'user_id' => $user->id,
             'email' => $user->email
         ]);
@@ -72,7 +71,9 @@ class AccountDeletionExternalTest extends TestCase
 
         // Assert a message was sent to the given users...
         Mail::assertSent(UserAccountDeletionConfirmation::class, function ($mail) use ($user) {
-            return $mail->hasTo($user->email);
+            //also assert the user email is confirmed in the email HTML
+            //https://github.com/laravel/ideas/issues/405#issuecomment-759890953
+            return $mail->hasTo($user->email) && $mail->assertSeeInHtml($user->email);
         });
     }
 
@@ -92,7 +93,7 @@ class AccountDeletionExternalTest extends TestCase
         $user = factory(User::class)->create(
             ['email' => config('testing.UNIT_TEST_RANDOM_EMAIL')]
         );
-        $provider = factory(UserProvider::class)->create([
+        factory(UserProvider::class)->create([
             'user_id' => $user->id,
             'email' => $user->email
         ]);
@@ -215,7 +216,7 @@ class AccountDeletionExternalTest extends TestCase
 
         // Assert a message was sent to the given users...
         Mail::assertSent(UserAccountDeletionConfirmation::class, function ($mail) use ($user) {
-            return $mail->hasTo($user->email);
+            return $mail->hasTo($user->email) && $mail->assertSeeInHtml($user->email);
         });
 
         //delete fake files
@@ -243,10 +244,10 @@ class AccountDeletionExternalTest extends TestCase
         $user = factory(User::class)->create(
             ['email' => config('testing.UNIT_TEST_RANDOM_EMAIL')]
         );
-        $provider = factory(UserProvider::class)->create([
-            'user_id' => $user->id,
-            'email' => $user->email
-        ]);
+        factory(UserProvider::class)->create([
+             'user_id' => $user->id,
+             'email' => $user->email
+         ]);
 
         //create fake project
         $project = factory(Project::class)->create(['created_by' => $user->id]);
@@ -326,7 +327,7 @@ class AccountDeletionExternalTest extends TestCase
 
         // Assert a message was sent to the given users...
         Mail::assertSent(UserAccountDeletionConfirmation::class, function ($mail) use ($user) {
-            return $mail->hasTo($user->email);
+            return $mail->hasTo($user->email) && $mail->assertSeeInHtml($user->email);
         });
 
         //delete fake files
@@ -355,17 +356,17 @@ class AccountDeletionExternalTest extends TestCase
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
-        $provider = factory(UserProvider::class)->create([
-            'user_id' => $user->id,
-            'email' => $user->email
-        ]);
+        factory(UserProvider::class)->create([
+             'user_id' => $user->id,
+             'email' => $user->email
+         ]);
 
         // 2- create mock project with another user set as CREATOR
         $anotherUser = factory(User::class)->create(['state' => 'active']);
         $project = factory(Project::class)->create(['created_by' => $anotherUser->id]);
 
         //assign user to that project with the MANAGER role
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
             'role' => $role
@@ -463,7 +464,7 @@ class AccountDeletionExternalTest extends TestCase
 
         // Assert a message was sent to the given users...
         Mail::assertSent(UserAccountDeletionConfirmation::class, function ($mail) use ($user) {
-            return $mail->hasTo($user->email);
+            return $mail->hasTo($user->email) && $mail->assertSeeInHtml($user->email);
         });
 
         //delete fake files
@@ -492,10 +493,10 @@ class AccountDeletionExternalTest extends TestCase
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
-        $provider = factory(UserProvider::class)->create([
-            'user_id' => $user->id,
-            'email' => $user->email
-        ]);
+        factory(UserProvider::class)->create([
+             'user_id' => $user->id,
+             'email' => $user->email
+         ]);
 
         // 2- create mock project with another user set as CREATOR
         $anotherUser = factory(User::class)->create(['state' => 'active']);
@@ -599,7 +600,7 @@ class AccountDeletionExternalTest extends TestCase
 
         // Assert a message was sent to the given users...
         Mail::assertSent(UserAccountDeletionConfirmation::class, function ($mail) use ($user) {
-            return $mail->hasTo($user->email);
+            return $mail->hasTo($user->email) && $mail->assertSeeInHtml($user->email);
         });
 
         //delete fake files
@@ -735,7 +736,7 @@ class AccountDeletionExternalTest extends TestCase
 
         // Assert a message was sent to the given users...
         Mail::assertSent(UserAccountDeletionConfirmation::class, function ($mail) use ($user) {
-            return $mail->hasTo($user->email);
+            return $mail->hasTo($user->email) && $mail->assertSeeInHtml($user->email);
         });
 
         //delete fake files
@@ -871,7 +872,7 @@ class AccountDeletionExternalTest extends TestCase
 
         // Assert a message was sent to the given users...
         Mail::assertSent(UserAccountDeletionConfirmation::class, function ($mail) use ($user) {
-            return $mail->hasTo($user->email);
+            return $mail->hasTo($user->email) && $mail->assertSeeInHtml($user->email);
         });
 
         //delete fake files
@@ -929,7 +930,7 @@ class AccountDeletionExternalTest extends TestCase
 
         // Assert a message was sent to the given users...
         Mail::assertSent(UserAccountDeletionConfirmation::class, function ($mail) use ($user) {
-            return $mail->hasTo($user->email);
+            return $mail->hasTo($user->email) && $mail->assertSeeInHtml($user->email);
         });
     }
 
@@ -1300,7 +1301,7 @@ class AccountDeletionExternalTest extends TestCase
 
         // Assert a message was sent to the given users...
         Mail::assertSent(UserAccountDeletionConfirmation::class, function ($mail) use ($user) {
-            return $mail->hasTo($user->email);
+            return $mail->hasTo($user->email) && $mail->assertSeeInHtml($user->email);
         });
 
         //assert files are not touched
@@ -1486,7 +1487,7 @@ class AccountDeletionExternalTest extends TestCase
         }
         // Assert a message was sent to the given users...
         Mail::assertSent(UserAccountDeletionConfirmation::class, function ($mail) use ($user) {
-            return $mail->hasTo($user->email);
+            return $mail->hasTo($user->email) && $mail->assertSeeInHtml($user->email);
         });
 
         //check counts

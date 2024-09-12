@@ -174,7 +174,7 @@ class AccountController extends Controller
     {
         //send confirmation email to user
         try {
-            Mail::to($email)->send(new UserAccountDeletionConfirmation());
+            Mail::to($email)->send(new UserAccountDeletionConfirmation($email));
         } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             return Response::apiErrorCode(400, [

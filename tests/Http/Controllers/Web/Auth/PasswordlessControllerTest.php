@@ -74,8 +74,6 @@ class PasswordlessControllerTest extends TestCase
 
     public function test_missing_email()
     {
-        $email = config('testing.MANAGER_EMAIL');
-
         //send a code to user for authentication
         Mail::fake();
 
@@ -170,7 +168,7 @@ class PasswordlessControllerTest extends TestCase
         // First invalid attempt
         $response = $this->post('/login/passwordless/verification', [
             'email' => $email,
-            'code' => strval(Generators::randomNumber(6, 1))
+            'code' => Generators::randomNumber(6, 1)
         ], [])->assertStatus(200);
         $this->assertEquals('auth.verification_passwordless', $response->original->getName());
         $this->assertEquals(['ec5_378'], $response->original->getData()['errors']->all());
@@ -178,7 +176,7 @@ class PasswordlessControllerTest extends TestCase
         //Second invalid attempt
         $response = $this->post('/login/passwordless/verification', [
             'email' => $email,
-            'code' => strval(Generators::randomNumber(6, 1))
+            'code' => Generators::randomNumber(6, 1)
         ], []);
 
         $response->assertStatus(200);
@@ -188,7 +186,7 @@ class PasswordlessControllerTest extends TestCase
         //Third invalid attempt, redirect back to login
         $response = $this->post('/login/passwordless/verification', [
             'email' => $email,
-            'code' => strval(Generators::randomNumber(6, 1))
+            'code' => Generators::randomNumber(6, 1)
         ], [])->assertStatus(302);
 
         $response->assertRedirect(route('login'));
@@ -265,7 +263,7 @@ class PasswordlessControllerTest extends TestCase
         // First invalid attempt
         $response = $this->post('/login/passwordless/verification', [
             'email' => $email,
-            'code' => strval(Generators::randomNumber(6, 1))
+            'code' => Generators::randomNumber(6, 1)
         ], [])->assertStatus(200);
         $this->assertEquals('auth.verification_passwordless', $response->original->getName());
         $this->assertEquals(['ec5_378'], $response->original->getData()['errors']->all());
@@ -273,7 +271,7 @@ class PasswordlessControllerTest extends TestCase
         //Second invalid attempt
         $response = $this->post('/login/passwordless/verification', [
             'email' => $email,
-            'code' => strval(Generators::randomNumber(6, 1))
+            'code' => Generators::randomNumber(6, 1)
         ], [])->assertStatus(200);
         $this->assertEquals('auth.verification_passwordless', $response->original->getName());
         $this->assertEquals(['ec5_378'], $response->original->getData()['errors']->all());
@@ -281,13 +279,13 @@ class PasswordlessControllerTest extends TestCase
         //Third invalid attempt, redirect back to login
         $response = $this->post('/login/passwordless/verification', [
             'email' => $email,
-            'code' => strval(Generators::randomNumber(6, 1))
+            'code' => Generators::randomNumber(6, 1)
         ], [])->assertStatus(302);
 
         $response->assertRedirect(route('login'));
         $this->assertEquals('ec5_378', session('errors')->getBag('default')->first());
 
-        //Now do login succesfully
+        //Now do login successfully
         $code = Generators::randomNumber(6, 1);
         factory(UserPasswordlessWeb::class)
             ->create([
@@ -327,7 +325,7 @@ class PasswordlessControllerTest extends TestCase
         // First invalid attempt
         $response = $this->post('/login/passwordless/verification', [
             'email' => $email,
-            'code' => strval(Generators::randomNumber(6, 1))
+            'code' => Generators::randomNumber(6, 1)
         ], [])->assertStatus(200);
         $this->assertEquals('auth.verification_passwordless', $response->original->getName());
         $this->assertEquals(['ec5_378'], $response->original->getData()['errors']->all());
@@ -345,7 +343,7 @@ class PasswordlessControllerTest extends TestCase
                 'expires_at' => Carbon::now()->addSeconds($tokenExpiresAt)->toDateTimeString()
             ]);
 
-        //Now do login succesfully
+        //Now do login successfully
         $response = $this->post('/login/passwordless/verification', [
             'email' => $email,
             'code' => $code

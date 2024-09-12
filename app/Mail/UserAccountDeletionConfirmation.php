@@ -5,19 +5,22 @@ namespace ec5\Mail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Config;
 
 class UserAccountDeletionConfirmation extends Mailable
 {
-    use Queueable, SerializesModels;
+    use Queueable;
+    use SerializesModels;
+
+    public string $email;
 
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct()
+    public function __construct($email)
     {
+        $this->email = $email;
     }
 
     /**
@@ -25,11 +28,12 @@ class UserAccountDeletionConfirmation extends Mailable
      *
      * @return $this
      */
-    public function build()
+    public function build(): static
     {
         return $this->from(
             config('mail.from.address'),
-            config('mail.from.name'))
+            config('mail.from.name')
+        )
             ->subject('Account Deletion Confirmation')
             ->view('emails.account_deletion_confirmation');
     }
