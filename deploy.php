@@ -8,6 +8,7 @@
 namespace Deployer;
 
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 require 'recipe/laravel.php';
 
@@ -40,17 +41,17 @@ try {
 }
 
 // Production server
-host('production')
+localhost('production')
     ->set('deploy_path', '/var/www/html_prod')
     ->set('branch', 'master');
 
 // Development server
-host('development')
+localhost('development')
     ->set('deploy_path', '/var/www/html_prod')
     ->set('branch', 'development');
 
 // Apple server (custom branch)
-host('apple')
+localhost('apple')
     ->set('deploy_path', '/var/www/html_prod')
     ->set('branch', 'features/sign-in-with-apple');
 
@@ -82,19 +83,13 @@ desc('Deploy your project');
 task('deploy', [
     'artisan:down',
     'deploy:prepare',
-    'deploy:lock',
-    'deploy:release',
-    'deploy:update_code',
-    'deploy:shared',
     'deploy:vendors',
-    'deploy:writable',
+    'artisan:storage:link',
     'artisan:view:clear',
     'artisan:cache:clear',
     'artisan:config:cache',
-    'deploy:symlink',
     'artisan:migrate',
-    'deploy:unlock',
-    'cleanup'
+    'deploy:publish'
     // 'artisan:up', // go back online manually
 ]);
 
@@ -102,17 +97,14 @@ desc('Install Epicollect5 release');
 try {
     task('install', [
         'deploy:prepare',
-        'deploy:lock',
-        'deploy:release',
-        'deploy:update_code',
-        'deploy:shared',
         'deploy:vendors',
-        'deploy:writable',
-        'deploy:symlink',
-        'deploy:unlock',
-        'cleanup'
+        'artisan:storage:link',
+        'artisan:view:cache',
+        'artisan:config:cache',
+        'deploy:publish'
     ]);
-} catch (\Exception $e) {
+
+} catch (Throwable $e) {
     Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
 }
 
@@ -121,11 +113,11 @@ try {
     task('reminder:update_release', function () {
         writeln('<info>Remember to update the release in .env before running artisan up!</info>');
     });
-} catch (\Exception $e) {
+} catch (Throwable $e) {
     Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
 }
 
 // Hook the custom task to run after the deployment
 after('deploy', 'reminder:update_release');
 
-after('deploy', 'success');
+after('deploy', 'deploy:success');
