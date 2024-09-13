@@ -2,7 +2,7 @@
 
 namespace ec5\Providers;
 
-use Illuminate\Support\Carbon;
+use Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Blade;
@@ -14,14 +14,12 @@ class AppServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function boot()
+    public function boot(): void
     {
-//        //https://stackoverflow.com/questions/65003024/replicating-claims-as-headers-is-deprecated-and-will-removed-from-v4-0-laravel
-//        if (config('app.debug')) {
-//            error_reporting(E_ALL & ~E_USER_DEPRECATED);
-//        } else {
-//            error_reporting(0);
-//        }
+        //skip ide helper in production
+        if ($this->app->isLocal()) {
+            $this->app->register(IdeHelperServiceProvider::class);
+        }
 
         Paginator::useBootstrapThree();
         Blade::withoutComponentTags();

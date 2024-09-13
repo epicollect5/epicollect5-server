@@ -197,8 +197,7 @@ return [
         // Laravel Passport
         Laravel\Passport\PassportServiceProvider::class,
         //Avatar
-        Laravolt\Avatar\ServiceProvider::class,
-        Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
+        Laravolt\Avatar\ServiceProvider::class
     ],
 
     /*
