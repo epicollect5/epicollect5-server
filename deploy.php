@@ -23,7 +23,7 @@ add('writable_dirs', [
     'storage/app/temp'
 ]);
 
-task('deploy:check_clean_install', function () {
+task('setup:check_clean_install', function () {
     $deployPath = get('deploy_path');
 
     // Define the release path (usually the current release is a symlink to the most recent release)
@@ -39,8 +39,21 @@ task('deploy:check_clean_install', function () {
     }
 });
 
+task('setup:symlink_deploy_file', function () {
+    // Path to the current release's deploy.php file
+    $currentDeployFile = '{{release_path}}/deploy.php';
 
-task('deploy:change_storage_owner_group', function () {
+
+    // Path where the symlink will be created, adjust it as needed
+    $deploySymlinkPath = '{{deploy_path}}/deploy.php';
+
+    // Create a symlink pointing to the latest deploy.php
+    run("ln -sf $currentDeployFile $deploySymlinkPath");
+
+    writeln('Symlink to the latest deploy.php has been created.');
+});
+
+task('setup:change_storage_owner_group', function () {
     $writableDirs = get('writable_dirs');
     // Get the Apache or Nginx user dynamically
     $httpUser = run('ps aux | egrep "(apache|nginx)" | grep -v root | head -n 1 | awk \'{print $1}\'');
@@ -56,19 +69,29 @@ task('deploy:change_storage_owner_group', function () {
     }
 });
 
-task('mysql:create_user_and_db', function () {
-    $dbUsername = ask('Enter the MySQL user you want to create (e.g. epicollect5):');
+task('setup:create_user_and_db', function () {
+    $dbUsername = 'epicollect5-server';
+    // Generate a random password with at least one uppercase, lowercase, and number
+    $lowercase = 'abcdefghijklmnopqrstuvwxyz';
+    $uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    $numbers = '0123456789';
+    $allChars = $lowercase . $uppercase . $numbers;
 
-    // Use askHidden to hide the password input
-    $dbPassword = askHiddenResponse('Enter the password for this user:');
-    $dbPasswordConfirm = askHiddenResponse('Confirm the password for this user:');
+    // Ensure at least one of each required character
+    $dbPassword = $lowercase[random_int(0, strlen($lowercase) - 1)] .
+        $uppercase[random_int(0, strlen($uppercase) - 1)] .
+        $numbers[random_int(0, strlen($numbers) - 1)];
 
-    if ($dbPassword !== $dbPasswordConfirm) {
-        writeln('Passwords do not match. Please try again.');
-        return false;
+    // Fill the rest of the password length with random characters
+    for ($i = 0; $i < 9; $i++) {
+        $dbPassword .= $allChars[random_int(0, strlen($allChars) - 1)];
     }
 
-    $dbName = ask('Enter the name of the database to create (e.g. epicollect5_prod):');
+    // Shuffle the password to ensure randomness
+    $dbPassword = str_shuffle($dbPassword);
+    $dbName = 'epicollect5_prod';
+
+    writeln("Generated password for '$dbUsername', saving to .env");
 
     // Write SQL commands to a file
     $sqlFile = "/tmp/db_setup.sql";
@@ -91,7 +114,6 @@ task('mysql:create_user_and_db', function () {
     $sharedHTAccessFile = get('deploy_path') . '/shared/public/.htaccess';
     $currentEnvExample = get('release_path') . '/.env.example';
     $currentHTAccessExample = get('release_path') . '/public/.htaccess-example';
-
 
     run("cp $currentEnvExample $sharedEnvFile");
     writeln('.env file copied from .env.example.');
@@ -182,15 +204,16 @@ task('deploy_c', [
 desc('Install Epicollect5 release');
 try {
     task('install', [
-        'deploy:check_clean_install',
+        'setup:check_clean_install',
         'deploy:prepare',
         'deploy:vendors',
         'artisan:storage:link',
         'artisan:view:cache',
         'artisan:config:cache',
-        'deploy:change_storage_owner_group',
+        'setup:change_storage_owner_group',
         'deploy:publish',
-        'mysql:create_user_and_db'
+        'setup:create_user_and_db',
+        'setup:symlink_deploy_file'
     ]);
 
 } catch (Throwable $e) {

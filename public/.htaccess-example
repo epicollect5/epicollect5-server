@@ -1,43 +1,42 @@
 <IfModule mod_rewrite.c>
 
-Options -Indexes
-#redirect to homepage
- ErrorDocument 403 https://domain.com
+    Options -Indexes
+    # Redirect to homepage
+    ErrorDocument 403 https://your.domain.com
 
     <IfModule mod_negotiation.c>
         Options -MultiViews
     </IfModule>
 
-        <IfModule mod_deflate.c>
-  AddOutputFilterByType DEFLATE text/html
-  AddOutputFilterByType DEFLATE application/vnd.api+json
-  AddOutputFilterByType DEFLATE text/css
-  AddOutputFilterByType DEFLATE text/javascript
-  AddOutputFilterByType DEFLATE text/xml
-  AddOutputFilterByType DEFLATE text/plain
-  AddOutputFilterByType DEFLATE image/x-icon
-  AddOutputFilterByType DEFLATE image/svg+xml
-  AddOutputFilterByType DEFLATE application/rss+xml
-  AddOutputFilterByType DEFLATE application/javascript
-  AddOutputFilterByType DEFLATE application/x-javascript
-  AddOutputFilterByType DEFLATE application/xml
-  AddOutputFilterByType DEFLATE application/xhtml+xml
-  AddOutputFilterByType DEFLATE application/x-font
-  AddOutputFilterByType DEFLATE application/x-font-truetype
-  AddOutputFilterByType DEFLATE application/x-font-ttf
-  AddOutputFilterByType DEFLATE application/x-font-otf
-  AddOutputFilterByType DEFLATE application/x-font-opentype
-  AddOutputFilterByType DEFLATE application/vnd.ms-fontobject
-  AddOutputFilterByType DEFLATE font/ttf
-  AddOutputFilterByType DEFLATE font/otf
-  AddOutputFilterByType DEFLATE font/opentype
+    <IfModule mod_deflate.c>
+        AddOutputFilterByType DEFLATE text/html
+        AddOutputFilterByType DEFLATE application/vnd.api+json
+        AddOutputFilterByType DEFLATE text/css
+        AddOutputFilterByType DEFLATE text/javascript
+        AddOutputFilterByType DEFLATE text/xml
+        AddOutputFilterByType DEFLATE text/plain
+        AddOutputFilterByType DEFLATE image/x-icon
+        AddOutputFilterByType DEFLATE image/svg+xml
+        AddOutputFilterByType DEFLATE application/rss+xml
+        AddOutputFilterByType DEFLATE application/javascript
+        AddOutputFilterByType DEFLATE application/x-javascript
+        AddOutputFilterByType DEFLATE application/xml
+        AddOutputFilterByType DEFLATE application/xhtml+xml
+        AddOutputFilterByType DEFLATE application/x-font
+        AddOutputFilterByType DEFLATE application/x-font-truetype
+        AddOutputFilterByType DEFLATE application/x-font-ttf
+        AddOutputFilterByType DEFLATE application/x-font-otf
+        AddOutputFilterByType DEFLATE application/x-font-opentype
+        AddOutputFilterByType DEFLATE application/vnd.ms-fontobject
+        AddOutputFilterByType DEFLATE font/ttf
+        AddOutputFilterByType DEFLATE font/otf
+        AddOutputFilterByType DEFLATE font/opentype
 
-# For Olders Browsers Which Can't Handle Compression
-  BrowserMatch ^Mozilla/4 gzip-only-text/html
-  BrowserMatch ^Mozilla/4\.0[678] no-gzip
-  BrowserMatch \bMSIE !no-gzip !gzip-only-text/html
-</IfModule>
-
+        # For Older Browsers Which Can't Handle Compression
+        BrowserMatch ^Mozilla/4 gzip-only-text/html
+        BrowserMatch ^Mozilla/4\.0[678] no-gzip
+        BrowserMatch \bMSIE !no-gzip !gzip-only-text/html
+    </IfModule>
 
     RewriteEngine On
 
@@ -47,17 +46,16 @@ Options -Indexes
     Header add Access-Control-Expose-Headers: "Authorization"
 
     # All requests to https (optional, comment/uncomment the below statements if no SSL is installed)
-    RewriteCond %{HTTPS} !=on
+    # RewriteCond %{HTTPS} !=on
     # This checks to make sure the connection is not already HTTPS
 
-    RewriteRule ^/?(.*) https://%{SERVER_NAME}/$1 [R,L]
+    # RewriteRule ^/?(.*) https://%{SERVER_NAME}/$1 [R,L]
     # This rule will redirect users from their original location, to the same location but using HTTPS.
     # i.e.  http://www.example.com/foo/ to https://www.example.com/foo/
     # The leading slash is made optional so that this will work either in httpd.conf
     # or .htaccess context
 
     # IMPORTANT: for Google Login to work, set the redirect URI accordingly
-
 
     # Redirect Trailing Slashes If Not A Folder...
     RewriteCond %{REQUEST_FILENAME} !-d
@@ -69,25 +67,24 @@ Options -Indexes
     RewriteRule ^ index.php [L]
 
     # Handle Authorization Header
-
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
-    # Add you apache alias and uncomment if the installation is not in the root directory
+    # Add your apache alias and uncomment if the installation is not in the root directory
     # Usually the home page will work, but not the login page.
     # If calling the login page with the index.php in the url works, the rewrite base is the cause
     # RewriteBase /{apache_alias}
 
-    #For PHP 8+
-           <IfModule mod_php.c>
-               # PHP value limits
-               php_value memory_limit 5000M
-               php_value max_execution_time 5000
-               php_value upload_max_filesize 500M
-               php_value post_max_size 600M
-           </IfModule>
+    # For PHP 8+
+    <IfModule mod_php.c>
+        # PHP value limits
+        php_value memory_limit 5000M
+        php_value max_execution_time 5000
+        php_value upload_max_filesize 500M
+        php_value post_max_size 600M
+    </IfModule>
 
-    #Uncomment and set the below if the installation is not in the root folder
-    #RewriteBase /folder/
+    # Uncomment and set the below if the installation is not in the root folder
+    # RewriteBase /folder/
 
 </IfModule>
