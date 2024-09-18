@@ -9,24 +9,28 @@ class UpdatePassportV9 extends Migration
     /**
      * Run the migrations.
      *
-     * @return void
      */
-    public function up()
+    public function up(): void
     {
-        Schema::table('oauth_clients', function (Blueprint $table) {
-            $table->string('provider')->after('secret')->nullable();
-        });
+        // Check if the 'provider' column already exists in the 'oauth_clients' table
+        if (!Schema::hasColumn('oauth_clients', 'provider')) {
+            Schema::table('oauth_clients', function (Blueprint $table) {
+                $table->string('provider')->after('secret')->nullable();
+            });
+        }
     }
 
     /**
      * Reverse the migrations.
      *
-     * @return void
      */
-    public function down()
+    public function down(): void
     {
-        Schema::table('oauth_clients', function (Blueprint $table) {
-            $table->dropColumn('provider');
-        });
+        // Check if the 'provider' column exists before trying to drop it
+        if (Schema::hasColumn('oauth_clients', 'provider')) {
+            Schema::table('oauth_clients', function (Blueprint $table) {
+                $table->dropColumn('provider');
+            });
+        }
     }
 }
