@@ -15,7 +15,7 @@ class SeedSuperadminCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'seed:superadmin';
+    protected $signature = 'seed:superadmin {--email=} {--name=} {--surname=} {--password=}';
 
     /**
      * The console command description.
@@ -31,11 +31,11 @@ class SeedSuperadminCommand extends Command
     public function handle(): int
     {
         do {
-            $email = $this->ask('Enter superadmin email:');
-            $name = $this->ask('Enter superadmin name:');
-            $surname = $this->ask('Enter superadmin surname:');
-            $password = $this->secret('Enter superadmin password:');
-            $confirmPassword = $this->secret('Confirm superadmin password:');
+            $email = $this->option('email') ?? $this->ask('Enter superadmin email:');
+            $name = $this->option('name') ?? $this->ask('Enter superadmin name:');
+            $surname = $this->option('surname') ?? $this->ask('Enter superadmin surname:');
+            $password = $this->option('password') ?? $this->secret('Enter superadmin password:');
+            $confirmPassword = $this->option('password') ?? $this->secret('Confirm superadmin password:');
 
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 $this->error('Invalid email format.');
