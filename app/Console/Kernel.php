@@ -7,6 +7,7 @@ use ec5\Console\Commands\CheckStorageAvailableDiskSpace;
 use ec5\Console\Commands\RemoveUnverifiedUsersCommand;
 use ec5\Console\Commands\SeedEntriesCommand;
 use ec5\Console\Commands\SeedMediaCommand;
+use ec5\Console\Commands\SeedSuperadminCommand;
 use ec5\Console\Commands\SystemStatsCommand;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
@@ -26,6 +27,7 @@ class Kernel extends ConsoleKernel
         CheckStorageAvailableDiskSpace::class,
         SeedEntriesCommand::class,
         SeedMediaCommand::class,
+        SeedSuperadminCommand::class
     ];
 
     /**

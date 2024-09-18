@@ -82,7 +82,7 @@ class AdminController extends AuthController
             $this->incrementLoginAttempts($request);
         }
 
-        return redirect()->route('admin.login')
+        return redirect()->route('login-admin')
         ->withInput($request->only('email', 'remember'))
         ->withErrors(['ec5_36']);
     }

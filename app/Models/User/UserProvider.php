@@ -25,4 +25,7 @@ class UserProvider extends Model
      * @var string
      */
     protected $table = 'users_providers';
+    protected $fillable = [
+        'provider'
+    ];
 }
