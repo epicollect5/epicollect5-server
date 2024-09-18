@@ -17,22 +17,21 @@ set('repository', 'https://github.com/epicollect5/epicollect5-server.git');
 set('ssh_multiplexing', true);
 
 add('shared_files', ['public/.htaccess']);
-
 add('writable_dirs', [
     'storage/app/projects',
     'storage/app/temp'
 ]);
 
+//MYSQL user for the epicollect5 app
+define('DB_USERNAME', 'epicollect5-server');
+define('DB_NAME', 'epicollect5_prod');
 
 task('setup:check_clean_install', function () {
     $deployPath = get('deploy_path');
-
     // Define the release path (usually the current release is a symlink to the most recent release)
     $currentReleasePath = $deployPath . '/current';
-
     // Check if the current release path is a symlink
     $isSymlink = run("test -L $currentReleasePath && echo 'true' || echo 'false'");
-
     if ($isSymlink === 'true') {
         writeln('<error>A release already exists. Skipping install.</error>');
         // Abort the deployment
@@ -43,18 +42,15 @@ task('setup:check_clean_install', function () {
 task('setup:symlink_deploy_file', function () {
     // Path to the current release's deploy.php file
     $currentDeployFile = '{{release_path}}/deploy.php';
-
-
     // Path where the symlink will be created, adjust it as needed
     $deploySymlinkPath = '{{deploy_path}}/deploy.php';
-
     // Create a symlink pointing to the latest deploy.php
     run("ln -sf $currentDeployFile $deploySymlinkPath");
 
     writeln('Symlink to the latest deploy.php has been created.');
 });
 
-task('setup:change_storage_owner_group', function () {
+task('setup:storage', function () {
     $writableDirs = get('writable_dirs');
     // Get the Apache or Nginx user dynamically
     $httpUser = run('ps aux | egrep "(apache|nginx)" | grep -v root | head -n 1 | awk \'{print $1}\'');
@@ -71,8 +67,12 @@ task('setup:change_storage_owner_group', function () {
     }
 });
 
-task('setup:create_user_and_db', function () {
-    $dbUsername = 'epicollect5-server';
+task('setup:database', function () {
+
+    // Constants for username and database name
+    $dbUsername = DB_USERNAME;
+    $dbName = DB_NAME;
+
     // Generate a random password with at least one uppercase, lowercase, and number
     $lowercase = 'abcdefghijklmnopqrstuvwxyz';
     $uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -91,13 +91,16 @@ task('setup:create_user_and_db', function () {
 
     // Shuffle the password to ensure randomness
     $dbPassword = str_shuffle($dbPassword);
-    $dbName = 'epicollect5_prod';
+    // Save the password for use in the next task
+    set('dbPassword', $dbPassword);
 
     writeln("Generated password for '$dbUsername', saving to .env");
 
     // Write SQL commands to a file
     $sqlFile = "/tmp/db_setup.sql";
     run("echo \"CREATE USER IF NOT EXISTS '$dbUsername'@'localhost' IDENTIFIED BY '$dbPassword';\" > $sqlFile");
+    // Additional command to update the password if the user already exists
+    run("echo \"ALTER USER '$dbUsername'@'localhost' IDENTIFIED BY '$dbPassword';\" >> $sqlFile");
     run("echo \"GRANT USAGE ON *.* TO '$dbUsername'@'localhost';\" >> $sqlFile");
     run("echo \"CREATE DATABASE IF NOT EXISTS $dbName;\" >> $sqlFile");
     run("echo \"GRANT ALL PRIVILEGES ON $dbName.* TO '$dbUsername'@'localhost';\" >> $sqlFile");
@@ -110,6 +113,17 @@ task('setup:create_user_and_db', function () {
     run("rm $sqlFile");
 
     writeln('MySQL user and database created successfully.');
+});
+
+// Task to update the .env file
+task('setup:env', function () {
+
+    // Save the password for use in the next task
+    $dbPassword = get('dbPassword');
+
+    // Constants for username and database name
+    $dbUsername = DB_USERNAME;
+    $dbName = DB_NAME;
 
     // Resolve the deploy path and current path
     $sharedEnvFile = get('deploy_path') . '/shared/.env';
@@ -145,7 +159,8 @@ task('setup:create_user_and_db', function () {
     writeln('.env file updated successfully.');
 });
 
-task('setup:passport_keys', function () {
+
+task('setup:passport:keys', function () {
     // Run artisan passport:keys to generate the keys
     run('cd {{deploy_path}}/current && {{bin/php}} artisan passport:keys');
 
@@ -172,22 +187,30 @@ task('setup:passport_keys', function () {
     writeln('Passport keys generated and permissions updated.');
 });
 
+task('setup:storage:link', function () {
+    // Run artisan passport:keys to generate the keys
+    run('cd {{deploy_path}}/current && {{bin/php}} artisan storage:link');
+    writeln('artisan storage:link executed.');
+});
+
+task('setup:key:generate', function () {
+    // Run artisan passport:keys to generate the keys
+    run('cd {{deploy_path}}/current && {{bin/php}} artisan key:generate');
+    writeln('artisan key:generate executed.');
+});
+
+task('setup:storage:link', function () {
+    // Run artisan passport:keys to generate the keys
+    run('cd {{deploy_path}}/current && {{bin/php}} artisan storage:link');
+    writeln('artisan storage:link executed.');
+});
+
 
 
 // Production server
 localhost('production')
     ->set('deploy_path', '/var/www/html_prod')
     ->set('branch', 'master');
-
-// Development server
-localhost('development')
-    ->set('deploy_path', '/var/www/html_prod')
-    ->set('branch', 'development');
-
-// Apple server (custom branch)
-localhost('apple')
-    ->set('deploy_path', '/var/www/html_prod')
-    ->set('branch', 'features/sign-in-with-apple');
 
 // Tasks
 desc('Execute artisan migrate');
@@ -236,14 +259,14 @@ try {
         'setup:check_clean_install',
         'deploy:prepare',
         'deploy:vendors',
-        'artisan:storage:link',
-        'setup:change_storage_owner_group',
-        'artisan:view:cache',
-        'artisan:config:cache',
+        'setup:storage',
         'deploy:publish',
-        'setup:create_user_and_db',
-        'setup:passport_keys',
-      //  'artisan:migrate',
+        'setup:database',
+        'setup:env',
+        'setup:key:generate',
+        'setup:storage:link',
+        'setup:passport:keys',
+        'artisan:migrate',
         'setup:symlink_deploy_file'
     ]);
 
