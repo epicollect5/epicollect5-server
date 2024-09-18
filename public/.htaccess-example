@@ -1,8 +1,8 @@
 <IfModule mod_rewrite.c>
 
     Options -Indexes
-    # Redirect to homepage
-    ErrorDocument 403 https://your.domain.com
+    # Redirect to homepage, uncomment in production with real domain
+    # ErrorDocument 403 https://your.domain.com
 
     <IfModule mod_negotiation.c>
         Options -MultiViews

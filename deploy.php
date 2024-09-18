@@ -23,6 +23,7 @@ add('writable_dirs', [
     'storage/app/temp'
 ]);
 
+
 task('setup:check_clean_install', function () {
     $deployPath = get('deploy_path');
 
@@ -57,6 +58,7 @@ task('setup:change_storage_owner_group', function () {
     $writableDirs = get('writable_dirs');
     // Get the Apache or Nginx user dynamically
     $httpUser = run('ps aux | egrep "(apache|nginx)" | grep -v root | head -n 1 | awk \'{print $1}\'');
+    $httpUser = trim($httpUser); // Clean up any extra whitespace
     // Apply ownership and permissions recursively to the entire storage directory
     run("sudo chown -R {$httpUser}:{$httpUser} {{release_path}}/storage");
     run("sudo chmod -R 775 {{release_path}}/storage");
@@ -143,6 +145,33 @@ task('setup:create_user_and_db', function () {
     writeln('.env file updated successfully.');
 });
 
+task('setup:passport_keys', function () {
+    // Run artisan passport:keys to generate the keys
+    run('cd {{deploy_path}}/current && {{bin/php}} artisan passport:keys');
+
+    // Path to the keys
+    $keysPath = '{{deploy_path}}/shared/storage';
+
+    // Get the Apache or Nginx user dynamically
+    $httpUser = run('ps aux | grep -E "(apache|nginx)" | grep -v root | head -n 1 | awk \'{print $1}\'');
+    $httpUser = trim($httpUser); // Clean up any extra whitespace
+
+    if (empty($httpUser)) {
+        writeln('Unable to determine the HTTP server user.');
+        exit(1);
+    }
+
+    // Change ownership of the keys to the HTTP server user
+    run("sudo chown $httpUser:$httpUser $keysPath/oauth-private.key");
+    run("sudo chown $httpUser:$httpUser $keysPath/oauth-public.key");
+
+    // Set appropriate permissions for the keys
+    run("sudo chmod 600 $keysPath/oauth-private.key");
+    run("sudo chmod 644 $keysPath/oauth-public.key");
+
+    writeln('Passport keys generated and permissions updated.');
+});
+
 
 
 // Production server
@@ -208,11 +237,13 @@ try {
         'deploy:prepare',
         'deploy:vendors',
         'artisan:storage:link',
+        'setup:change_storage_owner_group',
         'artisan:view:cache',
         'artisan:config:cache',
-        'setup:change_storage_owner_group',
         'deploy:publish',
         'setup:create_user_and_db',
+        'setup:passport_keys',
+      //  'artisan:migrate',
         'setup:symlink_deploy_file'
     ]);
 
