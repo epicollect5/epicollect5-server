@@ -7,10 +7,8 @@ class CreateUsersTable extends Migration
 {
     /**
      * Run the migrations.
-     *
-     * @return void
      */
-    public function up()
+    public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
             $table->integer('id', true);
@@ -28,28 +26,24 @@ class CreateUsersTable extends Migration
             $table->string('api_token')->default('');
         });
 
-        // Insert super admin user
+        // Insert the first superadmin user
         DB::table('users')->insert(
             array(
                 'name' => config('epicollect.setup.super_admin_user.first_name'),
                 'last_name' => config('epicollect.setup.super_admin_user.last_name'),
                 'email' => config('epicollect.setup.super_admin_user.email'),
                 'password' => bcrypt(config('epicollect.setup.super_admin_user.password'), ['rounds' => config('auth.bcrypt_rounds')]),
-                'server_role' => 'superadmin',
-                'state' => 'active'
+                'server_role' => config('epicollect.strings.server_roles.superadmin'),
+                'state' => config('epicollect.strings.user_state.active')
             )
         );
     }
 
-
     /**
      * Reverse the migrations.
-     *
-     * @return void
      */
-    public function down()
+    public function down(): void
     {
         Schema::drop('users');
     }
-
 }
