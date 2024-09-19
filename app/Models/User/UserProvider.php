@@ -26,6 +26,8 @@ class UserProvider extends Model
      */
     protected $table = 'users_providers';
     protected $fillable = [
+        'user_id',
+        'email',
         'provider'
     ];
 }
