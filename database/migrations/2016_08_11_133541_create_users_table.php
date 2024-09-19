@@ -5,7 +5,6 @@ use Illuminate\Database\Schema\Blueprint;
 
 class CreateUsersTable extends Migration
 {
-
     /**
      * Run the migrations.
      *
@@ -35,7 +34,7 @@ class CreateUsersTable extends Migration
                 'name' => config('epicollect.setup.super_admin_user.first_name'),
                 'last_name' => config('epicollect.setup.super_admin_user.last_name'),
                 'email' => config('epicollect.setup.super_admin_user.email'),
-                'password' => bcrypt(config('epicollect.setup.super_admin_user.password')),
+                'password' => bcrypt(config('epicollect.setup.super_admin_user.password'), ['rounds' => config('auth.bcrypt_rounds')]),
                 'server_role' => 'superadmin',
                 'state' => 'active'
             )
