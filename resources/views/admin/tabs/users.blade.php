@@ -4,39 +4,74 @@
         <div class="panel panel-default">
             <div class="panel-heading">
                 <div class="row">
-                    <div class="col-xs-6">
+                    <div class="col-xs-4">
                         <input type="text"
                                name="search"
                                class="form-control user-administration__user-search"
                                placeholder="{{trans('site.search_for_user')}}">
                     </div>
-                    @if($adminUser->server_role === 'superadmin')
-                        <div class="col-xs-2 pull-right">
-                            <a class="btn btn-action user-administration__user-add pull-right hidden-xs"
-                               data-toggle="modal" data-target="#ec5ModalAddUser"
-                               href="#">{{trans('site.add_user')}}</a>
-                            <a class="btn btn-action user-administration__user-add pull-right visible-xs-block"
-                               data-toggle="modal" data-target="#ec5ModalAddUser" href="#">
-                                <i class="material-icons">&#43;</i>
-                            </a>
-                        </div>
-                    @endif
-                    <div @if($adminUser->server_role === 'superadmin')
-                             class="col-xs-2 pull-right"
-                         @else
-                             class="col-xs-4"
-                            @endif
-                    >
-                        <a class="btn btn-default user-administration__user-reset pull-right hidden-xs hidden-sm"
-                           href="#">{{trans('site.clear_filter')}}</a>
-                        <a class="btn btn-default user-administration__user-reset pull-right visible-sm-block"
-                           href="#">{{trans('site.clear')}}</a>
-                        <a class="btn btn-default user-administration__user-reset pull-right visible-xs-block"
-                           href="#">
-                            <i class="material-icons">&#xE5D5;</i>
-                        </a>
+                    <div class="col-xs-4">
+                        {{--                                <select name="filteroption"--}}
+                        {{--                                        class="form-control user-administration__user-filter-option"--}}
+                        {{--                                >--}}
+                        {{--                                    <option value="">Any Server Role</option>--}}
+                        {{--                                </select>--}}
+                        <select name="filteroption"
+                                class="form-control user-administration__user-filter-option">
+                            <option value="" selected>All Server Roles</option>
+                            <option value="superadmin">Superadmin</option>
+                            <option value="admin">Admin</option>
+                            <option value="basic">Basic</option>
+                        </select>
+
                     </div>
 
+                    <div class="col-xs-4">
+                        <div class="btn-group pull-right" role="group">
+                            <button type="button" class="btn btn-action user-administration__user-reset hidden-xs">
+                                {{trans('site.clear')}}
+                            </button>
+                            <button type="button" class="btn btn-action user-administration__user-reset visible-xs">
+                                <span class="material-icons">filter_list_off</span>
+                            </button>
+                            <button type="button" class="btn btn-action user-administration__user-add hidden-xs"
+                                    data-toggle="modal" data-target="#ec5ModalAddUser">
+                                {{trans('site.add_user')}}
+                            </button>
+                            <button type="button" class="btn btn-action user-administration__user-add visible-xs"
+                                    data-toggle="modal" data-target="#ec5ModalAddUser">
+                                <span class="material-icons">person_add</span>
+                            </button>
+                        </div>
+                    </div>
+
+
+                    {{--                    <div @if($adminUser->server_role === 'superadmin')--}}
+                    {{--                             class="col-xs-2"--}}
+                    {{--                         @else--}}
+                    {{--                             class="col-xs-4"--}}
+                    {{--                            @endif--}}
+                    {{--                    >--}}
+                    {{--                        <a class="btn btn-default user-administration__user-reset pull-right hidden-xs hidden-sm"--}}
+                    {{--                           href="#">{{trans('site.clear_filter')}}</a>--}}
+                    {{--                        <a class="btn btn-default user-administration__user-reset pull-right visible-sm-block"--}}
+                    {{--                           href="#">{{trans('site.clear')}}</a>--}}
+                    {{--                        <a class="btn btn-default user-administration__user-reset pull-right visible-xs-block"--}}
+                    {{--                           href="#">--}}
+                    {{--                            <i class="material-icons">&#xE5D5;</i>--}}
+                    {{--                        </a>--}}
+                    {{--                    </div>--}}
+                    {{--                    @if($adminUser->server_role === 'superadmin')--}}
+                    {{--                        <div class="col-xs-2">--}}
+                    {{--                            <a class="btn btn-action user-administration__user-add pull-right hidden-xs"--}}
+                    {{--                               data-toggle="modal" data-target="#ec5ModalAddUser"--}}
+                    {{--                               href="#">{{trans('site.add_user')}}</a>--}}
+                    {{--                            <a class="btn btn-action user-administration__user-add pull-right visible-xs-block"--}}
+                    {{--                               data-toggle="modal" data-target="#ec5ModalAddUser" href="#">--}}
+                    {{--                                <i class="material-icons">&#43;</i>--}}
+                    {{--                            </a>--}}
+                    {{--                        </div>--}}
+                    {{--                    @endif--}}
                 </div>
             </div>
             <div class="panel-body">
@@ -79,7 +114,7 @@
                                placeholder="{{trans('site.first_name')}}"
                                name="first_name" value="{{ old('first_name') }}" required>
                         @if ($errors->has('first_name'))
-                            <span class="help-block">{{config('epicollect.codes.'.$errors->first('first_name'))}}</span>
+                            <span class="help-block">{{trans('status_codes.'.$errors->first('first_name'))}}</span>
                         @endif
                     </div>
 
@@ -89,7 +124,7 @@
                                placeholder="{{trans('site.last_name')}}"
                                name="last_name" value="{{ old('last_name') }}" required>
                         @if ($errors->has('last_name'))
-                            <span class="help-block">{{config('epicollect.codes.'.$errors->first('last_name'))}}</span>
+                            <span class="help-block">{{trans('status_codes.'.$errors->first('last_name'))}}</span>
                         @endif
                     </div>
 
@@ -99,7 +134,7 @@
                                placeholder="{{trans('site.email_address')}}"
                                name="email" value="{{ old('email') }}" required>
                         @if ($errors->has('email'))
-                            <span class="help-block">{{config('epicollect.codes.'.$errors->first('email'))}}</span>
+                            <span class="help-block">{{trans('status_codes.'.$errors->first('email'))}}</span>
                         @endif
                     </div>
 
@@ -109,7 +144,7 @@
                                placeholder="{{trans('site.password')}}"
                                name="password" value="{{ old('password') }}" required>
                         @if ($errors->has('password'))
-                            <span class="help-block">{{config('epicollect.codes.'.$errors->first('password'))}}</span>
+                            <span class="help-block">{{trans('status_codes.'.$errors->first('password'))}}</span>
                         @endif
                         <div>
                             <small>
@@ -125,7 +160,7 @@
                                name="password_confirmation"
                                value="{{ old('password_confirmation') }}" required>
                         @if ($errors->has('password'))
-                            <span class="help-block">{{config('epicollect.codes.'.$errors->first('password'))}}</span>
+                            <span class="help-block">{{trans('status_codes.'.$errors->first('password'))}}</span>
                         @endif
                     </div>
 

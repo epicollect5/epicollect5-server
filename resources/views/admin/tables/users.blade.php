@@ -8,17 +8,19 @@
         <tr>
             <th class="text-center">{{ trans('site.name') }}</th>
             <th class="text-center">{{ trans('site.email') }}</th>
+            <th class="text-center">Server Role</th>
         </tr>
         @foreach ($users as $user)
             <tr>
-                <td>
+                <td class="text-right">
                     @if (!empty($user->name))
                         {{ $user->name . ' ' . $user->last_name }}
                     @else
                         <i>n/a</i>
                     @endif
                 </td>
-                <td>{{ $user->email }}</td>
+                <td class="text-right">{{ $user->email }}</td>
+                <td class="text-center">{{ $user->server_role }}</td>
             </tr>
         @endforeach
     </table>
