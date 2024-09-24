@@ -1,7 +1,7 @@
 <?php
 /*
 *************************************
-// Migrated to Deployer 7.x for Laravel
+// Migrated to Deployer 7.x for Laravel 11
 *************************************
 */
 
@@ -23,7 +23,7 @@ add('writable_dirs', [
 ]);
 
 //MYSQL user for the epicollect5 app
-define('DB_USERNAME', 'epicollect5-server');
+define('DB_USERNAME', 'epicollect5_server');
 define('DB_NAME', 'epicollect5_prod');
 
 task('setup:check_clean_install', function () {
@@ -154,9 +154,123 @@ task('setup:env', function () {
         "DB_PASSWORD=$dbPassword",
         $envContent
     );
+
+    //replace help text
+    $envContent = preg_replace(
+        '/^#key below is an example to make php artisan key:generate works.*/m',
+        '',
+        $envContent
+    );
+
     file_put_contents($sharedEnvFile, $envContent);
 
     writeln('.env file updated successfully.');
+});
+
+task('setup:alerts', function () {
+    while (true) {
+        // Prompt for alert email
+        $email = ask('Enter system email for alerts:');
+
+        // Validate email format
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            writeln('<error>Invalid email format. Please try again.</error>');
+            continue; // Restart the task if email is invalid
+        }
+
+        // Proceed with the task if inputs are valid
+        writeln('<info>Email is valid, saving to .env</info>');
+
+        // Update the .env file
+        $sharedEnvFile = get('deploy_path') . '/shared/.env';
+        $envContent = file_get_contents($sharedEnvFile);
+
+        $envContent = preg_replace(
+            '/^SYSTEM_EMAIL=.*/m',
+            "SYSTEM_EMAIL=$email",
+            $envContent
+        );
+
+        file_put_contents($sharedEnvFile, $envContent);
+
+        writeln('<info>.env file updated successfully.</info>');
+        break; // Exit the loop once the task is successfully completed
+    }
+});
+
+
+task('setup:superadmin', function () {
+
+    while (true) {
+        // Prompt for superadmin email
+        $email = ask('Enter superadmin email:');
+        // Prompt for superadmin name
+        $name = ask('Enter superadmin name:');
+        // Prompt for superadmin surname
+        $surname = ask('Enter superadmin surname:');
+
+        // Validate email format
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            writeln('<error>Invalid email format. Please try again.</error>');
+            continue; // Restart the task if email is invalid
+        }
+
+        // Prompt for superadmin password twice
+        $password = askHiddenResponse('Enter superadmin password:');
+        $confirmPassword = askHiddenResponse('Confirm superadmin password:');
+
+        // Check if passwords match
+        if ($password !== $confirmPassword) {
+            writeln('<error>Passwords do not match. Please try again.</error>');
+            continue; // Restart the task if passwords don't match
+        }
+
+        // Show entered details and ask for confirmation
+        writeln("<info>Details entered:</info>");
+        writeln("<info>Email:</info> $email");
+        writeln("<info>Name:</info> $name");
+        writeln("<info>Surname:</info> $surname");
+
+        $confirmation = ask('Do you want to proceed with these details? (yes/no)', true);
+        if (strtolower($confirmation) !== 'yes') {
+            writeln('<error>Operation aborted by user. Please try again.</error>');
+            continue; // Restart the task if user aborts
+        }
+
+        // Proceed with the task if inputs are valid and confirmed
+        writeln('<info>Superadmin credentials are valid, saving to .env</info>');
+
+        // Update the .env file
+        $sharedEnvFile = get('deploy_path') . '/shared/.env';
+        $envContent = file_get_contents($sharedEnvFile);
+        $envContent = preg_replace(
+            '/^SUPER_ADMIN_FIRST_NAME=.*/m',
+            "SUPER_ADMIN_FIRST_NAME=$name",
+            $envContent
+        );
+        $envContent = preg_replace(
+            '/^SUPER_ADMIN_LAST_NAME=.*/m',
+            "SUPER_ADMIN_LAST_NAME=$surname",
+            $envContent
+        );
+
+        $envContent = preg_replace(
+            '/^SUPER_ADMIN_EMAIL=.*/m',
+            "SUPER_ADMIN_EMAIL=$email",
+            $envContent
+        );
+
+        $envContent = preg_replace(
+            '/^SUPER_ADMIN_PASSWORD=.*/m',
+            "SUPER_ADMIN_PASSWORD=$password",
+            $envContent
+        );
+
+        file_put_contents($sharedEnvFile, $envContent);
+
+        writeln('<info>.env file updated successfully.</info>');
+        break; // Exit the loop once the task is successfully completed
+    }
 });
 
 
@@ -196,16 +310,14 @@ task('setup:storage:link', function () {
 task('setup:key:generate', function () {
     // Run artisan passport:keys to generate the keys
     run('cd {{deploy_path}}/current && {{bin/php}} artisan key:generate');
-    writeln('artisan key:generate executed.');
+    writeln('<info>artisan key:generate executed.</info>');
 });
 
-task('setup:storage:link', function () {
+task('setup:stats', function () {
     // Run artisan passport:keys to generate the keys
-    run('cd {{deploy_path}}/current && {{bin/php}} artisan storage:link');
-    writeln('artisan storage:link executed.');
+    run('cd {{deploy_path}}/current && {{bin/php}} artisan system:stats');
+    writeln('<info>Initial system stats executed.</info>');
 });
-
-
 
 // Production server
 localhost('production')
@@ -215,16 +327,21 @@ localhost('production')
 // Tasks
 desc('Execute artisan migrate');
 task('artisan:migrate', function () {
-    run('{{bin/php}} {{release_path}}/artisan migrate --force', [
-        'timeout' => 2000, // increasing timeout for long migrations
+    $output =  run('{{bin/php}} {{release_path}}/artisan migrate --force', [
+        'timeout' => 2000, // increasing timeout for long migrations,
+        'real_time_output' => false
     ]);
+    writeln("<info>$output</info>");
+
 })->once();
 
 desc('Execute artisan migrate:rollback');
 task('artisan:migrate:rollback', function () {
-    run('{{bin/php}} {{release_path}}/artisan migrate:rollback --force', [
+    $output = run('{{bin/php}} {{release_path}}/artisan migrate:rollback --force', [
         'timeout' => 2000, // increasing timeout for long migrations
+        'real_time_output' => false
     ]);
+    writeln("<info>$output</info>");
 })->once();
 
 desc('Execute artisan migrate:status');
@@ -232,28 +349,28 @@ task('artisan:migrate:status', function () {
     run('{{bin/php}} {{release_path}}/artisan migrate:status');
 })->once();
 
-// If deploy fails automatically unlock.
-after('deploy:failed', 'deploy:unlock');
+desc('Execute artisan down with secret');
+task('artisan:down_with_secret', function () {
+    $output =   run('cd {{deploy_path}}/current && {{bin/php}} artisan down --with-secret');
+    writeln("<info>$output</info>");
+});
+
 
 // Main task
-desc('Deploy your project');
-task('deploy_c', [
-    'artisan:down',
+desc('Deploy (update) your project');
+task('deploy', [
+    'artisan:down_with_secret',
     'deploy:prepare',
     'deploy:vendors',
-    'deploy:shared',
-    'deploy:writable',
-    'artisan:key:generate',
-    'artisan:storage:link',
-    'artisan:view:clear',
-    'artisan:cache:clear',
-    'artisan:config:cache',
     'artisan:migrate',
+    'artisan:config:cache',
+    'artisan:route:cache',
+    'artisan:view:cache',
     'deploy:publish'
-    // 'artisan:up', // go back online manually
+    // 'artisan:up', // go back online manually after checking all works
 ]);
 
-desc('Install Epicollect5 release');
+desc('Install Epicollect5 release from scratch');
 try {
     task('install', [
         'setup:check_clean_install',
@@ -266,8 +383,13 @@ try {
         'setup:key:generate',
         'setup:storage:link',
         'setup:passport:keys',
+        'setup:superadmin',
+        'setup:alerts',
+        'artisan:view:clear',
+        'artisan:config:cache',
         'artisan:migrate',
-        'setup:symlink_deploy_file'
+        'setup:symlink_deploy_file',
+        'setup:stats'
     ]);
 
 } catch (Throwable $e) {
@@ -285,5 +407,8 @@ try {
 
 // Hook the custom task to run after the deployment
 after('deploy', 'reminder:update_release');
-
+// If deploy fails automatically unlock.
+after('deploy:failed', 'deploy:unlock');
+after('install:failed', 'deploy:unlock');
+//show message if success
 after('deploy', 'deploy:success');
