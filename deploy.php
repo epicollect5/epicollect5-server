@@ -357,6 +357,13 @@ task('artisan:down_with_secret', function () {
     writeln("<info>$output</info>");
 });
 
+task('artisan:about', function () {
+    $output =   run('cd {{deploy_path}}/current && {{bin/php}} artisan about', [
+        'real_time_output' => true
+    ]);
+    writeln("<info>$output</info>");
+});
+
 
 // Main task
 desc('Deploy (update) your project');
@@ -368,7 +375,8 @@ task('deploy', [
     'artisan:config:cache',
     'artisan:route:cache',
     'artisan:view:cache',
-    'deploy:publish'
+    'deploy:publish',
+    'artisan:about'
     // 'artisan:up', // go back online manually after checking all works
 ]);
 

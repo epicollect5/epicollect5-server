@@ -16,8 +16,6 @@ class Kernel extends HttpKernel
     protected $middleware = [
         //imp: without the class below, built in maintenance mode will not work
         \ec5\Http\Middleware\PreventRequestsDuringMaintenance::class,
-        \ec5\Http\Middleware\ApiMaintenanceModeResponse::class
-
     ];
 
     /**

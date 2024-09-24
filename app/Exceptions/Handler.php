@@ -2,6 +2,7 @@
 
 namespace ec5\Exceptions;
 
+use ec5\Http\Middleware\PreventRequestsDuringMaintenance;
 use ec5\Traits\Middleware\MiddlewareTools;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Container\BindingResolutionException;
@@ -70,9 +71,21 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Throwable $e): \Illuminate\Http\Response|JsonResponse|\Symfony\Component\HttpFoundation\Response|RedirectResponse
     {
+        /**
+         * Handle Maintenance mode  -> HttpException with 503 status code
+         * @see PreventRequestsDuringMaintenance
+         */
+        if ($e instanceof HttpException && $e->getStatusCode() === 503) {
+            if (app()->isDownForMaintenance()) {
+                if ($this->isJsonRequest($request)) {
+                    $errors = ['maintenance.mode' => ['ec5_252']];
+                    return Response::apiErrorCode(404, $errors);
+                }
+            }
+        }
+
         // Handle not found exceptions
         if ($e instanceof NotFoundHttpException) {
-
             //in production, redirect all pages not found to home page
             if (App::environment() === 'production') {
                 return redirect()->route('home');
