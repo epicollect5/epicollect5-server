@@ -41,7 +41,7 @@ task('setup:check_clean_install', function () {
 
 task('setup:symlink_deploy_file', function () {
     // Path to the current release's deploy.php file
-    $currentDeployFile = '{{release_path}}/deploy.php';
+    $currentDeployFile = 'current/deploy.php';
     // Path where the symlink will be created, adjust it as needed
     $deploySymlinkPath = '{{deploy_path}}/deploy.php';
     // Create a symlink pointing to the latest deploy.php
@@ -358,10 +358,9 @@ task('artisan:down_with_secret', function () {
 });
 
 task('artisan:about', function () {
-    $output =   run('cd {{deploy_path}}/current && {{bin/php}} artisan about', [
-        'real_time_output' => true
+    $output = run('cd {{deploy_path}}/current && {{bin/php}} artisan about', [
+        'real_time_output' => false
     ]);
-    writeln("<info>$output</info>");
 });
 
 
@@ -376,6 +375,7 @@ task('deploy', [
     'artisan:route:cache',
     'artisan:view:cache',
     'deploy:publish',
+    'setup:symlink_deploy_file',
     'artisan:about'
     // 'artisan:up', // go back online manually after checking all works
 ]);
