@@ -8,26 +8,22 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
-class CheckStorageAvailableDiskSpace extends Command
+class SystemCheckStorageAvailableCommand extends Command
 {
     /**
      * The name and signature of the console command.
-     *
-     * @var string
      */
-    protected $signature = 'check-storage-available';
+    protected $signature = 'system:check-storage';
 
     /**
      * The console command description.
      *
-     * @var string
      */
     protected $description = 'Check the available storage for files';
 
     /**
      * Create a new command instance.
      *
-     * @return void
      */
     public function __construct()
     {

@@ -351,7 +351,9 @@ task('artisan:migrate:status', function () {
 
 desc('Execute artisan down with secret');
 task('artisan:down_with_secret', function () {
-    $output =   run('cd {{deploy_path}}/current && {{bin/php}} artisan down --with-secret');
+    $output =   run('cd {{deploy_path}}/current && {{bin/php}} artisan down --with-secret', [
+        'real_time_output' => true
+        ]);
     writeln("<info>$output</info>");
 });
 
@@ -409,6 +411,5 @@ try {
 after('deploy', 'reminder:update_release');
 // If deploy fails automatically unlock.
 after('deploy:failed', 'deploy:unlock');
-after('install:failed', 'deploy:unlock');
 //show message if success
 after('deploy', 'deploy:success');

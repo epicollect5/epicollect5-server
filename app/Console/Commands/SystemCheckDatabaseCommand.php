@@ -8,14 +8,14 @@ use Log;
 use Mail;
 use Throwable;
 
-class CheckDatabase extends Command
+class SystemCheckDatabaseCommand extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'check-database';
+    protected $signature = 'system:check-database';
 
     /**
      * The console command description.

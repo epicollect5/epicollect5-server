@@ -2,8 +2,8 @@
 
 namespace ec5\Console;
 
-use ec5\Console\Commands\CheckDatabase;
-use ec5\Console\Commands\CheckStorageAvailableDiskSpace;
+use ec5\Console\Commands\SystemCheckDatabaseCommand;
+use ec5\Console\Commands\SystemCheckStorageAvailableCommand;
 use ec5\Console\Commands\RemoveUnverifiedUsersCommand;
 use ec5\Console\Commands\SeedEntriesCommand;
 use ec5\Console\Commands\SeedMediaCommand;
@@ -23,8 +23,8 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         SystemStatsCommand::class,
         RemoveUnverifiedUsersCommand::class,
-        CheckDatabase::class,
-        CheckStorageAvailableDiskSpace::class,
+        SystemCheckDatabaseCommand::class,
+        SystemCheckStorageAvailableCommand::class,
         SeedEntriesCommand::class,
         SeedMediaCommand::class,
         SeedSuperadminCommand::class
@@ -40,25 +40,26 @@ class Kernel extends ConsoleKernel
     {
         if (App::environment() === 'production') {
             //grab system stats for the current day
-            $schedule->command('system-stats')
+            $schedule->command('system:stats')
                 ->dailyAt('01:00')
                 ->timezone('Europe/London')
                 ->withoutOverlapping();
 
-            $schedule->command('check-storage-available')
+            //check storage available
+            $schedule->command('system:check-storage')
                 ->dailyAt('07:00')
                 ->timezone('Europe/London')
                 ->withoutOverlapping();
         } else {
             //run commands every hour locally (for debugging)
-            $schedule->command('system-stats')
+            $schedule->command('system:stats')
                 ->hourly()
                 ->withoutOverlapping();
 
-            $schedule->command('check-storage-available')
+            $schedule->command('system:check-storage')
                 ->hourly()
                 ->withoutOverlapping();
         }
-        // $schedule->command('check-database')->everyMinute();
+        // $schedule->command('system:check-database')->everyMinute();
     }
 }

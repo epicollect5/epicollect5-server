@@ -17,7 +17,7 @@ class SystemStatsCommand extends Command
      * The name and signature of the console command.
      *
      */
-    protected $signature = 'system-stats';
+    protected $signature = 'system:stats';
 
     /**
      * The console command description.
