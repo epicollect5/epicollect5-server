@@ -359,7 +359,7 @@ task('artisan:down_with_secret', function () {
 
 task('artisan:about', function () {
     $output = run('cd {{deploy_path}}/current && {{bin/php}} artisan about', [
-        'real_time_output' => false
+        'real_time_output' => true
     ]);
 });
 
