@@ -7,7 +7,6 @@ use Carbon\Carbon;
 use DB;
 use ec5\Http\Validation\Auth\RulePasswordlessApiLogin;
 use ec5\Http\Validation\Auth\RulePasswordlessWeb;
-use ec5\Http\Validation\Auth\RuleRecaptcha;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Mail\UserPasswordlessApiMail;
 use ec5\Models\User\User;
@@ -15,7 +14,6 @@ use ec5\Models\User\UserPasswordlessWeb;
 use ec5\Models\User\UserProvider;
 use ec5\Services\User\UserService;
 use ec5\Traits\Auth\ReCaptchaValidation;
-use Exception;
 use Firebase\JWT\JWT as FirebaseJwt;
 use Firebase\JWT\Key;
 use Illuminate\Http\Request;
@@ -38,20 +36,21 @@ class PasswordlessController extends AuthController
         return view('auth.verification_passwordless');
     }
 
-    public function sendCode(Request $request, RulePasswordlessWeb $validator, RuleRecaptcha $captchaValidator)
+    public function sendCode(Request $request, RulePasswordlessWeb $rulePasswordlessWeb)
     {
         $tokenExpiresAt = config('auth.passwordless_token_expire', 300);
         $params = $request->all();
 
         //validate request
-        $validator->validate($params);
-        if ($validator->hasErrors()) {
+        $rulePasswordlessWeb->validate($params);
+        if ($rulePasswordlessWeb->hasErrors()) {
             // Redirect back if errors
-            return redirect()->back()->withErrors($validator->errors());
+            return redirect()->back()->withErrors($rulePasswordlessWeb->errors());
         }
 
-        //imp: skip captcha only when testing
-        if (!(App::environment() === 'testing')) {
+        //imp: skip captcha validation only when testing OR when disabled in the .env
+        $isGoogleRecaptchaEnabled = config('epicollect.setup.google_recaptcha.use_google_recaptcha');
+        if (!(App::environment() === 'testing')  && $isGoogleRecaptchaEnabled) {
             //parse recaptcha response for any errors
             if (isset($params['g-recaptcha-response'])) {
                 $recaptchaResponse = $params['g-recaptcha-response'];

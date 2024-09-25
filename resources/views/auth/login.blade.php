@@ -1,3 +1,7 @@
+@php
+    $isGoogleRecaptchaEnabled = config('epicollect.setup.google_recaptcha.use_google_recaptcha');
+@endphp
+
 @extends('app')
 @section('title', trans('site.login'))
 @section('content')
@@ -33,9 +37,11 @@
                                 @endif
 
                                 <div class="col-xs-12 col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
-                                    <span class="hidden gcaptcha">
-                                        {{ $gcaptcha }}
-                                    </span>
+                                    @if ($isGoogleRecaptchaEnabled)
+                                        <span class="hidden gcaptcha">
+                                                {{ $gcaptcha }}
+                                        </span>
+                                    @endif
 
                                     <form id="page-login__passwordless" method="POST"
                                           action="{{ route('passwordless-token-web') }}" accept-charset="UTF-8">
@@ -53,6 +59,10 @@
                                                 </small>
                                             </div>
                                         </div>
+                                        {{--Need this to pass validation when recaptcha is disabled--}}
+                                        @if (!$isGoogleRecaptchaEnabled)
+                                            <input type="hidden" name="g-recaptcha-response" value="fake_value">
+                                        @endif
 
                                         <div class="form-group">
                                             <input id="passwordless" class="btn btn-default btn-action pull-right"
@@ -100,6 +110,8 @@
 @stop
 
 @section('scripts')
-    <script src="https://www.google.com/recaptcha/api.js?render={{ config('auth.google.recaptcha_site_key') }}"></script>
+    @if ($isGoogleRecaptchaEnabled)
+        <script src="https://www.google.com/recaptcha/api.js?render={{ config('auth.google.recaptcha_site_key') }}"></script>
+    @endif
     <script type="text/javascript" src="{{ asset('js/users/users.js') . '?' . config('app.release') }}"></script>
 @stop

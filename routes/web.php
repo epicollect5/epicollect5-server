@@ -17,7 +17,7 @@ Route::get('more-view', 'Web\MorePages\MoreViewController@index');
 
 // Authentication routes
 Route::group(['middleware' => ['guest']], function () {
-    Route::get('login', 'Web\Auth\AuthController@show')->name('login');
+    Route::get('login', 'Web\Auth\LoginController@show')->name('login');
     Route::post('login', 'Web\Auth\LocalController@authenticate');
     //  Route::post('login/ldap', 'Web\Auth\LdapController@authenticate');
     Route::get('login/admin', 'Web\Auth\AdminController@show')->name('login-admin');
@@ -132,7 +132,7 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::get('profile', 'Web\Auth\ProfileController@show')->name('profile');
     // Logout route
-    Route::get('logout', 'Web\Auth\AuthController@logout')->name('logout');
+    Route::get('logout', 'Web\Auth\LogoutController@logout')->name('logout');
 
     Route::get('profile/connect-google', 'Web\Auth\ProfileController@connectGoogle')->name('profile-connect-google');
 

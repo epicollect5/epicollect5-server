@@ -10,68 +10,70 @@ $(document).ready(function () {
         return false;
     }
 
-    //get client site ID
-    var captchaContainer = $('.gcaptcha');
-    var siteId = captchaContainer.text().trim();
     var appleLoginBtn = pageLogin.find('.btn-login-apple');
 
-    captchaContainer.remove();
+    //check if Google Recaptcha is enabled
+    var captchaContainer = $('.gcaptcha');
+    if (captchaContainer.length > 0) {
+        //get client site ID
+        var siteId = captchaContainer.text().trim();
 
-    window.grecaptcha.ready(function () {
+        captchaContainer.remove();
 
-        var timeout;
-        // create debounced function
-        var attemptSubmission = function (e) {
-            var form = pageLogin.find('form#page-login__passwordless');
+        window.grecaptcha.ready(function () {
 
-            e.preventDefault();
+            var timeout;
+            // create debounced function
+            var attemptSubmission = function (e) {
+                var form = pageLogin.find('form#page-login__passwordless');
 
-            function _execute() {
-                //show overlay
+                e.preventDefault();
 
-                window.EC5.overlay.fadeIn();
-                //get grecaptcha token
-                window.grecaptcha.execute(siteId, { action: 'passwordless' }).then(function (token) {
-                    //embed token and send it to server for verification
-                    form.prepend('<input type="hidden" name="g-recaptcha-response" value="' + token + '">')
-                        .submit();
-                    //hide overlay
-                    window.setTimeout(window.EC5.overlay.fadeOut(), 10000);
+                function _execute() {
+                    //show overlay
+
+                    window.EC5.overlay.fadeIn();
+                    //get grecaptcha token
+                    window.grecaptcha.execute(siteId, {action: 'passwordless'}).then(function (token) {
+                            //embed token and send it to server for verification
+                            form.prepend('<input type="hidden" name="g-recaptcha-response" value="' + token + '">')
+                                .submit();
+                            //hide overlay
+                            window.setTimeout(window.EC5.overlay.fadeOut(), 10000);
+                        }
+                    );
                 }
-                );
-            }
 
-            //use html5 validation first (if supported)
-            if (typeof form.get(0).reportValidity === "function") {
-                if (form.get(0).reportValidity()) {
+                //use html5 validation first (if supported)
+                if (typeof form.get(0).reportValidity === "function") {
+                    if (form.get(0).reportValidity()) {
+                        _execute();
+                    }
+                } else {
                     _execute();
                 }
-            }
-            else {
-                _execute();
-            }
-        };
+            };
 
-        $('#passwordless').on('click', function (e) {
-            window.clearTimeout(timeout);
-            timeout = window.setTimeout(attemptSubmission(e), 1000);
+            $('#passwordless').on('click', function (e) {
+                window.clearTimeout(timeout);
+                timeout = window.setTimeout(attemptSubmission(e), 1000);
+            });
         });
-    });
 
-    //handle show password checkbox
-    pageLogin.find('.show-password-control').on('click', function () {
+        //handle show password checkbox
+        pageLogin.find('.show-password-control').on('click', function () {
 
-        if ($(this).prop('checked')) {
-            pageLogin.find('input.password-input').each(function () {
-                $(this).attr('type', 'text');
-            });
-        }
-        else {
-            pageLogin.find('input.password-input').each(function (iput) {
-                $(this).attr('type', 'password');
-            });
-        }
-    });
+            if ($(this).prop('checked')) {
+                pageLogin.find('input.password-input').each(function () {
+                    $(this).attr('type', 'text');
+                });
+            } else {
+                pageLogin.find('input.password-input').each(function (iput) {
+                    $(this).attr('type', 'password');
+                });
+            }
+        });
+    }
 
     appleLoginBtn.on('click', function (e) {
 
