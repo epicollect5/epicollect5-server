@@ -362,8 +362,10 @@ div.hr-or:before {
   margin: 16px 0;
 }
 
-span.material-icons {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.user-administration__user-reset, .user-administration__user-add {
+  span.material-icons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }
