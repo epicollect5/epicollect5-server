@@ -23,7 +23,7 @@ return [
         'key' => env('OPENCAGE_KEY')
     ],
     'google_recaptcha' => [
-        'use_google_recaptcha' => env('GOOGLE_RECAPTCHA_ENABLED', false),
+        'use_google_recaptcha' => env('USE_GOOGLE_RECAPTCHA', false),
         'verify_endpoint' => env('GOOGLE_RECAPTCHA_API_VERIFY_ENDPOINT'),
         'site_key' => env('GOOGLE_RECAPTCHA_SITE_KEY'),
         'secret_key' => env('GOOGLE_RECAPTCHA_SECRET_KEY')

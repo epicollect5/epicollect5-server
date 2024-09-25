@@ -20,6 +20,7 @@ $(document).ready(function () {
 
         captchaContainer.remove();
 
+
         window.grecaptcha.ready(function () {
 
             var timeout;
@@ -34,14 +35,19 @@ $(document).ready(function () {
 
                     window.EC5.overlay.fadeIn();
                     //get grecaptcha token
-                    window.grecaptcha.execute(siteId, {action: 'passwordless'}).then(function (token) {
-                            //embed token and send it to server for verification
-                            form.prepend('<input type="hidden" name="g-recaptcha-response" value="' + token + '">')
-                                .submit();
-                            //hide overlay
-                            window.setTimeout(window.EC5.overlay.fadeOut(), 10000);
-                        }
-                    );
+                    try {
+                        window.grecaptcha.execute(siteId, {action: 'passwordless'}).then(function (token) {
+                                //embed token and send it to server for verification
+                                form.prepend('<input type="hidden" name="g-recaptcha-response" value="' + token + '">')
+                                    .submit();
+                                //hide overlay
+                                window.setTimeout(window.EC5.overlay.fadeOut(), 10000);
+                            }
+                        );
+                    } catch (e) {
+                        window.setTimeout(window.EC5.overlay.fadeOut(), 500);
+                        window.EC5.toast.showError('Google ReCaptcha ' + e);
+                    }
                 }
 
                 //use html5 validation first (if supported)
