@@ -363,6 +363,12 @@ task('artisan:about', function () {
     ]);
 });
 
+task('composer:dump-autoload', function () {
+    $output = run('cd {{deploy_path}}/current && {{bin/composer}} dump-autoload -o', [
+        'real_time_output' => true
+    ]);
+});
+
 
 // Main task
 desc('Deploy (update) your project');
@@ -376,6 +382,7 @@ task('deploy', [
     'artisan:view:cache',
     'deploy:publish',
     'setup:symlink_deploy_file',
+    'composer:dump-autoload',
     'artisan:about'
     // 'artisan:up', // go back online manually after checking all works
 ]);
