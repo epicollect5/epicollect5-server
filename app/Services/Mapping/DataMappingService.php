@@ -4,7 +4,7 @@ namespace ec5\Services\Mapping;
 
 use Carbon\Carbon;
 use ec5\DTO\ProjectDTO;
-use ec5\Libraries\Utilities\GpointConverter;
+use ec5\Libraries\Utilities\GPointConverter;
 use ec5\Models\User\User;
 use Log;
 use Throwable;
@@ -372,7 +372,7 @@ class DataMappingService
     private function parseAnswer($type, $answer, $input)
     {
         $parsedAnswer = '';
-        $converter = new GpointConverter();
+        $converter = new GPointConverter();
 
         switch ($type) {
             //todo input type should be constants....

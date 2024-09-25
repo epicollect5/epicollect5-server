@@ -1,6 +1,6 @@
 <?php
 
-namespace Http\Validation\Upload;
+namespace Tests\Http\Validation\Upload;
 
 use ec5\Http\Validation\Entries\Upload\FileRules\RuleAudio;
 use ec5\Http\Validation\Entries\Upload\FileRules\RulePhotoApp;
@@ -149,7 +149,8 @@ class RuleUploadTest extends TestCase
         $this->assertTrue($this->ruleUpload->hasErrors());
         $this->assertEquals(
             ["validation" => ["ec5_269"]],
-            $this->ruleUpload->errors());
+            $this->ruleUpload->errors()
+        );
     }
 
     public function test_should_missing_entry_key()
@@ -178,7 +179,8 @@ class RuleUploadTest extends TestCase
                     "ec5_21"
                 ]
             ],
-            $this->ruleUpload->errors());
+            $this->ruleUpload->errors()
+        );
     }
 
     public function test_multiple_valid_parent_entries()

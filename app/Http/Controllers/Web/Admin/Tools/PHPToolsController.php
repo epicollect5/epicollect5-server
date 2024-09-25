@@ -6,12 +6,11 @@ use Auth;
 use Carbon\Carbon;
 use ec5\DTO\ProjectDTO;
 use ec5\Libraries\Utilities\Generators;
-use ec5\Libraries\Utilities\GpointConverter;
+use ec5\Libraries\Utilities\GPointConverter;
 use ec5\Mail\DebugEmailSending;
 use ec5\Models\Project\Project;
 use ec5\Services\Project\ProjectAvatarService;
 use ec5\Traits\Eloquent\System\ProjectsStats;
-use Exception;
 use Illuminate\Support\Facades\Mail;
 use Storage;
 
@@ -52,7 +51,7 @@ class PHPToolsController
 
     public function textLLtoUTM()
     {
-        $converter = new GpointConverter();
+        $converter = new GPointConverter();
         $converter->setLongLat(-0.019106, 51.583362);
         $converter->convertLLtoTM(null);
         $converter->printUTM();
