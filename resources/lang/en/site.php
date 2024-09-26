@@ -128,7 +128,7 @@ return [
     'details' => 'Details',
     'mapping_data' => 'Map Data',
     'import_project' => 'Import Project',
-    'project_json' => 'Project JSON',
+    'project_json' => 'Project .json',
     'role' => 'Role',
     'rename' => 'Rename',
     'confirm_project_name' => 'Please type in the name of the project to confirm:',

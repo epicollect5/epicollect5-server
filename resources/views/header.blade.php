@@ -41,6 +41,7 @@
 @endif
 
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"/>
 <link href='https://fonts.googleapis.com/css?family=Arimo' rel='stylesheet' type='text/css'>
 <link rel="manifest" href="{{ asset('/json/app-manifest.json') }}">
 <title>{{ config('app.name') }} - @yield('title')</title>
