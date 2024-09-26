@@ -15,6 +15,7 @@ require 'recipe/laravel.php';
 // Configuration
 set('repository', 'https://github.com/epicollect5/epicollect5-server.git');
 set('ssh_multiplexing', true);
+set('keep_releases', 3);
 
 add('shared_files', ['public/.htaccess']);
 add('writable_dirs', [
