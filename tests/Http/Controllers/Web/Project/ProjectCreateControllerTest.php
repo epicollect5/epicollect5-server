@@ -20,13 +20,14 @@ use Tests\TestCase;
 
 class ProjectCreateControllerTest extends TestCase
 {
-    use DatabaseTransactions, Assertions;
+    use DatabaseTransactions;
+    use Assertions;
 
-    const DRIVER = 'web';
+    public const string DRIVER = 'web';
 
     protected $request;
-    protected $validator;
-    protected $access;
+    protected RuleCreateRequest $validator;
+    protected array $access;
     protected $projectNameMaxLength;
 
     public function setUp(): void
@@ -40,7 +41,7 @@ class ProjectCreateControllerTest extends TestCase
         $this->access = array_keys(config('epicollect.strings.projects_access'));
 
         //to have a user logged in as superadmin
-        $user = User::find(1);
+        $user = User::where('email', config('testing.SUPER_ADMIN_EMAIL'))->first();
         $this->be($user);
 
         $this->reset();
@@ -145,7 +146,7 @@ class ProjectCreateControllerTest extends TestCase
 
 
         //to have a user logged in as basic
-        $user = User::find(10);
+        $user = User::where('server_role', config('epicollect.strings.server_roles.basic'))->first();
         $this->be($user);
 
         //canNOT use ec5 prefix

@@ -20,7 +20,7 @@ class ProjectImportControllerTest extends TestCase
 {
     use DatabaseTransactions;
 
-    const DRIVER = 'web';
+    public const DRIVER = 'web';
     protected $faker;
     protected $request;
     protected $validator;
@@ -39,7 +39,7 @@ class ProjectImportControllerTest extends TestCase
         $this->access = array_keys(config('epicollect.strings.projects_access'));
 
         //to have a user logged in as superadmin
-        $user = User::find(1);
+        $user = User::where('email', config('testing.SUPER_ADMIN_EMAIL'))->first();
         $this->be($user);
 
         $this->reset();
@@ -47,7 +47,6 @@ class ProjectImportControllerTest extends TestCase
 
     public function reset()
     {
-
         $this->request = [
             'name' => 'Test Project 000001',
             'slug' => 'test-project-000001',
