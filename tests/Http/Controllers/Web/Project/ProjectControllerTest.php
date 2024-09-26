@@ -9,14 +9,13 @@ use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Symfony\Component\Routing\Exception\RouteNotFoundException;
 use Tests\TestCase;
 
 class ProjectControllerTest extends TestCase
 {
     use DatabaseTransactions;
 
-    const DRIVER = 'web';
+    public const string DRIVER = 'web';
 
     public function test_private_project_home_page_renders_correctly()
     {
@@ -28,7 +27,7 @@ class ProjectControllerTest extends TestCase
 
         //assign the user to that project with the CREATOR role
         $role = config('epicollect.strings.project_roles.creator');
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
             'role' => $role
@@ -46,10 +45,10 @@ class ProjectControllerTest extends TestCase
             ['project_id' => $project->id]
         );
 
-        $response = $this
-            ->actingAs($user, self::DRIVER)
-            ->get('project/' . $project->slug)
-            ->assertStatus(200);
+        $this
+             ->actingAs($user, self::DRIVER)
+             ->get('project/' . $project->slug)
+             ->assertStatus(200);
     }
 
     public function test_private_project_home_page_redirect_if_not_logged_in()
@@ -62,7 +61,7 @@ class ProjectControllerTest extends TestCase
 
         //assign the user to that project with the CREATOR role
         $role = config('epicollect.strings.project_roles.creator');
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
             'role' => $role
@@ -80,7 +79,7 @@ class ProjectControllerTest extends TestCase
             ['project_id' => $project->id]
         );
 
-        $response = $this
+        $this
             ->get('project/' . $project->slug)
             ->assertStatus(302)
             ->assertRedirect(Route('login'));
@@ -99,7 +98,7 @@ class ProjectControllerTest extends TestCase
 
         //assign the user to that project with the CREATOR role
         $role = config('epicollect.strings.project_roles.creator');
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
             'role' => $role
@@ -117,7 +116,7 @@ class ProjectControllerTest extends TestCase
             ['project_id' => $project->id]
         );
 
-        $response = $this
+        $this
             ->get('project/' . $project->slug)
             ->assertStatus(200);
     }
@@ -136,7 +135,7 @@ class ProjectControllerTest extends TestCase
 
         //assign the user to that project with the CREATOR role
         $role = config('epicollect.strings.project_roles.creator');
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
             'role' => $role
@@ -173,7 +172,7 @@ class ProjectControllerTest extends TestCase
         $this->assertEquals('ec5_11', $errorsArray[0]);
     }
 
-    public function test_public_project_home_page_renders_correctly_logged_in()
+    public function test_public_project_dataviewer_error_project_trashed()
     {
         //create mock user
         $user = factory(User::class)->create();
@@ -181,12 +180,13 @@ class ProjectControllerTest extends TestCase
         //create a fake project with that user
         $project = factory(Project::class)->create([
             'created_by' => $user->id,
-            'access' => config('epicollect.strings.project_access.public')
+            'access' => config('epicollect.strings.project_access.public'),
+            'status' => config('epicollect.strings.project_status.trashed')
         ]);
 
         //assign the user to that project with the CREATOR role
         $role = config('epicollect.strings.project_roles.creator');
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
             'role' => $role
@@ -205,6 +205,56 @@ class ProjectControllerTest extends TestCase
         );
 
         $response = $this
+            ->get('project/' . $project->slug. '/data')
+            ->assertStatus(200);
+        $this->assertEquals('errors.gen_error', $response->original->getName());
+        // Assert that there is an error message with key 'ec5_11'
+        $this->assertArrayHasKey('errors', $response->original->getData());
+        // Assert that the view has an 'errors' variable
+        $this->assertTrue($response->original->offsetExists('errors'));
+        // Access the MessageBag and assert specific errors
+        $errors = $response->original->offsetGet('errors');
+        // Ensure that the 'view' key exists in the MessageBag
+        $this->assertTrue($errors->has('view'));
+        // Access the 'errors' array directly
+        $errorsArray = $errors->get('view');
+        // Assert that it is an array and contains 'ec5_11'
+        $this->assertIsArray($errorsArray);
+        $this->assertEquals('ec5_11', $errorsArray[0]);
+    }
+
+    public function test_public_project_home_page_renders_correctly_logged_in()
+    {
+        //create mock user
+        $user = factory(User::class)->create();
+
+        //create a fake project with that user
+        $project = factory(Project::class)->create([
+            'created_by' => $user->id,
+            'access' => config('epicollect.strings.project_access.public')
+        ]);
+
+        //assign the user to that project with the CREATOR role
+        $role = config('epicollect.strings.project_roles.creator');
+        factory(ProjectRole::class)->create([
+            'user_id' => $user->id,
+            'project_id' => $project->id,
+            'role' => $role
+        ]);
+
+        //set up project stats and project structures (to make R&A middleware work, to be removed)
+        //because they are using a repository with joins
+        factory(ProjectStats::class)->create(
+            [
+                'project_id' => $project->id,
+                'total_entries' => 0
+            ]
+        );
+        factory(ProjectStructure::class)->create(
+            ['project_id' => $project->id]
+        );
+
+        $this
             ->actingAs($user)
             ->get('project/' . $project->slug)
             ->assertStatus(200);
@@ -220,7 +270,7 @@ class ProjectControllerTest extends TestCase
 
         //assign the user to that project with the CREATOR role
         $role = config('epicollect.strings.project_roles.creator');
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
             'role' => $role
@@ -240,7 +290,7 @@ class ProjectControllerTest extends TestCase
             ['project_id' => $project->id]
         );
 
-        $response = $this
+        $this
             ->actingAs($user, self::DRIVER)
             ->get('myprojects/' . $project->slug)
             ->assertStatus(200);
@@ -256,7 +306,7 @@ class ProjectControllerTest extends TestCase
 
         //assign the user to that project with the CREATOR role
         $role = config('epicollect.strings.project_roles.creator');
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
             'role' => $role
@@ -277,7 +327,7 @@ class ProjectControllerTest extends TestCase
         );
 
         Auth::logout();
-        $response = $this
+        $this
             ->get('myprojects/' . $project->slug)
             ->assertStatus(302)
             ->assertRedirect(Route('login'));
@@ -295,7 +345,7 @@ class ProjectControllerTest extends TestCase
 
         //assign the user to that project with the CREATOR role
         $role = config('epicollect.strings.project_roles.creator');
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
             'role' => $role
@@ -315,7 +365,7 @@ class ProjectControllerTest extends TestCase
             ['project_id' => $project->id]
         );
 
-        $response = $this
+        $this
             ->actingAs($user, self::DRIVER)
             ->get('myprojects/' . $project->slug)
             ->assertStatus(200);
@@ -333,7 +383,7 @@ class ProjectControllerTest extends TestCase
 
         //assign the user to that project with the CREATOR role
         $role = config('epicollect.strings.project_roles.creator');
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
             'role' => $role
@@ -353,7 +403,7 @@ class ProjectControllerTest extends TestCase
             ['project_id' => $project->id]
         );
 
-        $response = $this
+        $this
             ->actingAs($user, self::DRIVER)
             ->get('myprojects/' . $project->slug)
             ->assertStatus(200);
@@ -369,7 +419,7 @@ class ProjectControllerTest extends TestCase
 
         //assign the user to that project with the CREATOR role
         $role = config('epicollect.strings.project_roles.creator');
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
             'role' => $role
@@ -387,7 +437,7 @@ class ProjectControllerTest extends TestCase
             ['project_id' => $project->id]
         );
 
-        $response = $this
+        $this
             ->actingAs($user, self::DRIVER)
             ->get('project/' . $project->slug . '/data')
             ->assertStatus(200);
@@ -403,7 +453,7 @@ class ProjectControllerTest extends TestCase
 
         //assign the user to that project with the CREATOR role
         $role = config('epicollect.strings.project_roles.creator');
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
             'role' => $role
@@ -449,7 +499,8 @@ class ProjectControllerTest extends TestCase
                 'user_id' => $user->id,
                 'project_id' => $project->id,
                 'role' => config('epicollect.strings.project_roles.manager')
-            ]);
+            ]
+        );
 
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
@@ -491,7 +542,8 @@ class ProjectControllerTest extends TestCase
                 'user_id' => $user->id,
                 'project_id' => $project->id,
                 'role' => config('epicollect.strings.project_roles.curator')
-            ]);
+            ]
+        );
 
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
@@ -545,7 +597,8 @@ class ProjectControllerTest extends TestCase
                 'user_id' => $user->id,
                 'project_id' => $project->id,
                 'role' => config('epicollect.strings.project_roles.collector')
-            ]);
+            ]
+        );
 
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
@@ -599,7 +652,8 @@ class ProjectControllerTest extends TestCase
                 'user_id' => $user->id,
                 'project_id' => $project->id,
                 'role' => config('epicollect.strings.project_roles.viewer')
-            ]);
+            ]
+        );
 
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
@@ -651,7 +705,8 @@ class ProjectControllerTest extends TestCase
                 'user_id' => $user->id,
                 'project_id' => $project->id,
                 'role' => config('epicollect.strings.project_roles.viewer')
-            ]);
+            ]
+        );
 
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
@@ -666,12 +721,11 @@ class ProjectControllerTest extends TestCase
         );
 
         Auth::logout();
-        $response = $this
+        $this
             ->get(Route('formbuilder', ['project_slug' => $project->slug]))
             ->assertStatus(302)
             ->assertRedirect(Route('login'));
     }
-
 
     public function test_download_project_definition()
     {
@@ -686,7 +740,8 @@ class ProjectControllerTest extends TestCase
                 'user_id' => $user->id,
                 'project_id' => $project->id,
                 'role' => config('epicollect.strings.project_roles.creator')
-            ]);
+            ]
+        );
 
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
@@ -700,7 +755,7 @@ class ProjectControllerTest extends TestCase
             ['project_id' => $project->id]
         );
 
-        $response = $this
+        $this
             ->actingAs($user, self::DRIVER)
             ->get('myprojects/' . $project->slug . '/download-project-definition')
             ->assertStatus(200);
@@ -719,7 +774,7 @@ class ProjectControllerTest extends TestCase
 
         //assign the user to that project with the CREATOR role
         $role = config('epicollect.strings.project_roles.creator');
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
             'role' => $role
@@ -737,7 +792,7 @@ class ProjectControllerTest extends TestCase
             ['project_id' => $project->id]
         );
 
-        $response = $this
+        $this
             ->get('open/project/' . $project->slug)
             ->assertStatus(200);
     }
@@ -756,7 +811,7 @@ class ProjectControllerTest extends TestCase
 
         //assign the user to that project with the CREATOR role
         $role = config('epicollect.strings.project_roles.creator');
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
             'role' => $role
@@ -806,7 +861,7 @@ class ProjectControllerTest extends TestCase
 
         //assign the user to that project with the CREATOR role
         $role = config('epicollect.strings.project_roles.creator');
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
             'role' => $role
@@ -824,7 +879,7 @@ class ProjectControllerTest extends TestCase
             ['project_id' => $project->id]
         );
 
-        $response = $this->actingAs($user)
+        $this->actingAs($user)
             ->get('open/project/' . $project->slug)
             ->assertStatus(200);
     }
@@ -842,7 +897,7 @@ class ProjectControllerTest extends TestCase
 
         //assign the user to that project with the CREATOR role
         $role = config('epicollect.strings.project_roles.creator');
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
             'role' => $role
@@ -860,7 +915,7 @@ class ProjectControllerTest extends TestCase
             ['project_id' => $project->id]
         );
 
-        $response = $this
+        $this
             ->get('open/project/' . $project->slug)
             ->assertStatus(200);
     }
@@ -878,7 +933,7 @@ class ProjectControllerTest extends TestCase
 
         //assign the user to that project with the CREATOR role
         $role = config('epicollect.strings.project_roles.creator');
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
             'role' => $role
@@ -896,10 +951,8 @@ class ProjectControllerTest extends TestCase
             ['project_id' => $project->id]
         );
 
-        $response = $this->actingAs($user)
+        $this->actingAs($user)
             ->get('open/project/' . $project->slug)
             ->assertStatus(200);
     }
-
-
 }
