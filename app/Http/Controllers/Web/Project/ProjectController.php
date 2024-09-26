@@ -6,12 +6,12 @@ use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectStats;
 use ec5\Traits\Eloquent\StatsRefresher;
 use ec5\Traits\Requests\RequestAttributes;
-use Illuminate\Http\JsonResponse;
 use Response;
 
 class ProjectController
 {
-    use StatsRefresher, RequestAttributes;
+    use StatsRefresher;
+    use RequestAttributes;
 
     public function show()
     {
@@ -81,6 +81,11 @@ class ProjectController
      */
     public function dataviewer()
     {
+        // If the project is trashed, redirect to error page
+        if ($this->requestedProject()->status === config('epicollect.strings.project_status.trashed')) {
+            return view('errors.gen_error')->withErrors(['view' => 'ec5_11']);
+        }
+
         $this->refreshProjectStats($this->requestedProject());
         return view('project.dataviewer', [
             'project' => $this->requestedProject()
