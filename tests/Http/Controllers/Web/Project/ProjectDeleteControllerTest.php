@@ -23,9 +23,7 @@ class ProjectDeleteControllerTest extends TestCase
 {
     use DatabaseTransactions;
 
-    // use WithoutMiddleware;
-
-    const DRIVER = 'web';
+    public const string DRIVER = 'web';
 
     public function setUp(): void
     {
@@ -43,7 +41,7 @@ class ProjectDeleteControllerTest extends TestCase
         //create mock user
         $user = factory(User::class)->create();
         //add a user provider
-        $provider = factory(UserProvider::class)->create([
+        factory(UserProvider::class)->create([
             'user_id' => $user->id,
             'email' => $user->email
         ]);
@@ -53,7 +51,49 @@ class ProjectDeleteControllerTest extends TestCase
 
         //assign the user to that project with the CREATOR role
         $role = config('epicollect.strings.project_roles.creator');
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
+            'user_id' => $user->id,
+            'project_id' => $project->id,
+            'role' => $role
+        ]);
+
+        //set up project stats and project structures (to make R&A middleware work, to be removed)
+        //because they are using a repository with joins
+        factory(ProjectStats::class)->create(
+            [
+                'project_id' => $project->id,
+                'total_entries' => 0
+            ]
+        );
+        factory(ProjectStructure::class)->create(
+            ['project_id' => $project->id]
+        );
+
+        $this
+            ->actingAs($user, self::DRIVER)
+            ->get('myprojects/' . $project->slug . '/delete')
+            ->assertStatus(200);
+    }
+
+    public function test_delete_page_redirect_if_active()
+    {
+        //create mock user
+        $user = factory(User::class)->create();
+        //add a user provider
+        factory(UserProvider::class)->create([
+            'user_id' => $user->id,
+            'email' => $user->email
+        ]);
+
+        //create a fake project with that user and set its status to active
+        $project = factory(Project::class)->create([
+            'created_by' => $user->id,
+            'status' => config('epicollect.strings.project_status.active')
+        ]);
+
+        //assign the user to that project with the CREATOR role
+        $role = config('epicollect.strings.project_roles.creator');
+        factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
             'role' => $role
@@ -72,17 +112,91 @@ class ProjectDeleteControllerTest extends TestCase
         );
 
         $response = $this
-            ->actingAs($user, self::DRIVER)
+            ->actingAs($user)
             ->get('myprojects/' . $project->slug . '/delete')
-            ->assertStatus(200);
+        ->assertStatus(200);
+
+        //should return an error view
+        $this->assertEquals('errors.gen_error', $response->original->getName());
+        // Assert that there is an error message with key 'ec5_11'
+        $this->assertArrayHasKey('errors', $response->original->getData());
+        // Assert that the view has an 'errors' variable
+        $this->assertTrue($response->original->offsetExists('errors'));
+        // Access the MessageBag and assert specific errors
+        $errors = $response->original->offsetGet('errors');
+        // Ensure that the 'view' key exists in the MessageBag
+        $this->assertTrue($errors->has('view'));
+        // Access the 'errors' array directly
+        $errorsArray = $errors->get('view');
+        // Assert that it is an array and contains 'ec5_11'
+        $this->assertIsArray($errorsArray);
+        $this->assertEquals('ec5_11', $errorsArray[0]);
     }
 
-    public function test_delete_page_redirectes_not_logged_in()
+    public function test_delete_page_redirect_if_locked()
     {
         //create mock user
         $user = factory(User::class)->create();
         //add a user provider
-        $provider = factory(UserProvider::class)->create([
+        factory(UserProvider::class)->create([
+            'user_id' => $user->id,
+            'email' => $user->email
+        ]);
+
+        //create a fake project with that user and set its status to active
+        $project = factory(Project::class)->create([
+            'created_by' => $user->id,
+            'status' => config('epicollect.strings.project_status.locked')
+        ]);
+
+        //assign the user to that project with the CREATOR role
+        $role = config('epicollect.strings.project_roles.creator');
+        factory(ProjectRole::class)->create([
+            'user_id' => $user->id,
+            'project_id' => $project->id,
+            'role' => $role
+        ]);
+
+        //set up project stats and project structures (to make R&A middleware work, to be removed)
+        //because they are using a repository with joins
+        factory(ProjectStats::class)->create(
+            [
+                'project_id' => $project->id,
+                'total_entries' => 0
+            ]
+        );
+        factory(ProjectStructure::class)->create(
+            ['project_id' => $project->id]
+        );
+
+        $response = $this
+            ->actingAs($user)
+            ->get('myprojects/' . $project->slug . '/delete')
+            ->assertStatus(200);
+
+        //should return an error view
+        $this->assertEquals('errors.gen_error', $response->original->getName());
+        // Assert that there is an error message with key 'ec5_11'
+        $this->assertArrayHasKey('errors', $response->original->getData());
+        // Assert that the view has an 'errors' variable
+        $this->assertTrue($response->original->offsetExists('errors'));
+        // Access the MessageBag and assert specific errors
+        $errors = $response->original->offsetGet('errors');
+        // Ensure that the 'view' key exists in the MessageBag
+        $this->assertTrue($errors->has('view'));
+        // Access the 'errors' array directly
+        $errorsArray = $errors->get('view');
+        // Assert that it is an array and contains 'ec5_11'
+        $this->assertIsArray($errorsArray);
+        $this->assertEquals('ec5_11', $errorsArray[0]);
+    }
+
+    public function test_delete_page_redirect_not_logged_in()
+    {
+        //create mock user
+        $user = factory(User::class)->create();
+        //add a user provider
+        factory(UserProvider::class)->create([
             'user_id' => $user->id,
             'email' => $user->email
         ]);
@@ -92,7 +206,7 @@ class ProjectDeleteControllerTest extends TestCase
 
         //assign the user to that project with the CREATOR role
         $role = config('epicollect.strings.project_roles.creator');
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
             'role' => $role
@@ -111,7 +225,7 @@ class ProjectDeleteControllerTest extends TestCase
         );
 
         Auth::logout();
-        $response = $this
+        $this
             ->get('myprojects/' . $project->slug . '/delete')
             ->assertStatus(302)
             ->assertRedirect(Route('login'));
@@ -127,7 +241,7 @@ class ProjectDeleteControllerTest extends TestCase
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
         //add a user provider
-        $provider = factory(UserProvider::class)->create([
+        factory(UserProvider::class)->create([
             'user_id' => $user->id,
             'email' => $user->email
         ]);
@@ -136,7 +250,7 @@ class ProjectDeleteControllerTest extends TestCase
         $project = factory(Project::class)->create(['created_by' => $user->id]);
 
         //assign the user to that project with the CREATOR role
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
             'role' => $role
@@ -200,7 +314,7 @@ class ProjectDeleteControllerTest extends TestCase
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
         //add a user provider
-        $provider = factory(UserProvider::class)->create([
+        factory(UserProvider::class)->create([
             'user_id' => $user->id,
             'email' => $user->email
         ]);
@@ -214,7 +328,7 @@ class ProjectDeleteControllerTest extends TestCase
         ]);
 
         //assign the user to that project with the CREATOR role
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
             'role' => $role
@@ -284,7 +398,7 @@ class ProjectDeleteControllerTest extends TestCase
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
         //add a user provider
-        $provider = factory(UserProvider::class)->create([
+        factory(UserProvider::class)->create([
             'user_id' => $user->id,
             'email' => $user->email
         ]);
@@ -293,7 +407,7 @@ class ProjectDeleteControllerTest extends TestCase
         $project = factory(Project::class)->create(['created_by' => $user->id]);
 
         //assign the user to that project with the CREATOR role
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
             'role' => $role
@@ -400,7 +514,7 @@ class ProjectDeleteControllerTest extends TestCase
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
         //add a user provider
-        $provider = factory(UserProvider::class)->create([
+        factory(UserProvider::class)->create([
             'user_id' => $user->id,
             'email' => $user->email
         ]);
@@ -414,7 +528,7 @@ class ProjectDeleteControllerTest extends TestCase
         );
 
         //assign the user to that project with the CREATOR role
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
             'role' => $role
@@ -493,26 +607,26 @@ class ProjectDeleteControllerTest extends TestCase
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
         //add a user provider
-        $provider = factory(UserProvider::class)->create([
+        factory(UserProvider::class)->create([
             'user_id' => $user->id,
             'email' => $user->email
         ]);
         $anotherUser = factory(User::class)->create();
         //add a user provider
-        $provider = factory(UserProvider::class)->create([
+        factory(UserProvider::class)->create([
             'user_id' => $anotherUser->id,
             'email' => $anotherUser->email
         ]);
         //create mock project with that another user
         $project = factory(Project::class)->create(['created_by' => $anotherUser->id]);
         //assign another user to that project with the CREATOR role
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $anotherUser->id,
             'project_id' => $project->id,
             'role' => 'creator'
         ]);
         //assign the user to that project with the MANAGER role
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
             'role' => $role
@@ -579,25 +693,25 @@ class ProjectDeleteControllerTest extends TestCase
         $numOfBranchEntries = mt_rand(10, 100);
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
-        $provider = factory(UserProvider::class)->create([
+        factory(UserProvider::class)->create([
             'user_id' => $user->id,
             'email' => $user->email
         ]);
         $anotherUser = factory(User::class)->create();
-        $provider = factory(UserProvider::class)->create([
+        factory(UserProvider::class)->create([
             'user_id' => $anotherUser->id,
             'email' => $anotherUser->email
         ]);
         //create mock project with that another user
         $project = factory(Project::class)->create(['created_by' => $anotherUser->id]);
         //assign another user to that project with the CREATOR role
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $anotherUser->id,
             'project_id' => $project->id,
             'role' => 'creator'
         ]);
         //assign the user to that project with the CURATOR role
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
             'role' => $role
@@ -663,25 +777,25 @@ class ProjectDeleteControllerTest extends TestCase
         $numOfBranchEntries = mt_rand(10, 100);
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
-        $provider = factory(UserProvider::class)->create([
+        factory(UserProvider::class)->create([
             'user_id' => $user->id,
             'email' => $user->email
         ]);
         $anotherUser = factory(User::class)->create();
-        $provider = factory(UserProvider::class)->create([
+        factory(UserProvider::class)->create([
             'user_id' => $anotherUser->id,
             'email' => $anotherUser->email
         ]);
         //create mock project with that another user
         $project = factory(Project::class)->create(['created_by' => $anotherUser->id]);
         //assign another user to that project with the CREATOR role
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $anotherUser->id,
             'project_id' => $project->id,
             'role' => 'creator'
         ]);
         //assign the user to that project with the COLLECTOR role
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
             'role' => $role
@@ -747,25 +861,25 @@ class ProjectDeleteControllerTest extends TestCase
         $numOfBranchEntries = mt_rand(10, 100);
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
-        $provider = factory(UserProvider::class)->create([
+        factory(UserProvider::class)->create([
             'user_id' => $user->id,
             'email' => $user->email
         ]);
         $anotherUser = factory(User::class)->create();
-        $provider = factory(UserProvider::class)->create([
+        factory(UserProvider::class)->create([
             'user_id' => $anotherUser->id,
             'email' => $anotherUser->email
         ]);
         //create mock project with that another user
         $project = factory(Project::class)->create(['created_by' => $anotherUser->id]);
         //assign another user to that project with the CREATOR role
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $anotherUser->id,
             'project_id' => $project->id,
             'role' => 'creator'
         ]);
         //assign the user to that project with the VIEWER role
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
             'role' => $role
@@ -830,14 +944,14 @@ class ProjectDeleteControllerTest extends TestCase
         $numOfBranchEntries = mt_rand(10, 100);
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
-        $provider = factory(UserProvider::class)->create([
+        factory(UserProvider::class)->create([
             'user_id' => $user->id,
             'email' => $user->email
         ]);
         //create mock project with that user
         $project = factory(Project::class)->create(['created_by' => $user->id]);
         //assign another user to that project with the CREATOR role
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
             'role' => $role
@@ -907,14 +1021,14 @@ class ProjectDeleteControllerTest extends TestCase
         $numOfBranchEntries = mt_rand(10, 100);
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
-        $provider = factory(UserProvider::class)->create([
+        factory(UserProvider::class)->create([
             'user_id' => $user->id,
             'email' => $user->email
         ]);
         //create mock project with that user
         $project = factory(Project::class)->create(['created_by' => $user->id]);
         //assign the user to that project with the CREATOR role
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
             'role' => $role
@@ -950,60 +1064,60 @@ class ProjectDeleteControllerTest extends TestCase
         );
 
         // Create an instance of the controller
-//        $controller = new ProjectDeleteController(new Request());
-//
-//        // Create a partial mock with only the archiveProject method mocked
-//        $controllerMock = Mockery::mock($controller)->makePartial();
-//
-//        //Mock only the archiveProject method
-//        $controllerMock->shouldReceive('archiveProject')
-//            ->with($project->id, $project->slug)
-//            ->once()
-//            ->andReturn(false);
+        //        $controller = new ProjectDeleteController(new Request());
+        //
+        //        // Create a partial mock with only the archiveProject method mocked
+        //        $controllerMock = Mockery::mock($controller)->makePartial();
+        //
+        //        //Mock only the archiveProject method
+        //        $controllerMock->shouldReceive('archiveProject')
+        //            ->with($project->id, $project->slug)
+        //            ->once()
+        //            ->andReturn(false);
 
         // Use the mocked instance to hit the real controller method
         //todo: get back to this after the refactoring using DTO instead of middleware
         // $response = $controllerMock->softDelete($project->id, $project->slug);
 
         // Mock the middleware behavior
-//        $legacyProject = new LegacyProject(
-//            new ProjectDefinition(),
-//            new ProjectExtra(),
-//            new ProjectMapping(),
-//            new ProjectStats()
-//        );
-//        $legacyProjectRole = new LegacyProjectRole();
-//        $legacyProjectRole->setRole(new LegacyUser(), $project->id, $role);
-//
-//        // Retrieve project (legacy way,  R&A fiasco)
-//        $search = new SearchRepository();
-//        $currentProject = $search->find($project->slug, $columns = array('*'));
-//        $legacyProject->init($currentProject);
-//
-//        $request = $this->app['request'];
-//        // Set attributes as if the middleware has run
-//        $request->attributes->add(['requestedProject' => $legacyProject]);
-//        //$this->request->attributes->add(['requestedUser' => $this->requestedUser]);
-//        $request->attributes->add(['requestedProjectRole' => $legacyProjectRole]);
-//
-//
-//        //$controller->requestedProject = $legacyProject;
-//        //$controller->requestedProjectRole = $legacyProjectRole;
-////
-////        // Create a partial mock with only the archiveProject method mocked
-//        $controllerMock = Mockery::mock(new ProjectControllerBase($request))->makePartial();
-//
-////        //Mock only the archiveProject method
-//        $controllerMock->shouldReceive('archiveProject')
-//            ->with($project->id, $project->slug)
-//            ->andReturn(false);
-//
-//        // Use the mocked instance to hit the real controller method
-//        // Create an instance of the controller
-//        $controller = new ProjectDeleteController($request);
-//        $response = $controller->softDelete();
-//
-//        dd($response->status());
+        //        $legacyProject = new LegacyProject(
+        //            new ProjectDefinition(),
+        //            new ProjectExtra(),
+        //            new ProjectMapping(),
+        //            new ProjectStats()
+        //        );
+        //        $legacyProjectRole = new LegacyProjectRole();
+        //        $legacyProjectRole->setRole(new LegacyUser(), $project->id, $role);
+        //
+        //        // Retrieve project (legacy way,  R&A fiasco)
+        //        $search = new SearchRepository();
+        //        $currentProject = $search->find($project->slug, $columns = array('*'));
+        //        $legacyProject->init($currentProject);
+        //
+        //        $request = $this->app['request'];
+        //        // Set attributes as if the middleware has run
+        //        $request->attributes->add(['requestedProject' => $legacyProject]);
+        //        //$this->request->attributes->add(['requestedUser' => $this->requestedUser]);
+        //        $request->attributes->add(['requestedProjectRole' => $legacyProjectRole]);
+        //
+        //
+        //        //$controller->requestedProject = $legacyProject;
+        //        //$controller->requestedProjectRole = $legacyProjectRole;
+        ////
+        ////        // Create a partial mock with only the archiveProject method mocked
+        //        $controllerMock = Mockery::mock(new ProjectControllerBase($request))->makePartial();
+        //
+        ////        //Mock only the archiveProject method
+        //        $controllerMock->shouldReceive('archiveProject')
+        //            ->with($project->id, $project->slug)
+        //            ->andReturn(false);
+        //
+        //        // Use the mocked instance to hit the real controller method
+        //        // Create an instance of the controller
+        //        $controller = new ProjectDeleteController($request);
+        //        $response = $controller->softDelete();
+        //
+        //        dd($response->status());
 
         //Bail out since the project is featured
         // $response->assertRedirect('myprojects/' . $project->slug);
@@ -1011,4 +1125,3 @@ class ProjectDeleteControllerTest extends TestCase
 
     }
 }
-
