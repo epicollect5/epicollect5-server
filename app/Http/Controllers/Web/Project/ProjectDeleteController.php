@@ -15,13 +15,21 @@ use Log;
 
 class ProjectDeleteController
 {
-    use RequestAttributes, Archiver, StatsRefresher;
+    use RequestAttributes;
+    use Archiver;
+    use StatsRefresher;
 
     public function show()
     {
         if (!$this->requestedProjectRole()->canDeleteProject()) {
             return view('errors.gen_error')->withErrors(['errors' => ['ec5_91']]);
         }
+
+        // If the project IS NOT trashed, redirect to error page
+        if ($this->requestedProject()->status !== config('epicollect.strings.project_status.trashed')) {
+            return view('errors.gen_error')->withErrors(['view' => 'ec5_11']);
+        }
+
         $this->refreshProjectStats($this->requestedProject());
         return view('project.project_delete');
     }
@@ -122,7 +130,7 @@ class ProjectDeleteController
         }
     }
 
-//delete entries in chunks (branch entries are deleted by FK constraint ON CASCADE DELETE)
+    //delete entries in chunks (branch entries are deleted by FK constraint ON CASCADE DELETE)
     private function deleteEntries($projectId)
     {
         Entry::where('project_id', $projectId)->chunk(100, function ($rows) {
