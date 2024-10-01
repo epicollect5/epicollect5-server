@@ -9,6 +9,8 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -78,6 +80,29 @@ class Handler extends ExceptionHandler
         if ($e instanceof HttpException && $e->getStatusCode() === 503) {
             if (app()->isDownForMaintenance()) {
                 if ($this->isJsonRequest($request)) {
+                    //let the preflight request go through in maintenance mode (avoid CORS issues)
+                    if ($request->isMethod('OPTIONS')) {
+                        return response()->json([], 200, []);
+                    }
+
+                    //post request from the formbuilder route?
+                    if ($request->isMethod('POST')) {
+                        // Find the matching route
+                        $matchingRoute = Route::getRoutes()->match($request);
+                        // Get the route name
+                        try {
+                            $routeName = $matchingRoute->getName();
+                            if ($routeName === 'formbuilder-store') {
+                                //tell user to export form(s) and retry later
+                                $errors = ['maintenance.mode' => ['ec5_404']];
+                                return Response::apiErrorCode(404, $errors);
+                            }
+                        } catch (Throwable $e) {
+                            //if route is not found, ignore and just log
+                            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
+                        }
+                    }
+                    //any other json request, standard maintenance message
                     $errors = ['maintenance.mode' => ['ec5_252']];
                     return Response::apiErrorCode(404, $errors);
                 }

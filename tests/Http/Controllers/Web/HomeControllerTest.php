@@ -11,7 +11,7 @@ class HomeControllerTest extends TestCase
 {
     use DatabaseTransactions;
 
-    const DRIVER = 'web';
+    const string DRIVER = 'web';
 
     public function test_home_page_renders_correctly()
     {

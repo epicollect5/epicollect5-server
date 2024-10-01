@@ -10,22 +10,21 @@ use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use Faker\Factory as Faker;
+use Faker\Generator;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
-use League\Csv\Exception;
 use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
-
+use Throwable;
 
 class FormbuilderControllerTest extends TestCase
 {
     use DatabaseTransactions;
 
-    private $user;
-    private $projectDefinition;
-    private $project;
-    private $faker;
+    private User $user;
+    private array $projectDefinition;
+    private Project $project;
+    private Generator $faker;
 
     public function setUp(): void
     {
@@ -81,14 +80,18 @@ class FormbuilderControllerTest extends TestCase
 
         //see https://github.com/laravel/framework/issues/46455
         $response = $this->actingAs($this->user)
-            ->call('POST', 'api/internal/formbuilder/' . $this->project->slug,
+            ->call(
+                'POST',
+                'api/internal/formbuilder/' . $this->project->slug,
                 [],
                 [],
                 [],
-                [], $base64EncodedData);
+                [],
+                $base64EncodedData
+            );
         try {
             $response->assertStatus(200);
-        } catch (\Exception $exception) {
+        } catch (Throwable $exception) {
             $this->logTestError($exception, $response);
         }
 
@@ -131,11 +134,15 @@ class FormbuilderControllerTest extends TestCase
         //see https://github.com/laravel/framework/issues/46455
 
         $response = $this->actingAs($this->user)
-            ->call('POST', 'api/internal/formbuilder/' . $this->project->slug,
+            ->call(
+                'POST',
+                'api/internal/formbuilder/' . $this->project->slug,
                 [],
                 [],
                 [],
-                [], $base64EncodedData);
+                [],
+                $base64EncodedData
+            );
 
         $response->assertStatus(422)
             ->assertJsonStructure([
@@ -147,7 +154,8 @@ class FormbuilderControllerTest extends TestCase
                     ]
                 ]
             ])
-            ->assertExactJson([
+            ->assertExactJson(
+                [
                     "errors" => [
                         [
                             "code" => "ec5_245",
@@ -175,11 +183,15 @@ class FormbuilderControllerTest extends TestCase
 
         //see https://github.com/laravel/framework/issues/46455
         $response = $this->actingAs($this->user)
-            ->call('POST', 'api/internal/formbuilder/' . $this->project->slug,
+            ->call(
+                'POST',
+                'api/internal/formbuilder/' . $this->project->slug,
                 [],
                 [],
                 [],
-                [], $base64EncodedData);
+                [],
+                $base64EncodedData
+            );
 
         $response->assertStatus(422)
             ->assertJsonStructure([
@@ -191,7 +203,8 @@ class FormbuilderControllerTest extends TestCase
                     ]
                 ]
             ])
-            ->assertExactJson([
+            ->assertExactJson(
+                [
                     "errors" => [
                         [
                             "code" => "ec5_224",
@@ -216,11 +229,15 @@ class FormbuilderControllerTest extends TestCase
 
         //see https://github.com/laravel/framework/issues/46455
         $response = $this->actingAs($this->user)
-            ->call('POST', 'api/internal/formbuilder/' . $this->project->slug,
+            ->call(
+                'POST',
+                'api/internal/formbuilder/' . $this->project->slug,
                 [],
                 [],
                 [],
-                [], $base64EncodedData);
+                [],
+                $base64EncodedData
+            );
 
         $response->assertStatus(422)
             ->assertJsonStructure([
@@ -232,7 +249,8 @@ class FormbuilderControllerTest extends TestCase
                     ]
                 ]
             ])
-            ->assertExactJson([
+            ->assertExactJson(
+                [
                     "errors" => [
                         [
                             "code" => "ec5_246",
@@ -257,11 +275,15 @@ class FormbuilderControllerTest extends TestCase
 
         //see https://github.com/laravel/framework/issues/46455
         $response = $this->actingAs($this->user)
-            ->call('POST', 'api/internal/formbuilder/' . $this->project->slug,
+            ->call(
+                'POST',
+                'api/internal/formbuilder/' . $this->project->slug,
                 [],
                 [],
                 [],
-                [], $base64EncodedData);
+                [],
+                $base64EncodedData
+            );
 
         $response->assertStatus(422)
             ->assertJsonStructure([
@@ -273,7 +295,8 @@ class FormbuilderControllerTest extends TestCase
                     ]
                 ]
             ])
-            ->assertExactJson([
+            ->assertExactJson(
+                [
                     "errors" => [
                         [
                             "code" => "ec5_323",
@@ -298,11 +321,15 @@ class FormbuilderControllerTest extends TestCase
 
         //see https://github.com/laravel/framework/issues/46455
         $response = $this->actingAs($this->user)
-            ->call('POST', 'api/internal/formbuilder/' . $this->project->slug,
+            ->call(
+                'POST',
+                'api/internal/formbuilder/' . $this->project->slug,
                 [],
                 [],
                 [],
-                [], $base64EncodedData);
+                [],
+                $base64EncodedData
+            );
 
         $response->assertStatus(422)
             ->assertJsonStructure([
@@ -314,7 +341,8 @@ class FormbuilderControllerTest extends TestCase
                     ]
                 ]
             ])
-            ->assertExactJson([
+            ->assertExactJson(
+                [
                     "errors" => [
                         [
                             "code" => "ec5_220",
@@ -339,11 +367,15 @@ class FormbuilderControllerTest extends TestCase
 
         //see https://github.com/laravel/framework/issues/46455
         $response = $this->actingAs($this->user)
-            ->call('POST', 'api/internal/formbuilder/' . $this->project->slug,
+            ->call(
+                'POST',
+                'api/internal/formbuilder/' . $this->project->slug,
                 [],
                 [],
                 [],
-                [], $base64EncodedData);
+                [],
+                $base64EncodedData
+            );
 
         $response->assertStatus(422)
             ->assertJsonStructure([
@@ -355,7 +387,8 @@ class FormbuilderControllerTest extends TestCase
                     ]
                 ]
             ])
-            ->assertExactJson([
+            ->assertExactJson(
+                [
                     "errors" => [
                         [
                             "code" => "ec5_323",
@@ -380,11 +413,15 @@ class FormbuilderControllerTest extends TestCase
 
         //see https://github.com/laravel/framework/issues/46455
         $response = $this->actingAs($this->user)
-            ->call('POST', 'api/internal/formbuilder/' . $this->project->slug,
+            ->call(
+                'POST',
+                'api/internal/formbuilder/' . $this->project->slug,
                 [],
                 [],
                 [],
-                [], $base64EncodedData);
+                [],
+                $base64EncodedData
+            );
 
         $response->assertStatus(422)
             ->assertJsonStructure([
@@ -396,7 +433,8 @@ class FormbuilderControllerTest extends TestCase
                     ]
                 ]
             ])
-            ->assertExactJson([
+            ->assertExactJson(
+                [
                     "errors" => [
                         [
                             "code" => "ec5_220",
@@ -419,7 +457,9 @@ class FormbuilderControllerTest extends TestCase
                     'checkbox' => 'checkbox',
                     'searchsingle' => 'searchsingle',
                     'searchmultiple' => 'searchmultiple'
-                ]));
+                ]
+            )
+        );
 
         foreach ($inputs as $index => $input) {
             if ($input['type'] === $randomMultipleChoiceInput) {
@@ -437,11 +477,15 @@ class FormbuilderControllerTest extends TestCase
 
         //see https://github.com/laravel/framework/issues/46455
         $response = $this->actingAs($this->user)
-            ->call('POST', 'api/internal/formbuilder/' . $this->project->slug,
+            ->call(
+                'POST',
+                'api/internal/formbuilder/' . $this->project->slug,
                 [],
                 [],
                 [],
-                [], $base64EncodedData);
+                [],
+                $base64EncodedData
+            );
 
         $response->assertStatus(422)
             ->assertJsonStructure([
@@ -453,7 +497,8 @@ class FormbuilderControllerTest extends TestCase
                     ]
                 ]
             ])
-            ->assertExactJson([
+            ->assertExactJson(
+                [
                     "errors" => [
                         [
                             "code" => "ec5_323",
@@ -476,7 +521,9 @@ class FormbuilderControllerTest extends TestCase
                     'checkbox' => 'checkbox',
                     'searchsingle' => 'searchsingle',
                     'searchmultiple' => 'searchmultiple'
-                ]));
+                ]
+            )
+        );
 
         foreach ($inputs as $index => $input) {
             if ($input['type'] === $randomMultipleChoiceInput) {
@@ -494,11 +541,15 @@ class FormbuilderControllerTest extends TestCase
 
         //see https://github.com/laravel/framework/issues/46455
         $response = $this->actingAs($this->user)
-            ->call('POST', 'api/internal/formbuilder/' . $this->project->slug,
+            ->call(
+                'POST',
+                'api/internal/formbuilder/' . $this->project->slug,
                 [],
                 [],
                 [],
-                [], $base64EncodedData);
+                [],
+                $base64EncodedData
+            );
 
         $response->assertStatus(422)
             ->assertJsonStructure([
@@ -510,7 +561,8 @@ class FormbuilderControllerTest extends TestCase
                     ]
                 ]
             ])
-            ->assertExactJson([
+            ->assertExactJson(
+                [
                     "errors" => [
                         [
                             "code" => "ec5_220",
@@ -535,11 +587,15 @@ class FormbuilderControllerTest extends TestCase
 
         //see https://github.com/laravel/framework/issues/46455
         $response = $this->actingAs($this->user)
-            ->call('POST', 'api/internal/formbuilder/' . $this->project->slug,
+            ->call(
+                'POST',
+                'api/internal/formbuilder/' . $this->project->slug,
                 [],
                 [],
                 [],
-                [], $base64EncodedData);
+                [],
+                $base64EncodedData
+            );
 
         $response->assertStatus(422)
             ->assertJsonStructure([
@@ -551,7 +607,8 @@ class FormbuilderControllerTest extends TestCase
                     ]
                 ]
             ])
-            ->assertExactJson([
+            ->assertExactJson(
+                [
                     "errors" => [
                         [
                             "code" => "ec5_44",
@@ -576,11 +633,15 @@ class FormbuilderControllerTest extends TestCase
 
         //see https://github.com/laravel/framework/issues/46455
         $response = $this->actingAs($this->user)
-            ->call('POST', 'api/internal/formbuilder/' . $this->project->slug,
+            ->call(
+                'POST',
+                'api/internal/formbuilder/' . $this->project->slug,
                 [],
                 [],
                 [],
-                [], $base64EncodedData);
+                [],
+                $base64EncodedData
+            );
 
         $response->assertStatus(422)
             ->assertJsonStructure([
@@ -592,7 +653,8 @@ class FormbuilderControllerTest extends TestCase
                     ]
                 ]
             ])
-            ->assertExactJson([
+            ->assertExactJson(
+                [
                     "errors" => [
                         [
                             "code" => "ec5_29",
@@ -617,11 +679,15 @@ class FormbuilderControllerTest extends TestCase
 
         //see https://github.com/laravel/framework/issues/46455
         $response = $this->actingAs($this->user)
-            ->call('POST', 'api/internal/formbuilder/' . $this->project->slug,
+            ->call(
+                'POST',
+                'api/internal/formbuilder/' . $this->project->slug,
                 [],
                 [],
                 [],
-                [], $base64EncodedData);
+                [],
+                $base64EncodedData
+            );
 
         $response->assertStatus(422)
             ->assertJsonStructure([
@@ -633,7 +699,8 @@ class FormbuilderControllerTest extends TestCase
                     ]
                 ]
             ])
-            ->assertExactJson([
+            ->assertExactJson(
+                [
                     "errors" => [
                         [
                             "code" => "ec5_29",
@@ -658,11 +725,15 @@ class FormbuilderControllerTest extends TestCase
 
         //see https://github.com/laravel/framework/issues/46455
         $response = $this->actingAs($this->user)
-            ->call('POST', 'api/internal/formbuilder/' . $this->project->slug,
+            ->call(
+                'POST',
+                'api/internal/formbuilder/' . $this->project->slug,
                 [],
                 [],
                 [],
-                [], $base64EncodedData);
+                [],
+                $base64EncodedData
+            );
 
         $response->assertStatus(422)
             ->assertJsonStructure([
@@ -674,7 +745,8 @@ class FormbuilderControllerTest extends TestCase
                     ]
                 ]
             ])
-            ->assertExactJson([
+            ->assertExactJson(
+                [
                     "errors" => [
                         [
                             "code" => "ec5_243",
@@ -699,11 +771,15 @@ class FormbuilderControllerTest extends TestCase
 
         //see https://github.com/laravel/framework/issues/46455
         $response = $this->actingAs($this->user)
-            ->call('POST', 'api/internal/formbuilder/' . $this->project->slug,
+            ->call(
+                'POST',
+                'api/internal/formbuilder/' . $this->project->slug,
                 [],
                 [],
                 [],
-                [], $base64EncodedData);
+                [],
+                $base64EncodedData
+            );
 
         $response->assertStatus(422)
             ->assertJsonStructure([
@@ -715,7 +791,8 @@ class FormbuilderControllerTest extends TestCase
                     ]
                 ]
             ])
-            ->assertExactJson([
+            ->assertExactJson(
+                [
                     "errors" => [
                         [
                             "code" => "ec5_67",
@@ -742,11 +819,15 @@ class FormbuilderControllerTest extends TestCase
 
         //see https://github.com/laravel/framework/issues/46455
         $response = $this->actingAs($this->user)
-            ->call('POST', 'api/internal/formbuilder/' . $this->project->slug,
+            ->call(
+                'POST',
+                'api/internal/formbuilder/' . $this->project->slug,
                 [],
                 [],
                 [],
-                [], $base64EncodedData);
+                [],
+                $base64EncodedData
+            );
 
         $response->assertStatus(422)
             ->assertJsonStructure([
@@ -758,7 +839,8 @@ class FormbuilderControllerTest extends TestCase
                     ]
                 ]
             ])
-            ->assertExactJson([
+            ->assertExactJson(
+                [
                     "errors" => [
                         [
                             "code" => "ec5_263",
@@ -788,15 +870,19 @@ class FormbuilderControllerTest extends TestCase
 
         //see https://github.com/laravel/framework/issues/46455
         $response = $this->actingAs($this->user)
-            ->call('POST', 'api/internal/formbuilder/' . $this->project->slug,
+            ->call(
+                'POST',
+                'api/internal/formbuilder/' . $this->project->slug,
                 [],
                 [],
                 [],
-                [], $base64EncodedData);
+                [],
+                $base64EncodedData
+            );
 
         try {
             $response->assertStatus(200);
-        } catch (\Exception $exception) {
+        } catch (Throwable $exception) {
             $this->logTestError($exception, $response);
         }
 
@@ -827,15 +913,19 @@ class FormbuilderControllerTest extends TestCase
 
         //see https://github.com/laravel/framework/issues/46455
         $response = $this->actingAs($this->user)
-            ->call('POST', 'api/internal/formbuilder/' . $this->project->slug,
+            ->call(
+                'POST',
+                'api/internal/formbuilder/' . $this->project->slug,
                 [],
                 [],
                 [],
-                [], $base64EncodedData);
+                [],
+                $base64EncodedData
+            );
 
         try {
             $response->assertStatus(200);
-        } catch (\Exception $exception) {
+        } catch (Throwable $exception) {
             $this->logTestError($exception, $response);
         }
 
@@ -867,7 +957,7 @@ class FormbuilderControllerTest extends TestCase
                 $jsonResponse['meta']['project_stats']['structure_last_updated']
             );
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
 
@@ -886,7 +976,7 @@ class FormbuilderControllerTest extends TestCase
                 (string)strtotime($afterUpdatedAt),
                 $jsonResponse['data']['attributes']['version']
             );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -914,15 +1004,19 @@ class FormbuilderControllerTest extends TestCase
 
         //see https://github.com/laravel/framework/issues/46455
         $response = $this->actingAs($this->user)
-            ->call('POST', 'api/internal/formbuilder/' . $this->project->slug,
+            ->call(
+                'POST',
+                'api/internal/formbuilder/' . $this->project->slug,
                 [],
                 [],
                 [],
-                [], $base64EncodedData);
+                [],
+                $base64EncodedData
+            );
 
         try {
             $response->assertStatus(200);
-        } catch (\Exception $exception) {
+        } catch (Throwable $exception) {
             $this->logTestError($exception, $response);
         }
 
@@ -964,15 +1058,19 @@ class FormbuilderControllerTest extends TestCase
 
         //see https://github.com/laravel/framework/issues/46455
         $response = $this->actingAs($this->user)
-            ->call('POST', 'api/internal/formbuilder/' . $this->project->slug,
+            ->call(
+                'POST',
+                'api/internal/formbuilder/' . $this->project->slug,
                 [],
                 [],
                 [],
-                [], $base64EncodedData);
+                [],
+                $base64EncodedData
+            );
 
         try {
             $response->assertStatus(200);
-        } catch (\Exception $exception) {
+        } catch (Throwable $exception) {
             $this->logTestError($exception, $response);
         }
 

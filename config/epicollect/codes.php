@@ -338,4 +338,5 @@ return [
     "ec5_401" => "Chunk branch entries deleted successfully.",
     "ec5_402" => "Session expired. Please export your form(s) and login again.",
     "ec5_403" => "Logo file size too large. Max file size is :max",
+    "ec5_404" => "The website is currently undergoing maintenance.  <br/> Please export your form(s) and retry later.",
 ];
