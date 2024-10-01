@@ -32,8 +32,7 @@
     "symfony/mailgun-mailer": "^7.1",
     "symfony/http-client": "^7.1",
     "ext-posix": "*",
-    "laravolt/avatar": "^5.1",
-    "ext-http": "*"
+    "laravolt/avatar": "^5.1"
   },
   "require-dev": {
     "ext-xdebug": "*",
