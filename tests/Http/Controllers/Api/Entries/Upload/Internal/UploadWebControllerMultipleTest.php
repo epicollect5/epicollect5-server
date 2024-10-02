@@ -2,6 +2,8 @@
 
 namespace Tests\Http\Controllers\Api\Entries\Upload\Internal;
 
+use ec5\Libraries\Generators\EntryGenerator;
+use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
@@ -9,12 +11,8 @@ use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
-use Exception;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Tests\Generators\EntryGenerator;
-use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
-
 
 /* This class does not follow optimal testing practices
    since the application does not get rebooted before each request
@@ -89,11 +87,15 @@ class UploadWebControllerMultipleTest extends TestCase
         $response = [];
         try {
             $response[] = $this->actingAs($user)
-                ->call('POST', 'api/internal/formbuilder/' . $project->slug,
+                ->call(
+                    'POST',
+                    'api/internal/formbuilder/' . $project->slug,
                     [],
                     [],
                     [],
-                    [], $base64EncodedData);
+                    [],
+                    $base64EncodedData
+                );
 
             /// dd($response[0]);
 
@@ -125,7 +127,8 @@ class UploadWebControllerMultipleTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post('api/internal/web-upload/' . $this->project->slug, $entry);
             $response[0]->assertStatus(200)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "data" => [
                             "code" => "ec5_237",
                             "title" => "Entry successfully uploaded."
@@ -172,7 +175,8 @@ class UploadWebControllerMultipleTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post('api/internal/web-upload/' . $this->project->slug, $entry);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_323",
@@ -225,7 +229,8 @@ class UploadWebControllerMultipleTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post('api/internal/web-upload/' . $this->project->slug, $entry);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_220",

@@ -3,13 +3,13 @@
 namespace Database\Seeders;
 
 use App;
+use ec5\Libraries\Generators\EntryGenerator;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use ec5\Traits\Eloquent\Remover;
 use Illuminate\Database\Seeder;
-use Tests\Generators\EntryGenerator;
 
 class EntriesSeeder extends Seeder
 {
@@ -112,7 +112,7 @@ class EntriesSeeder extends Seeder
         //loop all the child forms, if any
         $forms = array_get($projectDefinition, 'data.project.forms');
         foreach ($forms as $formIndex => $form) {
-            if($formIndex > 0) {
+            if ($formIndex > 0) {
 
                 $output->writeln("\rAdding child entries for form level $formIndex...    ");
 

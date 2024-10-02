@@ -2,6 +2,8 @@
 
 namespace Tests\Http\Controllers\Api\Entries\Upload\Internal;
 
+use ec5\Libraries\Generators\EntryGenerator;
+use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
@@ -13,8 +15,6 @@ use Exception;
 use Faker\Factory as Faker;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Ramsey\Uuid\Uuid;
-use Tests\Generators\EntryGenerator;
-use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 
 class UploadWebControllerLimitsTest extends TestCase
@@ -107,11 +107,15 @@ class UploadWebControllerLimitsTest extends TestCase
 
             //see https://github.com/laravel/framework/issues/46455
             $response = $this->actingAs($user)
-                ->call('POST', 'api/internal/formbuilder/' . $project->slug,
+                ->call(
+                    'POST',
+                    'api/internal/formbuilder/' . $project->slug,
                     [],
                     [],
                     [],
-                    [], $base64EncodedData);
+                    [],
+                    $base64EncodedData
+                );
 
             $response->assertStatus(200);
             $this->assertSame(json_decode($response->getContent(), true), $projectDefinition);
@@ -177,7 +181,8 @@ class UploadWebControllerLimitsTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $entry);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_250",
@@ -204,7 +209,8 @@ class UploadWebControllerLimitsTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $entry);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_250",
@@ -231,7 +237,8 @@ class UploadWebControllerLimitsTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $entry);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_250",
@@ -258,7 +265,8 @@ class UploadWebControllerLimitsTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $entry);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_250",
@@ -285,7 +293,8 @@ class UploadWebControllerLimitsTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $entry);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_250",
@@ -325,7 +334,8 @@ class UploadWebControllerLimitsTest extends TestCase
             //post the branch entry
             $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $branchEntry);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_250",
@@ -366,7 +376,8 @@ class UploadWebControllerLimitsTest extends TestCase
             //post the branch entry
             $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $branchEntry);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_250",
@@ -407,7 +418,8 @@ class UploadWebControllerLimitsTest extends TestCase
             //post the branch entry
             $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $branchEntry);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_250",
@@ -448,7 +460,8 @@ class UploadWebControllerLimitsTest extends TestCase
             //post the branch entry
             $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $branchEntry);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_250",
@@ -489,7 +502,8 @@ class UploadWebControllerLimitsTest extends TestCase
             //post the branch entry
             $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $branchEntry);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_250",

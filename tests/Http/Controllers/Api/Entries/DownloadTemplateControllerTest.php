@@ -2,6 +2,7 @@
 
 namespace Tests\Http\Controllers\Api\Entries;
 
+use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Libraries\Utilities\Common;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Models\Entries\BranchEntry;
@@ -12,16 +13,14 @@ use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use ec5\Traits\Assertions;
-use Exception;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Str;
-use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
-use Illuminate\Support\Arr;
 
 class DownloadTemplateControllerTest extends TestCase
 {
-    use DatabaseTransactions, Assertions;
+    use DatabaseTransactions;
+    use Assertions;
 
     private $user;
     private $projectDefinition;
@@ -76,11 +75,15 @@ class DownloadTemplateControllerTest extends TestCase
         $response = [];
         try {
             $response[] = $this->actingAs($user)
-                ->call('POST', 'api/internal/formbuilder/' . $project->slug,
+                ->call(
+                    'POST',
+                    'api/internal/formbuilder/' . $project->slug,
                     [],
                     [],
                     [],
-                    [], $base64EncodedData);
+                    [],
+                    $base64EncodedData
+                );
 
             $response[0]->assertStatus(200);
             $this->assertSame(json_decode($response[0]->getContent(), true), $projectDefinition);
@@ -195,7 +198,8 @@ class DownloadTemplateControllerTest extends TestCase
                     "headers" => []
                 ]
             ])
-            ->assertExactJson([
+            ->assertExactJson(
+                [
                     "data" => [
                         "headers" => ["ec5_uuid", "1_Name"]
                     ]
@@ -291,7 +295,8 @@ class DownloadTemplateControllerTest extends TestCase
                     "headers" => []
                 ]
             ])
-            ->assertExactJson([
+            ->assertExactJson(
+                [
                     "data" => [
                         "headers" => ["ec5_uuid", "1_Name"]
                     ]
@@ -319,7 +324,8 @@ class DownloadTemplateControllerTest extends TestCase
                     ]
                 ]
             ])
-            ->assertExactJson([
+            ->assertExactJson(
+                [
                     "errors" => [
                         [
                             "code" => "ec5_21",

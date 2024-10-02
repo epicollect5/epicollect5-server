@@ -2,6 +2,7 @@
 
 namespace Tests\Http\Controllers\Web\Project;
 
+use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
@@ -12,7 +13,6 @@ use Faker\Generator;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\UploadedFile;
 use Storage;
-use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 use Throwable;
 

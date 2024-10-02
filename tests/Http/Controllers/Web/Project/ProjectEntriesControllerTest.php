@@ -2,6 +2,8 @@
 
 namespace Tests\Http\Controllers\Web\Project;
 
+use ec5\Libraries\Generators\EntryGenerator;
+use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
@@ -12,8 +14,6 @@ use ec5\Models\User\User;
 use Exception;
 use Faker\Factory as Faker;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Tests\Generators\EntryGenerator;
-use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 
 class ProjectEntriesControllerTest extends TestCase

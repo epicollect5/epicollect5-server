@@ -2,6 +2,7 @@
 
 namespace Tests\Http\Controllers\Api\Project;
 
+use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Models\OAuth\OAuthClientProject;
 use ec5\Models\Project\Project;
@@ -10,16 +11,12 @@ use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use ec5\Traits\Assertions;
-use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Passport\ClientRepository;
 use PHPUnit\Framework\Attributes\Depends;
-use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
-
 
 class ProjectControllerExportTest extends TestCase
 {
@@ -28,7 +25,7 @@ class ProjectControllerExportTest extends TestCase
     private $user;
     private $project;
     private $projectStructure;
-    const DRIVER = 'web';
+    public const DRIVER = 'web';
 
     public function setup(): void
     {
@@ -108,7 +105,9 @@ class ProjectControllerExportTest extends TestCase
         //add the project and client
         $clientRepository = new ClientRepository();
         $client = $clientRepository->create(
-            $user->id, 'Test App', ''
+            $user->id,
+            'Test App',
+            ''
         )->makeVisible('secret');
 
         factory(OAuthClientProject::class)->create([

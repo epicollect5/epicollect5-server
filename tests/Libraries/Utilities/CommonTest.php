@@ -2,11 +2,11 @@
 
 namespace Tests\Libraries\Utilities;
 
+use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Libraries\Utilities\Common;
 use ec5\Libraries\Utilities\Generators;
-use Tests\Generators\ProjectDefinitionGenerator;
-use Tests\TestCase;
 use ec5\Traits\Assertions;
+use Tests\TestCase;
 
 class CommonTest extends TestCase
 {

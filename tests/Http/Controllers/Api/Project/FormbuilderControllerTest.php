@@ -3,6 +3,7 @@
 namespace Tests\Http\Controllers\Api\Project;
 
 use Carbon\Carbon;
+use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectRole;
@@ -13,7 +14,6 @@ use Faker\Factory as Faker;
 use Faker\Generator;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Str;
-use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 use Throwable;
 
@@ -97,6 +97,53 @@ class FormbuilderControllerTest extends TestCase
 
         $this->assertSame(json_decode($response->getContent(), true), $this->projectDefinition);
     }
+
+    //todo: this does not work
+    //    public function test_should_not_save_project()
+    //    {
+    //        // Temporarily change the session driver for this test to 'file'
+    //        config(['session.driver' => 'file']);
+    //        // Convert data array to JSON
+    //        $jsonData = json_encode($this->projectDefinition);
+    //        // Gzip Compression
+    //        $gzippedData = gzencode($jsonData); // '9' is the compression level (0-9, where 9 is highest)
+    //        // Base64 Encoding
+    //        $base64EncodedData = base64_encode($gzippedData);
+    //
+    //
+    //        $this->actingAs($this->user);
+    //
+    //        // Step 2: Travel forward in time, beyond session lifetime (default is 24 hours)
+    //        $sessionLifetimeMinutes = config('session.lifetime'); // Session duration from config
+    //        $travelDuration = $sessionLifetimeMinutes + 1; // Travel just beyond the session expiry
+    //        $this->travel($travelDuration)->minutes();
+    //
+    //        Session::flush(); // Clear session data
+    //        session()->invalidate(); // This will destroy the session and simulate an expired session
+    //
+    //        // Simulate a token mismatch by setting an invalid CSRF token
+    //        $invalidCsrfToken = 'invalid_token';
+    //        session()->put('_token', $invalidCsrfToken);
+    //
+    //        //see https://github.com/laravel/framework/issues/46455
+    //        $response = $this
+    //            ->call(
+    //                'POST',
+    //                'api/internal/formbuilder/' . $this->project->slug,
+    //                [],
+    //                [],
+    //                [],
+    //                ['X-CSRF-TOKEN' => $invalidCsrfToken], // Simulating an invalid token,
+    //                $base64EncodedData
+    //            );
+    //        try {
+    //            $response->assertStatus(200);
+    //        } catch (Throwable $exception) {
+    //            $this->logTestError($exception, $response);
+    //        }
+    //
+    //        $this->assertSame(json_decode($response->getContent(), true), $this->projectDefinition);
+    //    }
 
     /* This method does not follow optimal testing practices
     since the application does not get rebooted before each request

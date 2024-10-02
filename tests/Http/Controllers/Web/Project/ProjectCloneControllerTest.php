@@ -3,6 +3,7 @@
 namespace Tests\Http\Controllers\Web\Project;
 
 use Auth;
+use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Libraries\Utilities\Common;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Models\Project\Project;
@@ -13,7 +14,6 @@ use ec5\Models\User\User;
 use ec5\Traits\Assertions;
 use Faker\Factory as Faker;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 
 class ProjectCloneControllerTest extends TestCase

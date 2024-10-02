@@ -2,6 +2,8 @@
 
 namespace Tests\Http\Controllers\Api\Entries\Upload\Internal\Required;
 
+use ec5\Libraries\Generators\EntryGenerator;
+use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
@@ -13,13 +15,12 @@ use ec5\Traits\Assertions;
 use Exception;
 use Faker\Factory as Faker;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Tests\Generators\EntryGenerator;
-use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 
 class RequiredFormGroupTest extends TestCase
 {
-    use DatabaseTransactions, Assertions;
+    use DatabaseTransactions;
+    use Assertions;
 
     public function setUp(): void
     {
@@ -28,7 +29,8 @@ class RequiredFormGroupTest extends TestCase
         User::where(
             'email',
             'like',
-            '%example.net%')
+            '%example.net%'
+        )
             ->delete();
 
         $this->faker = Faker::create();
@@ -100,8 +102,8 @@ class RequiredFormGroupTest extends TestCase
                 $groupInputs = $input['group'];
                 foreach ($groupInputs as $groupInputIndex => $groupInput) {
                     if ($groupInput['type'] === config('epicollect.strings.inputs_type.text')) {
-                        $_inputs =& $this->projectDefinition['data']['project']['forms'][0]['inputs'];
-                        $_group =& $_inputs[$inputIndex]['group'][$groupInputIndex];
+                        $_inputs = & $this->projectDefinition['data']['project']['forms'][0]['inputs'];
+                        $_group = & $_inputs[$inputIndex]['group'][$groupInputIndex];
                         $_group['is_required'] = true;
                         $groupInputRef = $groupInput['ref'];
                         break;
@@ -138,7 +140,8 @@ class RequiredFormGroupTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post('api/internal/web-upload/' . $this->project->slug, $payload);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_21",
@@ -168,8 +171,8 @@ class RequiredFormGroupTest extends TestCase
                 $groupInputs = $input['group'];
                 foreach ($groupInputs as $groupInputIndex => $groupInput) {
                     if ($groupInput['type'] === config('epicollect.strings.inputs_type.integer')) {
-                        $_inputs =& $this->projectDefinition['data']['project']['forms'][0]['inputs'];
-                        $_group =& $_inputs[$inputIndex]['group'][$groupInputIndex];
+                        $_inputs = & $this->projectDefinition['data']['project']['forms'][0]['inputs'];
+                        $_group = & $_inputs[$inputIndex]['group'][$groupInputIndex];
                         $_group['is_required'] = true;
                         $groupInputRef = $groupInput['ref'];
                         break;
@@ -206,7 +209,8 @@ class RequiredFormGroupTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post('api/internal/web-upload/' . $this->project->slug, $payload);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_21",
@@ -236,8 +240,8 @@ class RequiredFormGroupTest extends TestCase
                 $groupInputs = $input['group'];
                 foreach ($groupInputs as $groupInputIndex => $groupInput) {
                     if ($groupInput['type'] === config('epicollect.strings.inputs_type.decimal')) {
-                        $_inputs =& $this->projectDefinition['data']['project']['forms'][0]['inputs'];
-                        $_group =& $_inputs[$inputIndex]['group'][$groupInputIndex];
+                        $_inputs = & $this->projectDefinition['data']['project']['forms'][0]['inputs'];
+                        $_group = & $_inputs[$inputIndex]['group'][$groupInputIndex];
                         $_group['is_required'] = true;
                         $groupInputRef = $groupInput['ref'];
                         break;
@@ -274,7 +278,8 @@ class RequiredFormGroupTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post('api/internal/web-upload/' . $this->project->slug, $payload);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_21",
@@ -304,8 +309,8 @@ class RequiredFormGroupTest extends TestCase
                 $groupInputs = $input['group'];
                 foreach ($groupInputs as $groupInputIndex => $groupInput) {
                     if ($groupInput['type'] === config('epicollect.strings.inputs_type.phone')) {
-                        $_inputs =& $this->projectDefinition['data']['project']['forms'][0]['inputs'];
-                        $_group =& $_inputs[$inputIndex]['group'][$groupInputIndex];
+                        $_inputs = & $this->projectDefinition['data']['project']['forms'][0]['inputs'];
+                        $_group = & $_inputs[$inputIndex]['group'][$groupInputIndex];
                         $_group['is_required'] = true;
                         $groupInputRef = $groupInput['ref'];
                         break;
@@ -342,7 +347,8 @@ class RequiredFormGroupTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post('api/internal/web-upload/' . $this->project->slug, $payload);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_21",
@@ -372,8 +378,8 @@ class RequiredFormGroupTest extends TestCase
                 $groupInputs = $input['group'];
                 foreach ($groupInputs as $groupInputIndex => $groupInput) {
                     if ($groupInput['type'] === config('epicollect.strings.inputs_type.date')) {
-                        $_inputs =& $this->projectDefinition['data']['project']['forms'][0]['inputs'];
-                        $_group =& $_inputs[$inputIndex]['group'][$groupInputIndex];
+                        $_inputs = & $this->projectDefinition['data']['project']['forms'][0]['inputs'];
+                        $_group = & $_inputs[$inputIndex]['group'][$groupInputIndex];
                         $_group['is_required'] = true;
                         $groupInputRef = $groupInput['ref'];
                         break;
@@ -410,7 +416,8 @@ class RequiredFormGroupTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post('api/internal/web-upload/' . $this->project->slug, $payload);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_21",
@@ -440,8 +447,8 @@ class RequiredFormGroupTest extends TestCase
                 $groupInputs = $input['group'];
                 foreach ($groupInputs as $groupInputIndex => $groupInput) {
                     if ($groupInput['type'] === config('epicollect.strings.inputs_type.time')) {
-                        $_inputs =& $this->projectDefinition['data']['project']['forms'][0]['inputs'];
-                        $_group =& $_inputs[$inputIndex]['group'][$groupInputIndex];
+                        $_inputs = & $this->projectDefinition['data']['project']['forms'][0]['inputs'];
+                        $_group = & $_inputs[$inputIndex]['group'][$groupInputIndex];
                         $_group['is_required'] = true;
                         $groupInputRef = $groupInput['ref'];
                         break;
@@ -478,7 +485,8 @@ class RequiredFormGroupTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post('api/internal/web-upload/' . $this->project->slug, $payload);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_21",
@@ -508,8 +516,8 @@ class RequiredFormGroupTest extends TestCase
                 $groupInputs = $input['group'];
                 foreach ($groupInputs as $groupInputIndex => $groupInput) {
                     if ($groupInput['type'] === config('epicollect.strings.inputs_type.textarea')) {
-                        $_inputs =& $this->projectDefinition['data']['project']['forms'][0]['inputs'];
-                        $_group =& $_inputs[$inputIndex]['group'][$groupInputIndex];
+                        $_inputs = & $this->projectDefinition['data']['project']['forms'][0]['inputs'];
+                        $_group = & $_inputs[$inputIndex]['group'][$groupInputIndex];
                         $_group['is_required'] = true;
                         $groupInputRef = $groupInput['ref'];
                         break;
@@ -546,7 +554,8 @@ class RequiredFormGroupTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post('api/internal/web-upload/' . $this->project->slug, $payload);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_21",
@@ -576,8 +585,8 @@ class RequiredFormGroupTest extends TestCase
                 $groupInputs = $input['group'];
                 foreach ($groupInputs as $groupInputIndex => $groupInput) {
                     if ($groupInput['type'] === config('epicollect.strings.inputs_type.radio')) {
-                        $_inputs =& $this->projectDefinition['data']['project']['forms'][0]['inputs'];
-                        $_group =& $_inputs[$inputIndex]['group'][$groupInputIndex];
+                        $_inputs = & $this->projectDefinition['data']['project']['forms'][0]['inputs'];
+                        $_group = & $_inputs[$inputIndex]['group'][$groupInputIndex];
                         $_group['is_required'] = true;
                         $groupInputRef = $groupInput['ref'];
                         break;
@@ -614,7 +623,8 @@ class RequiredFormGroupTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post('api/internal/web-upload/' . $this->project->slug, $payload);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_21",
@@ -644,8 +654,8 @@ class RequiredFormGroupTest extends TestCase
                 $groupInputs = $input['group'];
                 foreach ($groupInputs as $groupInputIndex => $groupInput) {
                     if ($groupInput['type'] === config('epicollect.strings.inputs_type.dropdown')) {
-                        $_inputs =& $this->projectDefinition['data']['project']['forms'][0]['inputs'];
-                        $_group =& $_inputs[$inputIndex]['group'][$groupInputIndex];
+                        $_inputs = & $this->projectDefinition['data']['project']['forms'][0]['inputs'];
+                        $_group = & $_inputs[$inputIndex]['group'][$groupInputIndex];
                         $_group['is_required'] = true;
                         $groupInputRef = $groupInput['ref'];
                         break;
@@ -682,7 +692,8 @@ class RequiredFormGroupTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post('api/internal/web-upload/' . $this->project->slug, $payload);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_21",
@@ -712,8 +723,8 @@ class RequiredFormGroupTest extends TestCase
                 $groupInputs = $input['group'];
                 foreach ($groupInputs as $groupInputIndex => $groupInput) {
                     if ($groupInput['type'] === config('epicollect.strings.inputs_type.checkbox')) {
-                        $_inputs =& $this->projectDefinition['data']['project']['forms'][0]['inputs'];
-                        $_group =& $_inputs[$inputIndex]['group'][$groupInputIndex];
+                        $_inputs = & $this->projectDefinition['data']['project']['forms'][0]['inputs'];
+                        $_group = & $_inputs[$inputIndex]['group'][$groupInputIndex];
                         $_group['is_required'] = true;
                         $groupInputRef = $groupInput['ref'];
                         break;
@@ -750,7 +761,8 @@ class RequiredFormGroupTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post('api/internal/web-upload/' . $this->project->slug, $payload);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_21",
@@ -780,8 +792,8 @@ class RequiredFormGroupTest extends TestCase
                 $groupInputs = $input['group'];
                 foreach ($groupInputs as $groupInputIndex => $groupInput) {
                     if ($groupInput['type'] === config('epicollect.strings.inputs_type.searchsingle')) {
-                        $_inputs =& $this->projectDefinition['data']['project']['forms'][0]['inputs'];
-                        $_group =& $_inputs[$inputIndex]['group'][$groupInputIndex];
+                        $_inputs = & $this->projectDefinition['data']['project']['forms'][0]['inputs'];
+                        $_group = & $_inputs[$inputIndex]['group'][$groupInputIndex];
                         $_group['is_required'] = true;
                         $groupInputRef = $groupInput['ref'];
                         break 2;
@@ -791,8 +803,8 @@ class RequiredFormGroupTest extends TestCase
                 //inject searchsingle question if missing
                 $searchsingleInput = ProjectDefinitionGenerator::createSearchSingleInput($input['ref']);
                 $searchsingleInput['is_required'] = true;
-                $_inputs =& $this->projectDefinition['data']['project']['forms'][0]['inputs'];
-                $_group =& $_inputs[$inputIndex]['group'];
+                $_inputs = & $this->projectDefinition['data']['project']['forms'][0]['inputs'];
+                $_group = & $_inputs[$inputIndex]['group'];
                 $_group[] = $searchsingleInput;
                 $groupInputRef = $searchsingleInput['ref'];
                 //override entry generator with new project definition
@@ -826,7 +838,8 @@ class RequiredFormGroupTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post('api/internal/web-upload/' . $this->project->slug, $payload);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_21",
@@ -856,8 +869,8 @@ class RequiredFormGroupTest extends TestCase
                 $groupInputs = $input['group'];
                 foreach ($groupInputs as $groupInputIndex => $groupInput) {
                     if ($groupInput['type'] === config('epicollect.strings.inputs_type.searchmultiple')) {
-                        $_inputs =& $this->projectDefinition['data']['project']['forms'][0]['inputs'];
-                        $_group =& $_inputs[$inputIndex]['group'][$groupInputIndex];
+                        $_inputs = & $this->projectDefinition['data']['project']['forms'][0]['inputs'];
+                        $_group = & $_inputs[$inputIndex]['group'][$groupInputIndex];
                         $_group['is_required'] = true;
                         $groupInputRef = $groupInput['ref'];
                         break;
@@ -866,8 +879,8 @@ class RequiredFormGroupTest extends TestCase
                 //inject searchmultiple question if missing
                 $searchmultipleInput = ProjectDefinitionGenerator::createSearchMultipleInput($input['ref']);
                 $searchmultipleInput['is_required'] = true;
-                $_inputs =& $this->projectDefinition['data']['project']['forms'][0]['inputs'];
-                $_group =& $_inputs[$inputIndex]['group'];
+                $_inputs = & $this->projectDefinition['data']['project']['forms'][0]['inputs'];
+                $_group = & $_inputs[$inputIndex]['group'];
                 $_group[] = $searchmultipleInput;
                 $groupInputRef = $searchmultipleInput['ref'];
                 //override entry generator with new project definition
@@ -900,7 +913,8 @@ class RequiredFormGroupTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post('api/internal/web-upload/' . $this->project->slug, $payload);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_21",
@@ -930,8 +944,8 @@ class RequiredFormGroupTest extends TestCase
                 $groupInputs = $input['group'];
                 foreach ($groupInputs as $groupInputIndex => $groupInput) {
                     if ($groupInput['type'] === config('epicollect.strings.inputs_type.barcode')) {
-                        $_inputs =& $this->projectDefinition['data']['project']['forms'][0]['inputs'];
-                        $_group =& $_inputs[$inputIndex]['group'][$groupInputIndex];
+                        $_inputs = & $this->projectDefinition['data']['project']['forms'][0]['inputs'];
+                        $_group = & $_inputs[$inputIndex]['group'][$groupInputIndex];
                         $_group['is_required'] = true;
                         $groupInputRef = $groupInput['ref'];
                         break;
@@ -968,7 +982,8 @@ class RequiredFormGroupTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post('api/internal/web-upload/' . $this->project->slug, $payload);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_21",

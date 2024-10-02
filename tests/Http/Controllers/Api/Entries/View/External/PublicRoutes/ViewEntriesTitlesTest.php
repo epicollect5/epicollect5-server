@@ -2,6 +2,8 @@
 
 namespace Tests\Http\Controllers\Api\Entries\View\External\PublicRoutes;
 
+use ec5\Libraries\Generators\EntryGenerator;
+use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
@@ -12,16 +14,14 @@ use ec5\Models\User\User;
 use ec5\Services\Mapping\ProjectMappingService;
 use ec5\Services\Project\ProjectExtraService;
 use ec5\Traits\Assertions;
-use Exception;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Tests\Generators\EntryGenerator;
-use Tests\Generators\ProjectDefinitionGenerator;
-use Tests\TestCase;
 use Faker\Factory as Faker;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Tests\TestCase;
 
 class ViewEntriesTitlesTest extends TestCase
 {
-    use DatabaseTransactions, Assertions;
+    use DatabaseTransactions;
+    use Assertions;
 
     private $endpoint = 'api/entries/';
 
@@ -32,7 +32,8 @@ class ViewEntriesTitlesTest extends TestCase
         User::where(
             'email',
             'like',
-            '%example.net%')
+            '%example.net%'
+        )
             ->delete();
 
         $this->faker = Faker::create();
@@ -137,7 +138,8 @@ class ViewEntriesTitlesTest extends TestCase
             //timestamp
             $this->assertEquals(
                 str_replace(' ', 'T', $entryFromDB->created_at) . '.000Z',
-                $entryFromResponse['entry']['created_at']);
+                $entryFromResponse['entry']['created_at']
+            );
             //answers
             $entryFromDBEntryData = json_decode($entryFromDB->entry_data, true);
             $this->assertEquals($entryFromDBEntryData['entry']['answers'], $entryFromResponse['entry']['answers']);
@@ -226,7 +228,8 @@ class ViewEntriesTitlesTest extends TestCase
             //timestamp
             $this->assertEquals(
                 str_replace(' ', 'T', $childEntryFromDB->created_at) . '.000Z',
-                $entryFromResponse['entry']['created_at']);
+                $entryFromResponse['entry']['created_at']
+            );
             //answers
             $childEntryFromDBEntryData = json_decode($childEntryFromDB->entry_data, true);
             $this->assertEquals($childEntryFromDBEntryData['entry']['answers'], $entryFromResponse['entry']['answers']);
@@ -292,7 +295,8 @@ class ViewEntriesTitlesTest extends TestCase
                 $formRef,
                 $branches[0]['branch'],
                 $parentEntryFromDB->uuid,
-                $branchRef);
+                $branchRef
+            );
             $entryRowBundle = $this->entryGenerator->createBranchEntryRow(
                 $this->user,
                 $this->project,
@@ -334,7 +338,8 @@ class ViewEntriesTitlesTest extends TestCase
             //timestamp
             $this->assertEquals(
                 str_replace(' ', 'T', $branchEntryFromDB->created_at) . '.000Z',
-                $entryFromResponse['branch_entry']['created_at']);
+                $entryFromResponse['branch_entry']['created_at']
+            );
             //answers
             $branchEntryFromDBEntryData = json_decode($branchEntryFromDB->entry_data, true);
             $this->assertEquals($branchEntryFromDBEntryData['branch_entry']['answers'], $entryFromResponse['branch_entry']['answers']);
@@ -406,7 +411,8 @@ class ViewEntriesTitlesTest extends TestCase
                         $formRef,
                         $branch['branch'],
                         $entryFromDB->uuid,
-                        $branch['ref']);
+                        $branch['ref']
+                    );
                     $entryRowBundle = $this->entryGenerator->createBranchEntryRow(
                         $this->user,
                         $this->project,
@@ -453,7 +459,8 @@ class ViewEntriesTitlesTest extends TestCase
             foreach ($branchEntries as $branchEntry) {
                 $this->assertEquals(
                     $ownerEntryFromDB->uuid,
-                    $branchEntry['relationships']['branch']['data']['owner_entry_uuid']);
+                    $branchEntry['relationships']['branch']['data']['owner_entry_uuid']
+                );
 
             }
         } catch (\Throwable $e) {

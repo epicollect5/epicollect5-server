@@ -3,12 +3,12 @@
 namespace Database\Seeders;
 
 use App;
+use ec5\Libraries\Generators\MediaGenerator;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectStructure;
 use Illuminate\Database\Seeder;
-use Tests\Generators\MediaGenerator;
 
 class MediaSeeder extends Seeder
 {
@@ -28,7 +28,7 @@ class MediaSeeder extends Seeder
             return;
         }
         $skipProjectNameConfirm = false;
-        if($projectId === null) {
+        if ($projectId === null) {
             $projectId = (int)$this->command->ask('Please enter the project ID', 7);
         } else {
             $skipProjectNameConfirm = true;
@@ -42,7 +42,7 @@ class MediaSeeder extends Seeder
 
         // Confirm project name?
         $projectName = $project->name;
-        if(!$skipProjectNameConfirm) {
+        if (!$skipProjectNameConfirm) {
             $proceed = strtolower($this->command->ask("The project name is '$projectName'. Proceed? (y/n)", 'n'));
 
             if ($proceed !== 'y') {
@@ -57,7 +57,7 @@ class MediaSeeder extends Seeder
         $entries = Entry::where('project_id', $project->id)->get();
         $branchEntries = BranchEntry::where('project_id', $project->id)->get();
 
-        if(sizeof($entries) === 0) {
+        if (sizeof($entries) === 0) {
             $this->command->error('No entries found for this project.');
             return;
         }
@@ -79,7 +79,7 @@ class MediaSeeder extends Seeder
                 }
 
                 //get all media questions in branches
-                if($type === config('epicollect.strings.inputs_type.branch')) {
+                if ($type === config('epicollect.strings.inputs_type.branch')) {
                     $branchInputs = $input['branch'];
                     foreach ($branchInputs as $branchInput) {
                         $type = $branchInput['type'];
@@ -93,7 +93,7 @@ class MediaSeeder extends Seeder
                         }
 
                         //get all media questions in nested group(s)
-                        if($type === config('epicollect.strings.inputs_type.group')) {
+                        if ($type === config('epicollect.strings.inputs_type.group')) {
                             $nestedGroupInputs = $branchInput['group'];
                             foreach ($nestedGroupInputs as $nestedGroupInput) {
                                 $type = $nestedGroupInput['type'];
@@ -111,7 +111,7 @@ class MediaSeeder extends Seeder
                 }
 
                 //get all media questions in groups
-                if($type === config('epicollect.strings.inputs_type.group')) {
+                if ($type === config('epicollect.strings.inputs_type.group')) {
                     $groupInputs = $input['group'];
                     foreach ($groupInputs as $groupInput) {
                         $type = $groupInput['type'];
@@ -169,7 +169,7 @@ class MediaSeeder extends Seeder
 
         $output->writeln('...');
 
-        if(sizeof($branchEntries) === 0) {
+        if (sizeof($branchEntries) === 0) {
             // Final message
             $output->writeln("No branch entries found for this project.");
             $output->writeln("All done.");

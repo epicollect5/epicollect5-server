@@ -2,6 +2,7 @@
 
 namespace Tests\Http\Controllers;
 
+use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
@@ -10,7 +11,6 @@ use ec5\Models\User\User;
 use Faker\Factory as Faker;
 use Faker\Generator;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 
 class MaintenanceModeTest extends TestCase

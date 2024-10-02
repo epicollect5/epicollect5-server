@@ -1,11 +1,11 @@
 <?php
 
-namespace Tests\Generators;
+namespace ec5\Libraries\Generators;
 
 use Carbon\Carbon;
 use ec5\Libraries\Utilities\Generators;
-use Illuminate\Support\Str;
 use Faker\Factory as Faker;
+use Illuminate\Support\Str;
 
 class ProjectDefinitionGenerator
 {

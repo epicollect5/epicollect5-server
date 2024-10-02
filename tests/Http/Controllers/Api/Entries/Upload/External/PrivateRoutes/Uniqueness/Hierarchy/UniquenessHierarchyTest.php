@@ -2,6 +2,8 @@
 
 namespace Tests\Http\Controllers\Api\Entries\Upload\External\PrivateRoutes\Uniqueness\Hierarchy;
 
+use ec5\Libraries\Generators\EntryGenerator;
+use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Libraries\Utilities\Common;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
@@ -12,18 +14,15 @@ use ec5\Models\User\User;
 use ec5\Services\Mapping\ProjectMappingService;
 use ec5\Services\Project\ProjectExtraService;
 use ec5\Traits\Assertions;
-use Exception;
 use Faker\Factory as Faker;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Auth;
-use Tests\Generators\EntryGenerator;
-use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
-use Illuminate\Support\Arr;
 
 class UniquenessHierarchyTest extends TestCase
 {
-    use DatabaseTransactions, Assertions;
+    use DatabaseTransactions;
+    use Assertions;
 
     private $endpoint = 'api/upload/';
 
@@ -34,7 +33,8 @@ class UniquenessHierarchyTest extends TestCase
         User::where(
             'email',
             'like',
-            '%example.net%')
+            '%example.net%'
+        )
             ->delete();
 
         $this->faker = Faker::create();
@@ -189,11 +189,14 @@ class UniquenessHierarchyTest extends TestCase
         $response = [];
         try {
             //perform a web upload
-            $response[] = $this->actingAs($this->user)->post('api/upload/' . $this->project->slug,
+            $response[] = $this->actingAs($this->user)->post(
+                'api/upload/' . $this->project->slug,
                 $payload,
-                ['Authorization' => 'Bearer ' . $jwt]);
+                ['Authorization' => 'Bearer ' . $jwt]
+            );
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -304,11 +307,14 @@ class UniquenessHierarchyTest extends TestCase
         $response = [];
         try {
             //perform a web upload
-            $response[] = $this->actingAs($this->user)->post('api/upload/' . $this->project->slug,
+            $response[] = $this->actingAs($this->user)->post(
+                'api/upload/' . $this->project->slug,
                 $payload,
-                ['Authorization' => 'Bearer ' . $jwt]);
+                ['Authorization' => 'Bearer ' . $jwt]
+            );
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -419,11 +425,14 @@ class UniquenessHierarchyTest extends TestCase
         $response = [];
         try {
             //perform a web upload
-            $response[] = $this->actingAs($this->user)->post('api/upload/' . $this->project->slug,
+            $response[] = $this->actingAs($this->user)->post(
+                'api/upload/' . $this->project->slug,
                 $payload,
-                ['Authorization' => 'Bearer ' . $jwt]);
+                ['Authorization' => 'Bearer ' . $jwt]
+            );
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -534,11 +543,14 @@ class UniquenessHierarchyTest extends TestCase
         $response = [];
         try {
             //perform a web upload
-            $response[] = $this->actingAs($this->user)->post('api/upload/' . $this->project->slug,
+            $response[] = $this->actingAs($this->user)->post(
+                'api/upload/' . $this->project->slug,
                 $payload,
-                ['Authorization' => 'Bearer ' . $jwt]);
+                ['Authorization' => 'Bearer ' . $jwt]
+            );
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -656,11 +668,14 @@ class UniquenessHierarchyTest extends TestCase
         $response = [];
         try {
             //perform a web upload
-            $response[] = $this->actingAs($this->user)->post('api/upload/' . $this->project->slug,
+            $response[] = $this->actingAs($this->user)->post(
+                'api/upload/' . $this->project->slug,
                 $payload,
-                ['Authorization' => 'Bearer ' . $jwt]);
+                ['Authorization' => 'Bearer ' . $jwt]
+            );
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -778,11 +793,14 @@ class UniquenessHierarchyTest extends TestCase
         $response = [];
         try {
             //perform a web upload
-            $response[] = $this->actingAs($this->user)->post('api/upload/' . $this->project->slug,
+            $response[] = $this->actingAs($this->user)->post(
+                'api/upload/' . $this->project->slug,
                 $payload,
-                ['Authorization' => 'Bearer ' . $jwt]);
+                ['Authorization' => 'Bearer ' . $jwt]
+            );
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -900,11 +918,14 @@ class UniquenessHierarchyTest extends TestCase
         $response = [];
         try {
             //perform a web upload
-            $response[] = $this->actingAs($this->user)->post('api/upload/' . $this->project->slug,
+            $response[] = $this->actingAs($this->user)->post(
+                'api/upload/' . $this->project->slug,
                 $payload,
-                ['Authorization' => 'Bearer ' . $jwt]);
+                ['Authorization' => 'Bearer ' . $jwt]
+            );
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -1022,11 +1043,14 @@ class UniquenessHierarchyTest extends TestCase
         $response = [];
         try {
             //perform a web upload
-            $response[] = $this->actingAs($this->user)->post('api/upload/' . $this->project->slug,
+            $response[] = $this->actingAs($this->user)->post(
+                'api/upload/' . $this->project->slug,
                 $payload,
-                ['Authorization' => 'Bearer ' . $jwt]);
+                ['Authorization' => 'Bearer ' . $jwt]
+            );
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -1144,11 +1168,14 @@ class UniquenessHierarchyTest extends TestCase
         $response = [];
         try {
             //perform a web upload
-            $response[] = $this->actingAs($this->user)->post('api/upload/' . $this->project->slug,
+            $response[] = $this->actingAs($this->user)->post(
+                'api/upload/' . $this->project->slug,
                 $payload,
-                ['Authorization' => 'Bearer ' . $jwt]);
+                ['Authorization' => 'Bearer ' . $jwt]
+            );
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -1269,11 +1296,14 @@ class UniquenessHierarchyTest extends TestCase
         $response = [];
         try {
             //perform a web upload
-            $response[] = $this->actingAs($this->user)->post('api/upload/' . $this->project->slug,
+            $response[] = $this->actingAs($this->user)->post(
+                'api/upload/' . $this->project->slug,
                 $payload,
-                ['Authorization' => 'Bearer ' . $jwt]);
+                ['Authorization' => 'Bearer ' . $jwt]
+            );
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -1394,11 +1424,14 @@ class UniquenessHierarchyTest extends TestCase
         $response = [];
         try {
             //perform a web upload
-            $response[] = $this->actingAs($this->user)->post('api/upload/' . $this->project->slug,
+            $response[] = $this->actingAs($this->user)->post(
+                'api/upload/' . $this->project->slug,
                 $payload,
-                ['Authorization' => 'Bearer ' . $jwt]);
+                ['Authorization' => 'Bearer ' . $jwt]
+            );
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -1519,11 +1552,14 @@ class UniquenessHierarchyTest extends TestCase
         $response = [];
         try {
             //perform a web upload
-            $response[] = $this->actingAs($this->user)->post('api/upload/' . $this->project->slug,
+            $response[] = $this->actingAs($this->user)->post(
+                'api/upload/' . $this->project->slug,
                 $payload,
-                ['Authorization' => 'Bearer ' . $jwt]);
+                ['Authorization' => 'Bearer ' . $jwt]
+            );
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -1644,11 +1680,14 @@ class UniquenessHierarchyTest extends TestCase
         $response = [];
         try {
             //perform a web upload
-            $response[] = $this->actingAs($this->user)->post('api/upload/' . $this->project->slug,
+            $response[] = $this->actingAs($this->user)->post(
+                'api/upload/' . $this->project->slug,
                 $payload,
-                ['Authorization' => 'Bearer ' . $jwt]);
+                ['Authorization' => 'Bearer ' . $jwt]
+            );
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -1769,11 +1808,14 @@ class UniquenessHierarchyTest extends TestCase
         $response = [];
         try {
             //perform a web upload
-            $response[] = $this->actingAs($this->user)->post('api/upload/' . $this->project->slug,
+            $response[] = $this->actingAs($this->user)->post(
+                'api/upload/' . $this->project->slug,
                 $payload,
-                ['Authorization' => 'Bearer ' . $jwt]);
+                ['Authorization' => 'Bearer ' . $jwt]
+            );
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -1884,11 +1926,14 @@ class UniquenessHierarchyTest extends TestCase
         $response = [];
         try {
             //perform a web upload
-            $response[] = $this->actingAs($this->user)->post('api/upload/' . $this->project->slug,
+            $response[] = $this->actingAs($this->user)->post(
+                'api/upload/' . $this->project->slug,
                 $payload,
-                ['Authorization' => 'Bearer ' . $jwt]);
+                ['Authorization' => 'Bearer ' . $jwt]
+            );
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -1999,11 +2044,14 @@ class UniquenessHierarchyTest extends TestCase
         $response = [];
         try {
             //perform a web upload
-            $response[] = $this->actingAs($this->user)->post('api/upload/' . $this->project->slug,
+            $response[] = $this->actingAs($this->user)->post(
+                'api/upload/' . $this->project->slug,
                 $payload,
-                ['Authorization' => 'Bearer ' . $jwt]);
+                ['Authorization' => 'Bearer ' . $jwt]
+            );
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",

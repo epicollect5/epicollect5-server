@@ -3,7 +3,8 @@
 namespace Tests\Http\Controllers\Api\Entries\View;
 
 use Common;
-use ec5\DTO\ProjectExtraDTO;
+use ec5\Libraries\Generators\EntryGenerator;
+use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
@@ -15,13 +16,12 @@ use ec5\Services\Project\ProjectExtraService;
 use ec5\Traits\Assertions;
 use Faker\Factory as Faker;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Tests\Generators\EntryGenerator;
-use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 
 class ViewEntriesBaseControllerTest extends TestCase
 {
-    use DatabaseTransactions, Assertions;
+    use DatabaseTransactions;
+    use Assertions;
 
     protected $faker;
     protected $user;

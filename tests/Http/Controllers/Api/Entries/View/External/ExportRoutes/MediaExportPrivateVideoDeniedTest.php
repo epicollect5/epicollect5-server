@@ -2,6 +2,9 @@
 
 namespace Tests\Http\Controllers\Api\Entries\View\External\ExportRoutes;
 
+use ec5\Libraries\Generators\EntryGenerator;
+use ec5\Libraries\Generators\MediaGenerator;
+use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectRole;
@@ -11,12 +14,8 @@ use ec5\Models\User\User;
 use ec5\Services\Mapping\ProjectMappingService;
 use ec5\Services\Project\ProjectExtraService;
 use ec5\Traits\Assertions;
-use Exception;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Storage;
-use Tests\Generators\EntryGenerator;
-use Tests\Generators\MediaGenerator;
-use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 
 class MediaExportPrivateVideoDeniedTest extends TestCase
@@ -30,7 +29,8 @@ class MediaExportPrivateVideoDeniedTest extends TestCase
         User::where(
             'email',
             'like',
-            '%example.net%')
+            '%example.net%'
+        )
             ->delete();
 
 
@@ -137,7 +137,8 @@ class MediaExportPrivateVideoDeniedTest extends TestCase
                     'headers' => [
                         'X-Requested-With' => 'XMLHttpRequest'
                     ]
-                ]);
+                ]
+            );
 
             $content = $response[0]->getBody()->getContents();
 

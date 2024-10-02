@@ -2,6 +2,7 @@
 
 namespace Tests\Http\Controllers\Web\Project;
 
+use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Models\OAuth\OAuthAccessToken;
 use ec5\Models\OAuth\OAuthClient;
 use ec5\Models\OAuth\OAuthClientProject;
@@ -13,15 +14,13 @@ use ec5\Models\User\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Laravel\Passport\ClientRepository;
 use Laravel\Passport\Passport;
-use SebastianBergmann\RecursionContext\Exception;
-use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 
 class ProjectAppsControllerTest extends TestCase
 {
     use DatabaseTransactions;
 
-    const DRIVER = 'web';
+    public const DRIVER = 'web';
     private $faker;
     private $user;
     private $project;
@@ -148,7 +147,9 @@ class ProjectAppsControllerTest extends TestCase
         try {
             $clientRepository = new ClientRepository();
             $client = $clientRepository->create(
-                $this->user->id, 'Test App', ''
+                $this->user->id,
+                'Test App',
+                ''
             )->makeVisible('secret');
 
             factory(OAuthClientProject::class)->create([
@@ -160,19 +161,22 @@ class ProjectAppsControllerTest extends TestCase
                 1,
                 OAuthClientProject::where('project_id', $this->project->id)
                     ->where('client_id', $client->id)
-                    ->get());
+                    ->get()
+            );
             $this->assertCount(
                 1,
                 OAuthClient::where('user_id', $this->user->id)
                     ->where('id', $client->id)
-                    ->get());
+                    ->get()
+            );
 
             //imp: mimic a client in 5.4 (actingAsClient() is added in newer Laravel versions)
             Passport::actingAs($this->user, [], 'api_external');
             //create a token
             $response[] = $this
                 ->withoutMiddleware()//to avoid throttling
-                ->post('api/oauth/token',
+                ->post(
+                    'api/oauth/token',
                     [
                         'grant_type' => 'client_credentials',
                         'client_id' => $client->id,
@@ -204,7 +208,9 @@ class ProjectAppsControllerTest extends TestCase
         try {
             $clientRepository = new ClientRepository();
             $client = $clientRepository->create(
-                $this->user->id, 'Test App', ''
+                $this->user->id,
+                'Test App',
+                ''
             )->makeVisible('secret');
 
             factory(OAuthClientProject::class)->create([
@@ -221,18 +227,21 @@ class ProjectAppsControllerTest extends TestCase
                 1,
                 OAuthClientProject::where('project_id', $this->project->id)
                     ->where('client_id', $client->id)
-                    ->get());
+                    ->get()
+            );
             $this->assertCount(
                 1,
                 OAuthClient::where('user_id', $this->user->id)
                     ->where('id', $client->id)
-                    ->get());
+                    ->get()
+            );
 
 
             $this->assertCount(
                 1,
                 OAuthAccessToken::where('client_id', $client->id)
-                    ->get());
+                    ->get()
+            );
 
             //revoke the token
             $payload = [

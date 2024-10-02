@@ -3,23 +3,23 @@
 namespace Tests\Http\Controllers\Api\Entries;
 
 use Carbon\Carbon;
+use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use ec5\Traits\Assertions;
-use Exception;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Str;
 use Storage;
-use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 use ZipArchive;
 
 class DownloadSubsetControllerTest extends TestCase
 {
-    use DatabaseTransactions, Assertions;
+    use DatabaseTransactions;
+    use Assertions;
 
     public function test_redirect_if_user_not_logged_in()
     {
@@ -388,11 +388,15 @@ class DownloadSubsetControllerTest extends TestCase
 
         //see https://github.com/laravel/framework/issues/46455
         $response = $this->actingAs($user)
-            ->call('POST', 'api/internal/formbuilder/' . $project->slug,
+            ->call(
+                'POST',
+                'api/internal/formbuilder/' . $project->slug,
                 [],
                 [],
                 [],
-                [], $base64EncodedData);
+                [],
+                $base64EncodedData
+            );
         try {
             $response->assertStatus(200);
         } catch (\Exception $exception) {
@@ -481,11 +485,15 @@ class DownloadSubsetControllerTest extends TestCase
 
         //see https://github.com/laravel/framework/issues/46455
         $response = $this->actingAs($user)
-            ->call('POST', 'api/internal/formbuilder/' . $project->slug,
+            ->call(
+                'POST',
+                'api/internal/formbuilder/' . $project->slug,
                 [],
                 [],
                 [],
-                [], $base64EncodedData);
+                [],
+                $base64EncodedData
+            );
         try {
             $response->assertStatus(200);
         } catch (\Exception $exception) {
@@ -623,7 +631,8 @@ class DownloadSubsetControllerTest extends TestCase
                     ]
                 ]
             ])
-            ->assertExactJson([
+            ->assertExactJson(
+                [
                     "errors" => [
                         [
                             "code" => "ec5_29",

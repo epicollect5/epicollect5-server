@@ -2,6 +2,7 @@
 
 namespace Tests\Http\Controllers\Api\Project;
 
+use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectRole;
@@ -12,7 +13,6 @@ use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Storage;
 use Image;
 use PHPUnit\Framework\Attributes\DataProvider;
-use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 
 class MediaControllerTest extends TestCase

@@ -2,7 +2,7 @@
 
 namespace Tests\Routes\Api\external;
 
-
+use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
@@ -11,12 +11,12 @@ use ec5\Models\User\User;
 use ec5\Traits\Assertions;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Auth;
-use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 
 class ExternalRoutesTest extends TestCase
 {
-    use DatabaseTransactions, Assertions;
+    use DatabaseTransactions;
+    use Assertions;
 
     private $project;
     private $user;

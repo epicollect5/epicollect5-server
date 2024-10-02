@@ -2,6 +2,8 @@
 
 namespace Tests\Http\Controllers\Api\Entries\Upload\External\PublicRoutes\Uniqueness\Form;
 
+use ec5\Libraries\Generators\EntryGenerator;
+use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Libraries\Utilities\Common;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
@@ -13,16 +15,14 @@ use ec5\Models\User\User;
 use ec5\Services\Mapping\ProjectMappingService;
 use ec5\Services\Project\ProjectExtraService;
 use ec5\Traits\Assertions;
-use Exception;
 use Faker\Factory as Faker;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Tests\Generators\EntryGenerator;
-use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 
 class UniquenessFormBranchTest extends TestCase
 {
-    use DatabaseTransactions, Assertions;
+    use DatabaseTransactions;
+    use Assertions;
 
     private $endpoint = 'api/upload/';
 
@@ -33,7 +33,8 @@ class UniquenessFormBranchTest extends TestCase
         User::where(
             'email',
             'like',
-            '%example.net%')
+            '%example.net%'
+        )
             ->delete();
 
         $this->faker = Faker::create();
@@ -196,7 +197,8 @@ class UniquenessFormBranchTest extends TestCase
             $formRef,
             $branchInputs,
             $ownerEntryFromDB->uuid,
-            $ownerInputRef);
+            $ownerInputRef
+        );
         $payloadAnswers = $payload['data']['branch_entry']['answers'];
         $this->setDuplicatedAnswer($payloadAnswers, $payload, $branchInputRef, $inputAnswer);
 
@@ -205,7 +207,8 @@ class UniquenessFormBranchTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $payload);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -323,7 +326,8 @@ class UniquenessFormBranchTest extends TestCase
             $formRef,
             $branchInputs,
             $ownerEntryFromDB->uuid,
-            $ownerInputRef);
+            $ownerInputRef
+        );
         $payloadAnswers = $payload['data']['branch_entry']['answers'];
         $this->setDuplicatedAnswer($payloadAnswers, $payload, $branchInputRef, $inputAnswer);
 
@@ -332,7 +336,8 @@ class UniquenessFormBranchTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $payload);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -450,7 +455,8 @@ class UniquenessFormBranchTest extends TestCase
             $formRef,
             $branchInputs,
             $ownerEntryFromDB->uuid,
-            $ownerInputRef);
+            $ownerInputRef
+        );
         $payloadAnswers = $payload['data']['branch_entry']['answers'];
         $this->setDuplicatedAnswer($payloadAnswers, $payload, $branchInputRef, $inputAnswer);
 
@@ -459,7 +465,8 @@ class UniquenessFormBranchTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $payload);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -577,7 +584,8 @@ class UniquenessFormBranchTest extends TestCase
             $formRef,
             $branchInputs,
             $ownerEntryFromDB->uuid,
-            $ownerInputRef);
+            $ownerInputRef
+        );
         $payloadAnswers = $payload['data']['branch_entry']['answers'];
         $this->setDuplicatedAnswer($payloadAnswers, $payload, $branchInputRef, $inputAnswer);
 
@@ -586,7 +594,8 @@ class UniquenessFormBranchTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $payload);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -711,7 +720,8 @@ class UniquenessFormBranchTest extends TestCase
             $formRef,
             $branchInputs,
             $ownerEntryFromDB->uuid,
-            $ownerInputRef);
+            $ownerInputRef
+        );
         $payloadAnswers = $payload['data']['branch_entry']['answers'];
         $this->setDuplicatedAnswer($payloadAnswers, $payload, $branchInputRef, $inputAnswer);
 
@@ -720,7 +730,8 @@ class UniquenessFormBranchTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $payload);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -846,7 +857,8 @@ class UniquenessFormBranchTest extends TestCase
             $formRef,
             $branchInputs,
             $ownerEntryFromDB->uuid,
-            $ownerInputRef);
+            $ownerInputRef
+        );
         $payloadAnswers = $payload['data']['branch_entry']['answers'];
         $this->setDuplicatedAnswer($payloadAnswers, $payload, $branchInputRef, $inputAnswer);
 
@@ -855,7 +867,8 @@ class UniquenessFormBranchTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $payload);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -981,7 +994,8 @@ class UniquenessFormBranchTest extends TestCase
             $formRef,
             $branchInputs,
             $ownerEntryFromDB->uuid,
-            $ownerInputRef);
+            $ownerInputRef
+        );
         $payloadAnswers = $payload['data']['branch_entry']['answers'];
         $this->setDuplicatedAnswer($payloadAnswers, $payload, $branchInputRef, $inputAnswer);
 
@@ -990,7 +1004,8 @@ class UniquenessFormBranchTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $payload);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -1116,7 +1131,8 @@ class UniquenessFormBranchTest extends TestCase
             $formRef,
             $branchInputs,
             $ownerEntryFromDB->uuid,
-            $ownerInputRef);
+            $ownerInputRef
+        );
         $payloadAnswers = $payload['data']['branch_entry']['answers'];
         $this->setDuplicatedAnswer($payloadAnswers, $payload, $branchInputRef, $inputAnswer);
 
@@ -1125,7 +1141,8 @@ class UniquenessFormBranchTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $payload);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -1251,7 +1268,8 @@ class UniquenessFormBranchTest extends TestCase
             $formRef,
             $branchInputs,
             $ownerEntryFromDB->uuid,
-            $ownerInputRef);
+            $ownerInputRef
+        );
         $payloadAnswers = $payload['data']['branch_entry']['answers'];
         $this->setDuplicatedAnswer($payloadAnswers, $payload, $branchInputRef, $inputAnswer);
 
@@ -1260,7 +1278,8 @@ class UniquenessFormBranchTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $payload);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -1388,7 +1407,8 @@ class UniquenessFormBranchTest extends TestCase
             $formRef,
             $branchInputs,
             $ownerEntryFromDB->uuid,
-            $ownerInputRef);
+            $ownerInputRef
+        );
         $payloadAnswers = $payload['data']['branch_entry']['answers'];
         $this->setDuplicatedAnswer($payloadAnswers, $payload, $branchInputRef, $inputAnswer);
 
@@ -1397,7 +1417,8 @@ class UniquenessFormBranchTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $payload);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -1525,7 +1546,8 @@ class UniquenessFormBranchTest extends TestCase
             $formRef,
             $branchInputs,
             $ownerEntryFromDB->uuid,
-            $ownerInputRef);
+            $ownerInputRef
+        );
         $payloadAnswers = $payload['data']['branch_entry']['answers'];
         $this->setDuplicatedAnswer($payloadAnswers, $payload, $branchInputRef, $inputAnswer);
 
@@ -1534,7 +1556,8 @@ class UniquenessFormBranchTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $payload);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -1662,7 +1685,8 @@ class UniquenessFormBranchTest extends TestCase
             $formRef,
             $branchInputs,
             $ownerEntryFromDB->uuid,
-            $ownerInputRef);
+            $ownerInputRef
+        );
         $payloadAnswers = $payload['data']['branch_entry']['answers'];
         $this->setDuplicatedAnswer($payloadAnswers, $payload, $branchInputRef, $inputAnswer);
 
@@ -1671,7 +1695,8 @@ class UniquenessFormBranchTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $payload);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -1799,7 +1824,8 @@ class UniquenessFormBranchTest extends TestCase
             $formRef,
             $branchInputs,
             $ownerEntryFromDB->uuid,
-            $ownerInputRef);
+            $ownerInputRef
+        );
         $payloadAnswers = $payload['data']['branch_entry']['answers'];
         $this->setDuplicatedAnswer($payloadAnswers, $payload, $branchInputRef, $inputAnswer);
 
@@ -1808,7 +1834,8 @@ class UniquenessFormBranchTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $payload);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -1936,7 +1963,8 @@ class UniquenessFormBranchTest extends TestCase
             $formRef,
             $branchInputs,
             $ownerEntryFromDB->uuid,
-            $ownerInputRef);
+            $ownerInputRef
+        );
         $payloadAnswers = $payload['data']['branch_entry']['answers'];
         $this->setDuplicatedAnswer($payloadAnswers, $payload, $branchInputRef, $inputAnswer);
 
@@ -1945,7 +1973,8 @@ class UniquenessFormBranchTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $payload);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -2063,7 +2092,8 @@ class UniquenessFormBranchTest extends TestCase
             $formRef,
             $branchInputs,
             $ownerEntryFromDB->uuid,
-            $ownerInputRef);
+            $ownerInputRef
+        );
         $payloadAnswers = $payload['data']['branch_entry']['answers'];
         $this->setDuplicatedAnswer($payloadAnswers, $payload, $branchInputRef, $inputAnswer);
 
@@ -2072,7 +2102,8 @@ class UniquenessFormBranchTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $payload);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -2190,7 +2221,8 @@ class UniquenessFormBranchTest extends TestCase
             $formRef,
             $branchInputs,
             $ownerEntryFromDB->uuid,
-            $ownerInputRef);
+            $ownerInputRef
+        );
         $payloadAnswers = $payload['data']['branch_entry']['answers'];
         $this->setDuplicatedAnswer($payloadAnswers, $payload, $branchInputRef, $inputAnswer);
 
@@ -2199,7 +2231,8 @@ class UniquenessFormBranchTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $payload);
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",

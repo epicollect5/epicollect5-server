@@ -2,6 +2,7 @@
 
 namespace Tests\Http\Controllers\Web\Project;
 
+use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectRole;
@@ -13,7 +14,6 @@ use Exception;
 use Faker\Factory as Faker;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use PHPUnit\Framework\Attributes\DataProvider;
-use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 
 class ProjectMappingControllerTest extends TestCase

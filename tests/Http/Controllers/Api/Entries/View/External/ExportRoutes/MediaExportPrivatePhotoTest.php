@@ -2,6 +2,8 @@
 
 namespace Tests\Http\Controllers\Api\Entries\View\External\ExportRoutes;
 
+use ec5\Libraries\Generators\EntryGenerator;
+use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Models\Entries\Entry;
 use ec5\Models\OAuth\OAuthClientProject;
 use ec5\Models\Project\Project;
@@ -20,8 +22,6 @@ use Illuminate\Support\Facades\Storage;
 use Image;
 use Laravel\Passport\ClientRepository;
 use PHPUnit\Framework\Attributes\Depends;
-use Tests\Generators\EntryGenerator;
-use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 
 class MediaExportPrivatePhotoTest extends TestCase
@@ -45,7 +45,8 @@ class MediaExportPrivatePhotoTest extends TestCase
         );
 
         //create fake user for testing
-        $user = factory(User::class)->create([
+        $user = factory(User::class)->create(
+            [
                 'email' => config('testing.UNIT_TEST_RANDOM_EMAIL')
             ]
         );
@@ -95,7 +96,9 @@ class MediaExportPrivatePhotoTest extends TestCase
         //add the project and client
         $clientRepository = new ClientRepository();
         $client = $clientRepository->create(
-            $user->id, 'Test App', ''
+            $user->id,
+            'Test App',
+            ''
         )->makeVisible('secret');
 
         factory(OAuthClientProject::class)->create([

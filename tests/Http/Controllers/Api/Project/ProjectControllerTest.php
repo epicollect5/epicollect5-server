@@ -2,6 +2,7 @@
 
 namespace Tests\Http\Controllers\Api\Project;
 
+use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectRole;
@@ -10,19 +11,17 @@ use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use ec5\Traits\Assertions;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Illuminate\Support\Arr;
-use League\Csv\Exception;
-use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 
 class ProjectControllerTest extends TestCase
 {
-    use DatabaseTransactions, Assertions;
+    use DatabaseTransactions;
+    use Assertions;
 
     private $user;
     private $project;
     private $projectStructure;
-    const DRIVER = 'web';
+    public const DRIVER = 'web';
 
     public function setup(): void
     {
@@ -378,7 +377,9 @@ class ProjectControllerTest extends TestCase
         $canBulkUploadStatuses = config('epicollect.strings.can_bulk_upload');
         $desiredStatus = $canBulkUploadStatuses[array_rand($canBulkUploadStatuses)];
         $response = $this->actingAs($this->user)
-            ->json('POST', 'api/internal/can-bulk-upload/' . $this->project->slug,
+            ->json(
+                'POST',
+                'api/internal/can-bulk-upload/' . $this->project->slug,
                 ['can_bulk_upload' => $desiredStatus]
             )->assertStatus(200)
             ->assertExactJson([

@@ -3,6 +3,7 @@
 namespace Tests\Http\Controllers\Web\Project;
 
 use ec5\Http\Validation\Project\RuleImportRequest;
+use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Libraries\Utilities\Common;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Libraries\Utilities\Strings;
@@ -13,7 +14,6 @@ use Faker\Factory as Faker;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
-use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 
 class ProjectImportControllerTest extends TestCase

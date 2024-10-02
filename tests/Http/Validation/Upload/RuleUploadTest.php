@@ -29,13 +29,13 @@ use ec5\Http\Validation\Entries\Upload\RuleBranchEntry;
 use ec5\Http\Validation\Entries\Upload\RuleEntry;
 use ec5\Http\Validation\Entries\Upload\RuleFileEntry;
 use ec5\Http\Validation\Entries\Upload\RuleUpload;
+use ec5\Libraries\Generators\EntryGenerator;
+use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
-use Tests\Generators\EntryGenerator;
-use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 
 class RuleUploadTest extends TestCase

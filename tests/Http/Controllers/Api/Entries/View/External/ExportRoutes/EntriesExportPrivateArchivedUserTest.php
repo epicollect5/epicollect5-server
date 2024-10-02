@@ -2,6 +2,8 @@
 
 namespace Tests\Http\Controllers\Api\Entries\View\External\ExportRoutes;
 
+use ec5\Libraries\Generators\EntryGenerator;
+use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Models\Entries\Entry;
 use ec5\Models\OAuth\OAuthClientProject;
 use ec5\Models\Project\Project;
@@ -18,8 +20,6 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Laravel\Passport\ClientRepository;
 use PHPUnit\Framework\Attributes\Depends;
-use Tests\Generators\EntryGenerator;
-use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 
 class EntriesExportPrivateArchivedUserTest extends TestCase
@@ -43,7 +43,8 @@ class EntriesExportPrivateArchivedUserTest extends TestCase
         );
 
         //create fake user for testing
-        $user = factory(User::class)->create([
+        $user = factory(User::class)->create(
+            [
                 'email' => config('testing.UNIT_TEST_RANDOM_EMAIL')
             ]
         );
@@ -93,7 +94,9 @@ class EntriesExportPrivateArchivedUserTest extends TestCase
         //add the project and client
         $clientRepository = new ClientRepository();
         $client = $clientRepository->create(
-            $user->id, 'Test App', ''
+            $user->id,
+            'Test App',
+            ''
         )->makeVisible('secret');
 
         factory(OAuthClientProject::class)->create([
@@ -245,10 +248,12 @@ class EntriesExportPrivateArchivedUserTest extends TestCase
             //timestamp
             $this->assertEquals(
                 str_replace(' ', 'T', $entryFromDB->created_at) . '.000Z',
-                $entryFromResponse['created_at']);
+                $entryFromResponse['created_at']
+            );
             $this->assertEquals(
                 str_replace(' ', 'T', $entryFromDB->uploaded_at) . '.000Z',
-                $entryFromResponse['uploaded_at']);
+                $entryFromResponse['uploaded_at']
+            );
 
             $this->clearDatabase($params);
 

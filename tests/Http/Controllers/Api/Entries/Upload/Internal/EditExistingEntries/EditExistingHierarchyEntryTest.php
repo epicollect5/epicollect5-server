@@ -3,6 +3,8 @@
 namespace Tests\Http\Controllers\Api\Entries\Upload\Internal\EditExistingEntries;
 
 use Auth;
+use ec5\Libraries\Generators\EntryGenerator;
+use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
@@ -15,8 +17,6 @@ use ec5\Services\Project\ProjectExtraService;
 use ec5\Traits\Assertions;
 use Faker\Factory as Faker;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Tests\Generators\EntryGenerator;
-use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 use Throwable;
 

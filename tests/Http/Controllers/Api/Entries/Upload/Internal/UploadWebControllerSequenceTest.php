@@ -2,6 +2,8 @@
 
 namespace Tests\Http\Controllers\Api\Entries\Upload\Internal;
 
+use ec5\Libraries\Generators\EntryGenerator;
+use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
@@ -12,8 +14,6 @@ use ec5\Models\User\User;
 use Exception;
 use Faker\Factory as Faker;
 use PHPUnit\Framework\Attributes\Depends;
-use Tests\Generators\EntryGenerator;
-use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 
 /* We cannot do multiple post requests in the same test method,
@@ -91,11 +91,15 @@ class UploadWebControllerSequenceTest extends TestCase
 
             //see https://github.com/laravel/framework/issues/46455
             $response = $this->actingAs($user)
-                ->call('POST', 'api/internal/formbuilder/' . $project->slug,
+                ->call(
+                    'POST',
+                    'api/internal/formbuilder/' . $project->slug,
                     [],
                     [],
                     [],
-                    [], $base64EncodedData);
+                    [],
+                    $base64EncodedData
+                );
 
             $response->assertStatus(200);
             $this->assertSame(json_decode($response->getContent(), true), $projectDefinition);
@@ -133,7 +137,8 @@ class UploadWebControllerSequenceTest extends TestCase
             //perform a web upload
             $response[] = $this->actingAs($user)->post($this->endpoint . $project->slug, $entry);
             $response[0]->assertStatus(200)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "data" => [
                             "code" => "ec5_237",
                             "title" => "Entry successfully uploaded."
@@ -188,7 +193,8 @@ class UploadWebControllerSequenceTest extends TestCase
             $response[] = $this->actingAs($user)->post($this->endpoint . $project->slug, $childEntry1);
 
             $response[0]->assertStatus(200)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "data" => [
                             "code" => "ec5_237",
                             "title" => "Entry successfully uploaded."
@@ -243,7 +249,8 @@ class UploadWebControllerSequenceTest extends TestCase
             $response[] = $this->actingAs($user)->post($this->endpoint . $project->slug, $childEntry2);
 
             $response[0]->assertStatus(200)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "data" => [
                             "code" => "ec5_237",
                             "title" => "Entry successfully uploaded."
@@ -306,7 +313,8 @@ class UploadWebControllerSequenceTest extends TestCase
             $response[] = $this->actingAs($user)->post($this->endpoint . $project->slug, $childEntry3);
 
             $response[0]->assertStatus(200)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "data" => [
                             "code" => "ec5_237",
                             "title" => "Entry successfully uploaded."
@@ -373,7 +381,8 @@ class UploadWebControllerSequenceTest extends TestCase
             $response[] = $this->actingAs($user)->post($this->endpoint . $project->slug, $childEntry4);
 
             $response[0]->assertStatus(200)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "data" => [
                             "code" => "ec5_237",
                             "title" => "Entry successfully uploaded."
@@ -452,7 +461,8 @@ class UploadWebControllerSequenceTest extends TestCase
             //post the branch entry
             $response[] = $this->actingAs($user)->post($this->endpoint . $project->slug, $branchEntry);
             $response[0]->assertStatus(200)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "data" => [
                             "code" => "ec5_237",
                             "title" => "Entry successfully uploaded."
@@ -462,9 +472,12 @@ class UploadWebControllerSequenceTest extends TestCase
             $this->assertCount(
                 1,
                 BranchEntry::where(
-                    'project_id', $project->id)
+                    'project_id',
+                    $project->id
+                )
                     //   ->where('owner_uuid', $uuid)
-                    ->get());
+                    ->get()
+            );
 
             $this->assertEquals(1, Entry::where('uuid', $entry['data']['id'])
                 ->value('child_counts'));
@@ -479,7 +492,9 @@ class UploadWebControllerSequenceTest extends TestCase
 
             $branchCounts = json_decode(
                 Entry::where('uuid', $entry['data']['id'])
-                    ->value('branch_counts'), true);
+                    ->value('branch_counts'),
+                true
+            );
             $this->assertEquals([
                 $branches[0]['ref'] => 1,
                 $branches[1]['ref'] => 0,//branch was deleted
@@ -543,7 +558,8 @@ class UploadWebControllerSequenceTest extends TestCase
             //post the branch entry
             $response[] = $this->actingAs($user)->post($this->endpoint . $project->slug, $branchEntry);
             $response[0]->assertStatus(200)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "data" => [
                             "code" => "ec5_237",
                             "title" => "Entry successfully uploaded."
@@ -553,15 +569,21 @@ class UploadWebControllerSequenceTest extends TestCase
             $this->assertCount(
                 1,
                 BranchEntry::where(
-                    'form_ref', $ownerFormRef)
+                    'form_ref',
+                    $ownerFormRef
+                )
                     //   ->where('owner_uuid', $uuid)
-                    ->get());
+                    ->get()
+            );
             $this->assertCount(
                 2,
                 BranchEntry::where(
-                    'project_id', $project->id)
+                    'project_id',
+                    $project->id
+                )
                     //   ->where('owner_uuid', $uuid)
-                    ->get());
+                    ->get()
+            );
 
             $branchCounts = json_decode(Entry::where('uuid', $uuid)
                 ->value('branch_counts'), true);
@@ -629,7 +651,8 @@ class UploadWebControllerSequenceTest extends TestCase
             //post the branch entry
             $response[] = $this->actingAs($user)->post($this->endpoint . $project->slug, $branchEntry);
             $response[0]->assertStatus(200)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "data" => [
                             "code" => "ec5_237",
                             "title" => "Entry successfully uploaded."
@@ -639,15 +662,21 @@ class UploadWebControllerSequenceTest extends TestCase
             $this->assertCount(
                 1,
                 BranchEntry::where(
-                    'form_ref', $ownerFormRef)
+                    'form_ref',
+                    $ownerFormRef
+                )
                     //   ->where('owner_uuid', $uuid)
-                    ->get());
+                    ->get()
+            );
             $this->assertCount(
                 3,
                 BranchEntry::where(
-                    'project_id', $project->id)
+                    'project_id',
+                    $project->id
+                )
                     //   ->where('owner_uuid', $uuid)
-                    ->get());
+                    ->get()
+            );
 
             $branchCounts = json_decode(Entry::where('uuid', $uuid)
                 ->value('branch_counts'), true);
@@ -715,7 +744,8 @@ class UploadWebControllerSequenceTest extends TestCase
             //post the branch entry
             $response[] = $this->actingAs($user)->post($this->endpoint . $project->slug, $branchEntry);
             $response[0]->assertStatus(200)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "data" => [
                             "code" => "ec5_237",
                             "title" => "Entry successfully uploaded."
@@ -725,15 +755,21 @@ class UploadWebControllerSequenceTest extends TestCase
             $this->assertCount(
                 1,
                 BranchEntry::where(
-                    'form_ref', $ownerFormRef)
+                    'form_ref',
+                    $ownerFormRef
+                )
                     //   ->where('owner_uuid', $uuid)
-                    ->get());
+                    ->get()
+            );
             $this->assertCount(
                 4,
                 BranchEntry::where(
-                    'project_id', $project->id)
+                    'project_id',
+                    $project->id
+                )
                     //   ->where('owner_uuid', $uuid)
-                    ->get());
+                    ->get()
+            );
 
             $branchCounts = json_decode(Entry::where('uuid', $uuid)
                 ->value('branch_counts'), true);
@@ -796,7 +832,8 @@ class UploadWebControllerSequenceTest extends TestCase
             //post the branch entry
             $response[] = $this->actingAs($user)->post($this->endpoint . $project->slug, $branchEntry);
             $response[0]->assertStatus(200)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "data" => [
                             "code" => "ec5_237",
                             "title" => "Entry successfully uploaded."
@@ -806,15 +843,21 @@ class UploadWebControllerSequenceTest extends TestCase
             $this->assertCount(
                 1,
                 BranchEntry::where(
-                    'form_ref', $ownerFormRef)
+                    'form_ref',
+                    $ownerFormRef
+                )
                     //   ->where('owner_uuid', $uuid)
-                    ->get());
+                    ->get()
+            );
             $this->assertCount(
                 5,
                 BranchEntry::where(
-                    'project_id', $project->id)
+                    'project_id',
+                    $project->id
+                )
                     //   ->where('owner_uuid', $uuid)
-                    ->get());
+                    ->get()
+            );
 
             $branchCounts = json_decode(Entry::where('uuid', $uuid)
                 ->value('branch_counts'), true);

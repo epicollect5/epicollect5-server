@@ -2,6 +2,8 @@
 
 namespace Tests\Http\Controllers\Api\Entries\Upload\External\PublicRoutes\Media;
 
+use ec5\Libraries\Generators\EntryGenerator;
+use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Libraries\Utilities\Common;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
@@ -17,8 +19,6 @@ use Exception;
 use Faker\Factory as Faker;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Storage;
-use Tests\Generators\EntryGenerator;
-use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 
 /* We cannot do multiple post requests in the same test method,
@@ -29,7 +29,8 @@ use Tests\TestCase;
 
 class UploadAppControllerAudioTest extends TestCase
 {
-    use DatabaseTransactions, Assertions;
+    use DatabaseTransactions;
+    use Assertions;
 
     private $endpoint = 'api/upload/';
 
@@ -43,7 +44,8 @@ class UploadAppControllerAudioTest extends TestCase
         User::where(
             'email',
             'like',
-            '%example.net%')
+            '%example.net%'
+        )
             ->delete();
 
         $this->faker = Faker::create();
@@ -148,13 +150,15 @@ class UploadAppControllerAudioTest extends TestCase
             );
 
             //multipart upload from app with json encoded string and file (Cordova FileTransfer)
-            $response[] = $this->post($this->endpoint . $this->project->slug,
+            $response[] = $this->post(
+                $this->endpoint . $this->project->slug,
                 ['data' => json_encode($payload['data']), 'name' => $payload['name']],
                 ['Content-Type' => 'multipart/form-data']
             );
 
             $response[0]->assertStatus(200)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "data" => [
                             "code" => "ec5_237",
                             "title" => "Entry successfully uploaded."
@@ -254,13 +258,15 @@ class UploadAppControllerAudioTest extends TestCase
             ];
 
             //multipart upload from app with json encoded string and file (Cordova FileTransfer)
-            $response[] = $this->post($this->endpoint . $this->project->slug,
+            $response[] = $this->post(
+                $this->endpoint . $this->project->slug,
                 ['data' => json_encode($payload['data']), 'name' => $payload['name']],
                 ['Content-Type' => 'multipart/form-data']
             );
 
             $response[0]->assertStatus(200)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "data" => [
                             "code" => "ec5_237",
                             "title" => "Entry successfully uploaded."
@@ -326,13 +332,15 @@ class UploadAppControllerAudioTest extends TestCase
             );
 
             //multipart upload from app with json encoded string and file (Cordova FileTransfer)
-            $response[] = $this->post($this->endpoint . $this->project->slug,
+            $response[] = $this->post(
+                $this->endpoint . $this->project->slug,
                 ['data' => json_encode($payload['data']), 'name' => $payload['name']],
                 ['Content-Type' => 'multipart/form-data']
             );
 
             $response[0]->assertStatus(200)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "data" => [
                             "code" => "ec5_237",
                             "title" => "Entry successfully uploaded."
@@ -401,13 +409,15 @@ class UploadAppControllerAudioTest extends TestCase
             );
 
             //multipart upload from app with json encoded string and file (Cordova FileTransfer)
-            $response[] = $this->post($this->endpoint . $this->project->slug,
+            $response[] = $this->post(
+                $this->endpoint . $this->project->slug,
                 ['data' => json_encode($payload['data']), 'name' => $payload['name']],
                 ['Content-Type' => 'multipart/form-data']
             );
 
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_47",
@@ -527,13 +537,15 @@ class UploadAppControllerAudioTest extends TestCase
             ];
 
             //multipart upload from app with json encoded string and file (Cordova FileTransfer)
-            $response[] = $this->post($this->endpoint . $this->project->slug,
+            $response[] = $this->post(
+                $this->endpoint . $this->project->slug,
                 ['data' => json_encode($payload['data']), 'name' => $payload['name']],
                 ['Content-Type' => 'multipart/form-data']
             );
 
             $response[0]->assertStatus(200)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "data" => [
                             "code" => "ec5_237",
                             "title" => "Entry successfully uploaded."
@@ -657,13 +669,15 @@ class UploadAppControllerAudioTest extends TestCase
             BranchEntry::where('uuid', $branchEntryUuid)->delete();
 
             //multipart upload from app with json encoded string and file (Cordova FileTransfer)
-            $response[] = $this->post($this->endpoint . $this->project->slug,
+            $response[] = $this->post(
+                $this->endpoint . $this->project->slug,
                 ['data' => json_encode($payload['data']), 'name' => $payload['name']],
                 ['Content-Type' => 'multipart/form-data']
             );
 
             $response[0]->assertStatus(200)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "data" => [
                             "code" => "ec5_237",
                             "title" => "Entry successfully uploaded."
@@ -729,13 +743,15 @@ class UploadAppControllerAudioTest extends TestCase
             Entry::where('uuid', $entryUuid)->delete();
 
             //multipart upload from app with json encoded string and file (Cordova FileTransfer)
-            $response[] = $this->post($this->endpoint . $this->project->slug,
+            $response[] = $this->post(
+                $this->endpoint . $this->project->slug,
                 ['data' => json_encode($payload['data']), 'name' => $payload['name']],
                 ['Content-Type' => 'multipart/form-data']
             );
 
             $response[0]->assertStatus(200)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "data" => [
                             "code" => "ec5_237",
                             "title" => "Entry successfully uploaded."
@@ -816,13 +832,15 @@ class UploadAppControllerAudioTest extends TestCase
             );
 
             //multipart upload from app with json encoded string and file (Cordova FileTransfer)
-            $response[] = $this->post($this->endpoint . $this->project->slug,
+            $response[] = $this->post(
+                $this->endpoint . $this->project->slug,
                 ['data' => json_encode($payload['data']), 'name' => $payload['name']],
                 ['Content-Type' => 'multipart/form-data']
             );
 
             $response[0]->assertStatus(200)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "data" => [
                             "code" => "ec5_237",
                             "title" => "Entry successfully uploaded."

@@ -3,6 +3,8 @@
 namespace Tests\Http\Controllers\Api\Entries\Upload\External\PrivateRoutes\Uniqueness\Form;
 
 use Auth;
+use ec5\Libraries\Generators\EntryGenerator;
+use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Libraries\Utilities\Common;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
@@ -16,13 +18,12 @@ use ec5\Traits\Assertions;
 use Exception;
 use Faker\Factory as Faker;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Tests\Generators\EntryGenerator;
-use Tests\Generators\ProjectDefinitionGenerator;
 use Tests\TestCase;
 
 class UniquenessFormGroupTest extends TestCase
 {
-    use DatabaseTransactions, Assertions;
+    use DatabaseTransactions;
+    use Assertions;
 
     private $endpoint = 'api/upload/';
 
@@ -33,7 +34,8 @@ class UniquenessFormGroupTest extends TestCase
         User::where(
             'email',
             'like',
-            '%example.net%')
+            '%example.net%'
+        )
             ->delete();
 
         $this->faker = Faker::create();
@@ -106,8 +108,8 @@ class UniquenessFormGroupTest extends TestCase
                 $groupInputs = $input['group'];
                 foreach ($groupInputs as $groupInputIndex => $groupInput) {
                     if ($groupInput['type'] === config('epicollect.strings.inputs_type.text')) {
-                        $_inputs =& $this->projectDefinition['data']['project']['forms'][0]['inputs'];
-                        $_group =& $_inputs[$inputIndex]['group'][$groupInputIndex];
+                        $_inputs = & $this->projectDefinition['data']['project']['forms'][0]['inputs'];
+                        $_group = & $_inputs[$inputIndex]['group'][$groupInputIndex];
                         $_group['uniqueness'] = 'form';
                         $groupInputRef = $groupInput['ref'];
                         break;
@@ -181,11 +183,14 @@ class UniquenessFormGroupTest extends TestCase
         $response = [];
         try {
             //perform a web upload
-            $response[] = $this->actingAs($this->user)->post('api/upload/' . $this->project->slug,
+            $response[] = $this->actingAs($this->user)->post(
+                'api/upload/' . $this->project->slug,
                 $payload,
-                ['Authorization' => 'Bearer ' . $jwt]);
+                ['Authorization' => 'Bearer ' . $jwt]
+            );
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -214,8 +219,8 @@ class UniquenessFormGroupTest extends TestCase
                 $groupInputs = $input['group'];
                 foreach ($groupInputs as $groupInputIndex => $groupInput) {
                     if ($groupInput['type'] === config('epicollect.strings.inputs_type.integer')) {
-                        $_inputs =& $this->projectDefinition['data']['project']['forms'][0]['inputs'];
-                        $_group =& $_inputs[$inputIndex]['group'][$groupInputIndex];
+                        $_inputs = & $this->projectDefinition['data']['project']['forms'][0]['inputs'];
+                        $_group = & $_inputs[$inputIndex]['group'][$groupInputIndex];
                         $_group['uniqueness'] = 'form';
                         $groupInputRef = $groupInput['ref'];
                         break;
@@ -286,11 +291,14 @@ class UniquenessFormGroupTest extends TestCase
         $response = [];
         try {
             //perform a web upload
-            $response[] = $this->actingAs($this->user)->post('api/upload/' . $this->project->slug,
+            $response[] = $this->actingAs($this->user)->post(
+                'api/upload/' . $this->project->slug,
                 $payload,
-                ['Authorization' => 'Bearer ' . $jwt]);
+                ['Authorization' => 'Bearer ' . $jwt]
+            );
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -318,8 +326,8 @@ class UniquenessFormGroupTest extends TestCase
                 $groupInputs = $input['group'];
                 foreach ($groupInputs as $groupInputIndex => $groupInput) {
                     if ($groupInput['type'] === config('epicollect.strings.inputs_type.decimal')) {
-                        $_inputs =& $this->projectDefinition['data']['project']['forms'][0]['inputs'];
-                        $_group =& $_inputs[$inputIndex]['group'][$groupInputIndex];
+                        $_inputs = & $this->projectDefinition['data']['project']['forms'][0]['inputs'];
+                        $_group = & $_inputs[$inputIndex]['group'][$groupInputIndex];
                         $_group['uniqueness'] = 'form';
                         $groupInputRef = $groupInput['ref'];
                         break;
@@ -388,11 +396,14 @@ class UniquenessFormGroupTest extends TestCase
         $response = [];
         try {
             //perform a web upload
-            $response[] = $this->actingAs($this->user)->post('api/upload/' . $this->project->slug,
+            $response[] = $this->actingAs($this->user)->post(
+                'api/upload/' . $this->project->slug,
                 $payload,
-                ['Authorization' => 'Bearer ' . $jwt]);
+                ['Authorization' => 'Bearer ' . $jwt]
+            );
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -420,8 +431,8 @@ class UniquenessFormGroupTest extends TestCase
                 $groupInputs = $input['group'];
                 foreach ($groupInputs as $groupInputIndex => $groupInput) {
                     if ($groupInput['type'] === config('epicollect.strings.inputs_type.phone')) {
-                        $_inputs =& $this->projectDefinition['data']['project']['forms'][0]['inputs'];
-                        $_group =& $_inputs[$inputIndex]['group'][$groupInputIndex];
+                        $_inputs = & $this->projectDefinition['data']['project']['forms'][0]['inputs'];
+                        $_group = & $_inputs[$inputIndex]['group'][$groupInputIndex];
                         $_group['uniqueness'] = 'form';
                         $groupInputRef = $groupInput['ref'];
                         break;
@@ -490,11 +501,14 @@ class UniquenessFormGroupTest extends TestCase
         $response = [];
         try {
             //perform a web upload
-            $response[] = $this->actingAs($this->user)->post('api/upload/' . $this->project->slug,
+            $response[] = $this->actingAs($this->user)->post(
+                'api/upload/' . $this->project->slug,
                 $payload,
-                ['Authorization' => 'Bearer ' . $jwt]);
+                ['Authorization' => 'Bearer ' . $jwt]
+            );
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -526,8 +540,8 @@ class UniquenessFormGroupTest extends TestCase
                 $groupInputs = $input['group'];
                 foreach ($groupInputs as $groupInputIndex => $groupInput) {
                     if ($groupInput['type'] === config('epicollect.strings.inputs_type.date')) {
-                        $_inputs =& $this->projectDefinition['data']['project']['forms'][0]['inputs'];
-                        $_group =& $_inputs[$inputIndex]['group'][$groupInputIndex];
+                        $_inputs = & $this->projectDefinition['data']['project']['forms'][0]['inputs'];
+                        $_group = & $_inputs[$inputIndex]['group'][$groupInputIndex];
                         $_group['uniqueness'] = 'form';
                         $_group['datetime_format']
                             = $format;
@@ -598,11 +612,14 @@ class UniquenessFormGroupTest extends TestCase
         $response = [];
         try {
             //perform a web upload
-            $response[] = $this->actingAs($this->user)->post('api/upload/' . $this->project->slug,
+            $response[] = $this->actingAs($this->user)->post(
+                'api/upload/' . $this->project->slug,
                 $payload,
-                ['Authorization' => 'Bearer ' . $jwt]);
+                ['Authorization' => 'Bearer ' . $jwt]
+            );
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -634,8 +651,8 @@ class UniquenessFormGroupTest extends TestCase
                 $groupInputs = $input['group'];
                 foreach ($groupInputs as $groupInputIndex => $groupInput) {
                     if ($groupInput['type'] === config('epicollect.strings.inputs_type.date')) {
-                        $_inputs =& $this->projectDefinition['data']['project']['forms'][0]['inputs'];
-                        $_group =& $_inputs[$inputIndex]['group'][$groupInputIndex];
+                        $_inputs = & $this->projectDefinition['data']['project']['forms'][0]['inputs'];
+                        $_group = & $_inputs[$inputIndex]['group'][$groupInputIndex];
                         $_group['uniqueness'] = 'form';
                         $_group['datetime_format']
                             = $format;
@@ -706,11 +723,14 @@ class UniquenessFormGroupTest extends TestCase
         $response = [];
         try {
             //perform a web upload
-            $response[] = $this->actingAs($this->user)->post('api/upload/' . $this->project->slug,
+            $response[] = $this->actingAs($this->user)->post(
+                'api/upload/' . $this->project->slug,
                 $payload,
-                ['Authorization' => 'Bearer ' . $jwt]);
+                ['Authorization' => 'Bearer ' . $jwt]
+            );
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -742,8 +762,8 @@ class UniquenessFormGroupTest extends TestCase
                 $groupInputs = $input['group'];
                 foreach ($groupInputs as $groupInputIndex => $groupInput) {
                     if ($groupInput['type'] === config('epicollect.strings.inputs_type.date')) {
-                        $_inputs =& $this->projectDefinition['data']['project']['forms'][0]['inputs'];
-                        $_group =& $_inputs[$inputIndex]['group'][$groupInputIndex];
+                        $_inputs = & $this->projectDefinition['data']['project']['forms'][0]['inputs'];
+                        $_group = & $_inputs[$inputIndex]['group'][$groupInputIndex];
                         $_group['uniqueness'] = 'form';
                         $_group['datetime_format']
                             = $format;
@@ -814,11 +834,14 @@ class UniquenessFormGroupTest extends TestCase
         $response = [];
         try {
             //perform a web upload
-            $response[] = $this->actingAs($this->user)->post('api/upload/' . $this->project->slug,
+            $response[] = $this->actingAs($this->user)->post(
+                'api/upload/' . $this->project->slug,
                 $payload,
-                ['Authorization' => 'Bearer ' . $jwt]);
+                ['Authorization' => 'Bearer ' . $jwt]
+            );
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -850,8 +873,8 @@ class UniquenessFormGroupTest extends TestCase
                 $groupInputs = $input['group'];
                 foreach ($groupInputs as $groupInputIndex => $groupInput) {
                     if ($groupInput['type'] === config('epicollect.strings.inputs_type.date')) {
-                        $_inputs =& $this->projectDefinition['data']['project']['forms'][0]['inputs'];
-                        $_group =& $_inputs[$inputIndex]['group'][$groupInputIndex];
+                        $_inputs = & $this->projectDefinition['data']['project']['forms'][0]['inputs'];
+                        $_group = & $_inputs[$inputIndex]['group'][$groupInputIndex];
                         $_group['uniqueness'] = 'form';
                         $_group['datetime_format']
                             = $format;
@@ -922,11 +945,14 @@ class UniquenessFormGroupTest extends TestCase
         $response = [];
         try {
             //perform a web upload
-            $response[] = $this->actingAs($this->user)->post('api/upload/' . $this->project->slug,
+            $response[] = $this->actingAs($this->user)->post(
+                'api/upload/' . $this->project->slug,
                 $payload,
-                ['Authorization' => 'Bearer ' . $jwt]);
+                ['Authorization' => 'Bearer ' . $jwt]
+            );
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -958,8 +984,8 @@ class UniquenessFormGroupTest extends TestCase
                 $groupInputs = $input['group'];
                 foreach ($groupInputs as $groupInputIndex => $groupInput) {
                     if ($groupInput['type'] === config('epicollect.strings.inputs_type.date')) {
-                        $_inputs =& $this->projectDefinition['data']['project']['forms'][0]['inputs'];
-                        $_group =& $_inputs[$inputIndex]['group'][$groupInputIndex];
+                        $_inputs = & $this->projectDefinition['data']['project']['forms'][0]['inputs'];
+                        $_group = & $_inputs[$inputIndex]['group'][$groupInputIndex];
                         $_group['uniqueness'] = 'form';
                         $_group['datetime_format']
                             = $format;
@@ -1030,11 +1056,14 @@ class UniquenessFormGroupTest extends TestCase
         $response = [];
         try {
             //perform a web upload
-            $response[] = $this->actingAs($this->user)->post('api/upload/' . $this->project->slug,
+            $response[] = $this->actingAs($this->user)->post(
+                'api/upload/' . $this->project->slug,
                 $payload,
-                ['Authorization' => 'Bearer ' . $jwt]);
+                ['Authorization' => 'Bearer ' . $jwt]
+            );
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -1068,8 +1097,8 @@ class UniquenessFormGroupTest extends TestCase
                 $groupInputs = $input['group'];
                 foreach ($groupInputs as $groupInputIndex => $groupInput) {
                     if ($groupInput['type'] === config('epicollect.strings.inputs_type.time')) {
-                        $_inputs =& $this->projectDefinition['data']['project']['forms'][0]['inputs'];
-                        $_group =& $_inputs[$inputIndex]['group'][$groupInputIndex];
+                        $_inputs = & $this->projectDefinition['data']['project']['forms'][0]['inputs'];
+                        $_group = & $_inputs[$inputIndex]['group'][$groupInputIndex];
                         $_group['uniqueness'] = 'form';
                         $_group['datetime_format']
                             = $format;
@@ -1140,11 +1169,14 @@ class UniquenessFormGroupTest extends TestCase
         $response = [];
         try {
             //perform a web upload
-            $response[] = $this->actingAs($this->user)->post('api/upload/' . $this->project->slug,
+            $response[] = $this->actingAs($this->user)->post(
+                'api/upload/' . $this->project->slug,
                 $payload,
-                ['Authorization' => 'Bearer ' . $jwt]);
+                ['Authorization' => 'Bearer ' . $jwt]
+            );
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -1178,8 +1210,8 @@ class UniquenessFormGroupTest extends TestCase
                 $groupInputs = $input['group'];
                 foreach ($groupInputs as $groupInputIndex => $groupInput) {
                     if ($groupInput['type'] === config('epicollect.strings.inputs_type.time')) {
-                        $_inputs =& $this->projectDefinition['data']['project']['forms'][0]['inputs'];
-                        $_group =& $_inputs[$inputIndex]['group'][$groupInputIndex];
+                        $_inputs = & $this->projectDefinition['data']['project']['forms'][0]['inputs'];
+                        $_group = & $_inputs[$inputIndex]['group'][$groupInputIndex];
                         $_group['uniqueness'] = 'form';
                         $_group['datetime_format']
                             = $format;
@@ -1250,11 +1282,14 @@ class UniquenessFormGroupTest extends TestCase
         $response = [];
         try {
             //perform a web upload
-            $response[] = $this->actingAs($this->user)->post('api/upload/' . $this->project->slug,
+            $response[] = $this->actingAs($this->user)->post(
+                'api/upload/' . $this->project->slug,
                 $payload,
-                ['Authorization' => 'Bearer ' . $jwt]);
+                ['Authorization' => 'Bearer ' . $jwt]
+            );
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -1288,8 +1323,8 @@ class UniquenessFormGroupTest extends TestCase
                 $groupInputs = $input['group'];
                 foreach ($groupInputs as $groupInputIndex => $groupInput) {
                     if ($groupInput['type'] === config('epicollect.strings.inputs_type.time')) {
-                        $_inputs =& $this->projectDefinition['data']['project']['forms'][0]['inputs'];
-                        $_group =& $_inputs[$inputIndex]['group'][$groupInputIndex];
+                        $_inputs = & $this->projectDefinition['data']['project']['forms'][0]['inputs'];
+                        $_group = & $_inputs[$inputIndex]['group'][$groupInputIndex];
                         $_group['uniqueness'] = 'form';
                         $_group['datetime_format']
                             = $format;
@@ -1360,11 +1395,14 @@ class UniquenessFormGroupTest extends TestCase
         $response = [];
         try {
             //perform a web upload
-            $response[] = $this->actingAs($this->user)->post('api/upload/' . $this->project->slug,
+            $response[] = $this->actingAs($this->user)->post(
+                'api/upload/' . $this->project->slug,
                 $payload,
-                ['Authorization' => 'Bearer ' . $jwt]);
+                ['Authorization' => 'Bearer ' . $jwt]
+            );
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -1398,8 +1436,8 @@ class UniquenessFormGroupTest extends TestCase
                 $groupInputs = $input['group'];
                 foreach ($groupInputs as $groupInputIndex => $groupInput) {
                     if ($groupInput['type'] === config('epicollect.strings.inputs_type.time')) {
-                        $_inputs =& $this->projectDefinition['data']['project']['forms'][0]['inputs'];
-                        $_group =& $_inputs[$inputIndex]['group'][$groupInputIndex];
+                        $_inputs = & $this->projectDefinition['data']['project']['forms'][0]['inputs'];
+                        $_group = & $_inputs[$inputIndex]['group'][$groupInputIndex];
                         $_group['uniqueness'] = 'form';
                         $_group['datetime_format']
                             = $format;
@@ -1470,11 +1508,14 @@ class UniquenessFormGroupTest extends TestCase
         $response = [];
         try {
             //perform a web upload
-            $response[] = $this->actingAs($this->user)->post('api/upload/' . $this->project->slug,
+            $response[] = $this->actingAs($this->user)->post(
+                'api/upload/' . $this->project->slug,
                 $payload,
-                ['Authorization' => 'Bearer ' . $jwt]);
+                ['Authorization' => 'Bearer ' . $jwt]
+            );
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -1508,8 +1549,8 @@ class UniquenessFormGroupTest extends TestCase
                 $groupInputs = $input['group'];
                 foreach ($groupInputs as $groupInputIndex => $groupInput) {
                     if ($groupInput['type'] === config('epicollect.strings.inputs_type.time')) {
-                        $_inputs =& $this->projectDefinition['data']['project']['forms'][0]['inputs'];
-                        $_group =& $_inputs[$inputIndex]['group'][$groupInputIndex];
+                        $_inputs = & $this->projectDefinition['data']['project']['forms'][0]['inputs'];
+                        $_group = & $_inputs[$inputIndex]['group'][$groupInputIndex];
                         $_group['uniqueness'] = 'form';
                         $_group['datetime_format']
                             = $format;
@@ -1580,11 +1621,14 @@ class UniquenessFormGroupTest extends TestCase
         $response = [];
         try {
             //perform a web upload
-            $response[] = $this->actingAs($this->user)->post('api/upload/' . $this->project->slug,
+            $response[] = $this->actingAs($this->user)->post(
+                'api/upload/' . $this->project->slug,
                 $payload,
-                ['Authorization' => 'Bearer ' . $jwt]);
+                ['Authorization' => 'Bearer ' . $jwt]
+            );
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -1612,8 +1656,8 @@ class UniquenessFormGroupTest extends TestCase
                 $groupInputs = $input['group'];
                 foreach ($groupInputs as $groupInputIndex => $groupInput) {
                     if ($groupInput['type'] === config('epicollect.strings.inputs_type.textarea')) {
-                        $_inputs =& $this->projectDefinition['data']['project']['forms'][0]['inputs'];
-                        $_group =& $_inputs[$inputIndex]['group'][$groupInputIndex];
+                        $_inputs = & $this->projectDefinition['data']['project']['forms'][0]['inputs'];
+                        $_group = & $_inputs[$inputIndex]['group'][$groupInputIndex];
                         $_group['uniqueness'] = 'form';
                         $groupInputRef = $groupInput['ref'];
                         break;
@@ -1682,11 +1726,14 @@ class UniquenessFormGroupTest extends TestCase
         $response = [];
         try {
             //perform a web upload
-            $response[] = $this->actingAs($this->user)->post('api/upload/' . $this->project->slug,
+            $response[] = $this->actingAs($this->user)->post(
+                'api/upload/' . $this->project->slug,
                 $payload,
-                ['Authorization' => 'Bearer ' . $jwt]);
+                ['Authorization' => 'Bearer ' . $jwt]
+            );
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",
@@ -1714,8 +1761,8 @@ class UniquenessFormGroupTest extends TestCase
                 $groupInputs = $input['group'];
                 foreach ($groupInputs as $groupInputIndex => $groupInput) {
                     if ($groupInput['type'] === config('epicollect.strings.inputs_type.barcode')) {
-                        $_inputs =& $this->projectDefinition['data']['project']['forms'][0]['inputs'];
-                        $_group =& $_inputs[$inputIndex]['group'][$groupInputIndex];
+                        $_inputs = & $this->projectDefinition['data']['project']['forms'][0]['inputs'];
+                        $_group = & $_inputs[$inputIndex]['group'][$groupInputIndex];
                         $_group['uniqueness'] = 'form';
                         $groupInputRef = $groupInput['ref'];
                         break;
@@ -1784,11 +1831,14 @@ class UniquenessFormGroupTest extends TestCase
         $response = [];
         try {
             //perform a web upload
-            $response[] = $this->actingAs($this->user)->post('api/upload/' . $this->project->slug,
+            $response[] = $this->actingAs($this->user)->post(
+                'api/upload/' . $this->project->slug,
                 $payload,
-                ['Authorization' => 'Bearer ' . $jwt]);
+                ['Authorization' => 'Bearer ' . $jwt]
+            );
             $response[0]->assertStatus(400)
-                ->assertExactJson([
+                ->assertExactJson(
+                    [
                         "errors" => [
                             [
                                 "code" => "ec5_22",

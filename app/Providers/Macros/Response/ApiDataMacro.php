@@ -3,26 +3,22 @@
 namespace ec5\Providers\Macros\Response;
 
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\ServiceProvider;
 
 class ApiDataMacro extends ServiceProvider
 {
-    public function boot()
+    public function boot(): void
     {
         Response::macro('apiData', function ($data, $meta = null, $links = null) {
             $apiContentTypeHeaderKey = config('epicollect.setup.api.responseContentTypeHeaderKey');
             $apiContentTypeHeaderValue = config('epicollect.setup.api.responseContentTypeHeaderValue');
 
-            $content = [
-                'data' => $data
-            ];
-
+            $content = [];
             if ($meta) {
                 $content['meta'] = $meta;
             }
-
+            $content['data'] = $data;
             if ($links) {
                 $content['links'] = $links;
             }

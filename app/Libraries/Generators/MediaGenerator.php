@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Generators;
+namespace ec5\Libraries\Generators;
 
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Facades\Image;

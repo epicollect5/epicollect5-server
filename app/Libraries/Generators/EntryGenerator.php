@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Generators;
+namespace ec5\Libraries\Generators;
 
 use Carbon\Carbon;
 use ec5\DTO\EntryStructureDTO;
