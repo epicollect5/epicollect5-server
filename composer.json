@@ -32,7 +32,8 @@
     "symfony/mailgun-mailer": "^7.1",
     "symfony/http-client": "^7.1",
     "ext-posix": "*",
-    "laravolt/avatar": "^5.1"
+    "laravolt/avatar": "^5.1",
+    "fakerphp/faker": "^1.23"
   },
   "require-dev": {
     "ext-xdebug": "*",
@@ -41,7 +42,6 @@
     "symfony/css-selector": "2.8.*|3.0.*",
     "symfony/dom-crawler": "2.8.*|3.0.*",
     "ext-mbstring": "*",
-    "fakerphp/faker": "^1.23",
     "barryvdh/laravel-ide-helper": "^3.1",
     "laravel/pint": "^1.17",
     "squizlabs/php_codesniffer": "^3.10",
