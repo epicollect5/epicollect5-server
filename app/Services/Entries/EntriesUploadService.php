@@ -51,10 +51,10 @@ class EntriesUploadService
 
         // 2 - Check project status
         if (!$this->isProjectActive()) {
-            if($this->requestedProject()->isLocked()) {
+            if ($this->requestedProject()->isLocked()) {
                 $this->errors = ['upload-controller' => ['ec5_202']];
             }
-            if($this->requestedProject()->isTrashed()) {
+            if ($this->requestedProject()->isTrashed()) {
                 $this->errors = ['upload-controller' => ['ec5_11']];
             }
             return false;

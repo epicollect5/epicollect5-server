@@ -41,8 +41,6 @@ class UploadWebController extends UploadControllerBase
         if (!$this->entriesUploadService->upload()) {
             return Response::apiErrorCode(400, $this->entriesUploadService->errors);
         }
-
-
         //default response code for new entry
         $responseCode = 'ec5_237';
         $data = request()->get('data');

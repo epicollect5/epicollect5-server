@@ -73,6 +73,7 @@ return [
                     'private' => 0700,
                 ],
             ],
+            'directory_visibility' => 'public'
         ],
 
         'entry_original' => [
@@ -89,6 +90,7 @@ return [
                     'private' => 0700,
                 ],
             ],
+            'directory_visibility' => 'public'
         ],
 
         'entry_thumb' => [
@@ -105,6 +107,7 @@ return [
                     'private' => 0700,
                 ],
             ],
+            'directory_visibility' => 'public'
         ],
 
         'project_thumb' => [
@@ -121,6 +124,7 @@ return [
                     'private' => 0700,
                 ],
             ],
+            'directory_visibility' => 'public',
         ],
 
         'project_mobile_logo' => [
@@ -137,6 +141,7 @@ return [
                     'private' => 0700,
                 ],
             ],
+            'directory_visibility' => 'public',
         ],
 
         'video' => [
@@ -153,6 +158,7 @@ return [
                     'private' => 0700,
                 ],
             ],
+            'directory_visibility' => 'public'
         ],
 
         'audio' => [
@@ -169,6 +175,7 @@ return [
                     'private' => 0700,
                 ],
             ],
+            'directory_visibility' => 'public'
         ],
 
         'entries_zip' => [
@@ -185,6 +192,7 @@ return [
                     'private' => 0700,
                 ],
             ],
+            'directory_visibility' => 'public'
         ],
 
         /**

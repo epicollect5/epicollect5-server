@@ -123,7 +123,11 @@ class DownloadSubsetController
         //create an empty csv file in the temp/subset/{$project_ref} folder
         Storage::disk('temp')->put(
             'subset/' . $projectRef . '/' . $csvFilename,
-            ''
+            '',
+            [
+            'visibility' => 'public',
+                    'directory_visibility' => 'public'
+                ]
         );
 
         //get handle of empty file just created

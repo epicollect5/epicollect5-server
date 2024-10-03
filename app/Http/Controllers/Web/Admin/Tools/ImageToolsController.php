@@ -10,7 +10,6 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class ImageToolsController extends Controller
 {
-
     use DirectoryGenerator;
 
     /*
@@ -156,7 +155,11 @@ class ImageToolsController extends Controller
                     // Copy the original image into the $filePath folder
                     $fileSaved = $disk->put(
                         $filePath,
-                        file_get_contents($imageOriginal)
+                        file_get_contents($imageOriginal),
+                        [
+                            'visibility' => 'public',
+                            'directory_visibility' => 'public'
+                        ]
                     );
 
                     // If it successfully saves, resize it

@@ -34,7 +34,11 @@ class PhotoSaverService
             // Store the file into storage location, using specified driver
             Storage::disk($driver)->put(
                 $projectRef . '/' . $fileName,
-                file_get_contents($imageRealPath)
+                file_get_contents($imageRealPath),
+                [
+                    'visibility' => 'public',
+                    'directory_visibility' => 'public'
+                ]
             );
             return true;
         } catch (Throwable $e) {
@@ -72,7 +76,11 @@ class PhotoSaverService
             // Store the file into storage location, using specified driver
             Storage::disk($driver)->put(
                 $projectRef . '/' . $fileName,
-                file_get_contents($imagePath)
+                file_get_contents($imagePath),
+                [
+                    'visibility' => 'public',
+                    'directory_visibility' => 'public'
+                ]
             );
 
             return true;

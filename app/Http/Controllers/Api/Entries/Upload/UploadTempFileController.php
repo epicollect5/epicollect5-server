@@ -53,7 +53,11 @@ class UploadTempFileController extends UploadControllerBase
         // Store the file into storage location, using the driver based on the file type
         $fileSaved = Storage::disk('temp')->put(
             $fileType . '/' . $projectRef . '/' . $fileName,
-            file_get_contents($file->getRealPath())
+            file_get_contents($file->getRealPath()),
+            [
+                'visibility' => 'public',
+                'directory_visibility' => 'public'
+            ]
         );
         // Check if put was successful
         if (!$fileSaved) {

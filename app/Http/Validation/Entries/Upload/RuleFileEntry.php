@@ -11,7 +11,6 @@ use ec5\Http\Validation\Entries\Upload\FileRules\RuleVideo;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use ec5\Services\PhotoSaverService;
-use Exception;
 use File;
 use Illuminate\Support\Facades\Storage;
 
@@ -48,14 +47,13 @@ class RuleFileEntry extends EntryValidationBase
      */
     protected $ruleAudio;
 
-    function __construct(
+    public function __construct(
         RulePhotoApp $rulePhotoApp,
         RulePhotoWeb $rulePhotoWeb,
         RuleVideo    $ruleVideo,
         RuleAudio    $ruleAudio,
         RuleAnswers  $ruleAnswers
-    )
-    {
+    ) {
         $this->rulePhotoApp = $rulePhotoApp;
         $this->rulePhotoWeb = $rulePhotoWeb;
         $this->ruleVideo = $ruleVideo;
@@ -303,7 +301,11 @@ class RuleFileEntry extends EntryValidationBase
                 // Store the file into storage location, using driver based on the file type
                 $fileSaved = Storage::disk($driver)->put(
                     $projectRef . '/' . $fileName,
-                    file_get_contents($entryStructure->getFile()->getRealPath())
+                    file_get_contents($entryStructure->getFile()->getRealPath()),
+                    [
+                        'visibility' => 'public',
+                        'directory_visibility' => 'public'
+                    ]
                 );
 
                 // Check if put was successful
@@ -401,7 +403,11 @@ class RuleFileEntry extends EntryValidationBase
                 // Store the file into storage location, using driver based on the file type
                 $fileSaved = Storage::disk($driver)->put(
                     $projectRef . '/' . $fileName,
-                    file_get_contents($entryStructure->getFile()->getRealPath())
+                    file_get_contents($entryStructure->getFile()->getRealPath()),
+                    [
+                        'visibility' => 'public',
+                        'directory_visibility' => 'public'
+                    ]
                 );
 
                 // Check if put was successful
