@@ -59,7 +59,7 @@ window.EC5.projectDetails = window.EC5.projectDetails || {};
                         window.EC5.projectDetails.parameters[key] = value;
                     });
                     module.updateSettings(action);
-                    window.EC5.toast.showSuccess('Setting updated.');
+                    window.EC5.toast.showSuccess('Settings updated.');
                 } catch (e) {
                     window.EC5.projectUtils.showErrors(e);
                 }
