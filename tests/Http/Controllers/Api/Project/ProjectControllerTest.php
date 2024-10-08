@@ -18,10 +18,10 @@ class ProjectControllerTest extends TestCase
     use DatabaseTransactions;
     use Assertions;
 
-    private $user;
-    private $project;
-    private $projectStructure;
-    public const DRIVER = 'web';
+    private User $user;
+    private Project $project;
+    private ProjectStructure $projectStructure;
+    public const string DRIVER = 'web';
 
     public function setup(): void
     {

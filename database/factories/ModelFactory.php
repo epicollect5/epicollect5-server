@@ -96,11 +96,12 @@ $factory->define(Project::class, function (Faker\Generator $faker) {
         'description' => $faker->sentence,
         'small_description' => $faker->text($smallDescMin) . $faker->text($smallDescMax - $smallDescMin),
         'logo_url' => '',
-        'access' => 'private',
-        'visibility' => 'hidden',
-        'category' => 'general',
+        'access' => config('epicollect.strings.project_access.private'),
+        'visibility' => config('epicollect.strings.project_visibility.hidden'),
+        'category' => config('epicollect.strings.project_categories.general'),
         'created_by' => User::where('email', config('epicollect.setup.super_admin_user.email'))->first()['id'],
-        'status' => 'active'
+        'status' => config('epicollect.strings.project_status.active'),
+        'app_link_visibility' => config('epicollect.strings.project_visibility.hidden'),
     ];
 });
 
@@ -116,7 +117,7 @@ $factory->define(ProjectDTO::class, function (Faker\Generator $faker) {
     return [
         'name' => $name,
         'slug' => Str::slug($name),
-        'ref' => \ec5\Libraries\Utilities\Generators::projectRef(),
+        'ref' => Generators::projectRef(),
         'description' => $faker->sentence,
         'small_description' => $faker->text($smallDescMin) . $faker->text($smallDescMax - $smallDescMin),
         'logo_url' => '',

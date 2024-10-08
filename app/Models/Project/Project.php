@@ -31,6 +31,7 @@ class Project extends Model
      * @property Carbon $updated_at
      * @property string $status
      * @property string $can_bulk_upload
+     * @property string $app_link_visibility
      */
     use SerializeDates;
 

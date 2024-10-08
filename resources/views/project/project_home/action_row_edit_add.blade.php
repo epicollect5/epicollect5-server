@@ -26,14 +26,21 @@
 
     <div class="row">
 
-        <div class="col-xs-12 col-sm-12 col-md-6 project-home__action-btns text-center">
+        <div class="col-xs-12 col-sm-12 col-md-4 project-home__action-btns text-center">
             <a class="btn btn-action" href="{{ url('/myprojects/' . $projectSlug) }}">
                 <span class="material-icons">settings</span>
                 {{ trans('site.details') }}
             </a>
         </div>
 
-        <div class="col-xs-12 col-sm-12 col-md-6 project-home__action-btns text-center">
+        <div class="col-xs-12 col-sm-12 col-md-4 project-home__action-btns text-center">
+            <button class="btn btn-action" data-toggle="modal" data-target="#modal-app-link">
+                <span class="material-icons">install_mobile</span>
+                Add Project
+            </button>
+        </div>
+
+        <div class="col-xs-12 col-sm-12 col-md-4 project-home__action-btns text-center">
             <a class="btn btn-action"
                href="{{ url('project/' . $projectSlug . '/data') }}">
                 <span class="material-icons">table_view</span>
@@ -43,3 +50,4 @@
 
     </div>
 </div>
+@include('modals.modal_app_link')

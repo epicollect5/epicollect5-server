@@ -102,6 +102,7 @@ return [
         'small_description' => '',
         'description' => '',
         'category' => 'general',
+        'app_link_visibility' => 'hidden',
     ],
     // Project Entry Data structures
     'entry_data' => [

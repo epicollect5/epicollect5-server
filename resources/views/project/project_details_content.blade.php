@@ -158,13 +158,12 @@
         <div class="col-sm-12 col-md-12 col-lg-5 equal-height">
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    <div class="panel-title">{{ trans('site.settings') }}</div>
+                    <div class="panel-title">Project {{ trans('site.settings') }}</div>
                 </div>
                 <div class="panel-body">
-                    <div class="table-responsive">
+                    <div class="table-responsive table-project-settings">
                         <table class="table">
-                            <caption class="text-center">
-                            </caption>
+
                             <tbody>
                             <tr>
                                 <th>{{ trans('site.access') }}</th>
@@ -269,16 +268,14 @@
 </div><!-- end row -->
 
 @if(config('epicollect.setup.system.app_link_enabled'))
-    <div class="row">
-        <div class="col-sm-12 col-md-12 col-lg-12">
-            <div class="panel panel-default">
+    <div class="row flexbox">
+        <div class="col-sm-12 col-md-12 col-lg-7 app-link-view__wrapper equal-height">
+            <div id="app-link-view" class="panel panel-default">
                 <div class="panel-heading">
                     <div class="panel-title">App Link</div>
                 </div>
                 <div class="panel-body deeplink-btn-panel">
-                    <p>On any device with the Epicollect5 app installed, tapping the link below will automatically add
-                        the
-                        project.
+                    <p>Add the project by tapping the link below
                         <span class="deeplink-copy-btn"
                               data-url="{{ url('/open/project') . '/' . $requestAttributes->requestedProject->slug }}">
                         Copy App Link
@@ -296,19 +293,43 @@
                             {{ url('/open/project/'.$requestAttributes->requestedProject->slug) }}
                         </a>
                     </p>
-                    <p>Likewise, scanning the barcode below will load the project</p>
+                    <p>Or by scanning the QR code.</p>
                     <div id="qrcode"
                          data-url=" {{ url('/open/project/'.$requestAttributes->requestedProject->slug) }}">
                     </div>
-
                     <a class="btn btn-action margin-top-sm" id="qrcode-download" href="#"
-                       download={{$requestAttributes->requestedProject->slug.'.qr.png'}}>Download QR Code</a>
-
-
-                    {{--                @include('project.share.share_links')--}}
+                       download={{$requestAttributes->requestedProject->slug.'.qr.png'}}>Download</a>
                 </div>
             </div>
+        </div>
+        <div class="col-sm-12 col-md-12 col-lg-5 equal-height">
+            <div id="app-link-settings" class="panel panel-default">
+                <div class="panel-heading">
+                    <div class="panel-title">App Link Settings</div>
+                </div>
+                <div class="panel-body">
+                    <div class="table-responsive table-app-link-settings">
+                        <table class="table">
+                            <tbody>
+                            <tr>
+                                <th>Visibility</th>
+                                <td>
 
+                                    <div class="btn-group">
+                                        @foreach (array_keys(config('epicollect.strings.app_link_visibility')) as $value)
+                                            <div data-setting-type="app_link_visibility" data-value="{{ $value}}"
+                                                 class="btn btn-default btn-sm settings-app_link_visibility btn-settings-submit">
+                                                {{ $value }}
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 @endif
@@ -366,7 +387,8 @@
      data-js-visibility="{{ $requestAttributes->requestedProject->visibility }}"
      data-js-logo_url="{{ $requestAttributes->requestedProject->logo_url }}"
      data-js-category="{{ $requestAttributes->requestedProject->category }}"
-     data-js-slug="{{ $requestAttributes->requestedProject->slug }}">
+     data-js-slug="{{ $requestAttributes->requestedProject->slug }}"
+     data-js-app_link_visibility="{{ $requestAttributes->requestedProject->app_link_visibility }}">
 </div>
 
 @section('scripts')

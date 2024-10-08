@@ -110,7 +110,8 @@ return [
         'access' => 'access',
         'visibility' => 'visibility',
         'status' => 'status',
-        'category' => 'category'
+        'category' => 'category',
+        'app_link_visibility' => 'app_link_visibility',
     ],
     'search_data_entries' => [
         'form_ref' => 'form_ref',
@@ -258,6 +259,10 @@ return [
     ],
     'projects_visibility' => [
         'listed' => 'listed',
+        'hidden' => 'hidden'
+    ],
+    'app_link_visibility' => [
+        'shown' => 'shown',
         'hidden' => 'hidden'
     ],
     'projects_status' => [

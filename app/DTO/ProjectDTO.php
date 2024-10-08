@@ -47,6 +47,7 @@ class ProjectDTO
     public string $created_by = '';
     public string $status = '';
     public string $can_bulk_upload = 'nobody';
+    public string $app_link_visibility = 'hidden';
     private ProjectMappingService $projectMappingService;
 
     public function __construct(
@@ -119,6 +120,7 @@ class ProjectDTO
         // Set the project structure_id
         $this->structure_id = $data->structure_id ?? null;
         $this->can_bulk_upload = $data->can_bulk_upload;
+        $this->app_link_visibility = $data->app_link_visibility;
     }
 
     /**
@@ -413,6 +415,11 @@ class ProjectDTO
     public function getCanBulkUpload(): string
     {
         return $this->can_bulk_upload;
+    }
+
+    public function isAppLinkShown(): string
+    {
+        return $this->app_link_visibility === config('epicollect.strings.app_link_visibility.shown');
     }
 
 

@@ -34,13 +34,20 @@
                     </div>
 
                     @if($requestAttributes->requestedProjectRole->canEditProject())
-                        @include('project.project_home.action_row_edit')
+                        @if($requestAttributes->requestedProject->isAppLinkShown())
+                            @include('project.project_home.action_row_edit_add')
+                        @else
+                            @include('project.project_home.action_row_edit')
+                        @endif
                     @else
-                        @include('project.project_home.action_row_view')
+                        @if($requestAttributes->requestedProject->isAppLinkShown())
+                            @include('project.project_home.action_row_view_add')
+                        @else
+                            @include('project.project_home.action_row_view')
+                        @endif
                     @endif
 
                     <div class="panel-body project-home__project-description">
-
                         @if(!$requestAttributes->requestedProject->description)
                             <p class="well text-center">{{trans('site.no_desc_yet')}}</p>
                         @else
@@ -61,5 +68,5 @@
 @stop
 
 @section('scripts')
-
+    <script type="text/javascript" src="{{ asset('js/project/project.js').'?'.config('app.release') }}"></script>
 @stop

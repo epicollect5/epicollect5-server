@@ -3,7 +3,6 @@
 namespace ec5\Http\Validation\Project;
 
 use ec5\Http\Validation\ValidationBase;
-use Config;
 
 class RuleSettings extends ValidationBase
 {
@@ -11,7 +10,8 @@ class RuleSettings extends ValidationBase
         'access' => '',
         'visibility' => '',
         'status' => '',
-        'category' => ''
+        'category' => '',
+        'app_link_visibility' => ''
     ];
 
     /**
@@ -23,6 +23,7 @@ class RuleSettings extends ValidationBase
         $this->rules['visibility'] = 'sometimes|in:' . implode(',', array_keys(config('epicollect.strings.projects_visibility')));
         $this->rules['status'] = 'sometimes|in:' . implode(',', array_keys(config('epicollect.strings.projects_status_all')));
         $this->rules['category'] = 'sometimes|in:' . implode(',', array_keys(config('epicollect.strings.project_categories')));
+        $this->rules['app_link_visibility'] = 'sometimes|in:' . implode(',', array_keys(config('epicollect.strings.app_link_visibility')));
     }
 
 

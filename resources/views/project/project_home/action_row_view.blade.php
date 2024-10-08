@@ -22,7 +22,9 @@
         </div>
         <div class="col-xs-12 col-sm-12 col-md-4 project-home__action-btns">
             <a class="btn btn-action"
-               href="{{ url('project/' . $projectSlug . '/data') }}">{{ trans('site.view_data') }}
+               href="{{ url('project/' . $projectSlug . '/data') }}">
+                <span class="material-icons">table_view</span>
+                {{ trans('site.view_data') }}
             </a>
         </div>
     </div>

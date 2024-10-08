@@ -13,7 +13,6 @@ window.EC5.projectDetails = window.EC5.projectDetails || {};
     };
 
     module.updateSettings = function (which) {
-
         var onValue = module.currentSettingsValue(which);
         var settings_elements = $('.settings-' + which);
 
@@ -77,6 +76,10 @@ window.EC5.projectDetails = window.EC5.projectDetails || {};
 })(window.EC5.projectDetails);
 
 $(document).ready(function () {
+    //run only on project details page
+    if ($('.page-project-details').length === 0) {
+        return false;
+    }
 
     $('[data-toggle="tooltip"]').tooltip();
 
@@ -106,7 +109,8 @@ $(document).ready(function () {
         visibility: project_details.attr('data-js-visibility'),
         logo_url: project_details.attr('data-js-logo_url'),
         category: project_details.attr('data-js-category'),
-        slug: project_details.attr('data-js-slug')
+        slug: project_details.attr('data-js-slug'),
+        app_link_visibility: project_details.attr('data-js-app_link_visibility')
     };
 
     //generate QR Code on project details page only
@@ -114,13 +118,14 @@ $(document).ready(function () {
         var qrCodeWrapper = $('#qrcode');
         var qrcode = new window.QRCode('qrcode', {
             text: qrCodeWrapper.data('url'),
-            width: 256,
-            height: 256,
+            width: 1024,
+            height: 1024,
             colorDark: "#000000",
             colorLight: "#ffffff",
             correctLevel: QRCode.CorrectLevel.H
         });
-        //download QR code
+
+        //download QR code (the hidden one, size is bigger)
         $('#qrcode-download').on('click', function () {
             // Find the image inside the #qrcode div
             var image = qrCodeWrapper.find('img');
@@ -130,7 +135,6 @@ $(document).ready(function () {
     }
 
     $('.btn-settings-submit').on('click', function () {
-
         var ele = $(this);
         var action = ele.attr('data-setting-type');
         var setTo = ele.attr('data-value');
@@ -142,7 +146,7 @@ $(document).ready(function () {
 
     }); //end my button
 
-    $(['access', 'status', 'visibility']).each(function (i, action) {
+    $(['access', 'status', 'visibility', 'app_link_visibility']).each(function (i, action) {
         window.EC5.projectDetails.updateSettings(action);
     });
 
