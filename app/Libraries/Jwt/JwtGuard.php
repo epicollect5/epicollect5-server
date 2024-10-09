@@ -4,12 +4,9 @@ namespace ec5\Libraries\Jwt;
 
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\Guard;
-
 use ec5\Libraries\Jwt\JwtUserProvider as UserProvider;
-
 use Illuminate\Http\Request;
 use Illuminate\Contracts\Cookie\QueueingFactory as CookieJar;
-use Illuminate\Support\Str;
 use RuntimeException;
 use Cookie;
 use Route;
@@ -18,17 +15,13 @@ class JwtGuard implements Guard
 {
     /**
      * The currently authenticated user.
-     *
-     * @var AuthenticatableContract
      */
-    protected $user;
+    protected AuthenticatableContract|null $user = null;
 
     /**
      * The user we last attempted to retrieve.
-     *
-     * @var AuthenticatableContract
      */
-    protected $lastAttempted;
+    protected AuthenticatableContract $lastAttempted;
 
     /**
      * The user provider implementation.
@@ -67,42 +60,25 @@ class JwtGuard implements Guard
 
     /**
      * The JWT token
-     *
-     * @var
      */
     protected $jwtToken;
 
     /**
      * The name of the field on the request containing the API token.
-     *
-     * @var string
      */
-    protected $inputKey;
+    protected string $inputKey;
 
     /**
      * The name of the token "column" in persistent storage.
-     *
-     * @var string
      */
-    protected $storageKey;
-
-    /**
-     * Expiration time for the JWT token
-     * @var int
-     */
-    protected $expirationTime = 60;
+    protected string $storageKey;
 
     /**
      * External request url that should be checked for
      * a JWT token differently to an internal url
-     *
-     * @var string
      */
-    protected $externalRequestUrl = '/api';
+    protected string $externalRequestUrl = '/api';
 
-    /**
-     * @var
-     */
     protected $session;
 
     /**
@@ -122,20 +98,16 @@ class JwtGuard implements Guard
 
     /**
      * Determine if the current user is authenticated.
-     *
-     * @return bool
      */
-    public function check()
+    public function check(): bool
     {
         return !is_null($this->user());
     }
 
     /**
      * Determine if the current user is a guest.
-     *
-     * @return bool
      */
-    public function guest()
+    public function guest(): bool
     {
         return !$this->check();
     }
@@ -169,7 +141,7 @@ class JwtGuard implements Guard
             // Check api_token is valid
             if ($subject) {
 
-                // todo expire jwt?
+                // todo expired jwt?
 
                 // Retrieve the user
                 $this->user = $this->provider->retrieveByCredentials(
@@ -178,52 +150,42 @@ class JwtGuard implements Guard
                 if (!$this->user) {
                     return null;
                 }
-
             }
         }
 
         return $this->user;
     }
 
-    /**
-     * @return mixed
-     */
     public function jwtToken()
     {
         return $this->jwtToken;
     }
 
     /**
-     * Get the token for the current request.
+     * Get the token for the current request (if any)
      * Try to retrieve from request input, cookie or auth bearer
-     *
-     * @return string
      */
-    protected function getTokenForRequest()
+    protected function getTokenForRequest(): string|null
     {
         // Check if external or internal api request
         if (preg_match('#^' . $this->externalRequestUrl . '#', $this->request->getPathInfo())) {
-
             // If external, check for jwt in input or authorization bearer header
             $token = $this->request->input($this->inputKey);
 
             if (empty($token)) {
                 $token = $this->request->bearerToken();
             }
-
         } else {
             // If internal, check for jwt in cookie only
             $token = $this->request->cookie($this->inputKey);
         }
-
         return $token;
     }
 
     /**
      * Get the jwt header in the Authorization header format
-     *
      */
-    public function authorizationResponse()
+    public function authorizationResponse(): array
     {
         return [
             'type' => 'jwt',
@@ -233,8 +195,6 @@ class JwtGuard implements Guard
 
     /**
      * Get the ID for the currently authenticated user.
-     *
-     * @return int|null
      */
     public function id()
     {
@@ -243,11 +203,8 @@ class JwtGuard implements Guard
 
     /**
      * Validate a user's credentials.
-     *
-     * @param array $credentials
-     * @return bool
      */
-    public function validate(array $credentials = [])
+    public function validate(array $credentials = []): bool
     {
         return $this->attempt($credentials, false, false);
     }
@@ -255,13 +212,8 @@ class JwtGuard implements Guard
     /**
      * Attempt to authenticate a user using the given credentials.
      *
-     * @param array $credentials
-     * @param bool $remember
-     * @param bool $login
-     * @param bool $setCookie
-     * @return bool
      */
-    public function attempt(array $credentials = [], $remember = false, $login = true, $setCookie = false)
+    public function attempt(array $credentials = [], $remember = false, $login = true): bool
     {
         $this->lastAttempted = $user = $this->provider->retrieveByCredentials($credentials);
 
@@ -270,23 +222,17 @@ class JwtGuard implements Guard
         // fact valid we'll log the users into the application and return true.
         if ($this->hasValidCredentials($user, $credentials)) {
             if ($login) {
-                $this->login($user, $remember, $setCookie);
+                $this->login($user, false, false);
             }
-
             return true;
         }
-
         return false;
     }
 
     /**
      * Determine if the user matches the credentials.
-     *
-     * @param mixed $user
-     * @param array $credentials
-     * @return bool
      */
-    protected function hasValidCredentials($user, $credentials)
+    protected function hasValidCredentials($user, $credentials): bool
     {
         return !is_null($user) && $this->provider->validateCredentials($user, $credentials);
     }
@@ -295,15 +241,14 @@ class JwtGuard implements Guard
      * Log a user into the application.
      *
      * @param AuthenticatableContract $user
-     * @param $remember
-     * @param $setCookie
-     * @param $passwordless ->to bypass system wide jwt expiration for passwordless
+     * @param bool $remember
+     * @param bool $setCookie
      * @return void
      */
-    public function login(AuthenticatableContract $user, $remember = false, $setCookie = false)
+    public function login(AuthenticatableContract $user, $remember = false, $setCookie = false): void
     {
         /**
-         * MASSIVE HACK: passwordless auth route gets a shorter expire jwt
+         * imp: MASSIVE HACK: passwordless auth route gets a shorter expire jwt
          *
          * This is mainly to avoid building a custom guard just
          * to have a different jwt expiry time for the passwordless auth on mobile devices
@@ -338,12 +283,6 @@ class JwtGuard implements Guard
             $this->cookie->queue(cookie($this->inputKey, $this->jwtToken, ($jwtConfig['expire'] / 60)));
         }
 
-        if ($remember) {
-            $this->createRememberTokenIfDoesntExist($user);
-
-            $this->queueRecallerCookie($user);
-        }
-
         $this->setUser($user);
     }
 
@@ -364,24 +303,18 @@ class JwtGuard implements Guard
 
         // Null user
         $this->user = null;
-
         $this->loggedOut = true;
     }
 
     /**
      * Get the user provider used by the guard.
-     *
-     * @return \Illuminate\Contracts\Auth\UserProvider
      */
-    public function getProvider()
+    public function getProvider(): \Illuminate\Contracts\Auth\UserProvider|JwtUserProvider
     {
         return $this->provider;
     }
 
-    /**
-     * @param JwtUserProvider $provider
-     */
-    public function setProvider(UserProvider $provider)
+    public function setProvider($provider): void
     {
         $this->provider = $provider;
     }
@@ -490,63 +423,8 @@ class JwtGuard implements Guard
         $this->cookie = $cookie;
     }
 
-    /**
-     * Refresh the "remember me" token for the user.
-     *
-     * @param AuthenticatableContract $user
-     * @return void
-     */
-    protected function refreshRememberToken(AuthenticatableContract $user)
-    {
-        $user->setRememberToken($token = Str::random(60));
 
-        $this->provider->updateRememberToken($user, $token);
-    }
-
-    /**
-     * Create a new "remember me" token for the user if one doesn't already exist.
-     *
-     * @param AuthenticatableContract $user
-     * @return void
-     */
-    protected function createRememberTokenIfDoesntExist(AuthenticatableContract $user)
-    {
-        if (empty($user->getRememberToken())) {
-            $this->refreshRememberToken($user);
-        }
-    }
-
-    /**
-     * Queue the recaller cookie into the cookie jar.
-     *
-     * @param AuthenticatableContract $user
-     * @return void
-     */
-    protected function queueRecallerCookie(AuthenticatableContract $user)
-    {
-        $value = $user->getAuthIdentifier() . '|' . $user->getRememberToken();
-
-        $this->getCookieJar()->queue($this->createRecaller($value));
-    }
-
-    /**
-     * Create a "remember me" cookie for a given ID.
-     *
-     * @param string $value
-     * @return \Symfony\Component\HttpFoundation\Cookie
-     */
-    protected function createRecaller($value)
-    {
-        return $this->getCookieJar()->forever($this->getRecallerName(), $value);
-    }
-
-    public function authorizeClient()
-    {
-
-
-    }
-
-    public function hasUser()
+    public function hasUser(): bool
     {
         // Return true if a user is authenticated
         return !is_null($this->user);

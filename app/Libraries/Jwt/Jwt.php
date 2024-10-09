@@ -1,8 +1,11 @@
-<?php namespace ec5\Libraries\Jwt;
+<?php
+
+namespace ec5\Libraries\Jwt;
 
 use Firebase\JWT\Key;
 use Firebase\JWT\JWT as FirebaseJwt;
-use Exception;
+use Log;
+use Throwable;
 
 class Jwt
 {
@@ -14,130 +17,39 @@ class Jwt
     | This class handles the generating and verifying of JWT tokens
     |
     */
-    /**
-     * @var array
-     */
-    private $errors = [];
+    private array $errors = [];
 
-    /**
-     * Jwt constructor.
-     */
-    public function __construct()
-    {
-        //
-    }
-
-    /**
-     * Return the errors array.
-     *
-     * @return array
-     */
-    public function errors()
+    public function errors(): array
     {
         return $this->errors;
     }
 
-    /**
-     * Check if any errors.
-     *
-     * @return boolean
-     */
-    public function hasErrors()
+    public function hasErrors(): bool
     {
-        return count($this->errors) > 0 ? true : false;
+        return count($this->errors) > 0;
     }
 
     /**
      * Generate a JWT token.
-     *
-     * @param $apiToken
-     * @return array JWT Token
      */
-    public function generateToken($apiToken)
+    public function generateToken(string $apiToken): ?string
     {
-
-        $token = null;
-
         // get auth jwt config settings
         $jwtConfig = config('auth.jwt');
-
-        try {
-            // Extract the key, from the config file.
-            $secretKey = $jwtConfig['secret_key'];
-
-            $expiryTime = time() + $jwtConfig['expire'];
-
-            $data = array(
-                'iat' => time(), // issued at time
-                'jti' => uniqid(),//$apiToken, // unique token id
-                'iss' => config('app.url'), // issuer
-                'exp' => $expiryTime, // expiry time
-                'sub' => $apiToken, // subject i.e. user token
-            );
-
-            // Encode the array to a JWT string.
-            $token = FirebaseJwt::encode(
-                $data,      // Data to be encoded in the JWT
-                $secretKey, // The signing key
-                'HS256' // The signing algorithm
-            );
-
-            return $token;
-
-        } catch (\Throwable $e) {
-            $this->errors = ['ec5_50'];
-        }
-
-        return $token;
-
+        return $this->buildJWTToken($jwtConfig, $apiToken);
     }
 
-    public function generatePasswordlessToken($apiToken)
+    public function generatePasswordlessToken(string $apiToken): ?string
     {
-        $token = null;
-
         // get auth jwt config settings
         $jwtConfig = config('auth.jwt-passwordless');
-
-        try {
-            // Extract the key, from the config file.
-            $secretKey = $jwtConfig['secret_key'];
-
-            $expiryTime = time() + $jwtConfig['expire'];
-
-            $data = array(
-                'iat' => time(), // issued at time
-                'jti' => uniqid(),//$apiToken, // unique token id
-                'iss' => config('app.url'), // issuer
-                'exp' => $expiryTime, // expiry time
-                'sub' => $apiToken, // subject i.e. user token
-            );
-
-            // Encode the array to a JWT string.
-            $token = FirebaseJwt::encode(
-                $data,      // Data to be encoded in the JWT
-                $secretKey, // The signing key
-                'HS256' // The signing algorithm
-            );
-
-            return $token;
-
-        } catch (\Throwable $e) {
-            $this->errors = ['ec5_50'];
-        }
-
-        return $token;
-
+        return $this->buildJWTToken($jwtConfig, $apiToken);
     }
 
     /**
-     * Verify a JWT token.
-     *
-     * @param $token
-     * @param bool $returnClaim
-     * @return array|bool
+     * Verify a JWT token (valid, not expired, etc.)
      */
-    public function verifyToken($token, $returnClaim = false)
+    public function verifyToken($token, bool $returnClaim = false): bool|array
     {
         /**
          * IMPORTANT:
@@ -148,11 +60,11 @@ class Jwt
 
         // Get auth jwt config settings
         $jwtConfig = config('auth.jwt');
-
         $secretKey = $jwtConfig['secret_key'];
 
         // Attempt to decode the jwt token
         try {
+            //imp exception is thrown when token is not valid or expired
             $decodedToken = (array)FirebaseJwt::decode(
                 $token,
                 new Key($secretKey, 'HS256')
@@ -164,10 +76,10 @@ class Jwt
             }
             return true;
 
-        } catch (\Throwable $e) {
-
+        } catch (Throwable $e) {
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             // Token invalid:
-            // Signature not valid, jwt token expired or altered
+            // Imp: Signature not valid, jwt token expired or altered
             $this->errors = ['ec5_51'];
             return false;
         }
@@ -175,7 +87,7 @@ class Jwt
     }
 
     /**
-     * Generate a unique id to store against a odel.
+     * Generate a unique id to store against a model.
      *
      * @param int $id
      * @return string
@@ -183,28 +95,54 @@ class Jwt
     public function generateApiToken(int $id): string
     {
         // Generate unique id
-        $apiToken = uniqid($id . '-');
-
-        return $apiToken;
-
+        return uniqid($id . '-');
     }
 
     /**
      * Get the subject part of the claim, while also verifying the jwt token supplied
      *
      * @param $token
-     * @return bool|string
+     * @return bool|string|null
      */
-    public function getSubject($token)
+    public function getSubject($token): bool|string|null
     {
         $claim = $this->verifyToken($token, true);
 
         // If we have a claim, return the subject
-        if ($claim && isset($claim->sub)) {
-            return $claim->sub;
+        if ($claim && isset($claim['sub'])) {
+            return $claim['sub'];
         }
 
         return null;
     }
 
+    private function buildJWTToken(array $jwtConfig, string $apiToken): ?string
+    {
+        try {
+            // Extract the key, from the config file.
+            $secretKey = $jwtConfig['secret_key'];
+            $expiryTime = time() + $jwtConfig['expire'];
+
+            $data = array(
+                'iat' => time(), // issued at time
+                'jti' => uniqid(),//$apiToken, // unique token id
+                'iss' => config('app.url'), // issuer
+                'exp' => $expiryTime, // expiry time
+                'sub' => $apiToken, // subject i.e. user token
+            );
+
+            // Encode the array to a JWT string.
+            return FirebaseJwt::encode(
+                $data,      // Data to be encoded in the JWT
+                $secretKey, // The signing key
+                'HS256' // The signing algorithm
+            );
+
+        } catch (Throwable $e) {
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
+            $this->errors = ['ec5_50'];
+        }
+
+        return null;
+    }
 }

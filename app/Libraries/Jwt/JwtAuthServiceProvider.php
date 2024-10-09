@@ -14,21 +14,20 @@ use Illuminate\Support\ServiceProvider;
  */
 class JwtAuthServiceProvider extends ServiceProvider
 {
-
     /**
      * Register any application authentication / authorization services.
      *
      * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         Auth::provider('jwt', function ($app, array $config) {
-            return new JwtUserProvider($app['hash'], new User);
+            return new JwtUserProvider($app['hash'], new User());
         });
 
         Auth::extend('jwt', function ($app, $name, array $config) {
             // Create new Jwt User provider and ProjectApiApplication provider
-            $userProvider = new JwtUserProvider($app['hash'], new User);
+            $userProvider = new JwtUserProvider($app['hash'], new User());
 
             // Pass this to the Jwt Guard
             $guard = new JwtGuard($userProvider, $app['request'], new Jwt());
