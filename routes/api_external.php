@@ -26,8 +26,6 @@ Route::post('api/login/verify-google', 'Api\Auth\GoogleController@verifyUserEmai
     ->name('verify-google');
 Route::post('api/login/verify-apple', 'Api\Auth\AppleController@verifyUserEmail')
     ->name('verify-apple');
-//});
-//});
 
 
 Route::group(['middleware' => ['throttle:600,1']], function () {
@@ -119,8 +117,9 @@ Route::group(['middleware' => ['throttle:600,1']], function () {
     /* LEGACY END POINTS */
 });
 
-// Throttle documented READ endpoints - 60 requests per minute
-Route::group(['middleware' => ['throttle:60,1']], function () {
+// Throttle documented entries READ endpoints - 60 requests per minute
+$apiEntriesRateLimit = config('epicollect.setup.api.rate_limit_per_minute.entries');
+Route::group(['middleware' => ['throttle:'.$apiEntriesRateLimit]], function () {
 
     /* Routes used specifically for OAuth 2 client requests */
     // Issue client access_token
@@ -129,16 +128,25 @@ Route::group(['middleware' => ['throttle:60,1']], function () {
     /* Export endpoints */
     // Set project permissions api middleware
     Route::group(['middleware' => ['project.permissions.api']], function () {
-        // Export Project
-        Route::get('api/export/project/{project_slug}', 'Api\Project\ProjectController@export');
         // Export Entries
         Route::get('api/export/entries/{project_slug}', 'Api\Entries\View\ViewEntriesDataController@export');
     });
 });
 
+// Throttle documented project READ endpoints - 60 requests per minute
+$apiProjectRateLimit = config('epicollect.setup.api.rate_limit_per_minute.project');
+Route::group(['middleware' => ['throttle:'.$apiProjectRateLimit]], function () {
+    // Set project permissions api middleware
+    Route::group(['middleware' => ['project.permissions.api']], function () {
+        // Export Project
+        Route::get('api/export/project/{project_slug}', 'Api\Project\ProjectController@export');
+    });
+});
+
 
 //Trying a lower limit for export entry media as it was causing cpu spikes.
-Route::group(['middleware' => ['throttle:30,1']], function () {
+$apiMediaRateLimit = config('epicollect.setup.api.rate_limit_per_minute.media');
+Route::group(['middleware' => ['throttle:'.$apiMediaRateLimit]], function () {
     Route::group(['middleware' => ['project.permissions.api']], function () {
         // Export Entry Media
         Route::get('api/export/media/{project_slug}', 'Api\Project\MediaController@getMedia');

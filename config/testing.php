@@ -152,5 +152,17 @@ return [
     'WEB_UPLOAD_CONTROLLER_PROJECT' => [
         'name' => 'EC5 Web Upload Controller Project',
         'slug' => 'ec5-web-upload-controller-project'
+    ],
+    'API_RATE_LIMITS_PROJECT' => [
+        'name' => 'Api Rate Limits Project',
+        'slug' => 'api-rate-limits-project'
+    ],
+    'API_RATE_LIMITS_ENTRIES' => [
+        'name' => 'Api Rate Limits Entries',
+        'slug' => 'api-rate-limits-entries'
+    ],
+    'API_RATE_LIMITS_MEDIA' => [
+        'name' => 'Api Rate Limits Media',
+        'slug' => 'api-rate-limits-media'
     ]
 ];

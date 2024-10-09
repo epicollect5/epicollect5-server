@@ -6,6 +6,7 @@ use ec5\Http\Middleware\PreventRequestsDuringMaintenance;
 use ec5\Traits\Middleware\MiddlewareTools;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -145,6 +146,25 @@ class Handler extends ExceptionHandler
             return $this->middlewareErrorResponse($request, 'user not verified exception', 'ec5_374', 422);
         }
 
+        if ($e instanceof ThrottleRequestsException && $e->getStatusCode() === 429) {
+            // Find the matching route
+            $matchingRoute = Route::getRoutes()->match($request);
+            // Get the route name
+            try {
+                $routeName = $matchingRoute->getName();
+                //is it a passwordless attempt from the web?
+                if ($routeName === 'passwordless-token-web') {
+                    //redirect users to login page with error notification
+                    return redirect()->route('login')->withErrors(['ec5_255']);
+                }
+            } catch (Throwable $e) {
+                //if route is not found, ignore and just log
+                Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
+            }
+
+            return $this->middlewareErrorResponse($request, 'too many requests', 'ec5_255', 429);
+        }
+
         return parent::render($request, $e);
     }
 
@@ -171,7 +191,6 @@ class Handler extends ExceptionHandler
      */
     private function middlewareErrorResponse(Request $request, $type, $errorCode, $httpStatusCode): \Illuminate\Http\Response|JsonResponse|RedirectResponse
     {
-
         $errors = [$type => [$errorCode]];
 
         if ($this->isJsonRequest($request)) {

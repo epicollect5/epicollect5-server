@@ -37,6 +37,11 @@ return [
         'response_delay' => [
             'media' => env('RESPONSE_DELAY_MEDIA_REQUEST', 250000000),
             'upload' => env('RESPONSE_DELAY_UPLOAD_REQUEST', 500000000)
+        ],
+        'rate_limit_per_minute' => [
+            'media' => env('API_RATE_LIMIT_MEDIA', 30),
+            'entries' => env('API_RATE_LIMIT_ENTRIES', 60),
+            'project' => env('API_RATE_LIMIT_PROJECT', 60),
         ]
     ],
     'ldap' => [

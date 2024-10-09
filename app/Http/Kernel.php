@@ -52,7 +52,7 @@ class Kernel extends HttpKernel
         'auth' => \ec5\Http\Middleware\Authenticate::class,
         'unverified' => \ec5\Http\Middleware\Unverified::class,
         'guest' => \ec5\Http\Middleware\RedirectIfAuthenticated::class,
-        'throttle' => \ec5\Http\Middleware\ApiThrottleRequests::class,
+        'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'auth.verification' => \ec5\Http\Middleware\UserVerification::class,
         'auth.basic' => \ec5\Http\Middleware\BasicAuthenticate::class,
         'auth.admin' => \ec5\Http\Middleware\AdminAuthenticate::class,
