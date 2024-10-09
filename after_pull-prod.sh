@@ -9,8 +9,8 @@ YELLOW='\033[1;33m'
 RESET='\033[0m'
 
 
-#composer dump-autoload;
-echo -e "${YELLOW}Skipping composer dump-autoload - Run manually if needed, check permissions in framework/cache for any folder with root instead of www-data ownership${RESET}"
+composer dump-autoload -o;
+echo -e "${YELLOW}composer dump-autoload -  check permissions in framework/cache for any folder with root instead of www-data ownership${RESET}"
 
 php artisan clear-compiled;
 
