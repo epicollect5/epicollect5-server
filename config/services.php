@@ -54,8 +54,6 @@ return [
     'google_api' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
-        'redirect' => env('GOOGLE_LOGIN_REDIRECT_URI_API'),//todo do we still need this?
         'scope' => env('GOOGLE_SCOPE')
     ]
-
 ];
