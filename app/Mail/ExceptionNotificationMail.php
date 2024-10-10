@@ -5,11 +5,11 @@ namespace ec5\Mail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Config;
 
 class ExceptionNotificationMail extends Mailable
 {
-    use Queueable, SerializesModels;
+    use Queueable;
+    use SerializesModels;
 
     public $exceptionMessage;
 
@@ -27,10 +27,8 @@ class ExceptionNotificationMail extends Mailable
 
     /**
      * Build the message.
-     *
-     * @return $this
      */
-    public function build()
+    public function build(): static
     {
         return $this->from(config('mail.from.address'), config('mail.from.name'))
             ->subject('Server Exception')

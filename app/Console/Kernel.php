@@ -2,8 +2,7 @@
 
 namespace ec5\Console;
 
-use ec5\Console\Commands\SystemCheckDatabaseCommand;
-use ec5\Console\Commands\SystemCheckStorageAvailableCommand;
+use ec5\Console\Commands\SystemCheckStorageCommand;
 use ec5\Console\Commands\RemoveUnverifiedUsersCommand;
 use ec5\Console\Commands\SeedEntriesCommand;
 use ec5\Console\Commands\SeedMediaCommand;
@@ -17,14 +16,12 @@ class Kernel extends ConsoleKernel
 {
     /**
      * The Artisan commands provided by your application.
-     *
-     * @var array
      */
     protected $commands = [
         SystemStatsCommand::class,
         RemoveUnverifiedUsersCommand::class,
-        SystemCheckDatabaseCommand::class,
-        SystemCheckStorageAvailableCommand::class,
+        SystemCheckStorageCommand::class,
+        SystemCheckStorageCommand::class,
         SeedEntriesCommand::class,
         SeedMediaCommand::class,
         SeedSuperadminCommand::class
@@ -32,9 +29,6 @@ class Kernel extends ConsoleKernel
 
     /**
      * Define the application's command schedule.
-     *
-     * @param Schedule $schedule
-     * @return void
      */
     protected function schedule(Schedule $schedule): void
     {
@@ -60,6 +54,5 @@ class Kernel extends ConsoleKernel
                 ->hourly()
                 ->withoutOverlapping();
         }
-        // $schedule->command('system:check-database')->everyMinute();
     }
 }
