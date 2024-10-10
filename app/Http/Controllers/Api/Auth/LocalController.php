@@ -2,8 +2,8 @@
 
 namespace ec5\Http\Controllers\Api\Auth;
 
-use ec5\Libraries\Jwt\JwtUserProvider;
 use Auth;
+use ec5\Libraries\Auth\Jwt\JwtUserProvider;
 use Log;
 use Response;
 

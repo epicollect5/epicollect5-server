@@ -1,4 +1,6 @@
-<?php namespace ec5\Libraries\Ldap;
+<?php
+
+namespace ec5\Libraries\Auth\Ldap;
 
 class LdapUserProvider
 {
@@ -35,9 +37,9 @@ class LdapUserProvider
         $userName = $credentials['username'];
         $result = $this->connection->find($userName);
 
-        if(!empty($result)){
+        if (!empty($result)) {
 
-            $user = new LdapUser;
+            $user = new LdapUser();
             $user->setEntry($result);
             // check if this user is authenticated via DN and password
             if ($this->auth($user->getDn(), $credentials['password'])) {
@@ -58,7 +60,7 @@ class LdapUserProvider
      *
      * @return bool
      *
-     * @throws Exceptions\ConnectionException
+     * @throws \ec5\Libraries\Auth\Ldap\Exceptions\ConnectionException
      */
     public function auth($username, $password)
     {

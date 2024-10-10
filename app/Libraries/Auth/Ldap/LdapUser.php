@@ -1,6 +1,6 @@
 <?php
 
-namespace ec5\Libraries\Ldap;
+namespace ec5\Libraries\Auth\Ldap;
 
 use Illuminate\Contracts\Auth\Authenticatable as Authenticatable;
 

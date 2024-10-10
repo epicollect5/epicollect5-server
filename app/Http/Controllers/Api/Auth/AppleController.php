@@ -4,7 +4,7 @@ namespace ec5\Http\Controllers\Api\Auth;
 
 use Auth;
 use ec5\Http\Validation\Auth\RulePasswordlessApiLogin;
-use ec5\Libraries\Jwt\JwtUserProvider;
+use ec5\Libraries\Auth\Jwt\JwtUserProvider;
 use ec5\Models\User\User;
 use ec5\Models\User\UserPasswordlessApi;
 use ec5\Models\User\UserProvider;

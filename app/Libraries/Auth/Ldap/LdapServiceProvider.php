@@ -1,8 +1,8 @@
-<?php namespace ec5\Libraries\Ldap;
+<?php
+
+namespace ec5\Libraries\Auth\Ldap;
 
 use Illuminate\Support\ServiceProvider;
-use ec5\Libraries\Ldap\Exceptions\MissingConfigurationException;
-
 
 class LdapServiceProvider extends ServiceProvider
 {

@@ -7,7 +7,7 @@ use Illuminate\Support\ServiceProvider;
 
 class ToJSONFileMacro extends ServiceProvider
 {
-    public function boot()
+    public function boot(): void
     {
         Response::macro('toJSONFile', function ($content, $filename) {
             $headers = [

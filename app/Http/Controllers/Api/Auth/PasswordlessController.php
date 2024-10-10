@@ -7,13 +7,14 @@ use Carbon\Carbon;
 use DB;
 use ec5\Http\Validation\Auth\RulePasswordlessApiCode;
 use ec5\Http\Validation\Auth\RulePasswordlessApiLogin;
-use ec5\Libraries\Jwt\JwtUserProvider;
+use ec5\Libraries\Auth\Jwt\JwtUserProvider;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Mail\UserPasswordlessApiMail;
 use ec5\Models\User\User;
 use ec5\Models\User\UserPasswordlessApi;
 use ec5\Models\User\UserProvider;
 use ec5\Services\User\UserService;
+use ec5\Traits\Auth\PasswordlessProviderHandler;
 use Log;
 use Mail;
 use PDOException;
@@ -22,11 +23,16 @@ use Throwable;
 
 class PasswordlessController extends AuthController
 {
+    use PasswordlessProviderHandler;
+
     public function __construct(JwtUserProvider $provider)
     {
         parent::__construct($provider);
     }
 
+    /**
+     * @throws Throwable
+     */
     public function sendCode(RulePasswordlessApiCode $validator)
     {
         $tokenExpiresAt = config('auth.passwordless_token_expire', 300);
@@ -60,16 +66,14 @@ class PasswordlessController extends AuthController
 
             DB::commit();
         } catch (PDOException $e) {
-            Log::error('Error generating passwordless access code via api');
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             DB::rollBack();
-
             return Response::apiErrorCode(400, [
                 'passwordless-request-code' => ['ec5_104']
             ]);
         } catch (Throwable $e) {
-            Log::error('Error generating password access code via api');
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             DB::rollBack();
-
             return Response::apiErrorCode(400, [
                 'passwordless-request-code' => ['ec5_104']
             ]);
@@ -78,7 +82,8 @@ class PasswordlessController extends AuthController
         //send email with verification token
         try {
             Mail::to($email)->send(new UserPasswordlessApiMail($code));
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             return Response::apiErrorCode(400, [
                 'passwordless-request-code' => ['ec5_116']
             ]);
@@ -162,28 +167,8 @@ class PasswordlessController extends AuthController
              * Same goes for local users
              */
 
-            /**
-             * User was found and active, does this user have a passwordless provider?
-             */
-            if ($user->state === config('epicollect.strings.user_state.active')) {
-
-                $userProvider = UserProvider::where('email', $email)->where('provider', $this->passwordlessProviderLabel)->first();
-
-                if (!$userProvider) {
-                    /**
-                     * if the user is active but the passwordless provider is not found,
-                     * this user created an account with another provider (Apple or Google or Local)
-                     */
-
-                    //todo: do nothing aside from adding the passwordless provider?
-                    //add passwordless provider
-                    $userProvider = new UserProvider();
-                    $userProvider->email = $email;
-                    $userProvider->user_id = $user->id;
-                    $userProvider->provider = config('epicollect.strings.providers.passwordless');
-                    $userProvider->save();
-                }
-            }
+            //User was found, does this user need a passwordless provider?
+            $this->addPasswordlessProviderIfMissing($user, $email);
 
             //Login user as passwordless
             Auth::guard()->login($user, false);

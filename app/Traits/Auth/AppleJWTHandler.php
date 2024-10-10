@@ -2,8 +2,8 @@
 
 namespace ec5\Traits\Auth;
 
-use ec5\Libraries\JwtApple\JWT as JWTApple;
-use ec5\Libraries\JwtApple\JWK as JWKApple;
+use ec5\Libraries\Auth\JwtApple\JWK as JWKApple;
+use ec5\Libraries\Auth\JwtApple\JWT as JWTApple;
 use Log;
 use Throwable;
 

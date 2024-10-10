@@ -2,16 +2,16 @@
 
 namespace ec5\Providers\Macros\Response;
 
-use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\ServiceProvider;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Throwable;
 
 class ToMediaStreamMacro extends ServiceProvider
 {
-    public function boot()
+    public function boot(): void
     {
         Response::macro('toMediaStream', function (Request $request, $realFilepath, $inputType) {
             try {
@@ -56,7 +56,7 @@ class ToMediaStreamMacro extends ServiceProvider
 
                 return $response;
 
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
                 $error['api-media-controller'] = ['ec5_103'];
                 return Response::apiErrorCode(404, $error);

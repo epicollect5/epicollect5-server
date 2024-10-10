@@ -1,36 +1,38 @@
-<?php namespace ec5\Libraries\Ldap;
+<?php
 
-use ec5\Libraries\Ldap\Exceptions\ConnectionException;
+namespace ec5\Libraries\Auth\Ldap;
+
+use ec5\Libraries\Auth\Ldap\Exceptions\ConnectionException;
 
 interface ConnectionInterface
 {
-	/**
-	* The SSL LDAP protocol string.
-	*
-	* @var string
-	*/
-	const PROTOCOL_SSL = 'ldaps://';
+    /**
+    * The SSL LDAP protocol string.
+    *
+    * @var string
+    */
+    public const PROTOCOL_SSL = 'ldaps://';
 
-	/**
-	 * The non-SSL LDAP protocol string.
-	 *
-	 * @var string
-	 */
-	const PROTOCOL = 'ldap://';
+    /**
+     * The non-SSL LDAP protocol string.
+     *
+     * @var string
+     */
+    public const PROTOCOL = 'ldap://';
 
     /**
      * LDAP Protocol Version
      *
      * @var integer
      */
-    const VERSION = 3;
+    public const VERSION = 3;
 
     /**
      * Whether to automatically follow referrals returned by the LDAP server
      *
      * @var boolean
      */
-    const REFERRALS = false;
+    public const REFERRALS = false;
 
     /**
      * Connects the specified hostname to the LDAP server

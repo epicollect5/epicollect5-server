@@ -10,13 +10,13 @@ class ApiErrorCodeMacro extends ServiceProvider
 {
     public function boot(): void
     {
-        Response::macro('apiErrorCode', function ($httpStatusCode, array $errors, array $extra = []) {
+        Response::macro('apiErrorCode', function ($httpStatusCode, array $errors) {
             $parsedErrors = [];
             // loop through $errors and format into an API error array
             foreach ($errors as $key => $error) {
                 // temp array to store error, expecting array otherwise skip
                 if (is_array($error)) {
-                    foreach ($error as $errorKey => $errorValue) {
+                    foreach ($error as $errorValue) {
                         $tempArray = [];
                         // from formbuilder validation: helps pinpoint an error
                         // hack due to bad implementation by previous developers

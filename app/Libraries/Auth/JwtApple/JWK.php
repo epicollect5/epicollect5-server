@@ -1,6 +1,6 @@
 <?php
 
-namespace ec5\Libraries\JwtApple;
+namespace ec5\Libraries\Auth\JwtApple;
 
 use DomainException;
 use InvalidArgumentException;

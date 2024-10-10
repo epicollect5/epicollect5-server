@@ -7,7 +7,7 @@ use Illuminate\Support\ServiceProvider;
 
 class ToCSVFileMacro extends ServiceProvider
 {
-    public function boot()
+    public function boot(): void
     {
         Response::macro('toCSVFile', function ($content, $filename) {
             $headers = [

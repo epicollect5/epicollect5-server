@@ -2,11 +2,11 @@
 
 namespace ec5\Http\Controllers\Api\Auth;
 
-use ec5\Libraries\Jwt\JwtUserProvider;
+use Auth;
+use ec5\Libraries\Auth\Jwt\JwtUserProvider;
+use ec5\Libraries\Auth\Ldap\Ldap;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use ec5\Libraries\Ldap\Ldap;
-use Auth;
 use Log;
 use Response;
 use Throwable;

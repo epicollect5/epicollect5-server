@@ -1,11 +1,11 @@
 <?php
 
-namespace ec5\Libraries\JwtApple;
+namespace ec5\Libraries\Auth\JwtApple;
 
-use \DomainException;
-use \InvalidArgumentException;
-use \UnexpectedValueException;
-use \DateTime;
+use DateTime;
+use DomainException;
+use InvalidArgumentException;
+use UnexpectedValueException;
 
 /**
  * JSON Web Token implementation, based on this spec:
@@ -22,9 +22,9 @@ use \DateTime;
  */
 class JWT
 {
-    const ASN1_INTEGER = 0x02;
-    const ASN1_SEQUENCE = 0x10;
-    const ASN1_BIT_STRING = 0x03;
+    public const ASN1_INTEGER = 0x02;
+    public const ASN1_SEQUENCE = 0x10;
+    public const ASN1_BIT_STRING = 0x03;
 
     /**
      * When checking nbf, iat or expiration times,

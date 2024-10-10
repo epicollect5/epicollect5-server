@@ -1,9 +1,8 @@
 <?php
 
-namespace ec5\Libraries\Jwt;
+namespace ec5\Libraries\Auth\Jwt;
 
 use ec5\Models\User\User;
-use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\Authenticatable as UserContract;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Contracts\Hashing\Hasher as HasherContract;
@@ -54,7 +53,7 @@ class JwtUserProvider implements UserProvider
     /**
      * Update the "remember me" token for the given user in storage.
      */
-    public function updateRememberToken(AuthenticatableContract $user, $token): void
+    public function updateRememberToken(UserContract $user, $token): void
     {
         $user->setRememberToken($token);
         $user->save();
@@ -82,7 +81,7 @@ class JwtUserProvider implements UserProvider
     /**
      * Validate a user against the given credentials.
      */
-    public function validateCredentials(AuthenticatableContract $user, array $credentials): bool
+    public function validateCredentials(UserContract $user, array $credentials): bool
     {
         $plain = $credentials['password'];
 

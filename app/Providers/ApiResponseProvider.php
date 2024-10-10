@@ -9,10 +9,8 @@ class ApiResponseProvider extends ServiceProvider
 {
     /**
      * Bootstrap the application services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         //create a macro to wrap the response in "data" root property and set custom header according to jsonapi.org
         Response::macro('apiResponse', function ($content) {
@@ -23,7 +21,8 @@ class ApiResponseProvider extends ServiceProvider
                     'data' => $content
                 ])
                 ->header(
-                    $apiContentTypeHeaderKey, $apiContentTypeHeaderValue
+                    $apiContentTypeHeaderKey,
+                    $apiContentTypeHeaderValue
                 );
         });
     }

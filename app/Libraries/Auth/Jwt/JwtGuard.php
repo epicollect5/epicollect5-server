@@ -1,15 +1,15 @@
 <?php
 
-namespace ec5\Libraries\Jwt;
+namespace ec5\Libraries\Auth\Jwt;
 
+use Cookie;
+use ec5\Libraries\Auth\Jwt\JwtUserProvider as UserProvider;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\Guard;
-use ec5\Libraries\Jwt\JwtUserProvider as UserProvider;
-use Illuminate\Http\Request;
 use Illuminate\Contracts\Cookie\QueueingFactory as CookieJar;
-use RuntimeException;
-use Cookie;
+use Illuminate\Http\Request;
 use Route;
+use RuntimeException;
 
 class JwtGuard implements Guard
 {
@@ -25,43 +25,33 @@ class JwtGuard implements Guard
 
     /**
      * The user provider implementation.
-     *
-     * @var \Illuminate\Contracts\Auth\UserProvider
      */
-    protected $provider;
+    protected UserProvider $provider;
 
     /**
      * The Illuminate cookie creator service.
-     *
-     * @var \Illuminate\Contracts\Cookie\QueueingFactory
      */
     protected $cookie;
 
     /**
      * The request instance.
-     *
-     * @var \Symfony\Component\HttpFoundation\Request
      */
-    protected $request;
+    protected ?Request $request;
 
     /**
      * Indicates if the logout method has been called.
-     *
-     * @var bool
      */
-    protected $loggedOut = false;
+    protected bool $loggedOut = false;
 
     /**
      * The JWT class
-     *
-     * @var
      */
-    protected $jwt;
+    protected Jwt $jwt;
 
     /**
      * The JWT token
      */
-    protected $jwtToken;
+    protected string|null $jwtToken;
 
     /**
      * The name of the field on the request containing the API token.
@@ -79,14 +69,6 @@ class JwtGuard implements Guard
      */
     protected string $externalRequestUrl = '/api';
 
-    protected $session;
-
-    /**
-     * JwtGuard constructor.
-     * @param JwtUserProvider $provider
-     * @param Request|null $request
-     * @param Jwt $jwt
-     */
     public function __construct(UserProvider $provider, Request $request = null, Jwt $jwt)
     {
         $this->provider = $provider;
@@ -114,8 +96,6 @@ class JwtGuard implements Guard
 
     /**
      * Get the currently authenticated user.
-     *
-     * @return AuthenticatableContract|null
      */
     public function user()
     {
@@ -140,9 +120,6 @@ class JwtGuard implements Guard
 
             // Check api_token is valid
             if ($subject) {
-
-                // todo expired jwt?
-
                 // Retrieve the user
                 $this->user = $this->provider->retrieveByCredentials(
                     [$this->storageKey => $subject]
@@ -156,7 +133,7 @@ class JwtGuard implements Guard
         return $this->user;
     }
 
-    public function jwtToken()
+    public function jwtToken(): ?string
     {
         return $this->jwtToken;
     }
@@ -222,7 +199,7 @@ class JwtGuard implements Guard
         // fact valid we'll log the users into the application and return true.
         if ($this->hasValidCredentials($user, $credentials)) {
             if ($login) {
-                $this->login($user, false, false);
+                $this->login($user, $remember, false);
             }
             return true;
         }
@@ -239,13 +216,8 @@ class JwtGuard implements Guard
 
     /**
      * Log a user into the application.
-     *
-     * @param AuthenticatableContract $user
-     * @param bool $remember
-     * @param bool $setCookie
-     * @return void
      */
-    public function login(AuthenticatableContract $user, $remember = false, $setCookie = false): void
+    public function login(AuthenticatableContract $user, bool $remember = false, bool $setCookie = false): void
     {
         /**
          * imp: MASSIVE HACK: passwordless auth route gets a shorter expire jwt
@@ -288,10 +260,8 @@ class JwtGuard implements Guard
 
     /**
      * Log the user out of the application.
-     *
-     * @return void
      */
-    public function logout()
+    public function logout(): void
     {
         // Remove the api token from user
         if ($user = $this->user()) {
@@ -321,21 +291,16 @@ class JwtGuard implements Guard
 
     /**
      * Return the currently cached user.
-     *
-     * @return AuthenticatableContract|null
      */
-    public function getUser()
+    public function getUser(): ?AuthenticatableContract
     {
         return $this->user;
     }
 
     /**
      * Set the current user.
-     *
-     * @param AuthenticatableContract $user
-     * @return void
      */
-    public function setUser(AuthenticatableContract $user)
+    public function setUser(AuthenticatableContract $user): void
     {
         $this->user = $user;
 
@@ -344,21 +309,16 @@ class JwtGuard implements Guard
 
     /**
      * Get the current request instance.
-     *
-     * @return \Symfony\Component\HttpFoundation\Request
      */
-    public function getRequest()
+    public function getRequest(): Request
     {
         return $this->request ?: Request::createFromGlobals();
     }
 
     /**
      * Set the current request instance.
-     *
-     * @param Request $request
-     * @return $this
      */
-    public function setRequest(Request $request)
+    public function setRequest(Request $request): static
     {
         $this->request = $request;
 
@@ -367,19 +327,13 @@ class JwtGuard implements Guard
 
     /**
      * Get the last user we attempted to authenticate.
-     *
-     * @return AuthenticatableContract
      */
-    public function getLastAttempted()
+    public function getLastAttempted(): AuthenticatableContract
     {
         return $this->lastAttempted;
     }
 
-    /**
-     * @param AuthenticatableContract $user
-     * @param $token
-     */
-    public function saveToken(AuthenticatableContract $user, $token)
+    public function saveToken(AuthenticatableContract $user, $token): void
     {
         $storageKey = $this->storageKey;
         $user->$storageKey = $token;
@@ -389,10 +343,8 @@ class JwtGuard implements Guard
 
     /**
      * Remove the user data from the cookies.
-     *
-     * @return void
      */
-    protected function clearUserDataFromStorage()
+    protected function clearUserDataFromStorage(): void
     {
         $this->cookie->queue(Cookie::forget($this->inputKey));
     }
@@ -400,10 +352,9 @@ class JwtGuard implements Guard
     /**
      * Get the cookie creator instance used by the guard.
      *
-     * @return CookieJar
      * @throws RuntimeException
      */
-    public function getCookieJar()
+    public function getCookieJar(): CookieJar
     {
         if (!isset($this->cookie)) {
             throw new RuntimeException('Cookie jar has not been set.');
@@ -414,11 +365,8 @@ class JwtGuard implements Guard
 
     /**
      * Set the cookie creator instance used by the guard.
-     *
-     * @param \Illuminate\Contracts\Cookie\QueueingFactory $cookie
-     * @return void
      */
-    public function setCookieJar(CookieJar $cookie)
+    public function setCookieJar(CookieJar $cookie): void
     {
         $this->cookie = $cookie;
     }

@@ -1,7 +1,9 @@
-<?php namespace ec5\Libraries\Ldap;
+<?php
 
+namespace ec5\Libraries\Auth\Ldap;
+
+use ec5\Libraries\Auth\Ldap\Exceptions\ConnectionException;
 use ErrorException;
-use ec5\Libraries\Ldap\Exceptions\ConnectionException;
 
 class LdapConnection implements ConnectionInterface
 {
@@ -94,7 +96,9 @@ class LdapConnection implements ConnectionInterface
             $this->errors['ldap'] = 'ec5_56';
         } else {
             // set connection parameters from ldap config file
-            if ($config['ssl']) $this->ssl = true;
+            if ($config['ssl']) {
+                $this->ssl = true;
+            }
             $this->port = $config['port'];
             $this->baseDn = $config['base_dn'];
             $this->domainController = $config['domain_controller'];

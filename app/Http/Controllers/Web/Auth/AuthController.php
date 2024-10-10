@@ -13,10 +13,6 @@ use View;
 
 class AuthController extends Controller
 {
-    /*
-    | This controller is the base for the authentication of users.
-    */
-
     use AuthenticatesUsers;
 
     protected string $redirectTo = '/';
@@ -107,4 +103,5 @@ class AuthController extends Controller
 
         return $user;
     }
+
 }

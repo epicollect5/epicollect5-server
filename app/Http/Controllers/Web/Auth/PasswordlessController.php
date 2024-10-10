@@ -11,20 +11,20 @@ use ec5\Libraries\Utilities\Generators;
 use ec5\Mail\UserPasswordlessApiMail;
 use ec5\Models\User\User;
 use ec5\Models\User\UserPasswordlessWeb;
-use ec5\Models\User\UserProvider;
 use ec5\Services\User\UserService;
+use ec5\Traits\Auth\PasswordlessProviderHandler;
 use ec5\Traits\Auth\ReCaptchaValidation;
-use Firebase\JWT\JWT as FirebaseJwt;
-use Firebase\JWT\Key;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Log;
 use Mail;
 use PDOException;
+use Throwable;
 
 class PasswordlessController extends AuthController
 {
     use ReCaptchaValidation;
+    use PasswordlessProviderHandler;
 
     public function __construct()
     {
@@ -36,6 +36,9 @@ class PasswordlessController extends AuthController
         return view('auth.verification_passwordless');
     }
 
+    /**
+     * @throws Throwable
+     */
     public function sendCode(Request $request, RulePasswordlessWeb $rulePasswordlessWeb)
     {
         $tokenExpiresAt = config('auth.passwordless_token_expire', 300);
@@ -54,9 +57,15 @@ class PasswordlessController extends AuthController
             //parse recaptcha response for any errors
             if (isset($params['g-recaptcha-response'])) {
                 $recaptchaResponse = $params['g-recaptcha-response'];
-                $recaptchaErrors = $this->getAnyRecaptchaErrors($recaptchaResponse);
-                if (!empty($recaptchaErrors)) {
-                    return redirect()->back()->withErrors($recaptchaErrors);
+                try {
+                    $recaptchaErrors = $this->getAnyRecaptchaErrors($recaptchaResponse);
+                    if (!empty($recaptchaErrors)) {
+                        return redirect()->back()->withErrors($recaptchaErrors);
+                    }
+                } catch (Throwable $e) {
+                    Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
+                    return redirect()->back()->withErrors(['recaptcha' => ['ec5_103']]);
+
                 }
             } else {
                 return redirect()->back()->withErrors(['recaptcha' => ['ec5_103']]);
@@ -90,7 +99,7 @@ class PasswordlessController extends AuthController
                 'exception' => $e->getMessage(),
                 'passwordless-request-code' => ['ec5_104']
             ]);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error('Error generating passwordless access code web');
             DB::rollBack();
 
@@ -103,7 +112,7 @@ class PasswordlessController extends AuthController
         //send email with verification code
         try {
             Mail::to($email)->send(new UserPasswordlessApiMail($code));
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             return redirect()->back()->withErrors([
                 'exception' => $e->getMessage(),
@@ -129,7 +138,7 @@ class PasswordlessController extends AuthController
         if (!(App::environment() === 'testing')) {
             if (!$isPasswordlessEnabled) {
                 // Auth method is not allowed
-                \Log::error('Passwordless auth not enabled');
+                Log::error('Passwordless auth not enabled');
                 return redirect()->route('login')->withErrors($validator->errors());
             }
         }
@@ -138,7 +147,7 @@ class PasswordlessController extends AuthController
         $params = $request->all();
         $validator->validate($params);
         if ($validator->hasErrors()) {
-            \Log::error('Passwordless auth request error', ['errors' => $validator->errors()]);
+            Log::error('Passwordless auth request error', ['errors' => $validator->errors()]);
             return redirect()->route('login')->withErrors($validator->errors());
         }
 
@@ -154,7 +163,7 @@ class PasswordlessController extends AuthController
 
         //Does the email exists?
         if ($userPasswordless === null) {
-            Log::error('Error validating passworless code', [
+            Log::error('Error validating passwordless code', [
                 'error' => 'Email does not exist',
                 'email' => $email
             ]);
@@ -166,7 +175,7 @@ class PasswordlessController extends AuthController
 
         //check if the code is valid
         if (!$userPasswordless->isValidCode($code)) {
-            Log::error('Invalid passworless code', [
+            Log::error('Invalid passwordless code', [
                 'error' => 'Code not valid',
                 'email' => $email,
                 'code' => $code
@@ -212,7 +221,7 @@ class PasswordlessController extends AuthController
         }
 
         /**
-         * if user exists and it is active, just log the user in.
+         * if user exists, and it is active, just log the user in.
          * This means the user owns the email used, if the user owns a Google and Apple account
          * matching the email, that will give the user access to those projects.
          * Apple and Google verify the email on their side so we are safe
@@ -220,47 +229,10 @@ class PasswordlessController extends AuthController
          * Same goes for local users
          */
 
-        /**
-         * User was found and active, does this user have a passwordless provider?
-         */
-        if ($user->state === config('epicollect.strings.user_state.active')) {
-
-            $userProvider = UserProvider::where('email', $email)->where('provider', $this->passwordlessProviderLabel)->first();
-
-            if (!$userProvider) {
-                /**
-                 * if the user is active but the passwordless provider is not found,
-                 * this user created an account with another provider (Apple or Google or Local)
-                 */
-
-                //todo: do nothing aside from adding the passwordless provider?
-                //add passwordless provider
-                $userProvider = new UserProvider();
-                $userProvider->email = $email;
-                $userProvider->user_id = $user->id;
-                $userProvider->provider = config('epicollect.strings.providers.passwordless');
-                $userProvider->save();
-            }
-        }
+        //User is found at this point, does this user need a passwordless provider?
+        $this->addPasswordlessProviderIfMissing($user, $email);
         //Login user as passwordless
         Auth::login($user, false);
         return $this->sendLoginResponse($request);
-    }
-
-    private function decodeToken($token)
-    {
-        $jwtConfig = config('auth.jwt-passwordless');
-        $secretKey = $jwtConfig['secret_key'];
-        $decoded = null;
-
-        try {
-            $decoded = (array)FirebaseJwt::decode(
-                $token,
-                new Key($secretKey, 'HS256')
-            );
-        } catch (\Throwable $e) {
-            Log::error('Error decoding jwt-passwordless token to login', ['exception' => $e->getMessage()]);
-        }
-        return $decoded;
     }
 }

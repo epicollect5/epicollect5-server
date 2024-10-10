@@ -2,14 +2,12 @@
 
 namespace ec5\Providers\Macros\Response;
 
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\ServiceProvider;
 
 class ApiSuccessCodeMacro extends ServiceProvider
 {
-    public function boot()
+    public function boot(): void
     {
         Response::macro('apiSuccessCode', function ($code) {
             $apiContentTypeHeaderKey = config('epicollect.setup.api.responseContentTypeHeaderKey');
@@ -22,7 +20,8 @@ class ApiSuccessCodeMacro extends ServiceProvider
                     ]
                 ])
                 ->header(
-                    $apiContentTypeHeaderKey, $apiContentTypeHeaderValue
+                    $apiContentTypeHeaderKey,
+                    $apiContentTypeHeaderValue
                 );
         });
     }

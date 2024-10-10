@@ -1,9 +1,9 @@
 <?php
 
-namespace ec5\Libraries\Jwt;
+namespace ec5\Libraries\Auth\Jwt;
 
-use Firebase\JWT\Key;
 use Firebase\JWT\JWT as FirebaseJwt;
+use Firebase\JWT\Key;
 use Log;
 use Throwable;
 

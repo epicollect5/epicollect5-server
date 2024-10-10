@@ -4,8 +4,8 @@ namespace ec5\Http\Controllers\Web\Auth;
 
 use Auth;
 use ec5\Http\Controllers\Controller;
-use ec5\Libraries\JwtApple\JWK as JWKApple;
-use ec5\Libraries\JwtApple\JWT as JWTApple;
+use ec5\Libraries\Auth\JwtApple\JWK as JWKApple;
+use ec5\Libraries\Auth\JwtApple\JWT as JWTApple;
 use ec5\Models\User\User;
 use ec5\Models\User\UserProvider;
 use ec5\Traits\Auth\AppleJWTHandler;

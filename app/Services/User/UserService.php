@@ -3,7 +3,7 @@
 namespace ec5\Services\User;
 
 use DB;
-use ec5\Libraries\Ldap\LdapUser;
+use ec5\Libraries\Auth\Ldap\LdapUser;
 use ec5\Models\User\User;
 use ec5\Models\User\UserProvider;
 use Exception;

@@ -145,8 +145,6 @@ return [
          * Laravel Framework Service Providers...
          */
         Illuminate\Auth\AuthServiceProvider::class,
-        // Jwt provider
-        ec5\Libraries\Jwt\JwtAuthServiceProvider::class,
         Illuminate\Broadcasting\BroadcastServiceProvider::class,
         Illuminate\Bus\BusServiceProvider::class,
         Illuminate\Cache\CacheServiceProvider::class,
@@ -175,6 +173,8 @@ return [
          */
         ec5\Providers\AppServiceProvider::class,
         ec5\Providers\AuthServiceProvider::class,
+        // Jwt provider for JWT authentication
+        ec5\Providers\JwtAuthServiceProvider::class,
         ec5\Providers\EventServiceProvider::class,
         ec5\Providers\RouteServiceProvider::class,
         ec5\Providers\ApiResponseProvider::class,
@@ -192,7 +192,7 @@ return [
         // Socialite
         Laravel\Socialite\SocialiteServiceProvider::class,
         // Ldap
-        ec5\Libraries\Ldap\LdapServiceProvider::class,
+        \ec5\Libraries\Auth\Ldap\LdapServiceProvider::class,
         // Image Intervention
         Intervention\Image\ImageServiceProvider::class,
         // Laravel Passport
@@ -245,7 +245,7 @@ return [
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
         'Socialite' => Laravel\Socialite\Facades\Socialite::class,
-        'Ldap' => ec5\Libraries\Ldap\Ldap::class,
+        'Ldap' => \ec5\Libraries\Auth\Ldap\Ldap::class,
         'Uuid' => Webpatser\Uuid\Uuid::class,
         'Image' => Intervention\Image\Facades\Image::class,
         'Avatar' => Laravolt\Avatar\Facade::class,
