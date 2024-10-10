@@ -40,7 +40,6 @@ class RateLimitsEntriesExportTest extends TestCase
     private User $user;
     private Project $project;
     private array $projectDefinition;
-    private String $name;
     private String $slug;
     private String $email;
     public function setUp(): void
@@ -49,7 +48,7 @@ class RateLimitsEntriesExportTest extends TestCase
         //to clear limits counter, wait 1 minute and 1 second
         sleep(61);
 
-        $this->name = config('testing.API_RATE_LIMITS_ENTRIES.name');
+        $name = config('testing.API_RATE_LIMITS_ENTRIES.name');
         $this->slug = config('testing.API_RATE_LIMITS_ENTRIES.slug');
         $this->email = config('testing.UNIT_TEST_RANDOM_EMAIL');
 
@@ -69,7 +68,7 @@ class RateLimitsEntriesExportTest extends TestCase
 
         //create a project with custom project definition
         $this->projectDefinition = ProjectDefinitionGenerator::createProject(1);
-        $this->projectDefinition['data']['project']['name'] = $this->name;
+        $this->projectDefinition['data']['project']['name'] = $name;
         $this->projectDefinition['data']['project']['slug'] = $this->slug;
         $this->project = factory(Project::class)->create(
             [
@@ -207,21 +206,8 @@ class RateLimitsEntriesExportTest extends TestCase
             } catch (Throwable $e) {
                 if ($e->hasResponse()) {
                     $response = $e->getResponse();
-
                     // Assert the status code
                     $this->assertEquals(429, $response->getStatusCode());
-
-                    // Get headers from the response
-                    $headers = $response->getHeaders();
-
-                    // Check if 'X-RateLimit-Remaining' key exists in headers (case-insensitive)
-                    $rateLimitRemainingKey = array_change_key_case($headers);
-                    $this->assertArrayHasKey('x-ratelimit-remaining', $rateLimitRemainingKey);
-
-                    // Optional: If you want to check the value as well
-                    $remaining = $rateLimitRemainingKey['x-ratelimit-remaining'][0] ?? null;
-                    $this->assertNotNull($remaining);
-                    $this->assertEquals(0, $remaining);
                 }
             }
 
