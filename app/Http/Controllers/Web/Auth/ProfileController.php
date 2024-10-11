@@ -46,12 +46,14 @@ class ProfileController extends Controller
      */
     public function show(Request $request)
     {
-        $request->session()->put('nonce', csrf_token());
+        $nonce = csrf_token();
+        session(['nonce' => $nonce]);
 
         return view('auth.profile', [
             'name' => $this->user->name,
             'email' => $this->user->email,
             'providers' => $this->providers,
+            'nonce' => $nonce,
             'auth_methods' => config('auth.auth_methods')
         ]);
     }

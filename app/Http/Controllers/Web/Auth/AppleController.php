@@ -173,6 +173,7 @@ class AppleController extends AuthController
         }
 
         //we get here when there is any validation error
+        Log::error(__METHOD__ . ' failed.', ['$parsed_id_token' => $parsed_id_token]);
         return redirect()->route('login')->withErrors(['ec5_386']);
     }
 

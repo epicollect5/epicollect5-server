@@ -24,10 +24,11 @@ class LoginController extends AuthController
                     session()->put('url.intended', url()->previous());
             }
 
-            session(['nonce' => csrf_token()]);
-
+            $nonce = csrf_token();
+            session(['nonce' => $nonce]);
             return view('auth.login', [
-                'gcaptcha' => config('epicollect.setup.google_recaptcha.site_key')
+                'gcaptcha' => config('epicollect.setup.google_recaptcha.site_key'),
+                'nonce' => $nonce,
             ]);
         }
         return redirect()->route('home');

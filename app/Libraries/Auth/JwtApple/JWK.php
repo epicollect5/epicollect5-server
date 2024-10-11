@@ -30,10 +30,8 @@ class JWK
      * @throws InvalidArgumentException     Provided JWK Set is empty
      * @throws UnexpectedValueException     Provided JWK Set was invalid
      * @throws DomainException              OpenSSL failure
-     *
-     * @uses parseKey
      */
-    public static function parseKeySet(array $jwks)
+    public static function parseKeySet(array $jwks): array
     {
         $keys = array();
 
@@ -63,13 +61,9 @@ class JWK
      *
      * @param array $jwk An individual JWK
      *
-     * @return resource|array An associative array that represents the key
-     *
      * @throws InvalidArgumentException     Provided JWK is empty
      * @throws UnexpectedValueException     Provided JWK was invalid
      * @throws DomainException              OpenSSL failure
-     *
-     * @uses createPemFromModulusAndExponent
      */
     private static function parseKey(array $jwk)
     {
@@ -111,9 +105,8 @@ class JWK
      *
      * @return string The RSA public key represented in PEM format
      *
-     * @uses encodeLength
      */
-    private static function createPemFromModulusAndExponent($n, $e)
+    private static function createPemFromModulusAndExponent($n, $e): string
     {
         $modulus = JWT::urlsafeB64Decode($n);
         $publicExponent = JWT::urlsafeB64Decode($e);
