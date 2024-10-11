@@ -29,7 +29,7 @@ trait AppleJWTHandler
 
     public function getPublicKeysFromAppleEndpoint(mixed $token): array
     {
-        $apple_jwk_keys = json_decode(file_get_contents(config('auth.apple.public_keys_endpoint')), null, 512, JSON_OBJECT_AS_ARRAY);
+        $apple_jwk_keys = json_decode(file_get_contents(config('auth.apple.public_keys_endpoint')), null, 512);
         $keys = array();
         foreach ($apple_jwk_keys->keys as $key) {
             $keys[] = (array)$key;
