@@ -19,11 +19,10 @@ class VerifyCsrfToken extends BaseVerifier
     ];
 
     /**
-     * @return true
      *
-     * imp: to make it work like pre Laravel 7
-     *  without this, X-CSRF token from Ajax post requests
-     *  stop working
+     *  imp: to make it work like pre Laravel 7
+     *   without this, X-CSRF token from Ajax post requests
+     *   stop working
      */
     public static function serialized(): bool
     {
