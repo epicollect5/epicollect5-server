@@ -11,6 +11,7 @@ use ec5\Models\User\UserProvider;
 use ec5\Traits\Auth\AppleJWTHandler;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\InvalidStateException;
 use Log;
@@ -47,7 +48,7 @@ class ProfileController extends Controller
     public function show(Request $request)
     {
         $nonce = csrf_token();
-        session(['nonce' => $nonce]);
+        Cache::add($nonce, true, now()->addMinutes(30));
 
         return view('auth.profile', [
             'name' => $this->user->name,
@@ -174,7 +175,6 @@ class ProfileController extends Controller
         }
 
         try {
-            $nonce = session('nonce');
             $params = $request->all();
             $token = $params['id_token'];
 
@@ -200,7 +200,8 @@ class ProfileController extends Controller
                 return redirect()->route('profile')->withErrors(['ec5_386']);
             }
 
-            if ($parsed_id_token['nonce'] === $nonce) {
+            if (Cache::has($parsed_id_token['nonce'])) {
+                Cache::forget($parsed_id_token['nonce']);
                 //get Apple user email, always sent in the token
                 $appleUserEmail = $parsed_id_token['email'];
 

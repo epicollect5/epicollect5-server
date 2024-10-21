@@ -42,7 +42,6 @@ class AppleController extends AuthController
         $isLocalAuthEnabled = in_array($this->localProviderLabel, $this->authMethods, true);
 
         //request parameters originally sent by Apple and posted here by ec5 front end
-        // $params = $request->get('authorization');
         $params = $request->all();
         $token = $params['id_token'];
         $parsed_id_token = $this->parseIdentityToken($token);
