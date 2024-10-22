@@ -2,8 +2,6 @@
 
 namespace ec5\Http\Controllers\Web\Auth;
 
-use Illuminate\Support\Facades\Cache;
-
 class LoginController extends AuthController
 {
     /*
@@ -27,7 +25,7 @@ class LoginController extends AuthController
             }
 
             $nonce = csrf_token();
-            Cache::add($nonce, true, now()->addMinutes(30));
+            session(['nonce' => $nonce]);
             return view('auth.login', [
                 'gcaptcha' => config('epicollect.setup.google_recaptcha.site_key'),
                 'nonce' => $nonce,

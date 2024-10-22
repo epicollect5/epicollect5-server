@@ -11,7 +11,6 @@ use ec5\Models\User\UserProvider;
 use ec5\Traits\Auth\AppleJWTHandler;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\InvalidStateException;
 use Log;
@@ -48,7 +47,7 @@ class ProfileController extends Controller
     public function show(Request $request)
     {
         $nonce = csrf_token();
-        Cache::add($nonce, true, now()->addMinutes(30));
+        session(['nonce' => $nonce]);
 
         return view('auth.profile', [
             'name' => $this->user->name,
@@ -175,6 +174,7 @@ class ProfileController extends Controller
         }
 
         try {
+            $nonce = session('nonce');
             $params = $request->all();
             $token = $params['id_token'];
 
@@ -200,8 +200,7 @@ class ProfileController extends Controller
                 return redirect()->route('profile')->withErrors(['ec5_386']);
             }
 
-            if (Cache::has($parsed_id_token['nonce'])) {
-                Cache::forget($parsed_id_token['nonce']);
+            if ($parsed_id_token['nonce'] === $nonce) {
                 //get Apple user email, always sent in the token
                 $appleUserEmail = $parsed_id_token['email'];
 
@@ -258,15 +257,6 @@ class ProfileController extends Controller
         }
         return redirect()->route('profile')->withErrors(['ec5_386']);
     }
-
-    //    //after 5 failed login attempts, users need to wait 10 minutes
-    //    protected function hasTooManyLoginAttempts(Request $request)
-    //    {
-    //        return $this->limiter()->tooManyAttempts(
-    //            $this->throttleKey($request),
-    //            5
-    //        );
-    //    }
 
     private function isLocal($user)
     {

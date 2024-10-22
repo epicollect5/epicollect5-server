@@ -11,7 +11,6 @@ use ec5\Traits\Auth\AppleJWTHandler;
 use ec5\Traits\Auth\AppleUserUpdater;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Log;
 use Throwable;
 
@@ -36,6 +35,7 @@ class AppleController extends AuthController
 
     public function handleAppleCallback(Request $request)
     {
+        $nonce = session('nonce');
         $appleUser = null;
 
         //check if local logins are enabled
@@ -56,8 +56,7 @@ class AppleController extends AuthController
             return redirect()->route('login')->withErrors(['ec5_386']);
         }
 
-        if (Cache::has($parsed_id_token['nonce'])) {
-            Cache::forget($parsed_id_token['nonce']);
+        if ($parsed_id_token['nonce'] === $nonce) {
             //get Apple user email, always sent in the token
             $email = $parsed_id_token['email'];
             //look for the user
@@ -173,6 +172,7 @@ class AppleController extends AuthController
         }
 
         //we get here when there is any validation error
+        Log::error(__METHOD__ . ' failed.', ['$parsed_id_token' => $parsed_id_token]);
         return redirect()->route('login')->withErrors(['ec5_386']);
     }
 

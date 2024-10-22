@@ -90,7 +90,7 @@
         <meta name="appleid-signin-client-id" content="{{config('auth.apple.connect_client_id')}}">
         <meta name="appleid-signin-redirect-uri" content="{{config('auth.apple.connect_redirect_uri')}}">
     @endif
-    <meta name="appleid-signin-nonce" content="{{$nonce }}">
+    <meta name="appleid-signin-nonce" content="{{$nonce}}">
 @endif
 
 
