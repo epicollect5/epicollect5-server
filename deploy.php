@@ -18,9 +18,18 @@ set('ssh_multiplexing', true);
 set('keep_releases', 3);
 
 add('shared_files', ['public/.htaccess']);
-add('writable_dirs', [
+set('writable_dirs', [
+    'bootstrap/cache',
+    'storage',
+    'storage/app',
     'storage/app/projects',
-    'storage/app/temp'
+    'storage/app/temp',
+    'storage/framework',
+    'storage/framework/cache',
+    'storage/framework/cache/data',
+    'storage/framework/sessions',
+    'storage/framework/views',
+    'storage/logs',
 ]);
 
 //MYSQL user for the epicollect5 app
