@@ -48,6 +48,8 @@ php artisan view:clear
 print_message "$YELLOW" "Running php artisan config:clear..."
 php artisan config:clear
 
+php artisan optimize:clear
+
 print_message "$YELLOW" "Listing files in bootstrap/cache before deletion..."
 # List files before deletion
 before_files=$(list_files bootstrap/cache)
