@@ -18,7 +18,7 @@
                           account_box
                     </span>
                         <small>
-                            {{$email}}
+                            <strong>{{$email}}</strong>
                         </small>
                     </a>
                 </div>
