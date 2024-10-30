@@ -22,38 +22,21 @@ return [
         'zone' => env('MAILGUN_ZONE'),
     ],
 
-    'ses' => [
-        'key' => env('SES_KEY'),
-        'secret' => env('SES_SECRET'),
-        'region' => 'us-east-1',
-    ],
-
-    'sparkpost' => [
-        'secret' => env('SPARKPOST_SECRET'),
-    ],
-
-    'stripe' => [
-        'model' => \ec5\Models\User\User::class,
-        'key' => env('STRIPE_KEY'),
-        'secret' => env('STRIPE_SECRET'),
-
-    ],
-
-    /*
-    * Google details for logins via the web
-    */
+    //Google credentials for web auth
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
         'redirect' => env('GOOGLE_LOGIN_REDIRECT_URI')
     ],
 
-    /*
-     * Google details for logins via the mobile client
-     */
+    //Google credentials mobile auth
     'google_api' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        //this redirect allows the mobile app to be redirected to localhost
+        //without it, Socialite will throw an error
+        'redirect' => env('GOOGLE_LOGIN_REDIRECT_URI_API', 'http://localhost'),
+        //todo: not sure we are still using the scope
         'scope' => env('GOOGLE_SCOPE')
     ]
 ];
