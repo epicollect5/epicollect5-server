@@ -158,7 +158,11 @@
         <div class="col-sm-12 col-md-12 col-lg-5 equal-height">
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    <div class="panel-title">Project {{ trans('site.settings') }}</div>
+                    <div class="panel-title">Project {{ trans('site.settings') }}
+                        <a href="https://docs.epicollect.net/web-application/set-project-details#project-settings"
+                           target="_blank">
+                            <i class="material-symbols-outlined">help</i></a>
+                    </div>
                 </div>
                 <div class="panel-body">
                     <div class="table-responsive table-project-settings">

@@ -5,7 +5,7 @@
         </a>
         <a class="list-group-item" href="{{ url('/myprojects/'.$requestAttributes->requestedProject->slug)}}">
             <i class="material-icons">&#xE8B8;</i>
-            {{ trans('site.details')}}
+            {{ trans('site.manage_project')}}
         </a>
 
         <a class="list-group-item"

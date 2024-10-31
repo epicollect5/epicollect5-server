@@ -2,9 +2,14 @@
 
     <div class="panel-heading">
         <span>{{ trans('site.manage_users') }}
-            <span class="badge count-overall">{{ $countOverall }}</span>
+             <a href="https://docs.epicollect.net/web-application/manage-users"
+                target="_blank">
+                            <span class="material-symbols-outlined">
+help
+</span></a>
         </span>
         @if ($requestAttributes->requestedProjectRole->canManageUsers())
+
             <div class="btn-group pull-right" role="group">
                 <button class="btn btn-action btn-sm" data-toggle="modal" data-target="#ec5ModalExistingUser">
                     <i class="material-icons">account_circle</i>
@@ -28,6 +33,9 @@
                         </li>
                     </ul>
                 </div>
+            </div>
+            <div class="pull-right margin-right-md">
+                Total <span class="badge count-overall">{{ $countOverall }}</span>
             </div>
         @endif
     </div>
