@@ -64,8 +64,9 @@ class UserRoutesTest extends TestCase
         $response = $this->get('/profile');
         $response->assertRedirect('/login');
 
-        $response = $this->get('/admin');
-        $response->assertStatus(422);
+        $response = $this->get('/admin/stats');
+        $response->assertStatus(302);
+        $response->assertRedirect(Route('login-admin'));
     }
 
     /**
