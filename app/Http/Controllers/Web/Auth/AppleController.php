@@ -9,6 +9,7 @@ use ec5\Models\User\UserProvider;
 use ec5\Services\User\UserService;
 use ec5\Traits\Auth\AppleJWTHandler;
 use ec5\Traits\Auth\AppleUserUpdater;
+use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Log;
@@ -43,10 +44,15 @@ class AppleController extends AuthController
 
         //request parameters originally sent by Apple and posted here by ec5 front end
         $params = $request->all();
-        $token = $params['id_token'];
-        $parsed_id_token = $this->parseIdentityToken($token);
+        try {
+            $token = $params['id_token'];
+            $parsed_id_token = $this->parseIdentityToken($token);
 
-        if (!$parsed_id_token) {
+            if (!$parsed_id_token) {
+                throw new Exception('Invalid Apple ID token');
+            }
+        } catch (Throwable $e) {
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             return redirect()->route('login')->withErrors(['ec5_382']);
         }
 
