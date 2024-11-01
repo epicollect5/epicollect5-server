@@ -24,7 +24,7 @@ class DownloadSubsetController
     use RequestAttributes;
 
     protected DataMappingService $dataMappingService;
-    protected array $errors;
+    protected array $errors = [];
 
     public function __construct(DataMappingService $dataMappingService)
     {
