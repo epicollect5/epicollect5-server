@@ -2,6 +2,7 @@
 
 namespace ec5\Libraries\Utilities;
 
+use Cookie;
 use Illuminate\Support\Str;
 
 class Common
@@ -223,5 +224,24 @@ class Common
     public static function getMonthName($monthNumber): string
     {
         return date("M", mktime(0, 0, 0, $monthNumber, 1));
+    }
+
+    //Use a cookie to signal the download has completed and hide overlay.
+    //no need to be secured, just a timestamp
+    public static function getMediaCookie($value)
+    {
+        $cookieName = config('epicollect.setup.cookies.download_entries');
+        return Cookie::make(
+            $cookieName,
+            $value,
+            //"If set to 0, or omitted, the cookie will expire at the end of the session (when the browser closes)."
+            0,              // Duration in minutes
+            '/',            // Path, use '/' to be accessible throughout the site
+            null,           // Domain, use null for default
+            false,           // Secure flag: should be true if using HTTPS
+            false,          // HttpOnly: set to false for JavaScript access
+            false,          // Raw: typically false unless raw encoding is needed
+            'Lax'           // SameSite setting, using 'Lax' to avoid cross-site restrictions
+        );
     }
 }

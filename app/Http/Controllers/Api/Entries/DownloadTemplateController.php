@@ -36,7 +36,7 @@ class DownloadTemplateController
         $projectMappings = json_decode($projectStructure->project_mapping, true);
         $projectDefinition = json_decode($projectStructure->project_definition, true);
         $params = $request->all();
-        $cookieName = config('epicollect.mappings.cookies.download-entries');
+        $cookieName = config('epicollect.setup.cookies.download_entries');
 
         //todo validation request
         $ruleUploadTemplate->validate($params);
@@ -107,8 +107,7 @@ class DownloadTemplateController
             $mapTos
         );
 
-        //"If set to 0, or omitted, the cookie will expire at the end of the session (when the browser closes)."
-        $mediaCookie = Cookie::make($cookieName, $timestamp, 0, null, null, false, false);
+        $mediaCookie = Common::getMediaCookie($timestamp);
         Cookie::queue($mediaCookie);
 
         $content = implode(',', $csvHeaders);

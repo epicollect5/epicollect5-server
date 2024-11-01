@@ -42,7 +42,7 @@ class DownloadSubsetController
 
         //Get raw query params, $this->getRequestParams is doing some filtering
         $rawParams = $request->all();
-        $cookieName = config('epicollect.mappings.cookies.download-entries');
+        $cookieName = config('epicollect.setup.cookies.download_entries');
 
         // Validate the options and query string
         if (!$entriesViewService->areValidQueryParams($params)) {
@@ -100,8 +100,7 @@ class DownloadSubsetController
             return Response::apiErrorCode(400, $this->errors);
             //todo should I delete any leftovers here?
         }
-        //"If set to 0, or omitted, the cookie will expire at the end of the session (when the browser closes)."
-        $mediaCookie = Cookie::make($cookieName, $timestamp, 0, null, null, false, false);
+        $mediaCookie = Common::getMediaCookie($timestamp);
         Cookie::queue($mediaCookie);
 
         return response()->download($filepath, $filename)->deleteFileAfterSend(true);

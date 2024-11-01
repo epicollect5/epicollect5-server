@@ -52,7 +52,7 @@ class DownloadSubsetControllerTest extends TestCase
                 'total_entries' => 0
             ]
         );
-        $cookieName = config('epicollect.mappings.cookies.download-entries');
+        $cookieName = config('epicollect.setup.cookies.download_entries');
         $queryString = '?map_index=0&filename=ciao';
         $queryString .= '&' . $cookieName . '=test';
         $response = [];
@@ -115,9 +115,9 @@ class DownloadSubsetControllerTest extends TestCase
                 'total_entries' => 0
             ]
         );
-        $cookies = [config('epicollect.mappings.cookies.download-entries') => Carbon::now()->timestamp];
+        $cookies = [config('epicollect.setup.cookies.download_entries') => Carbon::now()->timestamp];
         $params = [
-            config('epicollect.mappings.cookies.download-entries') => Carbon::now()->timestamp,
+            config('epicollect.setup.cookies.download_entries') => Carbon::now()->timestamp,
             'format' => $format
         ];
         $response = $this->actingAs($user)->call('GET', 'api/internal/download-entries/' . $project->slug, $params, $cookies);
@@ -178,9 +178,9 @@ class DownloadSubsetControllerTest extends TestCase
                 'total_entries' => 0
             ]
         );
-        $cookies = [config('epicollect.mappings.cookies.download-entries') => Carbon::now()->timestamp];
+        $cookies = [config('epicollect.setup.cookies.download_entries') => Carbon::now()->timestamp];
         $params = [
-            config('epicollect.mappings.cookies.download-entries') => Carbon::now()->timestamp,
+            config('epicollect.setup.cookies.download_entries') => Carbon::now()->timestamp,
             'format' => $format
         ];
         $response = $this->actingAs($user)->call('GET', 'api/internal/download-entries/' . $project->slug, $params, $cookies);
@@ -241,9 +241,9 @@ class DownloadSubsetControllerTest extends TestCase
                 'total_entries' => 0
             ]
         );
-        $cookies = [config('epicollect.mappings.cookies.download-entries') => Carbon::now()->timestamp];
+        $cookies = [config('epicollect.setup.cookies.download_entries') => Carbon::now()->timestamp];
         $params = [
-            config('epicollect.mappings.cookies.download-entries') => Carbon::now()->timestamp,
+            config('epicollect.setup.cookies.download_entries') => Carbon::now()->timestamp,
             'format' => $format
         ];
         $response = $this->actingAs($user)->call('GET', 'api/internal/download-entries/' . $project->slug, $params, $cookies);
@@ -304,9 +304,9 @@ class DownloadSubsetControllerTest extends TestCase
                 'total_entries' => 0
             ]
         );
-        $cookies = [config('epicollect.mappings.cookies.download-entries') => Carbon::now()->timestamp];
+        $cookies = [config('epicollect.setup.cookies.download_entries') => Carbon::now()->timestamp];
         $params = [
-            config('epicollect.mappings.cookies.download-entries') => Carbon::now()->timestamp,
+            config('epicollect.setup.cookies.download_entries') => Carbon::now()->timestamp,
             'format' => $format
         ];
         $response = $this->actingAs($user)->call('GET', 'api/internal/download-entries/' . $project->slug, $params, $cookies);
@@ -403,8 +403,8 @@ class DownloadSubsetControllerTest extends TestCase
             $this->logTestError($exception, $response);
         }
 
-        $cookies = [config('epicollect.mappings.cookies.download-entries') => Carbon::now()->timestamp];
-        $params = [config('epicollect.mappings.cookies.download-entries') => Carbon::now()->timestamp,
+        $cookies = [config('epicollect.setup.cookies.download_entries') => Carbon::now()->timestamp];
+        $params = [config('epicollect.setup.cookies.download_entries') => Carbon::now()->timestamp,
             'format' => $format];
         $response = $this->actingAs($user)->call('GET', 'api/internal/download-entries/' . $project->slug, $params, $cookies);
 
@@ -500,8 +500,8 @@ class DownloadSubsetControllerTest extends TestCase
             $this->logTestError($exception, $response);
         }
 
-        $cookies = [config('epicollect.mappings.cookies.download-entries') => Carbon::now()->timestamp];
-        $params = [config('epicollect.mappings.cookies.download-entries') => Carbon::now()->timestamp,
+        $cookies = [config('epicollect.setup.cookies.download_entries') => Carbon::now()->timestamp];
+        $params = [config('epicollect.setup.cookies.download_entries') => Carbon::now()->timestamp,
             'format' => $format];
         $response = $this->actingAs($user)->call('GET', 'api/internal/download-entries/' . $project->slug, $params, $cookies);
 
@@ -561,9 +561,9 @@ class DownloadSubsetControllerTest extends TestCase
                 'total_entries' => 0
             ]
         );
-        $cookies = [config('epicollect.mappings.cookies.download-entries') => Carbon::now()->timestamp];
+        $cookies = [config('epicollect.setup.cookies.download_entries') => Carbon::now()->timestamp];
         $params = [
-            config('epicollect.mappings.cookies.download-entries') => Carbon::now()->timestamp,
+            config('epicollect.setup.cookies.download_entries') => Carbon::now()->timestamp,
             'format' => 'ciao',
             'map_index' => 0
         ];
@@ -571,7 +571,7 @@ class DownloadSubsetControllerTest extends TestCase
         $response->assertStatus(400);
 
         $params = [
-            config('epicollect.mappings.cookies.download-entries') => Carbon::now()->timestamp,
+            config('epicollect.setup.cookies.download_entries') => Carbon::now()->timestamp,
             'format' => 'gibberish',
             'map_index' => 0
         ];
@@ -579,7 +579,7 @@ class DownloadSubsetControllerTest extends TestCase
         $response->assertStatus(400);
 
         $params = [
-            config('epicollect.mappings.cookies.download-entries') => Carbon::now()->timestamp,
+            config('epicollect.setup.cookies.download_entries') => Carbon::now()->timestamp,
             'format' => 'csv',
             'map_index' => 'gibberish'
         ];
@@ -678,7 +678,7 @@ class DownloadSubsetControllerTest extends TestCase
         $response = $this
             ->actingAs($user)
             ->json('GET', 'api/internal/download-entries/' . $project->slug)
-            ->withCookie(config('epicollect.mappings.cookies.download-entries'), 'gibberish');
+            ->withCookie(config('epicollect.setup.cookies.download_entries'), 'gibberish');
 
 
         //for reasons unknown when using withCookie() we need to change approch to test the response

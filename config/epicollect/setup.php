@@ -55,5 +55,8 @@ return [
     ],
     'bulk_deletion' => [
         'chunk_size' => env('BULK_DELETION_CHUNK_SIZE', 100),
+    ],
+    'cookies' => [
+        'download_entries' => 'epicollect5-download-entries'
     ]
 ];

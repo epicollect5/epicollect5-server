@@ -33,7 +33,7 @@ class DownloadController
         $allowedKeys = array_keys(config('epicollect.strings.download_data_entries'));
         $perPage = config('epicollect.limits.entries_table.per_page_download');
         $params = $viewEntriesService->getSanitizedQueryParams($allowedKeys, $perPage);
-        $cookieName = config('epicollect.mappings.cookies.download-entries');
+        $cookieName = config('epicollect.setup.cookies.download_entries');
 
         if ($user === null) {
             return Response::apiErrorCode(400, ['download-entries' => ['ec5_86']]);
@@ -61,9 +61,7 @@ class DownloadController
 
     private function sendArchive($filepath, $filename, $timestamp = null)
     {
-        $cookieName = config('epicollect.mappings.cookies.download-entries');
-        //"If set to 0, or omitted, the cookie will expire at the end of the session (when the browser closes)."
-        $mediaCookie = Cookie::make($cookieName, $timestamp, 0, null, null, false, false);
+        $mediaCookie = Common::getMediaCookie($timestamp);
         Cookie::queue($mediaCookie);
 
         if (file_exists($filepath)) {

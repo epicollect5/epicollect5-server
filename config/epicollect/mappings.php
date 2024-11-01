@@ -17,9 +17,6 @@ return [
         'branch_ref' => 'ec5_branch_ref',
         'branch_uuid' => 'ec5_branch_uuid'
     ],
-    'cookies' => [
-        'download-entries' => 'epicollect5-download-entries'
-    ],
     'user_placeholder' => [
         'apple_first_name' => 'Apple User',
         'apple_last_name' => 'n/a',
