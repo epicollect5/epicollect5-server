@@ -1,6 +1,9 @@
 <div class="panel panel-default">
     <div class="panel-heading">
         <span>{{ trans('site.clone_project') }}</span>
+        <a href="https://docs.epicollect.net/web-application/clone-project" target="_blank">
+            <i class="material-symbols-outlined">help</i>
+        </a>
     </div>
     <div class="panel-body">
 

@@ -1,6 +1,9 @@
 <div class="panel panel-default page-manage-entries">
     <div class="panel-heading">
         <span>{{ trans('site.manage_entries') }}</span>
+        <a href="https://docs.epicollect.net/web-application/manage-entries" target="_blank">
+            <i class="material-symbols-outlined">help</i>
+        </a>
     </div>
     <div class="panel-body">
         {{-- Nav tabs --}}

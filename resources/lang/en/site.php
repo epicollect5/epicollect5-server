@@ -113,7 +113,7 @@ return [
     'form_name_placeholder' => 'i.e. Census',
     'manage_users' => 'Manage Users',
     'forms' => 'Forms',
-    'clone' => 'Clone',
+    'clone' => 'Clone Project',
     'download' => 'Download',
     'cannot_remove_creator' => 'The creator cannot be removed.',
     'cannot_remove_a' => 'Cannot remove a ',
