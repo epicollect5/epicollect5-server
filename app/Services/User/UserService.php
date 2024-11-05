@@ -270,7 +270,7 @@ class UserService
         return null;
     }
 
-    public static function getAllUsers($perPage = 1, $currentPage = 1, $search = '', $options = array(), $columns = array('*'))
+    public static function getAllUsers($perPage = 1, $currentPage = 1, $search = '', $filters = array())
     {
         // retrieve paginated users relative to the search (on name and email)
         // and filter (if applicable), ordered by name
@@ -280,21 +280,15 @@ class UserService
                 $query->where('name', 'LIKE', $search . '%')
                     ->orWhere('email', 'LIKE', $search . '%');
             }
-        })->where(function ($query) use ($options) {
+        })->where(function ($query) use ($filters) {
             // if you have filter criteria, add to where clause
-            if (!empty($options['filter']) && !empty($options['filter_option'])) {
-                $query->where($options['filter'], '=', $options['filter_option']);
+            if (!empty($filters['server_role'])) {
+                $query->where('server_role', '=', $filters['server_role']);
+            }
+            if (!empty($filters['state'])) {
+                $query->where('state', '=', $filters['state']);
             }
         })->orderBy('name', 'asc');
-
-        // check if the current $page requested will be greater than the total number of pages allowed
-        // if so, we should set the current page to the previous page
-        $totalPages = ceil($users->count() / $perPage);
-        if ($currentPage > $totalPages) {
-            $currentPage--;
-        } else {
-            $currentPage = null;
-        }
 
         // now paginate users
         return $users->simplePaginate($perPage);

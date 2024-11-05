@@ -36,22 +36,24 @@ class AdminController extends Controller
     public function showUsers(Request $request)
     {
         // Get request data
-        $data = $request->all();
+        $params = $request->all();
         $perPage = config('epicollect.limits.users_per_page');
         $adminUser = $request->user();
         $ajaxView = 'admin.tables.users';
 
         // Set search/filter/filter option defaults
-        $search = !empty($data['search']) ? $data['search'] : '';
-        $options['filter'] = !empty($data['filter']) ? $data['filter'] : '';
-        $options['filter_option'] = !empty($data['filterOption']) ? $data['filterOption'] : '';
-        $currentPage = !empty($data['page']) ? $data['page'] : 1;
+        $search = !empty($params['search']) ? $params['search'] : '';
 
-        $users = UserService::getAllUsers($perPage, $currentPage, $search, $options);
-        $users->appends($options);
+        $filters['server_role'] = !empty($params['server_role']) ? $params['server_role'] : '';
+        $filters['state'] = !empty($params['state']) ? $params['state'] : '';
+
+        $currentPage = !empty($params['page']) ? $params['page'] : 1;
+
+        $users = UserService::getAllUsers($perPage, $currentPage, $search, $filters);
+        $users->appends($filters);
         $users->appends(['search' => $search]);
 
-        $params = [
+        $payload = [
             'action' => 'users',
             'users' => $users,
             'adminUser' => $adminUser
@@ -59,10 +61,10 @@ class AdminController extends Controller
 
         // If ajax, return rendered html from $ajaxView
         if ($request->ajax()) {
-            return response()->json(view($ajaxView, $params)->render());
+            return response()->json(view($ajaxView, $payload)->render());
         }
         // Return view with relevant params
-        return view('admin.admin', $params);
+        return view('admin.admin', $payload);
     }
 
     /**
@@ -75,11 +77,11 @@ class AdminController extends Controller
         $action = 'projects';
 
         // Get request data
-        $options = $request->all();
+        $params = $request->all();
         $perPage = config('epicollect.limits.admin_projects_per_page');
 
         //get projects paginated
-        $projects = $this->projectModel->admin($perPage, $options);
+        $projects = $this->projectModel->admin($perPage, $params);
 
         // Append the creator user's User object and current user's ProjectRole object
         foreach ($projects as $project) {
@@ -87,20 +89,20 @@ class AdminController extends Controller
             $project->my_role = $projectService->getRole($adminUser, $project->project_id)->getRole();
         }
 
-        $projects->appends($options);
+        $projects->appends($params);
 
-        $params = [
+        $payload = [
             'projects' => $projects,
             'action' => $action
         ];
 
         // If ajax, return rendered html from $ajaxView
         if ($request->ajax()) {
-            return response()->json(view($view, $params)->render());
+            return response()->json(view($view, $payload)->render());
         }
 
         // Return view with relevant params
-        return view('admin.admin', $params);
+        return view('admin.admin', $payload);
     }
 
     public function showStats()

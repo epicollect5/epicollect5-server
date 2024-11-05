@@ -7,10 +7,6 @@ window.EC5.users = window.EC5.users || {};
  */
 (function users(module) {
 
-    /**
-     *
-     * @param error
-     */
     module.showError = function (error) {
 
         if (error.responseJSON.errors) {
@@ -28,13 +24,8 @@ window.EC5.users = window.EC5.users || {};
      * Function for asynchronously retrieving the
      * list of users, based on any search/filter
      * criteria, with pagination
-     *
-     * @param page
-     * @param search
-     * @param filter
-     * @param filterOption
      */
-    module.getUsers = function (page, search, filter, filterOption) {
+    module.getUsers = function (page, search, server_role, state) {
 
         window.setTimeout(function () {
             window.EC5.overlay.fadeIn();
@@ -47,15 +38,20 @@ window.EC5.users = window.EC5.users || {};
         // Set defaults
         page = typeof page !== 'undefined' ? page : 1;
         search = typeof search !== 'undefined' ? search : '';
-        filter = typeof filter !== 'undefined' ? filter : '';
-        filterOption = typeof filterOption !== 'undefined' ? filterOption : '';
+        server_role = typeof server_role !== 'undefined' ? server_role : '';
+        state = typeof state !== 'undefined' ? state : '';
 
         // Make ajax request to load users
         $.ajax({
             url: window.EC5.SITE_URL + '/admin/users',
             type: 'GET',
             dataType: 'json',
-            data: {page: page, search: search, filter: filter, filterOption: filterOption}
+            data: {
+                page: page,
+                search: search,
+                server_role: server_role,
+                state: state
+            }
         }).done(function (data) {
             $('.user-administration__users').html(data) // Update the content
                 .animate({opacity: 1}, 500); // Animate opacity to 1 over 500 milliseconds
@@ -86,12 +82,13 @@ window.EC5.users = window.EC5.users || {};
             // Retrieve search and filter/filter option values from page elements
             // so pagination works within the current results set
             var search = container.find('.user-administration__user-search').val();
-            var filter = 'server_role';
-            var filterOption = container.find('.user-administration__user-filter-option').val();
+            var server_role = container.find('.user-administration__user-filter__server-role').val();
+            var state = container.find('.user-administration__user-filter__state').val();
             var page = container.find('.pagination .active span').html();
 
+
             // get users based on page and any existing search or filter and filter option
-            module.getUsers(page, search, filter, filterOption);
+            module.getUsers(page, search, server_role, state);
 
         }).fail(module.showError);
 
@@ -160,17 +157,18 @@ $(document).ready(function () {
     // Bind keyup event to search input
     userAdministration.on('keyup', '.user-administration__user-search', function (e) {
         // Get value of input
-        var value = this.value;
+        var needle = this.value;
 
         // If the length is 3 or more characters, or the user pressed ENTER, search
-        if (this.value.length >= 3 || e.keyCode === 13) {
+        if (needle.length >= 3 || e.keyCode === 13) {
 
             // Get user-administration container
             var container = $(this).closest('.user-administration');
 
             // Retrieve filter/filter option values from page elements
             // so pagination works within the current results set
-            var filterOption = container.find('.user-administration__user-filter-option').val();
+            var server_role = container.find('.user-administration__user-filter__server_role').val();
+            var state = container.find('.user-administration__user-filter__state').val();
 
             // Set delay amount
             // for user to stop typing
@@ -187,21 +185,29 @@ $(document).ready(function () {
             // Set new timeout request
             requestTimeout = setTimeout(function () {
                 // Get users based on this search (with filter values, if applicable)
-                window.EC5.users.getUsers(1, value, 'server_role', filterOption);
-
+                window.EC5.users.getUsers(1, needle, server_role, state);
             }, requestDelay);
-
         }
-
     });
 
     // Bind on change event to filter users by server role
-    userAdministration.on('change', '.user-administration__user-filter-option', function (e) {
+    userAdministration.on('change', '.user-administration__user-filter__state', function (e) {
         // Retrieve search and filter/filter option values from page elements
         // so pagination works within the current results set
         var search = $('.user-administration__user-search').val();
+        var server_role = $('.user-administration__user-filter__server-role').val();
         // Get users based on filter and filter option (with search value, if applicable)
-        window.EC5.users.getUsers(1, search, 'server_role', this.value);
+
+        window.EC5.users.getUsers(1, search, server_role, this.value);
+    });
+
+    userAdministration.on('change', '.user-administration__user-filter__server-role', function (e) {
+        // Retrieve search and filter/filter option values from page elements
+        // so pagination works within the current results set
+        var search = $('.user-administration__user-search').val();
+        var state = $('.user-administration__user-filter__state').val();
+        // Get users based on filter and filter option (with search value, if applicable)
+        window.EC5.users.getUsers(1, search, this.value, state);
     });
 
 

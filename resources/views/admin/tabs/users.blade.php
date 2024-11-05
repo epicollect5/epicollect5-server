@@ -10,20 +10,23 @@
                                class="form-control user-administration__user-search"
                                placeholder="{{trans('site.search_for_user')}}">
                     </div>
-                    <div class="col-xs-4">
-                        {{--                                <select name="filteroption"--}}
-                        {{--                                        class="form-control user-administration__user-filter-option"--}}
-                        {{--                                >--}}
-                        {{--                                    <option value="">Any Server Role</option>--}}
-                        {{--                                </select>--}}
+                    <div class="col-xs-2">
                         <select name="filteroption"
-                                class="form-control user-administration__user-filter-option">
-                            <option value="" selected>All Server Roles</option>
+                                class="form-control user-administration__user-filter__server-role">
+                            <option value="" selected>All Server Role(s)</option>
                             <option value="superadmin">Superadmin</option>
                             <option value="admin">Admin</option>
                             <option value="basic">Basic</option>
                         </select>
-
+                    </div>
+                    <div class="col-xs-2">
+                        <select name="filteroption"
+                                class="form-control user-administration__user-filter__state">
+                            <option value="" selected>All Status(es)</option>
+                            <option value="active">Active</option>
+                            <option value="archived">Archived</option>
+                            <option value="unverified">Unverified</option>
+                        </select>
                     </div>
 
                     <div class="col-xs-4">
@@ -44,34 +47,6 @@
                             </button>
                         </div>
                     </div>
-
-
-                    {{--                    <div @if($adminUser->server_role === 'superadmin')--}}
-                    {{--                             class="col-xs-2"--}}
-                    {{--                         @else--}}
-                    {{--                             class="col-xs-4"--}}
-                    {{--                            @endif--}}
-                    {{--                    >--}}
-                    {{--                        <a class="btn btn-default user-administration__user-reset pull-right hidden-xs hidden-sm"--}}
-                    {{--                           href="#">{{trans('site.clear_filter')}}</a>--}}
-                    {{--                        <a class="btn btn-default user-administration__user-reset pull-right visible-sm-block"--}}
-                    {{--                           href="#">{{trans('site.clear')}}</a>--}}
-                    {{--                        <a class="btn btn-default user-administration__user-reset pull-right visible-xs-block"--}}
-                    {{--                           href="#">--}}
-                    {{--                            <i class="material-icons">&#xE5D5;</i>--}}
-                    {{--                        </a>--}}
-                    {{--                    </div>--}}
-                    {{--                    @if($adminUser->server_role === 'superadmin')--}}
-                    {{--                        <div class="col-xs-2">--}}
-                    {{--                            <a class="btn btn-action user-administration__user-add pull-right hidden-xs"--}}
-                    {{--                               data-toggle="modal" data-target="#ec5ModalAddUser"--}}
-                    {{--                               href="#">{{trans('site.add_user')}}</a>--}}
-                    {{--                            <a class="btn btn-action user-administration__user-add pull-right visible-xs-block"--}}
-                    {{--                               data-toggle="modal" data-target="#ec5ModalAddUser" href="#">--}}
-                    {{--                                <i class="material-icons">&#43;</i>--}}
-                    {{--                            </a>--}}
-                    {{--                        </div>--}}
-                    {{--                    @endif--}}
                 </div>
             </div>
             <div class="panel-body">
@@ -79,7 +54,6 @@
                 <div class="user-administration__users table-responsive">
                     @include('admin.tables.users')
                 </div>
-
             </div>
         </div>
     </div>

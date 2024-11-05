@@ -4,25 +4,33 @@
   text-align: left;
 }
 
-.page-admin{
-
-  .panel-heading.navbar-default {
-    padding:0;
+.page-admin {
+  .user-administration__table {
+    table-layout: fixed;
+    th, td {
+      width: 30%; /* Adjust this value based on the number of columns */
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
   }
 
-  .projects-list__total, .user-list__total{
+  .panel-heading.navbar-default {
+    padding: 0;
+  }
+
+  .projects-list__total, .user-list__total {
     color: $deep-purple;
     font-weight: 700;
   }
   .filter-controls__visibility, .filter-controls__access {
     .filter-dropdown-label {
-      margin-top:6px;
+      margin-top: 6px;
       margin-right: 5px;
     }
   }
   .projects-list__filter-controls_dropdowns {
     .btn-action.dropdown-toggle {
-      width:120px;
+      width: 120px;
     }
   }
 
@@ -32,7 +40,7 @@
   }
 
   .projects-list {
-    position:relative;
+    position: relative;
     //320 is roughly footer height + navabr height +  page title etc... kinda working
     min-height: calc(100vh - 320px);
     .projects-loader {
