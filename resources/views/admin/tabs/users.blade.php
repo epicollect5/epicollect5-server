@@ -31,10 +31,10 @@
 
                     <div class="col-xs-4">
                         <div class="btn-group pull-right" role="group">
-                            <button type="button" class="btn btn-action user-administration__user-reset hidden-xs">
+                            <button type="button" class="btn btn-action user-administration__user-clear hidden-xs">
                                 {{trans('site.clear')}}
                             </button>
-                            <button type="button" class="btn btn-action user-administration__user-reset visible-xs">
+                            <button type="button" class="btn btn-action user-administration__user-clear visible-xs">
                                 <span class="material-icons">filter_list_off</span>
                             </button>
                             <button type="button" class="btn btn-action user-administration__user-add hidden-xs"

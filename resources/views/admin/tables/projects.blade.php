@@ -2,23 +2,23 @@
     @if (count($projects) == 0)
         <p class="well">{{ trans('site.no_projects_found') }}</p>
     @else
-        <table class="table table-bordered table-hover table-condensed projects__table">
+        <table class="table table-bordered table-striped table-hover table-condensed projects__table">
             <tr>
                 <th></th>
                 <th class="text-center">{{ trans('site.name') }}</th>
                 <th class="text-center">{{ trans('site.creator') }}</th>
-                <th class="text-center" style="width:100px">{{ trans('site.created_at') }}</th>
+                <th class="text-center" style="width:130px">Created On</th>
                 <th class="text-center">{{ trans('site.status') }}</th>
                 <th class="text-center">{{ trans('site.visibility') }}</th>
                 <th class="text-center">{{ trans('site.access') }}</th>
                 <th class="text-center">{{ trans('site.entries') }}</th>
-                <th class="text-center" style="width:120px">{{ trans('site.my_role') }}</th>
                 <th></th>
             </tr>
             @foreach ($projects as $project)
                 <tr>
-                    <td class="text-center"><img class="project-logo" width="32" height="32"
-                                                 src=" {{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_mobile_logo') }}"/>
+                    <td class="text-center">
+                        <img class="project-logo" width="32" height="32"
+                             src=" {{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_mobile_logo') }}"/>
                     </td>
                     <td>
                         <a title="{{ trans('site.view_project') }}" href="{{ url('project/' . $project->slug) }}">
@@ -31,7 +31,7 @@
                         {{ str_limit($project->user->name . ' ' . $project->user->last_name, $limit = 20, $end = '...') }}
                     </td>
                     <td class="text-center">
-                        {{ \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $project->created_at)->format('d M y') }}
+                        {{ Carbon\Carbon::parse($project->created_at)->format('jS M, Y')  }}
                     </td>
                     <td class="text-center">
                         {{ trans('site.' . $project->status) }}
@@ -43,19 +43,6 @@
                         {{ trans('site.' . $project->access) }}
                     </td>
                     <td class="text-center">{{ $project->total_entries }}</td>
-                    <td>
-                        <div class="btn-group">
-                            <select class="form-control project-roles" data-project-id="{{ $project->project_id }}">
-                                <option value="">{{ trans('site.no_role') }}</option>
-                                @foreach (array_keys(config('epicollect.strings.project_roles')) as $role)
-                                    <option value="{{ $role }}"
-                                            @if ($project->my_role == $role) selected @endif>
-                                        {{ trans('site.project_roles.' . $role) }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </td>
                     <td><a title="{{ trans('site.view_project_details') }}" class="btn btn-action btn-sm"
                            href="{{ url('myprojects/' . $project->slug) }}">Details</a></td>
                 </tr>

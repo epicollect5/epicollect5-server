@@ -182,6 +182,7 @@ $(document).ready(function () {
             // Clear the previous timeout request
             clearTimeout(requestTimeout);
 
+
             // Set new timeout request
             requestTimeout = setTimeout(function () {
                 // Get users based on this search (with filter values, if applicable)
@@ -212,13 +213,15 @@ $(document).ready(function () {
 
 
     // Bind on click to reset table
-    userAdministration.on('click', '.user-administration__user-reset', function (e) {
+    userAdministration.on('click', '.user-administration__user-clear', function (e) {
 
         e.preventDefault();
         // Remove search text
         $('.user-administration__user-search').val('');
         ///remove server role selection
-        $('.user-administration__user-filter-option').val('');
+        $('.user-administration__user-filter__server-role').val('');
+        $('.user-administration__user-filter__state').val('');
+
         // Get users
         window.EC5.users.getUsers();
     });

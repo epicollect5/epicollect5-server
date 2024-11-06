@@ -4,6 +4,17 @@
   text-align: left;
 }
 
+.projects__table {
+  tbody > tr:hover {
+    background-color: $light-green;
+  }
+  td {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+}
+
 .page-admin {
   .user-administration__table {
     table-layout: fixed;
@@ -11,6 +22,9 @@
       width: 30%; /* Adjust this value based on the number of columns */
       text-overflow: ellipsis;
       overflow: hidden;
+    }
+    tbody > tr:hover {
+      background-color: $light-green;
     }
   }
 
