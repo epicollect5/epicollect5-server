@@ -3,7 +3,9 @@
 namespace ec5\Libraries\Utilities;
 
 use Cookie;
+use GuzzleHttp\Client;
 use Illuminate\Support\Str;
+use Symfony\Component\DomCrawler\Crawler;
 
 class Common
 {
@@ -243,5 +245,34 @@ class Common
             false,          // Raw: typically false unless raw encoding is needed
             'Lax'           // SameSite setting, using 'Lax' to avoid cross-site restrictions
         );
+    }
+
+    //get the version of Epicollect5 running in production at CGPS
+    public static function getCGPSEpicollectVersion(): string
+    {
+        // Initialize Guzzle client
+        $client = new Client();
+
+        // Send a GET request to the URL
+        $response = $client->get(config('epicollect.setup.cgps_epicollect_server_url'));
+
+        // Check if the request was successful
+        if ($response->getStatusCode() === 200) {
+            // Get the HTML content of the page
+            $html = (string)$response->getBody();
+
+            $crawler = new Crawler($html);
+
+            // Use the Crawler to locate the <small> element containing the version text
+            $versionText = $crawler->filter('div.footer-links ul li small')->text();
+
+            // Extract the version from the string
+            preg_match('/v([\d.]+)/', $versionText, $matches);
+
+            return $matches[1] ?? '0.0.0';
+        }
+
+        // Return if the request failed
+        return '0.0.0';
     }
 }

@@ -3,6 +3,7 @@
 namespace ec5\Http\Controllers\Web\Admin;
 
 use ec5\Http\Controllers\Controller;
+use ec5\Libraries\Utilities\Common;
 use ec5\Models\Project\Project;
 use ec5\Models\User\User;
 use ec5\Services\Project\ProjectService;
@@ -66,6 +67,35 @@ class AdminController extends Controller
         // Return view with relevant params
         return view('admin.admin', $payload);
     }
+
+    public function showSettings(Request $request)
+    {
+        // Get request data
+        $params = $request->all();
+        $CGPSVersion = Common::getCGPSEpicollectVersion();
+        $currentVersion = config('epicollect.setup.system.version');
+
+        $payload = [
+            'action' => 'settings',
+            'CGPSVersion' => $CGPSVersion,
+            'currentVersion' => $currentVersion,
+            'update' => version_compare($currentVersion, $CGPSVersion, '<'),
+            'systemEmail' => config('epicollect.setup.system.email')
+        ];
+
+        // Return view with relevant params
+        return view('admin.admin', $payload);
+    }
+
+    public function updateSettings(Request $request)
+    {
+        $params = $request->all();
+
+        //todo: validate with rule admin settings
+
+        //todo:update settings
+    }
+
 
     /**
      * @throws Throwable

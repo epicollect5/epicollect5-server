@@ -56,6 +56,7 @@ Route::group(['middleware' => 'auth.admin'], function () {
     Route::get('admin/projects', 'Web\Admin\AdminController@showProjects')->name('admin-projects');
     Route::get('admin/stats', 'Web\Admin\AdminController@showStats')->name('admin-stats');
     Route::get('admin/users', 'Web\Admin\AdminController@showUsers')->name('admin-users');
+    Route::get('admin/settings', 'Web\Admin\AdminController@showSettings')->name('admin-settings-show');
 
     Route::post('admin/update-user-state', 'Web\Admin\AdminUsersController@updateUserState');
     Route::post('admin/add-user', 'Web\Admin\AdminUsersController@addUser');

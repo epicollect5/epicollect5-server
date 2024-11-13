@@ -124,4 +124,5 @@ Route::group(['middleware' => 'auth.admin'], function () {
     Route::get('api/internal/admin/entries-stats', 'Web\Admin\AdminDataController@getEntriesStats');
     Route::get('api/internal/admin/projects-stats', 'Web\Admin\AdminDataController@getProjectsStats');
     Route::get('api/internal/admin/users-stats', 'Web\Admin\AdminDataController@getUsersStats');
+    Route::post('api/internal/admin/settings', 'Web\Admin\AdminController@updateSettings')->name('admin-settings-update');
 });

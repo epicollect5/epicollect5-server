@@ -7,6 +7,7 @@ return [
     | When setting up Epicollect5 for the first time, a Super Admin user needs
     | to be created.
     */
+    'cgps_epicollect_server_url' => 'https://five.epicollect.net',
 
     'super_admin_user' => [
         'first_name' => env('SUPER_ADMIN_FIRST_NAME'),
@@ -16,7 +17,8 @@ return [
     ],
     'system' => [
         'email' => env('SYSTEM_EMAIL', 'system@example.com'),
-        'app_link_enabled' => (bool) env('APP_LINK_ENABLED', false)
+        'app_link_enabled' => (bool) env('APP_LINK_ENABLED', false),
+        'version' => env('PRODUCTION_SERVER_VERSION', '1.0.0'),
     ],
     'opencage' => [
         'endpoint' => env('OPENCAGE_ENDPOINT'),
