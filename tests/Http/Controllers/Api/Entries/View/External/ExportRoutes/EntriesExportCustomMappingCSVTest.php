@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUnhandledExceptionInspection */
+
 namespace Tests\Http\Controllers\Api\Entries\View\External\ExportRoutes;
 
 use ec5\DTO\ProjectMappingDTO;
@@ -12,12 +14,14 @@ use Illuminate\Foundation\Testing\DatabaseTransactions;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Http\Controllers\Api\Entries\View\ViewEntriesBaseControllerTest;
 use League\Csv\Reader;
+use Throwable;
 
 class EntriesExportCustomMappingCSVTest extends ViewEntriesBaseControllerTest
 {
-    use DatabaseTransactions, Assertions;
+    use DatabaseTransactions;
+    use Assertions;
 
-    private $endpoint = 'api/export/entries/';
+    private string $endpoint = 'api/export/entries/';
 
     public function test_entries_export_endpoint_parent_single_entry_custom_mapping_not_modified_csv()
     {
@@ -133,7 +137,8 @@ class EntriesExportCustomMappingCSVTest extends ViewEntriesBaseControllerTest
                     'form_index' => 0,
                     'onlyMapTheseRefs' => $onlyMapTheseRefs,
                     'projectDefinition' => $this->projectDefinition
-                ]);
+                ]
+            );
 
             $entryFromResponse = $response[0]['data']['entries'][0];
             //dd($entryFromResponse);
@@ -142,11 +147,13 @@ class EntriesExportCustomMappingCSVTest extends ViewEntriesBaseControllerTest
             //timestamp
             $this->assertEquals(
                 str_replace(' ', 'T', $entryFromDB->created_at) . '.000Z',
-                $entryFromResponse['created_at']);
+                $entryFromResponse['created_at']
+            );
             $this->assertEquals(
                 str_replace(' ', 'T', $entryFromDB->uploaded_at) . '.000Z',
-                $entryFromResponse['uploaded_at']);
-        } catch (\Throwable $e) {
+                $entryFromResponse['uploaded_at']
+            );
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -282,11 +289,13 @@ class EntriesExportCustomMappingCSVTest extends ViewEntriesBaseControllerTest
             //timestamp
             $this->assertEquals(
                 str_replace(' ', 'T', $entryFromDB->created_at) . '.000Z',
-                $entryFromResponse['created_at']);
+                $entryFromResponse['created_at']
+            );
             $this->assertEquals(
                 str_replace(' ', 'T', $entryFromDB->uploaded_at) . '.000Z',
-                $entryFromResponse['uploaded_at']);
-        } catch (\Throwable $e) {
+                $entryFromResponse['uploaded_at']
+            );
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -411,14 +420,11 @@ class EntriesExportCustomMappingCSVTest extends ViewEntriesBaseControllerTest
             );
 
             $this->assertCount($numOfEntries, $response[0]['data']['entries']);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
-    /**
-     * @throws Exception
-     */
     public function test_entries_export_endpoint_child_single_entry_custom_mapping_modified_csv()
     {
         //set project as public so the endpoint is accessible without auth
@@ -580,18 +586,17 @@ class EntriesExportCustomMappingCSVTest extends ViewEntriesBaseControllerTest
             //timestamp
             $this->assertEquals(
                 str_replace(' ', 'T', $childEntryFromDB->created_at) . '.000Z',
-                $entryFromResponse['created_at']);
+                $entryFromResponse['created_at']
+            );
             $this->assertEquals(
                 str_replace(' ', 'T', $childEntryFromDB->uploaded_at) . '.000Z',
-                $entryFromResponse['uploaded_at']);
-        } catch (\Throwable $e) {
+                $entryFromResponse['uploaded_at']
+            );
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
-    /**
-     * @throws Exception
-     */
     public function test_entries_export_endpoint_child_single_entry_loop()
     {
         for ($i = 0; $i < rand(10, 50); $i++) {
@@ -672,7 +677,8 @@ class EntriesExportCustomMappingCSVTest extends ViewEntriesBaseControllerTest
                 $formRef,
                 $branches[$randomBranchIndex]['branch'],
                 $parentEntryFromDB->uuid,
-                $branchRef);
+                $branchRef
+            );
             $entryRowBundle = $this->entryGenerator->createBranchEntryRow(
                 $this->user,
                 $this->project,
@@ -770,15 +776,17 @@ class EntriesExportCustomMappingCSVTest extends ViewEntriesBaseControllerTest
             //timestamp
             $this->assertEquals(
                 str_replace(' ', 'T', $branchEntryFromDB->created_at) . '.000Z',
-                $entryFromResponse['created_at']);
+                $entryFromResponse['created_at']
+            );
             $this->assertEquals(
                 str_replace(' ', 'T', $branchEntryFromDB->uploaded_at) . '.000Z',
-                $entryFromResponse['uploaded_at']);
+                $entryFromResponse['uploaded_at']
+            );
 
             //assert branch owner row ID
             $ownerEntry = Entry::where('uuid', $branchEntryFromDB->owner_uuid)->first();
             $this->assertEquals($branchEntryFromDB->owner_entry_id, $ownerEntry->id);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -792,9 +800,9 @@ class EntriesExportCustomMappingCSVTest extends ViewEntriesBaseControllerTest
 
     /**
      * Test method to be run multiple times.
-     *
      */
-    #[DataProvider('multipleRunProvider')] public function test_entries_export_endpoint_form_0_single_entry_custom_mapping_modified_branches_count_csv($index)
+    #[DataProvider('multipleRunProvider')]
+    public function test_entries_export_endpoint_form_0_single_entry_custom_mapping_modified_branches_count_csv()
     {
         $mapIndex = 1;
         //set project as public so the endpoint is accessible without auth
@@ -870,7 +878,8 @@ class EntriesExportCustomMappingCSVTest extends ViewEntriesBaseControllerTest
                     $formRef,
                     $branch['branch'],
                     $ownerEntryFromDB->uuid,
-                    $branch['ref']);
+                    $branch['ref']
+                );
                 $entryRowBundle = $this->entryGenerator->createBranchEntryRow(
                     $this->user,
                     $this->project,
@@ -988,7 +997,9 @@ class EntriesExportCustomMappingCSVTest extends ViewEntriesBaseControllerTest
                     'form_index' => 0,
                     'onlyMapTheseRefs' => $onlyMapTheseRefs,
                     'projectDefinition' => $this->projectDefinition
-                ], $mapIndex);
+                ],
+                $mapIndex
+            );
 
 
             $entryFromResponse = $response[0]['data']['entries'][0];
@@ -998,11 +1009,13 @@ class EntriesExportCustomMappingCSVTest extends ViewEntriesBaseControllerTest
             //timestamp
             $this->assertEquals(
                 str_replace(' ', 'T', $entryFromDB->created_at) . '.000Z',
-                $entryFromResponse['created_at']);
+                $entryFromResponse['created_at']
+            );
             $this->assertEquals(
                 str_replace(' ', 'T', $entryFromDB->uploaded_at) . '.000Z',
-                $entryFromResponse['uploaded_at']);
-        } catch (\Throwable $e) {
+                $entryFromResponse['uploaded_at']
+            );
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

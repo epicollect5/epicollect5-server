@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUnhandledExceptionInspection */
+
 namespace Tests\Http\Controllers\Api\Entries\Upload\External\PublicRoutes\Version;
 
 use Carbon\Carbon;

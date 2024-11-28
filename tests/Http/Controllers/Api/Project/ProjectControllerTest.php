@@ -174,7 +174,7 @@ class ProjectControllerTest extends TestCase
     public function test_search_should_find_more_projects()
     {
         $numOfProjects = 20;
-        $needle = 'EC5 Unit ';
+        $needle = 'EC5 Unit';
         //create fake projects (use 'EC5 Unit' to avoid uniqueness issues)
         for ($i = 0; $i < $numOfProjects; $i++) {
             $project = factory(Project::class)->create([
@@ -209,7 +209,7 @@ class ProjectControllerTest extends TestCase
     public function test_search_should_skip_archived_projects()
     {
         $numOfProjects = 20;
-        $needle = 'EC5 Unit ';
+        $needle = 'EC5 Unit';
         //create fake projects (use 'EC5 Unit' to avoid uniqueness issues)
         for ($i = 0; $i < $numOfProjects; $i++) {
             $project = factory(Project::class)->create([
@@ -233,7 +233,7 @@ class ProjectControllerTest extends TestCase
     public function test_search_should_skip_trashed_projects()
     {
         $numOfProjects = 20;
-        $needle = 'EC5 Unit ';
+        $needle = 'EC5 Unit';
         //create fake projects (use 'EC5 Unit' to avoid uniqueness issues)
         for ($i = 0; $i < $numOfProjects; $i++) {
             $project = factory(Project::class)->create([
