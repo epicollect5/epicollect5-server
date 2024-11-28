@@ -666,7 +666,7 @@ trait Assertions
         }
     }
 
-    public function assertEntryRowAgainstPayload($entryRowBundle, $entryPayload)
+    public function assertEntryRowAgainstPayload($entryRowBundle, $entryPayload): void
     {
         $entryType = $entryPayload['data']['type'];
 
@@ -729,7 +729,7 @@ trait Assertions
                     "uuid" => $entryPayload['data'][$entryType]['entry_uuid'],
                     "title" => $entryPayload['data'][$entryType]['title'],
                     "accuracy" => $locationAnswer['accuracy'],
-                    "created_at" => date('Y-m-d', strtotime($entryStructure->getDateCreated())),
+                    "created_at" => date('Y-m-d', strtotime($entryStructure->getEntryCreatedAt())),
                     "possible_answers" => $this->getPayloadPossibleAnswers(
                         $entryPayload['data'][$entryType]['answers'],
                         $multipleChoiceInputRefs
@@ -768,7 +768,7 @@ trait Assertions
         //assert timestamps are equal (converted as the format is different JS/MYSQL)
         $this->assertTrue(
             DateFormatConverter::areTimestampsEqual(
-                $entryStructure->getDateCreated(),
+                $entryStructure->getEntryCreatedAt(),
                 $entryStored->created_at
             )
         );

@@ -9,14 +9,15 @@
 namespace ec5\Libraries\Utilities;
 
 use Carbon\Carbon;
+use Throwable;
 
 class DateFormatConverter
 {
+    public const string ENTRY_PAYLOAD_CREATED_AT_FORMAT = 'Y-m-d\TH:i:s.v\Z';
 
-    public static function mySQLToISO($mysqlDate): string
+    public static function getEntryPayloadCreatedAtFormat(): string
     {
-        //datetime format in PHP https://www.php.net/manual/en/function.date.php
-        return (new \DateTime($mysqlDate))->format('Y-m-d\TH:i:s.000') . 'Z';
+        return self::ENTRY_PAYLOAD_CREATED_AT_FORMAT;
     }
 
     //passing in created_at (request) and created_at DB
@@ -61,5 +62,28 @@ class DateFormatConverter
             'oldest' => $oldest,
             'newest' => $newest
         ];
+    }
+
+    public static function getSanitisedCreateAt($rawCreatedAt): string
+    {
+        /**
+         * imp: Sanitise created_at timestamp coming from devices
+         *  To avoid zero dates or epoch defaults (1970-01-01)
+         *  This might happen when devices do not have SIM cards or internet
+         */
+        try {
+            $entryCreatedAt = Carbon::parse($rawCreatedAt);
+        } catch (Throwable) {
+            // Fallback to current datetime minus one minute if parsing fails
+            $entryCreatedAt = now()->subMinute();
+        }
+
+        if ($entryCreatedAt->year <= 1970) {
+            // Invalid date from the device, so set it to current datetime - 1 minute
+            //re-format to get 3 digits milliseconds, since Carbon()->toISOString() returns 6 digits milliseconds
+            return now()->subMinute()->format(self::ENTRY_PAYLOAD_CREATED_AT_FORMAT);
+        } else {
+            return $entryCreatedAt->format(self::ENTRY_PAYLOAD_CREATED_AT_FORMAT);
+        }
     }
 }

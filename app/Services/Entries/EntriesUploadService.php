@@ -8,8 +8,6 @@ use ec5\Models\Counters\BranchEntryCounter;
 use ec5\Models\Counters\EntryCounter;
 use ec5\Traits\Requests\RequestAttributes;
 use Log;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\NotFoundExceptionInterface;
 use Throwable;
 
 class EntriesUploadService
@@ -35,7 +33,7 @@ class EntriesUploadService
     {
         try {
             $payload = request()->get('data');
-        } catch (NotFoundExceptionInterface|ContainerExceptionInterface $e) {
+        } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             $this->errors = ['upload-controller' => ['ec5_53']];
             return false;

@@ -2,10 +2,13 @@
 
 namespace ec5\DTO;
 
+use Carbon\Carbon;
+use ec5\Libraries\Utilities\DateFormatConverter;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use Hash;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Throwable;
 
 class EntryStructureDTO
 {
@@ -98,6 +101,12 @@ class EntryStructureDTO
             ]
         ];
 
+        //Sanitise zero dates or epoch defaults (1970-01-01)
+        //imp: payload might not have the created_at, for example for entry deletion requests or unit tests
+        if (isset($payload[$type]['created_at'])) {
+            $payload[$type]['created_at'] = DateFormatConverter::getSanitisedCreateAt($payload[$type]['created_at']);
+        }
+
         // Dynamic-type-specific data
         $this->data[$type] = [
             'entry_uuid' => $payload[$type]['entry_uuid'] ?? '',
@@ -183,21 +192,29 @@ class EntryStructureDTO
         return $this->data['type'] ?? '';
     }
 
-    public function getDateCreated(): ?string
+    public function getEntryCreatedAt(): string
     {
-        /**
-         * Sometimes this is failing, so return the uploaded_at which
-         * is the current date, otherwise it will be saved as 0000... in the db
-         * since we are returning an empty string
-         * */
-        if (isset($this->getEntry()['created_at'])) {
-            //hack due to Laravel 7 adding unwanted .000 (milliseconds)
-            // return Carbon::parse($this->getEntry()['created_at'])->format('Y-m-d H:i:s');
-            return $this->getEntry()['created_at'];
-        } else {
-            return date('Y-m-d H:i:s');
+        $entry = $this->getEntry();
+
+        if (!empty($entry['created_at'])) {
+            /**
+             * Ensure the date is valid before returning, as some old versions of the app
+             * may have posted invalid or zero dates.
+             */
+            try {
+                // Parse the date and explicitly format it to ISO 8601 with fixed milliseconds
+                return Carbon::parse($entry['created_at'])->format('Y-m-d\TH:i:s.000\Z');
+            } catch (Throwable) {
+                // Handle invalid date formats
+                return now()->format('Y-m-d\TH:i:s.000\Z'); // Fallback to the current date
+            }
         }
+
+        // Default to the current date and time with fixed milliseconds
+        return now()->format('Y-m-d\TH:i:s.000\Z');
     }
+
+
 
     public function getDeviceId(): ?string
     {
@@ -480,7 +497,7 @@ class EntryStructureDTO
             'uuid' => $this->getEntryUuid(),
             'title' => $this->getTitle(),
             'accuracy' => $locationAnswer['accuracy'],
-            'created_at' => date('Y-m-d', strtotime($this->getDateCreated())),
+            'created_at' => date('Y-m-d', strtotime($this->getEntryCreatedAt())),
 
             // Possible answers will be added at the end
             'possible_answers' => [],

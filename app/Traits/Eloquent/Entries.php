@@ -80,7 +80,7 @@ trait Entries
         // Set the entry params to be added
         $entry['uuid'] = $entryStructure->getEntryUuid();
         $entry['form_ref'] = $entryStructure->getFormRef();
-        $entry['created_at'] = $entryStructure->getDateCreated();
+        $entry['created_at'] = $entryStructure->getEntryCreatedAt();
         $entry['project_id'] = $entryStructure->getProjectId();
         $entry['device_id'] = $entryStructure->getHashedDeviceId();
         $entry['platform'] = $entryStructure->getPlatform();
