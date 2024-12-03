@@ -76,6 +76,7 @@ window.EC5.projectDetails = window.EC5.projectDetails || {};
 })(window.EC5.projectDetails);
 
 $(document).ready(function () {
+
     //run only on project details page
     if ($('.page-project-details').length === 0) {
         return false;
@@ -150,7 +151,7 @@ $(document).ready(function () {
         window.EC5.projectDetails.updateSettings(action);
     });
 
-    $('#project-category').on('change', function (e) {
+    $('#project-category').on('change', function () {
         var action = 'category';
         var setTo = $(this).val();
 

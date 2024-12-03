@@ -22,10 +22,12 @@ window.EC5.projectUtils = window.EC5.projectUtils || {};
 
         if (response.responseJSON) {
             $(response.responseJSON.errors).each(function (index, error) {
-                errorMessage += error.title + '<br/>';
+                //cannot use <br/> because HTML is escaped
+                errorMessage += error.title + '\n';
             });
         } else {
-            errorMessage += 'Unknown error' + '<br/>';
+            //cannot use <br/> because HTML is escaped
+            errorMessage += 'Unknown error' + '\n';
         }
         window.EC5.toast.showError(errorMessage);
     };

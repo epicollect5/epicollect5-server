@@ -141,6 +141,8 @@ body {
 
 .toast-message {
   text-align: center;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
 }
 
 .no-hover:hover {
