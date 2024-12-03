@@ -59,9 +59,11 @@ $(document).ready(function () {
             }
         });
     }
-    //extend string function for truncating
+    // Extend string function for truncating
     String.prototype.trunc = function (n) {
-        return this.substr(0, n - 1) + (this.length >= n ? '...' : '');
+        return this.length > n
+            ? this.slice(0, n - 1) + '...'
+            : this;
     };
 
     //debounce helper
