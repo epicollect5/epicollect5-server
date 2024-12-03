@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Created by PhpStorm.
  * User: mirko
@@ -13,13 +14,6 @@ use Throwable;
 
 class DateFormatConverter
 {
-    public const string ENTRY_PAYLOAD_CREATED_AT_FORMAT = 'Y-m-d\TH:i:s.v\Z';
-
-    public static function getEntryPayloadCreatedAtFormat(): string
-    {
-        return self::ENTRY_PAYLOAD_CREATED_AT_FORMAT;
-    }
-
     //passing in created_at (request) and created_at DB
     //{"request":"2020-10-21T13:08:22.398Z","db":"2020-10-21 13:08:22"}
     public static function areTimestampsEqual($requestTimestamp, $dbTimestamp): bool
@@ -79,11 +73,11 @@ class DateFormatConverter
         }
 
         if ($entryCreatedAt->year <= 1970) {
-            // Invalid date from the device, so set it to current datetime - 1 minute
-            //re-format to get 3 digits milliseconds, since Carbon()->toISOString() returns 6 digits milliseconds
-            return now()->subMinute()->format(self::ENTRY_PAYLOAD_CREATED_AT_FORMAT);
-        } else {
-            return $entryCreatedAt->format(self::ENTRY_PAYLOAD_CREATED_AT_FORMAT);
+            // Invalid date from the device, fallback to current datetime - 1 minute
+            $entryCreatedAt = now()->subMinute();
         }
+
+        // Always format with .000 milliseconds
+        return $entryCreatedAt->format('Y-m-d\TH:i:s') . '.000Z';
     }
 }

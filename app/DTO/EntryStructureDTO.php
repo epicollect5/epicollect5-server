@@ -214,8 +214,6 @@ class EntryStructureDTO
         return now()->format('Y-m-d\TH:i:s.000\Z');
     }
 
-
-
     public function getDeviceId(): ?string
     {
         return $this->getEntry()['device_id'] ?? '';

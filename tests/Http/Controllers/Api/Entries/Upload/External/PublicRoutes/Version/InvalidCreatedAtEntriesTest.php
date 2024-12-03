@@ -8,7 +8,6 @@ use Carbon\Carbon;
 use ec5\Libraries\Generators\EntryGenerator;
 use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Libraries\Utilities\Common;
-use ec5\Libraries\Utilities\DateFormatConverter;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
@@ -182,7 +181,7 @@ class InvalidCreatedAtEntriesTest extends TestCase
 
 
             $this->assertEquals(
-                $entryFromDB->created_at->format(DateFormatConverter::getEntryPayloadCreatedAtFormat()),
+                $entryFromDB->created_at->format('Y-m-d\TH:i:s') . '.000Z',
                 $entryFromPayload['created_at']
             );
             $this->assertGreaterThan(1970, $entryFromDB->created_at->year);
@@ -201,6 +200,8 @@ class InvalidCreatedAtEntriesTest extends TestCase
                     Carbon::parse($geoJson['properties']['created_at'])->toDateString()
                 );
             }
+
+            //assert milliseconds are always set to 000
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
@@ -378,7 +379,7 @@ class InvalidCreatedAtEntriesTest extends TestCase
             $branchEntryFromPayload = $payload['data']['branch_entry'];
 
             $this->assertEquals(
-                $branchEntryFromDB->created_at->format(DateFormatConverter::getEntryPayloadCreatedAtFormat()),
+                $branchEntryFromDB->created_at->format('Y-m-d\TH:i:s') . '.000Z',
                 $branchEntryFromPayload['created_at']
             );
             $this->assertGreaterThan(1970, $branchEntryFromDB->created_at->year);
@@ -474,6 +475,6 @@ class InvalidCreatedAtEntriesTest extends TestCase
         // Create a Carbon instance from the random timestamp
         $randomDate = Carbon::createFromTimestamp($randomTimestamp);
 
-        return $randomDate->format(DateFormatConverter::getEntryPayloadCreatedAtFormat());
+        return $randomDate->format('Y-m-d\TH:i:s') . '.000Z';
     }
 }
