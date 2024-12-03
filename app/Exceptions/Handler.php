@@ -136,6 +136,14 @@ class Handler extends ExceptionHandler
                     // Return a session expired response for the formbuilder store route, better UX
                     return $this->middlewareErrorResponse($request, 'csrf exception', 'ec5_402', 422);
                 }
+                if ($routeName === 'post-project-settings') {
+                    // Return a session expired response for the project-settings route, better UX
+                    return $this->middlewareErrorResponse($request, 'csrf exception', 'ec5_405', 422);
+                }
+                if ($routeName === 'post-project-details') {
+                    // Return a session expired response for the project-details route, better UX
+                    return $this->middlewareErrorResponse($request, 'csrf exception', 'ec5_405', 422);
+                }
             }
             return $this->middlewareErrorResponse($request, 'csrf exception', 'ec5_116', 422);
         }

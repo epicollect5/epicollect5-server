@@ -162,9 +162,9 @@ Route::group(['middleware' => 'auth'], function () {
 
         Route::get('myprojects/{project_slug}/formbuilder', 'Web\Project\ProjectController@formbuilder')->name('formbuilder');
 
-        Route::post('myprojects/{project_slug}/settings/{action?}', 'Web\Project\ProjectEditController@settings');
+        Route::post('myprojects/{project_slug}/settings/{action?}', 'Web\Project\ProjectEditController@settings')->name('post-project-settings');
 
-        Route::post('myprojects/{project_slug}/details', 'Web\Project\ProjectEditController@updateDetails');
+        Route::post('myprojects/{project_slug}/details', 'Web\Project\ProjectEditController@updateDetails')->name('post-project-details');
 
         Route::get('myprojects/{project_slug}/download-project-definition', 'Web\Project\ProjectController@downloadProjectDefinition');
 
