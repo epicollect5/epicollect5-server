@@ -8,7 +8,7 @@ return new class () extends Migration {
      */
     public function up(): void
     {
-        Schema::drop('users_verify');
+        Schema::dropIfExists('users_verify');
     }
 
     /**
