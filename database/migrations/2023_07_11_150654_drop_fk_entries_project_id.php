@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class DropFkEntriesProjectId extends Migration
 {
@@ -12,44 +12,13 @@ class DropFkEntriesProjectId extends Migration
      */
     public function up(): void
     {
-        // Drop foreign key constraint on entries table
-        Schema::table('entries', function (Blueprint $table) {
-            try {
-                $table->dropForeign('fk_entries_project_id');
-            } catch (Throwable $e) {
-                Log::error(__METHOD__ . ' failed on entries table.', ['exception' => $e->getMessage()]);
-            }
-        });
-
-        // Drop foreign key constraint on branch_entries table
-        Schema::table('branch_entries', function (Blueprint $table) {
-            try {
-                $table->dropForeign('fk_branch_entries_project_id');
-            } catch (Throwable $e) {
-                Log::error(__METHOD__ . ' failed on branch_entries table.', ['exception' => $e->getMessage()]);
-            }
-        });
-
-        // Drop foreign key constraint on entries_archive table if it exists
+        $this->dropForeignKeyIfExists('entries', 'fk_entries_project_id');
+        $this->dropForeignKeyIfExists('branch_entries', 'fk_branch_entries_project_id');
         if (Schema::hasTable('entries_archive')) {
-            Schema::table('entries_archive', function (Blueprint $table) {
-                try {
-                    $table->dropForeign('fk_entries_archive_project_id');
-                } catch (Throwable $e) {
-                    Log::error(__METHOD__ . ' failed on entries_archive table.', ['exception' => $e->getMessage()]);
-                }
-            });
+            $this->dropForeignKeyIfExists('entries_archive', 'fk_entries_archive_project_id');
         }
-
-        // Drop foreign key constraint on branch_entries_archive table if it exists
         if (Schema::hasTable('branch_entries_archive')) {
-            Schema::table('branch_entries_archive', function (Blueprint $table) {
-                try {
-                    $table->dropForeign('fk_branch_entries_archive_project_id');
-                } catch (Throwable $e) {
-                    Log::error(__METHOD__ . ' failed on branch_entries_archive table.', ['exception' => $e->getMessage()]);
-                }
-            });
+            $this->dropForeignKeyIfExists('branch_entries_archive', 'fk_branch_entries_archive_project_id');
         }
     }
 
@@ -58,56 +27,59 @@ class DropFkEntriesProjectId extends Migration
      */
     public function down(): void
     {
-        // Restore foreign key constraint on entries table
         Schema::table('entries', function (Blueprint $table) {
-            try {
-                $table->foreign('project_id', 'fk_entries_project_id')
-                    ->references('id')
-                    ->on('projects')
-                    ->onDelete('cascade');
-            } catch (Throwable $e) {
-                Log::error(__METHOD__ . ' failed to restore on entries table.', ['exception' => $e->getMessage()]);
-            }
+            $table->foreign('project_id', 'fk_entries_project_id')
+                ->references('id')
+                ->on('projects')
+                ->onDelete('cascade');
         });
 
-        // Restore foreign key constraint on branch_entries table
         Schema::table('branch_entries', function (Blueprint $table) {
-            try {
-                $table->foreign('project_id', 'fk_branch_entries_project_id')
-                    ->references('id')
-                    ->on('projects')
-                    ->onDelete('cascade');
-            } catch (Throwable $e) {
-                Log::error(__METHOD__ . ' failed to restore on branch_entries table.', ['exception' => $e->getMessage()]);
-            }
+            $table->foreign('project_id', 'fk_branch_entries_project_id')
+                ->references('id')
+                ->on('projects')
+                ->onDelete('cascade');
         });
 
-        // Restore foreign key constraint on entries_archive table if it exists
         if (Schema::hasTable('entries_archive')) {
             Schema::table('entries_archive', function (Blueprint $table) {
-                try {
-                    $table->foreign('project_id', 'fk_entries_archive_project_id')
-                        ->references('id')
-                        ->on('projects')
-                        ->onDelete('cascade');
-                } catch (Throwable $e) {
-                    Log::error(__METHOD__ . ' failed to restore on entries_archive table.', ['exception' => $e->getMessage()]);
-                }
+                $table->foreign('project_id', 'fk_entries_archive_project_id')
+                    ->references('id')
+                    ->on('projects')
+                    ->onDelete('cascade');
             });
         }
 
-        // Restore foreign key constraint on branch_entries_archive table if it exists
         if (Schema::hasTable('branch_entries_archive')) {
             Schema::table('branch_entries_archive', function (Blueprint $table) {
-                try {
-                    $table->foreign('project_id', 'fk_branch_entries_archive_project_id')
-                        ->references('id')
-                        ->on('projects')
-                        ->onDelete('cascade');
-                } catch (Throwable $e) {
-                    Log::error(__METHOD__ . ' failed to restore on branch_entries_archive table.', ['exception' => $e->getMessage()]);
-                }
+                $table->foreign('project_id', 'fk_branch_entries_archive_project_id')
+                    ->references('id')
+                    ->on('projects')
+                    ->onDelete('cascade');
             });
         }
     }
+
+    /**
+     * Drop foreign key if it exists.
+     */
+    protected function foreignKeyExists(string $table, string $foreignKey): bool
+    {
+        return DB::table('information_schema.TABLE_CONSTRAINTS')
+            ->where('CONSTRAINT_TYPE', 'FOREIGN KEY')
+            ->whereRaw('TABLE_SCHEMA = DATABASE()')
+            ->where('TABLE_NAME', $table)
+            ->where('CONSTRAINT_NAME', $foreignKey)
+            ->exists();
+    }
+
+    protected function dropForeignKeyIfExists(string $table, string $foreignKey): void
+    {
+        if ($this->foreignKeyExists($table, $foreignKey)) {
+            Schema::table($table, function (Blueprint $table) use ($foreignKey) {
+                $table->dropForeign($foreignKey);
+            });
+        }
+    }
+
 }
