@@ -1,4 +1,5 @@
 <?php
+
 /*
 *************************************
 // Migrated to Deployer 7.x for Laravel 11
@@ -58,6 +59,20 @@ task('setup:symlink_deploy_file', function () {
     run("ln -sf $currentDeployFile $deploySymlinkPath");
 
     writeln('Symlink to the latest deploy.php has been created.');
+});
+
+task('setup:symlink_laravel_storage_folders_file', function () {
+    // Path to the current release's deploy.php file
+    $currentDeployFile = 'current/laravel_storage_folders.sh';
+    // Path where the symlink will be created, adjust it as needed
+    $deploySymlinkPath = '{{deploy_path}}/laravel_storage_folders.sh';
+    // Create a symlink pointing to the latest deploy.php
+    run("ln -sf $currentDeployFile $deploySymlinkPath");
+
+    // Ensure the file is executable
+    run("sudo chmod +x $deploySymlinkPath");
+
+    writeln('Symlink to the latest laravel_storage_folders.sh has been created and made executable.');
 });
 
 task('setup:storage', function () {
@@ -392,6 +407,7 @@ task('deploy', [
     'artisan:view:cache',
     'deploy:publish',
     'setup:symlink_deploy_file',
+    'setup:symlink_laravel_storage_folders_file',
     'composer:dump-autoload',
     'artisan:about'
     // 'artisan:up', // go back online manually after checking all works
@@ -426,6 +442,7 @@ try {
 // Custom task to display a reminder message
 try {
     task('reminder:update_release', function () {
+        writeln('<info>App is currently in maintenance mode.</info>');
         writeln('<info>Remember to update the release in .env before running artisan up!</info>');
     });
 } catch (Throwable $e) {
