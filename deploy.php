@@ -340,7 +340,7 @@ task('setup:key:generate', function () {
 
 task('setup:stats', function () {
     // Run artisan passport:keys to generate the keys
-    run('cd {{deploy_path}}/current && {{bin/php}} artisan system:stats');
+    run('cd {{deploy_path}}/current && {{bin/php}} artisan system:stats --deployer');
     writeln('<info>Initial system stats executed.</info>');
 });
 

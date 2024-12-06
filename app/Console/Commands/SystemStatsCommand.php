@@ -8,6 +8,7 @@ use ec5\Services\System\EntriesTotalsService;
 use ec5\Services\System\ProjectsTotalsService;
 use ec5\Services\System\UsersTotalsService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use Log;
 use Throwable;
 
@@ -17,7 +18,7 @@ class SystemStatsCommand extends Command
      * The name and signature of the console command.
      *
      */
-    protected $signature = 'system:stats';
+    protected $signature = 'system:stats {--deployer}';
 
     /**
      * The console command description.
@@ -31,6 +32,15 @@ class SystemStatsCommand extends Command
      */
     public function handle(): void
     {
+        // Check if deployer flag is passed
+        if ($this->option('deployer')) {
+            // Check if the system stats table count is 0
+            if (SystemStatsModel::count() > 0) {
+                $this->info('Skipping stats query command as system_stats table is not empty.');
+                return; // Skip stats if table is not empty
+            }
+        }
+
         $systemStatsModel = new SystemStatsModel();
         $usersTotals = new UsersTotalsService();
         $projectsTotals = new ProjectsTotalsService();
@@ -50,6 +60,8 @@ class SystemStatsCommand extends Command
             $systemStatsModel->branch_entries_stats = json_encode($branchEntriesStats);
 
             $systemStatsModel->save();
+
+            $this->info('System stats query successful.');
         } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
         }
