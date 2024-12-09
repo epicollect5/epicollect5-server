@@ -1,5 +1,8 @@
 <?php
 
+/** @noinspection PhpUnnecessaryCurlyVarSyntaxInspection */
+/** @noinspection PhpUnhandledExceptionInspection */
+
 /*
 *************************************
 // Migrated to Deployer 7.x for Laravel 11
@@ -432,6 +435,7 @@ try {
         'artisan:config:cache',
         'artisan:migrate',
         'setup:symlink_deploy_file',
+        'setup:symlink_laravel_storage_folders_file',
         'setup:stats'
     ]);
 
