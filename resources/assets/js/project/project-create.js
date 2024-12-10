@@ -121,6 +121,33 @@ $(document).ready(function () {
             window.EC5.projectCreate.toggleGroupValidation(form_group, false, 'Must be at least 15 chars long');
         }
     });
+
+    //Show overlay and disable submit button (CREATE) when form is valid to avois double submissions
+    $('.page-create-project .create-project-form').on('submit', function (e) {
+        // Check if the form is valid
+        if (!this.checkValidity()) {
+            e.preventDefault();  // Stop form submission
+            window.EC5.overlay.fadeOut();  // Hide the overlay
+            return false;
+        }
+
+        // Show overlay if form is valid
+        window.EC5.overlay.fadeIn();
+        $(this).find('button[type="submit"]').prop('disabled', true);
+    });
+
+    //Show overlay and disable submit button (IMPORT) when form is valid to avois double submissions
+    $('.page-create-project #project-name-form-group-import').on('submit', function (e) {
+        // Check if the form is valid
+        if (!this.checkValidity()) {
+            e.preventDefault();  // Stop form submission
+            window.EC5.overlay.fadeOut();  // Hide the overlay
+            return false;
+        }
+        // Show overlay if form is valid
+        window.EC5.overlay.fadeIn();
+        $(this).find('button[type="submit"]').prop('disabled', true);
+    });
 });
 
 
