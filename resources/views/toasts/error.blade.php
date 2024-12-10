@@ -1,6 +1,6 @@
 @if(!$errors->isEmpty())
     @foreach($errors->all() as $error)
-        @if (strpos($error, 'ec5_') === false)
+        @if (!str_contains($error, 'ec5_'))
             {{--error was already translated--}}
             <div class="var-holder-error" data-message="{{$error}}"></div>
         @else
@@ -12,7 +12,7 @@
         //get all errors
         var errors = '';
         $('.var-holder-error').each(function () {
-            errors += $(this).attr('data-message') + '</br>';
+            errors += $(this).attr('data-message') + '\n';
         });
         EC5.toast.showError(errors);
     </script>

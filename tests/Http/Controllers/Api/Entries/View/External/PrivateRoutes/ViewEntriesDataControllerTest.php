@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUnhandledExceptionInspection */
+
 namespace Tests\Http\Controllers\Api\Entries\View\External\PrivateRoutes;
 
 use Auth;
@@ -9,15 +11,16 @@ use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectRole;
 use ec5\Models\User\User;
 use ec5\Traits\Assertions;
-use Exception;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\Http\Controllers\Api\Entries\View\ViewEntriesBaseControllerTest;
+use Throwable;
 
 class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
 {
-    use DatabaseTransactions, Assertions;
+    use DatabaseTransactions;
+    use Assertions;
 
-    private $endpoint = 'api/entries/';
+    private string $endpoint = 'api/entries/';
 
     public function test_parent_entry_row_stored_to_db()
     {
@@ -73,7 +76,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
             Entry::where('uuid', $entryPayloads[0]['data']['id'])->get()
         );
 
-        $entryFromDB = Entry::where('uuid', $entryPayloads[0]['data']['id'])->first();
+        Entry::where('uuid', $entryPayloads[0]['data']['id'])->first();
 
         //assert response passing parent form ref
         $queryString = '?form_ref=' . $formRef;
@@ -91,7 +94,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
                 ]
             ]);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -139,11 +142,11 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
                     [
                         "code" => "ec5_78",
                         "source" => "middleware",
-                        "title" => "This project is private. <br/> You need permission to access it."
+                        "title" => "This project is private. \n You need permission to access it."
                     ]
                 ]
             ]);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -200,7 +203,8 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
             //timestamp
             $this->assertEquals(
                 str_replace(' ', 'T', $entryFromDB->created_at) . '.000Z',
-                $entryFromResponse['entry']['created_at']);
+                $entryFromResponse['entry']['created_at']
+            );
             //answers
             $entryFromDBEntryData = json_decode($entryFromDB->entry_data, true);
             $this->assertEquals($entryFromDBEntryData['entry']['answers'], $entryFromResponse['entry']['answers']);
@@ -208,7 +212,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
             $this->assertEquals(Project::version($this->project->slug), $entryFromResponse['entry']['project_version']);
             //user id
             $this->assertEquals($entryFromDB->user_id, $entryFromResponse['relationships']['user']['data']['id']);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -260,7 +264,8 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
             //timestamp
             $this->assertEquals(
                 str_replace(' ', 'T', $entryFromDB->created_at) . '.000Z',
-                $entryFromResponse['entry']['created_at']);
+                $entryFromResponse['entry']['created_at']
+            );
             //answers
             $entryFromDBEntryData = json_decode($entryFromDB->entry_data, true);
             $this->assertEquals($entryFromDBEntryData['entry']['answers'], $entryFromResponse['entry']['answers']);
@@ -268,7 +273,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
             $this->assertEquals(Project::version($this->project->slug), $entryFromResponse['entry']['project_version']);
             //user id
             $this->assertEquals($entryFromDB->user_id, $entryFromResponse['relationships']['user']['data']['id']);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -354,7 +359,8 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
             //timestamp
             $this->assertEquals(
                 str_replace(' ', 'T', $childEntryFromDB->created_at) . '.000Z',
-                $entryFromResponse['entry']['created_at']);
+                $entryFromResponse['entry']['created_at']
+            );
             //answers
             $childEntryFromDBEntryData = json_decode($childEntryFromDB->entry_data, true);
             $this->assertEquals($childEntryFromDBEntryData['entry']['answers'], $entryFromResponse['entry']['answers']);
@@ -366,7 +372,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
             //parent
             $this->assertEquals($childEntryFromDB->parent_uuid, $entryFromResponse['relationships']['parent']['data']['parent_entry_uuid']);
             $this->assertEquals($childEntryFromDB->parent_form_ref, $entryFromResponse['relationships']['parent']['data']['parent_form_ref']);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -418,7 +424,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
                 $entries
             );
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -497,7 +503,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
                 $entries
             );
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -573,7 +579,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
             //should be able to get all the entries ($this->user)
             $this->assertCount($numOfEntries * 2, $json['data']['entries']);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -649,7 +655,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
             //should be able to get all the entries ($this->user)
             $this->assertCount($numOfEntries * 2, $json['data']['entries']);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -725,7 +731,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
             //should be able to get all the entries ($this->user)
             $this->assertCount($numOfEntries * 2, $json['data']['entries']);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -801,7 +807,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
             //should be able to get all the entries ($this->user)
             $this->assertCount($numOfEntries * 2, $json['data']['entries']);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -911,7 +917,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
                 //should be able to get only collector entries
                 $this->assertTrue(in_array($entry['id'], $collectorEntriesUuids));
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -962,7 +968,8 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
                 $formRef,
                 $branches[0]['branch'],
                 $parentEntryFromDB->uuid,
-                $branchRef);
+                $branchRef
+            );
             $entryRowBundle = $this->entryGenerator->createBranchEntryRow(
                 $this->user,
                 $this->project,
@@ -1005,7 +1012,8 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
             //timestamp
             $this->assertEquals(
                 str_replace(' ', 'T', $branchEntryFromDB->created_at) . '.000Z',
-                $entryFromResponse['branch_entry']['created_at']);
+                $entryFromResponse['branch_entry']['created_at']
+            );
             //answers
             $branchEntryFromDBEntryData = json_decode($branchEntryFromDB->entry_data, true);
             $this->assertEquals($branchEntryFromDBEntryData['branch_entry']['answers'], $entryFromResponse['branch_entry']['answers']);
@@ -1016,7 +1024,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
             //owner entry
             $this->assertEquals($branchEntryFromDB->owner_uuid, $entryFromResponse['relationships']['branch']['data']['owner_entry_uuid']);
             $this->assertEquals($branchEntryFromDB->owner_input_ref, $entryFromResponse['relationships']['branch']['data']['owner_input_ref']);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1074,7 +1082,8 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
                 $formRef,
                 $branches[0]['branch'],
                 $parentEntryFromDB->uuid,
-                $branchRef);
+                $branchRef
+            );
             $entryRowBundle = $this->entryGenerator->createBranchEntryRow(
                 $this->user,
                 $this->project,
@@ -1112,7 +1121,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
                 $numOfBranches,
                 $entries
             );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -1170,7 +1179,8 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
                         $formRef,
                         $branch['branch'],
                         $entryFromDB->uuid,
-                        $branch['ref']);
+                        $branch['ref']
+                    );
                     $entryRowBundle = $this->entryGenerator->createBranchEntryRow(
                         $this->user,
                         $this->project,
@@ -1220,10 +1230,11 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
             foreach ($branchEntries as $branchEntry) {
                 $this->assertEquals(
                     $ownerEntryFromDB->uuid,
-                    $branchEntry['relationships']['branch']['data']['owner_entry_uuid']);
+                    $branchEntry['relationships']['branch']['data']['owner_entry_uuid']
+                );
 
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

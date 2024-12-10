@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpInconsistentReturnPointsInspection */
+
 namespace Tests\Http\Controllers\Api\Entries\Upload\External\PrivateRoutes;
 
 use ec5\Libraries\Generators\EntryGenerator;
@@ -18,6 +20,7 @@ use Faker\Factory as Faker;
 use Illuminate\Support\Facades\Auth;
 use PHPUnit\Framework\Attributes\Depends;
 use Tests\TestCase;
+use Throwable;
 
 /* We cannot do multiple post requests in the same test method,
    as the app boots only once, and we are going to have side effects
@@ -29,7 +32,7 @@ class UploadAppControllerSequenceTest extends TestCase
 {
     use Assertions;
 
-    private $endpoint = 'api/upload/';
+    private string $endpoint = 'api/upload/';
 
     public function setUp(): void
     {
@@ -161,7 +164,7 @@ class UploadAppControllerSequenceTest extends TestCase
                 'project' => $project,
                 'entryGenerator' => $entryGenerator
             ];
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project
@@ -193,7 +196,7 @@ class UploadAppControllerSequenceTest extends TestCase
                             [
                                 "code" => "ec5_78",
                                 "source" => "middleware",
-                                "title" => "This project is private. <br/> You need permission to access it."
+                                "title" => "This project is private. \n You need permission to access it."
                             ]
                         ]
                     ]
@@ -205,7 +208,7 @@ class UploadAppControllerSequenceTest extends TestCase
                 'project' => $project,
                 'entryGenerator' => $entryGenerator
             ];
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project
@@ -273,7 +276,7 @@ class UploadAppControllerSequenceTest extends TestCase
                 'project' => $project,
                 'entryGenerator' => $entryGenerator
             ];
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project
@@ -344,7 +347,7 @@ class UploadAppControllerSequenceTest extends TestCase
                 'project' => $project,
                 'entryGenerator' => $entryGenerator
             ];
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project
@@ -420,7 +423,7 @@ class UploadAppControllerSequenceTest extends TestCase
                 'project' => $project,
                 'entryGenerator' => $entryGenerator
             ];
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project
@@ -502,7 +505,7 @@ class UploadAppControllerSequenceTest extends TestCase
                 'project' => $project,
                 'entryGenerator' => $entryGenerator
             ];
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project
@@ -587,7 +590,7 @@ class UploadAppControllerSequenceTest extends TestCase
                 'project' => $project,
                 'entryGenerator' => $entryGenerator
             ];
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project
@@ -698,7 +701,7 @@ class UploadAppControllerSequenceTest extends TestCase
                 'project' => $project,
                 'entryGenerator' => $entryGenerator
             ];
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project
@@ -806,7 +809,7 @@ class UploadAppControllerSequenceTest extends TestCase
                 'project' => $project,
                 'entryGenerator' => $entryGenerator
             ];
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project
@@ -913,7 +916,7 @@ class UploadAppControllerSequenceTest extends TestCase
                 'project' => $project,
                 'entryGenerator' => $entryGenerator
             ];
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project
@@ -1020,7 +1023,7 @@ class UploadAppControllerSequenceTest extends TestCase
                 'project' => $project,
                 'entryGenerator' => $entryGenerator
             ];
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project
@@ -1117,7 +1120,7 @@ class UploadAppControllerSequenceTest extends TestCase
                 'user' => $user,
                 'project' => $project
             ]);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project

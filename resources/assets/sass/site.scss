@@ -141,8 +141,11 @@ body {
 
 .toast-message {
   text-align: center;
-  white-space: pre-wrap;
+  white-space: pre-wrap; //so new lines (\n) are respected
   overflow-wrap: break-word;
+  //this sort of fix the alignment when using \n
+  width: 90%;
+  padding: 0 0 0 5%;
 }
 
 .no-hover:hover {

@@ -7,7 +7,6 @@ use ec5\Http\Validation\Project\RuleCreateRequest;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Services\Project\ProjectService;
 use ec5\Traits\Project\ProjectTools;
-use Exception;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\RedirectResponse;
@@ -16,24 +15,17 @@ use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Redirect;
 use Session;
+use Throwable;
 
 class ProjectCreateController
 {
     use ProjectTools;
 
-    const CREATE = 'create';
+    public const string CREATE = 'create';
 
-    protected $project;
-    protected $type;
-
-    /**
-     * @var array
-     */
-    protected $errors = [];
-
-    /**
-     * @param ProjectDTO $project
-     */
+    protected ProjectDTO $project;
+    protected string $type;
+    protected array $errors = [];
     public function __construct(ProjectDTO $project)
     {
         $this->project = $project;
@@ -63,8 +55,7 @@ class ProjectCreateController
         Request           $request,
         RuleCreateRequest $ruleCreateRequest,
         ProjectService    $projectService
-    )
-    {
+    ) {
         $this->type = ProjectCreateController::CREATE;
         // todo: send active 'tab' with the response if there are errors (to go back to correct tab)
 
@@ -99,7 +90,7 @@ class ProjectCreateController
         try {
             // Create everything for this project
             $this->project->create($newProjectRef, $payload);
-        } catch (\Throwable $e) {
+        } catch (Throwable) {
             $request->flash();
             return Redirect::to('myprojects/create')
                 ->withErrors(['db' => ['ec5_224']])

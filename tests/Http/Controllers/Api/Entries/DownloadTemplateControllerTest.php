@@ -16,15 +16,16 @@ use ec5\Traits\Assertions;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Str;
 use Tests\TestCase;
+use Throwable;
 
 class DownloadTemplateControllerTest extends TestCase
 {
     use DatabaseTransactions;
     use Assertions;
 
-    private $user;
-    private $projectDefinition;
-    private $project;
+    private User $user;
+    private array $projectDefinition;
+    private Project $project;
 
     public function setUp(): void
     {
@@ -94,7 +95,7 @@ class DownloadTemplateControllerTest extends TestCase
             $this->user = $user;
             $this->project = $project;
             $this->projectDefinition = $projectDefinition;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -146,13 +147,13 @@ class DownloadTemplateControllerTest extends TestCase
             ]
         ]);
 
-        //imp: cannot use exactJson due to escaping the <br/>
+        //imp: cannot use exactJson due to escaping the \n
         $response[0]->assertJsonFragment([
             "errors" => [
                 [
                     "code" => "ec5_78",
                     "source" => "middleware",
-                    "title" => "This project is private. <br/> You need permission to access it."
+                    "title" => "This project is private. \n You need permission to access it."
                 ]
             ]
         ]);
@@ -191,7 +192,7 @@ class DownloadTemplateControllerTest extends TestCase
         );
 
         $queryString = '?map_index=0&form_index=0&branch_ref=&format=json';
-        $response = $this->get('api/internal/upload-headers/' . $project->slug . $queryString)
+        $this->get('api/internal/upload-headers/' . $project->slug . $queryString)
             ->assertStatus(200)
             ->assertJsonStructure([
                 "data" => [
@@ -287,7 +288,7 @@ class DownloadTemplateControllerTest extends TestCase
         );
 
         $queryString = '?map_index=0&form_index=0&branch_ref=&format=json';
-        $response = $this->actingAs($user)
+        $this->actingAs($user)
             ->get('api/internal/upload-headers/' . $project->slug . $queryString)
             ->assertStatus(200)
             ->assertJsonStructure([
@@ -313,7 +314,7 @@ class DownloadTemplateControllerTest extends TestCase
         $queryString .= '&format=csv';
         $queryString .= '&filename=' . $filename;
         $queryString .= '&epicollect5-download-entries=';
-        $response = $this->actingAs($this->user)->get('api/internal/upload-template/' . $this->project->slug . $queryString)
+        $this->actingAs($this->user)->get('api/internal/upload-template/' . $this->project->slug . $queryString)
             ->assertStatus(400)
             ->assertJsonStructure([
                 'errors' => [
@@ -482,7 +483,7 @@ class DownloadTemplateControllerTest extends TestCase
 
             $JSONResponse = json_decode($response[0]->getContent(), true);
             $this->assertJSONHeadersBranch($JSONResponse['data']['headers'], $mapIndex, $form, $branchRef, $branchIndex);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -501,7 +502,7 @@ class DownloadTemplateControllerTest extends TestCase
         $projectStructure = ProjectStructure::where('project_id', $this->project->id)->first();
         $mapping = json_decode($projectStructure->project_mapping, true);
         $selectedMapping = $mapping[$mapIndex]['forms'][$form['ref']];
-        $expectedHeaders = Common::getTemplateHeaders($form['inputs'], $selectedMapping, $mapTos[] = ['ec5_uuid']);
+        $expectedHeaders = Common::getTemplateHeaders($form['inputs'], $selectedMapping, ['ec5_uuid']);
         $this->assertEquals($headers, $expectedHeaders);
     }
 
@@ -512,7 +513,7 @@ class DownloadTemplateControllerTest extends TestCase
         $mapping = json_decode($projectStructure->project_mapping, true);
         $selectedMapping = $mapping[$mapIndex]['forms'][$form['ref']][$branchRef]['branch'];
         $branchInputs = $form['inputs'][$branchIndex]['branch'];
-        $expectedHeaders = Common::getTemplateHeaders($branchInputs, $selectedMapping, $mapTos[] = ['ec5_branch_uuid']);
+        $expectedHeaders = Common::getTemplateHeaders($branchInputs, $selectedMapping, ['ec5_branch_uuid']);
         $this->assertEquals($headers, $expectedHeaders);
     }
 
@@ -523,7 +524,7 @@ class DownloadTemplateControllerTest extends TestCase
         $projectStructure = ProjectStructure::where('project_id', $this->project->id)->first();
         $mapping = json_decode($projectStructure->project_mapping, true);
         $selectedMapping = $mapping[$mapIndex]['forms'][$form['ref']];
-        $expectedHeaders = Common::getTemplateHeaders($form['inputs'], $selectedMapping, $mapTos[] = ['ec5_uuid']);
+        $expectedHeaders = Common::getTemplateHeaders($form['inputs'], $selectedMapping, ['ec5_uuid']);
         $this->assertEquals($headers, $expectedHeaders);
     }
 
@@ -535,7 +536,7 @@ class DownloadTemplateControllerTest extends TestCase
         $mapping = json_decode($projectStructure->project_mapping, true);
         $selectedMapping = $mapping[$mapIndex]['forms'][$form['ref']][$branchRef]['branch'];
         $branchInputs = $form['inputs'][$branchIndex]['branch'];
-        $expectedHeaders = Common::getTemplateHeaders($branchInputs, $selectedMapping, $mapTos[] = ['ec5_branch_uuid']);
+        $expectedHeaders = Common::getTemplateHeaders($branchInputs, $selectedMapping, ['ec5_branch_uuid']);
         $this->assertEquals($headers, $expectedHeaders);
     }
 }

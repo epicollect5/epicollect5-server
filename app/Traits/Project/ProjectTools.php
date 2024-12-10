@@ -35,6 +35,4 @@ trait ProjectTools
             return ['db' => ['ec5_104']];
         }
     }
-
-
 }

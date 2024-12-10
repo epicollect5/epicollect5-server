@@ -26,7 +26,7 @@
                 <script>
                     var errors = '';
                     $('.var-holder-error').each(function () {
-                        errors += $(this).attr('data-message') + '</br>'
+                        errors += $(this).attr('data-message') + '\n'
                     });
                     EC5.toast.showError(errors);
                 </script>

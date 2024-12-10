@@ -18,7 +18,7 @@ window.EC5.project_users = window.EC5.project_users || {};
 
             if (error.responseJSON) {
                 $.each(error.responseJSON.errors, function (index, error) {
-                    parsedErrors += error.title + '<br/>';
+                    parsedErrors += error.title + '\n';
                 });
             } else {
                 parsedErrors = error;
@@ -159,10 +159,10 @@ window.EC5.project_users = window.EC5.project_users || {};
                                 window.EC5.overlay.fadeOut();
                                 $('#ec5ModalImportUsers').modal('hide');
 
-                                //show errors
+                                //show errors or success
                                 if (config.invalidEmailAddresses.length > 0) {
                                     window.EC5.toast.showWarning(config.messages.warning.SOME_USERS_NOT_IMPORTED);
-                                    window.EC5.toast.showError(config.messages.error.INVALID_EMAILS + ': <br/>' + config.invalidEmailAddresses.join('<br/>'));
+                                    window.EC5.toast.showError(config.messages.error.INVALID_EMAILS + ': \n' + config.invalidEmailAddresses.join('\n'));
                                 } else {
                                     window.EC5.toast.showSuccess(config.messages.success.USERS_IMPORTED);
                                 }
@@ -187,7 +187,7 @@ window.EC5.project_users = window.EC5.project_users || {};
                                 window.EC5.toast.showError(_parseErrors(error));
                                 if (config.invalidEmailAddresses.length > 0) {
                                     window.EC5.toast.showWarning(config.messages.warning.SOME_USERS_NOT_IMPORTED);
-                                    window.EC5.toast.showError(config.messages.error.INVALID_EMAILS + ': <br/>' + config.invalidEmailAddresses.join('<br/>'));
+                                    window.EC5.toast.showError(config.messages.error.INVALID_EMAILS + ': \n' + config.invalidEmailAddresses.join('\n'));
                                 }
                             }, function () {
                                 window.EC5.overlay.fadeOut()
