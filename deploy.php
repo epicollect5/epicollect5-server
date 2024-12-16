@@ -22,6 +22,14 @@ set('ssh_multiplexing', true);
 set('keep_releases', 3);
 
 add('shared_files', ['public/.htaccess']);
+set('writable_mode', 'chmod');
+// Using sudo in writable commands?
+set('writable_use_sudo', false);
+// Use recursive mode (-R)?
+set('writable_recursive', true);
+// The chmod mode.
+set('writable_chmod_mode', '0775');
+
 set('writable_dirs', [
     'bootstrap/cache',
     'storage',
@@ -386,13 +394,13 @@ task('artisan:down_with_secret', function () {
 });
 
 task('artisan:about', function () {
-    $output = run('cd {{deploy_path}}/current && {{bin/php}} artisan about', [
+    run('cd {{deploy_path}}/current && {{bin/php}} artisan about', [
         'real_time_output' => true
     ]);
 });
 
 task('composer:dump-autoload', function () {
-    $output = run('cd {{deploy_path}}/current && {{bin/composer}} dump-autoload -o', [
+    run('cd {{deploy_path}}/current && {{bin/composer}} dump-autoload -o', [
         'real_time_output' => true
     ]);
 });
