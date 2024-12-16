@@ -1,8 +1,13 @@
+@php
+    use Illuminate\Support\Str;
+@endphp
+
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="csrf-token" content="{{ csrf_token() }}"/>
 <meta name="theme-color" content="#673C90">
+
 
 {{--Add og: metatag on Epicollect5 home page--}}
 @if(Route::currentRouteName() === 'home')
@@ -106,20 +111,15 @@
         src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js"></script>
 
 {{-- Share Links js--}}
-@if(config('app.url') == 'https://five.epicollect.net')
+@if(Str::is('*.epicollect.net', config('app.url')))
     <script type='text/javascript'
-            src='//platform-api.sharethis.com/js/sharethis.js#property=58d59cc8a1c5fb00126d1e14&product=inline-share-buttons'
-            async='async'>
-    </script>
-@elseif(config('app.url') == 'https://dev.epicollect.net')
-    <script type='text/javascript'
-            src='//platform-api.sharethis.com/js/sharethis.js#property=65e078139391bf00191aa09a&product=inline-share-buttons'
+            src='//platform-api.sharethis.com/js/sharethis.js#property={{config('epicollect.setup.sharethis.property_id')}}&product=inline-share-buttons'
             async='async'>
     </script>
 @else
     {{--    Not working on localhost but buttons are still displayed--}}
     <script type='text/javascript'
-            src='//platform-api.sharethis.com/js/sharethis.js#property=58d59cc8a1c5fb00126d1e14&product=inline-share-buttons'
+            src='//platform-api.sharethis.com/js/sharethis.js#property={{config('epicollect.setup.sharethis.property_id')}}&product=inline-share-buttons'
             async='async'>
     </script>
 @endif

@@ -60,5 +60,8 @@ return [
     ],
     'cookies' => [
         'download_entries' => 'epicollect5-download-entries'
+    ],
+    'sharethis' => [
+        'property_id' => env('SHARETHIS_PROPERTY_ID', '')
     ]
 ];
