@@ -405,12 +405,14 @@ task('composer:dump-autoload', function () {
     ]);
 });
 
-
-// Main task
-desc('Deploy (update) your project');
-task('deploy', [
+desc('Update Epicollect5 to a new release');
+task('update', [
     'artisan:down_with_secret',
-    'deploy:prepare',
+    'deploy:info',
+    'deploy:lock',
+    'deploy:release',
+    'deploy:update_code',
+    'deploy:shared',
     'deploy:vendors',
     'artisan:migrate',
     'artisan:config:cache',
