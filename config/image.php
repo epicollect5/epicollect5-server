@@ -6,16 +6,9 @@ return array(
     |--------------------------------------------------------------------------
     | Image Driver
     |--------------------------------------------------------------------------
-    |
-    | Intervention Image supports "GD Library" and "Imagick" to process images
-    | internally. You may choose one of them according to your PHP
-    | configuration. By default PHP's "GD Library" implementation is used.
-    |
-    | Supported: "gd", "imagick"
-    |
+    | imp: Imagick is used to keep the metadata when resizing, as GD was stripping them
+    | imp: EXIF Support	must be enabled, check phpinfo()
     */
 
-    //Imagick is used to keep metadata
-    'driver' => env('INTERVENTION_IMAGE_LIBRARY', 'imagick'),
-
+    'driver' => 'imagick'
 );

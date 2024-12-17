@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Set specific configuration variables here
  */
@@ -16,7 +17,7 @@ return [
     | Supported: "gd", "imagick"
     |
     */
-    'driver'    => env('INTERVENTION_IMAGE_LIBRARY'),
+    'driver'    => 'imagick',
 
     // Initial generator class
     'generator' => \Laravolt\Avatar\Generator\DefaultGenerator::class,
