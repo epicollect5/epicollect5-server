@@ -44,6 +44,10 @@ set('writable_dirs', [
     'storage/logs',
 ]);
 
+// List of dirs what will be shared between releases.
+// Each release will have symlink to those dirs stored in {{deploy_path}}/shared dir.
+set('shared_dirs', ['storage']);
+
 //MYSQL user for the epicollect5 app
 define('DB_USERNAME', 'epicollect5_server');
 define('DB_NAME', 'epicollect5_prod');
@@ -102,6 +106,17 @@ task('setup:storage', function () {
         run("sudo chmod -R 775 {{release_path}}/$dir");
     }
 });
+
+
+//Ensure the bootstrap/cache folder exists and set correct permissions
+task('setup:bootstrap_cache_folder', function () {
+    $httpUser = trim(run('ps aux | egrep "(apache|nginx)" | grep -v root | head -n 1 | awk \'{print $1}\''));
+    run("sudo mkdir -p {{release_path}}/bootstrap/cache");
+    run("sudo chown -R {$httpUser}:{$httpUser} {{release_path}}/bootstrap/cache");
+    run("sudo chmod -R 775 {{release_path}}/bootstrap/cache");
+
+    writeln('bootstrap/cache created (or ignored if existing) successfully.');
+})->desc('Ensure bootstrap/cache folder exists with correct permissions');
 
 task('setup:database', function () {
 
@@ -413,6 +428,7 @@ task('update', [
     'deploy:release',
     'deploy:update_code',
     'deploy:shared',
+    'setup:bootstrap_cache_folder',
     'deploy:vendors',
     'artisan:migrate',
     'artisan:config:cache',
@@ -432,7 +448,7 @@ try {
         'setup:check_clean_install',
         'deploy:prepare',
         'deploy:vendors',
-        'setup:storage',
+        'setup:storage',//todo: maybe this is redundant
         'deploy:publish',
         'setup:database',
         'setup:env',
