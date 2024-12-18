@@ -8,27 +8,27 @@
     <style>
         html, body {
             height: 100%;
-        }
-
-        body {
             margin: 0;
             padding: 0;
             width: 100%;
             color: #673C90;
-            display: table;
+            display: flex;
+            flex-direction: column;
             font-weight: bold;
             font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
         }
 
         .container {
             text-align: center;
-            display: table-cell;
-            vertical-align: middle;
+            flex: 1; /* Allow the container to take up available space */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
         }
 
         .content {
             text-align: center;
-            display: inline-block;
         }
 
         .title {
@@ -37,7 +37,21 @@
         }
 
         .lead {
-            font-size: 24px;;
+            font-size: 24px;
+        }
+
+        .footer {
+            text-align: center;
+            background-color: #f5f5f5;
+            color: black;
+            padding: 20px 0;
+            width: 100%;
+            position: relative;
+            bottom: 0;
+
+            a {
+                color: #673C90;
+            }
         }
     </style>
 </head>
@@ -54,5 +68,12 @@
         <p class="lead">Sorry for the inconvenience.</p>
     </div>
 </div>
+
+<footer class="footer">
+    <a href="https://www.pathogensurveillance.net/">&copy; {{ date('Y') }} Centre for
+        Genomic Pathogen
+        Surveillance</a>,&nbsp;v{{ config('app.production_server_version') }}
+</footer>
+
 </body>
 </html>

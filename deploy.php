@@ -24,7 +24,7 @@ set('keep_releases', 3);
 add('shared_files', ['public/.htaccess']);
 //set('writable_mode', 'chmod');
 // Using sudo in writable commands?
-//set('writable_use_sudo', false);
+set('writable_use_sudo', false);
 // Use recursive mode (-R)?
 //set('writable_recursive', true);
 // The chmod mode.
