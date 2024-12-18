@@ -22,13 +22,13 @@ set('ssh_multiplexing', true);
 set('keep_releases', 3);
 
 add('shared_files', ['public/.htaccess']);
-set('writable_mode', 'chmod');
+//set('writable_mode', 'chmod');
 // Using sudo in writable commands?
-set('writable_use_sudo', false);
+//set('writable_use_sudo', false);
 // Use recursive mode (-R)?
-set('writable_recursive', true);
+//set('writable_recursive', true);
 // The chmod mode.
-set('writable_chmod_mode', '0775');
+//set('writable_chmod_mode', '0775');
 
 set('writable_dirs', [
     'bootstrap/cache',
@@ -90,33 +90,39 @@ task('setup:symlink_laravel_storage_folders_file', function () {
     writeln('Symlink to the latest laravel_storage_folders.sh has been created and made executable.');
 });
 
-task('setup:storage', function () {
-    $writableDirs = get('writable_dirs');
-    // Get the Apache or Nginx user dynamically
-    $httpUser = run('ps aux | egrep "(apache|nginx)" | grep -v root | head -n 1 | awk \'{print $1}\'');
-    $httpUser = trim($httpUser); // Clean up any extra whitespace
-    // Apply ownership and permissions recursively to the entire storage directory
-    run("sudo chown -R {$httpUser}:{$httpUser} {{release_path}}/storage");
-    run("sudo chmod -R 775 {{release_path}}/storage");
-    run("sudo chown -R {$httpUser}:{$httpUser} {{release_path}}/bootstrap/cache");
-    run("sudo chmod -R 775 {{release_path}}/bootstrap/cache");
-    // Change ownership and group of each writable directory
-    foreach ($writableDirs as $dir) {
-        run("sudo chown -R {$httpUser}:{$httpUser} {{release_path}}/$dir");
-        run("sudo chmod -R 775 {{release_path}}/$dir");
-    }
-});
+//task('setup:storage', function () {
+//    $writableDirs = get('writable_dirs');
+//    // Get the Apache or Nginx user dynamically
+//    $httpUser = run('ps aux | egrep "(apache|nginx)" | grep -v root | head -n 1 | awk \'{print $1}\'');
+//    $httpUser = trim($httpUser); // Clean up any extra whitespace
+//    // Apply ownership and permissions recursively to the entire storage directory
+//    run("sudo chown -R {$httpUser}:{$httpUser} {{release_path}}/storage");
+//    run("sudo chmod -R 775 {{release_path}}/storage");
+//    run("sudo chown -R {$httpUser}:{$httpUser} {{release_path}}/bootstrap/cache");
+//    run("sudo chmod -R 775 {{release_path}}/bootstrap/cache");
+//    // Change ownership and group of each writable directory
+//    foreach ($writableDirs as $dir) {
+//        run("sudo chown -R {$httpUser}:{$httpUser} {{release_path}}/$dir");
+//        run("sudo chmod -R 775 {{release_path}}/$dir");
+//    }
+//});
 
 
-//Ensure the bootstrap/cache folder exists and set correct permissions
-task('setup:bootstrap_cache_folder', function () {
+//Ensure the cache folders exist and set correct permissions
+task('setup:cache_folders', function () {
     $httpUser = trim(run('ps aux | egrep "(apache|nginx)" | grep -v root | head -n 1 | awk \'{print $1}\''));
     run("sudo mkdir -p {{release_path}}/bootstrap/cache");
     run("sudo chown -R {$httpUser}:{$httpUser} {{release_path}}/bootstrap/cache");
     run("sudo chmod -R 775 {{release_path}}/bootstrap/cache");
 
-    writeln('bootstrap/cache created (or ignored if existing) successfully.');
-})->desc('Ensure bootstrap/cache folder exists with correct permissions');
+    run("sudo mkdir -p {{release_path}}/storage/framework/cache/data");
+    run("sudo chown -R {$httpUser}:{$httpUser} {{release_path}}/storage/framework/cache/data");
+    run("sudo chmod -R 775 {{release_path}}/storage/framework/cache/data");
+
+    writeln('<info>storage/framework/cache/data created (or ignored if existing) successfully.</info>');
+    writeln('<info>bootstrap/cache created (or ignored if existing) successfully.</info>');
+});
+
 
 task('setup:database', function () {
 
@@ -423,12 +429,14 @@ task('composer:dump-autoload', function () {
 desc('Update Epicollect5 to a new release');
 task('update', [
     'artisan:down_with_secret',
-    'deploy:info',
-    'deploy:lock',
-    'deploy:release',
-    'deploy:update_code',
-    'deploy:shared',
-    'setup:bootstrap_cache_folder',
+    'deploy:prepare',
+ //   'deploy:info',
+ //   'deploy:lock',
+ //   'deploy:release',
+//'deploy:update_code',
+//    'deploy:shared',
+   // 'setup:bootstrap_cache_folder',
+  //  'setup:storage_cache_folder',
     'deploy:vendors',
     'artisan:migrate',
     'artisan:config:cache',
@@ -448,7 +456,7 @@ try {
         'setup:check_clean_install',
         'deploy:prepare',
         'deploy:vendors',
-        'setup:storage',//todo: maybe this is redundant
+       // 'setup:storage',//todo: maybe this is redundant
         'deploy:publish',
         'setup:database',
         'setup:env',
