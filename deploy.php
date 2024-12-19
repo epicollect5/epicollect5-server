@@ -22,13 +22,9 @@ set('ssh_multiplexing', true);
 set('keep_releases', 3);
 
 add('shared_files', ['public/.htaccess']);
-//set('writable_mode', 'chmod');
-// Using sudo in writable commands?
-set('writable_use_sudo', false);
-// Use recursive mode (-R)?
-//set('writable_recursive', true);
-// The chmod mode.
-//set('writable_chmod_mode', '0775');
+//we need sudo to be able to set ACL when not the owner of the files
+//for example, on legacy volumes with www-data:www-data
+set('writable_use_sudo', true);
 
 set('writable_dirs', [
     'bootstrap/cache',
@@ -430,13 +426,6 @@ desc('Update Epicollect5 to a new release');
 task('update', [
     'artisan:down_with_secret',
     'deploy:prepare',
- //   'deploy:info',
- //   'deploy:lock',
- //   'deploy:release',
-//'deploy:update_code',
-//    'deploy:shared',
-   // 'setup:bootstrap_cache_folder',
-  //  'setup:storage_cache_folder',
     'deploy:vendors',
     'artisan:migrate',
     'artisan:config:cache',
@@ -456,7 +445,6 @@ try {
         'setup:check_clean_install',
         'deploy:prepare',
         'deploy:vendors',
-       // 'setup:storage',//todo: maybe this is redundant
         'deploy:publish',
         'setup:database',
         'setup:env',
