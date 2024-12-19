@@ -424,6 +424,7 @@ task('composer:dump-autoload', function () {
 
 desc('Update Epicollect5 to a new release');
 task('update', [
+    'check:not_root',
     'artisan:down_with_secret',
     'deploy:prepare',
     'deploy:vendors',
@@ -439,9 +440,19 @@ task('update', [
     // 'artisan:up', // go back online manually after checking all works
 ]);
 
+// Task to check if running as root
+task('check:not_root', function () {
+    $user = run('whoami');
+    if ($user === 'root') {
+        writeln('<error>Deployment must not be run as root. Aborting.</error>');
+        exit(1);
+    }
+});
+
 desc('Install Epicollect5 release from scratch');
 try {
     task('install', [
+        'check:not_root',
         'setup:check_clean_install',
         'deploy:prepare',
         'deploy:vendors',
