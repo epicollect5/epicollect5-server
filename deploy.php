@@ -20,6 +20,7 @@ require 'recipe/laravel.php';
 set('repository', 'https://github.com/epicollect5/epicollect5-server.git');
 set('ssh_multiplexing', true);
 set('keep_releases', 3);
+set('default_timeout', 7200);
 
 add('shared_files', ['public/.htaccess']);
 //we need sudo to be able to set ACL when not the owner of the files
