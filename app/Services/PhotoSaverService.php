@@ -32,6 +32,8 @@ class PhotoSaverService
             // Destroy after use
             $img->destroy();
             // Store the file into storage location, using specified driver
+            //imp: folders are generated with 755,
+            // see https://github.com/laravel/framework/issues/42586
             Storage::disk($driver)->put(
                 $projectRef . '/' . $fileName,
                 file_get_contents($imageRealPath),
@@ -74,6 +76,8 @@ class PhotoSaverService
             // Destroy after use
             $img->destroy();
             // Store the file into storage location, using specified driver
+            //imp: folders are generated with 755,
+            // see https://github.com/laravel/framework/issues/42586
             Storage::disk($driver)->put(
                 $projectRef . '/' . $fileName,
                 file_get_contents($imagePath),
