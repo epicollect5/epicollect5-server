@@ -164,5 +164,5 @@ return [
 
     'http_only' => true,
     //need relaxed cookies for cross site requests (POST from Apple)
-    'same_site' =>  env('SESSION_SAME_SITE', 'lax'),
+    'same_site' =>  env('SESSION_SAME_SITE', 'none'),
 ];
