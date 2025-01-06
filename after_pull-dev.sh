@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Run on the server after pulling to clear Laravel cache.
-# Give it executable permission with chmod +x and run with sudo ./after_pull.sh
+# Give it executable permission with chmod +x and run with  ./after_pull.sh
 
 # ANSI escape codes for text colors
 YELLOW='\033[1;33m'  # Yellow
