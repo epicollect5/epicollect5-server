@@ -19,6 +19,7 @@ return [
         'email' => env('SYSTEM_EMAIL', 'system@example.com'),
         'app_link_enabled' => (bool) env('APP_LINK_ENABLED', false),
         'version' => env('PRODUCTION_SERVER_VERSION', '1.0.0'),
+        'storage_driver' => env('STORAGE_DRIVER', 'local')
     ],
     'opencage' => [
         'endpoint' => env('OPENCAGE_ENDPOINT'),

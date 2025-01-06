@@ -43,6 +43,7 @@ return [
 
     'disks' => [
 
+        //todo: is this actually needed?
         'public' => [
             'driver' => 'local',
             'root' => public_path('images'),
@@ -52,15 +53,16 @@ return [
         ],
 
         'temp' => [
-            'driver' => 'local',
+            'driver' => config('epicollect.setup.system.storage_driver'),
             'root' => storage_path('app/temp'),
             'throw' => true,
             'visibility' => 'public',
             'directory_visibility' => 'public',
         ],
 
+        //todo: is this actually needed?
         'local' => [
-            'driver' => 'local',
+            'driver' => config('epicollect.setup.system.storage_driver'),
             'root' => storage_path('app'),
             'throw' => true,
             'permissions' => [
@@ -69,15 +71,16 @@ return [
                     'private' => 0600,
                 ],
                 'dir' => [
-                    'public' => 0775,
+                    'public' => 0755,
                     'private' => 0700,
                 ],
-            ],
-            'directory_visibility' => 'public'
+            ]
         ],
 
+        //imp: Laravel Team is against having a permission different from 755 on public folders
+        //see https://github.com/laravel/docs/pull/8003
         'entry_original' => [
-            'driver' => 'local',
+            'driver' => config('epicollect.setup.system.storage_driver'),
             'root' => storage_path('app/entries/photo/entry_original'),
             'throw' => true,
             'permissions' => [
@@ -86,15 +89,16 @@ return [
                     'private' => 0600,
                 ],
                 'dir' => [
-                    'public' => 0775,
+                    'public' => 0755,
                     'private' => 0700,
                 ],
-            ],
-            'directory_visibility' => 'public'
+            ]
         ],
 
+        //imp: Laravel Team is against having a permission different from 755 on public folders
+        //see https://github.com/laravel/docs/pull/8003
         'entry_thumb' => [
-            'driver' => 'local',
+            'driver' => config('epicollect.setup.system.storage_driver'),
             'root' => storage_path('app/entries/photo/entry_thumb'),
             'throw' => true,
             'permissions' => [
@@ -103,15 +107,16 @@ return [
                     'private' => 0600,
                 ],
                 'dir' => [
-                    'public' => 0775,
+                    'public' => 0755,
                     'private' => 0700,
-                ],
-            ],
-            'directory_visibility' => 'public'
+                ]
+            ]
         ],
 
+        //imp: Laravel Team is against having a permission different from 755 on public folders
+        //see https://github.com/laravel/docs/pull/8003
         'project_thumb' => [
-            'driver' => 'local',
+            'driver' => config('epicollect.setup.system.storage_driver'),
             'root' => storage_path('app/projects/project_thumb'),
             'throw' => true,
             'permissions' => [
@@ -120,15 +125,16 @@ return [
                     'private' => 0600,
                 ],
                 'dir' => [
-                    'public' => 0775,
+                    'public' => 0755,
                     'private' => 0700,
                 ],
-            ],
-            'directory_visibility' => 'public',
+            ]
         ],
 
+        //imp: Laravel Team is against having a permission different from 755 on public folders
+        //see https://github.com/laravel/docs/pull/8003
         'project_mobile_logo' => [
-            'driver' => 'local',
+            'driver' => config('epicollect.setup.system.storage_driver'),
             'root' => storage_path('app/projects/project_mobile_logo'),
             'throw' => true,
             'permissions' => [
@@ -137,15 +143,16 @@ return [
                     'private' => 0600,
                 ],
                 'dir' => [
-                    'public' => 0775,
+                    'public' => 0755,
                     'private' => 0700,
                 ],
-            ],
-            'directory_visibility' => 'public',
+            ]
         ],
 
+        //imp: Laravel Team is against having a permission different from 755 on public folders
+        //see https://github.com/laravel/docs/pull/8003
         'video' => [
-            'driver' => 'local',
+            'driver' => config('epicollect.setup.system.storage_driver'),
             'root' => storage_path('app/entries/video'),
             'throw' => true,
             'permissions' => [
@@ -154,15 +161,16 @@ return [
                     'private' => 0600,
                 ],
                 'dir' => [
-                    'public' => 0775,
+                    'public' => 0755,
                     'private' => 0700,
                 ],
-            ],
-            'directory_visibility' => 'public'
+            ]
         ],
 
+        //imp: Laravel Team is against having a permission different from 755 on public folders
+        //see https://github.com/laravel/docs/pull/8003
         'audio' => [
-            'driver' => 'local',
+            'driver' => config('epicollect.setup.system.storage_driver'),
             'root' => storage_path('app/entries/audio'),
             'throw' => true,
             'permissions' => [
@@ -171,15 +179,16 @@ return [
                     'private' => 0600,
                 ],
                 'dir' => [
-                    'public' => 0775,
+                    'public' => 0755,
                     'private' => 0700,
                 ],
-            ],
-            'directory_visibility' => 'public'
+            ]
         ],
 
+        //imp: Laravel Team is against having a permission different from 755 on public folders
+        //see https://github.com/laravel/docs/pull/8003
         'entries_zip' => [
-            'driver' => 'local',
+            'driver' => config('epicollect.setup.system.storage_driver'),
             'root' => storage_path('app/entries/zip'),
             'throw' => true,
             'permissions' => [
@@ -188,11 +197,10 @@ return [
                     'private' => 0600,
                 ],
                 'dir' => [
-                    'public' => 0775,
+                    'public' => 0755,
                     'private' => 0700,
                 ],
-            ],
-            'directory_visibility' => 'public'
+            ]
         ],
 
         /**
@@ -213,7 +221,7 @@ return [
                     'private' => 0600,
                 ],
                 'dir' => [
-                    'public' => 0775,
+                    'public' => 0755,
                     'private' => 0700,
                 ],
             ],
@@ -229,7 +237,7 @@ return [
                     'private' => 0600,
                 ],
                 'dir' => [
-                    'public' => 0775,
+                    'public' => 0755,
                     'private' => 0700,
                 ],
             ],
@@ -245,7 +253,7 @@ return [
                     'private' => 0600,
                 ],
                 'dir' => [
-                    'public' => 0775,
+                    'public' => 0755,
                     'private' => 0700,
                 ],
             ],
@@ -261,7 +269,7 @@ return [
                     'private' => 0600,
                 ],
                 'dir' => [
-                    'public' => 0775,
+                    'public' => 0755,
                     'private' => 0700,
                 ],
             ],
@@ -277,7 +285,7 @@ return [
                     'private' => 0600,
                 ],
                 'dir' => [
-                    'public' => 0775,
+                    'public' => 0755,
                     'private' => 0700,
                 ],
             ],
