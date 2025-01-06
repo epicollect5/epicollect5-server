@@ -150,6 +150,30 @@ Epicollect5 server runs on Ubuntu 18 LTS & PHP 7.1
 
 - restart apache
 
+## Folders Structure & Permissions
+
+Once installed, Epicollect5 gets the following folder structure and simlinks
+
+/var/www/html_prod
+├── .dep
+│ ├── (permissions: drwxrwsr-x, owner: dev, group: www-data)
+├── cleanup.sh
+│ ├── (permissions: -rwxrwxr-x, owner: dev, group: www-data)
+├── current -> releases/7
+│ ├── (permissions: lrwxrwxrwx, owner: dev, group: www-data)
+├── deploy.php -> current/deploy.php
+│ ├── (permissions: lrwxrwxrwx, owner: dev, group: www-data)
+├── laravel_storage_folders.sh -> current/laravel_storage_folders.sh
+│ ├── (permissions: lrwxrwxrwx, owner: dev, group: www-data)
+├── releases
+│ ├── (permissions: drwxrwsr-x, owner: dev, group: www-data)
+├── shared
+│ ├── (permissions: drwxrwsr-x, owner: dev, group: www-data)
+├── .. (parent directory)
+│ ├── (permissions: drwxr-xr-x, owner: www-data, group: www-data)
+└── .
+├── (permissions: drwxr-sr-x, owner: dev, group: www-data)
+
 ## Forking
 
 We provide this software as is, under MIT license, for the benefit and use of the community, however we are unable to
