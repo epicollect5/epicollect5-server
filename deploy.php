@@ -87,24 +87,6 @@ task('setup:symlink_laravel_storage_folders_file', function () {
     writeln('Symlink to the latest laravel_storage_folders.sh has been created and made executable.');
 });
 
-//task('setup:storage', function () {
-//    $writableDirs = get('writable_dirs');
-//    // Get the Apache or Nginx user dynamically
-//    $httpUser = run('ps aux | egrep "(apache|nginx)" | grep -v root | head -n 1 | awk \'{print $1}\'');
-//    $httpUser = trim($httpUser); // Clean up any extra whitespace
-//    // Apply ownership and permissions recursively to the entire storage directory
-//    run("sudo chown -R {$httpUser}:{$httpUser} {{release_path}}/storage");
-//    run("sudo chmod -R 775 {{release_path}}/storage");
-//    run("sudo chown -R {$httpUser}:{$httpUser} {{release_path}}/bootstrap/cache");
-//    run("sudo chmod -R 775 {{release_path}}/bootstrap/cache");
-//    // Change ownership and group of each writable directory
-//    foreach ($writableDirs as $dir) {
-//        run("sudo chown -R {$httpUser}:{$httpUser} {{release_path}}/$dir");
-//        run("sudo chmod -R 775 {{release_path}}/$dir");
-//    }
-//});
-
-
 //Ensure the cache folders exist and set correct permissions
 task('setup:cache_folders', function () {
     $httpUser = trim(run('ps aux | egrep "(apache|nginx)" | grep -v root | head -n 1 | awk \'{print $1}\''));
