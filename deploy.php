@@ -374,9 +374,9 @@ task('setup:update_permissions:.env', function () {
 task('setup:update_permissions:bash_scripts', function () {
 
     //only owner can rwx
-    run("sudo chmod 700 after_pull-dev.sh");
-    run("sudo chmod 700 after_pull-prod.sh");
-    run("sudo chmod 700 laravel_storage_folders.sh");
+    run("sudo chmod 700 {{release_path}}/after_pull-dev.sh");
+    run("sudo chmod 700 {{release_path}}/after_pull-prod.sh");
+    run("sudo chmod 700 {{release_path}}/laravel_storage_folders.sh");
 
     writeln('<info>Bash scripts permissions updated.<info>');
 });
