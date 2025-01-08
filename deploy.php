@@ -49,6 +49,30 @@ set('shared_dirs', ['storage']);
 define('DB_USERNAME', 'epicollect5_server');
 define('DB_NAME', 'epicollect5_prod');
 
+function updatePermissionsApiKeys(): void
+{
+    $keysPath = '{{deploy_path}}/shared/storage';
+
+    // Get the Apache or Nginx user dynamically
+    $httpUser = run('ps aux | grep -E "(apache|nginx)" | grep -v root | head -n 1 | awk \'{print $1}\'');
+    $httpUser = trim($httpUser); // Clean up any extra whitespace
+
+    if (empty($httpUser)) {
+        writeln('<error>Unable to determine the HTTP server user.<error>');
+        exit(1);
+    }
+
+    // Change ownership of the keys to the HTTP server user
+    run("sudo chown $httpUser:$httpUser $keysPath/oauth-private.key");
+    run("sudo chown $httpUser:$httpUser $keysPath/oauth-public.key");
+
+    // Set appropriate permissions for the keys
+    run("sudo chmod 600 $keysPath/oauth-private.key");
+    run("sudo chmod 644 $keysPath/oauth-public.key");
+
+    writeln('<info>Passport keys permissions updated.<info>');
+}
+
 task('setup:check_clean_install', function () {
     $deployPath = get('deploy_path');
     // Define the release path (usually the current release is a symlink to the most recent release)
@@ -101,7 +125,6 @@ task('setup:cache_folders', function () {
     writeln('<info>storage/framework/cache/data created (or ignored if existing) successfully.</info>');
     writeln('<info>bootstrap/cache created (or ignored if existing) successfully.</info>');
 });
-
 
 task('setup:database', function () {
 
@@ -309,32 +332,53 @@ task('setup:superadmin', function () {
     }
 });
 
-
 task('setup:passport:keys', function () {
     // Run artisan passport:keys to generate the keys
     run('cd {{deploy_path}}/current && {{bin/php}} artisan passport:keys');
 
-    // Path to the keys
-    $keysPath = '{{deploy_path}}/shared/storage';
+    writeln('Passport keys generated.');
+
+    //Update keys permissions
+    updatePermissionsApiKeys();
+});
+
+
+task('setup:update_permissions:api_keys', function () {
+    updatePermissionsApiKeys();
+});
+
+task('setup:update_permissions:.env', function () {
+    $envPath = '{{deploy_path}}/shared/storage';
 
     // Get the Apache or Nginx user dynamically
     $httpUser = run('ps aux | grep -E "(apache|nginx)" | grep -v root | head -n 1 | awk \'{print $1}\'');
     $httpUser = trim($httpUser); // Clean up any extra whitespace
 
     if (empty($httpUser)) {
-        writeln('Unable to determine the HTTP server user.');
+        writeln('<error>Unable to determine the HTTP server user.<error>');
         exit(1);
     }
 
-    // Change ownership of the keys to the HTTP server user
-    run("sudo chown $httpUser:$httpUser $keysPath/oauth-private.key");
-    run("sudo chown $httpUser:$httpUser $keysPath/oauth-public.key");
+    $user = run('whoami');
 
-    // Set appropriate permissions for the keys
-    run("sudo chmod 600 $keysPath/oauth-private.key");
-    run("sudo chmod 644 $keysPath/oauth-public.key");
+    // Change ownership of the .env to the deployer user and group to HTTP server
+    // user can rw, apache can just read
+    run("sudo chown $user:$httpUser $envPath/.env");
 
-    writeln('Passport keys generated and permissions updated.');
+    // Set appropriate permissions for the .env file
+    run("sudo chmod 640 $envPath/.env");
+
+    writeln('<info>.env permissions updated.<info>');
+});
+
+task('setup:update_permissions:bash_scripts', function () {
+
+    //only owner can rwx
+    run("sudo chmod 700 after_pull-dev.sh");
+    run("sudo chmod 700 after_pull-prod.sh");
+    run("sudo chmod 700 laravel_storage_folders.sh");
+
+    writeln('<info>Bash scripts permissions updated.<info>');
 });
 
 task('setup:storage:link', function () {
@@ -418,6 +462,9 @@ task('update', [
     'deploy:publish',
     'setup:symlink_deploy_file',
     'setup:symlink_laravel_storage_folders_file',
+    'setup:update_permissions:bash_scripts',
+    'setup:update_permissions:api_keys',
+    'setup:update_permissions:.env',
     'composer:dump-autoload',
     'artisan:about'
     // 'artisan:up', // go back online manually after checking all works
@@ -452,6 +499,9 @@ try {
         'artisan:migrate',
         'setup:symlink_deploy_file',
         'setup:symlink_laravel_storage_folders_file',
+        'setup:update_permissions:bash_scripts',
+        'setup:update_permissions:api_keys',
+        'setup:update_permissions:.env',
         'setup:stats'
     ]);
 
