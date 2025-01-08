@@ -348,7 +348,7 @@ task('setup:update_permissions:api_keys', function () {
 });
 
 task('setup:update_permissions:.env', function () {
-    $envPath = '{{deploy_path}}/shared/storage';
+    $envPath = '{{deploy_path}}/shared';
 
     // Get the Apache or Nginx user dynamically
     $httpUser = run('ps aux | grep -E "(apache|nginx)" | grep -v root | head -n 1 | awk \'{print $1}\'');
