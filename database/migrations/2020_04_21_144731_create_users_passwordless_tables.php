@@ -17,7 +17,7 @@ class CreateUsersPasswordlessTable extends Migration
             $table->string('email')->unique('email');
             $table->string('token', 500);
             $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('expires_at')->nullable();
+            $table->timestamp('expires_at')->useCurrent();
         });
 
         Schema::create('users_passwordless_api', function (Blueprint $table) {
@@ -25,7 +25,7 @@ class CreateUsersPasswordlessTable extends Migration
             $table->string('email')->unique('email');
             $table->string('code', 500);
             $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('expires_at')->nullable();
+            $table->timestamp('expires_at')->useCurrent();
             $table->tinyInteger('attempts')->default('3');
         });
     }
