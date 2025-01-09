@@ -19,7 +19,7 @@ class CreateUsersVerify extends Migration
             $table->string('email')->unique('email');
             $table->string('code');
             $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('expires_at');
+            $table->timestamp('expires_at')->nullable();
         });
     }
 
