@@ -268,6 +268,7 @@ class RuleAnswers extends ValidationBase
     private function isUnique(EntryStructureDTO $entryStructure, $uniquenessType, $answer, $inputType, $inputDatetimeFormat): ?bool
     {
         $entryService = new EntriesUniquenessService();
-        return $entryService->isUnique($entryStructure, $uniquenessType, $this->inputRef, $answer, $inputType, $inputDatetimeFormat);
+        //imp: we cast (string) $answer to deal with integer and decimal questions
+        return $entryService->isUnique($entryStructure, $uniquenessType, $this->inputRef, (string) $answer, $inputType, $inputDatetimeFormat);
     }
 }

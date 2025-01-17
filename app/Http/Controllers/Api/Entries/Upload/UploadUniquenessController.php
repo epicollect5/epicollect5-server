@@ -70,7 +70,8 @@ class UploadUniquenessController extends UploadControllerBase
 
         // Check if the answer is unique or not
         $entryService = new EntriesUniquenessService();
-        if (!$entryService->isUnique($this->entryStructure, $uniquenessType, $inputRef, $answer, $inputType, $inputDatetimeFormat)) {
+        //imp: we cast (string) $answer to deal with integer and decimal questions
+        if (!$entryService->isUnique($this->entryStructure, $uniquenessType, $inputRef, (string) $answer, $inputType, $inputDatetimeFormat)) {
             return Response::apiErrorCode(400, ['uniqueness-controller' => ['ec5_22']]);
         }
 
