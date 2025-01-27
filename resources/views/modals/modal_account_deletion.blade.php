@@ -16,8 +16,8 @@
                 </p>
                 <div class="checkbox">
                     <label>
-                        <input type="checkbox" class="checkbox-confirm-account-deletion"> <strong>I understand this
-                            action cannot be undone.</strong>
+                        <input type="checkbox" class="checkbox-confirm-account-deletion">
+                        <strong>I fully understand this action cannot be undone or reversed.</strong>
                     </label>
                 </div>
             </div>
