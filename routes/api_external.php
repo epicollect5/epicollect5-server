@@ -15,7 +15,6 @@ Route::group(['middleware' => ['throttle:5,30']], function () {
 });
 
 //validate a login code (mobile app)
-//Route::group(['middleware' => ['throttle:5,1']], function () {
 //important: this route uses a hack in the login() method of JwtGuard
 //to have a shorter jwt expiry time. (instead of building a custom guard for 1 endpoint)
 //************************************************

@@ -48,7 +48,7 @@
                     @endif
 
                     <div class="panel-body project-home__project-description">
-                        @if(!$requestAttributes->requestedProject->description)
+                        @if(trim($requestAttributes->requestedProject->description) === '')
                             <p class="well text-center">{{trans('site.no_desc_yet')}}</p>
                         @else
                             <p class="well">{!! nl2br(e($requestAttributes->requestedProject->description)) !!}</p>
