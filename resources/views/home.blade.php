@@ -21,12 +21,6 @@
             </h1>
         </div>
 
-        {{--        <div class="row" style="text-align: center;">--}}
-        {{--            <p style="background-color:#ffe0b2;padding:5px 0;border-radius:6px">Try the new beta for--}}
-        {{--                <strong><a href="https://testflight.apple.com/join/6gW71eIy" target="_blank">iOS</a></strong>--}}
-        {{--            </p>--}}
-        {{--        </div>--}}
-
         <div class="row page-home-intro">
             <div class="col-xs-12 col-sm-12 col-md-4 col-lg-4 col-sm-12 text-center intro-thumbnail">
                 <img src="{{ asset('/images/ec5-intro-create-project.jpg') }}" class="img-responsive"
@@ -55,6 +49,41 @@
         </div>
 
         <hr>
+
+        <div class="page-home__server-stats row">
+            <h3 class="text-center server-stats__stats-teaser">Thousands of people use Epicollect5 to collect data for
+                thousands of projects every day.</h3>
+            <div class="col-xs-12 col-sm-4 col-md-4 col-lg-4 text-center server-stats__stats-wrapper">
+                <div class="circle stats-users">
+                    <div class="circle-content">
+                        <p><i class="material-icons">people</i></p>
+                        <h4>Users</h4>
+                        <p><strong>{{ $users }}</strong></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-sm-4 col-md-4 col-lg-4 text-center server-stats__stats-wrapper">
+                <div class="circle stats-projects">
+                    <div class="circle-content">
+                        <p><i class="material-icons">list_alt</i></p>
+                        <h4>Projects</h4>
+                        <p><strong>{{ $projects }}</strong></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-sm-4 col-md-4 col-lg-4 text-center server-stats__stats-wrapper">
+                <div class="circle stats-entries">
+                    <div class="circle-content">
+                        <p><i class="material-icons">cloud_upload</i></p>
+                        <h4>Entries</h4>
+                        <p><strong>{{ $entries }}</strong></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <hr>
+
         <div class="page-home__find-project">
             <h2 class="text-center">Have a look at our featured projects below or
                 <a href="{{ url('/projects/') }}" class="btn btn-default btn-action-inverse btn-lg">find a project</a>
@@ -158,43 +187,6 @@
                 @endforeach
             </div>
         @endif
-
-        <hr>
-
-        <div class="page-home__server-stats row">
-            <h3 class="text-center server-stats__stats-teaser">Thousand of people use <strong
-                        style="color:#673c90">Epicollect5</strong> every day
-                to collect data
-                all over the
-                world.</h3>
-            <div class="col-xs-12 col-sm-4 col-md-4 col-lg-4 text-center server-stats__stats-wrapper">
-                <div class="circle stats-users">
-                    <div class="circle-content">
-                        <p><i class="material-icons">people</i></p>
-                        <h4>Users</h4>
-                        <p><strong>{{ $users }}</strong></p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xs-12 col-sm-4 col-md-4 col-lg-4 text-center server-stats__stats-wrapper">
-                <div class="circle stats-projects">
-                    <div class="circle-content">
-                        <p><i class="material-icons">list_alt</i></p>
-                        <h4>Projects</h4>
-                        <p><strong>{{ $projects }}</strong></p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xs-12 col-sm-4 col-md-4 col-lg-4 text-center server-stats__stats-wrapper">
-                <div class="circle stats-entries">
-                    <div class="circle-content">
-                        <p><i class="material-icons">cloud_upload</i></p>
-                        <h4>Entries</h4>
-                        <p><strong>{{ $entries }}</strong></p>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <hr>
 
