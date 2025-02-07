@@ -188,6 +188,7 @@ class RateLimitsEntriesExportTest extends TestCase
         try {
             for ($i = 1; $i <= $apiEntriesRateLimit; $i++) {
                 $response = $entriesClient->request('GET', $entriesURL . $this->project->slug);
+                sleep(0.5);
                 // Get the response headers
                 $headers = $response->getHeaders();
                 // Check for X-RateLimit headers
