@@ -127,30 +127,33 @@
                 </div>
             @endforeach
 
-            <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
-                <div class="panel panel-default">
-                    <div class="panel-body">
-                        <a href="https://community.epicollect.net" class="thumbnail">
-                            <img class="img-responsive img-circle" width="128" height="128"
-                                 src="{{ asset('/images/epicollect5-rounded-no-borders.jpg')  }}"
-                                 alt="Community Logo">
-                            <div class="loader"></div>
-                        </a>
-
-                        <span class="project-name">Do You Have Any Questions?</span>
-
-                        <div class="project-small-description text-center">
-                            Ask Our Community
-                        </div>
-                        <div class="clearfix"></div>
-                        <div class="page-home-view-btn">
-                            <a class="btn btn-action" href="https://community.epicollect.net">
-                                {{ trans('site.join_community') }}
+            {{-- Only show Community column is featured project total is 7 (first row is 3) --}}
+            @if($projectsFirstRow->count() === 3)
+                <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+                            <a href="https://community.epicollect.net" class="thumbnail">
+                                <img class="img-responsive img-circle" width="128" height="128"
+                                     src="{{ asset('/images/epicollect5-rounded-no-borders.jpg')  }}"
+                                     alt="Community Logo">
+                                <div class="loader"></div>
                             </a>
+
+                            <span class="project-name">Do You Have Any Questions?</span>
+
+                            <div class="project-small-description text-center">
+                                Ask Our Community
+                            </div>
+                            <div class="clearfix"></div>
+                            <div class="page-home-view-btn">
+                                <a class="btn btn-action" href="https://community.epicollect.net">
+                                    {{ trans('site.join_community') }}
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            @endif
         </div>
 
         {{-- Display second project row only if we have 4 projects featured --}}
