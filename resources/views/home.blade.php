@@ -91,7 +91,7 @@
         </div>
         <hr>
 
-        <div class="row page-home-featured-projects">
+        <div class="row page-home-featured-projects-small">
 
             @foreach ($projectsFirstRow as $project)
                 <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
@@ -100,7 +100,7 @@
                         {{-- </div> --}}
                         <div class="panel-body">
                             <a href="{{ url('project/' . $project->slug) }}" class="thumbnail">
-                                <img class="img-responsive img-circle" width="256" height="256"
+                                <img class="img-responsive img-circle" width="128" height="128"
                                      src="
                                                 {{-- If a private project, show lock --}}
                                                      @if ($project->access == config('epicollect.strings.project_access.private')) {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
@@ -128,17 +128,22 @@
             @endforeach
 
             <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
-                <div class="panel panel-default panel-community">
+                <div class="panel panel-default">
                     <div class="panel-body">
                         <a href="https://community.epicollect.net" class="thumbnail">
-                            <img class="" width=" 256" src="{{ asset('/images/ec5-community.jpg') }}">
+                            <img class="img-responsive img-circle" width="128" height="128"
+                                 src="{{ asset('/images/epicollect5-rounded-no-borders.jpg')  }}"
+                                 alt="Community Logo">
                             <div class="loader"></div>
                         </a>
+
+                        <span class="project-name">Do You Have Any Questions?</span>
+
                         <div class="project-small-description text-center">
-                            Do you have any questions?
+                            Ask Our Community
                         </div>
                         <div class="clearfix"></div>
-                        <div class="page-home-join-btn">
+                        <div class="page-home-view-btn">
                             <a class="btn btn-action" href="https://community.epicollect.net">
                                 {{ trans('site.join_community') }}
                             </a>
