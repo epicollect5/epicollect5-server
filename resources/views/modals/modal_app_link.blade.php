@@ -23,7 +23,7 @@
                 <div class="row">
                     <div class="col-md-6 col-md-offset-3">
                         <p class="text-center">
-                            Or Scan the Code
+                            Or scan the QR code below
                         </p>
                         <div id="qrcode"
                              data-url=" {{ url('/open/project/'.$requestAttributes->requestedProject->slug) }}">
