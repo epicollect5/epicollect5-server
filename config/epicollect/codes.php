@@ -170,7 +170,7 @@ return [
     "ec5_232" => "File is currently being written to.",
     "ec5_233" => "Mapped question invalid.",
     "ec5_234" => "Mapping key already exists.",
-    "ec5_235" => ":values is a reserved word.",
+    "ec5_235" => "'EC5' is a reserved word.",
     "ec5_236" => "Entry successfully deleted",
     "ec5_237" => "Entry successfully uploaded.",
     "ec5_238" => "Sorry, you cannot edit this map.",
