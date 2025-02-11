@@ -11,6 +11,7 @@ use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use ec5\Traits\Assertions;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class ProjectControllerTest extends TestCase
@@ -393,4 +394,190 @@ class ProjectControllerTest extends TestCase
         $this->assertKeysNotEmpty($responseData);
         $this->assertEquals($storedProject->can_bulk_upload, $desiredStatus);
     }
+
+    public function test_project_search_multiple_matches()
+    {
+        //Add a few projects with similar names
+        $numOfProjects = rand(3, 10);
+        foreach (range(0, $numOfProjects) as $index) {
+            $projectName = $this->project->name . ' - ' . $index;
+            factory(Project::class)->create(
+                [
+                    'created_by' => $this->user->id,
+                    'name' => $projectName,
+                    'slug' => Str::slug($projectName),
+                    'ref' => Generators::projectRef(),
+                    'access' => config('epicollect.strings.project_access.private')
+                ]
+            );
+        }
+
+        $response = $this->actingAs($this->user, self::DRIVER)
+            ->json('GET', 'api/projects/' . $this->project->name)
+            ->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [
+                    '*' => [
+                        'type',
+                        'id',
+                        'project' => [
+                            'name',
+                            'slug',
+                            'access',
+                            'ref',
+                        ],
+                    ],
+                ],
+            ]);
+        $responseData = ($response->json())['data']; // Convert the JSON data response to an array.
+
+
+        $this->assertKeysNotEmpty($responseData);
+        //closest match is always first
+        $this->assertEquals($this->project->name, $responseData[0]['project']['name']);
+        $this->assertEquals($this->project->slug, $responseData[0]['project']['slug']);
+        //we always have more than one project
+        $this->assertGreaterThan($numOfProjects, count($responseData));
+    }
+
+    public function test_project_search_multiple_no_matches()
+    {
+        $this->actingAs($this->user, self::DRIVER)
+            ->json('GET', 'api/projects/' . Generators::projectRef())
+            ->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [],
+            ]);
+    }
+
+    public function test_project_search_empty()
+    {
+        $this->actingAs($this->user, self::DRIVER)
+            ->json('GET', 'api/projects')
+            ->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [],
+            ]);
+    }
+
+
+    public function test_project_search_exact()
+    {
+        //Add a few projects with similar names
+        $numOfProjects = rand(3, 10);
+        foreach (range(0, $numOfProjects) as $index) {
+            $projectName = $this->project->name . ' - ' . $index;
+            factory(Project::class)->create(
+                [
+                    'created_by' => $this->user->id,
+                    'name' => $projectName,
+                    'slug' => Str::slug($projectName),
+                    'ref' => Generators::projectRef(),
+                    'access' => config('epicollect.strings.project_access.private')
+                ]
+            );
+        }
+
+
+        $response = $this->actingAs($this->user, self::DRIVER)
+            ->json('GET', 'api/projects/' . $this->project->name . '?exact=true')
+            ->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [
+                    '*' => [
+                        'type',
+                        'id',
+                        'project' => [
+                            'name',
+                            'slug',
+                            'access',
+                            'ref',
+                        ],
+                    ],
+                ],
+            ])
+            ->assertExactJson([
+                'data' => [
+                    [
+                    'type' => 'project',
+                    'id' => $this->project->ref,
+                    'project' => [
+                        'name' => $this->project->name,
+                        'slug' => $this->project->slug,
+                        'access' => $this->project->access,
+                        'ref' => $this->project->ref,
+                    ],
+                    ]
+                ]
+            ]);
+        $responseData = ($response->json())['data']; // Convert the JSON data response to an array.
+        $this->assertKeysNotEmpty($responseData);
+        //Only one match
+        $this->assertEquals(1, count($responseData));
+    }
+
+    public function test_project_search_exact_not_exists()
+    {
+        //Add a few projects with similar names
+        $numOfProjects = rand(3, 10);
+        foreach (range(0, $numOfProjects) as $index) {
+            $projectName = $this->project->name . ' - ' . $index;
+            factory(Project::class)->create(
+                [
+                    'created_by' => $this->user->id,
+                    'name' => $projectName,
+                    'slug' => Str::slug($projectName),
+                    'ref' => Generators::projectRef(),
+                    'access' => config('epicollect.strings.project_access.private')
+                ]
+            );
+        }
+
+
+        $response = $this->actingAs($this->user, self::DRIVER)
+            ->json('GET', 'api/projects/' .  Generators::projectRef() . '?exact=true')
+            ->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [],
+            ])
+            ->assertExactJson([
+                'data' => []
+            ]);
+        $responseData = ($response->json())['data']; // Convert the JSON data response to an array.
+        //No match
+        $this->assertEquals(0, count($responseData));
+    }
+
+    public function test_project_search_exact_empty()
+    {
+        //Add a few projects with similar names
+        $numOfProjects = rand(3, 10);
+        foreach (range(0, $numOfProjects) as $index) {
+            $projectName = $this->project->name . ' - ' . $index;
+            factory(Project::class)->create(
+                [
+                    'created_by' => $this->user->id,
+                    'name' => $projectName,
+                    'slug' => Str::slug($projectName),
+                    'ref' => Generators::projectRef(),
+                    'access' => config('epicollect.strings.project_access.private')
+                ]
+            );
+        }
+
+
+        $response = $this->actingAs($this->user, self::DRIVER)
+            ->json('GET', 'api/projects/  ?exact=true')
+            ->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [],
+            ])
+            ->assertExactJson([
+                'data' => []
+            ]);
+        $responseData = ($response->json())['data']; // Convert the JSON data response to an array.
+        //No match
+        $this->assertEquals(0, count($responseData));
+    }
+
 }

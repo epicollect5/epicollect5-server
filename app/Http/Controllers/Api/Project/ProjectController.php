@@ -105,11 +105,20 @@ class ProjectController
         $hits = [];
         $projects = [];
 
+        // Check if the 'exact' query parameter is present and true
+        $exactMatch = request()->query('exact', false);
+
         if (!empty($name)) {
-            //get all projects where the name starts with the needle provided (archived and trashed are filtered)
-            $hits = Project::startsWith($name, ['name', 'slug', 'access', 'ref']);
+            if ($exactMatch) {
+                // Perform exact match search
+                $hits = Project::matches($name, ['name', 'slug', 'access', 'ref']);
+            } else {
+                // Perform starts-with search
+                $hits = Project::startsWith($name, ['name', 'slug', 'access', 'ref']);
+            }
         }
-        // Build the json api response
+
+        // Build the JSON API response
         foreach ($hits as $hit) {
             $data['type'] = 'project';
             $data['id'] = $hit->ref;
@@ -118,7 +127,6 @@ class ProjectController
         }
 
         return Response::apiData($projects);
-
     }
 
     public function exists(RuleName $ruleName, $name)
