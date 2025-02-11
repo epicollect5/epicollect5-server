@@ -57,6 +57,8 @@ Route::group(['middleware' => 'auth.admin'], function () {
     Route::get('admin/stats', 'Web\Admin\AdminController@showStats')->name('admin-stats');
     Route::get('admin/users', 'Web\Admin\AdminController@showUsers')->name('admin-users');
     Route::get('admin/settings', 'Web\Admin\AdminController@showSettings')->name('admin-settings-show');
+    Route::get('admin/phpinfo', 'Web\Admin\AdminController@showPHPInfo')->name('admin-phpinfo-show');
+
 
     Route::post('admin/update-user-state', 'Web\Admin\AdminUsersController@updateUserState');
     Route::post('admin/add-user', 'Web\Admin\AdminUsersController@addUser');
@@ -69,7 +71,6 @@ Route::group(['middleware' => 'auth.admin'], function () {
     Route::get('admin/tools/api/entries', 'Web\Admin\Tools\ApiPrivateEntriesController@getEntries');
     Route::get('admin/tools/api/media', 'Web\Admin\Tools\ApiPrivateEntriesController@getMedia');
 
-    Route::get('admin/tools/phpinfo', 'Web\Admin\Tools\PHPToolsController@showPHPInfo');
     Route::get('admin/tools/opcache', 'Web\Admin\Tools\PHPToolsController@resetOpcache');
     Route::get('admin/tools/projects-stats', 'Web\Admin\Tools\PHPToolsController@showProjectsStats');
 

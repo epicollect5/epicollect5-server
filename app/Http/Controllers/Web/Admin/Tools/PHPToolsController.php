@@ -12,13 +12,16 @@ use ec5\Models\Project\Project;
 use ec5\Services\Project\ProjectAvatarService;
 use ec5\Traits\Eloquent\System\ProjectsStats;
 use Illuminate\Support\Facades\Mail;
+use JetBrains\PhpStorm\NoReturn;
+use Random\RandomException;
 use Storage;
+use Throwable;
 
 class PHPToolsController
 {
     use ProjectsStats;
 
-    protected $project;
+    protected ProjectDTO $project;
 
     public function __construct(ProjectDTO $project)
     {
@@ -32,11 +35,6 @@ class PHPToolsController
             return 'Opcache cleared';
         }
         return 'Could not clear Opcache';
-    }
-
-    public function showPHPInfo()
-    {
-        phpInfo();
     }
 
     public function showProjectsStats()
@@ -60,11 +58,9 @@ class PHPToolsController
 
     }
 
-    public function avatarPalette()
-    {
-        return view('admin.avatar_palette', ['colors' => config('laravolt.avatar.backgrounds')]);
-    }
-
+    /**
+     * @throws Throwable
+     */
     public function createProjectAvatar($ref = 'b8a4ac0a586b46dd8ad41ecf9eff39a7')
     {
         //get project name
@@ -100,6 +96,9 @@ class PHPToolsController
         return 'Project "' . $name . '" already has a logo';
     }
 
+    /**
+     * @throws Throwable
+     */
     private function doUpdate($params)
     {
         // Update the Definition and Extra data
@@ -115,7 +114,7 @@ class PHPToolsController
         try {
             Mail::to(config('epicollect.setup.super_admin_user.email'))->send(new DebugEmailSending());
             return 'Mail sent.';
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return 'Failed -> ' . $e->getMessage();
         }
     }
@@ -126,11 +125,14 @@ class PHPToolsController
         try {
             Mail::to(config('epicollect.setup.system.email'))->send(new DebugEmailSending());
             return 'Mail sent.';
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return 'Failed -> ' . $e->getMessage();
         }
     }
 
+    /**
+     * @throws RandomException
+     */
     public function previewEmail()
     {
         $userName = Auth::user()->name;
@@ -156,7 +158,7 @@ class PHPToolsController
         ]);
     }
 
-    public function hash()
+    #[NoReturn] public function hash()
     {
         dd(bcrypt('my-password', ['rounds' => 12]));
         // dd('test', bcrypt('test', ['rounds' => 12]), bcrypt('test', ['rounds' => 12]), bcrypt('test', ['rounds' => 12]));

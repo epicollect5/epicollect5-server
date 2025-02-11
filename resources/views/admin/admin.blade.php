@@ -29,6 +29,11 @@
                     Settings
                 </a>
             </li>
+            <li role="presentation">
+                <a href="{{ url('admin/phpinfo') }}" target="_blank">
+                    phpinfo()
+                </a>
+            </li>
         </ul>
 
         {{-- Tab panes --}}

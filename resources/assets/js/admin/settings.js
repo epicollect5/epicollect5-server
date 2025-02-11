@@ -37,7 +37,7 @@ $(document).ready(function () {
 
     $('[data-setting-type]').on('click', function () {
         // Get the value of the `data-setting-type` attribute
-        const settingType = $(this).data('setting-type');
+        var settingType = $(this).data('setting-type');
 
         // Perform your action here
         console.log('Setting type clicked:', settingType);

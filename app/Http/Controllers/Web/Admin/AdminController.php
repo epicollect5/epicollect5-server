@@ -68,10 +68,9 @@ class AdminController extends Controller
         return view('admin.admin', $payload);
     }
 
-    public function showSettings(Request $request)
+    public function showSettings()
     {
         // Get request data
-        $params = $request->all();
         $CGPSVersion = Common::getCGPSEpicollectVersion();
         $currentVersion = config('epicollect.setup.system.version');
 
@@ -87,9 +86,13 @@ class AdminController extends Controller
         return view('admin.admin', $payload);
     }
 
+    public function showPHPInfo()
+    {
+        phpInfo();
+    }
+
     public function updateSettings(Request $request)
     {
-        $params = $request->all();
 
         //todo: validate with rule admin settings
 
