@@ -25,7 +25,10 @@
 
                     <div class="panel-body text-center">
                         <h3 class="margin-bottom-xs margin-top-xs"
-                            data-project-name="{{$requestAttributes->requestedProject->name}}">{{ trans('site.confirm_leave_project', ['projectName' => $requestAttributes->requestedProject->name]) }}</h3>
+                            data-project-name="{{$requestAttributes->requestedProject->name}}">
+                            <?php $message = str_replace('\n', "\n\n", trans('site.confirm_leave_project', ['projectName' => $requestAttributes->requestedProject->name])); ?>
+                            <span> {!! nl2br(e($message)) !!}</span>
+                        </h3>
 
                         <form action="{{ url('myprojects') . '/' . $requestAttributes->requestedProject->slug . '/leave' }}"
                               class="leave-project"

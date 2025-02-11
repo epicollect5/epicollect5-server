@@ -132,8 +132,8 @@ return [
     'role' => 'Role',
     'rename' => 'Rename',
     'confirm_project_name' => 'Please type in the name of the project to confirm:',
-    'confirm_delete_project' => 'Are you sure you want to delete ":projectName" and all its data?',
-    'confirm_leave_project' => 'Are you sure you want to leave ":projectName"?',
+    'confirm_delete_project' => 'Are you sure you want to delete\n ":projectName"\n and all its data?',
+    'confirm_leave_project' => 'Are you sure you want to leave?\n":projectName"',
     'month_names' => [
         'Jan',
         'Feb',

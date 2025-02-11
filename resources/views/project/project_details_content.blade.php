@@ -284,12 +284,13 @@
 
                 </div>
                 <div class="panel-body deeplink-btn-panel">
-                    <p>To add the project to the Epicollect5 app on Android or iOS devices, tap the link
-                        provided below. This will automatically open the Epicollect5 app and load the project directly
-                        into it.
+                    <p>To add the project to the Epicollect5 app on your Android or iOS device, use the link below.
 
-                        <span class="deeplink-copy-btn"
-                              data-url="{{ url('/open/project') . '/' . $requestAttributes->requestedProject->slug }}">
+                        <strong>On a mobile device</strong>, tapping the link will open the Epicollect5 app and load the
+                        project automatically. </p>
+
+                    <span class="deeplink-copy-btn"
+                          data-url="{{ url('/open/project') . '/' . $requestAttributes->requestedProject->slug }}">
                             <button class="btn btn-sm btn-action">
                                 <i class="material-icons" data-toggle="tooltip" data-placement="top"
                                    title="Copied!"
@@ -298,23 +299,25 @@
                         </i>
                                 Copy App Link
                             </button>
-
                     </span>
-                    </p>
 
                     <p>
-                        <a href="{{ url('/open/project/'.$requestAttributes->requestedProject->slug) }}"
-                           target="_blank">
-                            {{ url('/open/project/'.$requestAttributes->requestedProject->slug) }}
-                        </a>
+                    <pre> {{ url('/open/project/'.$requestAttributes->requestedProject->slug) }}</pre>
                     </p>
+
+
                     <p>Alternatively, you can scan the QR code using your device's camera or a QR code scanner to
                         achieve the same result.</p>
                     <div id="qrcode"
                          data-url=" {{ url('/open/project/'.$requestAttributes->requestedProject->slug) }}">
                     </div>
                     <a class="btn btn-action margin-top-sm" id="qrcode-download" href="#"
-                       download={{$requestAttributes->requestedProject->slug.'.qr.png'}}>Download</a>
+                       download={{$requestAttributes->requestedProject->slug.'.qr.png'}}>
+                        <i class="material-icons">
+                            download
+                        </i>
+                        Download
+                    </a>
                 </div>
             </div>
         </div>

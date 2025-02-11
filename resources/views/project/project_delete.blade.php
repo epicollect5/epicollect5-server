@@ -14,17 +14,19 @@
                 <div id="" class="panel panel-default ">
 
                     <div class="panel-body">
-                        <a href="{{url('project/' . $requestAttributes->requestedProject->slug . '/data')}}">
-                            <img class="project-home__logo img-responsive img-circle" width="256" height="256"
-                                 alt="Project logo" src="@if($requestAttributes->requestedProject->logo_url == '') {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
+                        <img class="project-home__logo img-responsive img-circle" width="256" height="256"
+                             alt="Project logo" src="@if($requestAttributes->requestedProject->logo_url == '') {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
                                  @else
                                  {{ url('/api/internal/media/'.$requestAttributes->requestedProject->slug . '?type=photo&name=logo.jpg&format=project_thumb') }}
                                  @endif">
-                        </a>
                     </div>
 
                     <div class="panel-body text-center">
-                        <h3 data-project-name="{{$requestAttributes->requestedProject->name}}">{{ trans('site.confirm_delete_project', ['projectName' => $requestAttributes->requestedProject->name]) }}</h3>
+                        <h3 data-project-name="{{$requestAttributes->requestedProject->name}}">
+                            <?php $message = str_replace('\n', "\n", trans('site.confirm_delete_project', ['projectName' => $requestAttributes->requestedProject->name])); ?>
+                            <span> {!! nl2br(e($message)) !!}</span>
+                            {{--                            {{ trans('site.confirm_delete_project', ['projectName' => $requestAttributes->requestedProject->name]) }}--}}
+                        </h3>
 
                         <form action="{{ url('myprojects') . '/' . $requestAttributes->requestedProject->slug . '/delete' }}"
                               class="delete-project"
