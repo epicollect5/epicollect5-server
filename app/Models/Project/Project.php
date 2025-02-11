@@ -254,11 +254,25 @@ class Project extends Model
         $archivedStatus = config('epicollect.strings.project_status.archived');
 
         return static::select($columns)
-            ->where('name', 'like', $name . '%')
+        ->where('name', 'like', $name . '%')
+        ->where('status', '<>', $trashedStatus)
+        ->where('status', '<>', $archivedStatus)
+        ->orderByRaw('LOWER(name) = ? DESC', [strtolower($name)]) // Exact match first
+        ->orderBy('updated_at', 'desc') // Optional: sort the rest by updated_at
+        ->take(50)
+        ->get();
+    }
+
+    public static function matches($name, $columns = ['*']): Collection|array
+    {
+        $trashedStatus = config('epicollect.strings.project_status.trashed');
+        $archivedStatus = config('epicollect.strings.project_status.archived');
+
+        return static::select($columns)
+            ->where('name', '=', $name)
             ->where('status', '<>', $trashedStatus)
             ->where('status', '<>', $archivedStatus)
-            ->orderBy('updated_at', 'desc')
-            ->take(50)
+            ->take(1)
             ->get();
     }
 
