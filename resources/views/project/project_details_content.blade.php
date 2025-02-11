@@ -276,7 +276,7 @@
         <div class="col-sm-12 col-md-12 col-lg-7 app-link-view__wrapper equal-height">
             <div id="app-link-view" class="panel panel-default">
                 <div class="panel-heading">
-                    <div class="panel-title">App Link
+                    <div class="panel-title">App Link <sup>Beta</sup>
                         <a href="https://docs.epicollect.net/web-application/projects-as-app-links"
                            target="_blank">
                             <i class="material-symbols-outlined">help</i></a>
@@ -321,7 +321,7 @@
         <div class="col-sm-12 col-md-12 col-lg-5 equal-height">
             <div id="app-link-settings" class="panel panel-default">
                 <div class="panel-heading">
-                    <div class="panel-title">App Link Settings
+                    <div class="panel-title">App Link Settings <sup>Beta</sup>
                         <a href="https://docs.epicollect.net/web-application/projects-as-app-links#app-link-visibility"
                            target="_blank">
                             <i class="material-symbols-outlined">help</i></a>
