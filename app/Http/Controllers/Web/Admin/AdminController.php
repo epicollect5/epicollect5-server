@@ -92,7 +92,12 @@ class AdminController extends Controller
         if (!Auth::user()->isSuperAdmin()) {
             redirect()->back();
         }
-        phpInfo();
+        // Check if phpinfo is enabled
+        if (!config('epicollect.setup.phpinfo.enabled')) {
+            return response('Phpinfo output must be enabled.', 403);
+        }
+
+        return phpinfo();
     }
 
     public function updateSettings(Request $request)

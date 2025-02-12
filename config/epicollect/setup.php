@@ -64,5 +64,8 @@ return [
     ],
     'sharethis' => [
         'property_id' => env('SHARETHIS_PROPERTY_ID', '')
+    ],
+    'phpinfo' => [
+        'enabled' => (bool) env('PHPINFO_ENABLED', false),
     ]
 ];
