@@ -255,8 +255,10 @@ window.EC5.projects = window.EC5.projects || {};
                             // Set active filter
                             module.domElements.filter_dropdown.html(module.options.filter_value + '&nbsp;<span class="caret"></span>');
 
+                        } else {
+                            //do nothing and just remove the overlay
+                            window.EC5.overlay.fadeOut();
                         }
-
                     });
                 }
 
