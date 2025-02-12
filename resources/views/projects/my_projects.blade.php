@@ -81,6 +81,16 @@
                     </div>
 
                 </div>
+                <div class="pull-right add-projects-helper-text">
+                    Projects must be added manually to the mobile apps.
+                    <strong>
+                        <a href="https://docs.epicollect.net/mobile-application/add-projects"
+                           target="_blank"
+                        >
+                            Learn More
+                        </a>
+                    </strong>
+                </div>
 
             </div>
 
