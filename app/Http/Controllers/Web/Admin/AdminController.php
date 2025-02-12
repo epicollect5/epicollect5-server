@@ -2,6 +2,7 @@
 
 namespace ec5\Http\Controllers\Web\Admin;
 
+use Auth;
 use ec5\Http\Controllers\Controller;
 use ec5\Libraries\Utilities\Common;
 use ec5\Models\Project\Project;
@@ -88,6 +89,9 @@ class AdminController extends Controller
 
     public function showPHPInfo()
     {
+        if (!Auth::user()->isSuperAdmin()) {
+            redirect()->back();
+        }
         phpInfo();
     }
 

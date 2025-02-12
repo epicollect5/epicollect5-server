@@ -118,6 +118,7 @@ class GoogleController extends AuthController
 
                     //if the user has a local provider, redirect to admin or staff login
                     //based on user server role
+                    //imp: local provider means they have a password
                     if (in_array($providerLocal, $userProviders)) {
 
                         switch ($user->server_role) {

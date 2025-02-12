@@ -23,8 +23,6 @@ Route::group(['middleware' => ['guest']], function () {
     Route::get('login/admin', 'Web\Auth\AdminController@show')->name('login-admin');
     Route::post('login/admin', 'Web\Auth\AdminController@authenticate');
 
-    Route::get('login/staff', 'Web\Auth\LocalController@show')->name('login-staff');
-    Route::post('login/staff', 'Web\Auth\LocalController@authenticate');
 
     // Google Authentication routes
     //Route::get('handle/connect-google', 'Web\Auth\ProfileController@handle');

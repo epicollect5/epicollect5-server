@@ -29,11 +29,13 @@
                     Settings
                 </a>
             </li>
-            <li role="presentation">
-                <a href="{{ url('admin/phpinfo') }}" target="_blank">
-                    phpinfo()
-                </a>
-            </li>
+            @if (Auth::user()->isSuperAdmin())
+                <li role="presentation">
+                    <a href="{{ url('admin/phpinfo') }}" target="_blank">
+                        phpinfo()
+                    </a>
+                </li>
+            @endif
         </ul>
 
         {{-- Tab panes --}}
