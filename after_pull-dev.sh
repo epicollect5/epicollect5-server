@@ -33,9 +33,6 @@ composer dump-autoload
 print_message "$YELLOW" "Running php artisan clear-compiled..."
 php artisan clear-compiled
 
-print_message "$YELLOW" "Running php artisan config:cache..."
-php artisan config:cache
-
 print_message "$YELLOW" "Running php artisan route:cache..."
 php artisan route:cache
 
@@ -52,6 +49,9 @@ print_message "$YELLOW" "Running php artisan system:clear-opcache..."
 php artisan system:clear-opcache;
 
 php artisan optimize:clear
+
+print_message "$YELLOW" "Running php artisan config:cache..."
+php artisan config:cache
 
 print_message "$YELLOW" "Listing files in bootstrap/cache before deletion..."
 # List files before deletion

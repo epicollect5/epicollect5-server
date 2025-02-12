@@ -14,8 +14,6 @@ echo -e "${YELLOW}composer dump-autoload -  check permissions in framework/cache
 
 php artisan clear-compiled;
 
-php artisan config:cache;
-
 php artisan route:cache;
 
 php artisan cache:clear
@@ -27,3 +25,5 @@ php artisan config:clear;
 php artisan optimize:clear
 
 php artisan system:clear-opcache;
+
+php artisan config:cache;
