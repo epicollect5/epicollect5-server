@@ -284,9 +284,8 @@
 
                 </div>
                 <div class="panel-body deeplink-btn-panel">
-                    <p>To add the project to the Epicollect5 app on your Android or iOS device, use the link below.
-
-                        <strong>On a mobile device</strong>, tapping the link will open the Epicollect5 app and load the
+                    <p><strong>On a mobile device</strong>, tapping the link below will open the Epicollect5 app and
+                        load the
                         project automatically. </p>
 
                     <span class="deeplink-copy-btn"
