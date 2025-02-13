@@ -23,19 +23,21 @@ return [
     ],
 
     //Google credentials for web auth
+    //Google only accepts https in production!
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
-        'redirect' => env('GOOGLE_LOGIN_REDIRECT_URI')
+        'redirect' => env('APP_URL').'/handle/google'
     ],
 
     //Google credentials mobile auth
+    //Google only accepts https in production!
     'google_api' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
-        //this redirect allows the mobile app to be redirected to localhost
+        //This redirect allows the mobile app to be redirected to localhost
         //without it, Socialite will throw an error
-        'redirect' => env('GOOGLE_LOGIN_REDIRECT_URI_API', 'http://localhost'),
+        'redirect' => 'http://localhost',
         //todo: not sure we are still using the scope
         'scope' => env('GOOGLE_SCOPE')
     ]

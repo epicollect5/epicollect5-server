@@ -143,16 +143,16 @@ return [
     'bcrypt_rounds' => env('BCRYPT_ROUNDS', 12),
 
     'google' => [
-        'connect_redirect_uri' => env('GOOGLE_CONNECT_REDIRECT_URI'),
+        'connect_redirect_uri' => env('APP_URL').'/profile/connect-google-callback',
         'recaptcha_site_key' => env('GOOGLE_RECAPTCHA_SITE_KEY')
-
     ],
+    //Apple redirect does not work with ip or localhost, and must be secure https://
+    //They are defined at https://developer.apple.com/account/resources/identifiers
     'apple' => [
         'public_keys_endpoint' => env('APPLE_PUBLIC_KEYS_ENDPOINT'),
         'login_client_id' => env('APPLE_LOGIN_CLIENT_ID'),
-        'login_redirect_uri' => env('APPLE_LOGIN_REDIRECT_URI'),
+        'login_redirect_uri' => env('APP_URL').'/handle/apple',
         'connect_client_id' => env('APPLE_CONNECT_CLIENT_ID'),
-        'connect_redirect_uri' => env('APPLE_CONNECT_REDIRECT_URI'),
-
+        'connect_redirect_uri' => env('APP_URL').'/profile/connect-apple-callback',
     ]
 ];
