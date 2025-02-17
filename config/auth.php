@@ -97,7 +97,7 @@ return [
         'expire' => env('JWT_PASSWORDLESS_EXPIRE', 86400)
     ],
 
-    'passwordless_token_expire' => env('PASSWORDLESS_TOKEN_EXPIRES_IN'),
+    'passwordless_token_expire' => (int) env('PASSWORDLESS_TOKEN_EXPIRES_IN', 1800),
     /*
     |--------------------------------------------------------------------------
     | Passport
