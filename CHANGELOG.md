@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 11.0.1
+
+- Added check to stop deleting single entry if project is locked
+
 # 11.0.0
 
 - Upgraded Laravel to version 11
@@ -9,4 +13,4 @@
 - Added project app links & QR codes
 - Fixed bugs and stability improvements
 
-##  
+##   
