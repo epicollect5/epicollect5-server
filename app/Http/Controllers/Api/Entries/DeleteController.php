@@ -54,6 +54,11 @@ class DeleteController extends Controller
             return Response::apiErrorCode(400, $ruleDelete->errors());
         }
 
+        //if the project is locked, single entry deletion is not allowed
+        if ($this->requestedProject()->status === config('epicollect.strings.project_status.locked')) {
+            return Response::apiErrorCode(400, ['deletion-entries' => ['ec5_202']]);
+        }
+
         // Load an entry structure
         $entryStructure->createStructure($data);
         // Add project id to entry structure
