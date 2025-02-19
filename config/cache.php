@@ -45,6 +45,7 @@ return [
         'file' => [
             'driver' => 'file',
             'path' => storage_path('framework/cache/data'),
+            'events' => false//to increase performance?
         ],
 
         'memcached' => [

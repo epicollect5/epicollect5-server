@@ -197,13 +197,21 @@ class ProjectDeleteEntriesControllerTest extends TestCase
         $response = $this->actingAs($manager, self::DRIVER)
             ->get('myprojects/' . $project->slug . '/delete-entries');
 
-        $this->assertEquals('project.project_delete_entries', $response->original->getName());
-        // Assert the view has the correct variables
-        $response->assertViewHas('project');
-        $projectDTOInstance = $response->original->getData()['project'];
-        // Assert that the 'project' variable is an instance of ProjectDTO
-        $this->assertInstanceOf(ProjectDTO::class, $projectDTOInstance);
-        $response->assertViewHas('totalEntries', $projectStats->total_entries);
+        //fails as manager role cannot delete entries in bulk
+        $this->assertEquals('errors.gen_error', $response->original->getName());
+        // Assert that there is an error message with key 'ec5_91'
+        $this->assertArrayHasKey('errors', $response->original->getData());
+        // Assert that the view has an 'errors' variable
+        $this->assertTrue($response->original->offsetExists('errors'));
+        // Access the MessageBag and assert specific errors
+        $errors = $response->original->offsetGet('errors');
+        // Ensure that the 'errors' key exists in the MessageBag
+        $this->assertTrue($errors->has('errors'));
+        // Access the 'errors' array directly
+        $errorsArray = $errors->get('errors');
+        // Assert that it is an array and contains 'ec5_91'
+        $this->assertIsArray($errorsArray);
+        $this->assertEquals('ec5_91', $errorsArray[0]);
     }
 
     public function test_delete_entries_page_but_role_is_curator()
