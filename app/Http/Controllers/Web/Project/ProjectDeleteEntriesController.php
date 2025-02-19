@@ -2,6 +2,7 @@
 
 namespace ec5\Http\Controllers\Web\Project;
 
+use Cache;
 use ec5\Models\Project\ProjectStats;
 use ec5\Traits\Eloquent\Archiver;
 use ec5\Traits\Eloquent\StatsRefresher;
@@ -27,6 +28,11 @@ class ProjectDeleteEntriesController
         if ($this->requestedProject()->status !== config('epicollect.strings.project_status.locked')) {
             return view('errors.gen_error')->withErrors(['errors' => ['ec5_91']]);
         }
+        //check lock for this user (only 1 deletion process per user)
+        $userId = $this->requestedUser()->id;
+        $userCacheKey = 'bulk_entries_deletion_user_' . $userId;
+        // Remove the user-level cache lock if it exists (optional, only if you want to reset the lock here)
+        Cache::lock($userCacheKey)->release();
 
         //refresh stats to get the latest entries and branch entries counts
         $this->refreshProjectStats($this->requestedProject());

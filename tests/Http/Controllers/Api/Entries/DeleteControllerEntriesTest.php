@@ -2,6 +2,7 @@
 
 namespace Tests\Http\Controllers\Api\Entries;
 
+use Cache;
 use ec5\Libraries\Generators\EntryGenerator;
 use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Models\Entries\BranchEntry;
@@ -15,6 +16,7 @@ use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Storage;
 use Ramsey\Uuid\Uuid;
 use Tests\TestCase;
+use Throwable;
 
 class DeleteControllerEntriesTest extends TestCase
 {
@@ -96,7 +98,7 @@ class DeleteControllerEntriesTest extends TestCase
             $this->project = $project;
             $this->projectDefinition = $projectDefinition;
             $this->entryGenerator = $entryGenerator;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -122,7 +124,7 @@ class DeleteControllerEntriesTest extends TestCase
                     ]
                 ]
             ]);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
 
@@ -151,7 +153,7 @@ class DeleteControllerEntriesTest extends TestCase
                     ]
                 ]
             ]);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -241,7 +243,7 @@ class DeleteControllerEntriesTest extends TestCase
 
             $videos = Storage::disk('video')->files($this->project->ref);
             $this->assertCount(0, $videos);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -337,7 +339,7 @@ class DeleteControllerEntriesTest extends TestCase
             Storage::disk('entry_original')->deleteDirectory($this->project->ref);
             Storage::disk('audio')->deleteDirectory($this->project->ref);
             Storage::disk('video')->deleteDirectory($this->project->ref);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -451,7 +453,7 @@ class DeleteControllerEntriesTest extends TestCase
             $videos = Storage::disk('video')->files($this->project->ref);
             $this->assertCount(0, $videos);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -551,8 +553,116 @@ class DeleteControllerEntriesTest extends TestCase
             $this->assertCount(0, $audios);
             $videos = Storage::disk('video')->files($this->project->ref);
             $this->assertCount(0, $videos);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
+        }
+    }
+
+    public function test_it_should_catch_deletion_process_already_running()
+    {
+        $formRef = $this->projectDefinition['data']['project']['forms'][0]['ref'];
+        $numOfEntries = rand(2000, 5000);
+        $mediaUuids = [];
+        $entry = [];
+        for ($i = 0; $i < $numOfEntries; $i++) {
+            $entry = factory(Entry::class)->create(
+                [
+                    'project_id' => $this->project->id,
+                    'user_id' => $this->user->id,
+                    'form_ref' => $formRef,
+                    'uuid' => Uuid::uuid4()->toString()
+                ]
+            );
+
+            //add 10 files for testing (no need to add 20.000)
+            if ($i < 10) {
+                //photo
+                Storage::disk('entry_original')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+                //audio
+                Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
+                //video
+                Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
+
+                $mediaUuids[] = $entry->uuid;
+            }
+        }
+
+        $formCounts = [
+            $formRef => [
+                'count' => $numOfEntries,
+                'last_entry_created' => $entry->created_at,
+                'first_entry_created' => $entry->created_at
+            ]
+        ];
+        ProjectStats::where('project_id', $this->project->id)
+            ->update([
+                'form_counts' => json_encode($formCounts),
+                'total_entries' => $numOfEntries
+            ]);
+
+
+        $this->assertCount($numOfEntries, Entry::where('project_id', $this->project->id)->get());
+        $this->assertEquals(
+            $numOfEntries,
+            ProjectStats::where('project_id', $this->project->id)
+                ->value('total_entries')
+        );
+
+        //hit the delete endpoint
+        $payload = [
+            'data' => [
+                'project-name' => $this->project->name
+            ]
+        ];
+        $response = [];
+        //set user in cache for the deletion process
+        $userId = $this->user->id;
+        $userCacheKey = 'bulk_entries_deletion_user_' . $userId;
+        // Acquire lock
+        $lock = Cache::lock($userCacheKey, 600);
+        if ($lock->get()) {
+            try {
+                //delete a chunk of entries
+                $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $payload);
+                $response[0]->assertStatus(400);
+
+                $response[0]->assertExactJson([
+                    "errors" => [[
+                        "code" => "ec5_255",
+                        "title" => "Too many requests have been made. Please try again later.",
+                        "source" => "errors"
+                    ]]
+                ]);
+                $this->assertCount($numOfEntries, Entry::where('project_id', $this->project->id)->get());
+                $this->assertEquals(
+                    $numOfEntries,
+                    ProjectStats::where('project_id', $this->project->id)
+                        ->value('total_entries')
+                );
+
+                $formCounts = json_decode(ProjectStats::where('project_id', $this->project->id)
+                    ->value('form_counts'), true);
+                $this->assertEquals($numOfEntries, $formCounts[$formRef]['count']);
+
+                //assert media files are not touched
+                $photos = Storage::disk('entry_original')->files($this->project->ref);
+                $this->assertCount(sizeof($mediaUuids), $photos);
+                $audios = Storage::disk('audio')->files($this->project->ref);
+                $this->assertCount(sizeof($mediaUuids), $audios);
+                $videos = Storage::disk('video')->files($this->project->ref);
+                $this->assertCount(sizeof($mediaUuids), $videos);
+
+            } catch (Throwable $e) {
+                $this->logTestError($e, $response);
+            } finally {
+                //now remove all the leftover fake files
+                Storage::disk('entry_original')->deleteDirectory($this->project->ref);
+                Storage::disk('audio')->deleteDirectory($this->project->ref);
+                Storage::disk('video')->deleteDirectory($this->project->ref);
+                $lock->release();
+            }
+        } else {
+            $this->fail('Failed to acquire the lock');
         }
     }
 }
