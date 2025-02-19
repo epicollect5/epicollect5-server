@@ -352,7 +352,4 @@ class ProjectDeleteEntriesControllerTest extends TestCase
         $this->assertIsArray($errorsArray);
         $this->assertEquals('ec5_91', $errorsArray[0]);
     }
-
-
-
 }

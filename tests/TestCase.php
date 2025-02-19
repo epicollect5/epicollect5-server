@@ -16,8 +16,10 @@ use ec5\Models\User\User;
 use ec5\Models\User\UserProvider;
 use Exception;
 use Faker\Factory as Faker;
+use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Foundation\Application;
 use Log;
+use Throwable;
 
 class TestCase extends \Illuminate\Foundation\Testing\TestCase
 {
@@ -36,7 +38,7 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
     {
         $app = require __DIR__ . '/../bootstrap/app.php';
 
-        $app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+        $app->make(Kernel::class)->bootstrap();
 
         return $app;
     }
@@ -121,7 +123,7 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
 
             //also remove leftover users from other tests or failures
             User::where('email', 'LIKE', '%@example.org%')->delete();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
         }
     }

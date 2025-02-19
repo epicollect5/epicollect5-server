@@ -12,15 +12,17 @@ use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Ramsey\Uuid\Uuid;
 use Tests\TestCase;
+use Throwable;
 
 class DeleteControllerEntryTest extends TestCase
 {
     use DatabaseTransactions;
 
-    private $endpoint = 'api/internal/deletion/entry/';
+    private string $endpoint = 'api/internal/deletion/entry/';
 
     protected function setUp(): void
     {
@@ -92,7 +94,7 @@ class DeleteControllerEntryTest extends TestCase
             $this->project = $project;
             $this->projectDefinition = $projectDefinition;
             $this->entryGenerator = $entryGenerator;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -109,18 +111,8 @@ class DeleteControllerEntryTest extends TestCase
             ]
         );
 
-        $formCounts = [
-            $formRef => [
-                'count' => 1,
-                'last_entry_created' => $entry->created_at,
-                'first_entry_created' => $entry->created_at
-            ]
-        ];
-        ProjectStats::where('project_id', $this->project->id)
-            ->update([
-                'form_counts' => json_encode($formCounts),
-                'total_entries' => 1
-            ]);
+        $projectStats = new ProjectStats();
+        $projectStats->updateEntryCounters($this->project->id);
         //build delete payload
         $payload = $this->createPayload(
             $this->user->id,
@@ -159,7 +151,7 @@ class DeleteControllerEntryTest extends TestCase
                     ->value('total_entries')
             );
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -184,18 +176,8 @@ class DeleteControllerEntryTest extends TestCase
         //video
         Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
 
-        $formCounts = [
-            $formRef => [
-                'count' => 1,
-                'last_entry_created' => $entry->created_at,
-                'first_entry_created' => $entry->created_at
-            ]
-        ];
-        ProjectStats::where('project_id', $this->project->id)
-            ->update([
-                'form_counts' => json_encode($formCounts),
-                'total_entries' => 1
-            ]);
+        $projectStats = new ProjectStats();
+        $projectStats->updateEntryCounters($this->project->id);
 
         $payload = $this->createPayload(
             $this->user->id,
@@ -242,7 +224,76 @@ class DeleteControllerEntryTest extends TestCase
 
             $videos = Storage::disk('video')->files($this->project->ref);
             $this->assertCount(0, $videos);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
+            $this->logTestError($e, $response);
+        }
+    }
+
+    public function test_it_should_bail_out_if_project_locked()
+    {
+        Project::where('id', $this->project->id)
+            ->update([
+                'status' => config('epicollect.strings.project_status.locked')
+            ]);
+
+        $formRef = $this->projectDefinition['data']['project']['forms'][0]['ref'];
+        $entry = factory(Entry::class)->create(
+            [
+                'project_id' => $this->project->id,
+                'user_id' => $this->user->id,
+                'form_ref' => $formRef,
+                'uuid' => Uuid::uuid4()->toString()
+            ]
+        );
+
+        $projectStats = new ProjectStats();
+        $projectStats->updateEntryCounters($this->project->id);
+
+        $payload = $this->createPayload(
+            $this->user->id,
+            $entry->uuid,
+            $formRef,
+            0,
+            0
+        );
+        $this->assertCount(1, Entry::where('uuid', $entry->uuid)->get());
+        $this->assertEquals(
+            1,
+            ProjectStats::where('project_id', $this->project->id)
+                ->value('total_entries')
+        );
+
+        //hit the delete endpoint
+        $response = [];
+        try {
+            $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, ['data' => $payload]);
+            $response[0]->assertStatus(400);
+            $response[0]->assertExactJson([
+                "errors" => [
+                    [
+                    "code" => "ec5_202",
+                    "source" => "deletion-entries",
+                    "title" => "This project is locked."
+                    ]
+                ]
+            ]);
+            $this->assertCount(1, Entry::where('uuid', $entry->uuid)->get());
+            $this->assertEquals(
+                1,
+                ProjectStats::where('project_id', $this->project->id)
+                    ->value('total_entries')
+            );
+
+            $formCounts = json_decode(ProjectStats::where('project_id', $this->project->id)
+                ->value('form_counts'), true);
+            $this->assertEquals([
+                $formRef => [
+                'count' => 1,
+                'last_entry_created' => Carbon::parse($entry->created_at)->format('Y-m-d H:i:s'),
+                'first_entry_created' => Carbon::parse($entry->created_at)->format('Y-m-d H:i:s'),
+                ]
+            ], $formCounts);
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -294,24 +345,8 @@ class DeleteControllerEntryTest extends TestCase
         $entry->child_counts = 1;
         $entry->save();
 
-
-        $formCounts = [
-            $formRef => [
-                'count' => 1,
-                'last_entry_created' => $entry->created_at,
-                'first_entry_created' => $entry->created_at
-            ],
-            $childFormRef => [
-                'count' => 1,
-                'last_entry_created' => $entry->created_at,
-                'first_entry_created' => $entry->created_at
-            ],
-        ];
-        ProjectStats::where('project_id', $this->project->id)
-            ->update([
-                'form_counts' => json_encode($formCounts),
-                'total_entries' => 2
-            ]);
+        $projectStats = new ProjectStats();
+        $projectStats->updateEntryCounters($this->project->id);
 
         $this->assertCount(1, Entry::where('uuid', $entry->uuid)->get());
         $this->assertEquals(1, Entry::where('uuid', $entry->uuid)->value('child_counts'));
@@ -381,7 +416,7 @@ class DeleteControllerEntryTest extends TestCase
             Storage::disk('audio')->deleteDirectory($this->project->ref);
             Storage::disk('video')->deleteDirectory($this->project->ref);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -524,7 +559,7 @@ class DeleteControllerEntryTest extends TestCase
             $videos = Storage::disk('video')->files($this->project->ref);
             $this->assertCount(0, $videos);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -650,7 +685,7 @@ class DeleteControllerEntryTest extends TestCase
             Storage::disk('entry_original')->deleteDirectory($this->project->ref);
             Storage::disk('audio')->deleteDirectory($this->project->ref);
             Storage::disk('video')->deleteDirectory($this->project->ref);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -769,7 +804,7 @@ class DeleteControllerEntryTest extends TestCase
             Storage::disk('audio')->deleteDirectory($this->project->ref);
             Storage::disk('video')->deleteDirectory($this->project->ref);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
