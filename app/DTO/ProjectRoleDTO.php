@@ -59,11 +59,11 @@ class ProjectRoleDTO
     }
 
     /**
-     * Only creator and manager can delete all the entries at once
+     * Only the creator delete all the entries at once
      */
     public function canDeleteEntries(): bool
     {
-        return $this->isCreator() || $this->isManager();
+        return $this->isCreator();
     }
 
     public function canDeleteEntry($entry): bool

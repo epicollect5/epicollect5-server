@@ -9,11 +9,22 @@
                         &nbsp;More info.
                     </a>
                 </div>
+
+            </div>
+
+        @elseif($requestAttributes->requestedProjectRole->getRole() !== config('epicollect.strings.project_roles.creator'))
+            <div class="panel-body">
+                <div class="warning-well">
+                    You do not have the permissions to delete all the entries in bulk
+                    <a href="https://docs.epicollect.net/web-application/manage-entries/entries-bulk-deletion"
+                       target="_blank">
+                        &nbsp;More info.
+                    </a>
+                </div>
             </div>
         @else
             <div class="panel-body">
                 <span>{{ trans('site.entries_deletion_description') }}</span>
-
                 <div class="pull-right">
                     @if (
                         $requestAttributes->requestedProjectRole->getUser()->isSuperAdmin() ||

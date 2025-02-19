@@ -2,6 +2,7 @@
 
 namespace ec5\Http\Controllers\Api\Entries;
 
+use Cache;
 use ec5\DTO\EntryStructureDTO;
 use ec5\Http\Controllers\Controller;
 use ec5\Http\Validation\Entries\Delete\RuleDelete;
@@ -150,16 +151,27 @@ class DeleteController extends Controller
             return Response::apiErrorCode(400, ['deletion-entries' => ['ec5_91']]);
         }
 
-        // Attempt to remove a chuck of entries
-        try {
-            if (!$this->removeEntriesChunk($this->requestedProject()->getId(), $this->requestedProject()->ref)) {
+        $userId = $this->requestedUser()->id;
+        $userCacheKey = 'bulk_entries_deletion_user_' . $userId;
+        $lock = Cache::lock($userCacheKey, 600);
+
+        if ($lock->get()) {
+            try {
+                // Attempt to remove a chunk of entries
+                if (!$this->removeEntriesChunk($this->requestedProject()->getId(), $this->requestedProject()->ref)) {
+                    return Response::apiErrorCode(400, ['errors' => ['ec5_104']]);
+                }
+                // Success!
+                return Response::apiSuccessCode('ec5_400');
+            } catch (Throwable $e) {
+                Log::error('Error deleting entries', ['exception' => $e->getMessage()]);
                 return Response::apiErrorCode(400, ['errors' => ['ec5_104']]);
+            } finally {
+                // Release the lock
+                $lock->release();
             }
-            // Success!
-            return Response::apiSuccessCode('ec5_400');
-        } catch (Throwable $e) {
-            Log::error('Error deletion() entries', ['exception' => $e->getMessage()]);
-            return Response::apiErrorCode(400, ['errors' => ['ec5_104']]);
+        } else {
+            return Response::apiErrorCode(400, ['errors' => ['ec5_255']]);
         }
     }
 }
