@@ -23,7 +23,7 @@ jobs:
             $0 ~ "# " && flag {exit}
             flag {print}
           ' CHANGELOG.md)
-          echo "::set-output name=release_notes::$RELEASE_NOTES"
+          echo "release_notes=$RELEASE_NOTES" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
         uses: actions/create-release@v1
