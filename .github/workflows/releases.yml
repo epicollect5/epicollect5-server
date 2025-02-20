@@ -1,0 +1,37 @@
+name: Generate Release Notes
+
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+' # Triggers the workflow when a tag matching the version pattern is pushed (e.g., 11.1.1)
+
+jobs:
+  generate-release-notes:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Extract release notes from CHANGELOG.md
+        id: changelog
+        run: |
+          TAG_VERSION=${GITHUB_REF#refs/tags/} # Extract the tag (e.g., 11.1.1)
+          echo "Extracting release notes for version: $TAG_VERSION"
+          RELEASE_NOTES=$(awk -v version="$TAG_VERSION" '
+            $0 ~ "# " version {flag=1; next}
+            $0 ~ "# " && flag {exit}
+            flag {print}
+          ' CHANGELOG.md)
+          echo "::set-output name=release_notes::$RELEASE_NOTES"
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: ${{ steps.changelog.outputs.release_notes }}
+          draft: false
+          prerelease: false
