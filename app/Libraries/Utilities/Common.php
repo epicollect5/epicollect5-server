@@ -286,6 +286,9 @@ class Common
         Cookie::queue($mediaCookie);
         $filename = 'epicollect5-error.txt';
         $content = config('epicollect.codes.'.$code);
+        if (empty($content)) {
+            $content = 'An unexpected error occurred.';
+        }
         return Response::toCSVFile($content, $filename);
     }
 }

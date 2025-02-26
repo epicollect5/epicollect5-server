@@ -597,9 +597,17 @@ class DataMappingService
         return Carbon::parse($mysqlDate)->format('Y-m-d\TH:i:s.000\Z');
     }
 
-    private function addCreatedByIfNeeded($access, array &$output, $userId): void
+    /**
+     * Adds the user email to the output array if the project is private
+     *
+     * @param string $access The project access level
+     * @param array &$output The output array to modify
+     * @param int|null $userId The user ID to look up
+     */
+    private function addCreatedByIfNeeded(string $access, array &$output, ?int $userId): void
     {
         if ($access === config('epicollect.strings.project_access.private')) {
+            //userId can be  0 when the entry was uploaded when the project was public without logging in.
             $output['created_by'] = 'n/a';
             if ($userId) {
                 if (isset($this->usersCache[$userId])) {

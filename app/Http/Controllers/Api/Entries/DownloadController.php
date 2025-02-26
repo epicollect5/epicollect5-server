@@ -76,7 +76,10 @@ class DownloadController
         $lockKey = 'download-entries-archive-' . $this->requestedUser()->id;
 
         // Attempt to acquire the lock
-        $lock = Cache::lock($lockKey, 300); // Lock for 5 minutes max
+        $lock = Cache::lock(
+            $lockKey,
+            config('epicollect.setup.locks.duration_archive_download_lock')
+        );
 
         if ($lock->get()) {
             try {
