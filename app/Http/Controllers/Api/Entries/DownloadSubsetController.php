@@ -110,6 +110,7 @@ class DownloadSubsetController
     {
         $exportChunk = config('epicollect.limits.entries_export_chunk');
         $projectRef = $this->requestedProject()->ref;
+        $access = $this->requestedProject()->access;
         //generate unique temp file name to cover concurrent users per project
         $csvFilename = Uuid::uuid4()->toString() . '.csv';
         $zipFilename = Uuid::uuid4()->toString() . '.zip';
@@ -147,18 +148,17 @@ class DownloadSubsetController
             //write headers
             $csv->insertOne($this->dataMappingService->getHeaderRowCSV());
             //chuck feature keeps memory usage low
-            $query->chunk($exportChunk, function ($entries) use ($csv) {
+            $query->chunk($exportChunk, function ($entries) use ($csv, $access) {
                 foreach ($entries as $entry) {
                     $csv->insertOne($this->dataMappingService->getMappedEntryCSV(
                         $entry->entry_data,
                         $entry->user_id,
                         $entry->title,
                         $entry->uploaded_at,
+                        $access,
                         $entry->branch_counts ?? null
                     ));
                 }
-                //   \LOG::error('Usage: ' . Common::formatBytes(memory_get_usage()));
-                //     \LOG::error('Peak Usage: ' . Common::formatBytes(memory_get_peak_usage()));
             });
         } catch (Throwable $e) {
             // Error writing to file
@@ -172,9 +172,6 @@ class DownloadSubsetController
         $zip->close();
         //delete temp csv file
         Storage::disk('temp')->delete('subset/' . $projectRef . '/' . $csvFilename);
-
-        //        \LOG::error('Usage: ' . Common::formatBytes(memory_get_usage()));
-        //        \LOG::error('Peak Usage: ' . Common::formatBytes(memory_get_peak_usage()));
         return $zipFilepath;
     }
 }

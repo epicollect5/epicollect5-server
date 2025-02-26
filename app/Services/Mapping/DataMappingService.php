@@ -21,6 +21,7 @@ class DataMappingService
     protected array $parentFormMap = [];
     protected bool $isTopHierarchyForm = false;
     protected array $datetimeFormatsPHP;
+    protected array $usersCache;
 
     public function __construct()
     {
@@ -38,6 +39,7 @@ class DataMappingService
         $this->isTopHierarchyForm = $this->forms[0]['ref'] === $formRef;
         $this->format = $format;
         $this->type = $type;
+        $this->usersCache = [];
         // Set the mapping
         $this->setupMapping($formRef, $branchRef, $mapIndex);
     }
@@ -97,7 +99,7 @@ class DataMappingService
         return $out;
     }
 
-    public function getMappedEntryCSV($JSONEntryString, $userId, $title, $uploaded_at, $branchCountsString = ''): array
+    public function getMappedEntryCSV($JSONEntryString, $userId, $title, $uploaded_at, $access, $branchCountsString = ''): array
     {
         $output = [];
         try {
@@ -133,27 +135,19 @@ class DataMappingService
         $output[] = $this->convertMYSQLDateToISO($uploaded_at);
 
         // Add email to private project downloads
-        if ($this->project->isPrivate()) {
-            $output['created_by'] = 'n/a';
-            if ($userId) {
-                $user = User::where('id', $userId)
-                    ->where('state', '<>', 'archived')
-                    ->first();
-                if ($user) {
-                    $output['created_by'] = $user->email;
-                }
-            }
-        }
+        $this->addCreatedByIfNeeded($access, $output, $userId);
         //add title (fingers crossed)
         $output[] = $title; //title
 
-        foreach ($this->inputsFlattened as $input) {
+        $answers = $entry['answers'];
+        $inputsFlattened = $this->inputsFlattened;
+        foreach ($inputsFlattened as $input) {
             $inputRef = $input['ref'];
             $inputMapping = $this->getInputMapping($inputRef);
 
             if (!$inputMapping['hide'] && $inputMapping['mapTo']) {
 
-                $answer = $entry['answers'][$inputRef]['answer'] ?? '';
+                $answer = $answers[$inputRef]['answer'] ?? '';
 
                 switch ($input['type']) {
                     case 'location':
@@ -205,7 +199,7 @@ class DataMappingService
         return $out;
     }
 
-    public function getMappedEntryJSON($JSONEntryString, $userId, $title, $uploaded_at, $branchCountsString = ''): false|array|string
+    public function getMappedEntryJSON($JSONEntryString, $userId, $title, $uploaded_at, $access, $branchCountsString = ''): false|array|string
     {
         $output = [];
         try {
@@ -232,34 +226,26 @@ class DataMappingService
         //add timestamps (ISO)
         $output['created_at'] = $entry['created_at'];
         $output['uploaded_at'] = $this->convertMYSQLDateToISO($uploaded_at);
-        // Add email to private project downloads
-        if ($this->project->isPrivate()) {
-            $output['created_by'] = 'n/a';
-            if ($userId) {
-                $user = User::where('id', $userId)
-                    ->where('state', '<>', 'archived')
-                    ->first();
-                if ($user) {
-                    $output['created_by'] = $user->email;
-                }
-            }
-        }
+        // Add email as created_by column (only to private project downloads)
+        $this->addCreatedByIfNeeded($access, $output, $userId);
 
         if ($entry == null) {
             return $output;
         }
 
-        //add title (finger crossed)
+        //add title (fingers crossed)
         $output['title'] = $title;
 
-        foreach ($this->inputsFlattened as $input) {
+        $answers = $entry['answers'];
+        $inputsFlattened = $this->inputsFlattened;
+        foreach ($inputsFlattened as $input) {
 
             $inputRef = $input['ref'];
             $inputMapping = $this->getInputMapping($inputRef);
 
             if (!$inputMapping['hide'] && $inputMapping['mapTo']) {
 
-                $answer = $entry['answers'][$inputRef]['answer'] ?? '';
+                $answer = $answers[$inputRef]['answer'] ?? '';
 
                 switch ($input['type']) {
                     case 'branch':
@@ -609,5 +595,27 @@ class DataMappingService
     private function convertMYSQLDateToISO($mysqlDate): string
     {
         return Carbon::parse($mysqlDate)->format('Y-m-d\TH:i:s.000\Z');
+    }
+
+    private function addCreatedByIfNeeded($access, array &$output, $userId): void
+    {
+        if ($access === config('epicollect.strings.project_access.private')) {
+            $output['created_by'] = 'n/a';
+            if ($userId) {
+                if (isset($this->usersCache[$userId])) {
+                    $output['created_by'] = $this->usersCache[$userId];
+                } else {
+                    $user = User::where('id', $userId)
+                        ->where('state', '<>', 'archived')
+                        ->first();
+                    if ($user) {
+                        $output['created_by'] = $user->email;
+                        $this->usersCache[$userId] = $user->email;
+                    } else {
+                        $this->usersCache[$userId] = 'n/a';
+                    }
+                }
+            }
+        }
     }
 }

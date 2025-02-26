@@ -3,6 +3,7 @@
 namespace ec5\Http\Controllers\Api\Entries;
 
 use Auth;
+use Cache;
 use Cookie;
 use ec5\Http\Validation\Entries\Download\RuleDownload;
 use ec5\Libraries\Utilities\Common;
@@ -61,29 +62,37 @@ class DownloadController
 
     private function sendArchive($filepath, $filename, $timestamp = null)
     {
-        $mediaCookie = Common::getMediaCookie($timestamp);
-        Cookie::queue($mediaCookie);
-
         if (file_exists($filepath)) {
+            $mediaCookie = Common::getMediaCookie($timestamp);
+            Cookie::queue($mediaCookie);
             return response()->download($filepath, $filename)->deleteFileAfterSend(true);
         } else {
-            //this happens only when users are downloading the file, so send error as file
-            //to keep the user on the dataviewer page.
-            //because on the front end this is requested using window.location
-            $filename = 'epicollect5-error.txt';
-            $content = config('epicollect.codes.ec5_364');
-            return Response::toCSVFile($content, $filename);
+            return Common::errorResponseAsFile($timestamp, 'ec5_364');
         }
     }
 
     private function createArchive(string $projectDir, array $params, $timestamp)
     {
-        $entriesDownloadService = new EntriesDownloadService(new DataMappingService());
-        if (!$entriesDownloadService->createArchive($this->requestedProject(), $projectDir, $params)) {
-            return Response::apiErrorCode(400, ['download-entries' => ['ec5_83']]);
+        $lockKey = 'download-entries-archive-' . $this->requestedUser()->id;
+
+        // Attempt to acquire the lock
+        $lock = Cache::lock($lockKey, 300); // Lock for 5 minutes max
+
+        if ($lock->get()) {
+            try {
+                $entriesDownloadService = new EntriesDownloadService(new DataMappingService());
+                if (!$entriesDownloadService->createArchive($this->requestedProject(), $projectDir, $params)) {
+                    return Common::errorResponseAsFile($timestamp, 'ec5_83');
+                }
+                $zipName = $this->requestedProject()->slug . '-' . $params['format'] . '.zip';
+                return $this->sendArchive($projectDir . '/' . $zipName, $zipName, $timestamp);
+            } finally {
+                // Release the lock
+                $lock->release();
+            }
+        } else {
+            return Common::errorResponseAsFile($timestamp, 'ec5_406');
         }
-        $zipName = $this->requestedProject()->slug . '-' . $params['format'] . '.zip';
-        return $this->sendArchive($projectDir . '/' . $zipName, $zipName, $timestamp);
     }
 
     private function getArchivePath($user)

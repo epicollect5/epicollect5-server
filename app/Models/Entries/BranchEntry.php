@@ -91,6 +91,20 @@ class BranchEntry extends Model
         return self::sortAndFilterEntries($q, $params);
     }
 
+    public static function getBranchEntriesByBranchRefOP($projectId, $params, $columns = array('*')): Builder
+    {
+        // Ensure 'id' is included in the columns
+        if (!in_array('id', $columns)) {
+            $columns[] = 'id';
+        }
+
+        return DB::table(config('epicollect.tables.branch_entries'))
+            ->where('project_id', '=', $projectId)
+            ->where('form_ref', '=', $params['form_ref'])
+            ->where('owner_input_ref', '=', $params['branch_ref'])
+            ->select($columns);
+    }
+
     /**
      * Get all branch entry uuids for the array of entry uuids
      *

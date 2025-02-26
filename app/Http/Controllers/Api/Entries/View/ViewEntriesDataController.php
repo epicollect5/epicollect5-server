@@ -124,6 +124,7 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
     {
         $columns = ['title', 'entry_data', 'branch_counts', 'child_counts', 'user_id', 'uploaded_at', 'created_at'];
         $project = $this->requestedProject();
+        $access = $project->access;
         $query = $this->runQueryHierarchy($options, $columns);
 
         //get the newest and oldest dates of this subset (before pagination occurs)
@@ -153,6 +154,7 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
                         $row->user_id,
                         $row->title,
                         $row->uploaded_at,
+                        $access,
                         $row->branch_counts ?? null
                     ),
                     true
@@ -198,6 +200,7 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
     {
         $columns = ['title', 'entry_data', 'user_id', 'uploaded_at'];
         $project = $this->requestedProject();
+        $access = $project->access;
 
         $branchEntries = $this->runQueryBranch($params, $columns);
 
@@ -225,6 +228,7 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
                         $row->user_id,
                         $row->title,
                         $row->uploaded_at,
+                        $access,
                         $row->branch_counts ?? null
                     ),
                     true
@@ -262,6 +266,7 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
 
     private function sendCSVResponse($query, $params)
     {
+        $access = $this->requestedProject()->access;
         // Open the output stream
         $data = fopen('php://output', 'w');
 
@@ -284,6 +289,7 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
                             $entry->user_id,
                             $entry->title,
                             $entry->uploaded_at,
+                            $access,
                             $entry->branch_counts ?? null
                         )
                     )

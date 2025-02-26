@@ -201,6 +201,21 @@ class Entry extends Model
         return self::sortAndFilterEntries($q, $params);
     }
 
+    public static function getEntriesByFormOP($projectId, $params, $columns = array('*')): Builder
+    {
+        // Ensure 'id' is included in the columns
+        if (!in_array('id', $columns)) {
+            $columns[] = 'id';
+        }
+
+        return DB::table(config('epicollect.tables.entries'))
+            ->where('project_id', '=', $projectId)
+            ->where('form_ref', '=', $params['form_ref'])
+            ->select($columns);
+    }
+
+
+
     /**
      * Get the parent given a parent entry uuid and form ref
      *

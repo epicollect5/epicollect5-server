@@ -4,6 +4,7 @@ namespace ec5\Libraries\Utilities;
 
 use Cookie;
 use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Str;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -274,5 +275,17 @@ class Common
 
         // Return if the request failed
         return '0.0.0';
+    }
+
+    public static function errorResponseAsFile($timestamp, $code)
+    {
+        // imp: this happens only when users are downloading the file, so send error as file
+        // to keep the user on the dataviewer page.
+        // because on the front end this is requested using window.location
+        $mediaCookie = Common::getMediaCookie($timestamp);
+        Cookie::queue($mediaCookie);
+        $filename = 'epicollect5-error.txt';
+        $content = config('epicollect.codes.'.$code);
+        return Response::toCSVFile($content, $filename);
     }
 }
