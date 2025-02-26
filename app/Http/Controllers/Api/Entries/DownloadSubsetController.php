@@ -106,6 +106,20 @@ class DownloadSubsetController
         return response()->download($filepath, $filename)->deleteFileAfterSend(true);
     }
 
+    /**
+     * Creates a ZIP archive containing a CSV export of entries.
+     *
+     * This method generates unique temporary CSV and ZIP filenames, writes the CSV file with 
+     * header and mapped entry rows (processed in chunks from the provided query) to a temporary 
+     * location, compresses the CSV into a ZIP archive, and deletes the temporary CSV file. If 
+     * an error occurs during the CSV writing process, the error is logged and an error code is 
+     * recorded.
+     *
+     * @param mixed $query Query object used to retrieve entries in chunks.
+     * @param string $filename Reference filename used to derive the CSV file name within the archive.
+     *
+     * @return string Full path to the generated ZIP archive.
+     */
     private function createSubsetArchive($query, $filename): string
     {
         $exportChunk = config('epicollect.limits.entries_export_chunk');
