@@ -10,7 +10,7 @@
 */
 
 //request a code to be sent by email (mobile app)
-Route::group(['middleware' => ['throttle:5,30']], function () {
+Route::group(['middleware' => ['throttle:passwordless']], function () {
     Route::post('api/login/passwordless/code', 'Api\Auth\PasswordlessController@sendCode');
 });
 

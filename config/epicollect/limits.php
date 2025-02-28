@@ -82,5 +82,6 @@ return [
     // IMP: Limit for number of rows at a time to chunk when downloading data
     // IMP: Ec5 Download Test project (103000 entries) consumes ~140MB memory at 50000 per chunk
     // IMP: with 1000, memory peak is at 20MB
-    'download_entries_chunk_limit' => 1000
+    'download_entries_chunk_limit' => 1000,
+    'passwordless_rate_limit' => (int) env('PASSWORDLESS_RATE_LIMIT', 10),
 ];

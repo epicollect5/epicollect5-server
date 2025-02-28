@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 11.1.2
+
+- Updated favicon
+
 # 11.1.1
 
 - Updated deletion operations so that only project creators can remove entries in bulk.
@@ -22,4 +26,4 @@
 - Added project app links & QR codes
 - Fixed bugs and stability improvements
 
-##     
+##      

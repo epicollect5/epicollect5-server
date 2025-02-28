@@ -39,7 +39,7 @@ Route::group(['middleware' => ['guest']], function () {
 
 
 //Passwordless routes, 5 requests max every 30 minutes (disabled for localhost and testing)
-$passwordlessMiddleware = in_array(App::environment(), ['local', 'testing']) ? ['guest'] : ['guest', 'throttle:5,30'];
+$passwordlessMiddleware = in_array(App::environment(), ['local', 'testing']) ? ['guest'] : ['guest', 'throttle:passwordless'];
 Route::group(['middleware' => $passwordlessMiddleware], function () use ($passwordlessMiddleware) {
     Route::post('login/passwordless/token', 'Web\Auth\PasswordlessController@sendCode')
         ->name('passwordless-token-web');
