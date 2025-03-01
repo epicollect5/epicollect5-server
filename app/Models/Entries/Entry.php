@@ -3,7 +3,6 @@
 namespace ec5\Models\Entries;
 
 use DB;
-use ec5\Services\Entries\EntriesViewService;
 use ec5\Traits\Eloquent\Entries;
 use ec5\Traits\Models\SerializeDates;
 use Illuminate\Database\Eloquent\Model;
@@ -74,32 +73,6 @@ class Entry extends Model
             });
 
         return self::sortAndFilterEntries($q, $options);
-    }
-
-    /**
-     * @param $projectId
-     * @param $params
-     * @return Builder
-     */
-    public function getGeoJsonData($projectId, $params): Builder
-    {
-        $selectSql = 'JSON_EXTRACT(geo_json_data, ?) as geo_json_data ';
-        $whereSql = 'project_id = ?';
-
-        //get all location data
-        $q = DB::table($this->table)
-            ->whereRaw($whereSql, [$projectId])
-            ->selectRaw($selectSql, ['$."' . $params['input_ref'] . '"']);
-
-        //filter by user (imp: applied to COLLECTOR ROLE ONLY)
-        /**
-         * @see EntriesViewService::getSanitizedQueryParams
-         */
-        if (!empty($params['user_id'])) {
-            $q->where('user_id', '=', $params['user_id']);
-        }
-
-        return self::sortAndFilterEntries($q, $params);
     }
 
     /**

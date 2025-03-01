@@ -11,6 +11,33 @@ use Throwable;
 
 trait Entries
 {
+    /** Get GeoJSON data for entries or branch entries
+     *
+     * @param $projectId
+     * @param $params
+     * @return Builder
+     */
+    public function getGeoJsonData($projectId, $params): Builder
+    {
+        $selectSql = 'JSON_EXTRACT(geo_json_data, ?) as geo_json_data ';
+        $whereSql = 'project_id = ?';
+
+        //get all location data
+        $q = DB::table($this->table)
+            ->whereRaw($whereSql, [$projectId])
+            ->selectRaw($selectSql, ['$."' . $params['input_ref'] . '"']);
+
+        //filter by user (imp: applied to COLLECTOR ROLE ONLY)
+        /**
+         * @see EntriesViewService::getSanitizedQueryParams
+         */
+        if (!empty($params['user_id'])) {
+            $q->where('user_id', '=', $params['user_id']);
+        }
+
+        return self::sortAndFilterEntries($q, $params);
+    }
+
     /**
      * Search for entries based on answers
      *

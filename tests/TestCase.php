@@ -56,7 +56,7 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
             $actual = print_r($e->getComparisonFailure()->getActual(), true) . PHP_EOL;
         }
 
-        echo 'Expected: ', $expected ?? PHP_EOL;
+        echo 'Expected: ', $expected;
         echo 'Actual: ' . $actual ?? PHP_EOL;
 
         // Ensure $response is an array or a Countable object before using sizeof()
@@ -84,11 +84,9 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
 
         // Mark the test as failed with expected and actual values
         $filePath = str_replace(base_path(), '', $e->getFile());
-        $stackTrace = $e->getTraceAsString();
-        $stackTraceLines = explode("\n", $stackTrace ?? '');
 
         // Log error for failed assertion
-        $this->fail("Error in {$filePath}:\n\n{$e->getMessage()}");
+        $this->fail("Error in $filePath:\n\n{$e->getMessage()}");
     }
 
     //clear database manually as we are not using database transactions
