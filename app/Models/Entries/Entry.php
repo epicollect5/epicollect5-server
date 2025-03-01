@@ -49,10 +49,22 @@ class Entry extends Model
     ];
 
     /**
-     * @param $projectId
-     * @param $options
-     * @param array $columns
-     * @return Builder
+     * Retrieves a query builder for a specific entry using the given project ID and options.
+     *
+     * This method builds a database query to select an entry from the entries table by matching the
+     * project identifier with a specified form reference and UUID. It optionally applies additional filters
+     * for user and parent entry identifiers if provided in the options. The query is then processed with
+     * sorting and filtering adjustments.
+     *
+     * @param mixed $projectId Identifier of the project.
+     * @param array $options Array containing query parameters:
+     *                       - 'form_ref': Form reference for filtering.
+     *                       - 'uuid': Unique identifier of the entry.
+     *                       - 'user_id' (optional): Identifier of the user for additional filtering.
+     *                       - 'parent_entry_uuid' (optional): UUID of the parent entry for additional filtering.
+     * @param array $columns List of columns to select; defaults to all columns.
+     *
+     * @return \Illuminate\Database\Query\Builder Query builder instance for the entry.
      */
     public function getEntry($projectId, $options, array $columns = array('*')): Builder
     {
