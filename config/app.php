@@ -185,6 +185,8 @@ return [
         ec5\Providers\Macros\Response\ToCSVFileMacro::class,
         ec5\Providers\Macros\Response\ToJSONFileMacro::class,
         ec5\Providers\Macros\Response\ToMediaStreamMacro::class,
+        //Rate Limiter
+        ec5\Providers\RateLimiterServiceProvider::class,
 
         /**
          * Custom Service Providers

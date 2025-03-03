@@ -10,7 +10,12 @@ use Illuminate\Support\Facades\Blade;
 class AppServiceProvider extends ServiceProvider
 {
     /**
-     * Bootstrap any application services.
+     * Bootstraps key application services.
+     *
+     * This method conditionally registers the IDE helper when running locally, configures
+     * a rate limiter for passwordless authentication based on the client's IP address and
+     * application settings, sets the pagination style to Bootstrap 3, and disables Blade
+     * component tags.
      *
      * @return void
      */
@@ -28,9 +33,10 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Register any application services.
      *
-     * @return void
+     * Rate limiting is configured in the RateLimiterServiceProvider
+     * @see RateLimiterServiceProvider
      */
-    public function register()
+    public function register(): void
     {
     }
 }
