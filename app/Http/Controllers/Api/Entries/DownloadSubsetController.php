@@ -82,7 +82,7 @@ class DownloadSubsetController
         if ($params['branch_ref'] !== '') {
             $columns = ['uuid', 'title', 'entry_data', 'user_id', 'uploaded_at'];
             // Get the query for these branch entries
-            $query = BranchEntry::getBranchEntriesByBranchRef(
+            $query = (new BranchEntry())->getBranchEntriesByBranchRef(
                 $this->requestedProject()->getId(),
                 $params,
                 $columns
@@ -91,7 +91,7 @@ class DownloadSubsetController
             //hierarchy
             $columns = ['title', 'entry_data', 'branch_counts', 'child_counts', 'user_id', 'uploaded_at'];
             // Get the query for these entries
-            $query = Entry::getEntriesByForm($this->requestedProject()->getId(), $params, $columns);
+            $query = (new Entry())->getEntriesByForm($this->requestedProject()->getId(), $params, $columns);
         }
 
         $filepath = $this->createSubsetArchive($query, $filename);

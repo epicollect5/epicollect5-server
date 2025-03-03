@@ -14,16 +14,17 @@ class EntryTest extends TestCase
 {
     use DatabaseTransactions;
 
-    protected $faker;
-    protected $user;
-    protected $project;
-    protected $formRef;
-    protected $superadmin;
+    protected User $user;
+    protected Project $project;
+    protected string $formRef;
+    protected User $superadmin;
+    protected Entry $entryModel;
 
-    public function setUp():void
+    public function setUp(): void
     {
         parent::setUp();
 
+        $this->entryModel = new Entry();
         $user = factory(User::class)->create();
         $superadmin = User::where('email', config('epicollect.setup.super_admin_user.email'))->first();
         $project = factory(Project::class)->create([
@@ -38,13 +39,13 @@ class EntryTest extends TestCase
             'title' => 'Ciao'
         ]);
 
-        $this->assertEquals(1, Entry::getEntriesByForm(
+        $this->assertEquals(1, $this->entryModel->getEntriesByForm(
             $project->id,
             ['form_ref' => $formRef],
             []
         )->count());
 
-        $this->assertEquals(1, Entry::getEntriesByForm(
+        $this->assertEquals(1, $this->entryModel->getEntriesByForm(
             $project->id,
             [
                 'form_ref' => $formRef,
@@ -53,7 +54,7 @@ class EntryTest extends TestCase
             []
         )->count());
 
-        $this->assertEquals(0, Entry::getEntriesByForm(
+        $this->assertEquals(0, $this->entryModel->getEntriesByForm(
             $project->id,
             [
                 'form_ref' => $formRef,
@@ -85,7 +86,7 @@ class EntryTest extends TestCase
             ]);
         }
 
-        $this->assertEquals($numOfEntries, Entry::getEntriesByForm(
+        $this->assertEquals($numOfEntries, $this->entryModel->getEntriesByForm(
             $this->project->id,
             [
                 'form_ref' => $this->formRef
@@ -108,7 +109,7 @@ class EntryTest extends TestCase
             ]);
         }
 
-        $this->assertEquals(1, Entry::getEntriesByForm(
+        $this->assertEquals(1, $this->entryModel->getEntriesByForm(
             $this->project->id,
             [
                 'form_ref' => $this->formRef,
@@ -117,7 +118,7 @@ class EntryTest extends TestCase
             []
         )->count());
 
-        $this->assertEquals($numOfEntries, Entry::getEntriesByForm(
+        $this->assertEquals($numOfEntries, $this->entryModel->getEntriesByForm(
             $this->project->id,
             [
                 'form_ref' => $this->formRef,
@@ -126,7 +127,7 @@ class EntryTest extends TestCase
             []
         )->count());
 
-        $this->assertEquals(0, Entry::getEntriesByForm(
+        $this->assertEquals(0, $this->entryModel->getEntriesByForm(
             $this->project->id,
             [
                 'form_ref' => $this->formRef,
@@ -153,7 +154,7 @@ class EntryTest extends TestCase
             ]);
         }
 
-        $this->assertEquals(0, Entry::getEntriesByForm(
+        $this->assertEquals(0, $this->entryModel->getEntriesByForm(
             $this->project->id,
             [
                 'form_ref' => $this->formRef,
@@ -162,7 +163,7 @@ class EntryTest extends TestCase
             []
         )->count());
 
-        $this->assertEquals(0, Entry::getEntriesByForm(
+        $this->assertEquals(0, $this->entryModel->getEntriesByForm(
             $this->project->id,
             [
                 'form_ref' => $this->formRef,
@@ -171,7 +172,7 @@ class EntryTest extends TestCase
             []
         )->count());
 
-        $this->assertEquals($numOfEntries, Entry::getEntriesByForm(
+        $this->assertEquals($numOfEntries, $this->entryModel->getEntriesByForm(
             $this->project->id,
             [
                 'form_ref' => $this->formRef,
@@ -200,7 +201,7 @@ class EntryTest extends TestCase
             $year++;
         }
 
-        $this->assertEquals($numOfEntries, Entry::getEntriesByForm(
+        $this->assertEquals($numOfEntries, $this->entryModel->getEntriesByForm(
             $this->project->id,
             [
                 'form_ref' => $this->formRef,
@@ -212,7 +213,7 @@ class EntryTest extends TestCase
         //filter by year (one by one)
         $year = 2016;
         for ($i = 0; $i < $numOfEntries; $i++) {
-            $this->assertEquals(1, Entry::getEntriesByForm(
+            $this->assertEquals(1, $this->entryModel->getEntriesByForm(
                 $this->project->id,
                 [
                     'form_ref' => $this->formRef,
@@ -228,7 +229,7 @@ class EntryTest extends TestCase
         //filter by year (between)
         $yearFrom = 2020;
         $yearTo = 2022;
-        $this->assertEquals(3, Entry::getEntriesByForm(
+        $this->assertEquals(3, $this->entryModel->getEntriesByForm(
             $this->project->id,
             [
                 'form_ref' => $this->formRef,
@@ -241,7 +242,7 @@ class EntryTest extends TestCase
 
         //remove entries so far
         Entry::where('project_id', $this->project->id)->delete();
-        $this->assertEquals(0, Entry::getEntriesByForm(
+        $this->assertEquals(0, $this->entryModel->getEntriesByForm(
             $this->project->id,
             [
                 'form_ref' => $this->formRef,
@@ -266,7 +267,7 @@ class EntryTest extends TestCase
 
         //assert one entry per month
         for ($month = 1; $month <= 12; $month++) {
-            $this->assertEquals(1, Entry::getEntriesByForm(
+            $this->assertEquals(1, $this->entryModel->getEntriesByForm(
                 $this->project->id,
                 [
                     'form_ref' => $this->formRef,
@@ -296,7 +297,7 @@ class EntryTest extends TestCase
         }
 
         // Fetch entries with natural sorting applied ASC
-        $entries = Entry::getEntriesByForm($this->project->id, [
+        $entries = $this->entryModel->getEntriesByForm($this->project->id, [
             'form_ref' => $this->formRef,
             'sort_by' => 'title',
             'sort_order' => 'ASC'
@@ -308,7 +309,7 @@ class EntryTest extends TestCase
         }
 
         // Fetch entries with natural sorting applied ASC
-        $entries = Entry::getEntriesByForm($this->project->id, [
+        $entries = $this->entryModel->getEntriesByForm($this->project->id, [
             'form_ref' => $this->formRef,
             'sort_by' => 'title',
             //   'sort_order' => 'DESC' //default
@@ -320,7 +321,7 @@ class EntryTest extends TestCase
         }
 
         // Fetch entries with natural sorting applied ASC
-        $entries = Entry::getEntriesByForm($this->project->id, [
+        $entries = $this->entryModel->getEntriesByForm($this->project->id, [
             'form_ref' => $this->formRef,
             'sort_by' => 'title',
             'sort_order' => 'DESC' //default
@@ -346,7 +347,7 @@ class EntryTest extends TestCase
         }
 
         // Fetch entries with natural sorting applied
-        $entries = Entry::getEntriesByForm($this->project->id, [
+        $entries = $this->entryModel->getEntriesByForm($this->project->id, [
             'form_ref' => $this->formRef,
             'sort_by' => 'title',
             'sort_order' => 'ASC'
@@ -365,7 +366,7 @@ class EntryTest extends TestCase
         }
 
         // Fetch entries with natural sorting applied
-        $entries = Entry::getEntriesByForm($this->project->id, [
+        $entries = $this->entryModel->getEntriesByForm($this->project->id, [
             'form_ref' => $this->formRef,
             'sort_by' => 'title',
             'sort_order' => 'DESC'
@@ -377,7 +378,7 @@ class EntryTest extends TestCase
         }
 
         // Fetch entries with natural sorting applied
-        $entries = Entry::getEntriesByForm($this->project->id, [
+        $entries = $this->entryModel->getEntriesByForm($this->project->id, [
             'form_ref' => $this->formRef,
             'sort_by' => 'title'
         ])->get();

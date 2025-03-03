@@ -56,7 +56,7 @@ class EntriesDownloadService
 
             $columns = ['title', 'entry_data', 'branch_counts', 'child_counts', 'user_id', 'uploaded_at'];
             // Get the query for these entries
-            $query = Entry::getEntriesByForm($this->project->getId(), $params, $columns);
+            $query = (new Entry())->getEntriesByForm($this->project->getId(), $params, $columns);
             // Write to file
             if (!$this->writeToFile($query, $projectDir, $fileName, $format)) {
                 return false;
@@ -88,7 +88,7 @@ class EntriesDownloadService
                 $columns = ['uuid', 'title', 'entry_data', 'user_id', 'uploaded_at'];
 
                 // Get the query for these branch entries
-                $query = BranchEntry::getBranchEntriesByBranchRef(
+                $query = (new BranchEntry())->getBranchEntriesByBranchRef(
                     $this->project->getId(),
                     $params,
                     $columns
@@ -230,12 +230,12 @@ class EntriesDownloadService
                             $count++;
                             // Write row to file
                             fwrite($file, $this->dataMappingService->getMappedEntryJSON(
-                                    $entry->entry_data,
-                                    $entry->user_id,
-                                    $entry->title,
-                                    $entry->uploaded_at,
-                                    $entry->branch_counts ?? null
-                                ) . $append);
+                                $entry->entry_data,
+                                $entry->user_id,
+                                $entry->title,
+                                $entry->uploaded_at,
+                                $entry->branch_counts ?? null
+                            ) . $append);
                         }
                     }
                 );

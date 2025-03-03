@@ -60,7 +60,7 @@ trait Entries
             $q->where('user_id', '=', $params['user_id']);
         }
 
-        return self::sortAndFilterEntries($q, $params);
+        return $this->sortAndFilterEntries($q, $params);
     }
 
     /**
@@ -85,7 +85,7 @@ trait Entries
         return $q;
     }
 
-    public static function sortAndFilterEntries(Builder $q, $filters): Builder
+    public function sortAndFilterEntries(Builder $q, $filters): Builder
     {
         // Filtering
         if (!empty($filters['filter_by'])) {

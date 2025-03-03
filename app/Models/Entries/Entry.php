@@ -72,7 +72,7 @@ class Entry extends Model
                 }
             });
 
-        return self::sortAndFilterEntries($q, $options);
+        return $this->sortAndFilterEntries($q, $options);
     }
 
     /**
@@ -99,7 +99,7 @@ class Entry extends Model
         if (!empty($options['input_ref'])) {
             $q = $this->createFilterOptions($q, $options);
         }
-        return self::sortAndFilterEntries($q, $options);
+        return $this->sortAndFilterEntries($q, $options);
     }
 
     /**
@@ -158,7 +158,7 @@ class Entry extends Model
         return $this->sortAndFilterEntries($q, $options);
     }
 
-    public static function getEntriesByForm($projectId, $params, $columns = array('*')): Builder
+    public function getEntriesByForm($projectId, $params, $columns = array('*')): Builder
     {
         $q = DB::table(config('epicollect.tables.entries'))
             ->where('project_id', '=', $projectId)
@@ -171,7 +171,7 @@ class Entry extends Model
             })
             ->select($columns);
 
-        return self::sortAndFilterEntries($q, $params);
+        return $this->sortAndFilterEntries($q, $params);
     }
 
     /**

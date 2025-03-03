@@ -15,18 +15,19 @@ class BranchEntryTest extends TestCase
 {
     use DatabaseTransactions;
 
-    protected $faker;
-    protected $user;
-    protected $project;
-    protected $entry;
-    protected $formRef;
-    protected $branchInputRef;
-    protected $superadmin;
+    protected User $user;
+    protected Project $project;
+    protected Entry $entry;
+    protected string $formRef;
+    protected string $branchInputRef;
+    protected User $superadmin;
+    protected BranchEntry $branchEntryModel;
 
     public function setUp(): void
     {
         parent::setUp();
 
+        $this->branchEntryModel = new BranchEntry();
         $user = factory(User::class)->create();
         $superadmin = User::where('email', config('epicollect.setup.super_admin_user.email'))->first();
         $project = factory(Project::class)->create([
@@ -52,7 +53,7 @@ class BranchEntryTest extends TestCase
             'title' => 'Ciao'
         ]);
 
-        $this->assertEquals(1, BranchEntry::getBranchEntriesByBranchRef(
+        $this->assertEquals(1, $this->branchEntryModel->getBranchEntriesByBranchRef(
             $project->id,
             [
                 'form_ref' => $formRef,
@@ -61,7 +62,7 @@ class BranchEntryTest extends TestCase
             []
         )->count());
 
-        $this->assertEquals(1, BranchEntry::getBranchEntriesByBranchRef(
+        $this->assertEquals(1, $this->branchEntryModel->getBranchEntriesByBranchRef(
             $project->id,
             [
                 'form_ref' => $formRef,
@@ -71,7 +72,7 @@ class BranchEntryTest extends TestCase
             []
         )->count());
 
-        $this->assertEquals(0, BranchEntry::getBranchEntriesByBranchRef(
+        $this->assertEquals(0, $this->branchEntryModel->getBranchEntriesByBranchRef(
             $project->id,
             [
                 'form_ref' => $formRef,
@@ -110,7 +111,7 @@ class BranchEntryTest extends TestCase
             ]);
         }
 
-        $this->assertEquals($numOfEntries, BranchEntry::getBranchEntriesByBranchRef(
+        $this->assertEquals($numOfEntries, $this->branchEntryModel->getBranchEntriesByBranchRef(
             $this->project->id,
             [
                 'form_ref' => $this->formRef,
@@ -137,7 +138,7 @@ class BranchEntryTest extends TestCase
             ]);
         }
 
-        $this->assertEquals(1, BranchEntry::getBranchEntriesByBranchRef(
+        $this->assertEquals(1, $this->branchEntryModel->getBranchEntriesByBranchRef(
             $this->project->id,
             [
                 'form_ref' => $this->formRef,
@@ -147,7 +148,7 @@ class BranchEntryTest extends TestCase
             []
         )->count());
 
-        $this->assertEquals($numOfEntries, BranchEntry::getBranchEntriesByBranchRef(
+        $this->assertEquals($numOfEntries, $this->branchEntryModel->getBranchEntriesByBranchRef(
             $this->project->id,
             [
                 'form_ref' => $this->formRef,
@@ -157,7 +158,7 @@ class BranchEntryTest extends TestCase
             []
         )->count());
 
-        $this->assertEquals(0, BranchEntry::getBranchEntriesByBranchRef(
+        $this->assertEquals(0, $this->branchEntryModel->getBranchEntriesByBranchRef(
             $this->project->id,
             [
                 'form_ref' => $this->formRef,
@@ -188,7 +189,7 @@ class BranchEntryTest extends TestCase
             ]);
         }
 
-        $this->assertEquals(0, BranchEntry::getBranchEntriesByBranchRef(
+        $this->assertEquals(0, $this->branchEntryModel->getBranchEntriesByBranchRef(
             $this->project->id,
             [
                 'form_ref' => $this->formRef,
@@ -198,7 +199,7 @@ class BranchEntryTest extends TestCase
             []
         )->count());
 
-        $this->assertEquals(0, BranchEntry::getBranchEntriesByBranchRef(
+        $this->assertEquals(0, $this->branchEntryModel->getBranchEntriesByBranchRef(
             $this->project->id,
             [
                 'form_ref' => $this->formRef,
@@ -208,7 +209,7 @@ class BranchEntryTest extends TestCase
             []
         )->count());
 
-        $this->assertEquals($numOfEntries, BranchEntry::getBranchEntriesByBranchRef(
+        $this->assertEquals($numOfEntries, $this->branchEntryModel->getBranchEntriesByBranchRef(
             $this->project->id,
             [
                 'form_ref' => $this->formRef,
@@ -241,7 +242,7 @@ class BranchEntryTest extends TestCase
             $year++;
         }
 
-        $this->assertEquals($numOfEntries, BranchEntry::getBranchEntriesByBranchRef(
+        $this->assertEquals($numOfEntries, $this->branchEntryModel->getBranchEntriesByBranchRef(
             $this->project->id,
             [
                 'form_ref' => $this->formRef,
@@ -254,7 +255,7 @@ class BranchEntryTest extends TestCase
         //filter by year (one by one)
         $year = 2016;
         for ($i = 0; $i < $numOfEntries; $i++) {
-            $this->assertEquals(1, BranchEntry::getBranchEntriesByBranchRef(
+            $this->assertEquals(1, $this->branchEntryModel->getBranchEntriesByBranchRef(
                 $this->project->id,
                 [
                     'form_ref' => $this->formRef,
@@ -271,7 +272,7 @@ class BranchEntryTest extends TestCase
         //filter by year (between)
         $yearFrom = 2020;
         $yearTo = 2022;
-        $this->assertEquals(3, BranchEntry::getBranchEntriesByBranchRef(
+        $this->assertEquals(3, $this->branchEntryModel->getBranchEntriesByBranchRef(
             $this->project->id,
             [
                 'form_ref' => $this->formRef,
@@ -285,7 +286,7 @@ class BranchEntryTest extends TestCase
 
         //remove entries so far
         BranchEntry::where('project_id', $this->project->id)->delete();
-        $this->assertEquals(0, BranchEntry::getBranchEntriesByBranchRef(
+        $this->assertEquals(0, $this->branchEntryModel->getBranchEntriesByBranchRef(
             $this->project->id,
             [
                 'form_ref' => $this->formRef,
@@ -314,7 +315,7 @@ class BranchEntryTest extends TestCase
 
         //assert one entry per month
         for ($month = 1; $month <= 12; $month++) {
-            $this->assertEquals(1, BranchEntry::getBranchEntriesByBranchRef(
+            $this->assertEquals(1, $this->branchEntryModel->getBranchEntriesByBranchRef(
                 $this->project->id,
                 [
                     'form_ref' => $this->formRef,
@@ -348,7 +349,7 @@ class BranchEntryTest extends TestCase
         }
 
         // Fetch entries with natural sorting applied ASC
-        $entries = BranchEntry::getBranchEntriesByBranchRef($this->project->id, [
+        $entries = $this->branchEntryModel->getBranchEntriesByBranchRef($this->project->id, [
             'form_ref' => $this->formRef,
             'branch_ref' => $this->branchInputRef,
             'sort_by' => 'title',
@@ -361,7 +362,7 @@ class BranchEntryTest extends TestCase
         }
 
         // Fetch entries with natural sorting applied ASC
-        $entries = BranchEntry::getBranchEntriesByBranchRef($this->project->id, [
+        $entries = $this->branchEntryModel->getBranchEntriesByBranchRef($this->project->id, [
             'form_ref' => $this->formRef,
             'branch_ref' => $this->branchInputRef,
             'sort_by' => 'title',
@@ -374,7 +375,7 @@ class BranchEntryTest extends TestCase
         }
 
         // Fetch entries with natural sorting applied ASC
-        $entries = BranchEntry::getBranchEntriesByBranchRef($this->project->id, [
+        $entries = $this->branchEntryModel->getBranchEntriesByBranchRef($this->project->id, [
             'form_ref' => $this->formRef,
             'branch_ref' => $this->branchInputRef,
             'sort_by' => 'title',
@@ -409,7 +410,7 @@ class BranchEntryTest extends TestCase
         }
 
         // Fetch entries with natural sorting applied
-        $entries = BranchEntry::getBranchEntriesByBranchRef($this->project->id, [
+        $entries = $this->branchEntryModel->getBranchEntriesByBranchRef($this->project->id, [
             'form_ref' => $this->formRef,
             'branch_ref' => $this->branchInputRef,
             'sort_by' => 'title',
@@ -429,7 +430,7 @@ class BranchEntryTest extends TestCase
         }
 
         // Fetch entries with natural sorting applied
-        $entries = BranchEntry::getBranchEntriesByBranchRef($this->project->id, [
+        $entries = $this->branchEntryModel->getBranchEntriesByBranchRef($this->project->id, [
             'form_ref' => $this->formRef,
             'branch_ref' => $this->branchInputRef,
             'sort_by' => 'title',

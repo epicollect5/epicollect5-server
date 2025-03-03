@@ -71,10 +71,10 @@ class BranchEntry extends Model
                 }
             });
 
-        return self::sortAndFilterEntries($q, $options);
+        return $this->sortAndFilterEntries($q, $options);
     }
 
-    public static function getBranchEntriesByBranchRef($projectId, $params, $columns = array('*')): Builder
+    public function getBranchEntriesByBranchRef($projectId, $params, $columns = array('*')): Builder
     {
         $q = DB::table(config('epicollect.tables.branch_entries'))
             ->where('project_id', '=', $projectId)
@@ -88,7 +88,7 @@ class BranchEntry extends Model
             })
             ->select($columns);
 
-        return self::sortAndFilterEntries($q, $params);
+        return $this->sortAndFilterEntries($q, $params);
     }
 
     /**
