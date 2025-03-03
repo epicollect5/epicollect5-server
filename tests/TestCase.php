@@ -43,6 +43,18 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
         return $app;
     }
 
+    /**
+     * Logs detailed error information for a failing test.
+     *
+     * This method outputs the exception message along with any available expected and actual values
+     * obtained from a comparison failure. It further processes the provided response to display
+     * additional context—such as a JSON representation of response details—if applicable. Finally,
+     * it marks the test as failed with a formatted error message that includes the relative file path.
+     *
+     * @param Exception $e The exception encountered during the test.
+     * @param mixed     $response Additional context for the error, which may include a test response
+     *                            object with diagnostic details.
+     */
     public function logTestError(Exception $e, $response): void
     {
         $expected = '';
@@ -56,7 +68,7 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
             $actual = print_r($e->getComparisonFailure()->getActual(), true) . PHP_EOL;
         }
 
-        echo 'Expected: ', $expected ?? PHP_EOL;
+        echo 'Expected: ', $expected;
         echo 'Actual: ' . $actual ?? PHP_EOL;
 
         // Ensure $response is an array or a Countable object before using sizeof()
@@ -84,14 +96,25 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
 
         // Mark the test as failed with expected and actual values
         $filePath = str_replace(base_path(), '', $e->getFile());
-        $stackTrace = $e->getTraceAsString();
-        $stackTraceLines = explode("\n", $stackTrace ?? '');
 
         // Log error for failed assertion
-        $this->fail("Error in {$filePath}:\n\n{$e->getMessage()}");
+        $this->fail("Error in $filePath:\n\n{$e->getMessage()}");
     }
 
-    //clear database manually as we are not using database transactions
+    /**
+     * Clears test-related database records manually.
+     *
+     * This method deletes entries from various tables to remove test artifacts. It targets users whose emails match
+     * specific patterns, as well as records related to a provided user, project, or client ID. The deletions include
+     * test users, associated user providers, OAuth clients, projects, project roles, project structures, stats, entries,
+     * branch entries, and OAuth tokens.
+     *
+     * @param array $params Associative array that may include:
+     *   - 'user': (optional) A user object whose records in users, user providers, and OAuth clients will be deleted.
+     *   - 'project': (optional) A project object whose records in projects, project roles, project structures, stats,
+     *                entries, branch entries, and OAuth client projects will be deleted.
+     *   - 'client_id': (optional) A client ID used to delete corresponding OAuth access tokens.
+     */
     public function clearDatabase($params): void
     {
         $user = $params['user'] ?? null;
