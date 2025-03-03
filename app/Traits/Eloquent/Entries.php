@@ -22,13 +22,38 @@ trait Entries
         $selectSql = 'JSON_EXTRACT(geo_json_data, ?) as geo_json_data ';
         $whereSql = 'project_id = ?';
 
-        //get all location data
+        /**
+         * Get the GeoJSON data for a location question by passing the input reference (input_ref) of that question.
+         *
+         * Example of data:
+         *
+         * {
+         *   "913e1f06a69e4718b3625bb3518e4672_67c58cb5c6e96_67c58cc7c0912_67c58cd0c0913": {
+         *     "id": "653c25d0-f81f-11ef-adfb-0b667d454f81",
+         *     "type": "Feature",
+         *     "geometry": {
+         *       "type": "Point",
+         *       "coordinates": [10.565543, 45.458595]
+         *     },
+         *     "properties": {
+         *       "uuid": "653c25d0-f81f-11ef-adfb-0b667d454f81",
+         *       "title": "653c25d0-f81f-11ef-adfb-0b667d454f81",
+         *       "accuracy": 4,
+         *       "created_at": "2025-03-03",
+         *       "possible_answers": []
+         *     }
+         *   },
+         *   {...}
+         * }
+         *
+         */
         $q = DB::table($this->table)
             ->whereRaw($whereSql, [$projectId])
             ->selectRaw($selectSql, ['$."' . $params['input_ref'] . '"']);
 
-        //filter by user (imp: applied to COLLECTOR ROLE ONLY)
         /**
+         * filter by user (imp: applied to COLLECTOR ROLE ONLY)
+         *
          * @see EntriesViewService::getSanitizedQueryParams
          */
         if (!empty($params['user_id'])) {
