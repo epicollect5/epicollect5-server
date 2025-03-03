@@ -119,8 +119,7 @@ Route::group(['middleware' => ['throttle:600,1']], function () {
 });
 
 // Throttle documented entries READ endpoints - 60 requests per minute
-$apiEntriesRateLimit = config('epicollect.setup.api.rate_limit_per_minute.entries');
-Route::group(['middleware' => ['throttle:'.$apiEntriesRateLimit]], function () {
+Route::group(['middleware' => ['throttle:api-export-entries']], function () {
 
     /* Routes used specifically for OAuth 2 client requests */
     // Issue client access_token
@@ -135,8 +134,7 @@ Route::group(['middleware' => ['throttle:'.$apiEntriesRateLimit]], function () {
 });
 
 // Throttle documented project READ endpoints - 60 requests per minute
-$apiProjectRateLimit = config('epicollect.setup.api.rate_limit_per_minute.project');
-Route::group(['middleware' => ['throttle:'.$apiProjectRateLimit]], function () {
+Route::group(['middleware' => ['throttle:api-export-project']], function () {
     // Set project permissions api middleware
     Route::group(['middleware' => ['project.permissions.api']], function () {
         // Export Project
@@ -144,10 +142,7 @@ Route::group(['middleware' => ['throttle:'.$apiProjectRateLimit]], function () {
     });
 });
 
-
-//Trying a lower limit for export entry media as it was causing cpu spikes.
-$apiMediaRateLimit = config('epicollect.setup.api.rate_limit_per_minute.media');
-Route::group(['middleware' => ['throttle:'.$apiMediaRateLimit]], function () {
+Route::group(['middleware' => ['throttle:api-export-media']], function () {
     Route::group(['middleware' => ['project.permissions.api']], function () {
         // Export Entry Media
         Route::get('api/export/media/{project_slug}', 'Api\Project\MediaController@getMedia');
@@ -166,9 +161,8 @@ Route::group(['middleware' => ['throttle:240,1']], function () {
 });
 
 //Following routes required authentication (to be logged in)
-//throttle this route in production, so we do not get a lot of deletion requests by the same user
-$accountDeletionMiddleware = App::isLocal() ? ['auth'] : ['auth', 'throttle:1,60'];
-Route::group(['middleware' => $accountDeletionMiddleware], function () {
+//This route has a rate limiter in production, so we do not get a lot of deletion requests by the same user
+Route::group(['middleware' => 'auth'], function () {
     //request user account deletion
     Route::post('/api/profile/account-deletion-request', 'Api\Auth\AccountController@handleDeletionRequest')->name('externalAccountDelete');
 });
