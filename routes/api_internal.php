@@ -113,8 +113,8 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('api/proxies/opencage/{search}', 'Api\Proxies\OpenCageController@fetchAPI');
 });
 
-//This route has a rate limiter in production, so we do not get a lot of deletion requests by the same user
-Route::group(['middleware' => 'auth'], function () {
+//This route has a rate limiter to prevent abuse
+Route::group(['middleware' => ['auth', 'throttle:account-deletion']], function () {
     //request user account deletion
     Route::post('/api/internal/profile/account-deletion-request', 'Api\Auth\AccountController@handleDeletionRequest')->name('internalAccountDelete');
 });
