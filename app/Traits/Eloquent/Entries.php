@@ -11,11 +11,19 @@ use Throwable;
 
 trait Entries
 {
-    /** Get GeoJSON data for entries or branch entries
+    /**
+     * Retrieves GeoJSON data for entries associated with a specific project.
      *
-     * @param $projectId
-     * @param $params
-     * @return Builder
+     * Constructs a query to extract GeoJSON data using the provided project ID and JSON key reference (via 'input_ref').
+     * If a 'user_id' is supplied in the parameters, the results are further filtered to include only entries corresponding
+     * to that user. The query is subsequently modified with additional sorting and filtering by calling sortAndFilterEntries.
+     *
+     * @param mixed $projectId The identifier of the project.
+     * @param array $params   Query parameters, including:
+     *                        - 'input_ref': The JSON key used to extract data from the geo_json_data field.
+     *                        - 'user_id' (optional): Filters entries by user ID if provided.
+     *
+     * @return \Illuminate\Database\Query\Builder The query builder instance configured for retrieving GeoJSON data.
      */
     public function getGeoJsonData($projectId, $params): Builder
     {
