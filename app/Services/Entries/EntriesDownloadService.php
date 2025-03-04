@@ -81,14 +81,13 @@ class EntriesDownloadService
             $startTime = microtime(true);
             Log::info("Starting query for form entries: {$form['ref']}");
             // Get the query for these entries
-            $query = Entry::getEntriesByFormOP($this->project->getId(), $params, $columns);
+             $query = (new Entry())->getEntriesByForm($this->project->getId(), $params, $columns);
             // Log the end of the query and calculate duration
             $endTime = microtime(true);
             $duration = round($endTime - $startTime, 4);
             Log::info("Query for form entries completed: {$form['ref']}", [
                 'duration_seconds' => $duration,
             ]);
-
 
             // Write to file
             if (!$this->writeToFile($query, $projectDir, $fileName, $format)) {
@@ -125,7 +124,7 @@ class EntriesDownloadService
                 $startTime = microtime(true);
                 Log::info("Starting query for branch entries: {$branch['ref']}");
                 // Get the query for these branch entries
-                $query = BranchEntry::getBranchEntriesByBranchRefOP(
+                $query = (new BranchEntry())->getBranchEntriesByBranchRef(
                     $this->project->getId(),
                     $params,
                     $columns
@@ -379,6 +378,7 @@ class EntriesDownloadService
                             'memory_usage' => Common::formatBytes(memory_get_usage()),
                             'peak_memory_usage' => Common::formatBytes(memory_get_peak_usage()),
                         ]);
+
                     }
                 }
 

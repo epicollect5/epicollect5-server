@@ -71,8 +71,9 @@ class BranchEntry extends Model
                 }
             });
 
-        return self::sortAndFilterEntries($q, $options);
+        return $this->sortAndFilterEntries($q, $options);
     }
+
 
     /**
      * Retrieve branch entries by branch reference.
@@ -90,10 +91,7 @@ class BranchEntry extends Model
      *     @type string $branch_ref The branch reference (owner input reference) to filter entries.
      *     @type int|null $user_id  Optional user identifier for narrowing down the results.
      * }
-     * @param array $columns The list of columns to select; defaults to all columns.
-     * @return \Illuminate\Database\Query\Builder The query builder instance with the applied filters.
-     */
-    public static function getBranchEntriesByBranchRef($projectId, $params, $columns = array('*')): Builder
+    public function getBranchEntriesByBranchRef($projectId, $params, $columns = array('*')): Builder
     {
         $q = DB::table(config('epicollect.tables.branch_entries'))
             ->where('project_id', '=', $projectId)
@@ -107,7 +105,7 @@ class BranchEntry extends Model
             })
             ->select($columns);
 
-        return self::sortAndFilterEntries($q, $params);
+        return $this->sortAndFilterEntries($q, $params);
     }
 
     /**

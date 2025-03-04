@@ -54,7 +54,7 @@ abstract class ViewEntriesControllerBase
                 );
             } else {
                 // All Form Entries
-                $query = Entry::getEntriesByForm(
+                $query = $entryModel->getEntriesByForm(
                     $this->requestedProject()->getId(),
                     $params,
                     $columns
@@ -90,7 +90,7 @@ abstract class ViewEntriesControllerBase
                 );
             } else {
                 // All Branch Entries for Branch Ref
-                $query = $branchEntryModel::getBranchEntriesByBranchRef(
+                $query = $branchEntryModel->getBranchEntriesByBranchRef(
                     $this->requestedProject()->getId(),
                     $params,
                     $columns

@@ -5,6 +5,7 @@ namespace Tests\Http\Controllers\Api\Entries\View\Internal;
 use Auth;
 use ec5\Libraries\Utilities\Common;
 use ec5\Libraries\Utilities\Generators;
+use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\ProjectRole;
 use ec5\Models\User\User;
@@ -12,11 +13,16 @@ use ec5\Traits\Assertions;
 use Exception;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\Http\Controllers\Api\Entries\View\ViewEntriesBaseControllerTest;
+use Throwable;
 
 class ViewEntriesLocationsControllerTest extends ViewEntriesBaseControllerTest
 {
-    use DatabaseTransactions, Assertions;
+    use DatabaseTransactions;
+    use Assertions;
 
+    /**
+     * @throws Throwable
+     */
     public function test_parent_entry_row_stored_to_db()
     {
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
@@ -35,6 +41,9 @@ class ViewEntriesLocationsControllerTest extends ViewEntriesBaseControllerTest
         );
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_multiple_parent_entry_rows_stored_to_db()
     {
         $count = rand(50, 100);
@@ -43,6 +52,10 @@ class ViewEntriesLocationsControllerTest extends ViewEntriesBaseControllerTest
         }
     }
 
+
+    /**
+     * @throws Throwable
+     */
     public function test_location_endpoint_input_ref_missing()
     {
         //generate entries
@@ -86,11 +99,14 @@ class ViewEntriesLocationsControllerTest extends ViewEntriesBaseControllerTest
                     ]
                 ]
             ]);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_location_endpoint_input_ref_not_existing()
     {
         //generate entries
@@ -135,11 +151,14 @@ class ViewEntriesLocationsControllerTest extends ViewEntriesBaseControllerTest
                     ]
                 ]
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_location_endpoint_form_ref_not_existing()
     {
         //generate entries
@@ -185,11 +204,14 @@ class ViewEntriesLocationsControllerTest extends ViewEntriesBaseControllerTest
                     ]
                 ]
             ]);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_entries_locations_endpoint_default_to_first_form()
     {
         //generate entries
@@ -238,15 +260,21 @@ class ViewEntriesLocationsControllerTest extends ViewEntriesBaseControllerTest
 
             $this->assertEquals(1, sizeof($geoJson['features']));
             $this->assertEquals($entriesSavedUuids[0], $geoJson['features'][0]['id']);
+            $this->assertEquals($entriesSavedTitles[0], $geoJson['features'][0]['properties']['title']);
+
             $this->assertGeoJsonData(
                 $locationInputRefs[0],
                 $entryPayloads[0]['data']['entry'],
-                $geoJson['features'][0]);
-        } catch (\Exception $e) {
+                $geoJson['features'][0]
+            );
+        } catch (Exception $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_entries_locations_endpoint_form_0_multiple_entries()
     {
         //generate entries
@@ -302,11 +330,14 @@ class ViewEntriesLocationsControllerTest extends ViewEntriesBaseControllerTest
                 $this->assertContains($feature['properties']['uuid'], $entriesSavedUuids);
                 $this->assertContains($feature['properties']['title'], $entriesSavedTitles);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_entries_locations_endpoint_form_0_single_entry()
     {
         //generate entries
@@ -362,18 +393,138 @@ class ViewEntriesLocationsControllerTest extends ViewEntriesBaseControllerTest
             //Actual: 2024-02-07
             $this->assertEquals(
                 date('Y-m-d', strtotime($entryPayloads[0]['data']['entry']['created_at'])),
-                $geoJson['features'][0]['properties']['created_at']);
+                $geoJson['features'][0]['properties']['created_at']
+            );
 
 
             $this->assertGeoJsonData(
                 $locationInputRefs[0],
                 $entryPayloads[0]['data']['entry'],
-                $geoJson['features'][0]);
-        } catch (\Exception $e) {
+                $geoJson['features'][0]
+            );
+        } catch (Exception $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
+    public function test_branch_entries_locations_endpoint_form_0_single_entry()
+    {
+        //generate entries
+        $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
+        $entryPayloads = [];
+        for ($i = 0; $i < 1; $i++) {
+            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entryRowBundle = $this->entryGenerator->createParentEntryRow(
+                $this->user,
+                $this->project,
+                $this->role,
+                $this->projectDefinition,
+                $entryPayloads[$i]
+            );
+
+            $this->assertEntryRowAgainstPayload(
+                $entryRowBundle,
+                $entryPayloads[$i]
+            );
+        }
+
+        //get branch inputs
+        $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
+        //get the first branch
+        $branchRef = '';
+        $branchIndex = 0;
+        foreach ($inputs as $index => $input) {
+            if ($input['type'] === config('epicollect.strings.inputs_type.branch')) {
+                $branchIndex = $index;
+                $branchRef = $input['ref'];
+                break;
+            }
+        }
+
+        $branchEntryPayloads = [];
+        for ($i = 0; $i < 1; $i++) {
+            $branchEntryPayloads[$i] = $this->entryGenerator->createBranchEntryPayload(
+                $formRef,
+                $inputs[$branchIndex]['branch'],
+                $entryPayloads[0]['data']['id'],
+                $branchRef
+            );
+            $entryRowBundle = $this->entryGenerator->createBranchEntryRow(
+                $this->user,
+                $this->project,
+                $this->role,
+                $this->projectDefinition,
+                $branchEntryPayloads[$i]
+            );
+
+            $this->assertEntryRowAgainstPayload(
+                $entryRowBundle,
+                $branchEntryPayloads[$i]
+            );
+        }
+
+        //assert rows are created
+        $this->assertCount(
+            1,
+            Entry::where('uuid', $entryPayloads[0]['data']['id'])->get()
+        );
+
+        $this->assertCount(
+            1,
+            BranchEntry::where(
+                'owner_entry_id',
+                Entry::where('uuid', $entryPayloads[0]['data']['id'])->pluck('id')
+            )->get()
+        );
+
+        $branchEntriesSavedUuids = BranchEntry::where('project_id', $this->project->id)->pluck('uuid')->toArray();
+        $branchEntriesSavedTitles = BranchEntry::where('project_id', $this->project->id)->pluck('title')->toArray();
+
+        //get location inputs for the branch entry (only one for this test)
+        $locationBranchInputRefs = Common::getBranchLocationInputRefs($this->projectDefinition, 0, $branchRef);
+
+        //assert response passing the location input_ref and first form ref and the branch_ref
+        //imp: input_ref is the branch input of type location, branch_ref is the branch owning that input
+        $queryString = '?form_ref=' . $formRef . '&input_ref='.$locationBranchInputRefs[0].'&branch_ref=' .$branchRef ;
+        $response = [];
+        try {
+            $response[] = $this->actingAs($this->user)
+                ->get('api/internal/entries-locations/' . $this->project->slug . $queryString);
+            $response[0]->assertStatus(200);
+            $this->assertEntriesLocationsResponse($response[0]);
+
+            $json = json_decode($response[0]->getContent(), true);
+            $geoJson = $json['data']['geojson'];
+
+            $this->assertEquals(1, sizeof($geoJson['features']));
+            $this->assertEquals($branchEntriesSavedUuids[0], $geoJson['features'][0]['id']);
+            $this->assertEquals($branchEntriesSavedUuids[0], $geoJson['features'][0]['properties']['uuid']);
+            $this->assertEquals($branchEntriesSavedTitles[0], $geoJson['features'][0]['properties']['title']);
+
+            //Uploaded: 2024-02-07T15:56:10.000Z
+            //Actual: 2024-02-07
+            $this->assertEquals(
+                date('Y-m-d', strtotime($branchEntryPayloads[0]['data']['branch_entry']['created_at'])),
+                $geoJson['features'][0]['properties']['created_at']
+            );
+
+
+            $this->assertGeoJsonData(
+                $locationBranchInputRefs[0],
+                $branchEntryPayloads[0]['data']['branch_entry'],
+                $geoJson['features'][0]
+            );
+        } catch (Exception $e) {
+            $this->logTestError($e, $response);
+        }
+    }
+
+    /**
+     * @throws Throwable
+     */
     public function test_creator_should_view_all_entries()
     {
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
@@ -445,11 +596,14 @@ class ViewEntriesLocationsControllerTest extends ViewEntriesBaseControllerTest
             //should be able to get all the entries ($this->user)
             $this->assertCount($numOfEntries * 2, $geoJson['features']);
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_manager_should_view_all_entries()
     {
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
@@ -521,11 +675,14 @@ class ViewEntriesLocationsControllerTest extends ViewEntriesBaseControllerTest
             //should be able to get all the entries ($this->user)
             $this->assertCount($numOfEntries * 2, $geoJson['features']);
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_curator_should_view_all_entries()
     {
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
@@ -597,11 +754,14 @@ class ViewEntriesLocationsControllerTest extends ViewEntriesBaseControllerTest
             //should be able to get all the entries ($this->user)
             $this->assertCount($numOfEntries * 2, $geoJson['features']);
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_viewer_should_view_all_entries()
     {
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
@@ -673,11 +833,14 @@ class ViewEntriesLocationsControllerTest extends ViewEntriesBaseControllerTest
             //should be able to get all the entries ($this->user)
             $this->assertCount($numOfEntries * 2, $geoJson['features']);
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_collector_can_view_only_own_entries()
     {
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
@@ -787,7 +950,7 @@ class ViewEntriesLocationsControllerTest extends ViewEntriesBaseControllerTest
             foreach ($geoJson['features'] as $feature) {
                 $this->assertTrue(in_array($feature['id'], $collectorEntriesUuids));
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logTestError($e, $response);
         }
     }

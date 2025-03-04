@@ -218,6 +218,7 @@ class RateLimitsEntriesExportTest extends TestCase
             $this->logTestError($e, []);
             return false;
         }
+        return true;
     }
 
     private function cleanUp()

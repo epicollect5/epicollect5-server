@@ -12,6 +12,66 @@ use Throwable;
 trait Entries
 {
     /**
+     * Retrieves GeoJSON data for entries associated with a specific project.
+     *
+     * Constructs a query to extract GeoJSON data using the provided project ID and JSON key reference (via 'input_ref').
+     * If a 'user_id' is supplied in the parameters, the results are further filtered to include only entries corresponding
+     * to that user. The query is subsequently modified with additional sorting and filtering by calling sortAndFilterEntries.
+     *
+     * @param mixed $projectId The identifier of the project.
+     * @param array $params   Query parameters, including:
+     *                        - 'input_ref': The JSON key used to extract data from the geo_json_data field.
+     *                        - 'user_id' (optional): Filters entries by user ID if provided.
+     *
+     * @return \Illuminate\Database\Query\Builder The query builder instance configured for retrieving GeoJSON data.
+     */
+    public function getGeoJsonData($projectId, $params): Builder
+    {
+        $selectSql = 'JSON_EXTRACT(geo_json_data, ?) as geo_json_data ';
+        $whereSql = 'project_id = ?';
+
+        /**
+         * Get the GeoJSON data for a location question by passing the input reference (input_ref) of that question.
+         *
+         * Example of data:
+         *
+         * {
+         *   "913e1f06a69e4718b3625bb3518e4672_67c58cb5c6e96_67c58cc7c0912_67c58cd0c0913": {
+         *     "id": "653c25d0-f81f-11ef-adfb-0b667d454f81",
+         *     "type": "Feature",
+         *     "geometry": {
+         *       "type": "Point",
+         *       "coordinates": [10.565543, 45.458595]
+         *     },
+         *     "properties": {
+         *       "uuid": "653c25d0-f81f-11ef-adfb-0b667d454f81",
+         *       "title": "653c25d0-f81f-11ef-adfb-0b667d454f81",
+         *       "accuracy": 4,
+         *       "created_at": "2025-03-03",
+         *       "possible_answers": []
+         *     }
+         *   },
+         *   {...}
+         * }
+         *
+         */
+        $q = DB::table($this->table)
+            ->whereRaw($whereSql, [$projectId])
+            ->selectRaw($selectSql, ['$."' . $params['input_ref'] . '"']);
+
+        /**
+         * filter by user (imp: applied to COLLECTOR ROLE ONLY)
+         *
+         * @see EntriesViewService::getSanitizedQueryParams
+         */
+        if (!empty($params['user_id'])) {
+            $q->where('user_id', '=', $params['user_id']);
+        }
+
+        return $this->sortAndFilterEntries($q, $params);
+    }
+
+    /**
      * Search for entries based on answers
      *
      * @param Builder $q
@@ -33,7 +93,7 @@ trait Entries
         return $q;
     }
 
-    public static function sortAndFilterEntries(Builder $q, $filters): Builder
+    public function sortAndFilterEntries(Builder $q, $filters): Builder
     {
         // Filtering
         if (!empty($filters['filter_by'])) {
