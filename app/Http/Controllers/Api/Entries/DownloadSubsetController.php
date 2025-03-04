@@ -106,10 +106,25 @@ class DownloadSubsetController
         return response()->download($filepath, $filename)->deleteFileAfterSend(true);
     }
 
+    /**
+     * Creates a ZIP archive containing a CSV export of entries.
+     *
+     * This method generates unique temporary CSV and ZIP filenames, writes the CSV file with 
+     * header and mapped entry rows (processed in chunks from the provided query) to a temporary 
+     * location, compresses the CSV into a ZIP archive, and deletes the temporary CSV file. If 
+     * an error occurs during the CSV writing process, the error is logged and an error code is 
+     * recorded.
+     *
+     * @param mixed $query Query object used to retrieve entries in chunks.
+     * @param string $filename Reference filename used to derive the CSV file name within the archive.
+     *
+     * @return string Full path to the generated ZIP archive.
+     */
     private function createSubsetArchive($query, $filename): string
     {
         $exportChunk = config('epicollect.limits.entries_export_chunk');
         $projectRef = $this->requestedProject()->ref;
+        $access = $this->requestedProject()->access;
         //generate unique temp file name to cover concurrent users per project
         $csvFilename = Uuid::uuid4()->toString() . '.csv';
         $zipFilename = Uuid::uuid4()->toString() . '.zip';
@@ -147,18 +162,17 @@ class DownloadSubsetController
             //write headers
             $csv->insertOne($this->dataMappingService->getHeaderRowCSV());
             //chuck feature keeps memory usage low
-            $query->chunk($exportChunk, function ($entries) use ($csv) {
+            $query->chunk($exportChunk, function ($entries) use ($csv, $access) {
                 foreach ($entries as $entry) {
                     $csv->insertOne($this->dataMappingService->getMappedEntryCSV(
                         $entry->entry_data,
                         $entry->user_id,
                         $entry->title,
                         $entry->uploaded_at,
+                        $access,
                         $entry->branch_counts ?? null
                     ));
                 }
-                //   \LOG::error('Usage: ' . Common::formatBytes(memory_get_usage()));
-                //     \LOG::error('Peak Usage: ' . Common::formatBytes(memory_get_peak_usage()));
             });
         } catch (Throwable $e) {
             // Error writing to file
@@ -172,9 +186,6 @@ class DownloadSubsetController
         $zip->close();
         //delete temp csv file
         Storage::disk('temp')->delete('subset/' . $projectRef . '/' . $csvFilename);
-
-        //        \LOG::error('Usage: ' . Common::formatBytes(memory_get_usage()));
-        //        \LOG::error('Peak Usage: ' . Common::formatBytes(memory_get_peak_usage()));
         return $zipFilepath;
     }
 }

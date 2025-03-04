@@ -116,14 +116,19 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
     }
 
     /**
-     * @param array $options
-     * @param bool $map
-     * @return JsonResponse
+     * Retrieves and formats entries data in JSON format.
+     *
+     * Executes a hierarchical query based on the provided options and paginates the results. Each entry is processed by decoding its stored JSON and, if mapping is enabled, reformatting it using the project-specific mapping service. The response includes the project's slug, a data type indicator, the formatted entries, metadata (including the newest and oldest entry dates), and pagination links.
+     *
+     * @param array $options Array of query options; expected keys include 'per_page' for pagination and 'map_index' for obtaining mapping details.
+     * @param bool $map Determines whether to apply project-specific mapping to the entries.
+     * @return JsonResponse The JSON response containing the formatted entries data, along with metadata and pagination links.
      */
     private function sendEntriesJSON(array $options, bool $map = false)
     {
         $columns = ['title', 'entry_data', 'branch_counts', 'child_counts', 'user_id', 'uploaded_at', 'created_at'];
         $project = $this->requestedProject();
+        $access = $project->access;
         $query = $this->runQueryHierarchy($options, $columns);
 
         //get the newest and oldest dates of this subset (before pagination occurs)
@@ -153,6 +158,7 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
                         $row->user_id,
                         $row->title,
                         $row->uploaded_at,
+                        $access,
                         $row->branch_counts ?? null
                     ),
                     true
@@ -190,14 +196,26 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
     }
 
     /**
-     * @param array $params
-     * @param bool $map
-     * @return JsonResponse
+     * Retrieves and formats branch entries into a paginated JSON response.
+     *
+     * Executes a branch-specific query based on input parameters, formats the results,
+     * and optionally applies a data mapping transformation using the project's access level.
+     * The response includes each entry’s title, entry data, associated user, and upload timestamp,
+     * along with pagination metadata and links. When mapping is enabled, additional mapping details
+     * are provided based on the specified map index.
+     *
+     * @param array $params An array of parameters controlling query options and pagination.
+     *                      Expected keys include 'per_page' for the number of entries per page,
+     *                      and 'map_index' for retrieving specific mapping details when mapping is enabled.
+     * @param bool $map Flag indicating whether to apply data mapping to the branch entries.
+     *
+     * @return JsonResponse The JSON response containing the paginated branch entries, with associated metadata and links.
      */
     private function sendBranchEntriesJSON(array $params, bool $map = false)
     {
         $columns = ['title', 'entry_data', 'user_id', 'uploaded_at'];
         $project = $this->requestedProject();
+        $access = $project->access;
 
         $branchEntries = $this->runQueryBranch($params, $columns);
 
@@ -225,6 +243,7 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
                         $row->user_id,
                         $row->title,
                         $row->uploaded_at,
+                        $access,
                         $row->branch_counts ?? null
                     ),
                     true
@@ -260,8 +279,25 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
         return $this->sendCSVResponse($query, $params);
     }
 
+    /**
+     * Streams a CSV export response containing entry data.
+     *
+     * This function opens an output stream and, if specified, writes a header row
+     * to the CSV. It then paginates through the provided query results and writes each
+     * entry to the CSV using a data mapping service that incorporates the project's access level.
+     * If an error occurs while writing any entry, the function logs the error and returns an API
+     * error response with a 400 status code.
+     *
+     * @param mixed $query The query object used to retrieve and paginate entry data.
+     * @param array $params Array of CSV export parameters including:
+     *                      - 'headers' (string): Set to 'true' to output the CSV header row.
+     *                      - 'per_page' (int): Number of entries per page for pagination.
+     *
+     * @return mixed A CSV stream response on success, or an API error response if an error occurs.
+     */
     private function sendCSVResponse($query, $params)
     {
+        $access = $this->requestedProject()->access;
         // Open the output stream
         $data = fopen('php://output', 'w');
 
@@ -284,6 +320,7 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
                             $entry->user_id,
                             $entry->title,
                             $entry->uploaded_at,
+                            $access,
                             $entry->branch_counts ?? null
                         )
                     )

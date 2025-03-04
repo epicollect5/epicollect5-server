@@ -6,6 +6,7 @@ use App;
 use ec5\Libraries\Generators\EntryGenerator;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
+use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use ec5\Traits\Eloquent\Remover;
@@ -15,13 +16,19 @@ class EntriesSeeder extends Seeder
 {
     use Remover;
     /**
-     * Run the database seeds.
+     * Seeds the database with entries, including parent, branch, and child entries, for a given project.
      *
-     * imp: php artisan db:seed --class=EntriesSeeder
-     * imp: php artisan seed:entries
+     * This seeder runs only in non-production environments. It prompts the user for a project ID and the number of entries to create,
+     * then verifies the project and, if confirmed, optionally deletes any existing entries along with their media files.
+     * The seeder retrieves the project structure and non-viewer user roles to assign a valid creator for each entry.
+     * It generates parent entries with associated branch entries, and for additional forms in the project,
+     * creates corresponding child entries (and branch entries) based on the project definition.
+     *
+     * Usage:
+     *   php artisan db:seed --class=EntriesSeeder
+     *   php artisan seed:entries
      *
      * @return void
-     * @noinspection DuplicatedCode
      */
     public function run(): void
     {
@@ -61,6 +68,10 @@ class EntriesSeeder extends Seeder
         }
 
         $projectStructure = ProjectStructure::where('project_id', $project->id)->first();
+        $projectRolesIDs = ProjectRole::where('project_id', $project->id)
+            ->where('role', '<>', config('epicollect.strings.project_roles.viewer'))
+            ->pluck('user_id')
+            ->toArray();
         $projectDefinition = ['data' => json_decode($projectStructure->project_definition, true)];
         $entryGenerator = new EntryGenerator($projectDefinition);
 
@@ -77,7 +88,7 @@ class EntriesSeeder extends Seeder
         for ($i = 0; $i < $numOfEntries; $i++) {
             $entryPayloads[$i] = $entryGenerator->createParentEntryPayload($formRef);
             $entryGenerator->createParentEntryRow(
-                User::find($project->created_by),
+                User::find($projectRolesIDs[array_rand($projectRolesIDs)]),//assign random user
                 $project,
                 config('epicollect.strings.project_roles.creator'),
                 $projectDefinition,

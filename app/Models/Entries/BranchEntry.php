@@ -74,6 +74,23 @@ class BranchEntry extends Model
         return $this->sortAndFilterEntries($q, $options);
     }
 
+
+    /**
+     * Retrieve branch entries by branch reference.
+     *
+     * Builds a query to select entries from the branch entries table for a specific project,
+     * filtering by form reference and branch reference (owner input reference). If a user ID is provided
+     * in the parameters, the query further restricts the results to that user. The query is then processed
+     * by applying additional sorting and filtering.
+     *
+     * @param int $projectId The unique identifier for the project.
+     * @param array $params {
+     *     Array of filtering criteria.
+     *
+     *     @type string $form_ref   The form reference used to select entries.
+     *     @type string $branch_ref The branch reference (owner input reference) to filter entries.
+     *     @type int|null $user_id  Optional user identifier for narrowing down the results.
+     * }
     public function getBranchEntriesByBranchRef($projectId, $params, $columns = array('*')): Builder
     {
         $q = DB::table(config('epicollect.tables.branch_entries'))
@@ -89,6 +106,34 @@ class BranchEntry extends Model
             ->select($columns);
 
         return $this->sortAndFilterEntries($q, $params);
+    }
+
+    /**
+     * Retrieves a query builder for branch entries matching specific criteria.
+     *
+     * This static method builds a query on the branch entries table (as defined in configuration)
+     * filtered by the provided project ID, form reference, and branch reference. It ensures that
+     * the 'id' column is always included in the selection.
+     *
+     * @param mixed $projectId The identifier of the project.
+     * @param array $params Associative array with keys:
+     *                      - 'form_ref': The form reference used for filtering.
+     *                      - 'branch_ref': The branch (owner input) reference for filtering.
+     * @param array $columns The list of columns to select; defaults to all columns.
+     * @return \Illuminate\Database\Query\Builder The query builder instance for the branch entries.
+     */
+    public static function getBranchEntriesByBranchRefOP($projectId, $params, $columns = array('*')): Builder
+    {
+        // Ensure 'id' is included in the columns
+        if (!in_array('id', $columns)) {
+            $columns[] = 'id';
+        }
+        // Optimized version without user_id filtering and sorting for better performance during bulk exports
+        return DB::table(config('epicollect.tables.branch_entries'))
+            ->where('project_id', '=', $projectId)
+            ->where('form_ref', '=', $params['form_ref'])
+            ->where('owner_input_ref', '=', $params['branch_ref'])
+            ->select($columns);
     }
 
     /**

@@ -153,7 +153,7 @@ class DeleteController extends Controller
 
         $userId = $this->requestedUser()->id;
         $userCacheKey = 'bulk_entries_deletion_user_' . $userId;
-        $lock = Cache::lock($userCacheKey, 600);
+        $lock = Cache::lock($userCacheKey, config('epicollect.setup.locks.duration_bulk_entries_deletion_lock'));
 
         if ($lock->get()) {
             try {
