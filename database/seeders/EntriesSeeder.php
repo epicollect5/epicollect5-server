@@ -16,13 +16,19 @@ class EntriesSeeder extends Seeder
 {
     use Remover;
     /**
-     * Run the database seeds.
+     * Seeds the database with entries, including parent, branch, and child entries, for a given project.
      *
-     * imp: php artisan db:seed --class=EntriesSeeder
-     * imp: php artisan seed:entries
+     * This seeder runs only in non-production environments. It prompts the user for a project ID and the number of entries to create,
+     * then verifies the project and, if confirmed, optionally deletes any existing entries along with their media files.
+     * The seeder retrieves the project structure and non-viewer user roles to assign a valid creator for each entry.
+     * It generates parent entries with associated branch entries, and for additional forms in the project,
+     * creates corresponding child entries (and branch entries) based on the project definition.
+     *
+     * Usage:
+     *   php artisan db:seed --class=EntriesSeeder
+     *   php artisan seed:entries
      *
      * @return void
-     * @noinspection DuplicatedCode
      */
     public function run(): void
     {

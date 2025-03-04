@@ -248,7 +248,16 @@ class Common
         );
     }
 
-    //get the version of Epicollect5 running in production at CGPS
+    /**
+     * Retrieves the running version of Epicollect5 from the CGPS production server.
+     *
+     * This method sends an HTTP GET request to a configured URL to fetch an HTML page containing
+     * version information. It parses the response to extract the version number from a specific
+     * element in the page footer. If the request fails or the version cannot be extracted, it returns
+     * a default version ('0.0.0').
+     *
+     * @return string The Epicollect5 version number, or '0.0.0' if unavailable.
+     */
     public static function getCGPSEpicollectVersion(): string
     {
         // Initialize Guzzle client
@@ -277,6 +286,18 @@ class Common
         return '0.0.0';
     }
 
+    /**
+     * Generates an error response as a downloadable CSV file.
+     *
+     * This method is used during file downloads to ensure that any error is returned as a CSV file, keeping the user on the dataviewer page.
+     * It sets a media cookie based on the provided timestamp, retrieves the error message using the supplied error code from the configuration,
+     * and returns the error content formatted as a CSV file with the filename "epicollect5-error.txt".
+     *
+     * @param mixed $timestamp The timestamp used to generate a unique media cookie for the file download.
+     * @param mixed $code The error code that corresponds to the error message found in the configuration.
+     *
+     * @return \Illuminate\Http\Response The CSV file response containing the error details.
+     */
     public static function errorResponseAsFile($timestamp, $code)
     {
         // imp: this happens only when users are downloading the file, so send error as file

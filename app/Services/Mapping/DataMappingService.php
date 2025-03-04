@@ -23,6 +23,13 @@ class DataMappingService
     protected array $datetimeFormatsPHP;
     protected array $usersCache;
 
+    /**
+     * Initializes the DataMappingService with configuration settings for mapping keys and datetime formats.
+     *
+     * Loads the mapping EC5 keys and PHP datetime formats from the configuration.
+     *
+     * @todo Refactor to use a common interface with separate implementations for CSV and JSON file writers.
+     */
     public function __construct()
     {
         $this->mappingEC5Keys = config('epicollect.strings.mapping_ec5_keys');
@@ -31,6 +38,23 @@ class DataMappingService
         // todo: implementations for writing to file - csvFileWriter and jsonFileWriter
     }
 
+    /**
+     * Initializes the DataMappingService with project data and mapping configuration.
+     *
+     * This method assigns the project instance and retrieves the form definitions from the provided
+     * project data. It determines if the specified form reference corresponds to the top-level form,
+     * resets the user email cache, and configures the input mapping based on the given form and branch
+     * references alongside the mapping index.
+     *
+     * @param ProjectDTO $project The project data transfer object containing definitions and forms.
+     * @param mixed $format The desired output format (e.g., CSV or JSON).
+     * @param mixed $type The mapping type (e.g., form or branch).
+     * @param mixed $formRef The reference identifier for the main form.
+     * @param mixed $branchRef The reference identifier for the branch, if applicable.
+     * @param mixed $mapIndex The index to select the specific mapping configuration.
+     *
+     * @return void
+     */
     public function init(ProjectDTO $project, $format, $type, $formRef, $branchRef, $mapIndex): void
     {
         $this->project = $project;
@@ -83,6 +107,15 @@ class DataMappingService
         return $output;
     }
 
+    /**
+     * Retrieves the UUID header keys for CSV output based on the mapping type.
+     *
+     * For branch mappings, it returns the branch owner and branch UUID keys.
+     * For form mappings, it returns the form UUID key and, if the form is not at the top hierarchy,
+     * includes the parent UUID key.
+     *
+     * @return array An array of UUID header keys appropriate for the current mapping type.
+     */
     public function getUUIDHeadersCSV(): array
     {
         $out = [];
@@ -99,6 +132,20 @@ class DataMappingService
         return $out;
     }
 
+    /**
+     * Maps a JSON entry to a CSV row based on the current mapping configuration.
+     *
+     * This method decodes the provided JSON string containing project entry data and branch counts. It determines the entry type (form or branch) and constructs a CSV row that includes UUID headers, creation timestamps, and parsed answers for each input field. Additionally, if the project is private (as indicated by the access flag), it adds the creator's email to the output.
+     *
+     * @param string $JSONEntryString JSON string containing the project entry data (with keys 'entry' or 'branch_entry') and associated relationships.
+     * @param mixed $userId Identifier for the user; used to retrieve the creator's email when required.
+     * @param string $title Title or label for the CSV entry.
+     * @param string $uploaded_at MySQL date string representing the upload time, which is converted to ISO 8601 format.
+     * @param bool $access Project access flag; if true, indicates a private project and triggers inclusion of the creator's email.
+     * @param string $branchCountsString Optional JSON string representing branch entry counts; defaults to an empty string.
+     *
+     * @return array CSV row as an array of mapped values.
+     */
     public function getMappedEntryCSV($JSONEntryString, $userId, $title, $uploaded_at, $access, $branchCountsString = ''): array
     {
         $output = [];
@@ -190,6 +237,17 @@ class DataMappingService
         return $out;
     }
 
+    /**
+     * Constructs an ordered array of UUID headers for a branch entry.
+     *
+     * The first element is the owner entry UUID retrieved from the relationships data (defaults to an empty string if not available),
+     * followed by the provided branch UUID. The order of these elements is critical for subsequent processing.
+     *
+     * @param string $uuid The branch entry's UUID.
+     * @param array $relationships Associative array containing branch relationship data.
+     *
+     * @return array An array where the first element is the owner entry UUID and the second is the branch UUID.
+     */
     private function getUUIDHeadersBranch($uuid, $relationships): array
     {
         $out = [];
@@ -199,6 +257,23 @@ class DataMappingService
         return $out;
     }
 
+    /**
+     * Transforms a JSON-encoded project entry into a structured JSON output.
+     *
+     * This function decodes the provided JSON entry and branch counts, then builds an output that includes UUID
+     * headers (differentiated by form or branch type), ISO-formatted timestamps, a title, and optionally the creator's
+     * email for private projects. It maps each input's answer according to its configuration and input type, handling
+     * specialized parsing for branch, location, checkbox, searchsingle, and searchmultiple inputs.
+     *
+     * @param string $JSONEntryString A JSON-encoded string containing entry data and relationships.
+     * @param int|string $userId The identifier used to retrieve the creator's email if needed.
+     * @param string $title The title to include in the output.
+     * @param string $uploaded_at The MySQL-formatted upload timestamp to be converted to ISO 8601 format.
+     * @param mixed $access An indicator determining whether to add the creator's email for private projects.
+     * @param string $branchCountsString (Optional) A JSON-encoded string with branch count information.
+     * @return false|array|string A JSON-encoded string of the mapped entry, an array if the entry data is missing,
+     *                             or an empty string on JSON decoding failure.
+     */
     public function getMappedEntryJSON($JSONEntryString, $userId, $title, $uploaded_at, $access, $branchCountsString = ''): false|array|string
     {
         $output = [];
@@ -591,20 +666,33 @@ class DataMappingService
     }
 
     //convert a MYSQL date (2024-08-15 17:37:46.000) to Javascript equivalent
-    //imp: we are also dropping milliseconds (pre Laravel 7 behaviour)
+    /**
+     * Converts a MySQL date string to an ISO 8601 formatted timestamp.
+     *
+     * This method uses the Carbon library to parse the provided MySQL date and returns it
+     * in an ISO 8601 format with milliseconds fixed to .000, emulating pre-Laravel 7 behavior.
+     *
+     * @param string $mysqlDate The MySQL date string to convert.
+     * @return string The ISO 8601 formatted date string.
+     */
     private function convertMYSQLDateToISO($mysqlDate): string
     {
         return Carbon::parse($mysqlDate)->format('Y-m-d\TH:i:s.000\Z');
     }
 
     /**
-     * Adds the user email to the output array if the project is private
+     * Adds the creator's email to the output array for private projects.
      *
-     * @param string $access The project access level
-     * @param array &$output The output array to modify
-     * @param int|null $userId The user ID to look up
+     * When the project access is set to private, this function assigns a 'created_by' key in the output.
+     * It defaults the value to "n/a" and, if a valid user ID is provided, attempts to retrieve the user's email
+     * from a cache or database. The retrieved email is cached for future use.
+     *
+     * @param string $access The project's access level, used to determine whether to add the creator's email.
+     * @param array  &$output Reference to the output array that will include the 'created_by' field if applicable.
+     * @param int|string|null $userId The identifier of the user whose email should be retrieved.
+     *
      */
-    private function addCreatedByIfNeeded(string $access, array &$output, ?int $userId): void
+    private function addCreatedByIfNeeded($access, array &$output, $userId): void
     {
         if ($access === config('epicollect.strings.project_access.private')) {
             //userId can be  0 when the entry was uploaded when the project was public without logging in.

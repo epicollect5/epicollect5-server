@@ -23,13 +23,32 @@ class EntriesDownloadService
     private float $totalDuration = 0;
     private int $totalEntries = 0;
 
+    /**
+     * Constructs a new EntriesDownloadService instance.
+     *
+     * Injects the data mapping service dependency used for processing project entries.
+     */
     public function __construct(DataMappingService $dataMappingService)
     {
         $this->dataMappingService = $dataMappingService;
     }
 
     /**
-     * Try and create all files
+     * Generates archive files for project entries and compiles them into a ZIP archive.
+     *
+     * This function resets performance counters and clears the target directory before processing each form
+     * and its related branch entries defined in the project. It retrieves entry data for both forms and branches,
+     * logs the duration of each query, writes the data to files in the specified format (CSV or JSON), and then
+     * archives all the generated files into a ZIP. The process halts and returns false if any file writing or
+     * archiving operation fails.
+     *
+     * @param ProjectDTO $project Project data used for generating the archive.
+     * @param string $projectDir Directory path where archive files are temporarily stored.
+     * @param array $params Array of parameters including:
+     *   - 'format': Desired output format (e.g., 'csv' or 'json').
+     *   - 'map_index': Index used for data mapping.
+     *
+     * @return bool True if the archive is successfully created; false otherwise.
      */
     public function createArchive(ProjectDTO $project, $projectDir, $params): bool
     {
@@ -159,6 +178,20 @@ class EntriesDownloadService
         }
     }
 
+    /**
+     * Writes the results of a query to a file in the specified format.
+     *
+     * This method ensures the target directory exists (creating it if necessary) and builds the output file path
+     * by appending the file name and format. It then delegates the file writing to either a CSV or JSON writer based
+     * on the provided format.
+     *
+     * @param Builder $query The query builder instance for retrieving the data entries.
+     * @param string  $projectDir The directory where the output file will be stored.
+     * @param string  $fileName The base name for the output file (without extension).
+     * @param string  $format The file format, either "csv" or "json".
+     *
+     * @return bool True if the file was written successfully; false otherwise.
+     */
     public function writeToFile(Builder $query, $projectDir, $fileName, $format): bool
     {
         // Make directory(recursive)  if it doesn't already exist,
@@ -181,6 +214,19 @@ class EntriesDownloadService
         return false;
     }
 
+    /**
+     * Writes query results to a CSV file.
+     *
+     * Processes the given query in configurable chunks to map and write entries to a CSV file.
+     * The method writes a UTF-8 BOM for proper Excel encoding, outputs a header row from the data mapping service,
+     * and iteratively writes each mapped row in batches. It logs execution details such as the total number of rows processed,
+     * elapsed time, and memory usage, and updates the cumulative duration and entry count maintained in the service.
+     *
+     * @param Builder $query Query builder instance yielding entry records.
+     * @param string $outputFile Path where the CSV file will be saved.
+     *
+     * @return bool True if the CSV file was written successfully, false on failure.
+     */
     public function writeCSV(Builder $query, $outputFile): bool
     {
         $startTime = microtime(true); // Start time
@@ -274,6 +320,15 @@ class EntriesDownloadService
         }
     }
 
+    /**
+     * Writes the query results to a JSON file.
+     *
+     * This function processes entries lazily in defined chunks, maps each entry into JSON format, and writes them into a file as a JSON array under the key "data". Data is buffered and flushed to the file when it reaches approximately 1 MB, ensuring efficient file I/O. The file is locked during writing to maintain consistency, and performance metrics such as execution time and memory usage are logged.
+     *
+     * @param Builder $query Query builder instance used to fetch entries.
+     * @param string $outputFile The path where the JSON file will be created.
+     * @return bool True if the JSON data was written successfully; false if an error occurred.
+     */
     public function writeJSON(Builder $query, $outputFile): bool
     {
         $startTime = microtime(true); // Start time

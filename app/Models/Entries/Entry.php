@@ -185,6 +185,17 @@ class Entry extends Model
         return $this->sortAndFilterEntries($q, $options);
     }
 
+    /**
+     * Retrieves entries for the specified project and form.
+     *
+     * Constructs a query on the entries table, filtering by the project identifier and form reference.
+     * Optionally filters by user ID if provided, and applies additional sorting and filtering via the sortAndFilterEntries method.
+     *
+     * @param mixed $projectId The project identifier.
+     * @param array $params An array containing query parameters; must include a 'form_ref' key and may include a 'user_id' key.
+     * @param array $columns The list of columns to retrieve; defaults to ['*'].
+     * @return \Illuminate\Database\Query\Builder The query builder instance for the constructed entries query.
+     */
     public static function getEntriesByForm($projectId, $params, $columns = array('*')): Builder
     {
         $q = DB::table(config('epicollect.tables.entries'))
@@ -201,6 +212,18 @@ class Entry extends Model
         return self::sortAndFilterEntries($q, $params);
     }
 
+    /**
+     * Retrieves entries for a specific form, ensuring the 'id' column is always selected.
+     *
+     * This method constructs a query on the entries table using the given project identifier and form reference
+     * from the parameters. It guarantees that the list of selected columns includes 'id', appending it if absent.
+     *
+     * @param mixed $projectId The identifier for the project.
+     * @param array $params Array of parameters that must include a 'form_ref' key for filtering entries by form.
+     * @param array $columns Optional list of columns to select; defaults to all columns.
+     *
+     * @return \Illuminate\Database\Query\Builder Query builder instance for retrieving the filtered entries.
+     */
     public static function getEntriesByFormOP($projectId, $params, $columns = array('*')): Builder
     {
         // Ensure 'id' is included in the columns

@@ -6,7 +6,10 @@ use Illuminate\Support\Facades\Schema;
 
 return new class () extends Migration {
     /**
-     * Run the migrations.
+     * Apply the migration by adding an optimized search index to the branch_entries table.
+     *
+     * This migration creates an index named "branch_entries_optimized_search" on the 
+     * project_id, form_ref, and owner_input_ref columns to enhance query performance.
      */
     public function up(): void
     {
@@ -16,7 +19,10 @@ return new class () extends Migration {
     }
 
     /**
-     * Reverse the migrations.
+     * Reverses the migration by removing the optimized search index from the branch_entries table.
+     *
+     * This method drops the 'branch_entries_optimized_search' index, effectively undoing the changes
+     * applied by the migration's up() method.
      */
     public function down(): void
     {
