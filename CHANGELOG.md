@@ -1,5 +1,13 @@
 ## Release Notes
 
+# 11.1.3
+
+- Improved CSV/JSON archive downloads, using lazyById()
+- Added user lock to archive downloads, restricting users to one project at a time.
+- Refactored Entries trait to avoid calling static methods.
+- Fixed branch locations query failure caused by a missing method.
+- Added an index to the `branch_entries` table to improve query performance.
+
 # 11.1.2
 
 - Updated favicon
@@ -26,4 +34,4 @@
 - Added project app links & QR codes
 - Fixed bugs and stability improvements
 
-##      
+##            
