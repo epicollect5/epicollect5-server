@@ -96,13 +96,12 @@ class EntriesExportCustomMappingCSVTest extends ViewEntriesBaseControllerTest
             // Iterate over each record
             foreach ($records as $record) {
                 // Initialize an empty array for the transformed record
-                $transformedRecord = [];
 
                 // Iterate over each header-value pair in the record
-                foreach ($record as $header => $value) {
-                    // Use the header as the key and assign the corresponding value
-                    $transformedRecord[$header] = $value;
-                }
+                // Use the header as the key and assign the corresponding value
+                $transformedRecord = array_map(function ($value) {
+                    return $value;
+                }, $record);
 
                 // Add the transformed record to the CSV data array
                 $entries[] = $transformedRecord;
@@ -237,13 +236,12 @@ class EntriesExportCustomMappingCSVTest extends ViewEntriesBaseControllerTest
             // Iterate over each record
             foreach ($records as $record) {
                 // Initialize an empty array for the transformed record
-                $transformedRecord = [];
 
                 // Iterate over each header-value pair in the record
-                foreach ($record as $header => $value) {
-                    // Use the header as the key and assign the corresponding value
-                    $transformedRecord[$header] = $value;
-                }
+                // Use the header as the key and assign the corresponding value
+                $transformedRecord = array_map(function ($value) {
+                    return $value;
+                }, $record);
 
                 // Add the transformed record to the CSV data array
                 $entries[] = $transformedRecord;
@@ -375,13 +373,12 @@ class EntriesExportCustomMappingCSVTest extends ViewEntriesBaseControllerTest
             // Iterate over each record
             foreach ($records as $record) {
                 // Initialize an empty array for the transformed record
-                $transformedRecord = [];
 
                 // Iterate over each header-value pair in the record
-                foreach ($record as $header => $value) {
-                    // Use the header as the key and assign the corresponding value
-                    $transformedRecord[$header] = $value;
-                }
+                // Use the header as the key and assign the corresponding value
+                $transformedRecord = array_map(function ($value) {
+                    return $value;
+                }, $record);
 
                 // Add the transformed record to the CSV data array
                 $entries[] = $transformedRecord;
@@ -534,13 +531,12 @@ class EntriesExportCustomMappingCSVTest extends ViewEntriesBaseControllerTest
             // Iterate over each record
             foreach ($records as $record) {
                 // Initialize an empty array for the transformed record
-                $transformedRecord = [];
 
                 // Iterate over each header-value pair in the record
-                foreach ($record as $header => $value) {
-                    // Use the header as the key and assign the corresponding value
-                    $transformedRecord[$header] = $value;
-                }
+                // Use the header as the key and assign the corresponding value
+                $transformedRecord = array_map(function ($value) {
+                    return $value;
+                }, $record);
 
                 // Add the transformed record to the CSV data array
                 $entries[] = $transformedRecord;
@@ -722,13 +718,12 @@ class EntriesExportCustomMappingCSVTest extends ViewEntriesBaseControllerTest
             // Iterate over each record
             foreach ($records as $record) {
                 // Initialize an empty array for the transformed record
-                $transformedRecord = [];
 
                 // Iterate over each header-value pair in the record
-                foreach ($record as $header => $value) {
-                    // Use the header as the key and assign the corresponding value
-                    $transformedRecord[$header] = $value;
-                }
+                // Use the header as the key and assign the corresponding value
+                $transformedRecord = array_map(function ($value) {
+                    return $value;
+                }, $record);
 
                 // Add the transformed record to the CSV data array
                 $entries[] = $transformedRecord;
@@ -937,13 +932,12 @@ class EntriesExportCustomMappingCSVTest extends ViewEntriesBaseControllerTest
             // Iterate over each record
             foreach ($records as $record) {
                 // Initialize an empty array for the transformed record
-                $transformedRecord = [];
 
                 // Iterate over each header-value pair in the record
-                foreach ($record as $header => $value) {
-                    // Use the header as the key and assign the corresponding value
-                    $transformedRecord[$header] = $value;
-                }
+                // Use the header as the key and assign the corresponding value
+                $transformedRecord = array_map(function ($value) {
+                    return $value;
+                }, $record);
 
                 // Add the transformed record to the CSV data array
                 $entries[] = $transformedRecord;
