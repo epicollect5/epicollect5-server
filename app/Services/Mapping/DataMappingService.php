@@ -688,14 +688,14 @@ class DataMappingService
      * from a cache or database. The retrieved email is cached for future use.
      *
      * @param string $access The project's access level, used to determine whether to add the creator's email.
-     * @param array  $output Reference to the output array that will include the 'created_by' field if applicable.
+     * @param array  &$output Reference to the output array that will include the 'created_by' field if applicable.
      * @param int|string|null $userId The identifier of the user whose email should be retrieved.
      *
-     * @return void
      */
     private function addCreatedByIfNeeded($access, array &$output, $userId): void
     {
         if ($access === config('epicollect.strings.project_access.private')) {
+            //userId can be  0 when the entry was uploaded when the project was public without logging in.
             $output['created_by'] = 'n/a';
             if ($userId) {
                 if (isset($this->usersCache[$userId])) {

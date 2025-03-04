@@ -67,5 +67,9 @@ return [
     ],
     'phpinfo' => [
         'enabled' => (bool) env('PHPINFO_ENABLED', false),
+    ],
+    'locks' => [
+        'duration_archive_download_lock' => (int) env('DURATION_ARCHIVE_DOWNLOAD_LOCK', 300),
+        'duration_bulk_entries_deletion_lock' => (int) env('DURATION_BULK_ENTRIES_DELETION_LOCK', 600)
     ]
 ];

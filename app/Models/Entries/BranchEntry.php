@@ -130,7 +130,7 @@ class BranchEntry extends Model
         if (!in_array('id', $columns)) {
             $columns[] = 'id';
         }
-
+        // Optimized version without user_id filtering and sorting for better performance during bulk exports
         return DB::table(config('epicollect.tables.branch_entries'))
             ->where('project_id', '=', $projectId)
             ->where('form_ref', '=', $params['form_ref'])
