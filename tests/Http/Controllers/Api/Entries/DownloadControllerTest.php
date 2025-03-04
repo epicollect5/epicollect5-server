@@ -10,6 +10,7 @@ use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use ec5\Traits\Assertions;
+use Exception;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Str;
 use Storage;
@@ -392,7 +393,7 @@ class DownloadControllerTest extends TestCase
             );
         try {
             $response->assertStatus(200);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->logTestError($exception, $response);
         }
 
@@ -490,7 +491,7 @@ class DownloadControllerTest extends TestCase
             );
         try {
             $response->assertStatus(200);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->logTestError($exception, $response);
         }
 
@@ -526,7 +527,6 @@ class DownloadControllerTest extends TestCase
     public function test_error_response_with_wrong_params()
     {
         //create user
-        $format = 'json';
         $user = factory(User::class)->create();
         //create project
         $project = factory(Project::class)->create(

@@ -91,7 +91,8 @@ class BranchEntry extends Model
      *     @type string $branch_ref The branch reference (owner input reference) to filter entries.
      *     @type int|null $user_id  Optional user identifier for narrowing down the results.
      * }
-    public function getBranchEntriesByBranchRef($projectId, $params, $columns = array('*')): Builder
+     */
+    public function getBranchEntriesByBranchRef(int $projectId, array $params, $columns = array('*')): Builder
     {
         $q = DB::table(config('epicollect.tables.branch_entries'))
             ->where('project_id', '=', $projectId)

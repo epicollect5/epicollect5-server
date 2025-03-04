@@ -180,7 +180,7 @@ class Entry extends Model
      * @param array $params An array containing query parameters; must include a 'form_ref' key and may include a 'user_id' key.
      * @param array $columns The list of columns to retrieve; defaults to ['*']
      */
-    public static function getEntriesByForm($projectId, $params, $columns = array('*')): Builder
+    public function getEntriesByForm($projectId, $params, $columns = array('*')): Builder
     {
         $q = DB::table(config('epicollect.tables.entries'))
             ->where('project_id', '=', $projectId)
