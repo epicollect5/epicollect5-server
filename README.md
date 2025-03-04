@@ -154,6 +154,7 @@ Epicollect5 server runs on Ubuntu 18 LTS & PHP 7.1
 
 Once installed, Epicollect5 gets the following folder structure and simlinks
 
+```
 /var/www/html_prod
 ├── .dep
 │ ├── (permissions: drwxrwsr-x, owner: dev, group: www-data)
@@ -173,6 +174,7 @@ Once installed, Epicollect5 gets the following folder structure and simlinks
 │ ├── (permissions: drwxr-xr-x, owner: www-data, group: www-data)
 └── .
 ├── (permissions: drwxr-sr-x, owner: dev, group: www-data)
+```
 
 ## Forking
 
