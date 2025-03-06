@@ -457,6 +457,8 @@ class DataMappingService
                     }
                 }
 
+
+
                 $parsedAnswer = count($temp) === 0 ? '' : implode(', ', $temp);
                 break;
             case 'json-searchsingle':
@@ -503,8 +505,14 @@ class DataMappingService
                         ];
                     }
                 } catch (Throwable $e) {
-                    Log::debug(__METHOD__ . ' failed | csv-location', ['exception' => $e->getMessage()]);
-                    //we get here when there is not an answer?
+                    Log::info(
+                        __METHOD__ . ' failed | csv-location, probably empty location',
+                        [
+                            'exception' => $e->getMessage(),
+                            '$answer' => $answer
+                        ]
+                    );
+                    //we get here when there is not an answer
                     $parsedAnswer = [
                         '',
                         '',
@@ -675,7 +683,7 @@ class DataMappingService
      * @param string $mysqlDate The MySQL date string to convert.
      * @return string The ISO 8601 formatted date string.
      */
-    private function convertMYSQLDateToISO($mysqlDate): string
+    private function convertMYSQLDateToISO(string $mysqlDate): string
     {
         return Carbon::parse($mysqlDate)->format('Y-m-d\TH:i:s.000\Z');
     }
@@ -692,7 +700,7 @@ class DataMappingService
      * @param int|string|null $userId The identifier of the user whose email should be retrieved.
      *
      */
-    private function addCreatedByIfNeeded($access, array &$output, $userId): void
+    private function addCreatedByIfNeeded(string $access, array &$output, $userId): void
     {
         if ($access === config('epicollect.strings.project_access.private')) {
             //userId can be  0 when the entry was uploaded when the project was public without logging in.

@@ -187,7 +187,7 @@ class EntriesExportPrivateCreatorTest extends TestCase
                 $projectDefinition,
                 $entryPayloads[$i]
             );
-            Auth::login($user);
+            Auth::logout();
 
             $this->assertEntryRowAgainstPayload(
                 $entryRowBundle,

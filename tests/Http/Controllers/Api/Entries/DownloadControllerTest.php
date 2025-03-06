@@ -2,13 +2,18 @@
 
 namespace Tests\Http\Controllers\Api\Entries;
 
+use Auth;
 use Carbon\Carbon;
+use ec5\Libraries\Generators\EntryGenerator;
 use ec5\Libraries\Generators\ProjectDefinitionGenerator;
+use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
+use ec5\Services\Mapping\ProjectMappingService;
+use ec5\Services\Project\ProjectExtraService;
 use ec5\Traits\Assertions;
 use Exception;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -272,10 +277,18 @@ class DownloadControllerTest extends TestCase
         //create user
         $format = 'csv';
         $user = factory(User::class)->create();
-        //create project
+        $projectName = config('testing.WEB_UPLOAD_CONTROLLER_PROJECT.name');
+        $projectSlug = config('testing.WEB_UPLOAD_CONTROLLER_PROJECT.slug');
+        //create a project with custom project definition
+        $projectDefinition = ProjectDefinitionGenerator::createProject(1);
+        $projectDefinition['data']['project']['name'] = $projectName;
+        $projectDefinition['data']['project']['slug'] = $projectSlug;
         $project = factory(Project::class)->create(
             [
                 'created_by' => $user->id,
+                'name' => array_get($projectDefinition, 'data.project.name'),
+                'slug' => array_get($projectDefinition, 'data.project.slug'),
+                'ref' => array_get($projectDefinition, 'data.project.ref'),
                 'access' => config('epicollect.strings.project_access.private')
             ]
         );
@@ -287,9 +300,18 @@ class DownloadControllerTest extends TestCase
             'role' => config('epicollect.strings.project_roles.creator')
         ]);
 
+        //create project structures
+        $projectExtraService = new ProjectExtraService();
+        $projectExtra = $projectExtraService->generateExtraStructure($projectDefinition['data']);
+        $projectMappingService = new ProjectMappingService();
+        $projectMapping = [$projectMappingService->createEC5AUTOMapping($projectExtra)];
+
         factory(ProjectStructure::class)->create(
             [
-                'project_id' => $project->id
+                'project_id' => $project->id,
+                'project_definition' => json_encode($projectDefinition['data']),
+                'project_extra' => json_encode($projectExtra),
+                'project_mapping' => json_encode($projectMapping)
             ]
         );
 
@@ -299,6 +321,35 @@ class DownloadControllerTest extends TestCase
                 'total_entries' => 0
             ]
         );
+
+        //generate entries by creator
+        $entryGenerator = new EntryGenerator($projectDefinition);
+        $formRef = array_get($projectDefinition, 'data.project.forms.0.ref');
+        $entryPayloads = [];
+        for ($i = 0; $i < 10; $i++) {
+            Auth::login($user);
+            $entryPayloads[$i] = $entryGenerator->createParentEntryPayload($formRef);
+            $entryRowBundle = $entryGenerator->createParentEntryRow(
+                $user,
+                $project,
+                config('epicollect.strings.project_roles.creator'),
+                $projectDefinition,
+                $entryPayloads[$i]
+            );
+            Auth::logout();
+
+            $this->assertEntryRowAgainstPayload(
+                $entryRowBundle,
+                $entryPayloads[$i]
+            );
+        }
+
+        //assert rows are created
+        $this->assertCount(
+            10,
+            Entry::where('project_id', $project->id)->get()
+        );
+
         $cookies = [config('epicollect.setup.cookies.download_entries') => Carbon::now()->timestamp];
         $params = [
             config('epicollect.setup.cookies.download_entries') => Carbon::now()->timestamp,
@@ -307,7 +358,7 @@ class DownloadControllerTest extends TestCase
         $response = $this->actingAs($user)->call('GET', 'api/internal/download-entries/' . $project->slug, $params, $cookies);
 
         $response->assertStatus(200);
-        // Assert that the returned file is a zip file
+        // Assert that the returned file is a zip file. If .txt, that is an error response as a file
         $this->assertTrue($response->headers->get('Content-Type') === 'application/zip');
         //assert filename
         $zipName = $project->slug . '-' . $params['format'] . '.zip';
@@ -325,7 +376,18 @@ class DownloadControllerTest extends TestCase
         // Get the downloaded file's path
         $filePath = $responseContent->getPathname();
 
-        $this->assertZipContent($filePath, $format, 1, 0);
+
+        $numOfForms = sizeof($projectDefinition['data']['project']['forms']);
+        $numOfBranches = 0;
+        foreach ($projectDefinition['data']['project']['forms'] as $form) {
+            foreach ($form['inputs'] as $input) {
+                if ($input['type'] === 'branch') {
+                    $numOfBranches++;
+                }
+            }
+        }
+
+        $this->assertZipContent($filePath, $format, $numOfForms, $numOfBranches);
 
         Storage::delete($filePath);
     }
@@ -739,7 +801,10 @@ class DownloadControllerTest extends TestCase
 
         // Close the zip file
         $zip->close();
-        // Assert that at least one JSON file was found in the zip
+        // Assert that at least one file was found in the zip
         $this->assertTrue($fileFound);
+
+        //assert the file is not an error file
+
     }
 }

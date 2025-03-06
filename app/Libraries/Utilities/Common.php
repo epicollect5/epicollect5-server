@@ -4,8 +4,10 @@ namespace ec5\Libraries\Utilities;
 
 use Cookie;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Str;
+use Random\RandomException;
 use Symfony\Component\DomCrawler\Crawler;
 
 class Common
@@ -209,7 +211,11 @@ class Common
     }
 
     //used to generate random Android device ID in tests
-    public static function generateRandomHex($length = 16)
+
+    /**
+     * @throws RandomException
+     */
+    public static function generateRandomHex($length = 16): string
     {
         // Calculate the number of bytes needed
         $byteLength = (int)ceil($length / 2);
@@ -231,7 +237,7 @@ class Common
 
     //Use a cookie to signal the download has completed and hide overlay.
     //no need to be secured, just a timestamp
-    public static function getMediaCookie($value)
+    public static function getDownloadEntriesCookie($value)
     {
         $cookieName = config('epicollect.setup.cookies.download_entries');
         return Cookie::make(
@@ -257,6 +263,7 @@ class Common
      * a default version ('0.0.0').
      *
      * @return string The Epicollect5 version number, or '0.0.0' if unavailable.
+     * @throws GuzzleException
      */
     public static function getCGPSEpicollectVersion(): string
     {
@@ -287,29 +294,26 @@ class Common
     }
 
     /**
-     * Generates an error response as a downloadable CSV file.
+     * Generates an error response as a downloadable TXT file.
      *
-     * This method is used during file downloads to ensure that any error is returned as a CSV file, keeping the user on the dataviewer page.
+     * This method is used during file downloads to ensure that any error is returned as a TXT file, keeping the user on the dataviewer page.
      * It sets a media cookie based on the provided timestamp, retrieves the error message using the supplied error code from the configuration,
-     * and returns the error content formatted as a CSV file with the filename "epicollect5-error.txt".
+     * and returns the error content formatted as a TXT file with the filename "epicollect5-error.txt".
      *
-     * @param mixed $timestamp The timestamp used to generate a unique media cookie for the file download.
-     * @param mixed $code The error code that corresponds to the error message found in the configuration.
-     *
-     * @return \Illuminate\Http\Response The CSV file response containing the error details.
+     * @param string $timestamp The timestamp used to generate a unique media cookie for the file download.
+     * @param string $code The error code that corresponds to the error message found in the configuration.
      */
-    public static function errorResponseAsFile($timestamp, $code)
+    public static function errorResponseAsFile(string $timestamp, string $code)
     {
-        // imp: this happens only when users are downloading the file, so send error as file
-        // to keep the user on the dataviewer page.
-        // because on the front end this is requested using window.location
-        $mediaCookie = Common::getMediaCookie($timestamp);
-        Cookie::queue($mediaCookie);
+        //media cookie is needed to hide the loader on the front end
+        //when the response is received
+        $downloadEntriesCookie = Common::getDownloadEntriesCookie($timestamp);
+        Cookie::queue($downloadEntriesCookie);
         $filename = 'epicollect5-error.txt';
         $content = config('epicollect.codes.'.$code);
         if (empty($content)) {
             $content = 'An unexpected error occurred.';
         }
-        return Response::toCSVFile($content, $filename);
+        return Response::toTXTFile($content, $filename);
     }
 }

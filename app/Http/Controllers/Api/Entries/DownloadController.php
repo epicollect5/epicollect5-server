@@ -70,14 +70,12 @@ class DownloadController
      * @param string $filepath The path to the archive file.
      * @param string $filename The name that will be used for the downloaded file.
      * @param mixed|null $timestamp Optional timestamp used for generating a media cookie and error response.
-     *
-     * @return \Illuminate\Http\Response The download response or an error response.
      */
     private function sendArchive($filepath, $filename, $timestamp = null)
     {
         if (file_exists($filepath)) {
-            $mediaCookie = Common::getMediaCookie($timestamp);
-            Cookie::queue($mediaCookie);
+            $downloadEntriesCookie = Common::getDownloadEntriesCookie($timestamp);
+            Cookie::queue($downloadEntriesCookie);
             return response()->download($filepath, $filename)->deleteFileAfterSend(true);
         } else {
             return Common::errorResponseAsFile($timestamp, 'ec5_364');

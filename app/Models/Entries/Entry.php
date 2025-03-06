@@ -202,13 +202,13 @@ class Entry extends Model
      * This method constructs a query on the entries table using the given project identifier and form reference
      * from the parameters. It guarantees that the list of selected columns includes 'id', appending it if absent.
      *
-     * @param mixed $projectId The identifier for the project.
+     * No sorting as this is for downloading archive only
+     *
+     * @param int $projectId The identifier for the project.
      * @param array $params Array of parameters that must include a 'form_ref' key for filtering entries by form.
      * @param array $columns Optional list of columns to select; defaults to all columns.
-     *
-     * @return \Illuminate\Database\Query\Builder Query builder instance for retrieving the filtered entries.
      */
-    public static function getEntriesByFormOP($projectId, $params, $columns = array('*')): Builder
+    public function getEntriesByFormForArchive(int $projectId, array $params, array $columns = array('*')): Builder
     {
         // Ensure 'id' is included in the columns
         if (!in_array('id', $columns)) {

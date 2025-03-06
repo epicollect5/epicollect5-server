@@ -107,8 +107,8 @@ class DownloadTemplateController
             $mapTos
         );
 
-        $mediaCookie = Common::getMediaCookie($timestamp);
-        Cookie::queue($mediaCookie);
+        $downloadEntriesCookie = Common::getDownloadEntriesCookie($timestamp);
+        Cookie::queue($downloadEntriesCookie);
 
         $content = implode(',', $csvHeaders);
         //return a csv file with the proper column headers

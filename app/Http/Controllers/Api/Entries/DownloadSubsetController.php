@@ -100,8 +100,8 @@ class DownloadSubsetController
             return Response::apiErrorCode(400, $this->errors);
             //todo should I delete any leftovers here?
         }
-        $mediaCookie = Common::getMediaCookie($timestamp);
-        Cookie::queue($mediaCookie);
+        $downloadEntriesCookie = Common::getDownloadEntriesCookie($timestamp);
+        Cookie::queue($downloadEntriesCookie);
 
         return response()->download($filepath, $filename)->deleteFileAfterSend(true);
     }
@@ -109,10 +109,10 @@ class DownloadSubsetController
     /**
      * Creates a ZIP archive containing a CSV export of entries.
      *
-     * This method generates unique temporary CSV and ZIP filenames, writes the CSV file with 
-     * header and mapped entry rows (processed in chunks from the provided query) to a temporary 
-     * location, compresses the CSV into a ZIP archive, and deletes the temporary CSV file. If 
-     * an error occurs during the CSV writing process, the error is logged and an error code is 
+     * This method generates unique temporary CSV and ZIP filenames, writes the CSV file with
+     * header and mapped entry rows (processed in chunks from the provided query) to a temporary
+     * location, compresses the CSV into a ZIP archive, and deletes the temporary CSV file. If
+     * an error occurs during the CSV writing process, the error is logged and an error code is
      * recorded.
      *
      * @param mixed $query Query object used to retrieve entries in chunks.

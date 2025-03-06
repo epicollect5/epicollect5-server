@@ -183,6 +183,7 @@ return [
         ec5\Providers\Macros\Response\ApiDataMacro::class,
         ec5\Providers\Macros\Response\ToCSVStreamMacro::class,
         ec5\Providers\Macros\Response\ToCSVFileMacro::class,
+        ec5\Providers\Macros\Response\ToTXTFileMacro::class,
         ec5\Providers\Macros\Response\ToJSONFileMacro::class,
         ec5\Providers\Macros\Response\ToMediaStreamMacro::class,
         //Rate Limiter
