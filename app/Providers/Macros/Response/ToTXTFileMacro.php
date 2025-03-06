@@ -7,6 +7,13 @@ use Illuminate\Support\ServiceProvider;
 
 class ToTXTFileMacro extends ServiceProvider
 {
+    /**
+     * Registers the "toTXTFile" macro on the Response facade.
+     *
+     * This macro provides a convenient way to generate a downloadable plain text file response.
+     * It assembles headers to set the content type as UTF-8 encoded plain text and configures the
+     * Content-Disposition header to prompt a file download with the specified filename.
+     */
     public function boot(): void
     {
         Response::macro('toTXTFile', function ($content, $filename) {

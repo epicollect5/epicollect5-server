@@ -26,6 +26,14 @@ class DownloadTemplateController
     use RequestAttributes;
 
     /**
+     * Processes a CSV template file download request.
+     *
+     * Extracts project and template mapping data, validates the request parameters, and generates a CSV file containing
+     * the template headers. If a branch reference is provided, the method generates a branch-specific template; otherwise,
+     * it creates a hierarchy template. A download cookie is queued using a timestamp from the query string. The method
+     * aborts with a 404 error if the timestamp is missing or invalid, and returns a 400 error response if validation fails
+     * or a specified branch reference is not found.
+     *
      * @throws BindingResolutionException
      */
     public function sendTemplateFileCSV(Request $request, RuleDownloadTemplate $ruleUploadTemplate)
