@@ -109,11 +109,11 @@ class BranchEntry extends Model
     }
 
     /**
-     * Retrieves branch entries fpr archive downloads
+     * Retrieves branch entries for archive downloads
      *
      * This method builds a query on the branch entries table (as defined in configuration)
      * filtered by the provided project ID, form reference, and branch reference.
-     * It ensures tha the 'id' column is always included in the selection.
+     * It ensures that the 'id' column is always included in the selection.
      *
      *  No sorting as this is for downloading archive only
      *

@@ -70,9 +70,9 @@ class DownloadController
      *
      * @param string $filepath The path to the archive file.
      * @param string $filename The name to be used for the downloaded file.
-     * @param mixed $timestamp Optional timestamp used for generating the download entries cookie and error response.
+     * @param ?string $timestamp Optional timestamp used for generating the download entries cookie and error response.
      */
-    private function sendArchive(string $filepath, string $filename, mixed $timestamp = null)
+    private function sendArchive(string $filepath, string $filename, ?string $timestamp = null)
     {
         if (file_exists($filepath)) {
             $downloadEntriesCookie = Common::getDownloadEntriesCookie($timestamp);
@@ -95,10 +95,10 @@ class DownloadController
      *
      * @param string $projectDir Directory where the archive is to be stored.
      * @param array $params Parameters for archive creation (e.g., output format).
-     * @param mixed $timestamp A timestamp used for file naming and error response consistency.
+     * @param ?string $timestamp A timestamp used for file naming and error response consistency.
      * @return mixed The response from sending the archive file or an error response.
      */
-    private function createArchive(string $projectDir, array $params, mixed $timestamp)
+    private function createArchive(string $projectDir, array $params, ?string $timestamp)
     {
         $lockKey = 'download-entries-archive-' . $this->requestedUser()->id;
 
