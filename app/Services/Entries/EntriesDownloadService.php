@@ -190,7 +190,7 @@ class EntriesDownloadService
      *
      * @return bool True if the file was written successfully; false otherwise.
      */
-    public function writeToFile(Builder $query, $projectDir, $fileName, $format): bool
+    public function writeToFile(Builder $query, string $projectDir, string $fileName, string $format): bool
     {
         // Make directory(recursive)  if it doesn't already exist,
         // directory will be like 2a58ddf888a04268b1545553dda88f28/123
@@ -327,7 +327,7 @@ class EntriesDownloadService
      * @param string $outputFile The path where the JSON file will be created.
      * @return bool True if the JSON data was written successfully; false if an error occurred.
      */
-    public function writeJSON(Builder $query, $outputFile): bool
+    public function writeJSON(Builder $query, string $outputFile): bool
     {
         $startTime = microtime(true); // Start time
         $memoryUsageStart = memory_get_usage(); // Initial memory usage

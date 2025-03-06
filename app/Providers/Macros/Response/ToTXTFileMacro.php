@@ -16,7 +16,7 @@ class ToTXTFileMacro extends ServiceProvider
      */
     public function boot(): void
     {
-        Response::macro('toTXTFile', function ($content, $filename) {
+        Response::macro('toTXTFile', function (string $content, string $filename) {
             $headers = [
                 'Content-Type' => 'text/plain; charset=utf-8',
                 'Content-Disposition' => 'attachment; filename="' . $filename . '"',

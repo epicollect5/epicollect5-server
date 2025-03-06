@@ -20,6 +20,7 @@ use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Str;
 use Storage;
 use Tests\TestCase;
+use Throwable;
 use ZipArchive;
 
 class DownloadControllerTest extends TestCase
@@ -59,7 +60,7 @@ class DownloadControllerTest extends TestCase
             ]
         );
 
-        $response = $this->get('api/internal/download-entries/' . $project->slug)
+        $this->get('api/internal/download-entries/' . $project->slug)
             ->assertStatus(400)
             ->assertJsonStructure([
                 'errors' => [
@@ -137,6 +138,7 @@ class DownloadControllerTest extends TestCase
         }
         $this->assertEquals($zipName, $extractedFilename);
         // Get the response content as a file
+        /** @noinspection PhpUndefinedMethodInspection */
         $responseContent = $response->getFile();
         // Get the downloaded file's path
         $filePath = $responseContent->getPathname();
@@ -200,6 +202,7 @@ class DownloadControllerTest extends TestCase
         }
         $this->assertEquals($zipName, $extractedFilename);
         // Get the response content as a file
+        /** @noinspection PhpUndefinedMethodInspection */
         $responseContent = $response->getFile();
         // Get the downloaded file's path
         $filePath = $responseContent->getPathname();
@@ -263,6 +266,7 @@ class DownloadControllerTest extends TestCase
         }
         $this->assertEquals($zipName, $extractedFilename);
         // Get the response content as a file
+        /** @noinspection PhpUndefinedMethodInspection */
         $responseContent = $response->getFile();
         // Get the downloaded file's path
         $filePath = $responseContent->getPathname();
@@ -272,6 +276,9 @@ class DownloadControllerTest extends TestCase
         Storage::delete($filePath);
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_download_csv_private()
     {
         //create user
@@ -372,6 +379,7 @@ class DownloadControllerTest extends TestCase
         }
         $this->assertEquals($zipName, $extractedFilename);
         // Get the response content as a file
+        /** @noinspection PhpUndefinedMethodInspection */
         $responseContent = $response->getFile();
         // Get the downloaded file's path
         $filePath = $responseContent->getPathname();
@@ -480,6 +488,7 @@ class DownloadControllerTest extends TestCase
         }
         $this->assertEquals($zipName, $extractedFilename);
         // Get the response content as a file
+        /** @noinspection PhpUndefinedMethodInspection */
         $responseContent = $response->getFile();
         // Get the downloaded file's path
         $filePath = $responseContent->getPathname();
@@ -577,6 +586,7 @@ class DownloadControllerTest extends TestCase
         }
         $this->assertEquals($zipName, $extractedFilename);
         // Get the response content as a file
+        /** @noinspection PhpUndefinedMethodInspection */
         $responseContent = $response->getFile();
         // Get the downloaded file's path
         $filePath = $responseContent->getPathname();
@@ -676,28 +686,28 @@ class DownloadControllerTest extends TestCase
             ]
         );
 
-        $response = $this->actingAs($user)->get('api/internal/download-entries/' . $project->slug)
-            ->assertStatus(400)
-            ->assertJsonStructure([
-                'errors' => [
-                    '*' => [
-                        'code',
-                        'title',
-                        'source',
-                    ]
-                ]
-            ])
-            ->assertExactJson(
-                [
-                    "errors" => [
-                        [
-                            "code" => "ec5_29",
-                            "title" => "Value invalid.",
-                            "source" => "download-entries"
-                        ],
-                    ]
-                ]
-            );
+        $this->actingAs($user)->get('api/internal/download-entries/' . $project->slug)
+             ->assertStatus(400)
+             ->assertJsonStructure([
+                 'errors' => [
+                     '*' => [
+                         'code',
+                         'title',
+                         'source',
+                     ]
+                 ]
+             ])
+             ->assertExactJson(
+                 [
+                     "errors" => [
+                         [
+                             "code" => "ec5_29",
+                             "title" => "Value invalid.",
+                             "source" => "download-entries"
+                         ],
+                     ]
+                 ]
+             );
     }
 
     public function test_should_abort_if_timestamp_malformed()

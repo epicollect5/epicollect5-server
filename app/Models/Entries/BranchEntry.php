@@ -74,7 +74,6 @@ class BranchEntry extends Model
         return $this->sortAndFilterEntries($q, $options);
     }
 
-
     /**
      * Retrieve branch entries by branch reference.
      *
@@ -110,11 +109,11 @@ class BranchEntry extends Model
     }
 
     /**
-     * Retrieves a query builder for branch entries matching specific criteria.
+     * Retrieves branch entries fpr archive downloads
      *
      * This method builds a query on the branch entries table (as defined in configuration)
-     * filtered by the provided project ID, form reference, and branch reference. It ensures that
-     * the 'id' column is always included in the selection.
+     * filtered by the provided project ID, form reference, and branch reference.
+     * It ensures tha the 'id' column is always included in the selection.
      *
      *  No sorting as this is for downloading archive only
      *

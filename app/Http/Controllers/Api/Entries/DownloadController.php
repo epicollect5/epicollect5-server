@@ -7,6 +7,7 @@ use Cache;
 use Cookie;
 use ec5\Http\Validation\Entries\Download\RuleDownload;
 use ec5\Libraries\Utilities\Common;
+use ec5\Models\User\User;
 use ec5\Services\Entries\EntriesDownloadService;
 use ec5\Services\Entries\EntriesViewService;
 use ec5\Services\Mapping\DataMappingService;
@@ -69,9 +70,9 @@ class DownloadController
      *
      * @param string $filepath The path to the archive file.
      * @param string $filename The name to be used for the downloaded file.
-     * @param mixed|null $timestamp Optional timestamp used for generating the download entries cookie and error response.
+     * @param mixed $timestamp Optional timestamp used for generating the download entries cookie and error response.
      */
-    private function sendArchive($filepath, $filename, $timestamp = null)
+    private function sendArchive(string $filepath, string $filename, mixed $timestamp = null)
     {
         if (file_exists($filepath)) {
             $downloadEntriesCookie = Common::getDownloadEntriesCookie($timestamp);
@@ -97,7 +98,7 @@ class DownloadController
      * @param mixed $timestamp A timestamp used for file naming and error response consistency.
      * @return mixed The response from sending the archive file or an error response.
      */
-    private function createArchive(string $projectDir, array $params, $timestamp)
+    private function createArchive(string $projectDir, array $params, mixed $timestamp)
     {
         $lockKey = 'download-entries-archive-' . $this->requestedUser()->id;
 
@@ -131,10 +132,10 @@ class DownloadController
      * currently requested project, and then adds the user's ID to ensure that archive files are stored
      * in a unique directory per user. This helps prevent conflicts during concurrent downloads.
      *
-     * @param object $user The authenticated user object with an accessible 'id' property.
+     * @param User $user The authenticated user object with an accessible 'id' property.
      * @return string The complete file system path for the user's archive directory.
      */
-    private function getArchivePath($user)
+    private function getArchivePath(User $user)
     {
         // Setup storage
         $storage = Storage::disk('entries_zip');

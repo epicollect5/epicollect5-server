@@ -10,6 +10,7 @@ use ec5\Models\Entries\Entry;
 use ec5\Services\Entries\EntriesViewService;
 use ec5\Services\Mapping\DataMappingService;
 use ec5\Traits\Requests\RequestAttributes;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
 use League\Csv\Writer;
 use Log;
@@ -124,12 +125,12 @@ class DownloadSubsetController
      * an error occurs during the CSV writing process, the error is logged and an error code is
      * recorded.
      *
-     * @param mixed $query Query object used to retrieve entries in chunks.
+     * @param Builder $query Query object used to retrieve entries in chunks.
      * @param string $filename Reference filename used to derive the CSV file name within the archive.
      *
      * @return string Full path to the generated ZIP archive.
      */
-    private function createSubsetArchive($query, $filename): string
+    private function createSubsetArchive(Builder $query, string $filename): string
     {
         $exportChunk = config('epicollect.limits.entries_export_chunk');
         $projectRef = $this->requestedProject()->ref;

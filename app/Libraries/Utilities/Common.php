@@ -223,7 +223,7 @@ class Common
      *
      * @throws RandomException If random byte generation fails.
      */
-    public static function generateRandomHex($length = 16): string
+    public static function generateRandomHex(int $length = 16): string
     {
         // Calculate the number of bytes needed
         $byteLength = (int)ceil($length / 2);
@@ -253,7 +253,7 @@ class Common
      * @param mixed $value The value to assign to the cookie, typically a timestamp.
      * @return \Symfony\Component\HttpFoundation\Cookie The generated cookie instance.
      */
-    public static function getDownloadEntriesCookie($value)
+    public static function getDownloadEntriesCookie(mixed $value): \Symfony\Component\HttpFoundation\Cookie
     {
         $cookieName = config('epicollect.setup.cookies.download_entries');
         return Cookie::make(
@@ -316,7 +316,6 @@ class Common
      *
      * @param string $timestamp A unique identifier used to generate the download entries cookie.
      * @param string $code The error code used to retrieve the corresponding error message from the configuration.
-     * @return string The error response formatted as a downloadable TXT file.
      */
     public static function errorResponseAsFile(string $timestamp, string $code)
     {

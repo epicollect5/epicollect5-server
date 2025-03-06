@@ -47,15 +47,15 @@ class DataMappingService
      * references alongside the mapping index.
      *
      * @param ProjectDTO $project The project data transfer object containing definitions and forms.
-     * @param mixed $format The desired output format (e.g., CSV or JSON).
-     * @param mixed $type The mapping type (e.g., form or branch).
-     * @param mixed $formRef The reference identifier for the main form.
-     * @param mixed $branchRef The reference identifier for the branch, if applicable.
+     * @param string $format The desired output format (e.g., CSV or JSON).
+     * @param string $type The mapping type (e.g., form or branch).
+     * @param string $formRef The reference identifier for the main form.
+     * @param mixed $branchRef The reference identifier for the branch, if applicable. can be null.
      * @param mixed $mapIndex The index to select the specific mapping configuration.
      *
      * @return void
      */
-    public function init(ProjectDTO $project, $format, $type, $formRef, $branchRef, $mapIndex): void
+    public function init(ProjectDTO $project, string $format, string $type, string $formRef, mixed $branchRef, mixed $mapIndex): void
     {
         $this->project = $project;
         $this->forms = $project->getProjectDefinition()->getData()['project']['forms'];
@@ -141,12 +141,12 @@ class DataMappingService
      * @param mixed $userId Identifier for the user; used to retrieve the creator's email when required.
      * @param string $title Title or label for the CSV entry.
      * @param string $uploaded_at MySQL date string representing the upload time, which is converted to ISO 8601 format.
-     * @param bool $access Project access flag; if true, indicates a private project and triggers inclusion of the creator's email.
-     * @param string $branchCountsString Optional JSON string representing branch entry counts; defaults to an empty string.
+     * @param string $access private or public
+     * @param ?string $branchCountsString Optional JSON string representing branch entry counts; defaults to an empty string.
      *
      * @return array CSV row as an array of mapped values.
      */
-    public function getMappedEntryCSV($JSONEntryString, $userId, $title, $uploaded_at, $access, $branchCountsString = ''): array
+    public function getMappedEntryCSV(string $JSONEntryString, mixed $userId, string $title, string $uploaded_at, string $access, ?string $branchCountsString = ''): array
     {
         $output = [];
         try {
@@ -248,7 +248,7 @@ class DataMappingService
      *
      * @return array An array where the first element is the owner entry UUID and the second is the branch UUID.
      */
-    private function getUUIDHeadersBranch($uuid, $relationships): array
+    private function getUUIDHeadersBranch(string $uuid, array $relationships): array
     {
         $out = [];
         //imp: order matters so don't change, otherwise need to change other places where header is ...
@@ -266,15 +266,15 @@ class DataMappingService
      * specialized parsing for branch, location, checkbox, searchsingle, and searchmultiple inputs.
      *
      * @param string $JSONEntryString A JSON-encoded string containing entry data and relationships.
-     * @param int|string $userId The identifier used to retrieve the creator's email if needed.
+     * @param mixed $userId The identifier used to retrieve the creator's email if needed.
      * @param string $title The title to include in the output.
      * @param string $uploaded_at The MySQL-formatted upload timestamp to be converted to ISO 8601 format.
-     * @param mixed $access An indicator determining whether to add the creator's email for private projects.
-     * @param string $branchCountsString (Optional) A JSON-encoded string with branch count information.
+     * @param string $access private or public
+     * @param ?string $branchCountsString (Optional) A JSON-encoded string with branch count information.
      * @return false|array|string A JSON-encoded string of the mapped entry, an array if the entry data is missing,
      *                             or an empty string on JSON decoding failure.
      */
-    public function getMappedEntryJSON($JSONEntryString, $userId, $title, $uploaded_at, $access, $branchCountsString = ''): false|array|string
+    public function getMappedEntryJSON(string $JSONEntryString, mixed $userId, string $title, string $uploaded_at, string $access, ?string $branchCountsString = ''): false|array|string
     {
         $output = [];
         try {
@@ -448,7 +448,7 @@ class DataMappingService
      *
      * @return mixed The parsed answer, which may vary in type (string, array, integer, or float) depending on the input type.
      */
-    private function parseAnswer($type, $answer, $input)
+    private function parseAnswer(string $type, mixed $answer, array $input): mixed
     {
         $parsedAnswer = '';
         $converter = new GPointConverter();
@@ -715,10 +715,10 @@ class DataMappingService
      *
      * @param string $access The project's access level, used to determine whether to add the creator's email.
      * @param array  &$output Reference to the output array that will include the 'created_by' field if applicable.
-     * @param int|string|null $userId The identifier of the user whose email should be retrieved.
+     * @param mixed $userId The identifier of the user whose email should be retrieved.
      *
      */
-    private function addCreatedByIfNeeded(string $access, array &$output, $userId): void
+    private function addCreatedByIfNeeded(string $access, array &$output, mixed $userId): void
     {
         if ($access === config('epicollect.strings.project_access.private')) {
             //userId can be  0 when the entry was uploaded when the project was public without logging in.
