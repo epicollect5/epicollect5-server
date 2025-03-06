@@ -31,6 +31,15 @@ class DownloadSubsetController
         $this->dataMappingService = $dataMappingService;
     }
 
+    /**
+     * Processes a request to download a subset of entries.
+     *
+     * This method validates and sanitizes the incoming query parameters and download rules, including verifying a timestamp
+     * from the download entries cookie. It checks the project mapping and map index, initializes the data mapping service, and
+     * retrieves the appropriate set of entries (either branch entries or form entries) based on provided parameters. It then
+     * generates a ZIP archive containing the subset of entries, queues a download tracking cookie, and returns a response to
+     * stream the ZIP file. In cases of validation or processing errors, an appropriate error response is returned.
+     */
     public function subset(Request $request, RuleDownloadSubset $ruleDownloadSubset, EntriesViewService $entriesViewService)
     {
         // Check the mapping is valid

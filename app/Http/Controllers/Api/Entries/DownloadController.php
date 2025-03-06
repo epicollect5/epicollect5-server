@@ -63,13 +63,13 @@ class DownloadController
     /**
      * Sends an archive file as a download and deletes it after sending, or returns an error if the file is missing.
      *
-     * This method checks if the file at the specified path exists. If it does, it queues a media cookie based on the
-     * provided timestamp and initiates a download response that deletes the file once sent. If the file cannot be found,
+     * This method checks if the file exists at the specified path. If it does, it queues a download entries cookie based on
+     * the provided timestamp and returns a download response that deletes the file after sending. If the file cannot be found,
      * it returns an error response with a designated error code.
      *
      * @param string $filepath The path to the archive file.
-     * @param string $filename The name that will be used for the downloaded file.
-     * @param mixed|null $timestamp Optional timestamp used for generating a media cookie and error response.
+     * @param string $filename The name to be used for the downloaded file.
+     * @param mixed|null $timestamp Optional timestamp used for generating the download entries cookie and error response.
      */
     private function sendArchive($filepath, $filename, $timestamp = null)
     {

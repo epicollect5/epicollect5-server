@@ -197,16 +197,18 @@ class Entry extends Model
     }
 
     /**
-     * Retrieves entries for a specific form, ensuring the 'id' column is always selected.
+     * Retrieves archive entries for a specific form.
      *
-     * This method constructs a query on the entries table using the given project identifier and form reference
-     * from the parameters. It guarantees that the list of selected columns includes 'id', appending it if absent.
+     * Constructs and returns a query builder for fetching entries from the entries table filtered by the specified
+     * project identifier and form reference provided in the parameters. This method ensures that the 'id' column is
+     * included in the list of selected columns by appending it if absent, and it omits sorting and additional filtering
+     * to optimize performance during bulk archive downloads.
      *
-     * No sorting as this is for downloading archive only
+     * @param int   $projectId The identifier of the project.
+     * @param array $params    An array of parameters that must include a 'form_ref' key for filtering entries by form.
+     * @param array $columns   Optional list of columns to select; defaults to all columns.
      *
-     * @param int $projectId The identifier for the project.
-     * @param array $params Array of parameters that must include a 'form_ref' key for filtering entries by form.
-     * @param array $columns Optional list of columns to select; defaults to all columns.
+     * @return \Illuminate\Database\Query\Builder The query builder instance for retrieving archive entries.
      */
     public function getEntriesByFormForArchive(int $projectId, array $params, array $columns = array('*')): Builder
     {

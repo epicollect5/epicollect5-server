@@ -430,6 +430,24 @@ class DataMappingService
         $this->map = $mapping;
     }
 
+    /**
+     * Parses and converts an answer based on its input type.
+     *
+     * This method transforms a raw answer into a formatted value suitable for output. It handles various input types including:
+     * - Selection inputs (e.g., radio, dropdown, search, and checkbox) by mapping answers through a possible answer mapping.
+     * - Location data in CSV and JSON formats by converting latitude and longitude into UTM coordinates using a GPointConverter.
+     * - Date and time values by formatting them according to a configured PHP datetime format.
+     * - Media inputs (photo, video, audio) by generating an appropriate media URL.
+     * - Numeric values by casting to integer or float.
+     *
+     * In cases where the expected location data is missing or invalid, the method returns fallback empty values while logging relevant information.
+     *
+     * @param mixed $type   The type identifier of the input (e.g., 'radio', 'csv-location', 'date', etc.).
+     * @param mixed $answer The raw answer to convert; can be a string, array, or associative array with specific keys.
+     * @param array $input  Metadata and configuration for the input, used for mapping and formatting.
+     *
+     * @return mixed The parsed answer, which may vary in type (string, array, integer, or float) depending on the input type.
+     */
     private function parseAnswer($type, $answer, $input)
     {
         $parsedAnswer = '';
