@@ -1,5 +1,11 @@
 ## Release Notes
 
+# 11.1.4
+
+- Fixed regression bugs introduced in the previous release.
+- Improved semantics for better clarity and consistency.
+- Made several small fixes to enhance stability and performance.
+
 # 11.1.3
 
 - Improved CSV/JSON archive downloads, using lazyById()
@@ -34,4 +40,4 @@
 - Added project app links & QR codes
 - Fixed bugs and stability improvements
 
-##            
+##              
