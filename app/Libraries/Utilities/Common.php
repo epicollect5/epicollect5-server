@@ -4,8 +4,10 @@ namespace ec5\Libraries\Utilities;
 
 use Cookie;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Str;
+use Random\RandomException;
 use Symfony\Component\DomCrawler\Crawler;
 
 class Common
@@ -209,7 +211,19 @@ class Common
     }
 
     //used to generate random Android device ID in tests
-    public static function generateRandomHex($length = 16)
+
+    /**
+     * Generates a random hexadecimal string.
+     *
+     * Calculates the required number of random bytes based on the desired length, converts them to a hexadecimal string,
+     * and truncates the result to exactly match the specified length.
+     *
+     * @param int $length Desired length of the resulting hexadecimal string. Defaults to 16.
+     * @return string A random hexadecimal string of the specified length.
+     *
+     * @throws RandomException If random byte generation fails.
+     */
+    public static function generateRandomHex(int $length = 16): string
     {
         // Calculate the number of bytes needed
         $byteLength = (int)ceil($length / 2);
@@ -230,8 +244,16 @@ class Common
     }
 
     //Use a cookie to signal the download has completed and hide overlay.
-    //no need to be secured, just a timestamp
-    public static function getMediaCookie($value)
+    /**
+     * Creates a cookie for download entries using the specified value.
+     *
+     * The cookie is configured to expire at the end of the browser session and is available across the entire site.
+     * It is not marked as secure, allowing JavaScript access, and uses the 'Lax' SameSite policy.
+     *
+     * @param mixed $value The value to assign to the cookie, typically a timestamp.
+     * @return \Symfony\Component\HttpFoundation\Cookie The generated cookie instance.
+     */
+    public static function getDownloadEntriesCookie(mixed $value): \Symfony\Component\HttpFoundation\Cookie
     {
         $cookieName = config('epicollect.setup.cookies.download_entries');
         return Cookie::make(
@@ -257,6 +279,7 @@ class Common
      * a default version ('0.0.0').
      *
      * @return string The Epicollect5 version number, or '0.0.0' if unavailable.
+     * @throws GuzzleException
      */
     public static function getCGPSEpicollectVersion(): string
     {
@@ -287,29 +310,24 @@ class Common
     }
 
     /**
-     * Generates an error response as a downloadable CSV file.
+     * Generates an error response as a downloadable TXT file.
      *
-     * This method is used during file downloads to ensure that any error is returned as a CSV file, keeping the user on the dataviewer page.
-     * It sets a media cookie based on the provided timestamp, retrieves the error message using the supplied error code from the configuration,
-     * and returns the error content formatted as a CSV file with the filename "epicollect5-error.txt".
+     * This function sets a download entries cookie using the provided timestamp to signal the completion of a download on the frontend. It then retrieves the error message corresponding to the given error code from the configuration—defaulting to a generic message if no match is found—and returns the error content formatted as a TXT file.
      *
-     * @param mixed $timestamp The timestamp used to generate a unique media cookie for the file download.
-     * @param mixed $code The error code that corresponds to the error message found in the configuration.
-     *
-     * @return \Illuminate\Http\Response The CSV file response containing the error details.
+     * @param string $timestamp A unique identifier used to generate the download entries cookie.
+     * @param string $code The error code used to retrieve the corresponding error message from the configuration.
      */
-    public static function errorResponseAsFile($timestamp, $code)
+    public static function errorResponseAsFile(string $timestamp, string $code)
     {
-        // imp: this happens only when users are downloading the file, so send error as file
-        // to keep the user on the dataviewer page.
-        // because on the front end this is requested using window.location
-        $mediaCookie = Common::getMediaCookie($timestamp);
-        Cookie::queue($mediaCookie);
+        //media cookie is needed to hide the loader on the front end
+        //when the response is received
+        $downloadEntriesCookie = Common::getDownloadEntriesCookie($timestamp);
+        Cookie::queue($downloadEntriesCookie);
         $filename = 'epicollect5-error.txt';
         $content = config('epicollect.codes.'.$code);
         if (empty($content)) {
             $content = 'An unexpected error occurred.';
         }
-        return Response::toCSVFile($content, $filename);
+        return Response::toTXTFile($content, $filename);
     }
 }

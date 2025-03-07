@@ -11,6 +11,7 @@ use ec5\Services\Mapping\DataMappingService;
 use ec5\Traits\Requests\RequestAttributes;
 use ec5\Traits\Response\ResponseTools;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Query\Builder;
 
 abstract class ViewEntriesControllerBase
 {
@@ -31,7 +32,7 @@ abstract class ViewEntriesControllerBase
     /**
      * @param array $params
      * @param array $columns
-     * @return \Illuminate\Database\Query\Builder
+     * @return Builder
      */
     protected function runQueryHierarchy(array $params, array $columns)
     {
@@ -67,7 +68,7 @@ abstract class ViewEntriesControllerBase
     /**
      * @param array $params
      * @param array $columns
-     * @return \Illuminate\Database\Query\Builder
+     * @return Builder
      */
     protected function runQueryBranch(array $params, array $columns)
     {

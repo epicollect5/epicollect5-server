@@ -50,7 +50,7 @@ class EntriesDownloadService
      *
      * @return bool True if the archive is successfully created; false otherwise.
      */
-    public function createArchive(ProjectDTO $project, $projectDir, $params): bool
+    public function createArchive(ProjectDTO $project, string $projectDir, array $params): bool
     {
         $this->totalDuration = 0;
         $this->totalEntries = 0;
@@ -75,13 +75,13 @@ class EntriesDownloadService
             // Set the mapping
             $this->dataMappingService->init($this->project, $format, config('epicollect.strings.form'), $form['ref'], null, $mapIndex);
 
-            $columns = ['title', 'entry_data', 'branch_counts', 'child_counts', 'user_id', 'uploaded_at'];
+            $columns = ['id','title', 'entry_data', 'branch_counts', 'child_counts', 'user_id', 'uploaded_at'];
 
             // Log the start of the query for form entries
             $startTime = microtime(true);
             Log::info("Starting query for form entries: {$form['ref']}");
             // Get the query for these entries
-             $query = (new Entry())->getEntriesByForm($this->project->getId(), $params, $columns);
+            $query = (new Entry())->getEntriesByFormForArchive($this->project->getId(), $params, $columns);
             // Log the end of the query and calculate duration
             $endTime = microtime(true);
             $duration = round($endTime - $startTime, 4);
@@ -117,14 +117,13 @@ class EntriesDownloadService
                     $mapIndex
                 );
 
-                $columns = ['uuid', 'title', 'entry_data', 'user_id', 'uploaded_at'];
-
+                $columns = ['id','uuid', 'title', 'entry_data', 'user_id', 'uploaded_at'];
 
                 // Log the start of the query for branch entries
                 $startTime = microtime(true);
                 Log::info("Starting query for branch entries: {$branch['ref']}");
                 // Get the query for these branch entries
-                $query = (new BranchEntry())->getBranchEntriesByBranchRef(
+                $query = (new BranchEntry())->getBranchEntriesByBranchRefForArchive(
                     $this->project->getId(),
                     $params,
                     $columns
@@ -191,7 +190,7 @@ class EntriesDownloadService
      *
      * @return bool True if the file was written successfully; false otherwise.
      */
-    public function writeToFile(Builder $query, $projectDir, $fileName, $format): bool
+    public function writeToFile(Builder $query, string $projectDir, string $fileName, string $format): bool
     {
         // Make directory(recursive)  if it doesn't already exist,
         // directory will be like 2a58ddf888a04268b1545553dda88f28/123
@@ -226,7 +225,7 @@ class EntriesDownloadService
      *
      * @return bool True if the CSV file was written successfully, false on failure.
      */
-    public function writeCSV(Builder $query, $outputFile): bool
+    public function writeCSV(Builder $query, string $outputFile): bool
     {
         $startTime = microtime(true); // Start time
         $memoryUsageStart = memory_get_usage(); // Initial memory usage
@@ -328,7 +327,7 @@ class EntriesDownloadService
      * @param string $outputFile The path where the JSON file will be created.
      * @return bool True if the JSON data was written successfully; false if an error occurred.
      */
-    public function writeJSON(Builder $query, $outputFile): bool
+    public function writeJSON(Builder $query, string $outputFile): bool
     {
         $startTime = microtime(true); // Start time
         $memoryUsageStart = memory_get_usage(); // Initial memory usage

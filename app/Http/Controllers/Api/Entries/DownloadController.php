@@ -7,6 +7,7 @@ use Cache;
 use Cookie;
 use ec5\Http\Validation\Entries\Download\RuleDownload;
 use ec5\Libraries\Utilities\Common;
+use ec5\Models\User\User;
 use ec5\Services\Entries\EntriesDownloadService;
 use ec5\Services\Entries\EntriesViewService;
 use ec5\Services\Mapping\DataMappingService;
@@ -63,21 +64,19 @@ class DownloadController
     /**
      * Sends an archive file as a download and deletes it after sending, or returns an error if the file is missing.
      *
-     * This method checks if the file at the specified path exists. If it does, it queues a media cookie based on the
-     * provided timestamp and initiates a download response that deletes the file once sent. If the file cannot be found,
+     * This method checks if the file exists at the specified path. If it does, it queues a download entries cookie based on
+     * the provided timestamp and returns a download response that deletes the file after sending. If the file cannot be found,
      * it returns an error response with a designated error code.
      *
      * @param string $filepath The path to the archive file.
-     * @param string $filename The name that will be used for the downloaded file.
-     * @param mixed|null $timestamp Optional timestamp used for generating a media cookie and error response.
-     *
-     * @return \Illuminate\Http\Response The download response or an error response.
+     * @param string $filename The name to be used for the downloaded file.
+     * @param ?string $timestamp Optional timestamp used for generating the download entries cookie and error response.
      */
-    private function sendArchive($filepath, $filename, $timestamp = null)
+    private function sendArchive(string $filepath, string $filename, ?string $timestamp = null)
     {
         if (file_exists($filepath)) {
-            $mediaCookie = Common::getMediaCookie($timestamp);
-            Cookie::queue($mediaCookie);
+            $downloadEntriesCookie = Common::getDownloadEntriesCookie($timestamp);
+            Cookie::queue($downloadEntriesCookie);
             return response()->download($filepath, $filename)->deleteFileAfterSend(true);
         } else {
             return Common::errorResponseAsFile($timestamp, 'ec5_364');
@@ -96,10 +95,10 @@ class DownloadController
      *
      * @param string $projectDir Directory where the archive is to be stored.
      * @param array $params Parameters for archive creation (e.g., output format).
-     * @param mixed $timestamp A timestamp used for file naming and error response consistency.
+     * @param ?string $timestamp A timestamp used for file naming and error response consistency.
      * @return mixed The response from sending the archive file or an error response.
      */
-    private function createArchive(string $projectDir, array $params, $timestamp)
+    private function createArchive(string $projectDir, array $params, ?string $timestamp)
     {
         $lockKey = 'download-entries-archive-' . $this->requestedUser()->id;
 
@@ -133,10 +132,10 @@ class DownloadController
      * currently requested project, and then adds the user's ID to ensure that archive files are stored
      * in a unique directory per user. This helps prevent conflicts during concurrent downloads.
      *
-     * @param object $user The authenticated user object with an accessible 'id' property.
+     * @param User $user The authenticated user object with an accessible 'id' property.
      * @return string The complete file system path for the user's archive directory.
      */
-    private function getArchivePath($user)
+    private function getArchivePath(User $user)
     {
         // Setup storage
         $storage = Storage::disk('entries_zip');

@@ -56,7 +56,7 @@ class Entry extends Model
      * for user and parent entry identifiers if provided in the options. The query is then processed with
      * sorting and filtering adjustments.
      *
-     * @param mixed $projectId Identifier of the project.
+     * @param int $projectId Identifier of the project.
      * @param array $options Array containing query parameters:
      *                       - 'form_ref': Form reference for filtering.
      *                       - 'uuid': Unique identifier of the entry.
@@ -64,9 +64,8 @@ class Entry extends Model
      *                       - 'parent_entry_uuid' (optional): UUID of the parent entry for additional filtering.
      * @param array $columns List of columns to select; defaults to all columns.
      *
-     * @return \Illuminate\Database\Query\Builder Query builder instance for the entry.
      */
-    public function getEntry($projectId, $options, array $columns = array('*')): Builder
+    public function getEntry(int $projectId, array $options, array $columns = array('*')): Builder
     {
         $q = DB::table($this->table)->select($columns)
             ->where('project_id', '=', $projectId)
@@ -143,44 +142,17 @@ class Entry extends Model
         return $uuids;
     }
 
-
-    /**
-     * @param $projectId
-     * @param $options
-     * @param array $columns
-     * @return Builder
-     */
-    public function getEntries($projectId, $options, array $columns = array('*')): Builder
-    {
-        $q = DB::table($this->table)
-            ->where('project_id', '=', $projectId)
-            ->where('form_ref', '=', $options['form_ref'])
-            ->where(function ($query) use ($options) {
-                // If we have a user ID
-                if (!empty($options['user_id'])) {
-                    $query->where('user_id', '=', $options['user_id']);
-                }
-            })
-            ->select($columns);
-
-        if (!empty($options['input_ref'])) {
-            $q = $this->createFilterOptions($q, $options);
-        }
-
-        return $this->sortAndFilterEntries($q, $options);
-    }
-
     /**
      * Retrieves entries for the specified project and form.
      *
      * Constructs a query on the entries table, filtering by the project identifier and form reference.
      * Optionally filters by user ID if provided, and applies additional sorting and filtering via the sortAndFilterEntries method.
      *
-     * @param mixed $projectId The project identifier.
+     * @param int $projectId The project identifier.
      * @param array $params An array containing query parameters; must include a 'form_ref' key and may include a 'user_id' key.
      * @param array $columns The list of columns to retrieve; defaults to ['*']
      */
-    public function getEntriesByForm($projectId, $params, $columns = array('*')): Builder
+    public function getEntriesByForm(int $projectId, array $params, array $columns = array('*')): Builder
     {
         $q = DB::table(config('epicollect.tables.entries'))
             ->where('project_id', '=', $projectId)
@@ -197,18 +169,19 @@ class Entry extends Model
     }
 
     /**
-     * Retrieves entries for a specific form, ensuring the 'id' column is always selected.
+     * Retrieves entries for a specific form for archive downloads
      *
-     * This method constructs a query on the entries table using the given project identifier and form reference
-     * from the parameters. It guarantees that the list of selected columns includes 'id', appending it if absent.
+     * Constructs and returns a query builder for fetching entries from the entries table filtered by the specified
+     * project identifier and form reference provided in the parameters. This method ensures that the 'id' column is
+     * included in the list of selected columns by appending it if absent.
      *
-     * @param mixed $projectId The identifier for the project.
-     * @param array $params Array of parameters that must include a 'form_ref' key for filtering entries by form.
-     * @param array $columns Optional list of columns to select; defaults to all columns.
+     * No sorting as this is for downloading archive only
      *
-     * @return \Illuminate\Database\Query\Builder Query builder instance for retrieving the filtered entries.
+     * @param int   $projectId The identifier of the project.
+     * @param array $params    An array of parameters that must include a 'form_ref' key for filtering entries by form.
+     * @param array $columns   Optional list of columns to select; defaults to all columns.
      */
-    public static function getEntriesByFormOP($projectId, $params, $columns = array('*')): Builder
+    public function getEntriesByFormForArchive(int $projectId, array $params, array $columns = array('*')): Builder
     {
         // Ensure 'id' is included in the columns
         if (!in_array('id', $columns)) {

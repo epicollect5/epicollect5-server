@@ -10,6 +10,7 @@ use ec5\Models\Entries\Entry;
 use ec5\Services\Entries\EntriesViewService;
 use ec5\Services\Mapping\DataMappingService;
 use ec5\Traits\Requests\RequestAttributes;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
 use League\Csv\Writer;
 use Log;
@@ -31,6 +32,15 @@ class DownloadSubsetController
         $this->dataMappingService = $dataMappingService;
     }
 
+    /**
+     * Processes a request to download a subset of entries.
+     *
+     * This method validates and sanitizes the incoming query parameters and download rules, including verifying a timestamp
+     * from the download entries cookie. It checks the project mapping and map index, initializes the data mapping service, and
+     * retrieves the appropriate set of entries (either branch entries or form entries) based on provided parameters. It then
+     * generates a ZIP archive containing the subset of entries, queues a download tracking cookie, and returns a response to
+     * stream the ZIP file. In cases of validation or processing errors, an appropriate error response is returned.
+     */
     public function subset(Request $request, RuleDownloadSubset $ruleDownloadSubset, EntriesViewService $entriesViewService)
     {
         // Check the mapping is valid
@@ -100,8 +110,8 @@ class DownloadSubsetController
             return Response::apiErrorCode(400, $this->errors);
             //todo should I delete any leftovers here?
         }
-        $mediaCookie = Common::getMediaCookie($timestamp);
-        Cookie::queue($mediaCookie);
+        $downloadEntriesCookie = Common::getDownloadEntriesCookie($timestamp);
+        Cookie::queue($downloadEntriesCookie);
 
         return response()->download($filepath, $filename)->deleteFileAfterSend(true);
     }
@@ -109,18 +119,18 @@ class DownloadSubsetController
     /**
      * Creates a ZIP archive containing a CSV export of entries.
      *
-     * This method generates unique temporary CSV and ZIP filenames, writes the CSV file with 
-     * header and mapped entry rows (processed in chunks from the provided query) to a temporary 
-     * location, compresses the CSV into a ZIP archive, and deletes the temporary CSV file. If 
-     * an error occurs during the CSV writing process, the error is logged and an error code is 
+     * This method generates unique temporary CSV and ZIP filenames, writes the CSV file with
+     * header and mapped entry rows (processed in chunks from the provided query) to a temporary
+     * location, compresses the CSV into a ZIP archive, and deletes the temporary CSV file. If
+     * an error occurs during the CSV writing process, the error is logged and an error code is
      * recorded.
      *
-     * @param mixed $query Query object used to retrieve entries in chunks.
+     * @param Builder $query Query object used to retrieve entries in chunks.
      * @param string $filename Reference filename used to derive the CSV file name within the archive.
      *
      * @return string Full path to the generated ZIP archive.
      */
-    private function createSubsetArchive($query, $filename): string
+    private function createSubsetArchive(Builder $query, string $filename): string
     {
         $exportChunk = config('epicollect.limits.entries_export_chunk');
         $projectRef = $this->requestedProject()->ref;

@@ -74,7 +74,6 @@ class BranchEntry extends Model
         return $this->sortAndFilterEntries($q, $options);
     }
 
-
     /**
      * Retrieve branch entries by branch reference.
      *
@@ -110,20 +109,22 @@ class BranchEntry extends Model
     }
 
     /**
-     * Retrieves a query builder for branch entries matching specific criteria.
+     * Retrieves branch entries for archive downloads
      *
-     * This static method builds a query on the branch entries table (as defined in configuration)
-     * filtered by the provided project ID, form reference, and branch reference. It ensures that
-     * the 'id' column is always included in the selection.
+     * This method builds a query on the branch entries table (as defined in configuration)
+     * filtered by the provided project ID, form reference, and branch reference.
+     * It ensures that the 'id' column is always included in the selection.
      *
-     * @param mixed $projectId The identifier of the project.
+     *  No sorting as this is for downloading archive only
+     *
+     * @param int $projectId The identifier of the project.
      * @param array $params Associative array with keys:
      *                      - 'form_ref': The form reference used for filtering.
      *                      - 'branch_ref': The branch (owner input) reference for filtering.
      * @param array $columns The list of columns to select; defaults to all columns.
-     * @return \Illuminate\Database\Query\Builder The query builder instance for the branch entries.
+     * @return Builder The query builder instance for the branch entries.
      */
-    public static function getBranchEntriesByBranchRefOP($projectId, $params, $columns = array('*')): Builder
+    public function getBranchEntriesByBranchRefForArchive(int $projectId, array $params, array $columns = array('*')): Builder
     {
         // Ensure 'id' is included in the columns
         if (!in_array('id', $columns)) {
