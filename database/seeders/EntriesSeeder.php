@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App;
 use ec5\Libraries\Generators\EntryGenerator;
+use ec5\Libraries\Utilities\Common;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectRole;
@@ -11,10 +12,12 @@ use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use ec5\Traits\Eloquent\Remover;
 use Illuminate\Database\Seeder;
+use Throwable;
 
 class EntriesSeeder extends Seeder
 {
     use Remover;
+
     /**
      * Seeds the database with entries, including parent, branch, and child entries, for a given project.
      *
@@ -28,10 +31,15 @@ class EntriesSeeder extends Seeder
      *   php artisan db:seed --class=EntriesSeeder
      *   php artisan seed:entries
      *
-     * @return void
+     * @throws Throwable
      */
     public function run(): void
     {
+
+        // Increase memory limit and execution time
+        ini_set('memory_limit', '5120M'); // 5GB
+        ini_set('max_execution_time', '0'); // Unlimited execution time
+
         if (App::environment('production')) {
             $this->command->info('Skipping seeder in production environment.');
             return;
@@ -82,43 +90,66 @@ class EntriesSeeder extends Seeder
         // Get the console output instance
         $output = $this->command->getOutput();
 
-        // Loop to insert the specified number of entries
-        $entryPayloads = [];
-        $branchEntryPayloads = [];
-        for ($i = 0; $i < $numOfEntries; $i++) {
-            $entryPayloads[$i] = $entryGenerator->createParentEntryPayload($formRef);
-            $entryGenerator->createParentEntryRow(
-                User::find($projectRolesIDs[array_rand($projectRolesIDs)]),//assign random user
-                $project,
-                config('epicollect.strings.project_roles.creator'),
-                $projectDefinition,
-                $entryPayloads[$i]
-            );
-            // Show progress
-            $num = $i + 1;
-            $output->write("\rInserted $num parent entries...    ");
+        // Cache users to avoid multiple queries
+        $projectUsers = User::whereIn('id', $projectRolesIDs)->get()->keyBy('id');
 
-            //if any branch, generate x branch entries
-            $numOfBranchEntries = rand(2, 5);
-            for ($j = 0; $j < $numOfBranchEntries; $j++) {
-                foreach ($branches as $ownerInputRef => $branchInputs) {
-                    $branchEntryPayloads[$j] = $entryGenerator->createBranchEntryPayload(
-                        $formRef,
-                        $branchInputs,
-                        $entryPayloads[$i]['data']['id'],
-                        $ownerInputRef
-                    );
-                    $entryGenerator->createBranchEntryRow(
-                        User::find($project->created_by),
-                        $project,
-                        config('epicollect.strings.project_roles.creator'),
-                        $projectDefinition,
-                        $branchEntryPayloads[$j]
-                    );
-                    $output->writeln("\rInserted branch entries...    ");
-                }
+        $batchSize = 1000;
+
+        // Loop to insert the specified number of entries in batches
+        for ($batchStart = 0; $batchStart < $numOfEntries; $batchStart += $batchSize) {
+            $batchEnd = min($batchStart + $batchSize, $numOfEntries);
+            $output->writeln("\rProcessing entries $batchStart to $batchEnd...    ");
+
+            for ($i = $batchStart; $i < $batchEnd; $i++) {
+                // Log memory usage before creating entry payload
+                $output->writeln("Memory usage before creating parent entry payload: " . Common::formatBytes(memory_get_usage()));
+
+                $entryPayload = $entryGenerator->createParentEntryPayload($formRef);
+
+                // Log memory usage after creating entry payload
+                $output->writeln("Memory usage after creating parent entry payload: " . Common::formatBytes(memory_get_usage()));
+
+                $randomUserId = $projectRolesIDs[array_rand($projectRolesIDs)];
+                $entryGenerator->createParentEntryRow(
+                    $projectUsers[$randomUserId], // assign random user from cached users
+                    $project,
+                    config('epicollect.strings.project_roles.creator'),
+                    $projectDefinition,
+                    $entryPayload
+                );
+
+                // Show progress
+                $num = $i + 1;
+                $output->write("\rInserted $num parent entries...    ");
+
+                // Log memory usage after inserting parent entry
+                $output->writeln("Memory usage after inserting parent entry $num: " . Common::formatBytes(memory_get_usage()));
+
+                // if any branch, generate x branch entries
+                $numOfBranchEntries = 1;
+                $this->insertBranches($numOfBranchEntries, $branches, $entryGenerator, $formRef, $entryPayload['data']['id'], $project, $projectDefinition, $output);
+
+                // Manually trigger garbage collection
+                gc_collect_cycles();
+
+                // Log memory usage after garbage collection
+                $output->writeln("Memory usage after garbage collection: " . Common::formatBytes(memory_get_usage()));
             }
+
+            // Clear entry generator and cached data
+            unset($entryPayload);
+            unset($entryGenerator);
+
+            // Reinitialize entry generator to free up memory
+            $entryGenerator = new EntryGenerator($projectDefinition);
+
+            // Manually trigger garbage collection
+            gc_collect_cycles();
+
+            // Log memory usage after batch processing and cleanup
+            $output->writeln("Memory usage after batch processing and cleanup: " . Common::formatBytes(memory_get_usage()));
         }
+
 
         //loop all the child forms, if any
         $forms = array_get($projectDefinition, 'data.project.forms');
@@ -154,25 +185,7 @@ class EntriesSeeder extends Seeder
 
                         //if any branch in the child form, generate x branch entries
                         $numOfChildBranchEntries = rand(1, 2);
-                        for ($j = 0; $j < $numOfChildBranchEntries; $j++) {
-                            foreach ($childBranches as $ownerInputRef => $childBranchInputs) {
-                                $branchEntryPayload = $entryGenerator->createBranchEntryPayload(
-                                    $childFormRef,
-                                    $childBranchInputs,
-                                    $childEntryPayload['data']['id'],
-                                    $ownerInputRef
-                                );
-                                $entryGenerator->createBranchEntryRow(
-                                    User::find($project->created_by),
-                                    $project,
-                                    config('epicollect.strings.project_roles.creator'),
-                                    $projectDefinition,
-                                    $branchEntryPayload
-                                );
-
-                                $output->writeln("\rInserted branch entries...    ");
-                            }
-                        }
+                        $this->insertBranches($numOfChildBranchEntries, $childBranches, $entryGenerator, $childFormRef, $childEntryPayload['data']['id'], $project, $projectDefinition, $output);
                     }
                 }
             }
@@ -201,5 +214,31 @@ class EntriesSeeder extends Seeder
             }
         }
         return $branches;
+    }
+
+    /**
+     * @throws Throwable
+     */
+    private function insertBranches(int $numOfBranchEntries, array $branches, EntryGenerator $entryGenerator, mixed $formRef, $id, $project, array $projectDefinition, $output): void
+    {
+        for ($j = 0; $j < $numOfBranchEntries; $j++) {
+            foreach ($branches as $ownerInputRef => $branchInputs) {
+                $branchEntryPayload = $entryGenerator->createBranchEntryPayload(
+                    $formRef,
+                    $branchInputs,
+                    $id,
+                    $ownerInputRef
+                );
+                $entryGenerator->createBranchEntryRow(
+                    User::find($project->created_by),
+                    $project,
+                    config('epicollect.strings.project_roles.creator'),
+                    $projectDefinition,
+                    $branchEntryPayload
+                );
+                $output->writeln("\rInserted branch entries...    ");
+            }
+        }
+        //  return array($j, $ownerInputRef, $branchEntryPayload);
     }
 }

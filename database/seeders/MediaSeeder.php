@@ -54,8 +54,8 @@ class MediaSeeder extends Seeder
         $projectStructure = ProjectStructure::where('project_id', $project->id)->first();
         $projectDefinition = ['data' => json_decode($projectStructure->project_definition, true)];
         $forms = $projectDefinition['data']['project']['forms'];
-        $entries = Entry::where('project_id', $project->id)->get();
-        $branchEntries = BranchEntry::where('project_id', $project->id)->get();
+        $entries = Entry::where('project_id', $project->id)->lazyById();
+        $branchEntries = BranchEntry::where('project_id', $project->id)->lazyById();
 
         if (sizeof($entries) === 0) {
             $this->command->error('No entries found for this project.');
@@ -159,6 +159,8 @@ class MediaSeeder extends Seeder
             // Show progress after processing each entry
             $percentage = ($processedEntries / $totalEntries) * 100;
             $output->write("\rProgress: " . number_format($percentage, 2) . "% ($processedEntries of $totalEntries entries)");
+            unset($answers);
+            gc_collect_cycles(); // Force garbage collection
         }
 
         // Show entries progress
@@ -204,6 +206,9 @@ class MediaSeeder extends Seeder
             // Show progress after processing each entry
             $percentage = ($processedEntries / $totalBranchEntries) * 100;
             $output->write("\rProgress: " . number_format($percentage, 2) . "% ($processedEntries of $totalBranchEntries branch entries)");
+
+            unset($answers);
+            gc_collect_cycles(); // Force garbage collection
         }
 
         // Show branches progress
