@@ -6,6 +6,7 @@ use ec5\Libraries\Utilities\DateFormatConverter;
 use Exception;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Routing\ResponseFactory;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Response;
 use Log;
@@ -288,14 +289,14 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
      * If an error occurs while writing any entry, the function logs the error and returns an API
      * error response with a 400 status code.
      *
-     * @param mixed $query The query object used to retrieve and paginate entry data.
+     * @param Builder $query The query object used to retrieve and paginate entry data.
      * @param array $params Array of CSV export parameters including:
      *                      - 'headers' (string): Set to 'true' to output the CSV header row.
      *                      - 'per_page' (int): Number of entries per page for pagination.
      *
      * @return mixed A CSV stream response on success, or an API error response if an error occurs.
      */
-    private function sendCSVResponse($query, $params)
+    private function sendCSVResponse(Builder $query, array $params)
     {
         $access = $this->requestedProject()->access;
         // Open the output stream
@@ -332,6 +333,6 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             return Response::apiErrorCode(400, ['entries-export-csv' => ['ec5_232']]);
         }
-        return Response::toCSVStream($data);
+        return Response::toCSVStream();
     }
 }
