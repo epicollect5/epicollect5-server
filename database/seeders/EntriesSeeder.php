@@ -64,8 +64,7 @@ class EntriesSeeder extends Seeder
             return;
         }
 
-        $entries = Entry::where('project_id', $project->id)->get();
-        if (sizeof($entries) > 0) {
+        if (Entry::where('project_id', $project->id)->exists()) {
             $proceed = strtolower($this->command->ask("Delete existing entries? (y/n)", 'n'));
             if ($proceed === 'y') {
                 //delete entries

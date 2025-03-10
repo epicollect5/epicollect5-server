@@ -57,7 +57,7 @@ class MediaSeeder extends Seeder
         $entries = Entry::where('project_id', $project->id)->lazyById();
         $branchEntries = BranchEntry::where('project_id', $project->id)->lazyById();
 
-        if ($entries->isEmpty()) {
+        if ($entries->first() === null) {
             $this->command->error('No entries found for this project.');
             return;
         }
@@ -171,7 +171,7 @@ class MediaSeeder extends Seeder
 
         $output->writeln('...');
 
-        if ($branchEntries->isEmpty()) {
+        if ($branchEntries->first() === null) {
             // Final message
             $output->writeln("No branch entries found for this project.");
             $output->writeln("All done.");
