@@ -283,7 +283,6 @@ class EntriesDownloadService
                             throw new RuntimeException("Failed to write data to CSV");
                         }
                     }
-
                 }
 
                 fflush($file);
@@ -300,7 +299,7 @@ class EntriesDownloadService
             Log::info('CSV write completed, single file', [
                 'chuck_size' => $chunkSize,
                 'total_rows' => $rowCount,
-                'total_time' => round($totalTime, 4),
+                'total_time' => round($totalTime / 60, 2).' minutes', // Convert seconds to minutes
                 'total_memory_usage' => Common::formatBytes($memoryUsageEnd - $memoryUsageStart),
                 'peak_memory_usage' => Common::formatBytes(memory_get_peak_usage()),
             ]);
@@ -402,7 +401,7 @@ class EntriesDownloadService
             $memoryUsageEnd = memory_get_usage();
             Log::info('JSON write completed', [
                 'total_rows' => $rowCount,
-                'total_time' => $totalTime,
+                'total_time' => round($totalTime / 60, 2).' minutes',
                 'total_memory_usage' => $memoryUsageEnd - $memoryUsageStart,
                 'peak_memory_usage' => memory_get_peak_usage(),
             ]);

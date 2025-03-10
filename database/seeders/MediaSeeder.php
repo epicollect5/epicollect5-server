@@ -57,7 +57,7 @@ class MediaSeeder extends Seeder
         $entries = Entry::where('project_id', $project->id)->lazyById();
         $branchEntries = BranchEntry::where('project_id', $project->id)->lazyById();
 
-        if (sizeof($entries) === 0) {
+        if ($entries->isEmpty()) {
             $this->command->error('No entries found for this project.');
             return;
         }
@@ -131,7 +131,7 @@ class MediaSeeder extends Seeder
         // Get the console output instance
         $output = $this->command->getOutput();
         // Initialize counters and totals
-        $totalEntries = count($entries); // Total number of entries
+        $totalEntries = Entry::where('project_id', $project->id)->count();
         $photoCount = 0;
         $audioCount = 0;
         $videoCount = 0;
@@ -171,7 +171,7 @@ class MediaSeeder extends Seeder
 
         $output->writeln('...');
 
-        if (sizeof($branchEntries) === 0) {
+        if ($branchEntries->isEmpty()) {
             // Final message
             $output->writeln("No branch entries found for this project.");
             $output->writeln("All done.");
@@ -179,7 +179,7 @@ class MediaSeeder extends Seeder
         }
 
         // Initialize counters and totals
-        $totalBranchEntries = count($branchEntries); // Total number of entries
+        $totalBranchEntries = BranchEntry::where('project_id', $project->id)->count();
         $photoCount = 0;
         $audioCount = 0;
         $videoCount = 0;
