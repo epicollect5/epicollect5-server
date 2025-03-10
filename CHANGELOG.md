@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 11.1.5
+
+- Fix memory leaks in seeders scripts
+
 # 11.1.4
 
 - Fixed regression bugs introduced in the previous release.
@@ -40,4 +44,4 @@
 - Added project app links & QR codes
 - Fixed bugs and stability improvements
 
-##              
+##                
