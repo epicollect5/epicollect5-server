@@ -67,8 +67,15 @@ class EntriesSeeder extends Seeder
         if (Entry::where('project_id', $project->id)->exists()) {
             $proceed = strtolower($this->command->ask("Delete existing entries? (y/n)", 'n'));
             if ($proceed === 'y') {
-                //delete entries
-                Entry::where('project_id', $project->id)->delete();
+                // Delete entries in chunks
+                Entry::where('project_id', $project->id)
+                    ->lazyById(1000)
+                    ->each(function ($entry) {
+                        // Get the console output instance
+                        $output = $this->command->getOutput();
+                        $output->writeln("\rProcessing entries deletion ...    ");
+                        $entry->delete();
+                    });
                 //delete all media files
                 $this->removeAllTheEntriesMediaFolders($project->ref);
             }
