@@ -9,6 +9,8 @@ use ec5\Models\Entries\Entry;
 use ec5\Services\Mapping\DataMappingService;
 use File;
 use Illuminate\Database\Query\Builder;
+use League\Csv\Bom;
+use League\Csv\Writer;
 use Log;
 use RuntimeException;
 use Storage;
@@ -146,7 +148,7 @@ class EntriesDownloadService
         }
         try {
             Log::info("All files completed SEQUENTIAL", [
-                'total_duration' => round($this->totalDuration, 4)
+                'total_duration' => round($this->totalDuration / 60, 2).' minutes'
             ]);
             $this->buildZipArchive($projectDir, $project->slug, $format);
         } catch (Throwable $e) {
@@ -205,7 +207,7 @@ class EntriesDownloadService
 
         switch ($format) {
             case 'csv':
-                return $this->writeCSV($query, $outputFile);
+                return $this->writeCSVLeague($query, $outputFile);
             case 'json':
                 return $this->writeJSON($query, $outputFile);
         }
@@ -244,7 +246,6 @@ class EntriesDownloadService
                 fputcsv($file, $this->dataMappingService->getHeaderRowCSV());
 
                 $chunkSize = config('epicollect.limits.download_entries_chunk_size');
-                $buffer = [];
                 $rowCount = 0; // Track the number of rows processed
 
                 foreach ($query->lazyById($chunkSize) as $entry) {
@@ -277,7 +278,6 @@ class EntriesDownloadService
 
                 // Write any remaining rows in the buffer
                 if (!empty($buffer)) {
-                    // Start timer for writing
                     foreach ($buffer as $row) {
                         if (fputcsv($file, $row) === false) {
                             throw new RuntimeException("Failed to write data to CSV");
@@ -316,6 +316,73 @@ class EntriesDownloadService
             return false;
         }
     }
+
+    public function writeCSVLeague(Builder $query, string $outputFile): bool
+    {
+        $startTime = microtime(true);
+        $memoryUsageStart = memory_get_usage();
+        $access = $this->project->isPrivate() ? 'private' : 'public';
+
+        try {
+            // Create CSV Writer instance
+            $csv = Writer::createFromPath($outputFile, 'w+');
+
+            // Add BOM for UTF-8 (Excel compatibility)
+            $csv->setOutputBOM(Bom::Utf8);
+
+            // Insert header row
+            $csv->insertOne($this->dataMappingService->getHeaderRowCSV());
+
+            $chunkSize = config('epicollect.limits.download_entries_chunk_size');
+            $rowCount = 0;
+            $buffer = [];
+
+            foreach ($query->lazyById($chunkSize) as $entry) {
+                $buffer[] = $this->dataMappingService->getMappedEntryCSV(
+                    $entry->entry_data,
+                    $entry->user_id,
+                    $entry->title,
+                    $entry->uploaded_at,
+                    $access,
+                    $entry->branch_counts ?? null
+                );
+
+                $rowCount++;
+
+                // Write buffer to CSV in chunks
+                if (count($buffer) >= $chunkSize) {
+                    $csv->insertAll($buffer);
+                    $buffer = []; // Clear the buffer
+                }
+            }
+
+            // Write any remaining rows in the buffer
+            if (!empty($buffer)) {
+                $csv->insertAll($buffer);
+            }
+
+            // Log execution time and memory usage
+            $totalTime = microtime(true) - $startTime;
+            $memoryUsageEnd = memory_get_usage();
+
+            Log::info('CSV write completed', [
+                'chunk_size' => $chunkSize,
+                'total_rows' => $rowCount,
+                'total_time' => round($totalTime / 60, 2) . ' minutes',
+                'total_memory_usage' => Common::formatBytes($memoryUsageEnd - $memoryUsageStart),
+                'peak_memory_usage' => Common::formatBytes(memory_get_peak_usage()),
+            ]);
+
+            $this->totalDuration += $totalTime;
+            $this->totalEntries += $rowCount;
+
+            return true;
+        } catch (Throwable $e) {
+            Log::error('writeCSV failed', ['exception' => $e->getMessage()]);
+            return false;
+        }
+    }
+
 
     /**
      * Writes the query results to a JSON file.
