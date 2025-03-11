@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 11.1.6
+
+- Potential improvements for CSV & JSON archive download
+
 # 11.1.5
 
 - Fix memory leaks in seeders scripts
@@ -44,4 +48,4 @@
 - Added project app links & QR codes
 - Fixed bugs and stability improvements
 
-##                
+##                  
