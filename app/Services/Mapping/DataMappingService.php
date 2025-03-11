@@ -546,7 +546,7 @@ class DataMappingService
                 try {
                     if ($answer['latitude'] && $answer['longitude']) {
                         $this->converter->setLongLat($answer['longitude'], $answer['latitude']);
-                        $this->converter->convertLLtoTM(null);
+                        $this->converter->convertLLtoTMClaude(null);
 
                         $parsedAnswer = [
                             'latitude' => $answer['latitude'],

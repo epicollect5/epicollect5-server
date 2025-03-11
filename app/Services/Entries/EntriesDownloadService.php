@@ -324,8 +324,15 @@ class EntriesDownloadService
         $access = $this->project->isPrivate() ? 'private' : 'public';
 
         try {
+            //  $csv = Writer::createFromPath($outputFile, 'w+');
+
+            // Add file locking
+            $fileObject = new \SplFileObject($outputFile, 'w+');
+            if (!$fileObject->flock(LOCK_EX)) {
+                throw new RuntimeException("Failed to acquire file lock");
+            }
             // Create CSV Writer instance
-            $csv = Writer::createFromPath($outputFile, 'w+');
+            $csv = Writer::createFromFileObject($fileObject);
 
             // Add BOM for UTF-8 (Excel compatibility)
             $csv->setOutputBOM(Bom::Utf8);
@@ -375,6 +382,9 @@ class EntriesDownloadService
 
             $this->totalDuration += $totalTime;
             $this->totalEntries += $rowCount;
+
+            // Release lock
+            $fileObject->flock(LOCK_UN);
 
             return true;
         } catch (Throwable $e) {
