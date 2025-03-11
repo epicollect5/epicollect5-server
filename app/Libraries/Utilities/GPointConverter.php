@@ -315,7 +315,7 @@ class GPointConverter
      * then the standard UTM coordinates are calculated.
      *
      */
-    public function convertLLtoTM($LongOrigin)
+    public function convertLLtoTM($LongOrigin): void
     {
         $k0 = 0.9996;
         $falseEasting = 0.0;
@@ -375,12 +375,170 @@ class GPointConverter
         } //10000000 meter offset for southern hemisphere
     }
 
+    public function convertLLtoTMClaude($LongOrigin = null): void
+    {
+        // Constants
+        $k0 = 0.9996;
+
+        // Normalize longitude to -180..179.9 range
+        $LongTemp = fmod(($this->long + 180), 360) - 180;
+
+        // Precompute frequently used values
+        $LatRad = deg2rad($this->lat);
+        $LongRad = deg2rad($LongTemp);
+        $sinLat = sin($LatRad);
+        $cosLat = cos($LatRad);
+        $tanLat = tan($LatRad);
+        $tanLatSq = $tanLat * $tanLat;
+        $e2Sin2Lat = $this->e2 * $sinLat * $sinLat;
+
+        // Determine zone number and false easting if not specified
+        if ($LongOrigin === null) {
+            $falseEasting = 500000.0;
+
+            // Determine UTM zone
+            $ZoneNumber = (int)(($LongTemp + 180) / 6) + 1;
+
+            // Special zone handling
+            if ($this->lat >= 56.0 && $this->lat < 64.0 && $LongTemp >= 3.0 && $LongTemp < 12.0) {
+                $ZoneNumber = 32;
+            } elseif ($this->lat >= 72.0 && $this->lat < 84.0) {
+                if ($LongTemp >= 0.0 && $LongTemp < 9.0) {
+                    $ZoneNumber = 31;
+                } elseif ($LongTemp >= 9.0 && $LongTemp < 21.0) {
+                    $ZoneNumber = 33;
+                } elseif ($LongTemp >= 21.0 && $LongTemp < 33.0) {
+                    $ZoneNumber = 35;
+                } elseif ($LongTemp >= 33.0 && $LongTemp < 42.0) {
+                    $ZoneNumber = 37;
+                }
+            }
+
+            $LongOrigin = ($ZoneNumber - 1) * 6 - 180 + 3;
+            $this->utmZone = $ZoneNumber . $this->UTMLetterDesignator();
+        } else {
+            $falseEasting = 0.0;
+        }
+
+        $LongOriginRad = deg2rad($LongOrigin);
+
+        // Precompute eccPrimeSquared
+        $eccPrimeSquared = $this->e2 / (1 - $this->e2);
+
+        // More precomputed values
+        $N = $this->a / sqrt(1 - $e2Sin2Lat);
+        $T = $tanLatSq;
+        $C = $eccPrimeSquared * $cosLat * $cosLat;
+        $A = $cosLat * ($LongRad - $LongOriginRad);
+        $ASq = $A * $A;
+
+        // Meridional arc calculation
+        // Coefficients for M calculation
+        $M0 = 1 - $this->e2 / 4 - 3 * $this->e2 * $this->e2 / 64 - 5 * $this->e2 * $this->e2 * $this->e2 / 256;
+        $M1 = 3 * $this->e2 / 8 + 3 * $this->e2 * $this->e2 / 32 + 45 * $this->e2 * $this->e2 * $this->e2 / 1024;
+        $M2 = 15 * $this->e2 * $this->e2 / 256 + 45 * $this->e2 * $this->e2 * $this->e2 / 1024;
+        $M3 = 35 * $this->e2 * $this->e2 * $this->e2 / 3072;
+
+        $M = $this->a * ($M0 * $LatRad - $M1 * sin(2 * $LatRad) + $M2 * sin(4 * $LatRad) - $M3 * sin(6 * $LatRad));
+
+        // Calculate easting
+        $E0 = 1;
+        $E1 = (1 - $T + $C);
+        $E2 = (5 - 18 * $T + $T * $T + 72 * $C - 58 * $eccPrimeSquared);
+
+        $this->utmEasting = $k0 * $N * ($A + $E1 * $ASq * $A / 6 + $E2 * $ASq * $ASq * $A / 120) + $falseEasting;
+
+        // Calculate northing
+        $N0 = $N * $tanLat;
+        $N1 = $ASq / 2;
+        $N2 = (5 - $T + 9 * $C + 4 * $C * $C) * $ASq * $ASq / 24;
+        $N3 = (61 - 58 * $T + $T * $T + 600 * $C - 330 * $eccPrimeSquared) * $ASq * $ASq * $ASq / 720;
+
+        $this->utmNorthing = $k0 * ($M + $N0 * ($N1 + $N2 + $N3));
+
+        // Apply southern hemisphere offset if needed
+        if ($this->lat < 0) {
+            $this->utmNorthing += 10000000.0;
+        }
+    }
+
+    public function convertLLtoTMChatGPT4($LongOrigin = null): void
+    {
+        static $k0 = 0.9996;
+        static $falseEasting = 500000.0;
+
+        // Normalize longitude to -180 to 179.9 range
+        $LongTemp = fmod($this->long + 180, 360) - 180;
+
+        // Precompute trigonometric values
+        $LatRad = deg2rad($this->lat);
+        $LongRad = deg2rad($LongTemp);
+        $sinLat = sin($LatRad);
+        $cosLat = cos($LatRad);
+        $tanLat = tan($LatRad);
+        $tan2Lat = $tanLat * $tanLat;
+
+        if ($LongOrigin === null) { // Determine UTM zone
+            $ZoneNumber = (int)(($LongTemp + 180) / 6) + 1;
+
+            if ($this->lat >= 56.0 && $this->lat < 64.0 && $LongTemp >= 3.0 && $LongTemp < 12.0) {
+                $ZoneNumber = 32;
+            } elseif ($this->lat >= 72.0 && $this->lat < 84.0) {
+                $ZoneAdjustments = [9 => 33, 21 => 35, 33 => 37];
+                foreach ($ZoneAdjustments as $boundary => $zone) {
+                    if ($LongTemp < $boundary) {
+                        $ZoneNumber = $zone;
+                        break;
+                    }
+                }
+            }
+
+            $LongOrigin = ($ZoneNumber - 1) * 6 - 177; // -180 + 3
+            $this->utmZone = sprintf("%d%s", $ZoneNumber, $this->UTMLetterDesignator());
+        }
+
+        $LongOriginRad = deg2rad($LongOrigin);
+
+        // Cache constant calculations
+        $eccPrimeSquared = $this->e2 / (1 - $this->e2);
+        $N = $this->a / sqrt(1 - $this->e2 * $sinLat * $sinLat);
+        $C = $eccPrimeSquared * $cosLat * $cosLat;
+        $A = $cosLat * ($LongRad - $LongOriginRad);
+
+        // Compute M with optimized summations
+        $M = $this->a * (
+            (1 - $this->e2 / 4 - 3 * pow($this->e2, 2) / 64 - 5 * pow($this->e2, 3) / 256) * $LatRad
+                - (3 * $this->e2 / 8 + 3 * pow($this->e2, 2) / 32 + 45 * pow($this->e2, 3) / 1024) * sin(2 * $LatRad)
+                + (15 * pow($this->e2, 2) / 256 + 45 * pow($this->e2, 3) / 1024) * sin(4 * $LatRad)
+                - (35 * pow($this->e2, 3) / 3072) * sin(6 * $LatRad)
+        );
+
+        // Compute Easting and Northing
+        $A2 = $A * $A;
+        $A3 = $A2 * $A;
+        $A4 = $A2 * $A2;
+        $A5 = $A3 * $A2;
+        $A6 = $A3 * $A3;
+
+        $this->utmEasting = $k0 * $N * ($A + (1 - $tan2Lat + $C) * $A3 / 6
+                + (5 - 18 * $tan2Lat + pow($tanLat, 4) + 72 * $C - 58 * $eccPrimeSquared) * $A5 / 120)
+            + $falseEasting;
+
+        $this->utmNorthing = $k0 * ($M + $N * $tanLat * ($A2 / 2 + (5 - $tan2Lat + 9 * $C + 4 * $C * $C) * $A4 / 24
+                    + (61 - 58 * $tan2Lat + pow($tanLat, 4) + 600 * $C - 330 * $eccPrimeSquared) * $A6 / 720));
+
+        if ($this->lat < 0) {
+            $this->utmNorthing += 10000000.0; // Southern Hemisphere Offset
+        }
+    }
+
+
     /**
      * This routine determines the correct UTM letter designator for the given latitude
      * returns 'Z' if latitude is outside the UTM limits of 84N to 80S
      * Written by Chuck Gantz- chuck.gantz@globalstar.com, converted to PHP by Brenor Brophy, brenor@sbcglobal.net
      */
-    public function UTMLetterDesignator()
+    public function UTMLetterDesignator(): string
     {
         if ((84 >= $this->lat) && ($this->lat >= 72)) {
             $LetterDesignator = 'X';

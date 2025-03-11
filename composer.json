@@ -37,7 +37,8 @@
     "league/flysystem-aws-s3-v3": "^3.29",
     "ext-openssl": "*",
     "symfony/dom-crawler": "^7.1",
-    "ext-mbstring": "*"
+    "ext-mbstring": "*",
+    "ext-simdjson": "*"
   },
   "require-dev": {
     "ext-xdebug": "*",

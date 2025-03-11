@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App;
 use ec5\Libraries\Generators\EntryGenerator;
-use ec5\Libraries\Utilities\Common;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectRole;
@@ -108,12 +107,12 @@ class EntriesSeeder extends Seeder
 
             for ($i = $batchStart; $i < $batchEnd; $i++) {
                 // Log memory usage before creating entry payload
-                $output->writeln("Memory usage before creating parent entry payload: " . Common::formatBytes(memory_get_usage()));
+                // $output->writeln("Memory usage before creating parent entry payload: " . Common::formatBytes(memory_get_usage()));
 
                 $entryPayload = $entryGenerator->createParentEntryPayload($formRef);
 
                 // Log memory usage after creating entry payload
-                $output->writeln("Memory usage after creating parent entry payload: " . Common::formatBytes(memory_get_usage()));
+                // $output->writeln("Memory usage after creating parent entry payload: " . Common::formatBytes(memory_get_usage()));
 
                 $randomUserId = $projectRolesIDs[array_rand($projectRolesIDs)];
                 $entryGenerator->createParentEntryRow(
@@ -129,7 +128,7 @@ class EntriesSeeder extends Seeder
                 $output->write("\rInserted $num parent entries...    ");
 
                 // Log memory usage after inserting parent entry
-                $output->writeln("Memory usage after inserting parent entry $num: " . Common::formatBytes(memory_get_usage()));
+                //$output->writeln("Memory usage after inserting parent entry $num: " . Common::formatBytes(memory_get_usage()));
 
                 // if any branch, generate x branch entries
                 $numOfBranchEntries = 1;
@@ -139,7 +138,7 @@ class EntriesSeeder extends Seeder
                 gc_collect_cycles();
 
                 // Log memory usage after garbage collection
-                $output->writeln("Memory usage after garbage collection: " . Common::formatBytes(memory_get_usage()));
+                //$output->writeln("Memory usage after garbage collection: " . Common::formatBytes(memory_get_usage()));
             }
 
             // Clear entry generator and cached data
@@ -153,7 +152,7 @@ class EntriesSeeder extends Seeder
             gc_collect_cycles();
 
             // Log memory usage after batch processing and cleanup
-            $output->writeln("Memory usage after batch processing and cleanup: " . Common::formatBytes(memory_get_usage()));
+            //$output->writeln("Memory usage after batch processing and cleanup: " . Common::formatBytes(memory_get_usage()));
         }
 
 

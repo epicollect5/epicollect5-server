@@ -309,7 +309,7 @@ class EntriesDownloadService
 
             return true;
         } catch (Throwable $e) {
-            Log::error('writeCSV failed', ['exception' => $e->getMessage()]);
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             if (isset($file)) {
                 fclose($file);
             }
@@ -378,7 +378,7 @@ class EntriesDownloadService
 
             return true;
         } catch (Throwable $e) {
-            Log::error('writeCSV failed', ['exception' => $e->getMessage()]);
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             return false;
         }
     }

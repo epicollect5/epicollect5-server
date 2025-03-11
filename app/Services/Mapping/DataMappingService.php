@@ -22,6 +22,7 @@ class DataMappingService
     protected bool $isTopHierarchyForm = false;
     protected array $datetimeFormatsPHP;
     protected array $usersCache;
+    protected GPointConverter $converter;
 
     /**
      * Initializes the DataMappingService with configuration settings for mapping keys and datetime formats.
@@ -66,6 +67,7 @@ class DataMappingService
         $this->usersCache = [];
         // Set the mapping
         $this->setupMapping($formRef, $branchRef, $mapIndex);
+        $this->converter = new GPointConverter();
     }
 
     public function getHeaderRowCSV(): array
@@ -150,8 +152,8 @@ class DataMappingService
     {
         $output = [];
         try {
-            $JSONEntry = json_decode($JSONEntryString, true);
-            $JSONBranchCounts = json_decode($branchCountsString, true);
+            $JSONEntry = simdjson_decode($JSONEntryString, true);
+            $JSONBranchCounts = simdjson_decode($branchCountsString, true);
         } catch (Throwable) {
             return $output;
         }
@@ -278,8 +280,8 @@ class DataMappingService
     {
         $output = [];
         try {
-            $JSONEntry = json_decode($JSONEntryString, true);
-            $JSONBranchCounts = json_decode($branchCountsString, true);
+            $JSONEntry = simdjson_decode($JSONEntryString, true);
+            $JSONBranchCounts = simdjson_decode($branchCountsString, true);
         } catch (Throwable) {
             return '';
         }
@@ -451,7 +453,6 @@ class DataMappingService
     private function parseAnswer(string $type, mixed $answer, array $input): mixed
     {
         $parsedAnswer = '';
-        $converter = new GPointConverter();
 
         switch ($type) {
             //todo input type should be constants....
@@ -501,16 +502,16 @@ class DataMappingService
             case 'csv-location':
                 try {
                     if ($answer['latitude'] && $answer['longitude']) {
-                        $converter->setLongLat($answer['longitude'], $answer['latitude']);
-                        $converter->convertLLtoTM(null);
+                        $this->converter->setLongLat($answer['longitude'], $answer['latitude']);
+                        $this->converter->convertLLtoTMClaude(null);
 
                         $parsedAnswer = [
                             $answer['latitude'],
                             $answer['longitude'],
                             $answer['accuracy'],
-                            (int)$converter->N(),
-                            (int)$converter->E(),
-                            $converter->Z()
+                            (int)$this->converter->N(),
+                            (int)$this->converter->E(),
+                            $this->converter->Z()
                         ];
                     } else {
                         $parsedAnswer = [
@@ -544,16 +545,16 @@ class DataMappingService
             case 'json-location':
                 try {
                     if ($answer['latitude'] && $answer['longitude']) {
-                        $converter->setLongLat($answer['longitude'], $answer['latitude']);
-                        $converter->convertLLtoTM(null);
+                        $this->converter->setLongLat($answer['longitude'], $answer['latitude']);
+                        $this->converter->convertLLtoTM(null);
 
                         $parsedAnswer = [
                             'latitude' => $answer['latitude'],
                             'longitude' => $answer['longitude'],
                             'accuracy' => $answer['accuracy'],
-                            'UTM_Northing' => (int)$converter->N(),
-                            'UTM_Easting' => (int)$converter->E(),
-                            'UTM_Zone' => $converter->Z()
+                            'UTM_Northing' => (int)$this->converter->N(),
+                            'UTM_Easting' => (int)$this->converter->E(),
+                            'UTM_Zone' => $this->converter->Z()
                         ];
                     } else {
                         $parsedAnswer = [
