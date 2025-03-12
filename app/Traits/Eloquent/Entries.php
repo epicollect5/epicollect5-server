@@ -18,21 +18,15 @@ trait Entries
      * If a 'user_id' is supplied in the parameters, the results are further filtered to include only entries corresponding
      * to that user. The query is subsequently modified with additional sorting and filtering by calling sortAndFilterEntries.
      *
-     * @param mixed $projectId The identifier of the project.
+     * @param int $projectId The identifier of the project.
      * @param array $params   Query parameters, including:
      *                        - 'input_ref': The JSON key used to extract data from the geo_json_data field.
      *                        - 'user_id' (optional): Filters entries by user ID if provided.
      *
-     * @return \Illuminate\Database\Query\Builder The query builder instance configured for retrieving GeoJSON data.
      */
-    public function getGeoJsonData($projectId, $params): Builder
+    public function getGeoJsonData(int $projectId, array $params): Builder
     {
-        $selectSql = 'JSON_EXTRACT(geo_json_data, ?) as geo_json_data ';
-        $whereSql = 'project_id = ?';
-
         /**
-         * Get the GeoJSON data for a location question by passing the input reference (input_ref) of that question.
-         *
          * Example of data:
          *
          * {
@@ -53,22 +47,56 @@ trait Entries
          *   },
          *   {...}
          * }
-         *
          */
-        $q = DB::table($this->table)
-            ->whereRaw($whereSql, [$projectId])
-            ->selectRaw($selectSql, ['$."' . $params['input_ref'] . '"']);
 
-        /**
-         * filter by user (imp: applied to COLLECTOR ROLE ONLY)
-         *
-         * @see EntriesViewService::getSanitizedQueryParams
-         */
-        if (!empty($params['user_id'])) {
-            $q->where('user_id', '=', $params['user_id']);
-        }
+        $index = 'idx_'.$this->table.'_project_form_ref_id';
+        return DB::table($this->table)
+            ->select('geo_json_data')
+            ->from(DB::raw("`$this->table` USE INDEX ($index)"))
+            ->where('project_id', $projectId)
+            ->where('form_ref', $params['form_ref'])
+            ->where(function ($query) use ($params) {
+                /**
+                 * filter by user (imp: applied to COLLECTOR ROLE ONLY)
+                 *
+                 * @see EntriesViewService::getSanitizedQueryParams
+                 */
+                if (!empty($params['user_id'])) {
+                    $query->where('user_id', '=', $params['user_id']);
+                }
+            });
 
-        return $this->sortAndFilterEntries($q, $params);
+    }
+
+    public function getNewestOldestCreatedAt($projectId, $formRef): array
+    {
+        //format date to match javascript degfault ISO8601 format
+        $formatDate = fn ($date) => $date
+            ? str_replace(' ', 'T', Carbon::parse($date)->format('Y-m-d H:i:s')) . '.000Z'
+            : null;
+
+        //get oldest date
+        $oldest = DB::table('entries')
+            ->where('project_id', $projectId)
+            ->where('form_ref', $formRef)
+            ->whereNotNull('geo_json_data')
+            ->orderBy('created_at', 'asc')
+            ->limit(1)
+            ->value('created_at');
+
+        //get newest date
+        $newest = DB::table('entries')
+            ->where('project_id', $projectId)
+            ->where('form_ref', $formRef)
+            ->whereNotNull('geo_json_data')
+            ->orderBy('created_at', 'desc')
+            ->limit(1)
+            ->value('created_at');
+
+        return [
+            'oldest' => $formatDate($oldest),
+            'newest' => $formatDate($newest),
+        ];
     }
 
     /**
@@ -92,6 +120,7 @@ trait Entries
 
         return $q;
     }
+
 
     public function sortAndFilterEntries(Builder $q, $filters): Builder
     {

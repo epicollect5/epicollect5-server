@@ -2,12 +2,14 @@
 
 namespace ec5\Http\Controllers\Api\Entries\View;
 
+use DB;
 use ec5\Http\Validation\Entries\View\RuleQueryStringLocations;
-use ec5\Libraries\Utilities\DateFormatConverter;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Response;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 
 class ViewEntriesLocationsController extends ViewEntriesControllerBase
 {
@@ -21,7 +23,8 @@ class ViewEntriesLocationsController extends ViewEntriesControllerBase
      *
      * Branch: needs the branch_ref as well
      *
-     *
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
      */
     public function show(RuleQueryStringLocations $ruleQueryStringLocations)
     {
@@ -49,10 +52,8 @@ class ViewEntriesLocationsController extends ViewEntriesControllerBase
         }
 
         $entries = $entryModel->getGeoJsonData($this->requestedProject()->getId(), $params);
-
-        $dates = DateFormatConverter::getNewestAndOldestFormatted($entries);
-
-        $entriesPaginated = $entries->paginate($params['per_page']);
+        $entriesPaginated = $entries->paginate(($params['per_page']));
+        $dates = $entryModel->getNewestOldestCreatedAt($this->requestedProject()->getId(), $params['form_ref']);
 
         // Data
         $data = [
@@ -65,17 +66,18 @@ class ViewEntriesLocationsController extends ViewEntriesControllerBase
         ];
 
         // Loop and json decode the geo json data from the db
+        $inputRef = $params['input_ref'];
         foreach ($entriesPaginated as $entry) {
             // Add to the geo json features array if it is NOT NULL
             if (isset($entry->geo_json_data)) {
-                $data['geojson']['features'][] = json_decode($entry->geo_json_data, true);
+                $data['geojson']['features'][] = json_decode($entry->geo_json_data, true)[$inputRef];
             }
         }
-
         // Append the required options to the LengthAwarePaginator
         $this->appendOptions($entriesPaginated, $params);
         // Get Meta and Links
         $meta = $this->getMeta($entriesPaginated, $dates['newest'], $dates['oldest']);
+
         $links = $this->getLinks($entriesPaginated);
 
         return Response::apiData($data, $meta, $links);

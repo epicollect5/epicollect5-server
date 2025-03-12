@@ -9,7 +9,9 @@ use ec5\Models\Project\Project;
 use ec5\Models\User\User;
 use ec5\Services\Project\ProjectService;
 use ec5\Services\User\UserService;
+use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Http\Request;
+use Log;
 use Throwable;
 
 class AdminController extends Controller
@@ -72,7 +74,12 @@ class AdminController extends Controller
     public function showSettings()
     {
         // Get request data
-        $CGPSVersion = Common::getCGPSEpicollectVersion();
+        try {
+            $CGPSVersion = Common::getCGPSEpicollectVersion();
+        } catch (GuzzleException $e) {
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
+            $CGPSVersion = 'n/a';
+        }
         $currentVersion = config('epicollect.setup.system.version');
 
         $payload = [
@@ -128,7 +135,7 @@ class AdminController extends Controller
         // Append the creator user's User object and current user's ProjectRole object
         foreach ($projects as $project) {
             $project->user = User::where('id', '=', $project->created_by)->first();
-            $project->my_role = $projectService->getRole($adminUser, $project->project_id)->getRole();
+            $project->my_role = $projectService->getRole($project->project_id, $adminUser)->getRole();
         }
 
         $projects->appends($params);

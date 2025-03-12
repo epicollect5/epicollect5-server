@@ -171,7 +171,7 @@ class UsersController
                 $userToAdd->save();
             }
             // Attempt to get their existing role if they have one
-            $userProjectRole = $projectService->getRole($userToAdd, $this->requestedProject()->getId());
+            $userProjectRole = $projectService->getRole($this->requestedProject()->getId(), $userToAdd);
 
             // Additional checks on the user against the user performing the action,
             // using the new role passed in and user's existing role, if available

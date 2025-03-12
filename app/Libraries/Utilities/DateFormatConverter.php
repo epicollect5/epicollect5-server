@@ -40,7 +40,7 @@ class DateFormatConverter
         $oldest = str_replace('+00:00', '.000Z', $now);
         $newest = str_replace('+00:00', '.000Z', $now);
 
-        if ($query->first() !== null) {
+        if ($query->exists()) {
             //this will have .xxx milliseconds
             $oldestRaw = $query->min('created_at');
             $newestRaw = $query->max('created_at');

@@ -35,10 +35,11 @@ return [
     'formlimits' => ['forms' => 5, 'inputs' => 300, 'titles' => 3],
     'search_per_project' => 5,
     'entries_table' => [
-        'per_page' => 50,
-        'per_page_download' => 3000 //it is not used anymore
+        'per_page' => 50
     ],
-    'entries_map' => ['per_page' => 200000], //this is a test with new dataviewer
+    'entries_map' => [
+        'per_page' => env('ENTRIES_MAP_PER_PAGE'), 50000
+    ], //this is a test with new dataviewer
     'entries_export_per_page_json' => 1000,
     'entries_export_chunk' => 100,
     'entries_export_per_page_csv' => 1000,
@@ -80,7 +81,7 @@ return [
 
     // IMP: Limit for number of rows at a time to chunk when downloading data
     // IMP: EC5 Download Test project (103000 entries) consumes ~140MB memory at 50000 per chunk
-    // IMP: with 1000, memory peak is at 20MB
+    // IMP: with 1000, memory peak is at 20MB but lots of queries
     'download_entries_chunk_size' => (int) env('DOWNLOAD_ENTRIES_ARCHIVE_CHUNK_SIZE', 1000),
     //per hour limit
     'passwordless_rate_limit' => (int) env('PASSWORDLESS_RATE_LIMIT', 10),

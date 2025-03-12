@@ -12,9 +12,13 @@ use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use Exception;
 use Log;
+use Throwable;
 
 class ProjectService
 {
+    /**
+     * @throws Throwable
+     */
     public function storeProject(ProjectDTO $project)
     {
         try {
@@ -106,7 +110,7 @@ class ProjectService
      * @param array $params
      * @return array
      */
-    public function getProjectMembersPaginated($perPage = 1, $search = '', $params = array()): array
+    public function getProjectMembersPaginated(int $perPage = 1, string $search = '', array $params = array()): array
     {
         $users = [];
 
@@ -142,7 +146,7 @@ class ProjectService
      * @param $projectId
      * @return ProjectRoleDTO
      */
-    public function getRole($user = null, $projectId): ProjectRoleDTO
+    public function getRole($projectId, ?User $user = null): ProjectRoleDTO
     {
         $projectRoleUser = new ProjectRoleDTO();
         $role = null;
@@ -163,6 +167,9 @@ class ProjectService
         return $projectRoleUser;
     }
 
+    /**
+     * @throws Throwable
+     */
     public function cloneProjectRoles($projectIdFrom, $projectIdTo): bool
     {
         try {
@@ -188,7 +195,7 @@ class ProjectService
 
             DB::commit();
             return true;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             DB::rollBack();
             return false;
@@ -196,6 +203,10 @@ class ProjectService
     }
 
     //Only add the user if it is not a member of the project
+
+    /**
+     * @throws Throwable
+     */
     public function addOrUpdateUserRole($userId, $projectId, $role): bool
     {
         try {
@@ -211,8 +222,6 @@ class ProjectService
                 if (!$wasUserUpdated) {
                     throw new Exception('Cannot add or update user role ');
                 }
-                DB::commit();
-                return true;
 
             } else {
                 // Create the project role for this user
@@ -225,10 +234,10 @@ class ProjectService
                 if (!$wasUserAdded) {
                     throw new Exception('Cannot add or update user role ');
                 }
-                DB::commit();
-                return true;
             }
-        } catch (\Throwable $e) {
+            DB::commit();
+            return true;
+        } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             DB::rollBack();
             return false;

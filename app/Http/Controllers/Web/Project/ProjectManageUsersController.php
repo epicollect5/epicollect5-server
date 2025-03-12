@@ -1,4 +1,6 @@
-<?php /** @noinspection DuplicatedCode */
+<?php
+
+/** @noinspection DuplicatedCode */
 
 namespace ec5\Http\Controllers\Web\Project;
 
@@ -8,7 +10,6 @@ use ec5\Models\Project\ProjectRole;
 use ec5\Models\User\User;
 use ec5\Services\Project\ProjectService;
 use ec5\Traits\Requests\RequestAttributes;
-use Exception;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\JsonResponse;
@@ -161,7 +162,7 @@ class ProjectManageUsersController
         }
 
         // Attempt to get their existing role if they have one
-        $userToAddProjectRole = $projectService->getRole($userToAdd, $this->requestedProject()->getId());
+        $userToAddProjectRole = $projectService->getRole($this->requestedProject()->getId(), $userToAdd);
 
         // Additional checks on the user against the user performing the action,
         // using the new role passed in and user's existing role, if available
@@ -244,7 +245,7 @@ class ProjectManageUsersController
             return Redirect::back()->withErrors(['ec5_90']);
         }
         // Get their existing role
-        $userProjectRole = $projectService->getRole($user, $this->requestedProject()->getId());
+        $userProjectRole = $projectService->getRole($this->requestedProject()->getId(), $user);
         // Additional checks on the user and their existing role
         $ruleProjectRole->additionalChecks(
             $this->requestedUser(),
@@ -265,7 +266,7 @@ class ProjectManageUsersController
             ProjectRole::where('user_id', $user->id)
                 ->where('project_id', $this->requestedProject()->getId())
                 ->delete();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             if (request()->ajax()) {
                 return Response::apiErrorCode(400, ['manage-user' => ['ec5_104']]);

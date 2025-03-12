@@ -33,7 +33,7 @@ class DownloadController
     {
         $user = Auth::user();
         $allowedKeys = array_keys(config('epicollect.strings.download_data_entries'));
-        $perPage = config('epicollect.limits.entries_table.per_page_download');
+        $perPage = config('epicollect.limits.entries_table.per_page');
         $params = $viewEntriesService->getSanitizedQueryParams($allowedKeys, $perPage);
         $cookieName = config('epicollect.setup.cookies.download_entries');
 
