@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 11.1.7
+
+- Removed simdjson calls for the time being due to regression bugs
+
 # 11.1.6
 
 - Potential improvements for CSV & JSON archive download
@@ -48,4 +52,4 @@
 - Added project app links & QR codes
 - Fixed bugs and stability improvements
 
-##                  
+##                   

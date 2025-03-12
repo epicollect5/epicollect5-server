@@ -153,6 +153,7 @@ class DataMappingService
         $output = [];
         try {
             $JSONEntry = json_decode($JSONEntryString, true);
+            //imp: simdjson throws error when parsing null
             $JSONBranchCounts = json_decode($branchCountsString, true);
         } catch (Throwable) {
             return $output;
@@ -281,6 +282,7 @@ class DataMappingService
         $output = [];
         try {
             $JSONEntry = json_decode($JSONEntryString, true);
+            //imp: simdjson throws error when parsing null
             $JSONBranchCounts = json_decode($branchCountsString, true);
         } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
