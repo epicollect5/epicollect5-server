@@ -152,8 +152,8 @@ class DataMappingService
     {
         $output = [];
         try {
-            $JSONEntry = simdjson_decode($JSONEntryString, true);
-            $JSONBranchCounts = simdjson_decode($branchCountsString, true);
+            $JSONEntry = json_decode($JSONEntryString, true);
+            $JSONBranchCounts = json_decode($branchCountsString, true);
         } catch (Throwable) {
             return $output;
         }
@@ -280,9 +280,10 @@ class DataMappingService
     {
         $output = [];
         try {
-            $JSONEntry = simdjson_decode($JSONEntryString, true);
-            $JSONBranchCounts = simdjson_decode($branchCountsString, true);
-        } catch (Throwable) {
+            $JSONEntry = json_decode($JSONEntryString, true);
+            $JSONBranchCounts = json_decode($branchCountsString, true);
+        } catch (Throwable $e) {
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             return '';
         }
 
