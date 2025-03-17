@@ -15,6 +15,7 @@ use ec5\Traits\Requests\RequestAttributes;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use Storage;
+use Throwable;
 
 class DownloadController
 {
@@ -116,11 +117,15 @@ class DownloadController
                 }
                 $zipName = $this->requestedProject()->slug . '-' . $params['format'] . '.zip';
                 return $this->sendArchive($projectDir . '/' . $zipName, $zipName, $timestamp);
+            } catch (Throwable $e) {
+                return Common::errorResponseAsFile($timestamp, $e->getMessage());
             } finally {
                 // Release the lock
                 $lock->release();
             }
         } else {
+            // Release the lock
+            $lock->release();
             return Common::errorResponseAsFile($timestamp, 'ec5_406');
         }
     }

@@ -12,7 +12,6 @@ use ec5\Models\Project\Project;
 use ec5\Services\Project\ProjectAvatarService;
 use ec5\Traits\Eloquent\System\ProjectsStats;
 use Illuminate\Support\Facades\Mail;
-use JetBrains\PhpStorm\NoReturn;
 use Random\RandomException;
 use Storage;
 use Throwable;
