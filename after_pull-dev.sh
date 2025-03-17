@@ -48,7 +48,7 @@ php artisan config:clear
 print_message "$YELLOW" "Running php artisan system:clear-opcache..."
 php artisan system:clear-opcache;
 
-#This is useful when testing.env variavble are not read
+#This is useful when testing.env variables are not read
 #https://stackoverflow.com/questions/67557514/laravel-unittest-environment-variables-are-totally-ignored
 print_message "$YELLOW" "Running php artisan optimize:clear..."
 php artisan optimize:clear

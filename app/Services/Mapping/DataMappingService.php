@@ -502,20 +502,20 @@ class DataMappingService
                 unset($temp);
                 break;
             case 'location':
-                $parsedAnswer = $answer['longitude'] ?? '';
+                $parsedAnswer = $answer['latitude'] ?? '';
                 $parsedAnswer .= ', ';
-                $parsedAnswer .= $answer['latitude'] ?? '';
+                $parsedAnswer .= $answer['longitude'] ?? '';
                 break;
 
             case 'csv-location':
                 try {
                     if ($answer['latitude'] && $answer['longitude']) {
-                        $this->converter->setLongLat($answer['latitude'], $answer['longitude']);
+                        $this->converter->setLongLat($answer['longitude'], $answer['latitude']);
                         $this->converter->convertLLtoTMClaude(null);
 
                         $parsedAnswer = [
-                            $answer['longitude'],
                             $answer['latitude'],
+                            $answer['longitude'],
                             $answer['accuracy'],
                             (int)$this->converter->N(),
                             (int)$this->converter->E(),
@@ -523,8 +523,8 @@ class DataMappingService
                         ];
                     } else {
                         $parsedAnswer = [
-                            $answer['longitude'] ?? '',
                             $answer['latitude'] ?? '',
+                            $answer['longitude'] ?? '',
                             $answer['accuracy'] ?? '',
                             '',
                             '',
@@ -553,12 +553,12 @@ class DataMappingService
             case 'json-location':
                 try {
                     if ($answer['longitude'] && $answer['latitude']) {
-                        $this->converter->setLongLat($answer['latitude'], $answer['longitude']);
+                        $this->converter->setLongLat($answer['longitude'], $answer['latitude']);
                         $this->converter->convertLLtoTMClaude(null);
 
                         $parsedAnswer = [
-                            'latitude' => $answer['longitude'],
-                            'longitude' => $answer['latitude'],
+                            'latitude' => $answer['latitude'],
+                            'longitude' => $answer['longitude'],
                             'accuracy' => $answer['accuracy'],
                             'UTM_Northing' => (int)$this->converter->N(),
                             'UTM_Easting' => (int)$this->converter->E(),
@@ -566,8 +566,8 @@ class DataMappingService
                         ];
                     } else {
                         $parsedAnswer = [
-                            'latitude' => $answer['longitude'] ?? '',
-                            'longitude' => $answer['latitude'] ?? '',
+                            'latitude' => $answer['latitude'] ?? '',
+                            'longitude' => $answer['longitude'] ?? '',
                             'accuracy' => $answer['accuracy'] ?? '',
                             'UTM_Northing' => '',
                             'UTM_Easting' => '',

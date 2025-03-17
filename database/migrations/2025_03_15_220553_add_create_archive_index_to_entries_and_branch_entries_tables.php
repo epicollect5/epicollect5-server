@@ -23,7 +23,7 @@ return new class () extends Migration {
      */
     public function down(): void
     {
-        Schema::table('entries_and_branch_entries_tables', function (Blueprint $table) {
+        Schema::table('epicollect.tables.entries', function (Blueprint $table) {
             $table->dropIndex('idx_entries_project_form_ref_id');
         });
         Schema::table(config('epicollect.tables.branch_entries'), function (Blueprint $table) {
