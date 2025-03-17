@@ -83,7 +83,7 @@ class EntriesDownloadService
             // Set the mapping
             $this->dataMappingService->init($this->project, $format, config('epicollect.strings.form'), $form['ref'], null, $mapIndex);
 
-            $columns = ['id','title', 'entry_data', 'branch_counts', 'child_counts', 'user_id', 'uploaded_at'];
+            $columns = ['id', 'title', 'entry_data', 'branch_counts', 'child_counts', 'user_id', 'uploaded_at'];
 
             // Log the start of the query for form entries
             $startTime = microtime(true);
@@ -125,7 +125,7 @@ class EntriesDownloadService
                     $mapIndex
                 );
 
-                $columns = ['id','uuid', 'title', 'entry_data', 'user_id', 'uploaded_at'];
+                $columns = ['id', 'uuid', 'title', 'entry_data', 'user_id', 'uploaded_at'];
 
                 // Log the start of the query for branch entries
                 $startTime = microtime(true);
@@ -155,7 +155,7 @@ class EntriesDownloadService
         try {
             Log::info("All files completed SEQUENTIAL", [
                 'project' => $this->project->name,
-                'total_duration' => round($this->totalDuration / 60, 2).' minutes'
+                'total_duration' => round($this->totalDuration / 60, 2) . ' minutes'
             ]);
             $this->buildZipArchive($projectDir, $project->slug, $format);
         } catch (Throwable $e) {
@@ -193,9 +193,9 @@ class EntriesDownloadService
      * on the provided format.
      *
      * @param Builder $query The query builder instance for retrieving the data entries.
-     * @param string  $projectDir The directory where the output file will be stored.
-     * @param string  $fileName The base name for the output file (without extension).
-     * @param string  $format The file format, either "csv" or "json".
+     * @param string $projectDir The directory where the output file will be stored.
+     * @param string $fileName The base name for the output file (without extension).
+     * @param string $format The file format, either "csv" or "json".
      *
      * @return bool True if the file was written successfully; false otherwise.
      */
@@ -276,8 +276,8 @@ class EntriesDownloadService
             $totalTime = microtime(true) - $startTime;
             $memoryUsageEnd = memory_get_usage();
 
-            Log::info(__METHOD__. ' write completed', [
-                'path' =>   $outputFile,
+            Log::info(__METHOD__ . ' write completed', [
+                'path' => $outputFile,
                 'chunk_size' => $chunkSize,
                 'total_rows' => $rowCount,
                 'total_time' => round($totalTime / 60, 2) . ' minutes',
@@ -343,26 +343,21 @@ class EntriesDownloadService
                         $access,
                         $entry->branch_counts ?? null
                     ) . $append;
+                    $entry = null;
 
                     $rowCount++;
 
                     // Write buffer to file when it reaches a certain size
-                    if (strlen($buffer) >= 1024 * 1024) { // 1 MB
+                    if (strlen($buffer) >= (1024 * 1024 * 10)) { // 1 MB
                         fwrite($file, $buffer);
-                        $buffer = ''; // Clear the buffer
-
-                        // Log I/O performance for this batch
-                        Log::info('Batch written', [
-                            'rows' => $rowCount,
-                            'memory_usage' => Common::formatBytes(memory_get_usage()),
-                            'peak_memory_usage' => Common::formatBytes(memory_get_peak_usage()),
-                        ]);
+                        $buffer = null; // Clear the buffer
                     }
                 }
 
                 // Write any remaining data in the buffer
                 if (!empty($buffer)) {
                     fwrite($file, $buffer);
+                    $buffer = null;
                 }
 
                 // Write the closing JSON structure
@@ -379,11 +374,13 @@ class EntriesDownloadService
             // Log total execution time and memory usage
             $totalTime = microtime(true) - $startTime;
             $memoryUsageEnd = memory_get_usage();
-            Log::info('JSON write completed', [
+            Log::info(__METHOD__ . ' write completed', [
+                'path' => $outputFile,
+                'chunk_size' => $chunkSize,
                 'total_rows' => $rowCount,
-                'total_time' => round($totalTime / 60, 2).' minutes',
-                'total_memory_usage' => $memoryUsageEnd - $memoryUsageStart,
-                'peak_memory_usage' => memory_get_peak_usage(),
+                'total_time' => round($totalTime / 60, 2) . ' minutes',
+                'total_memory_usage' => Common::formatBytes($memoryUsageEnd - $memoryUsageStart),
+                'peak_memory_usage' => Common::formatBytes(memory_get_peak_usage()),
             ]);
 
             return true;
