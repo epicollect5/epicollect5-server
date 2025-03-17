@@ -149,7 +149,7 @@ class GPointConverter
      * @param float $long
      * @param float $lat
      */
-    public function setLongLat($long, $lat): void
+    public function setLongLat(float $long, float $lat): void
     {
         $this->long = $long;
         $this->lat = $lat;

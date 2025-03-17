@@ -14,7 +14,9 @@ use ec5\Services\Mapping\DataMappingService;
 use ec5\Traits\Requests\RequestAttributes;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
+use Log;
 use Storage;
+use Throwable;
 
 class DownloadController
 {
@@ -116,6 +118,11 @@ class DownloadController
                 }
                 $zipName = $this->requestedProject()->slug . '-' . $params['format'] . '.zip';
                 return $this->sendArchive($projectDir . '/' . $zipName, $zipName, $timestamp);
+            } catch (Throwable $e) {
+                // Log the actual error for debugging
+                Log::error('Archive creation failed: ' . $e->getMessage());
+                // Return a generic error code to the user
+                return Common::errorResponseAsFile($timestamp, 'ec5_83');
             } finally {
                 // Release the lock
                 $lock->release();

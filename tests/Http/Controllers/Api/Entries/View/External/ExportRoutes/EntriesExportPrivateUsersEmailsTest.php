@@ -1,6 +1,6 @@
 <?php
 
-namespace Http\Controllers\Api\Entries\View\External\ExportRoutes;
+namespace Tests\Http\Controllers\Api\Entries\View\External\ExportRoutes;
 
 use ec5\Libraries\Generators\EntryGenerator;
 use ec5\Libraries\Generators\ProjectDefinitionGenerator;
@@ -30,6 +30,7 @@ class EntriesExportPrivateUsersEmailsTest extends TestCase
     /**
      * @throws Exception
      */
+    #[NoReturn]
     public function test_getting_OAuth2_token()
     {
         $name = config('testing.WEB_UPLOAD_CONTROLLER_PROJECT.name');
@@ -276,5 +277,6 @@ class EntriesExportPrivateUsersEmailsTest extends TestCase
         } finally {
             $this->clearDatabase($params);
         }
+        return true;
     }
 }
