@@ -2,7 +2,6 @@
 
 namespace ec5\Services\Mapping;
 
-use Carbon\Carbon;
 use ec5\DTO\ProjectDTO;
 use ec5\Libraries\Utilities\GPointConverter;
 use ec5\Models\User\User;
@@ -106,6 +105,7 @@ class DataMappingService
                 }
             }
         }
+        unset($inputMapping);
         return $output;
     }
 
@@ -120,18 +120,18 @@ class DataMappingService
      */
     public function getUUIDHeadersCSV(): array
     {
-        $out = [];
+        $output = [];
         if ($this->type == config('epicollect.strings.branch')) {
-            $out[] = $this->mappingEC5Keys['ec5_branch_owner_uuid'];
-            $out[] = $this->mappingEC5Keys['ec5_branch_uuid'];
+            $output[] = $this->mappingEC5Keys['ec5_branch_owner_uuid'];
+            $output[] = $this->mappingEC5Keys['ec5_branch_uuid'];
         } else {
             //guess both or one ???
-            $out[] = $this->mappingEC5Keys['ec5_uuid'];
+            $output[] = $this->mappingEC5Keys['ec5_uuid'];
             if (!$this->isTopHierarchyForm) {
-                $out[] = $this->mappingEC5Keys['ec5_parent_uuid'];
+                $output[] = $this->mappingEC5Keys['ec5_parent_uuid'];
             }
         }
-        return $out;
+        return $output;
     }
 
     /**
@@ -152,18 +152,17 @@ class DataMappingService
     {
         $output = [];
         try {
-            $JSONEntry = json_decode($JSONEntryString, true);
+            if (empty($JSONEntryString)) {
+                return $output;
+            }
             //imp: simdjson throws error when parsing null
-            $JSONBranchCounts = json_decode($branchCountsString, true);
+            $JSONEntry = simdjson_decode($JSONEntryString, true); //<- imp: parsing to object for performance
+            $JSONBranchCounts = json_decode($branchCountsString ?? '', true);
         } catch (Throwable) {
             return $output;
         }
 
-        if (empty($JSONEntry)) {
-            return $output;
-        }
-
-        $entry = [];
+        $entry  = null;
         switch ($this->type) {
             case config('epicollect.strings.form'):
                 $entry = $JSONEntry['entry'];
@@ -190,6 +189,7 @@ class DataMappingService
         $output[] = $title; //title
 
         $answers = $entry['answers'];
+        unset($entry);
         $inputsFlattened = $this->inputsFlattened;
         foreach ($inputsFlattened as $input) {
             $inputRef = $input['ref'];
@@ -224,20 +224,23 @@ class DataMappingService
             }
         }
 
+        unset($answers);
+        unset($inputMapping);
+
         return $output;
     }
 
-    private function getUUIDHeadersForm($uuid, $relationships): array
+    private function getUUIDHeadersForm(string $uuid, array $relationships): array
     {
         //imp: order matters so don't change, otherwise need to change other places where header is ...
-        $out = [];
-        $out[] = $uuid;
+        $output = [];
+        $output[] = $uuid;
         if ($this->isTopHierarchyForm) {
-            return $out;
+            return $output;
         }
         //child entry needs the parent entry uuid
-        $out[] = $relationships['parent']['data']['parent_entry_uuid'] ?? '';
-        return $out;
+        $output[] = $relationships['parent']['data']['parent_entry_uuid'] ?? '';
+        return $output;
     }
 
     /**
@@ -247,17 +250,17 @@ class DataMappingService
      * followed by the provided branch UUID. The order of these elements is critical for subsequent processing.
      *
      * @param string $uuid The branch entry's UUID.
-     * @param array $relationships Associative array containing branch relationship data.
+     * @param array $relationships stdclass containing branch relationship data.
      *
      * @return array An array where the first element is the owner entry UUID and the second is the branch UUID.
      */
     private function getUUIDHeadersBranch(string $uuid, array $relationships): array
     {
-        $out = [];
+        $output = [];
         //imp: order matters so don't change, otherwise need to change other places where header is ...
-        $out[] = $relationships['branch']['data']['owner_entry_uuid'] ?? '';
-        $out[] = $uuid;
-        return $out;
+        $output[] = $relationships['branch']['data']['owner_entry_uuid'] ?? '';
+        $output[] = $uuid;
+        return $output;
     }
 
     /**
@@ -281,28 +284,30 @@ class DataMappingService
     {
         $output = [];
         try {
-            $JSONEntry = json_decode($JSONEntryString, true);
+            if (empty($JSONEntryString)) {
+                return $output;
+            }
             //imp: simdjson throws error when parsing null
-            $JSONBranchCounts = json_decode($branchCountsString, true);
+            $JSONEntry = simdjson_decode($JSONEntryString, true);
+            $JSONBranchCounts = json_decode($branchCountsString ?? '', true);
         } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             return '';
         }
 
-        if (empty($JSONEntry)) {
-            return $output;
-        }
-
         $type = $JSONEntry['type'];
         $entry = $JSONEntry[$type] ?? null;
+        $relationships = $JSONEntry['relationships'];
+        unset($JSONEntry);
         switch ($this->type) {
             case 'form':
-                $output = $this->getUUIDHeadersJSONForm($entry['entry_uuid'], $JSONEntry['relationships']);
+                $output = $this->getUUIDHeadersJSONForm($entry['entry_uuid'], $relationships);
                 break;
             case 'branch':
-                $output = $this->getUUIDHeadersJSONBranch($entry['entry_uuid'], $JSONEntry['relationships']);
+                $output = $this->getUUIDHeadersJSONBranch($entry['entry_uuid'], $relationships);
                 break;
         }
+        unset($relationships);
         //add timestamps (ISO)
         $output['created_at'] = $entry['created_at'];
         $output['uploaded_at'] = $this->convertMYSQLDateToISO($uploaded_at);
@@ -317,6 +322,7 @@ class DataMappingService
         $output['title'] = $title;
 
         $answers = $entry['answers'];
+        unset($entry);
         $inputsFlattened = $this->inputsFlattened;
         foreach ($inputsFlattened as $input) {
 
@@ -353,29 +359,27 @@ class DataMappingService
                 }
             }
         }
+        unset($answers);
+        unset($inputMapping);
 
         // JSON_UNESCAPED_SLASHES will not escape forward slashes, in dates etc
         return json_encode($output, JSON_UNESCAPED_SLASHES);
     }
 
-    private function getUUIDHeadersJSONForm($uuid, $relationships): array
+    private function getUUIDHeadersJSONForm(string $uuid, array $relationships): array
     {
-        $out = [];
-
-        //!!! remember order matters so don't change, otherwise need to change other places where header is ...
-        $out[$this->mappingEC5Keys['ec5_uuid']] = $uuid;
-
+        $output = [];
+        //imp: !!! remember order matters so don't change, otherwise need to change other places where header is ...
+        $output[$this->mappingEC5Keys['ec5_uuid']] = $uuid;
         if ($this->isTopHierarchyForm) {
-            return $out;
+            return $output;
         }
+        $output[$this->mappingEC5Keys['ec5_parent_uuid']] = $relationships['parent']['data']['parent_entry_uuid'] ?? '';
 
-
-        $out[$this->mappingEC5Keys['ec5_parent_uuid']] = $relationships['parent']['data']['parent_entry_uuid'] ?? '';
-
-        return $out;
+        return $output;
     }
 
-    private function getUUIDHeadersJSONBranch($uuid, $relationships): array
+    private function getUUIDHeadersJSONBranch(string $uuid, array $relationships): array
     {
         $output = [];
         //!!! remember order matters so don't change, otherwise need to change other places where header is ...
@@ -388,7 +392,7 @@ class DataMappingService
     /**
      * Get keys for output show and key for mapping
      */
-    private function getInputMapping($inputRef): array
+    private function getInputMapping(string $inputRef): array
     {
         return [
             'hide' => (isset($this->map[$inputRef]['hide']) && $this->map[$inputRef]['hide']),
@@ -400,7 +404,7 @@ class DataMappingService
      * Get custom or default mapping and inputs in order for swap
      * Groups are added to the top level for ease of access
      */
-    private function setupMapping($formRef, $branchRef, $mapIndex): void
+    private function setupMapping(string $formRef, mixed $branchRef, mixed $mapIndex): void
     {
         $projectMapping = $this->project->getProjectMapping();
         $selectedMapping = $projectMapping->getMap($mapIndex, $formRef);
@@ -433,6 +437,7 @@ class DataMappingService
         }
 
         $this->map = $mapping;
+        unset($mapping, $selectedMapping);
     }
 
     /**
@@ -479,9 +484,8 @@ class DataMappingService
                     }
                 }
 
-
-
                 $parsedAnswer = count($temp) === 0 ? '' : implode(', ', $temp);
+                unset($temp);
                 break;
             case 'json-searchsingle':
             case 'json-searchmultiple':
@@ -495,6 +499,7 @@ class DataMappingService
                 }
 
                 $parsedAnswer = count($temp) == 0 ? [] : $temp;
+                unset($temp);
                 break;
             case 'location':
                 $parsedAnswer = $answer['latitude'] ?? '';
@@ -547,7 +552,7 @@ class DataMappingService
                 break;
             case 'json-location':
                 try {
-                    if ($answer['latitude'] && $answer['longitude']) {
+                    if ($answer['longitude'] && $answer['latitude']) {
                         $this->converter->setLongLat($answer['longitude'], $answer['latitude']);
                         $this->converter->convertLLtoTMClaude(null);
 
@@ -658,13 +663,14 @@ class DataMappingService
                 $flattenInputs[] = $input;
             }
         }
+        unset($inputs);
         return $flattenInputs;
     }
 
     /* This function returns a flat list of inputs and nested group inputs,
     * dropping the group inputs owner
     */
-    public function getBranchInputsFlattened($forms, $formRef, $branchInputRef): array
+    public function getBranchInputsFlattened(array $forms, string $formRef, $branchInputRef): array
     {
         $branchInputs = [];
         $flattenBranchInputs = [];
@@ -692,6 +698,7 @@ class DataMappingService
                 $flattenBranchInputs[] = $branchInput;
             }
         }
+        unset($branchInputs);
         return $flattenBranchInputs;
     }
 
@@ -699,15 +706,17 @@ class DataMappingService
     /**
      * Converts a MySQL date string to an ISO 8601 formatted timestamp.
      *
-     * This method uses the Carbon library to parse the provided MySQL date and returns it
+     * This method uses PHP Date to parse the provided MySQL date and returns it
      * in an ISO 8601 format with milliseconds fixed to .000, emulating pre-Laravel 7 behavior.
+     *
+     * imp: avoid the use of Carbon for better performance
      *
      * @param string $mysqlDate The MySQL date string to convert.
      * @return string The ISO 8601 formatted date string.
      */
     private function convertMYSQLDateToISO(string $mysqlDate): string
     {
-        return Carbon::parse($mysqlDate)->format('Y-m-d\TH:i:s.000\Z');
+        return date('Y-m-d\TH:i:s.000\Z', strtotime($mysqlDate));
     }
 
     /**

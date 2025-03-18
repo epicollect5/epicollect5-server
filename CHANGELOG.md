@@ -1,5 +1,10 @@
 ## Release Notes
 
+# 11.1.8
+
+- Optimized archive (CSV/JSON) queries by adding indexes and enforcing their use.
+- Re-introduced simdjon use.
+
 # 11.1.7
 
 - Removed simdjson calls for the time being due to regression bugs
@@ -51,5 +56,3 @@
 - Added Leave a project feature
 - Added project app links & QR codes
 - Fixed bugs and stability improvements
-
-##                   

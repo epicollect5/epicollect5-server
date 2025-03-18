@@ -187,8 +187,9 @@ class Entry extends Model
         if (!in_array('id', $columns)) {
             $columns[] = 'id';
         }
-        // Optimized version without user_id filtering and sorting for better performance during bulk exports
-        return DB::table(config('epicollect.tables.entries'))
+
+        // Use raw SQL to apply FORCE INDEX
+        return DB::table(DB::raw(config('epicollect.tables.entries') . ' FORCE INDEX (idx_entries_project_form_ref_id)'))
             ->where('project_id', '=', $projectId)
             ->where('form_ref', '=', $params['form_ref'])
             ->select($columns);
