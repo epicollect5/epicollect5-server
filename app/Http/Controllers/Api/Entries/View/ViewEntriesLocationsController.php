@@ -51,7 +51,7 @@ class ViewEntriesLocationsController extends ViewEntriesControllerBase
         }
 
         $entries = $entryModel->getGeoJsonData($this->requestedProject()->getId(), $params);
-        $entriesPaginated = $entries->paginate(($params['per_page']));
+        $entriesPaginated = $entries->paginate($params['per_page']);
         $dates = $entryModel->getNewestOldestCreatedAt($this->requestedProject()->getId(), $params['form_ref']);
 
         // Data
