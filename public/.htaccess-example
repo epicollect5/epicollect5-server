@@ -8,6 +8,37 @@
         Options -MultiViews
     </IfModule>
 
+    <IfModule mod_brotli.c>
+            # Compress the same MIME types as in your Deflate config
+            AddOutputFilterByType BROTLI_COMPRESS text/html
+            AddOutputFilterByType BROTLI_COMPRESS application/vnd.api+json
+            AddOutputFilterByType BROTLI_COMPRESS text/css
+            AddOutputFilterByType BROTLI_COMPRESS text/javascript
+            AddOutputFilterByType BROTLI_COMPRESS text/xml
+            AddOutputFilterByType BROTLI_COMPRESS text/plain
+            AddOutputFilterByType BROTLI_COMPRESS image/x-icon
+            AddOutputFilterByType BROTLI_COMPRESS image/svg+xml
+            AddOutputFilterByType BROTLI_COMPRESS application/rss+xml
+            AddOutputFilterByType BROTLI_COMPRESS application/javascript
+            AddOutputFilterByType BROTLI_COMPRESS application/x-javascript
+            AddOutputFilterByType BROTLI_COMPRESS application/xml
+            AddOutputFilterByType BROTLI_COMPRESS application/xhtml+xml
+            AddOutputFilterByType BROTLI_COMPRESS application/x-font
+            AddOutputFilterByType BROTLI_COMPRESS application/x-font-truetype
+            AddOutputFilterByType BROTLI_COMPRESS application/x-font-ttf
+            AddOutputFilterByType BROTLI_COMPRESS application/x-font-otf
+            AddOutputFilterByType BROTLI_COMPRESS application/x-font-opentype
+            AddOutputFilterByType BROTLI_COMPRESS application/vnd.ms-fontobject
+            AddOutputFilterByType BROTLI_COMPRESS font/ttf
+            AddOutputFilterByType BROTLI_COMPRESS font/otf
+            AddOutputFilterByType BROTLI_COMPRESS font/opentype
+
+            # For older browsers that do not support Brotli
+            BrowserMatch ^Mozilla/4 gzip-only-text/html
+            BrowserMatch ^Mozilla/4\.0[678] no-gzip
+            BrowserMatch \bMSIE !no-gzip !gzip-only-text/html
+        </IfModule>
+
     <IfModule mod_deflate.c>
         AddOutputFilterByType DEFLATE text/html
         AddOutputFilterByType DEFLATE application/vnd.api+json
