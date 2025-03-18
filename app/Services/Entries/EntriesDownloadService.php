@@ -2,6 +2,7 @@
 
 namespace ec5\Services\Entries;
 
+use DB;
 use ec5\DTO\ProjectDTO;
 use ec5\Libraries\Utilities\Common;
 use ec5\Models\Entries\BranchEntry;
@@ -13,6 +14,7 @@ use League\Csv\Bom;
 use League\Csv\Writer;
 use Log;
 use RuntimeException;
+use SplFileObject;
 use Storage;
 use Throwable;
 use ZipArchive;
@@ -67,6 +69,10 @@ class EntriesDownloadService
         $formCount = 1;
         $branchCount = 1;
 
+        Log::info("Started archive creation for project", [
+            'project' => $this->project->name,
+        ]);
+
         foreach ($forms as $form) {
 
             // Set the form ref into the params
@@ -77,7 +83,7 @@ class EntriesDownloadService
             // Set the mapping
             $this->dataMappingService->init($this->project, $format, config('epicollect.strings.form'), $form['ref'], null, $mapIndex);
 
-            $columns = ['id','title', 'entry_data', 'branch_counts', 'child_counts', 'user_id', 'uploaded_at'];
+            $columns = ['id', 'title', 'entry_data', 'branch_counts', 'child_counts', 'user_id', 'uploaded_at'];
 
             // Log the start of the query for form entries
             $startTime = microtime(true);
@@ -119,7 +125,7 @@ class EntriesDownloadService
                     $mapIndex
                 );
 
-                $columns = ['id','uuid', 'title', 'entry_data', 'user_id', 'uploaded_at'];
+                $columns = ['id', 'uuid', 'title', 'entry_data', 'user_id', 'uploaded_at'];
 
                 // Log the start of the query for branch entries
                 $startTime = microtime(true);
@@ -148,7 +154,8 @@ class EntriesDownloadService
         }
         try {
             Log::info("All files completed SEQUENTIAL", [
-                'total_duration' => round($this->totalDuration / 60, 2).' minutes'
+                'project' => $this->project->name,
+                'total_duration' => round($this->totalDuration / 60, 2) . ' minutes'
             ]);
             $this->buildZipArchive($projectDir, $project->slug, $format);
         } catch (Throwable $e) {
@@ -186,9 +193,9 @@ class EntriesDownloadService
      * on the provided format.
      *
      * @param Builder $query The query builder instance for retrieving the data entries.
-     * @param string  $projectDir The directory where the output file will be stored.
-     * @param string  $fileName The base name for the output file (without extension).
-     * @param string  $format The file format, either "csv" or "json".
+     * @param string $projectDir The directory where the output file will be stored.
+     * @param string $fileName The base name for the output file (without extension).
+     * @param string $format The file format, either "csv" or "json".
      *
      * @return bool True if the file was written successfully; false otherwise.
      */
@@ -204,130 +211,26 @@ class EntriesDownloadService
         }
 
         $outputFile = $projectDir . '/' . $fileName . '.' . $format;
-
         switch ($format) {
             case 'csv':
-                return $this->writeCSVLeague($query, $outputFile);
+                return $this->writeCSV($query, $outputFile);
             case 'json':
                 return $this->writeJSON($query, $outputFile);
         }
         return false;
     }
 
-    /**
-     * Writes query results to a CSV file.
-     *
-     * Processes the given query in configurable chunks to map and write entries to a CSV file.
-     * The method writes a UTF-8 BOM for proper Excel encoding, outputs a header row from the data mapping service,
-     * and iteratively writes each mapped row in batches. It logs execution details such as the total number of rows processed,
-     * elapsed time, and memory usage, and updates the cumulative duration and entry count maintained in the service.
-     *
-     * @param Builder $query Query builder instance yielding entry records.
-     * @param string $outputFile Path where the CSV file will be saved.
-     *
-     * @return bool True if the CSV file was written successfully, false on failure.
-     */
     public function writeCSV(Builder $query, string $outputFile): bool
     {
-        $startTime = microtime(true); // Start time
-        $memoryUsageStart = memory_get_usage(); // Initial memory usage
-        $access = $this->project->isPrivate() ? 'private' : 'public';
+        DB::disableQueryLog();
 
-        try {
-            $file = fopen($outputFile, "w");
-            if (!$file) {
-                throw new RuntimeException("Failed to open file: $outputFile");
-            }
-
-            // Acquire an exclusive lock
-            if (flock($file, LOCK_EX)) {
-                // Add BOM for Excel (UTF-8 languages do not display correctly by default)
-                fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
-                fputcsv($file, $this->dataMappingService->getHeaderRowCSV());
-
-                $chunkSize = config('epicollect.limits.download_entries_chunk_size');
-                $rowCount = 0; // Track the number of rows processed
-
-                foreach ($query->lazyById($chunkSize) as $entry) {
-
-                    // Start timer for mapping
-                    $buffer[] = $this->dataMappingService->getMappedEntryCSV(
-                        $entry->entry_data,
-                        $entry->user_id,
-                        $entry->title,
-                        $entry->uploaded_at,
-                        $access,
-                        $entry->branch_counts ?? null
-                    );
-
-                    $rowCount++;
-
-                    // Write buffer to file when it reaches the chunk limit
-                    if (count($buffer) >= $chunkSize) {
-                        // Start timer for writing
-                        foreach ($buffer as $row) {
-                            if (fputcsv($file, $row) === false) {
-                                throw new RuntimeException("Failed to write data to CSV");
-                            }
-                        }
-
-                        // End timer for writing and accumulate time
-                        $buffer = []; // Clear the buffer
-                    }
-                }
-
-                // Write any remaining rows in the buffer
-                if (!empty($buffer)) {
-                    foreach ($buffer as $row) {
-                        if (fputcsv($file, $row) === false) {
-                            throw new RuntimeException("Failed to write data to CSV");
-                        }
-                    }
-                }
-
-                fflush($file);
-                flock($file, LOCK_UN);
-            } else {
-                throw new RuntimeException("Failed to acquire file lock");
-            }
-
-            fclose($file);
-
-            // Log total execution time and memory usage
-            $totalTime = microtime(true) - $startTime;
-            $memoryUsageEnd = memory_get_usage();
-            Log::info('CSV write completed, single file', [
-                'chuck_size' => $chunkSize,
-                'total_rows' => $rowCount,
-                'total_time' => round($totalTime / 60, 2).' minutes', // Convert seconds to minutes
-                'total_memory_usage' => Common::formatBytes($memoryUsageEnd - $memoryUsageStart),
-                'peak_memory_usage' => Common::formatBytes(memory_get_peak_usage()),
-            ]);
-
-            $this->totalDuration += $totalTime;
-            $this->totalEntries += $rowCount;
-
-            return true;
-        } catch (Throwable $e) {
-            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
-            if (isset($file)) {
-                fclose($file);
-            }
-            return false;
-        }
-    }
-
-    public function writeCSVLeague(Builder $query, string $outputFile): bool
-    {
         $startTime = microtime(true);
         $memoryUsageStart = memory_get_usage();
         $access = $this->project->isPrivate() ? 'private' : 'public';
 
         try {
-            //  $csv = Writer::createFromPath($outputFile, 'w+');
-
             // Add file locking
-            $fileObject = new \SplFileObject($outputFile, 'w+');
+            $fileObject = new SplFileObject($outputFile, 'w+');
             if (!$fileObject->flock(LOCK_EX)) {
                 throw new RuntimeException("Failed to acquire file lock");
             }
@@ -344,7 +247,9 @@ class EntriesDownloadService
             $rowCount = 0;
             $buffer = [];
 
-            foreach ($query->lazyById($chunkSize) as $entry) {
+            foreach ($query->lazyById() as $entry) {
+
+                $rowCount++;
                 $buffer[] = $this->dataMappingService->getMappedEntryCSV(
                     $entry->entry_data,
                     $entry->user_id,
@@ -353,26 +258,26 @@ class EntriesDownloadService
                     $access,
                     $entry->branch_counts ?? null
                 );
-
-                $rowCount++;
-
+                $entry = null; // <--imp: this avoids memory leaks
                 // Write buffer to CSV in chunks
                 if (count($buffer) >= $chunkSize) {
                     $csv->insertAll($buffer);
-                    $buffer = []; // Clear the buffer
+                    $buffer = null;// <--imp: this avoids memory leaks
                 }
             }
 
             // Write any remaining rows in the buffer
             if (!empty($buffer)) {
                 $csv->insertAll($buffer);
+                $buffer = null;// <--imp: this avoids memory leaks
             }
 
             // Log execution time and memory usage
             $totalTime = microtime(true) - $startTime;
             $memoryUsageEnd = memory_get_usage();
 
-            Log::info('CSV write completed', [
+            Log::info(__METHOD__ . ' write completed', [
+                'path' => $outputFile,
                 'chunk_size' => $chunkSize,
                 'total_rows' => $rowCount,
                 'total_time' => round($totalTime / 60, 2) . ' minutes',
@@ -392,7 +297,6 @@ class EntriesDownloadService
             return false;
         }
     }
-
 
     /**
      * Writes the query results to a JSON file.
@@ -439,27 +343,21 @@ class EntriesDownloadService
                         $access,
                         $entry->branch_counts ?? null
                     ) . $append;
+                    $entry = null;
 
                     $rowCount++;
 
                     // Write buffer to file when it reaches a certain size
-                    if (strlen($buffer) >= 1024 * 1024) { // 1 MB
+                    if (strlen($buffer) >= (1024 * 1024 * 10)) { // 1 MB
                         fwrite($file, $buffer);
-                        $buffer = ''; // Clear the buffer
-
-                        // Log I/O performance for this batch
-                        Log::info('Batch written', [
-                            'rows' => $rowCount,
-                            'memory_usage' => Common::formatBytes(memory_get_usage()),
-                            'peak_memory_usage' => Common::formatBytes(memory_get_peak_usage()),
-                        ]);
-
+                        $buffer = null; // Clear the buffer
                     }
                 }
 
                 // Write any remaining data in the buffer
                 if (!empty($buffer)) {
                     fwrite($file, $buffer);
+                    $buffer = null;
                 }
 
                 // Write the closing JSON structure
@@ -476,11 +374,13 @@ class EntriesDownloadService
             // Log total execution time and memory usage
             $totalTime = microtime(true) - $startTime;
             $memoryUsageEnd = memory_get_usage();
-            Log::info('JSON write completed', [
+            Log::info(__METHOD__ . ' write completed', [
+                'path' => $outputFile,
+                'chunk_size' => $chunkSize,
                 'total_rows' => $rowCount,
-                'total_time' => round($totalTime / 60, 2).' minutes',
-                'total_memory_usage' => $memoryUsageEnd - $memoryUsageStart,
-                'peak_memory_usage' => memory_get_peak_usage(),
+                'total_time' => round($totalTime / 60, 2) . ' minutes',
+                'total_memory_usage' => Common::formatBytes($memoryUsageEnd - $memoryUsageStart),
+                'peak_memory_usage' => Common::formatBytes(memory_get_peak_usage()),
             ]);
 
             return true;
