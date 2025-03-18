@@ -134,7 +134,7 @@ class ViewEntriesLocationsControllerTest extends ViewEntriesBaseControllerTest
             Entry::where('uuid', $entryPayloads[0]['data']['id'])->get()
         );
 
-        //assert response missing the input_ref
+        //assert response with a random input_ref
         $inputRef = Generators::inputRef($formRef);
         $queryString = '?form_ref=' . $formRef . '&input_ref=' . $inputRef;
         $response = [];
@@ -241,7 +241,6 @@ class ViewEntriesLocationsControllerTest extends ViewEntriesBaseControllerTest
 
         $entriesSavedUuids = Entry::where('project_id', $this->project->id)->pluck('uuid')->toArray();
         $entriesSavedTitles = Entry::where('project_id', $this->project->id)->pluck('title')->toArray();
-
 
         //get location inputs for the parent form (only one for this test)
         $locationInputRefs = Common::getLocationInputRefs($this->projectDefinition, 0);
@@ -954,5 +953,123 @@ class ViewEntriesLocationsControllerTest extends ViewEntriesBaseControllerTest
             $this->logTestError($e, $response);
         }
     }
+
+    /**
+     * @throws Throwable
+     */
+    public function test_entries_locations_endpoint_no_locations_found_because_null()
+    {
+        //generate entries
+        $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
+        $entryPayloads = [];
+        for ($i = 0; $i < 1; $i++) {
+            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entryRowBundle = $this->entryGenerator->createParentEntryRow(
+                $this->user,
+                $this->project,
+                $this->role,
+                $this->projectDefinition,
+                $entryPayloads[$i]
+            );
+
+            $this->assertEntryRowAgainstPayload(
+                $entryRowBundle,
+                $entryPayloads[$i]
+            );
+        }
+
+        //assert rows are created
+        $this->assertCount(
+            1,
+            Entry::where('uuid', $entryPayloads[0]['data']['id'])->get()
+        );
+
+        Entry::where('uuid', $entryPayloads[0]['data']['id'])->update([
+            'geo_json_data' => null
+        ]);
+
+
+        //get location inputs for the parent form (only one for this test)
+        $locationInputRefs = Common::getLocationInputRefs($this->projectDefinition, 0);
+
+        //assert response passing the location input_ref and first form ref
+        $queryString = '?input_ref=' . $locationInputRefs[0];
+        $response = [];
+        try {
+            $response[] = $this->actingAs($this->user)
+                ->get('api/internal/entries-locations/' . $this->project->slug . $queryString);
+            $response[0]->assertStatus(200);
+
+            $this->assertEntriesLocationsResponse($response[0]);
+
+            $json = json_decode($response[0]->getContent(), true);
+            $geoJson = $json['data']['geojson'];
+
+            //assert geojson features is empty
+            $this->assertEquals(0, sizeof($geoJson['features']));
+        } catch (Exception $e) {
+            $this->logTestError($e, $response);
+        }
+    }
+
+    public function test_entries_locations_endpoint_no_locations_found_because_no_locations_for_question()
+    {
+        //generate entries
+        $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
+        $entryPayloads = [];
+        for ($i = 0; $i < 1; $i++) {
+            $entryPayloads[$i] = $this->entryGenerator->createParentEntryPayload($formRef);
+            $entryRowBundle = $this->entryGenerator->createParentEntryRow(
+                $this->user,
+                $this->project,
+                $this->role,
+                $this->projectDefinition,
+                $entryPayloads[$i]
+            );
+
+            $this->assertEntryRowAgainstPayload(
+                $entryRowBundle,
+                $entryPayloads[$i]
+            );
+        }
+
+        //assert rows are created
+        $this->assertCount(
+            1,
+            Entry::where('uuid', $entryPayloads[0]['data']['id'])->get()
+        );
+
+        //get location inputs for the parent form (only one for this test)
+        $locationInputRefs = Common::getLocationInputRefs($this->projectDefinition, 0);
+
+
+        //modify the geojson in the database to remove any location data for that input ref
+        $entry = Entry::where('uuid', $entryPayloads[0]['data']['id'])->first();
+        $geoJSONString =  $entry->geo_json_data;
+        $geoJSON = json_decode($geoJSONString, true);
+        unset($geoJSON[$locationInputRefs[0]]);
+        $entry->geo_json_data = json_encode($geoJSON);
+        $entry->save();
+
+        //assert response passing the location input_ref and first form ref
+        $queryString = '?input_ref=' . $locationInputRefs[0];
+        $response = [];
+        try {
+            $response[] = $this->actingAs($this->user)
+                ->get('api/internal/entries-locations/' . $this->project->slug . $queryString);
+            $response[0]->assertStatus(200);
+
+            $this->assertEntriesLocationsResponse($response[0]);
+
+            $json = json_decode($response[0]->getContent(), true);
+            $geoJSON = $json['data']['geojson'];
+
+            //assert geojson features is empty
+            $this->assertEquals(0, sizeof($geoJSON['features']));
+        } catch (Exception $e) {
+            $this->logTestError($e, $response);
+        }
+    }
+
 
 }

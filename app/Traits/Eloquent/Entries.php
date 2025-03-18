@@ -51,10 +51,11 @@ trait Entries
 
         $index = 'idx_'.$this->table.'_project_form_ref_id';
         return DB::table($this->table)
-            ->select('geo_json_data')
+            ->select('id', 'geo_json_data')
             ->from(DB::raw("`$this->table` USE INDEX ($index)"))
             ->where('project_id', $projectId)
             ->where('form_ref', $params['form_ref'])
+            ->whereNotNull('geo_json_data')
             ->where(function ($query) use ($params) {
                 /**
                  * filter by user (imp: applied to COLLECTOR ROLE ONLY)

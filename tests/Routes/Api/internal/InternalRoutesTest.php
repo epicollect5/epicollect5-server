@@ -12,12 +12,12 @@ class InternalRoutesTest extends TestCase
     use DatabaseTransactions;
 
     //internal routes use the default 'web; guard
-    const DRIVER = 'web';
+    public const string DRIVER = 'web';
 
-    protected $privateProjectSlug;
-    protected $publicProjectSlug;
+    protected string $privateProjectSlug;
+    protected string $publicProjectSlug;
 
-    public function setup():void
+    public function setup(): void
     {
         parent::setUp();
         $this->privateProjectSlug = 'ec5-private';
@@ -87,7 +87,7 @@ class InternalRoutesTest extends TestCase
         $slug = $project->slug;
 
         //add project structure
-        $projectStructure = factory(ProjectStructure::class)->create(
+        factory(ProjectStructure::class)->create(
             ['project_id' => $project->id]
         );
 
@@ -208,7 +208,7 @@ class InternalRoutesTest extends TestCase
         $this->json('GET', 'api/internal/temp-media/' . $slug . '?type=photo&format=entry_thumb&name=ciao', [])
             ->assertStatus(200);
 
-        $response = $this->json('GET', 'api/internal/download-entries/' . $slug . '', [])
+        $this->json('GET', 'api/internal/download-entries/' . $slug, [])
             ->assertStatus(400)
             ->assertExactJson([
                 "errors" => [

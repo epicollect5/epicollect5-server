@@ -69,7 +69,10 @@ class ViewEntriesLocationsController extends ViewEntriesControllerBase
         foreach ($entriesPaginated as $entry) {
             // Add to the geo json features array if it is NOT NULL
             if (isset($entry->geo_json_data)) {
-                $data['geojson']['features'][] = json_decode($entry->geo_json_data, true)[$inputRef];
+                $geoJSON =  simdjson_decode($entry->geo_json_data, true);
+                if (isset($geoJSON[$inputRef])) {
+                    $data['geojson']['features'][] = $geoJSON[$inputRef];
+                }
             }
         }
         // Append the required options to the LengthAwarePaginator

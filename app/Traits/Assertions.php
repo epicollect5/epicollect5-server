@@ -38,7 +38,7 @@ trait Assertions
         );
     }
 
-    public function assertKeysNotEmpty(array $data, int $depth = PHP_INT_MAX)
+    public function assertKeysNotEmpty(array $data, int $depth = PHP_INT_MAX): void
     {
         foreach ($data as $key => $value) {
             if (is_array($value) && $depth > 1) {
@@ -90,7 +90,7 @@ trait Assertions
         $this->assertKeysNotEmpty($jsonResponse, 1);
     }
 
-    public function assertProjectExportResponse($jsonResponse)
+    public function assertProjectExportResponse($jsonResponse): void
     {
         $this->assertIsArrayNotEmpty($jsonResponse['meta']['project_mapping']);
         $this->assertIsArrayNotEmpty($jsonResponse['meta']['project_stats']);
@@ -112,7 +112,7 @@ trait Assertions
         $this->assertKeysNotEmpty($jsonResponse, 1);
     }
 
-    public function assertProjectDefinition($projectDefinition)
+    public function assertProjectDefinition($projectDefinition): void
     {
         $this->assertArrayHasExactKeys(
             $projectDefinition,
@@ -312,7 +312,7 @@ trait Assertions
 
     }
 
-    public function assertEntriesExportResponse($response, $mapping, $params, $mapIndex = 0)
+    public function assertEntriesExportResponse($response, $mapping, $params, $mapIndex = 0): void
     {
         $mappedInputs = [];
         if (is_array($response)) {
@@ -361,22 +361,7 @@ trait Assertions
 
         //dd($mappedInputs, $params['onlyMapTheseRefs'], $mapTos);
 
-        $entries = $json['data']['entries'];
-        $fixedEntryKeys = [
-            'created_at',
-            'uploaded_at',
-            'title'
-        ];
-
-        if (array_key_exists('branchRef', $params)) {
-            $fixedEntryKeys[] = 'ec5_branch_owner_uuid';
-            $fixedEntryKeys[] = 'ec5_branch_uuid';
-        } else {
-            $fixedEntryKeys[] = 'ec5_uuid';
-            if ($params['form_index'] > 0) {
-                $fixedEntryKeys[] = 'ec5_parent_uuid';
-            }
-        }
+        list($entries, $fixedEntryKeys) = $this->getFixedEntryKeys($json['data']['entries'], $params);
 
 
         foreach ($fixedEntryKeys as $key) {
@@ -549,22 +534,7 @@ trait Assertions
 
         //dd($mappedInputs, $params['onlyMapTheseRefs'], $mapTos);
 
-        $entries = $json['data']['entries'];
-        $fixedEntryKeys = [
-            'created_at',
-            'uploaded_at',
-            'title'
-        ];
-
-        if (array_key_exists('branchRef', $params)) {
-            $fixedEntryKeys[] = 'ec5_branch_owner_uuid';
-            $fixedEntryKeys[] = 'ec5_branch_uuid';
-        } else {
-            $fixedEntryKeys[] = 'ec5_uuid';
-            if ($params['form_index'] > 0) {
-                $fixedEntryKeys[] = 'ec5_parent_uuid';
-            }
-        }
+        list($entries, $fixedEntryKeys) = $this->getFixedEntryKeys($json['data']['entries'], $params);
 
 
         foreach ($fixedEntryKeys as $key) {
@@ -653,12 +623,17 @@ trait Assertions
         }
     }
 
-    private function assertMeta($array)
+    private function assertMeta($array): void
     {
         foreach ($array as $key => $value) {
             if ($key === 'newest' || $key === 'oldest') {
-                // Assert that the value is an ISO 8601 date-time string
-                $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/', $value);
+                if ($value !== null) {
+                    // Assert that the value is an ISO 8601 date-time string
+                    $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/', $value);
+                } else {
+                    // Assert that the value is null
+                    $this->assertNull($value);
+                }
             } else {
                 // Assert that the value is an integer
                 $this->assertIsInt($value);
@@ -777,7 +752,7 @@ trait Assertions
         $this->assertEquals(0, $entryStored->branch_counts);
     }
 
-    public function assertEntryStoredAgainstEntryPayload($entryFromDB, $entryFromPayload, $projectDefinition, $formIndex = 0)
+    public function assertEntryStoredAgainstEntryPayload($entryFromDB, $entryFromPayload, $projectDefinition, $formIndex = 0): void
     {
         //for each location question, add geoJson to entryStructure
         $inputs = array_get($projectDefinition, 'data.project.forms.' . $formIndex . '.inputs');
@@ -852,7 +827,7 @@ trait Assertions
         );
     }
 
-    public function assertBranchEntryStoredAgainstBranchEntryPayload($branchEntryFromDB, $branchEntryFromPayload, $projectDefinition, $branchRef, $formIndex = 0)
+    public function assertBranchEntryStoredAgainstBranchEntryPayload($branchEntryFromDB, $branchEntryFromPayload, $projectDefinition, $branchRef, $formIndex = 0): void
     {
 
         //for each location question, add geoJson to entryStructure
@@ -938,7 +913,7 @@ trait Assertions
     }
 
 
-    public function assertGeoJsonData($locationQuestionRef, $entryFromPayload, $geoJsonFeature, $possibleAnswers = [])
+    public function assertGeoJsonData($locationQuestionRef, $entryFromPayload, $geoJsonFeature, $possibleAnswers = []): void
     {
         $locationAnswer = $entryFromPayload['answers'][$locationQuestionRef]['answer'];
 
@@ -986,7 +961,7 @@ trait Assertions
         return $possibleAnswers;
     }
 
-    public function assertArraySubset(array $expectedSubset, array $actualArray)
+    public function assertArraySubset(array $expectedSubset, array $actualArray): void
     {
         foreach ($expectedSubset as $key => $value) {
             $this->assertArrayHasKey($key, $actualArray);
@@ -997,6 +972,27 @@ trait Assertions
                 $this->assertEquals($value, $actualArray[$key]);
             }
         }
+    }
+
+    private function getFixedEntryKeys($entries1, $params): array
+    {
+        $entries = $entries1;
+        $fixedEntryKeys = [
+            'created_at',
+            'uploaded_at',
+            'title'
+        ];
+
+        if (array_key_exists('branchRef', $params)) {
+            $fixedEntryKeys[] = 'ec5_branch_owner_uuid';
+            $fixedEntryKeys[] = 'ec5_branch_uuid';
+        } else {
+            $fixedEntryKeys[] = 'ec5_uuid';
+            if ($params['form_index'] > 0) {
+                $fixedEntryKeys[] = 'ec5_parent_uuid';
+            }
+        }
+        return array($entries, $fixedEntryKeys);
     }
 
 
