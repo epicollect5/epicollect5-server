@@ -71,7 +71,7 @@ trait Entries
 
     public function getNewestOldestCreatedAt($projectId, $formRef): array
     {
-        //format date to match javascript degfault ISO8601 format
+        //format date to match javascript default ISO8601 format
         $formatDate = fn ($date) => $date
             ? str_replace(' ', 'T', Carbon::parse($date)->format('Y-m-d H:i:s')) . '.000Z'
             : null;
