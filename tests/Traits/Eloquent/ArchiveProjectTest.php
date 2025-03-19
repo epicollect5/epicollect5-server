@@ -20,7 +20,6 @@ class ArchiveProjectTest extends TestCase
         // Create a Faker instance
         $faker = Faker::create();
 
-
         for ($i = 0; $i < $repeatCount; $i++) {
 
             $userId = rand(1, 100);

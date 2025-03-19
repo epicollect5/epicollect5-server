@@ -16,12 +16,13 @@ trait Entries
      *
      * Constructs a query to extract GeoJSON data using the provided project ID and JSON key reference (via 'input_ref').
      * If a 'user_id' is supplied in the parameters, the results are further filtered to include only entries corresponding
-     * to that user. The query is subsequently modified with additional sorting and filtering by calling sortAndFilterEntries.
+     * to that user.
      *
      * @param int $projectId The identifier of the project.
-     * @param array $params   Query parameters, including:
-     *                        - 'input_ref': The JSON key used to extract data from the geo_json_data field.
-     *                        - 'user_id' (optional): Filters entries by user ID if provided.
+     * @param array $params
+     * Query parameters, including:
+     * - 'input_ref': The JSON key used to extract data from the geo_json_data field.
+     * - 'user_id' (optional): Filters entries by user ID if provided.
      *
      */
     public function getGeoJsonData(int $projectId, array $params): Builder
@@ -69,7 +70,7 @@ trait Entries
 
     }
 
-    public function getNewestOldestCreatedAt($projectId, $formRef): array
+    public function getNewestOldestCreatedAt(int $projectId, string $formRef): array
     {
         //format date to match javascript default ISO8601 format
         $formatDate = fn ($date) => $date
@@ -123,7 +124,7 @@ trait Entries
     }
 
 
-    public function sortAndFilterEntries(Builder $q, $filters): Builder
+    public function sortAndFilterEntries(Builder $q, array $filters): Builder
     {
         // Filtering
         if (!empty($filters['filter_by'])) {
@@ -165,7 +166,7 @@ trait Entries
         return $q;
     }
 
-    public function storeEntry(EntryStructureDTO $entryStructure, $entry): int
+    public function storeEntry(EntryStructureDTO $entryStructure, array $entry): int
     {
         // Set the entry params to be added
         $entry['uuid'] = $entryStructure->getEntryUuid();
