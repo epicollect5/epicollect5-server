@@ -1,5 +1,18 @@
 ## Release Notes
 
+# 11.1.9
+
+- Improved entries locations queries
+- Using Brotli instead of Gzip, with compression quality set to 9 in Apache
+
+apache2.conf
+
+```
+<IfModule mod_brotli.c>
+    BrotliCompressionQuality 9
+</IfModule>
+```
+
 # 11.1.8
 
 - Optimized archive (CSV/JSON) queries by adding indexes and enforcing their use.

@@ -105,10 +105,10 @@ trait Entries
      * Search for entries based on answers
      *
      * @param Builder $q
-     * @param $options
+     * @param array $options
      * @return Builder
      */
-    protected function createFilterOptions(Builder $q, $options): Builder
+    protected function createFilterOptions(Builder $q, array $options): Builder
     {
         $inputRef = (empty($options['input_ref'])) ? null : $options['input_ref'];
         $search = (empty($options['search'])) ? null : $options['search'];
@@ -122,7 +122,6 @@ trait Entries
 
         return $q;
     }
-
 
     public function sortAndFilterEntries(Builder $q, array $filters): Builder
     {
