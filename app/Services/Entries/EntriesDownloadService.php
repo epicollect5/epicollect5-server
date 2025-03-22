@@ -10,11 +10,8 @@ use ec5\Models\Entries\Entry;
 use ec5\Services\Mapping\DataMappingService;
 use File;
 use Illuminate\Database\Query\Builder;
-use League\Csv\Bom;
-use League\Csv\Writer;
 use Log;
 use RuntimeException;
-use SplFileObject;
 use Storage;
 use Throwable;
 use ZipArchive;
@@ -228,48 +225,44 @@ class EntriesDownloadService
         $memoryUsageStart = memory_get_usage();
         $access = $this->project->isPrivate() ? 'private' : 'public';
 
+        $file = null; // Declare file variable
+
         try {
-            // Add file locking
-            $fileObject = new SplFileObject($outputFile, 'w+');
-            if (!$fileObject->flock(LOCK_EX)) {
+            // Open file for writing
+            $file = fopen($outputFile, "w");
+            if (!$file) {
+                throw new RuntimeException("Failed to open file: $outputFile");
+            }
+
+            // Acquire an exclusive lock
+            if (!flock($file, LOCK_EX)) {
                 throw new RuntimeException("Failed to acquire file lock");
             }
-            // Create CSV Writer instance
-            $csv = Writer::createFromFileObject($fileObject);
 
-            // Add BOM for UTF-8 (Excel compatibility)
-            $csv->setOutputBOM(Bom::Utf8);
+            // Add BOM for Excel UTF-8 compatibility
+            fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
-            // Insert header row
-            $csv->insertOne($this->dataMappingService->getHeaderRowCSV());
+            // Add CSV headers
+            fputcsv($file, $this->dataMappingService->getHeaderRowCSV(), ',');
 
             $chunkSize = config('epicollect.limits.download_entries_chunk_size');
             $rowCount = 0;
-            $buffer = [];
 
             foreach ($query->lazyByIdDesc() as $entry) {
-
                 $rowCount++;
-                $buffer[] = $this->dataMappingService->getMappedEntryCSV(
-                    $entry->entry_data,
-                    $entry->user_id,
-                    $entry->title,
-                    $entry->uploaded_at,
-                    $access,
-                    $entry->branch_counts ?? null
+                fputcsv(
+                    $file,
+                    $this->dataMappingService->getMappedEntryCSV(
+                        $entry->entry_data,
+                        $entry->user_id,
+                        $entry->title,
+                        $entry->uploaded_at,
+                        $access,
+                        $entry->branch_counts ?? null
+                    ),
+                    ','
                 );
-                $entry = null; // <--imp: this avoids memory leaks
-                // Write buffer to CSV in chunks
-                if (count($buffer) >= $chunkSize) {
-                    $csv->insertAll($buffer);
-                    $buffer = null;// <--imp: this avoids memory leaks
-                }
-            }
-
-            // Write any remaining rows in the buffer
-            if (!empty($buffer)) {
-                $csv->insertAll($buffer);
-                $buffer = null;// <--imp: this avoids memory leaks
+                $entry = null; // Avoid memory leaks
             }
 
             // Log execution time and memory usage
@@ -288,15 +281,19 @@ class EntriesDownloadService
             $this->totalDuration += $totalTime;
             $this->totalEntries += $rowCount;
 
-            // Release lock
-            $fileObject->flock(LOCK_UN);
-
             return true;
         } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             return false;
+        } finally {
+            if (isset($file) && is_resource($file)) {
+                fflush($file);
+                flock($file, LOCK_UN);
+                fclose($file);
+            }
         }
     }
+
 
     /**
      * Writes the query results to a JSON file.
