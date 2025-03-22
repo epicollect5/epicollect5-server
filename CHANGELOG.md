@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 11.1.10
+
+- Using lazyByIdDesc() for CSV/JSON archive downloads
+
 # 11.1.9
 
 - Improved entries locations queries

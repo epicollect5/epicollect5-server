@@ -247,7 +247,7 @@ class EntriesDownloadService
             $rowCount = 0;
             $buffer = [];
 
-            foreach ($query->lazyById() as $entry) {
+            foreach ($query->lazyByIdDesc() as $entry) {
 
                 $rowCount++;
                 $buffer[] = $this->dataMappingService->getMappedEntryCSV(
@@ -329,7 +329,7 @@ class EntriesDownloadService
                 $rowCount = 0; // Track the number of rows processed
                 $total = $query->count('id'); // Get total number of entries
 
-                foreach ($query->lazyById($chunkSize) as $entry) {
+                foreach ($query->lazyByIdDesc($chunkSize) as $entry) {
 
                     // Whether to append a comma or not
                     $append = ($rowCount < $total - 1) ? ',' : '';
