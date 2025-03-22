@@ -217,6 +217,20 @@ class EntriesDownloadService
         return false;
     }
 
+    /**
+     * Writes query results to a CSV file.
+     *
+     * This method writes the data obtained from the provided query to the specified CSV file.
+     * It opens the file with an exclusive lock, writes a UTF-8 BOM for Excel compatibility,
+     * and outputs CSV headers followed by each mapped entry from the query. The function logs
+     * performance metrics including execution time, row count, and memory usage. Returns true
+     * on successful write operations and false if any file operation fails.
+     *
+     * @param Builder $query The query builder yielding entry data to be exported.
+     * @param string  $outputFile The full path where the CSV file will be created.
+     *
+     * @return bool True if the CSV file is written successfully, false otherwise.
+     */
     public function writeCSV(Builder $query, string $outputFile): bool
     {
         DB::disableQueryLog();
