@@ -1,5 +1,10 @@
 ## Release Notes
 
+# 11.1.11
+
+- Fixed BOM for Excel UTF-8 compatibility
+- Using fputcsv() directly for CSV archive downloads, no buffer.
+
 # 11.1.10
 
 - Using lazyByIdDesc() for CSV/JSON archive downloads
