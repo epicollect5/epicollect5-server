@@ -132,11 +132,14 @@ class BranchEntry extends Model
         }
         // Optimized version without user_id filtering and sorting for better performance during bulk exports
         //Use raw SQL to apply FORCE INDEX
-        return DB::table(DB::raw(config('epicollect.tables.branch_entries') . ' FORCE INDEX (idx_branch_entries_project_form_ref_id)'))
+        $q = DB::table(DB::raw(config('epicollect.tables.branch_entries') . ' FORCE INDEX (idx_branch_entries_project_form_ref_id)'))
             ->where('project_id', '=', $projectId)
             ->where('form_ref', '=', $params['form_ref'])
             ->where('owner_input_ref', '=', $params['branch_ref'])
             ->select($columns);
+
+        //sorting and filtering needed for different timeframe downloads (today,month, year...)
+        return $this->sortAndFilterEntries($q, $params);
     }
 
     /**

@@ -189,10 +189,13 @@ class Entry extends Model
         }
 
         // Use raw SQL to apply FORCE INDEX
-        return DB::table(DB::raw(config('epicollect.tables.entries') . ' FORCE INDEX (idx_entries_project_form_ref_id)'))
-            ->where('project_id', '=', $projectId)
-            ->where('form_ref', '=', $params['form_ref'])
-            ->select($columns);
+        $q = DB::table(DB::raw(config('epicollect.tables.entries') . ' FORCE INDEX (idx_entries_project_form_ref_id)'))
+             ->where('project_id', '=', $projectId)
+             ->where('form_ref', '=', $params['form_ref'])
+             ->select($columns);
+
+        //sorting and filtering needed for different timeframe downloads (today,month, year...)
+        return $this->sortAndFilterEntries($q, $params);
     }
 
     /**

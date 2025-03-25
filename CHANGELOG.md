@@ -1,5 +1,10 @@
 ## Release Notes
 
+# 11.1.12
+
+- Fixes regression bugs introduced in the previous release.
+- Re-added sorting and filtering for archive CSV/JSON downloads
+
 # 11.1.11
 
 - Fixed BOM for Excel UTF-8 compatibility
