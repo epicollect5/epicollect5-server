@@ -1,5 +1,10 @@
 ## Release Notes
 
+# 11.1.13
+
+- Fixed regression bugs introduced in the previous release.
+- Removed sorting from archive CSV/JSON downloads for perfomances, using only filtering
+
 # 11.1.12
 
 - Fixes regression bugs introduced in the previous release.

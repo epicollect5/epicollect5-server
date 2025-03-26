@@ -138,8 +138,8 @@ class BranchEntry extends Model
             ->where('owner_input_ref', '=', $params['branch_ref'])
             ->select($columns);
 
-        //sorting and filtering needed for different timeframe downloads (today,month, year...)
-        return $this->sortAndFilterEntries($q, $params);
+        //filtering needed for different timeframe downloads (today,month, year...)
+        return $this->filteringForArchive($q, $params);
     }
 
     /**
@@ -192,6 +192,5 @@ class BranchEntry extends Model
             ->select($columns);
 
         return $this->sortAndFilterEntries($q, $options);
-
     }
 }

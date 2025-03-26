@@ -188,4 +188,24 @@ trait Entries
             return 0;
         }
     }
+
+    public function filteringForArchive(Builder $q, array $params): Builder
+    {
+        // Filtering
+        if (!empty($params['filter_by'])) {
+            $filterBy = $params['filter_by'];
+            $from = !empty($params['filter_from']) ? Carbon::parse($params['filter_from'])->startOfDay() : null;
+            $to = !empty($params['filter_to']) ? Carbon::parse($params['filter_to'])->endOfDay() : null;
+
+            if ($from && $to) {
+                $q->whereBetween($filterBy, [$from, $to]);
+            } elseif ($from) {
+                $q->where($filterBy, '>=', $from);
+            } elseif ($to) {
+                $q->where($filterBy, '<=', $to);
+            }
+        }
+
+        return $q;
+    }
 }

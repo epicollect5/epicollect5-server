@@ -194,8 +194,8 @@ class Entry extends Model
              ->where('form_ref', '=', $params['form_ref'])
              ->select($columns);
 
-        //sorting and filtering needed for different timeframe downloads (today,month, year...)
-        return $this->sortAndFilterEntries($q, $params);
+        //filtering needed for different timeframe downloads (today,month, year...)
+        return $this->filteringForArchive($q, $params);
     }
 
     /**
