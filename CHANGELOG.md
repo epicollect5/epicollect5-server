@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 11.1.14
+
+- Added tests for from archive CSV/JSON downloads when different timeframes are used
+
 # 11.1.13
 
 - Fixed regression bugs introduced in the previous release.
