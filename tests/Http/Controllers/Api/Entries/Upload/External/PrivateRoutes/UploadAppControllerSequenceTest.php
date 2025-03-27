@@ -19,6 +19,7 @@ use Exception;
 use Faker\Factory as Faker;
 use Illuminate\Support\Facades\Auth;
 use PHPUnit\Framework\Attributes\Depends;
+use Random\RandomException;
 use Tests\TestCase;
 use Throwable;
 
@@ -34,6 +35,9 @@ class UploadAppControllerSequenceTest extends TestCase
 
     private string $endpoint = 'api/upload/';
 
+    /**
+     * @throws RandomException
+     */
     public function setUp(): void
     {
         parent::setUp();
@@ -54,20 +58,21 @@ class UploadAppControllerSequenceTest extends TestCase
         }
         //create a project with custom project definition
         //create fake user for testing
+        $user = factory(User::class)->create(['email' => $email]);
+        $projectDefinition = ProjectDefinitionGenerator::createProject(5);
+        $projectDefinition['data']['project']['name'] = $name;
+        $projectDefinition['data']['project']['slug'] = $slug;
+        $project = factory(Project::class)->create(
+            [
+                'created_by' => $user->id,
+                'name' => array_get($projectDefinition, 'data.project.name'),
+                'slug' => array_get($projectDefinition, 'data.project.slug'),
+                'ref' => array_get($projectDefinition, 'data.project.ref'),
+                'access' => config('epicollect.strings.project_access.private')
+            ]
+        );
+        $response = [];
         try {
-            $user = factory(User::class)->create(['email' => $email]);
-            $projectDefinition = ProjectDefinitionGenerator::createProject(5);
-            $projectDefinition['data']['project']['name'] = $name;
-            $projectDefinition['data']['project']['slug'] = $slug;
-            $project = factory(Project::class)->create(
-                [
-                    'created_by' => $user->id,
-                    'name' => array_get($projectDefinition, 'data.project.name'),
-                    'slug' => array_get($projectDefinition, 'data.project.slug'),
-                    'ref' => array_get($projectDefinition, 'data.project.ref'),
-                    'access' => config('epicollect.strings.project_access.private')
-                ]
-            );
             //add role
             factory(ProjectRole::class)->create([
                 'user_id' => $user->id,
@@ -99,7 +104,7 @@ class UploadAppControllerSequenceTest extends TestCase
             $base64EncodedData = base64_encode($gzippedData);
 
             //see https://github.com/laravel/framework/issues/46455
-            $response = $this->actingAs($user)
+            $response[] = $this->actingAs($user)
                 ->call(
                     'POST',
                     'api/internal/formbuilder/' . $project->slug,
@@ -110,8 +115,8 @@ class UploadAppControllerSequenceTest extends TestCase
                     $base64EncodedData
                 );
 
-            $response->assertStatus(200);
-            $this->assertSame(json_decode($response->getContent(), true), $projectDefinition);
+            $response[0]->assertStatus(200);
+            $this->assertSame(json_decode($response[0]->getContent(), true), $projectDefinition);
             //assert there are no entries or branch entries
             $this->assertCount(0, Entry::where('project_id', $project->id)->get());
             $this->assertCount(0, BranchEntry::where('project_id', $project->id)->get());
@@ -127,7 +132,7 @@ class UploadAppControllerSequenceTest extends TestCase
                 'user' => $user,
                 'project' => $project
             ]);
-            $this->logTestError($exception, $response);
+            $this->logTestError($exception, $response[0]);
         }
     }
 

@@ -389,4 +389,123 @@ class EntryTest extends TestCase
         }
     }
 
+    public function test_should_get_today_entries_for_archive()
+    {
+        //create fake entries from last week
+        for ($i = 0; $i < 5; $i++) {
+            factory(Entry::class)->create([
+                'project_id' => $this->project->id,
+                'form_ref' => $this->formRef,
+            'created_at' => now()->subWeek()
+            ]);
+        }
+
+        //create fake entry for today
+        for ($i = 0; $i < 1; $i++) {
+            factory(Entry::class)->create([
+                'project_id' => $this->project->id,
+                'form_ref' => $this->formRef,
+                'created_at' => now()
+            ]);
+        }
+
+        $entries = $this->entryModel->getEntriesByFormForArchive($this->project->id, [
+            'form_ref' => $this->formRef,
+            'filter_by' => 'created_at',
+            'filter_from' => now()->startOfDay(),
+            'filter_to' => now()->endOfDay(),
+        ])->get();
+
+        $this->assertEquals(1, $entries->count());
+    }
+
+    public function test_should_get_week_entries_for_archive()
+    {
+        //create fake entries for last month
+        for ($i = 0; $i < 5; $i++) {
+            factory(Entry::class)->create([
+                'project_id' => $this->project->id,
+                'form_ref' => $this->formRef,
+                'created_at' => now()->subMonth()
+            ]);
+        }
+
+        //create fake entries for this week
+        for ($i = 0; $i < 5; $i++) {
+            factory(Entry::class)->create([
+                'project_id' => $this->project->id,
+                'form_ref' => $this->formRef,
+                'created_at' => now()->subWeek()
+            ]);
+        }
+
+        $entries = $this->entryModel->getEntriesByFormForArchive($this->project->id, [
+            'form_ref' => $this->formRef,
+            'filter_by' => 'created_at',
+            'filter_from' => now()->subWeek(),
+            'filter_to' => now()->endOfDay(),
+        ])->get();
+
+        $this->assertEquals(5, $entries->count());
+    }
+
+    public function test_should_get_month_entries_for_archive()
+    {
+        //create fake entries from three months ago
+        for ($i = 0; $i < 5; $i++) {
+            factory(Entry::class)->create([
+                'project_id' => $this->project->id,
+                'form_ref' => $this->formRef,
+                'created_at' => now()->subMonths(3)
+            ]);
+        }
+
+        //create fake entry for today
+        for ($i = 0; $i < 5; $i++) {
+            factory(Entry::class)->create([
+                'project_id' => $this->project->id,
+                'form_ref' => $this->formRef,
+                'created_at' => now()->subMonth()
+            ]);
+        }
+
+        $entries = $this->entryModel->getEntriesByFormForArchive($this->project->id, [
+            'form_ref' => $this->formRef,
+            'filter_by' => 'created_at',
+            'filter_from' => now()->subMonth(),
+            'filter_to' => now()->endOfDay(),
+        ])->get();
+
+        $this->assertEquals(5, $entries->count());
+    }
+
+    public function test_should_get_year_entries_for_archive()
+    {
+        //create fake entries from last year
+        for ($i = 0; $i < 5; $i++) {
+            factory(Entry::class)->create([
+                'project_id' => $this->project->id,
+                'form_ref' => $this->formRef,
+                'created_at' => now()->subYear()
+            ]);
+        }
+
+        //create fake entries for this year
+        for ($i = 0; $i < 5; $i++) {
+            factory(Entry::class)->create([
+                'project_id' => $this->project->id,
+                'form_ref' => $this->formRef,
+                'created_at' => now()->startOfYear()
+            ]);
+        }
+
+        $entries = $this->entryModel->getEntriesByFormForArchive($this->project->id, [
+            'form_ref' => $this->formRef,
+            'filter_by' => 'created_at',
+            'filter_from' => now()->startOfYear(),
+            'filter_to' => now()->endOfYear(),
+        ])->get();
+
+        $this->assertEquals(5, $entries->count());
+    }
 }
