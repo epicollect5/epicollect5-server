@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 11.1.15
+
+- Improved admin page (users, projects, entries) queries
+
 # 11.1.14
 
 - Added tests for from archive CSV/JSON downloads when different timeframes are used
