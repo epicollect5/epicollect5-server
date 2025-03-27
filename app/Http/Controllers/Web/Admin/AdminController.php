@@ -6,8 +6,6 @@ use Auth;
 use ec5\Http\Controllers\Controller;
 use ec5\Libraries\Utilities\Common;
 use ec5\Models\Project\Project;
-use ec5\Models\User\User;
-use ec5\Services\Project\ProjectService;
 use ec5\Services\User\UserService;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Http\Request;
@@ -41,26 +39,20 @@ class AdminController extends Controller
     {
         // Get request data
         $params = $request->all();
-        $perPage = config('epicollect.limits.users_per_page');
-        $adminUser = $request->user();
         $ajaxView = 'admin.tables.users';
-
         // Set search/filter/filter option defaults
         $search = !empty($params['search']) ? $params['search'] : '';
 
         $filters['server_role'] = !empty($params['server_role']) ? $params['server_role'] : '';
         $filters['state'] = !empty($params['state']) ? $params['state'] : '';
 
-        $currentPage = !empty($params['page']) ? $params['page'] : 1;
-
-        $users = UserService::getAllUsers($perPage, $currentPage, $search, $filters);
+        $users = UserService::getAllUsers($search, $filters);
         $users->appends($filters);
         $users->appends(['search' => $search]);
 
         $payload = [
             'action' => 'users',
-            'users' => $users,
-            'adminUser' => $adminUser
+            'users' => $users
         ];
 
         // If ajax, return rendered html from $ajaxView
@@ -119,27 +111,16 @@ class AdminController extends Controller
     /**
      * @throws Throwable
      */
-    public function showProjects(Request $request, ProjectService $projectService)
+    public function showProjects(Request $request)
     {
-        $adminUser = $request->user();
         $view = 'admin.tables.projects';
         $action = 'projects';
 
-        // Get request data
         $params = $request->all();
-        $perPage = config('epicollect.limits.admin_projects_per_page');
 
         //get projects paginated
-        $projects = $this->projectModel->admin($perPage, $params);
-
-        // Append the creator user's User object and current user's ProjectRole object
-        foreach ($projects as $project) {
-            $project->user = User::where('id', '=', $project->created_by)->first();
-            $project->my_role = $projectService->getRole($project->project_id, $adminUser)->getRole();
-        }
-
+        $projects = $this->projectModel->admin($params);
         $projects->appends($params);
-
         $payload = [
             'projects' => $projects,
             'action' => $action

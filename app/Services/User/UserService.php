@@ -7,10 +7,15 @@ use ec5\Libraries\Auth\Ldap\LdapUser;
 use ec5\Models\User\User;
 use ec5\Models\User\UserProvider;
 use Exception;
+use Illuminate\Pagination\Paginator;
 use Log;
+use Throwable;
 
 class UserService
 {
+    /**
+     * @throws Throwable
+     */
     public static function createGoogleUser($googleUser): ?User
     {
         $provider = config('epicollect.strings.providers.google');
@@ -38,13 +43,16 @@ class UserService
                 throw new Exception('$isUserSaved && $isProviderSaved is false');
             }
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
             Log::error('Error creating/updating social user after login', ['exception' => $e->getMessage()]);
         }
         return null;
     }
 
+    /**
+     * @throws Throwable
+     */
     public static function createAppleUser($name, $lastName, $email): ?User
     {
         //create new Apple user
@@ -68,13 +76,16 @@ class UserService
             DB::commit();
 
             return $user;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
             Log::error('Error creating Apple user after login', ['exception' => $e->getMessage()]);
         }
         return null;
     }
 
+    /**
+     * @throws Throwable
+     */
     public static function createPasswordlessUser($email): ?User
     {
         $provider = config('epicollect.strings.providers.passwordless');
@@ -101,13 +112,16 @@ class UserService
             } else {
                 throw new Exception('createPasswordlessUser() transaction failed');
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
             Log::error('Error creating new passwordless user after login', ['exception' => $e->getMessage()]);
             return null;
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public static function updateUnverifiedPasswordlessUser($user): bool
     {
         $provider = config('epicollect.strings.providers.passwordless');
@@ -134,13 +148,16 @@ class UserService
             } else {
                 throw new Exception('updatePasswordlessUser() transaction failed');
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
             Log::error('Error updating unverified passwordless user after login', ['exception' => $e->getMessage()]);
             return false;
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public static function updateGoogleUser($googleUser): bool
     {
         $provider = config('epicollect.strings.providers.google');
@@ -162,7 +179,7 @@ class UserService
                 throw new Exception('updateGoogleUser() failed');
             }
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error('Error updating Google user after login', ['exception' => $e->getMessage()]);
             DB::rollBack();
             return false;
@@ -174,7 +191,7 @@ class UserService
         try {
             $user = self::amendUserDetailsGoogle($googleUser);
             return $user->save();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error('Error updating Google user details', [
                 'exception' => $e->getMessage()
             ]);
@@ -182,6 +199,9 @@ class UserService
         return false;
     }
 
+    /**
+     * @throws Throwable
+     */
     public static function updateAppleUser($name, $lastName, $email, $needProvider): bool
     {
         $provider = config('epicollect.strings.providers.apple');
@@ -208,7 +228,7 @@ class UserService
             }
             throw new Exception('updateAppleUser failed');
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error('Error updating Apple user after login', ['exception' => $e->getMessage()]);
             DB::rollBack();
             return false;
@@ -234,7 +254,6 @@ class UserService
             // If not, create new
             $user = new User();
             $user->email = $ldapUser->getAuthIdentifier();
-            $user->provider = config('epicollect.strings.providers.ldap');
             $user->state = config('epicollect.strings.user_state.active');
             $user->server_role = config('epicollect.strings.server_roles.basic');
             $user->save();
@@ -270,8 +289,9 @@ class UserService
         return null;
     }
 
-    public static function getAllUsers($perPage = 1, $currentPage = 1, $search = '', $filters = array())
+    public static function getAllUsers($search = '', $filters = array()): Paginator
     {
+        $perPage = config('epicollect.limits.users_per_page');
         // retrieve paginated users relative to the search (on name and email)
         // and filter (if applicable), ordered by name
         $users = User::where(function ($query) use ($search) {
@@ -288,7 +308,7 @@ class UserService
             if (!empty($filters['state'])) {
                 $query->where('state', '=', $filters['state']);
             }
-        })->orderBy('name', 'asc');
+        });
 
         // now paginate users
         return $users->simplePaginate($perPage);

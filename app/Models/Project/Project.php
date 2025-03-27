@@ -177,29 +177,39 @@ class Project extends Model
         return (string)$updatedAt;
     }
 
-    public function admin($perPage, $params = []): Paginator|array
+    public function admin($params = []): Paginator|array
     {
-        return $this->distinct()
+
+        $perPage  = config('epicollect.limits.admin_projects_per_page');
+        return $this
             ->join($this->projectStatsTable, $this->getTable() . '.id', '=', $this->projectStatsTable . '.project_id')
+            ->leftJoin('users', $this->getTable() . '.created_by', '=', 'users.id')  // Join users table
             ->where(function ($query) use ($params) {
                 if (!empty($params['name'])) {
-                    $query->where('name', 'LIKE', '%' . $params['name'] . '%');
+                    $query->where($this->getTable() . '.name', 'LIKE', '%' . $params['name'] . '%'); // Restore search by name
                 }
             })
             ->where(function ($query) use ($params) {
                 if (!empty($params['access'])) {
-                    $query->where('access', '=', $params['access']);
+                    $query->where($this->getTable() . '.access', '=', $params['access']);
                 }
             })
             ->where(function ($query) use ($params) {
                 if (!empty($params['visibility'])) {
-                    $query->where('visibility', '=', $params['visibility']);
+                    $query->where($this->getTable() . '.visibility', '=', $params['visibility']);
                 }
             })
-            ->where('status', '<>', 'archived')
-            ->orderBy('total_entries', 'desc')
+            ->where($this->getTable() . '.status', '<>', 'archived')
+            ->orderBy($this->projectStatsTable . '.total_entries', 'desc')  // Ensure sorting works
+            ->select(
+                $this->getTable() . '.*',
+                'users.name as user_name',
+                'users.last_name as user_last_name',
+                $this->projectStatsTable . '.total_entries' // Explicitly select total_entries
+            )
             ->simplePaginate($perPage);
     }
+
 
     /**
      * @throws Throwable
