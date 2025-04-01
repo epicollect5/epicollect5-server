@@ -102,6 +102,12 @@ class AccountDeletionInternalTest extends TestCase
         //assert user was dropped
         $this->assertEquals(0, User::where('email', $user->email)->count());
         $this->assertEquals(0, User::where('id', $user->id)->count());
+
+        //assert provider is removed
+        $this->assertEquals(0, UserProvider::where('email', $user->email)
+            ->count());
+        $this->assertEquals(0, UserProvider::where('user_id', $user->id)
+            ->count());
     }
 
     public function test_account_deletion_performed_with_role_creator_and_entries()
@@ -214,6 +220,13 @@ class AccountDeletionInternalTest extends TestCase
         //assert user was archived and email scrambled (due to DB uniqueness constraint)
         $this->assertEquals(0, User::where('email', $user->email)->count());
         $this->assertEquals(1, User::where('id', $user->id)->count());
+
+        //assert provider is removed
+        $this->assertEquals(0, UserProvider::where('email', $user->email)
+            ->count());
+        $this->assertEquals(0, UserProvider::where('user_id', $user->id)
+            ->count());
+
         //assert the project was archived
         $this->assertEquals(1, Project::where('id', $project->id)
             ->where('status', 'archived')
@@ -221,7 +234,6 @@ class AccountDeletionInternalTest extends TestCase
 
         //assert roles were dropped
         $this->assertEquals(0, ProjectRole::where('project_id', $project->id)->count());
-
 
         //assert entries & branch entries are NOT touched
         $this->assertEquals($numOfEntries, Entry::where('project_id', $project->id)->count());
@@ -325,6 +337,13 @@ class AccountDeletionInternalTest extends TestCase
         //assert user was archived, not removed
         $this->assertEquals(0, User::where('email', $user->email)->count());
         $this->assertEquals(1, User::where('id', $user->id)->count());
+
+        //assert provider is removed
+        $this->assertEquals(0, UserProvider::where('email', $user->email)
+            ->count());
+        $this->assertEquals(0, UserProvider::where('user_id', $user->id)
+            ->count());
+
         //assert the project was removed
         $this->assertEquals(0, Project::where('id', $project->id)
             ->count());
@@ -451,6 +470,13 @@ class AccountDeletionInternalTest extends TestCase
         //assert user was archived and email scrambled (due to DB uniqueness constraint)
         $this->assertEquals(0, User::where('email', $user->email)->count());
         $this->assertEquals(1, User::where('id', $user->id)->count());
+
+        //assert provider is removed
+        $this->assertEquals(0, UserProvider::where('email', $user->email)
+            ->count());
+        $this->assertEquals(0, UserProvider::where('user_id', $user->id)
+            ->count());
+
         //assert project was NOT archived
         $this->assertEquals(0, Project::where('id', $project->id)
             ->where('status', 'archived')
@@ -584,6 +610,13 @@ class AccountDeletionInternalTest extends TestCase
         //assert user was archived and email scrambled (due to DB uniqueness constraint)
         $this->assertEquals(0, User::where('email', $user->email)->count());
         $this->assertEquals(1, User::where('id', $user->id)->count());
+
+        //assert provider is removed
+        $this->assertEquals(0, UserProvider::where('email', $user->email)
+            ->count());
+        $this->assertEquals(0, UserProvider::where('user_id', $user->id)
+            ->count());
+
         //assert project was NOT archived
         $this->assertEquals(0, Project::where('id', $project->id)
             ->where('status', 'archived')
@@ -717,6 +750,13 @@ class AccountDeletionInternalTest extends TestCase
         //assert user was archived and email scrambled (due to DB uniqueness constraint)
         $this->assertEquals(0, User::where('email', $user->email)->count());
         $this->assertEquals(1, User::where('id', $user->id)->count());
+
+        //assert provider is removed
+        $this->assertEquals(0, UserProvider::where('email', $user->email)
+            ->count());
+        $this->assertEquals(0, UserProvider::where('user_id', $user->id)
+            ->count());
+
         //assert project was NOT archived
         $this->assertEquals(0, Project::where('id', $project->id)
             ->where('status', 'archived')
@@ -851,6 +891,13 @@ class AccountDeletionInternalTest extends TestCase
         //assert user was archived
         $this->assertEquals(0, User::where('email', $user->email)->count());
         $this->assertEquals(1, User::where('id', $user->id)->count());
+
+        //assert provider is removed
+        $this->assertEquals(0, UserProvider::where('email', $user->email)
+            ->count());
+        $this->assertEquals(0, UserProvider::where('user_id', $user->id)
+            ->count());
+
         //assert project was NOT archived
         $this->assertEquals(0, Project::where('id', $project->id)
             ->where('status', 'archived')
@@ -1195,6 +1242,12 @@ class AccountDeletionInternalTest extends TestCase
         $this->assertEquals(0, User::where('email', $user->email)->count());
         $this->assertEquals(1, User::where('id', $user->id)->count());
 
+        //assert provider is removed
+        $this->assertEquals(0, UserProvider::where('email', $user->email)
+            ->count());
+        $this->assertEquals(0, UserProvider::where('user_id', $user->id)
+            ->count());
+
         //assert projects with CREATOR role were archived
         $this->assertEquals(1, Project::where('id', $projectRoleCreatorOne->id)
             ->where('status', 'archived')
@@ -1388,6 +1441,12 @@ class AccountDeletionInternalTest extends TestCase
         //assert user was archived
         $this->assertEquals(0, User::where('email', $user->email)->count());
         $this->assertEquals(1, User::where('id', $user->id)->count());
+
+        //assert provider is removed
+        $this->assertEquals(0, UserProvider::where('email', $user->email)
+            ->count());
+        $this->assertEquals(0, UserProvider::where('user_id', $user->id)
+            ->count());
 
         //assert projects with CREATOR role were removed
         $this->assertEquals(0, Project::where('id', $projectRoleCreatorOne->id)

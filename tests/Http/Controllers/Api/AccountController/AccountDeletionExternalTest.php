@@ -69,6 +69,15 @@ class AccountDeletionExternalTest extends TestCase
                 ]
             ]);
 
+        //assert user was removed
+        $this->assertEquals(0, User::where('email', $user->email)->count());
+
+        //assert provider is removed
+        $this->assertEquals(0, UserProvider::where('email', $user->email)
+            ->count());
+        $this->assertEquals(0, UserProvider::where('user_id', $user->id)
+            ->count());
+
         // Assert a message was sent to the given users...
         Mail::assertSent(UserAccountDeletionConfirmation::class, function ($mail) use ($user) {
             //also assert the user email is confirmed in the email HTML
@@ -186,6 +195,13 @@ class AccountDeletionExternalTest extends TestCase
 
         //assert user was removed
         $this->assertEquals(0, User::where('email', $user->email)->count());
+
+        //assert provider is removed
+        $this->assertEquals(0, UserProvider::where('email', $user->email)
+            ->count());
+        $this->assertEquals(0, UserProvider::where('user_id', $user->id)
+            ->count());
+
         //assert project WAS archived
         $this->assertEquals(1, Project::where('id', $project->id)
             ->where('status', 'archived')
@@ -309,6 +325,13 @@ class AccountDeletionExternalTest extends TestCase
 
         //assert user was removed
         $this->assertEquals(0, User::where('email', $user->email)->count());
+
+        //assert provider is removed
+        $this->assertEquals(0, UserProvider::where('email', $user->email)
+            ->count());
+        $this->assertEquals(0, UserProvider::where('user_id', $user->id)
+            ->count());
+
         //assert project WAS removed
         $this->assertEquals(0, Project::where('id', $project->id)
             ->count());
@@ -433,6 +456,13 @@ class AccountDeletionExternalTest extends TestCase
 
         //assert user was removed
         $this->assertEquals(0, User::where('email', $user->email)->count());
+
+        //assert provider is removed
+        $this->assertEquals(0, UserProvider::where('email', $user->email)
+            ->count());
+        $this->assertEquals(0, UserProvider::where('user_id', $user->id)
+            ->count());
+
         //assert project was NOT archived
         $this->assertEquals(0, Project::where('id', $project->id)
             ->where(('status'), 'archived')
@@ -503,11 +533,11 @@ class AccountDeletionExternalTest extends TestCase
         $project = factory(Project::class)->create(['created_by' => $anotherUser->id]);
 
         //assign user to that project with the CURATOR role
-        $projectRole = factory(ProjectRole::class)->create([
-            'user_id' => $user->id,
-            'project_id' => $project->id,
-            'role' => $role
-        ]);
+        factory(ProjectRole::class)->create([
+             'user_id' => $user->id,
+             'project_id' => $project->id,
+             'role' => $role
+         ]);
 
         //assert project is present before archiving
         $this->assertEquals(1, Project::where('id', $project->id)->count());
@@ -570,6 +600,13 @@ class AccountDeletionExternalTest extends TestCase
 
         //assert user was removed
         $this->assertEquals(0, User::where('email', $user->email)->count());
+
+        //assert provider is removed
+        $this->assertEquals(0, UserProvider::where('email', $user->email)
+            ->count());
+        $this->assertEquals(0, UserProvider::where('user_id', $user->id)
+            ->count());
+
         //assert project was NOT archived
         $this->assertEquals(1, Project::where('id', $project->id)
             ->where('status', '<>', 'archived')
@@ -629,7 +666,7 @@ class AccountDeletionExternalTest extends TestCase
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
-        $provider = factory(UserProvider::class)->create([
+        factory(UserProvider::class)->create([
             'user_id' => $user->id,
             'email' => $user->email
         ]);
@@ -639,7 +676,7 @@ class AccountDeletionExternalTest extends TestCase
         $project = factory(Project::class)->create(['created_by' => $anotherUser->id]);
 
         //assign user to that project with the COLLECTOR role
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
             'role' => $role
@@ -706,6 +743,13 @@ class AccountDeletionExternalTest extends TestCase
 
         //assert user was removed
         $this->assertEquals(0, User::where('email', $user->email)->count());
+
+        //assert provider is removed
+        $this->assertEquals(0, UserProvider::where('email', $user->email)
+            ->count());
+        $this->assertEquals(0, UserProvider::where('user_id', $user->id)
+            ->count());
+
         //assert project was NOT archived
         $this->assertEquals(1, Project::where('id', $project->id)
             ->where('status', '<>', 'archived')
@@ -765,7 +809,7 @@ class AccountDeletionExternalTest extends TestCase
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
-        $provider = factory(UserProvider::class)->create([
+        factory(UserProvider::class)->create([
             'user_id' => $user->id,
             'email' => $user->email
         ]);
@@ -775,7 +819,7 @@ class AccountDeletionExternalTest extends TestCase
         $project = factory(Project::class)->create(['created_by' => $anotherUser->id]);
 
         //assign user to that project with the VIEWER role
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
             'role' => $role
@@ -842,6 +886,13 @@ class AccountDeletionExternalTest extends TestCase
 
         //assert user was removed
         $this->assertEquals(0, User::where('email', $user->email)->count());
+
+        //assert provider is removed
+        $this->assertEquals(0, UserProvider::where('email', $user->email)
+            ->count());
+        $this->assertEquals(0, UserProvider::where('user_id', $user->id)
+            ->count());
+
         //assert project was NOT archived
         $this->assertEquals(1, Project::where('id', $project->id)
             ->where('status', '<>', 'archived')
@@ -906,7 +957,7 @@ class AccountDeletionExternalTest extends TestCase
     {
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
-        $provider = factory(UserProvider::class)->create([
+        factory(UserProvider::class)->create([
             'user_id' => $user->id,
             'email' => $user->email
         ]);
@@ -927,6 +978,12 @@ class AccountDeletionExternalTest extends TestCase
                     "deleted" => true
                 ]
             ]);
+
+        //assert provider is removed
+        $this->assertEquals(0, UserProvider::where('email', $user->email)
+            ->count());
+        $this->assertEquals(0, UserProvider::where('user_id', $user->id)
+            ->count());
 
         // Assert a message was sent to the given users...
         Mail::assertSent(UserAccountDeletionConfirmation::class, function ($mail) use ($user) {
@@ -956,13 +1013,13 @@ class AccountDeletionExternalTest extends TestCase
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
-        $provider = factory(UserProvider::class)->create([
+        factory(UserProvider::class)->create([
             'user_id' => $user->id,
             'email' => $user->email
         ]);
         //create another user
         $anotherUser = factory(User::class)->create();
-        $provider = factory(UserProvider::class)->create([
+        factory(UserProvider::class)->create([
             'user_id' => $anotherUser->id,
             'email' => $anotherUser->email
         ]);
@@ -1240,6 +1297,12 @@ class AccountDeletionExternalTest extends TestCase
         $this->assertEquals(0, User::where('email', $user->email)->count());
         $this->assertEquals(1, User::where('id', $user->id)->count());
 
+        //assert provider is removed
+        $this->assertEquals(0, UserProvider::where('email', $user->email)
+            ->count());
+        $this->assertEquals(0, UserProvider::where('user_id', $user->id)
+            ->count());
+
         //assert projects with CREATOR role were archived
         $this->assertEquals(0, Project::where('id', $projectRoleCreatorOne->id)
             ->where('status', '<>', 'archived')
@@ -1286,8 +1349,8 @@ class AccountDeletionExternalTest extends TestCase
                 $this->assertEquals(2 * $numOfEntries, Entry::where('project_id', $projectId)->count());
                 $this->assertEquals(2 * ($numOfBranchEntries * $numOfEntries), BranchEntry::where('project_id', $projectId)->count());
             } else {
-                $this->assertEquals(1 * $numOfEntries, Entry::where('project_id', $projectId)->count());
-                $this->assertEquals(1 * ($numOfBranchEntries * $numOfEntries), BranchEntry::where('project_id', $projectId)->count());
+                $this->assertEquals($numOfEntries, Entry::where('project_id', $projectId)->count());
+                $this->assertEquals(($numOfBranchEntries * $numOfEntries), BranchEntry::where('project_id', $projectId)->count());
             }
 
             //assert all other roles are dropped, but not creator
@@ -1356,22 +1419,20 @@ class AccountDeletionExternalTest extends TestCase
 
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
-        $provider = factory(UserProvider::class)->create([
+        factory(UserProvider::class)->create([
             'user_id' => $user->id,
             'email' => $user->email
         ]);
         //create another user
         $anotherUser = factory(User::class)->create();
-        $provider = factory(UserProvider::class)->create([
+        factory(UserProvider::class)->create([
             'user_id' => $anotherUser->id,
             'email' => $anotherUser->email
         ]);
 
         // 2- create a couple of projects with that user
         $projectRoleCreatorOne = factory(Project::class)->create(['created_by' => $user->id]);
-        $projectRefs[] = $projectRoleCreatorOne->ref;
         $projectRoleCreatorTwo = factory(Project::class)->create(['created_by' => $user->id]);
-        $projectRefs[] = $projectRoleCreatorTwo->ref;
         //assign the user to those projects with the CREATOR role
         factory(ProjectRole::class)->create([
             'user_id' => $user->id,
@@ -1459,6 +1520,12 @@ class AccountDeletionExternalTest extends TestCase
         $this->assertEquals(0, User::where('email', $user->email)->count());
         $this->assertEquals(1, User::where('id', $user->id)->count());
 
+        //assert providers are removed
+        $this->assertEquals(0, UserProvider::where('user_id', $user->id)
+            ->count());
+        $this->assertEquals(0, UserProvider::where('email', $user->email)
+            ->count());
+
         //assert projects with CREATOR role were removed
         $this->assertEquals(0, Project::where('id', $projectRoleCreatorOne->id)
             ->count());
@@ -1470,10 +1537,15 @@ class AccountDeletionExternalTest extends TestCase
         $this->assertEquals(0, ProjectRole::where('project_id', $projectRoleCreatorOne->id)->count());
         $this->assertEquals(0, ProjectRole::where('project_id', $projectRoleCreatorTwo->id)->count());
 
+        //assert providers are removed
+        $this->assertEquals(0, UserProvider::where('user_id', $projectRoleCreatorOne->id)
+            ->count());
+        $this->assertEquals(0, UserProvider::where('user_id', $projectRoleCreatorTwo->id)
+            ->count());
+
         foreach ($projectsWithOtherRoles as $projectWithOtherRole) {
             //assert projects with other roles are NOT archived
             $projectId = $projectWithOtherRole['id'];
-            $otherRole = $projectWithOtherRole['role'];
             $this->assertEquals(1, Project::where('id', $projectId)
                 ->count());
 

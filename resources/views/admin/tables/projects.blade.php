@@ -22,7 +22,8 @@
                              alt="logo"/>
                     </td>
                     <td>
-                        <a title="{{ trans('site.view_project') }}" href="{{ url('project/' . $project->slug) }}">
+                        <a title="{{ trans('site.view_project') }}" href="{{ url('project/' . $project->slug) }}"
+                           target="_blank">
                             <span class="project-name">&nbsp;
                                 {{ str_limit($project->name, $limit = 36, $end = '...') }}
                             </span>
