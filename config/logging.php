@@ -17,7 +17,7 @@ return [
     |
     */
 
-    'default' => env('LOG_CHANNEL', 'stack'),
+    'default' => env('LOG_CHANNEL', 'daily'),
 
     /*
     |--------------------------------------------------------------------------
@@ -38,20 +38,20 @@ return [
         'stack' => [
             'driver' => 'stack',
             'channels' => ['single'],
-            'ignore_exceptions' => false,
+            'ignore_exceptions' => false
         ],
 
         'single' => [
             'driver' => 'single',
             'path' => storage_path('logs/phpunit.log'),
-            'level' => 'debug',
+            'level' => env('APP_LOG_LEVEL', 'error'),
         ],
 
         'daily' => [
             'driver' => 'daily',
             'path' => storage_path('logs/laravel.log'),
-            'level' => 'debug',
-            'days' => 365,
+            'level' => env('APP_LOG_LEVEL', 'error'),
+            'days' => env('APP_LOG_MAX_FILES', 30),
         ],
 
         'slack' => [
