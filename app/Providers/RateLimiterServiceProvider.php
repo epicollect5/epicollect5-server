@@ -27,7 +27,9 @@ class RateLimiterServiceProvider extends ServiceProvider
     }
 
     /**
-     * Configure all rate limiters for the application.
+     * Sets up all application rate limiters for various features.
+     *
+     * Initializes rate limiters for account deletion, passwordless authentication, API exports, and OAuth token requests.
      */
     public function configureRateLimiters(): void
     {
@@ -72,10 +74,10 @@ class RateLimiterServiceProvider extends ServiceProvider
     }
 
     /**
-     * Configure a specific API export rate limiter.
+     * Registers a rate limiter for API export operations with a configurable per-minute limit.
      *
-     * @param string $name The name of the rate limiter
-     * @param string $configKey The config key for the rate limit
+     * @param string $name The unique identifier for the rate limiter.
+     * @param string $configKey The configuration key specifying the rate limit value.
      */
     private function configureApiExportLimiter(string $name, string $configKey): void
     {
@@ -87,7 +89,7 @@ class RateLimiterServiceProvider extends ServiceProvider
     }
 
     /**
-     * Configure rate limiter for the /api/oauth/token endpoint.
+     * Registers a rate limiter for the /api/oauth/token endpoint, restricting requests per hour per client IP based on configuration.
      */
     private function configureOauthTokenLimiter(): void
     {
