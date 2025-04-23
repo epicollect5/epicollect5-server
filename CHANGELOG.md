@@ -1,5 +1,14 @@
 ## Release Notes
 
+# 11.1.17
+
+- Fixed log defaulting to bedbug instead of error
+- Lowered oauth token limit to 10 per hour
+
+# 11.1.16
+
+- Added tests for account deletion
+
 # 11.1.15
 
 - Improved admin page (users, projects, entries) queries
