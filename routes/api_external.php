@@ -120,11 +120,6 @@ Route::group(['middleware' => ['throttle:600,1']], function () {
 
 // Throttle documented entries READ endpoints - 60 requests per minute
 Route::group(['middleware' => ['throttle:api-export-entries']], function () {
-
-    /* Routes used specifically for OAuth 2 client requests */
-    // Issue client access_token
-    Route::post('api/oauth/token', 'Api\OAuth\OAuthController@issueToken');
-
     /* Export endpoints */
     // Set project permissions api middleware
     Route::group(['middleware' => ['project.permissions.api']], function () {
@@ -132,6 +127,14 @@ Route::group(['middleware' => ['throttle:api-export-entries']], function () {
         Route::get('api/export/entries/{project_slug}', 'Api\Entries\View\ViewEntriesDataController@export');
     });
 });
+
+// Throttle oauth token endpoint - 10 requests per hour by default
+Route::group(['middleware' => ['throttle:oauth-token']], function () {
+    /* Routes used specifically for OAuth 2 client requests */
+    // Issue client access_token
+    Route::post('api/oauth/token', 'Api\OAuth\OAuthController@issueToken');
+});
+
 
 // Throttle documented project READ endpoints - 60 requests per minute
 Route::group(['middleware' => ['throttle:api-export-project']], function () {

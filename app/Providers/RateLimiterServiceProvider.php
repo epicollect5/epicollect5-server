@@ -34,6 +34,7 @@ class RateLimiterServiceProvider extends ServiceProvider
         $this->configureAccountDeletionLimiter();
         $this->configurePasswordlessLimiter();
         $this->configureApiExportLimiters();
+        $this->configureOauthTokenLimiter();
     }
 
     /**
@@ -82,6 +83,17 @@ class RateLimiterServiceProvider extends ServiceProvider
             return Limit::perMinute(
                 config("epicollect.limits.api_export.$configKey")
             )->by($request->ip());
+        });
+    }
+
+    /**
+     * Configure rate limiter for the /api/oauth/token endpoint.
+     */
+    private function configureOauthTokenLimiter(): void
+    {
+        RateLimiter::for('oauth-token', function (Request $request) {
+            return Limit::perHour(config('epicollect.limits.oauth_token_limit'))
+                ->by($request->ip());
         });
     }
 }

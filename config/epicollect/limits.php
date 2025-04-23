@@ -86,6 +86,7 @@ return [
     //per hour limit
     'passwordless_rate_limit' => (int) env('PASSWORDLESS_RATE_LIMIT', 10),
     'account_deletion_limit' => (int) env('ACCOUNT_DELETION_LIMIT', 1),
+    'oauth_token_limit' => (int) env('OAUTH_TOKEN_LIMIT', 10),
     //per minute limit
     'api_export' => [
         'project' => (int) env('API_RATE_LIMIT_PROJECT', 60),
