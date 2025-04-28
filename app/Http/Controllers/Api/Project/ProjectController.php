@@ -96,8 +96,8 @@ class ProjectController
             ])
         ];
 
+        sleep(config('epicollect.setup.api_sleep_time.project'));
         return Response::apiData($data, $meta);
-
     }
 
     public function search($name = '')

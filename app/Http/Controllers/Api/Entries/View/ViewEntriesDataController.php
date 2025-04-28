@@ -15,11 +15,11 @@ use Throwable;
 
 class ViewEntriesDataController extends ViewEntriesControllerBase
 {
-    /**
-     * @return JsonResponse|StreamedResponse
-     */
-    public function export()
+    //Export entries using the API
+    public function export(): JsonResponse|StreamedResponse
     {
+        //Slow down api responses to avoid overloading the server
+        sleep(config('epicollect.setup.api_sleep_time.entries'));
         $jsonPerPageLimit = config('epicollect.limits.entries_export_per_page_json');
         $csvPerPageLimit = config('epicollect.limits.entries_export_per_page_csv');
 
@@ -95,10 +95,7 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
         }
     }
 
-    /**
-     * @return JsonResponse
-     */
-    public function show()
+    public function show(): JsonResponse
     {
         $allowedKeys = array_keys(config('epicollect.strings.search_data_entries'));
         $perPage = config('epicollect.limits.entries_table.per_page');

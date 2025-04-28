@@ -71,5 +71,12 @@ return [
     'locks' => [
         'duration_archive_download_lock' => (int) env('DURATION_ARCHIVE_DOWNLOAD_LOCK', 300),
         'duration_bulk_entries_deletion_lock' => (int) env('DURATION_BULK_ENTRIES_DELETION_LOCK', 600)
+    ],
+    //sleep time in seconds
+    'api_sleep_time' => [
+        'oauth' => (int) env('API_SLEEP_TIME_OAUTH', 3),
+        'project' => (int) env('API_SLEEP_TIME_PROJECT', 1),
+        'entries' => (int) env('API_SLEEP_TIME_ENTRIES', 1),
+        'media' => (int) env('API_SLEEP_TIME_MEDIA', 1),
     ]
 ];
