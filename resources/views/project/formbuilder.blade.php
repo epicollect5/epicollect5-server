@@ -46,8 +46,20 @@
     <!--navbar content goes here-->
 </nav>
 
-<div class="warning-well screen-resolution">The formbuilder does not support the current screen resolution</div>
-
+<div class="warning-well screen-resolution">
+    <p>The formbuilder does not support the current screen resolution</p>
+    <hr>
+    <p>A minimum screen width of <strong>1024px</strong> is required</p>
+    <hr>
+    <p><strong>
+            <a href="https://docs.epicollect.net/formbuilder/build-your-questionnaire"
+               target="_blank"
+            >
+                Learn More
+            </a>
+        </strong>
+    </p>
+</div>
 <div class="container-fluid page-formbuilder hidden">
     <div class="row">
         <section class="inputs-tools col-sm-3 col-md-2">
