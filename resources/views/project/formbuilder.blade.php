@@ -60,6 +60,9 @@
         </strong>
     </p>
 </div>
+
+<div class="total-entries hidden" data-total-entries="{{ $totalEntries }}"></div>
+
 <div class="container-fluid page-formbuilder hidden">
     <div class="row">
         <section class="inputs-tools col-sm-3 col-md-2">
@@ -314,6 +317,39 @@
                     </button>
                     <button type="button" class="btn btn-default btn-action possible_answers-perform-import"
                             disabled>Import
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="warning-delete-question"
+         class="modal fade"
+         tabindex="-1"
+         role="dialog">
+        <div class="modal-dialog"
+             role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button"
+                            class="close"
+                            data-dismiss="modal"
+                            aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title text-center">Warning</h4>
+                </div>
+                <div class="modal-body text-center">
+                    <p>Are you sure you want to delete this question?</p>
+                    <p class="warning-well">This action cannot be undone!</p>
+                    <p class="text-danger"><strong>All data associated with this question will also be permanently
+                            deleted.</strong></p>
+                    <a href="https://docs.epicollect.net/formbuilder/edit-inputs#delete-questions"
+                       target="_blank"
+                    >
+                        <strong>Learn More</strong></a>
+                </div>
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-default btn-danger btn-confirm-delete-question">Confirm
                     </button>
                 </div>
             </div>

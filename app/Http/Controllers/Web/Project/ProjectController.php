@@ -73,7 +73,10 @@ class ProjectController
         if (!$this->requestedProjectRole()->canEditProject()) {
             return view('errors.gen_error')->withErrors(['errors' => ['ec5_91']]);
         }
-        return view('project.formbuilder');
+
+        $totalEntries = ProjectStats::where('project_id', $this->requestedProject()->getId())->value('total_entries');
+
+        return view('project.formbuilder', ['totalEntries' => $totalEntries]);
     }
 
     /*
