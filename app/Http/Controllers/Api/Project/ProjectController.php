@@ -20,6 +20,7 @@ class ProjectController
     /**
      * @param ProjectStats $projectStats
      * @return JsonResponse
+     * @throws Throwable
      */
     public function show(ProjectStats $projectStats)
     {
@@ -74,6 +75,7 @@ class ProjectController
     /**
      * @param ProjectStats $projectStats
      * @return JsonResponse
+     * @throws Throwable
      */
     public function export(ProjectStats $projectStats)
     {

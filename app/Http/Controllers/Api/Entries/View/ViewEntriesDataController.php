@@ -16,6 +16,9 @@ use Throwable;
 class ViewEntriesDataController extends ViewEntriesControllerBase
 {
     //Export entries using the API
+    /**
+     * @throws Throwable
+     */
     public function export(): JsonResponse|StreamedResponse
     {
         //Slow down api responses to avoid overloading the server
@@ -95,6 +98,9 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function show(): JsonResponse
     {
         $allowedKeys = array_keys(config('epicollect.strings.search_data_entries'));
