@@ -7,12 +7,16 @@ use ec5\Models\Project\ProjectStats;
 use ec5\Traits\Eloquent\StatsRefresher;
 use ec5\Traits\Requests\RequestAttributes;
 use Response;
+use Throwable;
 
 class ProjectController
 {
     use StatsRefresher;
     use RequestAttributes;
 
+    /**
+     * @throws Throwable
+     */
     public function show()
     {
         $this->refreshProjectStats($this->requestedProject());
@@ -67,6 +71,7 @@ class ProjectController
 
     /**
      * Show formbuilder page
+     * @throws Throwable
      */
     public function formbuilder()
     {
@@ -74,16 +79,23 @@ class ProjectController
             return view('errors.gen_error')->withErrors(['errors' => ['ec5_91']]);
         }
 
+        //Refresh stats
+        $this->refreshProjectStats($this->requestedProject());
+        // Get total entries
         $totalEntries = ProjectStats::where(
             'project_id',
             $this->requestedProject()->getId()
         )->value('total_entries') ?? 0;
+
 
         return view('project.formbuilder', ['totalEntries' => $totalEntries]);
     }
 
     /*
      * Show dataviewer page
+     */
+    /**
+     * @throws Throwable
      */
     public function dataviewer()
     {
