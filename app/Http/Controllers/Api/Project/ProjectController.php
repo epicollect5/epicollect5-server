@@ -20,6 +20,7 @@ class ProjectController
     /**
      * @param ProjectStats $projectStats
      * @return JsonResponse
+     * @throws Throwable
      */
     public function show(ProjectStats $projectStats)
     {
@@ -74,6 +75,7 @@ class ProjectController
     /**
      * @param ProjectStats $projectStats
      * @return JsonResponse
+     * @throws Throwable
      */
     public function export(ProjectStats $projectStats)
     {
@@ -96,8 +98,8 @@ class ProjectController
             ])
         ];
 
+        sleep(config('epicollect.setup.api_sleep_time.project'));
         return Response::apiData($data, $meta);
-
     }
 
     public function search($name = '')

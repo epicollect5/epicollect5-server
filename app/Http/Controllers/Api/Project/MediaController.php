@@ -85,6 +85,7 @@ class MediaController
                     //photo response is the usual 200
                     $response = Response::make($file);
                     $response->header('Content-Type', $contentType);
+                    sleep(config('epicollect.setup.api_sleep_time.media'));
                     return $response;
                 }
             } catch (FileNotFoundException) {

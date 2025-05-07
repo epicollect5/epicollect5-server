@@ -13,7 +13,6 @@ use Log;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Response;
-
 //use Zend\Diactoros\Response as Psr7Response;
 use Nyholm\Psr7\Response as Psr7Response;
 use Throwable;
@@ -60,6 +59,10 @@ class OAuthController
             if (!empty($payload['client_id'])) {
                 OAuthAccessToken::where('client_id', $payload['client_id'])->delete();
             }
+
+            //Slow down the response to avoid overloading the server
+            sleep(config('epicollect.setup.api_sleep_time.oauth'));
+
             // return a new access token
             return $this->server->respondToAccessTokenRequest($request, new Psr7Response());
         } catch (OAuthServerException $e) {
