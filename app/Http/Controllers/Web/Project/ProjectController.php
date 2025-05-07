@@ -74,7 +74,10 @@ class ProjectController
             return view('errors.gen_error')->withErrors(['errors' => ['ec5_91']]);
         }
 
-        $totalEntries = ProjectStats::where('project_id', $this->requestedProject()->getId())->value('total_entries');
+        $totalEntries = ProjectStats::where(
+            'project_id',
+            $this->requestedProject()->getId()
+        )->value('total_entries') ?? 0;
 
         return view('project.formbuilder', ['totalEntries' => $totalEntries]);
     }
