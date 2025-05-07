@@ -5,9 +5,13 @@ namespace ec5\Traits\Eloquent;
 use ec5\DTO\ProjectDTO;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectStats;
+use Throwable;
 
 trait StatsRefresher
 {
+    /**
+     * @throws Throwable
+     */
     public function refreshProjectStats(ProjectDTO $requestedProject): void
     {
         $projectStats = new ProjectStats();
