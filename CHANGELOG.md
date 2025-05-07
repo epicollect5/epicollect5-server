@@ -1,5 +1,12 @@
 ## Release Notes
 
+# 11.1.19
+
+- Formbuilder: Added a modal dialog to confirm question deletion, including warnings about data loss and links to
+  further documentation.
+- Formbuilder: Enhanced the screen resolution warning with detailed requirements and a "Learn More" link.
+- Updated JSON-LD structured data in the header to use secure HTTPS URLs.
+
 # 11.1.18
 
 - Added compression to tables with json columns (for new installs)
