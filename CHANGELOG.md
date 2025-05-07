@@ -1,5 +1,11 @@
 ## Release Notes
 
+# 11.1.20
+
+- Introduced configurable delays for API responses in OAuth token issuance, project export, entries export, and media
+  download endpoints.
+- Added new configuration options to control API response delay durations via environment variables.
+
 # 11.1.19
 
 - Formbuilder: Added a modal dialog to confirm question deletion, including warnings about data loss and links to
