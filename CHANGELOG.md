@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 11.1.18
+
+- Added compression to tables with json columns (for new installs)
+
 # 11.1.17
 
 - Fixed log defaulting to bedbug instead of error
