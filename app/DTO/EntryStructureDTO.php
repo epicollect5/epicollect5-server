@@ -7,6 +7,7 @@ use ec5\Libraries\Utilities\DateFormatConverter;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use Hash;
+use Log;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Throwable;
 
@@ -73,64 +74,69 @@ class EntryStructureDTO
          *     - project_version: string - Project version.
          */
 
-
-        $type = $payload['type']; // entry, branch_entry, file_entry, archive
-        // Common data structure
-        $this->data = [
-            'type' => $payload['type'],
-            'id' => $payload['id'],
-            'attributes' => [
-                'form' => [
-                    'ref' => $payload['attributes']['form']['ref'],
-                    'type' => 'hierarchy'
-                ]
-            ],
-            'relationships' => [
-                'parent' => [
-                    'data' => [
-                        'parent_form_ref' => $payload['relationships']['parent']['data']['parent_form_ref'] ?? '',
-                        'parent_entry_uuid' => $payload['relationships']['parent']['data']['parent_entry_uuid'] ?? ''
+        try {
+            $type = $payload['type']; // entry, branch_entry, file_entry, archive
+            // Common data structure
+            $this->data = [
+                'type' => $payload['type'],
+                'id' => $payload['id'],
+                'attributes' => [
+                    'form' => [
+                        'ref' => $payload['attributes']['form']['ref'],
+                        'type' => 'hierarchy'
                     ]
                 ],
-                'branch' => [
-                    'data' => [
-                        'owner_input_ref' => $payload['relationships']['branch']['data']['owner_input_ref'] ?? '',
-                        'owner_entry_uuid' => $payload['relationships']['branch']['data']['owner_entry_uuid'] ?? '',
+                'relationships' => [
+                    'parent' => [
+                        'data' => [
+                            'parent_form_ref' => $payload['relationships']['parent']['data']['parent_form_ref'] ?? '',
+                            'parent_entry_uuid' => $payload['relationships']['parent']['data']['parent_entry_uuid'] ?? ''
+                        ]
+                    ],
+                    'branch' => [
+                        'data' => [
+                            'owner_input_ref' => $payload['relationships']['branch']['data']['owner_input_ref'] ?? '',
+                            'owner_entry_uuid' => $payload['relationships']['branch']['data']['owner_entry_uuid'] ?? '',
+                        ]
                     ]
                 ]
-            ]
-        ];
-
-        //Sanitise zero dates or epoch defaults (1970-01-01)
-        //imp: payload might not have the created_at, for example for entry deletion requests or unit tests
-        if (isset($payload[$type]['created_at'])) {
-            $payload[$type]['created_at'] = DateFormatConverter::getSanitisedCreateAt($payload[$type]['created_at']);
-        }
-
-        // Dynamic-type-specific data
-        $this->data[$type] = [
-            'entry_uuid' => $payload[$type]['entry_uuid'] ?? '',
-            'created_at' => $payload[$type]['created_at'] ?? '', // like '2024-02-12T11:32:32.321Z',
-            'device_id' => $payload[$type]['device_id'] ?? '',
-            'platform' => $payload[$type]['platform'] ?? '', //WEB, Android, iOS
-            'project_version' => $payload[$type]['project_version'] ?? '', // like '2024-02-12 11:32:05'
-            //when testing uniqueness, we set the below properties
-            'input_ref' => $payload[$type]['input_ref'] ?? '',
-            'answer' => $payload[$type]['answer'] ?? ''
-        ];
-
-        // Additional fields for specific types
-        if ($type === config('epicollect.strings.entry_types.file_entry')) {
-            $this->data[$type] += [
-                'name' => $payload[$type]['name'],
-                'type' => $payload[$type]['type'],
-                'input_ref' => $payload[$type]['input_ref']
             ];
-        } else {
-            $this->data[$type] += [
-                'title' => $payload[$type]['title'] ?? '',
-                'answers' => $payload[$type]['answers'] ?? []
+
+            //Sanitise zero dates or epoch defaults (1970-01-01)
+            //imp: payload might not have the created_at, for example for entry deletion requests or unit tests
+            if (isset($payload[$type]['created_at'])) {
+                $payload[$type]['created_at'] = DateFormatConverter::getSanitisedCreateAt($payload[$type]['created_at']);
+            }
+
+            // Dynamic-type-specific data
+            $this->data[$type] = [
+                'entry_uuid' => $payload[$type]['entry_uuid'] ?? '',
+                'created_at' => $payload[$type]['created_at'] ?? '', // like '2024-02-12T11:32:32.321Z',
+                'device_id' => $payload[$type]['device_id'] ?? '',
+                'platform' => $payload[$type]['platform'] ?? '', //WEB, Android, iOS
+                'project_version' => $payload[$type]['project_version'] ?? '', // like '2024-02-12 11:32:05'
+                //when testing uniqueness, we set the below properties
+                'input_ref' => $payload[$type]['input_ref'] ?? '',
+                'answer' => $payload[$type]['answer'] ?? ''
             ];
+
+            // Additional fields for specific types
+            if ($type === config('epicollect.strings.entry_types.file_entry')) {
+                $this->data[$type] += [
+                    'name' => $payload[$type]['name'],
+                    'type' => $payload[$type]['type'],
+                    'input_ref' => $payload[$type]['input_ref']
+                ];
+            } else {
+                $this->data[$type] += [
+                    'title' => $payload[$type]['title'] ?? '',
+                    'answers' => $payload[$type]['answers'] ?? []
+                ];
+            }
+        } catch (Throwable $e) {
+            Log::error(__METHOD__ . ' failed.', [
+                'payload' => $payload,
+                'exception' => $e->getMessage()]);
         }
     }
 

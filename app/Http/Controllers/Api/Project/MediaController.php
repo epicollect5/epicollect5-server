@@ -163,10 +163,12 @@ class MediaController
                     return $response;
                 }
             } catch (Throwable $e) {
-                Log::error('Temp media error', ['exception' => $e->getMessage()]);
-                //imp: If the file is not found, see if we have it in the non-temp folders
-                //imp: this covers the case when a user is editing an existing web entry
-                //imp: We display the stored file, if no temp file available yet
+                Log::info('Temp media error', ['exception' => $e->getMessage()]);
+                /**
+                 * Imp: If the file is not found, check for its existence in the non-temporary folders
+                 * Imp: This handles the case when a user is editing an existing web entry
+                 * Imp: If the temporary file is unavailable, display the stored file instead
+                 */
                 return $this->getMedia($ruleMedia);
             }
         }

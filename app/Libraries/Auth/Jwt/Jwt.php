@@ -77,13 +77,12 @@ class Jwt
             return true;
 
         } catch (Throwable $e) {
-            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
+            Log::info(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             // Token invalid:
             // Imp: Signature not valid, jwt token expired or altered
             $this->errors = ['ec5_51'];
             return false;
         }
-
     }
 
     /**

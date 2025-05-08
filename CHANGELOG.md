@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 11.1.21
+
+- Improved logging
+
 # 11.1.20
 
 - Introduced configurable delays for API responses in OAuth token issuance, project export, entries export, and media
