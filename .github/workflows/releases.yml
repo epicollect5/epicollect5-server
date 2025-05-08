@@ -16,22 +16,28 @@ jobs:
       - name: Extract release notes from CHANGELOG.md
         id: changelog
         run: |
-          TAG_VERSION=${GITHUB_REF#refs/tags/} # Extract the tag (e.g., 11.1.1)
+          TAG_VERSION=${GITHUB_REF#refs/tags/} # Extract the tag (e.g., 11.1.21)
           echo "Extracting release notes for version: $TAG_VERSION"
+
+          # Extract release notes using awk based on the version in the changelog
           RELEASE_NOTES=$(awk -v version="$TAG_VERSION" '
-          $0 ~ "^## \\[" version "\\]" {flag=1; next}
-          $0 ~ "^## \\[" && flag {exit}
-          flag {print}
+          $0 ~ "^# " version {flag=1; next}  # Look for the version heading
+          $0 ~ "^# " && flag {exit}         # Exit when the next heading is found
+          flag {print}                       # Print the lines while flag is set
           ' CHANGELOG.md)
-          
+
           # Guard against missing or empty release notes
           if [ -z "$RELEASE_NOTES" ]; then
           echo "Error: No release notes found for version $TAG_VERSION" >&2
-          exit 1
+          exit 1 
           fi
+
+          # Replace newlines with spaces (optional if you prefer to keep everything on one line)
+          RELEASE_NOTES=$(echo "$RELEASE_NOTES" | tr '\n' ' ')
           
-          # Write multi-line release notes to GitHub Actions output safely
-          printf "release_notes<<EOF\n%s\nEOF\n" "$RELEASE_NOTES" >> "$GITHUB_OUTPUT"
+          # Safely write the release notes to GitHub Actions output
+          echo "release_notes=$RELEASE_NOTES" >> "$GITHUB_OUTPUT"
+
 
       - name: Create GitHub Release
         uses: actions/create-release@v1
