@@ -24,6 +24,10 @@ jobs:
             flag {print}
           ' CHANGELOG.md)
           # Ensure the release notes are correctly formatted for GitHub Actions
+          if [ -z "$RELEASE_NOTES" ]; then
+            echo "Error: No release notes found for version $TAG_VERSION" >&2
+            exit 1
+          fi
           echo "release_notes<<EOF" >> $GITHUB_OUTPUT
           printf '%s\n' "$RELEASE_NOTES" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
