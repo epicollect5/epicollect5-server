@@ -19,18 +19,19 @@ jobs:
           TAG_VERSION=${GITHUB_REF#refs/tags/} # Extract the tag (e.g., 11.1.1)
           echo "Extracting release notes for version: $TAG_VERSION"
           RELEASE_NOTES=$(awk -v version="$TAG_VERSION" '
-            $0 ~ "# " version {flag=1; next}
-            $0 ~ "# " && flag {exit}
-            flag {print}
+          $0 ~ "^## \\[" version "\\]" {flag=1; next}
+          $0 ~ "^## \\[" && flag {exit}
+          flag {print}
           ' CHANGELOG.md)
-          # Ensure the release notes are correctly formatted for GitHub Actions
+          
+          # Guard against missing or empty release notes
           if [ -z "$RELEASE_NOTES" ]; then
-            echo "Error: No release notes found for version $TAG_VERSION" >&2
-            exit 1
+          echo "Error: No release notes found for version $TAG_VERSION" >&2
+          exit 1
           fi
-          echo "release_notes<<EOF" >> $GITHUB_OUTPUT
-          printf '%s\n' "$RELEASE_NOTES" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          
+          # Write multi-line release notes to GitHub Actions output safely
+          printf "release_notes<<EOF\n%s\nEOF\n" "$RELEASE_NOTES" >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub Release
         uses: actions/create-release@v1
