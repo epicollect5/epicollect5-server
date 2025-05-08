@@ -12,6 +12,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
       - name: Extract release notes from CHANGELOG.md
         id: changelog
         run: |
@@ -22,7 +23,14 @@ jobs:
             $0 ~ "# " && flag {exit}
             flag {print}
           ' CHANGELOG.md)
-          echo "release_notes=$RELEASE_NOTES" >> $GITHUB_OUTPUT
+          # Ensure the release notes are correctly formatted for GitHub Actions
+          if [ -z "$RELEASE_NOTES" ]; then
+            echo "Error: No release notes found for version $TAG_VERSION" >&2
+            exit 1
+          fi
+          echo "release_notes<<EOF" >> $GITHUB_OUTPUT
+          printf '%s\n' "$RELEASE_NOTES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
         uses: actions/create-release@v1
