@@ -25,7 +25,7 @@ jobs:
           ' CHANGELOG.md)
           # Ensure the release notes are correctly formatted for GitHub Actions
           echo "release_notes<<EOF" >> $GITHUB_OUTPUT
-          echo "$RELEASE_NOTES" >> $GITHUB_OUTPUT
+          printf '%s\n' "$RELEASE_NOTES" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
