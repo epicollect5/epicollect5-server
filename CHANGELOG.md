@@ -1,5 +1,10 @@
 ## Release Notes
 
+# 11.1.22
+
+- Show better error when api return 403 forbidden response (Dataviewer 0.1.1)
+- Improved download data modal message (Dataviewer 0.1.1)
+
 # 11.1.21
 
 - Improved logging
