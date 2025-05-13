@@ -254,4 +254,38 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
 
         return $randomString;
     }
+
+    public static function outOfBoundsIntDataProvider(): array
+    {
+        $tests = [];
+
+        for ($i = 0; $i < 100; $i++) {
+            $min = rand(-100, 100);
+            $max = rand($min + 1, $min + 200);
+
+            $tests[] = [$min, $max, $min - rand(1, 20)];  // too low
+            $tests[] = [$min, $max, $max + rand(1, 20)];  // too high
+        }
+
+        return $tests;
+    }
+
+    public static function outOfBoundsFloatDataProvider(): array
+    {
+        $tests = [];
+
+        for ($i = 0; $i < 100; $i++) {
+            $min = round(mt_rand(-1000, 1000) / 10, 5);  // e.g., -45.3
+            $max = round($min + mt_rand(1, 200) / 10, 5); // e.g., 55.6
+
+            $tooLow = round($min - mt_rand(1, 20) / 10, 5);
+            $tooHigh = round($max + mt_rand(1, 20) / 10, 5);
+
+            $tests[] = [$min, $max, $tooLow];
+            $tests[] = [$min, $max, $tooHigh];
+        }
+
+        return $tests;
+    }
+
 }
