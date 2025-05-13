@@ -3,11 +3,11 @@
 namespace Tests\Http\Validation\Entries\Upload\InputRules;
 
 use ec5\Http\Validation\Entries\Upload\InputRules\RuleIntegerInput;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class RuleIntegerInputTest extends TestCase
 {
-
     /**
      * @var \ec5\DTO\ProjectDTO
      */
@@ -144,7 +144,6 @@ class RuleIntegerInputTest extends TestCase
      */
     public function test_min_max_answer_too_low()
     {
-
         // Answer too low
         $answer = 0;
         // Sex min/max
@@ -178,5 +177,28 @@ class RuleIntegerInputTest extends TestCase
         $this->validator->validate($data);
         $this->assertTrue($this->validator->hasErrors());
         $this->validator->resetErrors();
+    }
+
+    #[DataProvider('outOfBoundsIntDataProvider')]
+    public function test_answer_out_of_bounds($min, $max, $answer)
+    {
+        $this->inputDetails['min'] = (string) $min;
+        $this->inputDetails['max'] = (string) $max;
+
+        $this->validator->setRules($this->inputDetails, $answer, $this->project);
+
+        $data = [$this->inputDetails['ref'] => $answer];
+        $this->validator->validate($data);
+
+        if ($answer < $min) {
+            echo "Caught: {$answer} is lower than min {$min}\n";
+        } elseif ($answer > $max) {
+            echo "Caught: {$answer} is greater than max {$max}\n";
+        }
+
+        $this->assertTrue($this->validator->hasErrors(), "Expected error for value={$answer}, min={$min}, max={$max}");
+
+        $this->validator->resetErrors();
+        $this->reset();
     }
 }

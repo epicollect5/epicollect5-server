@@ -3,11 +3,11 @@
 namespace Tests\Http\Validation\Entries\Upload\InputRules;
 
 use ec5\Http\Validation\Entries\Upload\InputRules\RuleDecimalInput;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class RuleDecimalInputTest extends TestCase
 {
-
     /**
      * @var \ec5\DTO\ProjectDTO
      */
@@ -148,46 +148,26 @@ class RuleDecimalInputTest extends TestCase
         $this->reset();
     }
 
-    /**
-     *
-     */
-    public function test_min_max_answer_too_low()
+    #[DataProvider('outOfBoundsFloatDataProvider')]
+    public function test_answer_out_of_bounds($min, $max, $answer)
     {
-
-        // Answer too low
-        $answer = 0.4;
-        // Sex min/max
-        $this->inputDetails['min'] = '50.4';
-        $this->inputDetails['max'] = '200.1';
+        $this->inputDetails['min'] = (string) $min;
+        $this->inputDetails['max'] = (string) $max;
 
         $this->validator->setRules($this->inputDetails, $answer, $this->project);
 
         $data = [$this->inputDetails['ref'] => $answer];
         $this->validator->validate($data);
-        $this->assertTrue($this->validator->hasErrors());
+
+        if ($answer < $min) {
+            echo "Caught: {$answer} is lower than min {$min}\n";
+        } elseif ($answer > $max) {
+            echo "Caught: {$answer} is greater than max {$max}\n";
+        }
+
+        $this->assertTrue($this->validator->hasErrors(), "Expected error for value={$answer}, min={$min}, max={$max}");
+
         $this->validator->resetErrors();
-
-        $this->reset();
-    }
-
-    /**
-     *
-     */
-    public function test_min_max_answer_too_high()
-    {
-        // Answer too high
-        $answer = 210.88;
-        // Sex min/max
-        $this->inputDetails['min'] = '50.4';
-        $this->inputDetails['max'] = '200.1';
-
-        $this->validator->setRules($this->inputDetails, $answer, $this->project);
-
-        $data = [$this->inputDetails['ref'] => $answer];
-        $this->validator->validate($data);
-        $this->assertTrue($this->validator->hasErrors());
-        $this->validator->resetErrors();
-
         $this->reset();
     }
 
