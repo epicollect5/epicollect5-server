@@ -1,5 +1,10 @@
 ## Release Notes
 
+# 11.1.23
+
+- Improved integer and decimal min and max tests
+- Removed Data Editor front end validation
+
 # 11.1.22
 
 - Show better error when api return 403 forbidden response (Dataviewer 0.1.1)
