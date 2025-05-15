@@ -28,6 +28,20 @@ class DownloadControllerTest extends TestCase
     use DatabaseTransactions;
     use Assertions;
 
+    public function setUp(): void
+    {
+        parent::setUp();
+        //remove leftovers
+        User::where(
+            'email',
+            'like',
+            '%example.net%'
+        )
+            ->delete();
+
+
+    }
+
     public function test_should_fails_if_user_not_logged_in()
     {
         //create user
@@ -284,19 +298,23 @@ class DownloadControllerTest extends TestCase
         //create user
         $format = 'csv';
         $user = factory(User::class)->create();
-        $projectName = config('testing.WEB_UPLOAD_CONTROLLER_PROJECT.name');
-        $projectSlug = config('testing.WEB_UPLOAD_CONTROLLER_PROJECT.slug');
-        //create a project with custom project definition
-        $projectDefinition = ProjectDefinitionGenerator::createProject(1);
-        $projectDefinition['data']['project']['name'] = $projectName;
-        $projectDefinition['data']['project']['slug'] = $projectSlug;
+        //create project
         $project = factory(Project::class)->create(
             [
                 'created_by' => $user->id,
+                'access' => config('epicollect.strings.project_access.private')
+            ]
+        );
+        //create a project with custom project definition
+        $projectDefinition = ProjectDefinitionGenerator::createProject(1);
+        $projectDefinition['data']['project']['name'] = $project->name;
+        $projectDefinition['data']['project']['slug'] = $project->slug;
+        //update project metadata
+        $project->update(
+            [
                 'name' => array_get($projectDefinition, 'data.project.name'),
                 'slug' => array_get($projectDefinition, 'data.project.slug'),
                 'ref' => array_get($projectDefinition, 'data.project.ref'),
-                'access' => config('epicollect.strings.project_access.private')
             ]
         );
 

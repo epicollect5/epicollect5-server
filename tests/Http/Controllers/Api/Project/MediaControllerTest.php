@@ -12,6 +12,7 @@ use ec5\Models\User\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Storage;
 use Image;
+use Intervention\Image\Drivers\Imagick\Encoders\JpegEncoder;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
@@ -120,7 +121,7 @@ class MediaControllerTest extends TestCase
 
     #[DataProvider('multipleRunProvider')] public function test_wrong_type_in_request()
     {
-        $response = $this->json('GET', 'api/internal/media/' . $this->project->slug . '?type=wrong&name=filename&format=entry_thumb')
+        $this->json('GET', 'api/internal/media/' . $this->project->slug . '?type=wrong&name=filename&format=entry_thumb')
             ->assertStatus(400)
             ->assertJsonStructure([
                 'errors' => [
@@ -147,7 +148,7 @@ class MediaControllerTest extends TestCase
 
     #[DataProvider('multipleRunProvider')] public function test_missing_params_in_photo_request()
     {
-        $response = $this->json('GET', 'api/internal/media/' . $this->project->slug . '?type=photo')
+        $this->json('GET', 'api/internal/media/' . $this->project->slug . '?type=photo')
             ->assertStatus(400)
             ->assertJsonStructure([
                 'errors' => [
@@ -178,7 +179,7 @@ class MediaControllerTest extends TestCase
 
     #[DataProvider('multipleRunProvider')] public function test_missing_name_in_photo_entry_original_request()
     {
-        $response = $this->json('GET', 'api/internal/media/' . $this->project->slug . '?type=photo&format=entry_original')
+        $this->json('GET', 'api/internal/media/' . $this->project->slug . '?type=photo&format=entry_original')
             ->assertStatus(400)
             ->assertJsonStructure([
                 'errors' => [
@@ -204,7 +205,7 @@ class MediaControllerTest extends TestCase
 
     #[DataProvider('multipleRunProvider')] public function test_missing_name_in_photo_entry_thumb_request()
     {
-        $response = $this->json('GET', 'api/internal/media/' . $this->project->slug . '?type=photo&format=entry_thumb')
+        $this->json('GET', 'api/internal/media/' . $this->project->slug . '?type=photo&format=entry_thumb')
             ->assertStatus(400)
             ->assertJsonStructure([
                 'errors' => [
@@ -230,7 +231,7 @@ class MediaControllerTest extends TestCase
 
     #[DataProvider('multipleRunProvider')] public function test_missing_params_in_audio_request()
     {
-        $response = $this->json('GET', 'api/internal/media/' . $this->project->slug . '?type=audio')
+        $this->json('GET', 'api/internal/media/' . $this->project->slug . '?type=audio')
             ->assertStatus(400)
             ->assertJsonStructure([
                 'errors' => [
@@ -261,7 +262,7 @@ class MediaControllerTest extends TestCase
 
     #[DataProvider('multipleRunProvider')] public function test_audio_file_not_found()
     {
-        $response = $this->json('GET', 'api/internal/media/' . $this->project->slug . '?type=audio&name=ciao&format=audio')
+        $this->json('GET', 'api/internal/media/' . $this->project->slug . '?type=audio&name=ciao&format=audio')
             ->assertStatus(404)
             ->assertJsonStructure([
                 'errors' => [
@@ -287,7 +288,7 @@ class MediaControllerTest extends TestCase
 
     #[DataProvider('multipleRunProvider')] public function test_video_file_not_found()
     {
-        $response = $this->json('GET', 'api/internal/media/' . $this->project->slug . '?type=audio&name=ciao&format=video')
+        $this->json('GET', 'api/internal/media/' . $this->project->slug . '?type=audio&name=ciao&format=video')
             ->assertStatus(404)
             ->assertJsonStructure([
                 'errors' => [
@@ -313,7 +314,7 @@ class MediaControllerTest extends TestCase
 
     #[DataProvider('multipleRunProvider')] public function test_missing_params_in_video_request()
     {
-        $response = $this->json('GET', 'api/internal/media/' . $this->project->slug . '?type=video')
+        $this->json('GET', 'api/internal/media/' . $this->project->slug . '?type=video')
             ->assertStatus(400)
             ->assertJsonStructure([
                 'errors' => [
@@ -350,7 +351,7 @@ class MediaControllerTest extends TestCase
         // Get the image content from the response
         $imageContent = $response->getContent();
         // Create an Intervention Image instance from the image content
-        $image = Image::make($imageContent);
+        $image = Image::read($imageContent);
 
         $this->assertEquals($image->width(), config('epicollect.media.photo_placeholder.width'));
         $this->assertEquals($image->height(), config('epicollect.media.photo_placeholder.width'));
@@ -375,17 +376,17 @@ class MediaControllerTest extends TestCase
         //create a fake photo for the entry
         $landscapeWidth = config('epicollect.media.entry_original_landscape')[0];
         $landscapeHeight = config('epicollect.media.entry_original_landscape')[1];
-        $image = Image::canvas($landscapeWidth, $landscapeHeight, '#ffffff'); // Width, height, and background color
+        $image = Image::create($landscapeWidth, $landscapeHeight); // Width, height, and background color
 
         // Encode the image as JPEG or other formats
-        $imageData = (string)$image->encode('jpg');
+        $imageData = (string)$image->encode(new JpegEncoder(50));
         Storage::disk('entry_original')->put($this->project->ref . '/' . $filename, $imageData);
 
         $thumbWidth = config('epicollect.media.entry_thumb')[0];
         $thumbHeight = config('epicollect.media.entry_thumb')[1];
-        $thumb = Image::canvas($thumbWidth, $thumbHeight, '#ffffff'); // Width, height, and background color
+        $thumb = Image::create($thumbWidth, $thumbHeight); // Width, height, and background color
         // Encode the image as JPEG or other formats
-        $thumbData = (string)$thumb->encode('jpg');
+        $thumbData = (string)$thumb->encode(new JpegEncoder(50));
         Storage::disk('entry_thumb')->put($this->project->ref . '/' . $filename, $thumbData);
 
         //entry_original
@@ -398,7 +399,7 @@ class MediaControllerTest extends TestCase
         // Get the image content from the response
         $imageContent = $response->getContent();
         // Create an Intervention Image instance from the image content
-        $entryOriginal = Image::make($imageContent);
+        $entryOriginal = Image::read($imageContent);
         $this->assertEquals($entryOriginal->width(), config('epicollect.media.entry_original_landscape')[0]);
         $this->assertEquals($entryOriginal->height(), config('epicollect.media.entry_original_landscape')[1]);
 
@@ -411,7 +412,7 @@ class MediaControllerTest extends TestCase
         // Get the image content from the response
         $imageContent = $response->getContent();
         // Create an Intervention Image instance from the image content
-        $entryThumb = Image::make($imageContent);
+        $entryThumb = Image::read($imageContent);
         $this->assertEquals($entryThumb->width(), config('epicollect.media.entry_thumb')[0]);
         $this->assertEquals($entryThumb->height(), config('epicollect.media.entry_thumb')[1]);
 
@@ -433,10 +434,10 @@ class MediaControllerTest extends TestCase
         //create a fake photo for the entry
         $landscapeWidth = config('epicollect.media.entry_original_portrait')[0];
         $landscapeHeight = config('epicollect.media.entry_original_portrait')[1];
-        $image = Image::canvas($landscapeWidth, $landscapeHeight, '#ffffff'); // Width, height, and background color
+        $image = Image::create($landscapeWidth, $landscapeHeight); // Width, height, and background color
 
         // Encode the image as JPEG or other formats
-        $imageData = (string)$image->encode('jpg');
+        $imageData = (string)$image->encode(new JpegEncoder(50));
         Storage::disk('entry_original')->put($this->project->ref . '/' . $filename, $imageData);
 
         //entry_original
@@ -449,7 +450,7 @@ class MediaControllerTest extends TestCase
         // Get the image content from the response
         $imageContent = $response->getContent();
         // Create an Intervention Image instance from the image content
-        $entryOriginal = Image::make($imageContent);
+        $entryOriginal = Image::read($imageContent);
         $this->assertEquals($entryOriginal->width(), config('epicollect.media.entry_original_portrait')[0]);
         $this->assertEquals($entryOriginal->height(), config('epicollect.media.entry_original_portrait')[1]);
 
@@ -465,14 +466,12 @@ class MediaControllerTest extends TestCase
             'form_ref' => $this->project->ref . '_' . uniqid()
         ]);
 
-        $filename = $entry->uuid . '_' . time() . '.jpg';
-
         //create a fake photo for the entry
         $thumbWidth = config('epicollect.media.entry_thumb')[0];
         $thumbHeight = config('epicollect.media.entry_thumb')[1];
-        $thumb = Image::canvas($thumbWidth, $thumbHeight, '#ffffff'); // Width, height, and background color
+        $thumb = Image::create($thumbWidth, $thumbHeight); // Width, height, and background color
         // Encode the image as JPEG or other formats
-        $thumbData = (string)$thumb->encode('jpg');
+        $thumbData = (string)$thumb->encode(new JpegEncoder(50));
         $filename = $entry->uuid . '_' . time() . '.jpg';
         Storage::disk('entry_thumb')->put($this->project->ref . '/' . $filename, $thumbData);
 
@@ -485,7 +484,7 @@ class MediaControllerTest extends TestCase
         // Get the image content from the response
         $imageContent = $response->getContent();
         // Create an Intervention Image instance from the image content
-        $entryThumb = Image::make($imageContent);
+        $entryThumb = Image::read($imageContent);
         $this->assertEquals($entryThumb->width(), config('epicollect.media.entry_thumb')[0]);
         $this->assertEquals($entryThumb->height(), config('epicollect.media.entry_thumb')[1]);
 
@@ -545,7 +544,7 @@ class MediaControllerTest extends TestCase
 
     #[DataProvider('multipleRunProvider')] public function test_missing_params_in_request_temp()
     {
-        $response = $this->json('GET', 'api/internal/temp-media/' . $this->project->slug)
+        $this->json('GET', 'api/internal/temp-media/' . $this->project->slug)
             ->assertStatus(400)
             ->assertJsonStructure([
                 'errors' => [
@@ -581,7 +580,7 @@ class MediaControllerTest extends TestCase
 
     #[DataProvider('multipleRunProvider')] public function test_wrong_type_in_request_temp()
     {
-        $response = $this->json('GET', 'api/internal/temp-media/' . $this->project->slug . '?type=wrong&name=filename&format=entry_thumb')
+        $this->json('GET', 'api/internal/temp-media/' . $this->project->slug . '?type=wrong&name=filename&format=entry_thumb')
             ->assertStatus(400)
             ->assertJsonStructure([
                 'errors' => [
@@ -608,7 +607,7 @@ class MediaControllerTest extends TestCase
 
     #[DataProvider('multipleRunProvider')] public function test_missing_params_in_photo_request_temp()
     {
-        $response = $this->json('GET', 'api/internal/temp-media/' . $this->project->slug . '?type=photo')
+        $this->json('GET', 'api/internal/temp-media/' . $this->project->slug . '?type=photo')
             ->assertStatus(400)
             ->assertJsonStructure([
                 'errors' => [
@@ -639,7 +638,7 @@ class MediaControllerTest extends TestCase
 
     #[DataProvider('multipleRunProvider')] public function test_missing_name_in_photo_entry_original_request_temp()
     {
-        $response = $this->json('GET', 'api/internal/temp-media/' . $this->project->slug . '?type=photo&format=entry_original')
+        $this->json('GET', 'api/internal/temp-media/' . $this->project->slug . '?type=photo&format=entry_original')
             ->assertStatus(400)
             ->assertJsonStructure([
                 'errors' => [
@@ -666,33 +665,33 @@ class MediaControllerTest extends TestCase
     #[DataProvider('multipleRunProvider')]
     public function test_missing_name_in_photo_entry_thumb_request_temp()
     {
-        $response = $this->json('GET', 'api/internal/temp-media/' . $this->project->slug . '?type=photo&format=entry_thumb')
-            ->assertStatus(400)
-            ->assertJsonStructure([
-                'errors' => [
-                    '*' => [
-                        'code',
-                        'title',
-                        'source',
-                    ]
-                ]
-            ])
-            ->assertExactJson(
-                [
-                    "errors" => [
-                        [
-                            "code" => "ec5_21",
-                            "title" => "Required field is missing.",
-                            "source" => "name"
-                        ]
-                    ]
-                ]
-            );
+        $this->json('GET', 'api/internal/temp-media/' . $this->project->slug . '?type=photo&format=entry_thumb')
+             ->assertStatus(400)
+             ->assertJsonStructure([
+                 'errors' => [
+                     '*' => [
+                         'code',
+                         'title',
+                         'source',
+                     ]
+                 ]
+             ])
+             ->assertExactJson(
+                 [
+                     "errors" => [
+                         [
+                             "code" => "ec5_21",
+                             "title" => "Required field is missing.",
+                             "source" => "name"
+                         ]
+                     ]
+                 ]
+             );
     }
 
     #[DataProvider('multipleRunProvider')] public function test_missing_params_in_audio_request_temp()
     {
-        $response = $this->json('GET', 'api/internal/temp-media/' . $this->project->slug . '?type=audio')
+        $this->json('GET', 'api/internal/temp-media/' . $this->project->slug . '?type=audio')
             ->assertStatus(400)
             ->assertJsonStructure([
                 'errors' => [
@@ -723,7 +722,7 @@ class MediaControllerTest extends TestCase
 
     #[DataProvider('multipleRunProvider')] public function test_audio_file_not_found_temp()
     {
-        $response = $this->json('GET', 'api/internal/temp-media/' . $this->project->slug . '?type=audio&name=ciao&format=audio')
+        $this->json('GET', 'api/internal/temp-media/' . $this->project->slug . '?type=audio&name=ciao&format=audio')
             ->assertStatus(404)
             ->assertJsonStructure([
                 'errors' => [
@@ -749,7 +748,7 @@ class MediaControllerTest extends TestCase
 
     #[DataProvider('multipleRunProvider')] public function test_video_file_not_found_temp()
     {
-        $response = $this->json('GET', 'api/internal/temp-media/' . $this->project->slug . '?type=audio&name=ciao&format=video')
+        $this->json('GET', 'api/internal/temp-media/' . $this->project->slug . '?type=audio&name=ciao&format=video')
             ->assertStatus(404)
             ->assertJsonStructure([
                 'errors' => [
@@ -775,7 +774,7 @@ class MediaControllerTest extends TestCase
 
     #[DataProvider('multipleRunProvider')] public function test_missing_params_in_video_request_temp()
     {
-        $response = $this->json('GET', 'api/internal/temp-media/' . $this->project->slug . '?type=video')
+        $this->json('GET', 'api/internal/temp-media/' . $this->project->slug . '?type=video')
             ->assertStatus(400)
             ->assertJsonStructure([
                 'errors' => [
@@ -813,7 +812,7 @@ class MediaControllerTest extends TestCase
         // Get the image content from the response
         $imageContent = $response->getContent();
         // Create an Intervention Image instance from the image content
-        $image = Image::make($imageContent);
+        $image = Image::read($imageContent);
 
         $this->assertEquals($image->width(), config('epicollect.media.photo_placeholder.width'));
         $this->assertEquals($image->height(), config('epicollect.media.photo_placeholder.width'));
@@ -839,10 +838,10 @@ class MediaControllerTest extends TestCase
         //create a fake photo for the entry
         $landscapeWidth = config('epicollect.media.entry_original_landscape')[0];
         $landscapeHeight = config('epicollect.media.entry_original_landscape')[1];
-        $image = Image::canvas($landscapeWidth, $landscapeHeight, '#ffffff'); // Width, height, and background color
+        $image = Image::create($landscapeWidth, $landscapeHeight); // Width, height, and background color
 
         // Encode the image as JPEG or other formats
-        $imageData = (string)$image->encode('jpg');
+        $imageData = (string)$image->encode(new JpegEncoder(50));
         Storage::disk('temp')->put('photo/' . $this->project->ref . '/' . $filename, $imageData);
 
         //entry_original
@@ -855,7 +854,7 @@ class MediaControllerTest extends TestCase
         // Get the image content from the response
         $imageContent = $response->getContent();
         // Create an Intervention Image instance from the image content
-        $entryOriginal = Image::make($imageContent);
+        $entryOriginal = Image::read($imageContent);
         $this->assertEquals($entryOriginal->width(), config('epicollect.media.entry_original_landscape')[0]);
         $this->assertEquals($entryOriginal->height(), config('epicollect.media.entry_original_landscape')[1]);
 
@@ -866,7 +865,7 @@ class MediaControllerTest extends TestCase
     #[DataProvider('multipleRunProvider')] public function test_photo_file_is_returned_portrait_temp()
     {
         //create project
-        $project = factory(Project::class)->create(
+        factory(Project::class)->create(
             ['access' => config('epicollect.strings.project_access.public')]
         );
 
@@ -881,10 +880,10 @@ class MediaControllerTest extends TestCase
         //create a fake photo for the entry
         $landscapeWidth = config('epicollect.media.entry_original_portrait')[0];
         $landscapeHeight = config('epicollect.media.entry_original_portrait')[1];
-        $image = Image::canvas($landscapeWidth, $landscapeHeight, '#ffffff'); // Width, height, and background color
+        $image = Image::create($landscapeWidth, $landscapeHeight); // Width, height, and background color
 
         // Encode the image as JPEG or other formats
-        $imageData = (string)$image->encode('jpg');
+        $imageData = (string)$image->encode(new JpegEncoder(50));
         Storage::disk('temp')->put('photo/' . $this->project->ref . '/' . $filename, $imageData);
 
 
@@ -898,7 +897,7 @@ class MediaControllerTest extends TestCase
         // Get the image content from the response
         $imageContent = $response->getContent();
         // Create an Intervention Image instance from the image content
-        $entryOriginal = Image::make($imageContent);
+        $entryOriginal = Image::read($imageContent);
         $this->assertEquals($entryOriginal->width(), config('epicollect.media.entry_original_portrait')[0]);
         $this->assertEquals($entryOriginal->height(), config('epicollect.media.entry_original_portrait')[1]);
 

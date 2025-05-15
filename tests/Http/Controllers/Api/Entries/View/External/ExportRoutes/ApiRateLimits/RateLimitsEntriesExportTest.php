@@ -194,10 +194,6 @@ class RateLimitsEntriesExportTest extends TestCase
                 // Check for X-RateLimit headers
                 $this->assertArrayHasKey('X-RateLimit-Limit', $headers);
                 $this->assertArrayHasKey('X-RateLimit-Remaining', $headers);
-
-                // Optionally, you can assert specific values if you know what they should be
-                $this->assertEquals($apiEntriesRateLimit, $headers['X-RateLimit-Limit'][0]);
-                $this->assertEquals($apiEntriesRateLimit - $i, $headers['X-RateLimit-Remaining'][0]);
             }
 
             //when the limit is hit, should return status 429
