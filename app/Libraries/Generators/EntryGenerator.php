@@ -19,6 +19,7 @@ use Exception;
 use Faker\Factory as Faker;
 use Faker\Generator;
 use Illuminate\Http\UploadedFile;
+use Log;
 use Ramsey\Uuid\Uuid;
 use Throwable;
 
@@ -209,6 +210,7 @@ class EntryGenerator
                     'answer' => $formattedDateTime,
                     'was_jumped' => false
                 ];
+                Log::info('date', ['answer' => $answer]);
                 break;
             case 'time':
                 $formatTime = config('epicollect.mappings.carbon_formats.fake_time');
@@ -222,6 +224,7 @@ class EntryGenerator
                     'answer' => $formattedDateTime,
                     'was_jumped' => false
                 ];
+                Log::info('time', ['answer' => $answer]);
                 break;
             case 'photo':
                 $answer = [

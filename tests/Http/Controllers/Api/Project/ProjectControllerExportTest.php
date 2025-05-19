@@ -11,10 +11,10 @@ use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use ec5\Traits\Assertions;
+use File;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\RateLimiter;
 use Laravel\Passport\ClientRepository;
 use PHPUnit\Framework\Attributes\Depends;
 use Tests\TestCase;
@@ -32,8 +32,6 @@ class ProjectControllerExportTest extends TestCase
     public function setup(): void
     {
         parent::setUp();
-        // Reset the rate limiter for oauth-token
-        RateLimiter::clear('oauth-token');
     }
 
     public function test_should_export_public_project()
@@ -70,6 +68,7 @@ class ProjectControllerExportTest extends TestCase
 
     public function test_should_get_token_OAuth2()
     {
+        File::cleanDirectory(storage_path('framework/cache/data'));
         /**
          * imp: create a user and a project to pass down
          */

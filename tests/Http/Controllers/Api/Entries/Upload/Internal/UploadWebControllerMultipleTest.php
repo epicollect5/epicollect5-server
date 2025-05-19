@@ -13,6 +13,7 @@ use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
+use Throwable;
 
 /* This class does not follow optimal testing practices
    since the application does not get rebooted before each request
@@ -252,7 +253,7 @@ class UploadWebControllerMultipleTest extends TestCase
                 Entry::where('project_id', $this->project->id)
                     ->get()
             );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

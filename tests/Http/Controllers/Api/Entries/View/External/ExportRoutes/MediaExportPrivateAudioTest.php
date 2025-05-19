@@ -16,14 +16,15 @@ use ec5\Services\Mapping\ProjectMappingService;
 use ec5\Services\Project\ProjectExtraService;
 use ec5\Traits\Assertions;
 use Exception;
+use File;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Passport\ClientRepository;
 use PHPUnit\Framework\Attributes\Depends;
 use Tests\TestCase;
+use Throwable;
 
 class MediaExportPrivateAudioTest extends TestCase
 {
@@ -40,7 +41,7 @@ class MediaExportPrivateAudioTest extends TestCase
     public function test_getting_OAuth2_token()
     {
         // Reset the rate limiter for oauth-token
-        RateLimiter::clear('oauth-token');
+        File::cleanDirectory(storage_path('framework/cache/data'));
         $name = config('testing.WEB_UPLOAD_CONTROLLER_PROJECT.name');
         $slug = config('testing.WEB_UPLOAD_CONTROLLER_PROJECT.slug');
         $email = config('testing.UNIT_TEST_RANDOM_EMAIL');
@@ -167,6 +168,9 @@ class MediaExportPrivateAudioTest extends TestCase
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     #[Depends('test_getting_OAuth2_token')] public function test_audios_export_endpoint_private($params)
     {
         $token = $params['token'];
@@ -259,5 +263,6 @@ class MediaExportPrivateAudioTest extends TestCase
             $this->logTestError($e, []);
             return false;
         }
+        return true;
     }
 }
