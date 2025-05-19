@@ -173,8 +173,6 @@ class MediaExportPrivatePhotoTest extends TestCase
      */
     #[Depends('test_getting_OAuth2_token')] public function test_photos_export_endpoint_private($params)
     {
-        // Reset the rate limiter for oauth-token
-        File::cleanDirectory(storage_path('framework/cache/data'));
         $token = $params['token'];
         $user = $params['user'];
         $project = $params['project'];

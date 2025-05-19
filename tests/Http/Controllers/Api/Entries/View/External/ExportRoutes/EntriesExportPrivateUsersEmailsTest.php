@@ -19,7 +19,6 @@ use Exception;
 use File;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
-use JetBrains\PhpStorm\NoReturn;
 use Laravel\Passport\ClientRepository;
 use PHPUnit\Framework\Attributes\Depends;
 use Tests\TestCase;
@@ -29,16 +28,14 @@ class EntriesExportPrivateUsersEmailsTest extends TestCase
 {
     use Assertions;
 
-    public function setup(): void
+    public function setUp(): void
     {
         parent::setUp();
-
     }
 
     /**
      * @throws Exception
      */
-    #[NoReturn]
     public function test_getting_OAuth2_token()
     {
         // Reset the rate limiter for oauth-token

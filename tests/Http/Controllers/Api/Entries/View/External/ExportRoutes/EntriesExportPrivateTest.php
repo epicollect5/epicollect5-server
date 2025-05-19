@@ -28,7 +28,7 @@ class EntriesExportPrivateTest extends TestCase
 {
     use Assertions;
 
-    public function setup(): void
+    public function setUp(): void
     {
         parent::setUp();
     }
