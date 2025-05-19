@@ -22,7 +22,7 @@ class PasswordlessControllerTest extends TestCase
      * imp: jwt validation. We need to send a valid token per each request
      * imp: instead.
      */
-    public function setup(): void
+    public function setUp(): void
     {
         parent::setUp();
     }

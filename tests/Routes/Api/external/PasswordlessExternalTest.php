@@ -2,7 +2,6 @@
 
 namespace Tests\Routes\Api\external;
 
-
 use Carbon\Carbon;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Mail\UserPasswordlessApiMail;
@@ -27,7 +26,7 @@ class PasswordlessExternalTest extends TestCase
     protected $privateProjectSlug;
     protected $publicProjectSlug;
 
-    public function setup(): void
+    public function setUp(): void
     {
         parent::setUp();
         $this->privateProjectSlug = 'ec5-private';
@@ -171,7 +170,7 @@ class PasswordlessExternalTest extends TestCase
                 ]
             ]);
 
-        //brute force attack!          
+        //brute force attack!
         for ($i = 0; $i < 50; $i++) {
             $this->json('POST', '/api/login/passwordless', [
                 'email' => $email,

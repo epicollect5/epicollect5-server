@@ -26,7 +26,7 @@ class AccountDeletionInternalTest extends TestCase
     //internal routes use the default 'web' guard
     public const string DRIVER = 'web';
 
-    public function setup(): void
+    public function setUp(): void
     {
         parent::setUp();
     }
