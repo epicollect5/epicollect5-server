@@ -169,7 +169,7 @@ class ImageToolsController extends Controller
                         $dimensions = config('epicollect.media.' . $driver);
 
                         // Attempt to resize and save the new image
-                        $resizedImage = PhotoSaverService::saveImage($directory, $fileDestPath, $fileName, $driver, $dimensions);
+                        $resizedImage = PhotoSaverService::saveImage($directory, $fileDestPath, $fileName, $driver, $dimensions, 50);
 
                         // Check if any errors creating/saving
                         if (!$resizedImage) {
