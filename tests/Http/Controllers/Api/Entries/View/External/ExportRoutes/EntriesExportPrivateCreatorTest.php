@@ -271,5 +271,6 @@ class EntriesExportPrivateCreatorTest extends TestCase
             $this->logTestError($e, []);
             return false;
         }
+        return true;
     }
 }

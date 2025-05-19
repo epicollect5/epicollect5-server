@@ -34,11 +34,10 @@ class UploadWebControllerMultipleTest extends TestCase
 {
     use DatabaseTransactions;
 
-    private $user;
-    private $projectDefinition;
-    private $project;
-    private $faker;
-    private $entryGenerator;
+    private User $user;
+    private array $projectDefinition;
+    private Project $project;
+    private EntryGenerator $entryGenerator;
 
     public function setUp(): void
     {
@@ -112,7 +111,7 @@ class UploadWebControllerMultipleTest extends TestCase
             $this->projectDefinition = $projectDefinition;
             $this->entryGenerator = $entryGenerator;
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -144,7 +143,7 @@ class UploadWebControllerMultipleTest extends TestCase
                     ->where('uuid', $entry['data']['id'])
                     ->get()
             );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             //dd($e->getMessage(), $response, json_encode($entry), json_encode($projectDefinition));
             $this->logTestError($e, $response);
         }
@@ -199,7 +198,7 @@ class UploadWebControllerMultipleTest extends TestCase
                 Entry::where('project_id', $this->project->id)
                     ->get()
             );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             //dd($e->getMessage(), $response, json_encode($entry), json_encode($projectDefinition));
             $this->logTestError($e, $response);
         }
