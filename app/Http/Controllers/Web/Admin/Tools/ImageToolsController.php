@@ -86,7 +86,7 @@ class ImageToolsController extends Controller
                 if ($resize) {
 
                     // Attempt to save the new image
-                    $thumb = PhotoSaverService::saveImage($directory, $fileSourcePath, $fileName, 'entry_original', $dimensions);
+                    $thumb = PhotoSaverService::saveImage($directory, $fileSourcePath, $fileName, 'entry_original', $dimensions, 100);
 
                     // Check if any errors creating/saving thumb
                     if (!$thumb) {
