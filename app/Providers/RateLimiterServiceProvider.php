@@ -2,7 +2,6 @@
 
 namespace ec5\Providers;
 
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -94,15 +93,9 @@ class RateLimiterServiceProvider extends ServiceProvider
      */
     private function configureOauthTokenLimiter(): void
     {
-        if ((App::environment() === 'testing')) {
-            RateLimiter::for('oauth-token', function () {
-                return Limit::none();
-            });
-        } else {
-            RateLimiter::for('oauth-token', function (Request $request) {
-                return Limit::perHour(config('epicollect.limits.oauth_token_limit'))
-                    ->by($request->ip());
-            });
-        }
+        RateLimiter::for('oauth-token', function (Request $request) {
+            return Limit::perHour(config('epicollect.limits.oauth_token_limit'))
+                ->by($request->ip());
+        });
     }
 }

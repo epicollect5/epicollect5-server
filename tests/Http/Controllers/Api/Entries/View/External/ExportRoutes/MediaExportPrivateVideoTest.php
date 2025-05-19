@@ -18,20 +18,30 @@ use ec5\Traits\Assertions;
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Passport\ClientRepository;
 use PHPUnit\Framework\Attributes\Depends;
 use Tests\TestCase;
+use Throwable;
 
 class MediaExportPrivateVideoTest extends TestCase
 {
     use Assertions;
 
+    public function setup(): void
+    {
+        parent::setUp();
+
+    }
     /**
      * @throws Exception
      */
     public function test_getting_OAuth2_token()
     {
+        // Reset the rate limiter for oauth-token
+        RateLimiter::clear('oauth-token');
+
         $name = config('testing.WEB_UPLOAD_CONTROLLER_PROJECT.name');
         $slug = config('testing.WEB_UPLOAD_CONTROLLER_PROJECT.slug');
         $email = config('testing.UNIT_TEST_RANDOM_EMAIL');
@@ -158,7 +168,11 @@ class MediaExportPrivateVideoTest extends TestCase
         }
     }
 
-    #[Depends('test_getting_OAuth2_token')] public function test_videos_export_endpoint_private($params)
+    /**
+     * @throws Throwable
+     */
+    #[Depends('test_getting_OAuth2_token')]
+    public function test_videos_export_endpoint_private($params)
     {
         $token = $params['token'];
         $user = $params['user'];
@@ -249,5 +263,6 @@ class MediaExportPrivateVideoTest extends TestCase
             $this->logTestError($e, []);
             return false;
         }
+        return true;
     }
 }

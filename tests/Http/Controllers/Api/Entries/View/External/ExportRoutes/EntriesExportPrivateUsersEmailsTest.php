@@ -18,6 +18,8 @@ use ec5\Traits\Assertions;
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use Illuminate\Support\Facades\RateLimiter;
+use JetBrains\PhpStorm\NoReturn;
 use Laravel\Passport\ClientRepository;
 use PHPUnit\Framework\Attributes\Depends;
 use Tests\TestCase;
@@ -27,12 +29,20 @@ class EntriesExportPrivateUsersEmailsTest extends TestCase
 {
     use Assertions;
 
+    public function setup(): void
+    {
+        parent::setUp();
+
+    }
+
     /**
      * @throws Exception
      */
     #[NoReturn]
     public function test_getting_OAuth2_token()
     {
+        // Reset the rate limiter for oauth-token
+        RateLimiter::clear('oauth-token');
         $name = config('testing.WEB_UPLOAD_CONTROLLER_PROJECT.name');
         $slug = config('testing.WEB_UPLOAD_CONTROLLER_PROJECT.slug');
         $email = config('testing.UNIT_TEST_RANDOM_EMAIL');

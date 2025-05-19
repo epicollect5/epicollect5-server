@@ -27,7 +27,7 @@ class ArchiveProjectTest extends TestCase
 
         for ($i = 0; $i < $repeatCount; $i++) {
 
-            $userId = $users[rand(0, 100)]->id;
+            $userId = $users[rand(0, count($users) - 1)]->id;
             // Create a test project
             $name = 'EC5 Unit Test ' . $i;
             $slug = Str::slug($name);

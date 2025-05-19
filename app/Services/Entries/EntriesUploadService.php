@@ -104,11 +104,11 @@ class EntriesUploadService
                 $this->isBulkUpload
             )
             ) {
+                $this->errors = $createEntryService->errors;
                 Log::error(__METHOD__ . ' failed.', [
                     'error' => $this->errors,
                     'data' => $payload
                 ]);
-                $this->errors = $createEntryService->errors;
                 return false;
             }
         }

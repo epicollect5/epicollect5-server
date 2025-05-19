@@ -111,7 +111,7 @@ return [
         'expire' => (int) env('ACCOUNT_CODE_EXPIRES_IN', 7200)
     ],
     'account_unverified' => [
-        'expire' => (int) env(' ACCOUNT_UNVERIFIED_EXPIRES_IN', 3)
+        'expire' => (int) env('ACCOUNT_UNVERIFIED_EXPIRES_IN', 3)
     ],
     /*
     |--------------------------------------------------------------------------

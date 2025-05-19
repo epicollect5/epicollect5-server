@@ -86,7 +86,7 @@ class ImageToolsController extends Controller
                 if ($resize) {
 
                     // Attempt to save the new image
-                    $thumb = PhotoSaverService::storeImage($directory, $fileSourcePath, $fileName, 'entry_original', $dimensions);
+                    $thumb = PhotoSaverService::saveImage($directory, $fileSourcePath, $fileName, 'entry_original', $dimensions);
 
                     // Check if any errors creating/saving thumb
                     if (!$thumb) {
@@ -169,7 +169,7 @@ class ImageToolsController extends Controller
                         $dimensions = config('epicollect.media.' . $driver);
 
                         // Attempt to resize and save the new image
-                        $resizedImage = PhotoSaverService::storeImage($directory, $fileDestPath, $fileName, $driver, $dimensions);
+                        $resizedImage = PhotoSaverService::saveImage($directory, $fileDestPath, $fileName, $driver, $dimensions);
 
                         // Check if any errors creating/saving
                         if (!$resizedImage) {
