@@ -1,6 +1,14 @@
 #!/bin/bash
+# This script creates the full Laravel storage folder structure under current/storage,
+# setting correct permissions and ownership for local debugging after cloning a droplet.
+# It should NOT be run in production because it aborts if storage is a symlink (common in prod).
+# Use this only after removing symlinks to get all storage subfolders physically present.
+
+set -e  # exit on any error
+set -x  # print commands as they run
+
 # A bash script to create storage folders with subfolders all in one go.
-DIR="/var/www/html_prod/shared/storage"
+DIR="/var/www/html_prod/current/storage"
 # Define users and directories
 REMOTE_USER=$(whoami)    # this will be the current SSH user (e.g., dev)
 HTTP_USER="www-data"     # Apache user
