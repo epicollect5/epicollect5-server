@@ -608,11 +608,19 @@ class EntryGenerator
             }
 
             if ($input['is_title']) {
-                $titles[] = $answers[$input['ref']]['answer'];
+                $answer = $answers[$input['ref']]['answer'];
+
+                if (is_array($answer)) {
+                    if (count($answer) === 1) {
+                        $titles[] = reset($answer); // Get the single value from the array
+                    }
+                } else {
+                    $titles[] = $answer;
+                }
             }
         }
-
         $title = implode(' ', $titles);
+
         $title = $title === '' ? $uuid : $title;
 
         return [

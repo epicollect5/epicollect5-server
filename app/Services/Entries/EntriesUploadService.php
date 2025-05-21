@@ -24,6 +24,7 @@ class EntriesUploadService
         $this->entryStructure = $entryStructure;
         $this->isBulkUpload = $isBulkUpload;
         $this->ruleUpload = $ruleUpload;
+        $this->errors = [];
     }
 
     /**
