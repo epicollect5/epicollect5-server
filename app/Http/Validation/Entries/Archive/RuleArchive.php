@@ -1,18 +1,18 @@
 <?php
 
-namespace ec5\Http\Validation\Entries\Delete;
+namespace ec5\Http\Validation\Entries\Archive;
 
 use ec5\DTO\EntryStructureDTO;
 use ec5\DTO\ProjectDTO;
 use ec5\Http\Validation\ValidationBase;
 
-class RuleDelete extends ValidationBase
+class RuleArchive extends ValidationBase
 {
     /**
      * @var array
      */
     protected $rules = [
-        'type' => 'required|string|in:delete',
+        'type' => 'required|string|in:archive',
         'id' => 'required|string|min:36|max:36',
         'attributes' => 'required|array',
         'attributes.form.ref' => 'required|min:46|max:46',
@@ -26,8 +26,8 @@ class RuleDelete extends ValidationBase
         'relationships.branch.data' => 'array',
         'relationships.branch.data.owner_input_ref' => 'min:60|max:60',
         'relationships.branch.data.owner_entry_uuid' => 'min:36|max:36',
-        'delete' => 'required',
-        'delete.entry_uuid' => 'required|string|min:36|max:36|same:id',
+        'archive' => 'required',
+        'archive.entry_uuid' => 'required|string|min:36|max:36|same:id',
     ];
 
     /**

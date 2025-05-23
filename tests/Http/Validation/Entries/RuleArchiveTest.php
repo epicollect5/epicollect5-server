@@ -3,23 +3,23 @@
 namespace Tests\Http\Validation\Entries;
 
 use Tests\TestCase;
-use ec5\Http\Validation\Entries\Delete\RuleDelete;
+use ec5\Http\Validation\Entries\Archive\RuleArchive;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 
-class RuleDeleteTest extends TestCase
+class RuleArchiveTest extends TestCase
 {
     use DatabaseTransactions;
 
-    private RuleDelete $ruleDelete;
-    private array $payload;
+    private $ruleArchive;
+    private $payload;
 
     public function setUp(): void
     {
         // This method will automatically be called prior to any of your test cases
         parent::setUp();
-        $this->ruleDelete = new RuleDelete();
+        $this->ruleArchive = new RuleArchive();
         $this->payload = [
-            'type' => 'delete',
+            'type' => 'archive',
             'id' => '42fd84b0-99e7-11ee-92b0-758caf1d828e',
             'attributes' => [
                 'form' => [
@@ -33,7 +33,7 @@ class RuleDeleteTest extends TestCase
                 'parent' => [
                 ]
             ],
-            'delete' => [
+            'archive' => [
                 'entry_uuid' => '42fd84b0-99e7-11ee-92b0-758caf1d828e'
             ]
         ];
@@ -42,54 +42,54 @@ class RuleDeleteTest extends TestCase
     public function tearDown(): void
     {
         parent::tearDown();
-        $this->ruleDelete->resetErrors();
+        $this->ruleArchive->resetErrors();
     }
 
     public function test_valid_payload()
     {
-        $this->ruleDelete->validate($this->payload);
-        $this->assertFalse($this->ruleDelete->hasErrors());
+        $this->ruleArchive->validate($this->payload);
+        $this->assertFalse($this->ruleArchive->hasErrors());
     }
 
     public function test_should_fail_if_type_wrong()
     {
         $this->payload['type'] = 'wrong';
 
-        $this->ruleDelete->validate($this->payload);
+        $this->ruleArchive->validate($this->payload);
 
-        $this->assertTrue($this->ruleDelete->hasErrors());
+        $this->assertTrue($this->ruleArchive->hasErrors());
         $this->assertEquals(
             [
                 'type' => ['ec5_29']
             ],
-            $this->ruleDelete->errors
+            $this->ruleArchive->errors
         );
     }
 
     public function test_should_fail_if_id_wrong()
     {
         $this->payload['id'] = null;
-        $this->ruleDelete->validate($this->payload);
-        $this->assertTrue($this->ruleDelete->hasErrors());
+        $this->ruleArchive->validate($this->payload);
+        $this->assertTrue($this->ruleArchive->hasErrors());
 
         $this->assertEquals(
             [
                 'id' => [
                     'ec5_21'
                 ],
-                'delete.entry_uuid' => [
-                    'The delete.entry uuid and id must match.'
+                'archive.entry_uuid' => [
+                    'The archive.entry uuid and id must match.'
                 ]
             ],
-            $this->ruleDelete->errors
+            $this->ruleArchive->errors
         );
     }
 
     public function test_should_fail_if_attributes_wrong()
     {
         $this->payload['attributes'] = null;
-        $this->ruleDelete->validate($this->payload);
-        $this->assertTrue($this->ruleDelete->hasErrors());
+        $this->ruleArchive->validate($this->payload);
+        $this->assertTrue($this->ruleArchive->hasErrors());
 
         $this->assertEquals(
             [
@@ -103,15 +103,15 @@ class RuleDeleteTest extends TestCase
                     'ec5_21'
                 ]
             ],
-            $this->ruleDelete->errors
+            $this->ruleArchive->errors
         );
     }
 
     public function test_should_fail_if_attributes_form_wrong()
     {
         $this->payload['attributes']['form'] = null;
-        $this->ruleDelete->validate($this->payload);
-        $this->assertTrue($this->ruleDelete->hasErrors());
+        $this->ruleArchive->validate($this->payload);
+        $this->assertTrue($this->ruleArchive->hasErrors());
 
         $this->assertEquals(
             [
@@ -122,15 +122,15 @@ class RuleDeleteTest extends TestCase
                     'ec5_21'
                 ]
             ],
-            $this->ruleDelete->errors
+            $this->ruleArchive->errors
         );
     }
 
     public function test_should_fail_if_attributes_form_ref_wrong()
     {
         $this->payload['attributes']['form']['ref'] = null;
-        $this->ruleDelete->validate($this->payload);
-        $this->assertTrue($this->ruleDelete->hasErrors());
+        $this->ruleArchive->validate($this->payload);
+        $this->assertTrue($this->ruleArchive->hasErrors());
 
         $this->assertEquals(
             [
@@ -138,15 +138,15 @@ class RuleDeleteTest extends TestCase
                     'ec5_21'
                 ]
             ],
-            $this->ruleDelete->errors
+            $this->ruleArchive->errors
         );
     }
 
     public function test_should_fail_if_attributes_form_type_wrong()
     {
         $this->payload['attributes']['form']['type'] = null;
-        $this->ruleDelete->validate($this->payload);
-        $this->assertTrue($this->ruleDelete->hasErrors());
+        $this->ruleArchive->validate($this->payload);
+        $this->assertTrue($this->ruleArchive->hasErrors());
 
         $this->assertEquals(
             [
@@ -154,15 +154,15 @@ class RuleDeleteTest extends TestCase
                     'ec5_21'
                 ]
             ],
-            $this->ruleDelete->errors
+            $this->ruleArchive->errors
         );
     }
 
     public function test_should_fail_if_relationships_wrong()
     {
         $this->payload['relationships'] = null;
-        $this->ruleDelete->validate($this->payload);
-        $this->assertTrue($this->ruleDelete->hasErrors());
+        $this->ruleArchive->validate($this->payload);
+        $this->assertTrue($this->ruleArchive->hasErrors());
 
         $this->assertEquals(
             [
@@ -176,44 +176,44 @@ class RuleDeleteTest extends TestCase
                     'ec5_21'
                 ]
             ],
-            $this->ruleDelete->errors
+            $this->ruleArchive->errors
         );
     }
 
-    public function test_should_fail_if_delete_key_missing()
+    public function test_should_fail_if_archive_key_missing()
     {
-        $this->payload['delete'] = null;
-        $this->ruleDelete->validate($this->payload);
-        $this->assertTrue($this->ruleDelete->hasErrors());
+        $this->payload['archive'] = null;
+        $this->ruleArchive->validate($this->payload);
+        $this->assertTrue($this->ruleArchive->hasErrors());
 
 
         $this->assertEquals(
             [
-                'delete' => [
+                'archive' => [
                     'ec5_21'
                 ],
-                'delete.entry_uuid' => [
+                'archive.entry_uuid' => [
                     'ec5_21'
                 ]
             ],
-            $this->ruleDelete->errors
+            $this->ruleArchive->errors
         );
     }
 
-    public function test_should_fail_if_delete_entry_uuid_not_matching()
+    public function test_should_fail_if_archive_entry_uuid_not_matching()
     {
-        $this->payload['delete']['entry_uuid'] = 'mismatch';
-        $this->ruleDelete->validate($this->payload);
-        $this->assertTrue($this->ruleDelete->hasErrors());
+        $this->payload['archive']['entry_uuid'] = 'mismatch';
+        $this->ruleArchive->validate($this->payload);
+        $this->assertTrue($this->ruleArchive->hasErrors());
 
         $this->assertEquals(
             [
-                'delete.entry_uuid' => [
+                'archive.entry_uuid' => [
                     'ec5_43',
-                    'The delete.entry uuid and id must match.'
+                    'The archive.entry uuid and id must match.'
                 ]
             ],
-            $this->ruleDelete->errors
+            $this->ruleArchive->errors
         );
     }
 }

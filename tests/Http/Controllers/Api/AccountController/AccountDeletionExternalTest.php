@@ -32,7 +32,7 @@ class AccountDeletionExternalTest extends TestCase
     use DatabaseTransactions;
 
 
-    public function setUp(): void
+    public function setup(): void
     {
         parent::setUp();
     }

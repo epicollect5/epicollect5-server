@@ -4,36 +4,83 @@ namespace ec5\Services;
 
 use Illuminate\Support\Facades\Storage;
 use Image;
-use Intervention\Image\Drivers\Imagick\Encoders\JpegEncoder;
 use Log;
 use Throwable;
 
 class PhotoSaverService
 {
     /**
-     * Save a photo to specific dimensions and store it in the storage location
+     * Save a photo to specific dimensions
      *
-     * @param string $projectRef Project reference identifier
-     * @param mixed $image Image data (file or path)
-     * @param string $fileName Target filename
-     * @param string $driver Storage driver
-     * @param array $dimensions Optional dimensions [width, height]
-     * @param int $quality JPEG quality (1-100)
-     * @return bool Success status
+     * @param array $dimensions (width, height)
      */
-    public static function saveImage(string $projectRef, mixed $image, string $fileName, string $driver, array $dimensions = [], int $quality = 50): bool
+    public static function saveImage($projectRef, $image, $fileName, $driver, array $dimensions = [], int $quality = 50): bool
     {
         try {
-            // Get the image path (handles both uploaded files and direct paths)
-            $imagePath = is_string($image) ? $image : $image->getRealPath();
+            $imageRealPath = $image->getRealPath();
+            $img = Image::make($imageRealPath);
+            // Crop and resize image
+            if (count($dimensions) > 0) {
+                $width = $dimensions[0];
+                $height = $dimensions[1] ?? null;
+                $img->fit($width, $height);
+            }
 
-            // Process the image (crop, resize, and encode)
-            $encodedImage = self::processImage($imagePath, $dimensions, $quality);
-
-            // Store the image into the storage location with the specified driver
+            $img->encode('jpg', $quality);
+            // Save new image over existing
+            $img->save();
+            // Destroy after use
+            $img->destroy();
+            // Store the file into storage location, using specified driver
+            //imp: folders are generated with 755,
+            // see https://github.com/laravel/framework/issues/42586
             Storage::disk($driver)->put(
                 $projectRef . '/' . $fileName,
-                $encodedImage,
+                file_get_contents($imageRealPath),
+                [
+                    'visibility' => 'public',
+                    'directory_visibility' => 'public'
+                ]
+            );
+            return true;
+        } catch (Throwable $e) {
+            Log::error('Cannot save image', ['exception' => $e]);
+            return false;
+        }
+    }
+
+    /**
+     * Save a photo to specific dimensions
+     *
+     * @param $projectRef
+     * @param $imagePath
+     * @param $fileName
+     * @param $driver
+     * @param array $dimensions (width, height)
+     * @param int $quality
+     * @return bool
+     */
+    public static function storeImage($projectRef, $imagePath, $fileName, $driver, array $dimensions = [], int $quality = 50): bool
+    {
+        try {
+            $img = Image::make($imagePath);
+            // Crop and resize image
+            if (count($dimensions) > 0) {
+                $width = $dimensions[0];
+                $height = $dimensions[1] ?? null;
+                $img->fit($width, $height);
+            }
+            $img->encode('jpg', $quality);
+            // Save new image over existing
+            $img->save();
+            // Destroy after use
+            $img->destroy();
+            // Store the file into storage location, using specified driver
+            //imp: folders are generated with 755,
+            // see https://github.com/laravel/framework/issues/42586
+            Storage::disk($driver)->put(
+                $projectRef . '/' . $fileName,
+                file_get_contents($imagePath),
                 [
                     'visibility' => 'public',
                     'directory_visibility' => 'public'
@@ -42,38 +89,8 @@ class PhotoSaverService
 
             return true;
         } catch (Throwable $e) {
-            // Log the exception in case of an error
             Log::error('Cannot save image', ['exception' => $e]);
             return false;
         }
-    }
-
-    /**
-     * Process the image: resize, crop, and encode it
-     *
-     * @param string $imagePath Path to the image
-     * @param array $dimensions Optional dimensions [width, height]
-     * @param int $quality JPEG quality (1-100)
-     * @return string Encoded image data
-     */
-    private static function processImage(string $imagePath, array $dimensions = [], int $quality = 50): string
-    {
-        // Read the image from the given path
-        $img = Image::read($imagePath);
-
-        // Crop and resize image if dimensions are provided
-        if (!empty($dimensions)) {
-            $width = $dimensions[0];
-            $height = $dimensions[1] ?? $width;
-            $img->cover($width, $height);
-        }
-
-        // Encode the image as JPEG with the specified quality
-        $encodedImage = $img->encode(new JpegEncoder($quality));
-
-        // Destroy the image object after use to free up memory
-        unset($img);
-
-        return (string)$encodedImage;
     }
 }

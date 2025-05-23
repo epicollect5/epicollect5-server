@@ -20,14 +20,9 @@ class ArchiveProjectTest extends TestCase
         // Create a Faker instance
         $faker = Faker::create();
 
-        //create fake users
-        for ($i = 0; $i < 100; $i++) {
-            $users[] = factory(User::class)->create();
-        }
-
         for ($i = 0; $i < $repeatCount; $i++) {
 
-            $userId = $users[rand(0, count($users) - 1)]->id;
+            $userId = rand(1, 100);
             // Create a test project
             $name = 'EC5 Unit Test ' . $i;
             $slug = Str::slug($name);

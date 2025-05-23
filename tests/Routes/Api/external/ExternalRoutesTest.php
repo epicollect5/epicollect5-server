@@ -30,7 +30,7 @@ class ExternalRoutesTest extends TestCase
      */
 
 
-    public function setUp(): void
+    public function setup(): void
     {
         parent::setUp();
 

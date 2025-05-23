@@ -14,7 +14,7 @@ class MediaGenerator
         $background = $backgrounds[array_rand($backgrounds)];
 
         // Create the canvas
-        $img = Image::create(
+        $img = Image::canvas(
             config('epicollect.media.entry_original_landscape')[0],
             config('epicollect.media.entry_original_landscape')[1],
             $background
@@ -56,7 +56,7 @@ class MediaGenerator
         $entryOriginalStream = $img->stream($format);
 
         // Create entry_thumb stream by cropping and resizing from the center
-        $entryThumbStream = Image::read($entryOriginalStream)->fit(
+        $entryThumbStream = Image::make($entryOriginalStream)->fit(
             config('epicollect.media.entry_thumb')[0],
             config('epicollect.media.entry_thumb')[1]
         );

@@ -24,7 +24,6 @@ class EntriesUploadService
         $this->entryStructure = $entryStructure;
         $this->isBulkUpload = $isBulkUpload;
         $this->ruleUpload = $ruleUpload;
-        $this->errors = [];
     }
 
     /**
@@ -105,11 +104,11 @@ class EntriesUploadService
                 $this->isBulkUpload
             )
             ) {
-                $this->errors = $createEntryService->errors;
                 Log::error(__METHOD__ . ' failed.', [
                     'error' => $this->errors,
                     'data' => $payload
                 ]);
+                $this->errors = $createEntryService->errors;
                 return false;
             }
         }

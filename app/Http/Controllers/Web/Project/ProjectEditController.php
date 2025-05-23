@@ -180,8 +180,7 @@ class ProjectEditController
             request()->file('logo_url'),
             'logo.jpg',
             $driver,
-            config('epicollect.media.' . $driver),
-            config('epicollect.media.project_avatar.quality')
+            config('epicollect.media.' . $driver)
         );
     }
 

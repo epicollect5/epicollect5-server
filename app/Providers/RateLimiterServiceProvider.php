@@ -94,9 +94,8 @@ class RateLimiterServiceProvider extends ServiceProvider
     private function configureOauthTokenLimiter(): void
     {
         RateLimiter::for('oauth-token', function (Request $request) {
-            return app()->environment('testing')
-                ? Limit::perMinute(100000)->by($request->ip())
-                : Limit::perHour(config('epicollect.limits.oauth_token_limit'))->by($request->ip());
+            return Limit::perHour(config('epicollect.limits.oauth_token_limit'))
+                ->by($request->ip());
         });
     }
 }
