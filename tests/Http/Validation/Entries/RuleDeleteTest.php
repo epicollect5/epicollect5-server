@@ -180,7 +180,7 @@ class RuleDeleteTest extends TestCase
         );
     }
 
-    public function test_should_fail_if_archive_key_missing()
+    public function test_should_fail_if_delete_key_missing()
     {
         $this->payload['delete'] = null;
         $this->ruleDelete->validate($this->payload);

@@ -33,6 +33,7 @@ class RuleDelete extends ValidationBase
     /**
      * @param ProjectDTO $project
      * @param EntryStructureDTO $entryStructure
+     * @return bool
      */
     public function additionalChecks(ProjectDTO $project, EntryStructureDTO $entryStructure): bool
     {

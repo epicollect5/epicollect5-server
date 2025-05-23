@@ -812,7 +812,7 @@ class DeleteControllerEntryTest extends TestCase
     public function test_should_delete_branch_entry_of_a_child_entry()
     {
         $forms = $this->projectDefinition['data']['project']['forms'];
-        //create owner entru in a child form
+        //create owner entry in a child form
         $formRef = $forms[1]['ref'];
         $entry = factory(Entry::class)->create(
             [
