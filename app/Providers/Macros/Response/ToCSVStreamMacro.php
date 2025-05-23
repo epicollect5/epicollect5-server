@@ -10,6 +10,7 @@ class ToCSVStreamMacro extends ServiceProvider
     public function boot(): void
     {
         Response::macro('toCSVStream', function () {
+            // fpassthru($data); // Not necessary in this context
 
             // Get the CSV content from the output buffer and clean it
             $csvContent = ob_get_clean();

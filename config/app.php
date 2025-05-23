@@ -197,7 +197,7 @@ return [
         // Ldap
         \ec5\Libraries\Auth\Ldap\LdapServiceProvider::class,
         // Image Intervention
-        Intervention\Image\Laravel\ServiceProvider::class,
+        Intervention\Image\ImageServiceProvider::class,
         // Laravel Passport
         Laravel\Passport\PassportServiceProvider::class,
         //Avatar
@@ -250,7 +250,7 @@ return [
         'Socialite' => Laravel\Socialite\Facades\Socialite::class,
         'Ldap' => \ec5\Libraries\Auth\Ldap\Ldap::class,
         'Uuid' => Webpatser\Uuid\Uuid::class,
-        'Image' => Intervention\Image\Laravel\Facades\Image::class,
+        'Image' => Intervention\Image\Facades\Image::class,
         'Avatar' => Laravolt\Avatar\Facade::class,
         'Notification' => Illuminate\Support\Facades\Notification::class,
         'Common' => ec5\Libraries\Utilities\Common::class

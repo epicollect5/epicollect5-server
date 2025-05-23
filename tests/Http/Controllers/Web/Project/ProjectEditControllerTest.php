@@ -76,7 +76,6 @@ class ProjectEditControllerTest extends TestCase
     {
         $accessValues = array_keys(config('epicollect.strings.project_access'));
         foreach ($accessValues as $accessValue) {
-            sleep(1);//to avoid race conditions
             $response = [];
             try {
                 $response[] = $this->actingAs($this->user)->post('myprojects/' . $this->project->slug . '/settings/access', ['access' => $accessValue]);
@@ -105,7 +104,6 @@ class ProjectEditControllerTest extends TestCase
     {
         $statusValues = ['active', 'trashed', 'locked'];
         foreach ($statusValues as $statusValue) {
-            sleep(1);//to avoid race conditions
             $response = [];
             try {
                 $response[] = $this->actingAs($this->user)->post(
@@ -137,7 +135,6 @@ class ProjectEditControllerTest extends TestCase
     {
         $visibilityValues = array_keys(config('epicollect.strings.project_visibility'));
         foreach ($visibilityValues as $visibilityValue) {
-            sleep(1);//to avoid race conditions
             $response = [];
             try {
                 $response[] = $this->actingAs($this->user)
@@ -170,7 +167,6 @@ class ProjectEditControllerTest extends TestCase
     {
         $categories = array_keys(config('epicollect.strings.project_categories'));
         foreach ($categories as $category) {
-            sleep(1);//to avoid race conditions
             $response = [];
             try {
                 $response[] = $this->actingAs($this->user)

@@ -98,12 +98,9 @@ class ProjectImportControllerTest extends TestCase
         $this->validator->resetErrors();
         $this->reset();
 
-        //create fake project
-        $project = factory(Project::class)->create();
-
         //not unique
-        $this->request['name'] = $project->name;
-        $this->request['slug'] = $project->slug;
+        $this->request['name'] = 'Bestpint';
+        $this->request['slug'] = 'bestpint';
 
         $this->validator->validate($this->request);
         $this->assertTrue($this->validator->hasErrors());
@@ -119,11 +116,9 @@ class ProjectImportControllerTest extends TestCase
         $this->validator->resetErrors();
         $this->reset();
 
-        //create fake basic user
-        $user = factory(User::class)->create([
-            'server_role' => config('epicollect.strings.server_roles.basic')
-        ]);
-        //user logged in as basic
+
+        //to have a user logged in as basic
+        $user = User::find(10);
         $this->be($user);
 
         //canNOT use ec5 prefix

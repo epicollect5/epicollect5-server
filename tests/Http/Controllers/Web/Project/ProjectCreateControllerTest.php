@@ -25,10 +25,10 @@ class ProjectCreateControllerTest extends TestCase
 
     public const string DRIVER = 'web';
 
-    protected array $request;
+    protected $request;
     protected RuleCreateRequest $validator;
     protected array $access;
-    protected int $projectNameMaxLength;
+    protected $projectNameMaxLength;
 
     public function setUp(): void
     {
@@ -126,13 +126,9 @@ class ProjectCreateControllerTest extends TestCase
         $this->validator->resetErrors();
         $this->reset();
 
-        //create fake project
-        $project = factory(Project::class)->create([
-        ]);
-
         //not unique
-        $this->request['name'] = $project->name;
-        $this->request['slug'] = $project->slug;
+        $this->request['name'] = 'Bestpint';
+        $this->request['slug'] = 'bestpint';
 
         $this->validator->validate($this->request);
         $this->assertTrue($this->validator->hasErrors());

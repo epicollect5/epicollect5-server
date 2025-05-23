@@ -6,8 +6,8 @@ return [
     'SUPER_ADMIN_EMAIL' => env('SUPER_ADMIN_EMAIL'),
     'CREATOR_EMAIL' => env('CREATOR_EMAIL'),
     'MANAGER_EMAIL' => env('MANAGER_EMAIL'),
-    'PASSWORDLESS_TOKEN_EXPIRES_IN' => (int) env('PASSWORDLESS_TOKEN_EXPIRES_IN'),
-    'BCRYPT_ROUNDS' => (int) env('BCRYPT_ROUNDS'),
+    'PASSWORDLESS_TOKEN_EXPIRES_IN' => env('PASSWORDLESS_TOKEN_EXPIRES_IN'),
+    'BCRYPT_ROUNDS' => env('BCRYPT_ROUNDS'),
     'JSON_STRUCTURES_WITH_WILDCARD' => [
         'project_definition' => [
             'id',

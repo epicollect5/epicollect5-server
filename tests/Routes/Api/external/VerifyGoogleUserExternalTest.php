@@ -26,7 +26,7 @@ class VerifyGoogleUserExternalTest extends TestCase
     protected $publicProjectSlug;
     protected $endpoint;
 
-    public function setUp(): void
+    public function setup(): void
     {
         parent::setUp();
         $this->privateProjectSlug = 'ec5-private';
@@ -148,7 +148,7 @@ class VerifyGoogleUserExternalTest extends TestCase
                 ]
             ]);
 
-        //brute force attack!
+        //brute force attack!          
         for ($i = 0; $i < 50; $i++) {
             $this->json('POST', $this->endpoint, [
                 'email' => $email,
