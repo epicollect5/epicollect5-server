@@ -809,6 +809,130 @@ class DeleteControllerEntryTest extends TestCase
         }
     }
 
+    public function test_should_delete_branch_entry_of_a_child_entry()
+    {
+        $forms = $this->projectDefinition['data']['project']['forms'];
+        //create owner entru in a child form
+        $formRef = $forms[1]['ref'];
+        $entry = factory(Entry::class)->create(
+            [
+                'project_id' => $this->project->id,
+                'user_id' => $this->user->id,
+                'form_ref' => $formRef,
+                'uuid' => Uuid::uuid4()->toString()
+            ]
+        );
+
+        //add a fake file per each entry (per each media type)
+        //photo
+        Storage::disk('entry_original')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+        //audio
+        Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
+        //video
+        Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
+
+        //add branch refs (only child form)
+        $branchRefs = [];
+        foreach ($forms as $index => $form) {
+            if ($index === 1) {
+                $inputs = $form['inputs'];
+                foreach ($inputs as $input) {
+                    if ($input['type'] === config('epicollect.strings.branch')) {
+                        $branchRefs[] = $input['ref'];
+                    }
+                }
+            }
+        }
+
+        $branchCounts = [];
+        $branchEntries = [];
+        foreach ($branchRefs as $branchRef) {
+            $branchUuid = Uuid::uuid4()->toString();
+            $branchEntries[] = factory(BranchEntry::class)->create(
+                [
+                    'project_id' => $this->project->id,
+                    'user_id' => $this->user->id,
+                    'form_ref' => $formRef,
+                    'owner_entry_id' => $entry->id,
+                    'owner_uuid' => $entry->uuid,
+                    'owner_input_ref' => $branchRef,
+                    'uuid' => $branchUuid
+                ]
+            );
+            //photo
+            Storage::disk('entry_original')->put($this->project->ref . '/' . $branchUuid . '_' . time() . '.jpg', '');
+            //audio
+            Storage::disk('audio')->put($this->project->ref . '/' . $branchUuid . '_' . time() . '.mp4', '');
+            //video
+            Storage::disk('video')->put($this->project->ref . '/' . $branchUuid . '_' . time() . '.mp4', '');
+
+            $branchCounts[$branchRef] = 1;
+        }
+        $entry->branch_counts = json_encode($branchCounts);
+        $entry->save();
+
+        $this->assertCount(1, Entry::where('project_id', $this->project->id)->get());
+        $this->assertCount(sizeof($branchEntries), BranchEntry::where('project_id', $this->project->id)->get());
+
+        //build delete payload
+        $payload = $this->createPayload(
+            $this->user->id,
+            $branchEntries[0]->uuid,
+            $formRef,
+            0,
+            0
+        );
+
+        //add branch metadata
+        $payload['relationships']['branch'] = [
+            'data' => [
+                'owner_input_ref' => $branchRefs[0],
+                'owner_entry_uuid' => $entry->uuid
+            ]
+        ];
+
+        //hit the delete endpoint
+        $response = [];
+        try {
+            $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, ['data' => $payload]);
+            $response[0]->assertStatus(200);
+            $response[0]->assertExactJson([
+                "data" => [
+                    "code" => "ec5_236",
+                    "title" => "Entry successfully deleted"
+                ]
+            ]);
+
+            $this->assertCount(1, Entry::where('project_id', $this->project->id)->get());
+            //branch was deleted, so assert the count -1
+            $this->assertCount(sizeof($branchCounts) - 1, BranchEntry::where('project_id', $this->project->id)->get());
+
+            //Assert branch count, for simplicity we check the first branch ref since we created branch entry with that
+            $branchCountsResult = Entry::where('project_id', $this->project->id)->value('branch_counts');
+            $branchCounts[$branchRefs[0]] = 0;
+            $this->assertEquals($branchCounts, json_decode($branchCountsResult, true));
+
+            //test only the branch entry files of one branch were deleted, parent entry files untouched, other branches untouched
+            $photos = Storage::disk('entry_original')->files($this->project->ref);
+            $this->assertCount(1 + (sizeof($branchEntries) - 1), $photos);
+
+            $audios = Storage::disk('audio')->files($this->project->ref);
+            $this->assertCount(1 + (sizeof($branchEntries) - 1), $audios);
+
+            $videos = Storage::disk('video')->files($this->project->ref);
+            $this->assertCount(1 + (sizeof($branchEntries) - 1), $videos);
+
+            //delete fake files
+            Storage::disk('entry_original')->deleteDirectory($this->project->ref);
+            Storage::disk('audio')->deleteDirectory($this->project->ref);
+            Storage::disk('video')->deleteDirectory($this->project->ref);
+
+        } catch (Throwable $e) {
+            $this->logTestError($e, $response);
+        }
+    }
+
+
     private function createPayload($userId, $entryUuid, $formRef, $branchCounts, $childCounts)
     {
         return [
