@@ -5,6 +5,7 @@ namespace ec5\Http\Controllers\Web\Admin\Tools;
 use ec5\Http\Controllers\Controller;
 use ec5\Libraries\DirectoryGenerator\DirectoryGenerator;
 use ec5\Services\PhotoSaverService;
+use JetBrains\PhpStorm\NoReturn;
 use Storage;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -25,7 +26,7 @@ class ImageToolsController extends Controller
      * Resize any entry images that have the incorrect entry_original size
      * to whatever dimensions are in the media config file
      */
-    public function resizeEntryImages()
+    #[NoReturn] public function resizeEntryImages()
     {
         $rootDisk = Storage::disk('entry_original');
 
@@ -86,7 +87,7 @@ class ImageToolsController extends Controller
                 if ($resize) {
 
                     // Attempt to save the new image
-                    $thumb = PhotoSaverService::storeImage($directory, $fileSourcePath, $fileName, 'entry_original', $dimensions);
+                    $thumb = PhotoSaverService::saveImage($directory, $fileSourcePath, $fileName, 'entry_original', $dimensions, 100);
 
                     // Check if any errors creating/saving thumb
                     if (!$thumb) {
@@ -108,7 +109,7 @@ class ImageToolsController extends Controller
      * First need to copy the entry_original image to the destination directory
      * Then resize that image to required dimensions
      */
-    public function createEntryExtraImages()
+    #[NoReturn] public function createEntryExtraImages()
     {
         $rootDisk = Storage::disk('entry_original');
 
@@ -169,7 +170,7 @@ class ImageToolsController extends Controller
                         $dimensions = config('epicollect.media.' . $driver);
 
                         // Attempt to resize and save the new image
-                        $resizedImage = PhotoSaverService::storeImage($directory, $fileDestPath, $fileName, $driver, $dimensions);
+                        $resizedImage = PhotoSaverService::saveImage($directory, $fileDestPath, $fileName, $driver, $dimensions, 50);
 
                         // Check if any errors creating/saving
                         if (!$resizedImage) {

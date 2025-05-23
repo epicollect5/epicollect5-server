@@ -13,6 +13,7 @@ use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
+use Throwable;
 
 /* This class does not follow optimal testing practices
    since the application does not get rebooted before each request
@@ -33,11 +34,10 @@ class UploadWebControllerMultipleTest extends TestCase
 {
     use DatabaseTransactions;
 
-    private $user;
-    private $projectDefinition;
-    private $project;
-    private $faker;
-    private $entryGenerator;
+    private User $user;
+    private array $projectDefinition;
+    private Project $project;
+    private EntryGenerator $entryGenerator;
 
     public function setUp(): void
     {
@@ -111,7 +111,7 @@ class UploadWebControllerMultipleTest extends TestCase
             $this->projectDefinition = $projectDefinition;
             $this->entryGenerator = $entryGenerator;
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -143,7 +143,7 @@ class UploadWebControllerMultipleTest extends TestCase
                     ->where('uuid', $entry['data']['id'])
                     ->get()
             );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             //dd($e->getMessage(), $response, json_encode($entry), json_encode($projectDefinition));
             $this->logTestError($e, $response);
         }
@@ -198,7 +198,7 @@ class UploadWebControllerMultipleTest extends TestCase
                 Entry::where('project_id', $this->project->id)
                     ->get()
             );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             //dd($e->getMessage(), $response, json_encode($entry), json_encode($projectDefinition));
             $this->logTestError($e, $response);
         }
@@ -252,7 +252,7 @@ class UploadWebControllerMultipleTest extends TestCase
                 Entry::where('project_id', $this->project->id)
                     ->get()
             );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

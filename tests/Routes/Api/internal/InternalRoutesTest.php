@@ -17,7 +17,7 @@ class InternalRoutesTest extends TestCase
     protected string $privateProjectSlug;
     protected string $publicProjectSlug;
 
-    public function setup(): void
+    public function setUp(): void
     {
         parent::setUp();
         $this->privateProjectSlug = 'ec5-private';

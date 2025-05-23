@@ -33,10 +33,10 @@ class RuleDelete extends ValidationBase
     /**
      * @param ProjectDTO $project
      * @param EntryStructureDTO $entryStructure
+     * @return bool
      */
-    public function additionalChecks(ProjectDTO $project, EntryStructureDTO $entryStructure)
+    public function additionalChecks(ProjectDTO $project, EntryStructureDTO $entryStructure): bool
     {
-        //todo: use Project, not Extra
         $projectExtra = $project->getProjectExtra();
         // Check if form ref exists
         if (count($projectExtra->getFormDetails($entryStructure->getFormRef())) == 0) {
@@ -47,10 +47,17 @@ class RuleDelete extends ValidationBase
         //if the current form ref is not the top parent, we must have a parent entry uuid
         $topParentFormRef = $project->getProjectDefinition()->getData()['project']['forms'][0]['ref'];
         if ($entryStructure->getFormRef() !== $topParentFormRef) {
+
+            //if the entry is a branch, we don't need a parent uuid but an owner uuid
+            $isBranch = !empty($entryStructure->getOwnerInputRef());
+            if ($isBranch) {
+                return true;
+            }
+            //if the entry is not a branch, we need a parent uuid
             if (empty($entryStructure->getParentUuid())) {
                 $this->addAdditionalError($entryStructure->getFormRef(), 'ec5_359');
+                return false;
             }
-            return false;
         }
 
         // Check if branch exists (if supplied)

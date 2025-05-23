@@ -11,23 +11,25 @@ use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use ec5\Traits\Assertions;
+use File;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Passport\ClientRepository;
 use PHPUnit\Framework\Attributes\Depends;
 use Tests\TestCase;
+use Throwable;
 
 class ProjectControllerExportTest extends TestCase
 {
     use Assertions;
 
-    private $user;
-    private $project;
-    private $projectStructure;
-    public const DRIVER = 'web';
+    private User $user;
+    private Project $project;
+    private ProjectStructure $projectStructure;
+    public const string DRIVER = 'web';
 
-    public function setup(): void
+    public function setUp(): void
     {
         parent::setUp();
     }
@@ -58,7 +60,7 @@ class ProjectControllerExportTest extends TestCase
             $this->assertEquals($projectDefinition, $projectResponse);
 
             $this->clearDatabase(['user' => $this->user, 'project' => $this->project]);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
             $this->clearDatabase(['user' => $this->user, 'project' => $this->project]);
         }
@@ -66,6 +68,7 @@ class ProjectControllerExportTest extends TestCase
 
     public function test_should_get_token_OAuth2()
     {
+        File::cleanDirectory(storage_path('framework/cache/data'));
         /**
          * imp: create a user and a project to pass down
          */
@@ -89,7 +92,7 @@ class ProjectControllerExportTest extends TestCase
         ]);
 
         //create basic project definition
-        $projectStructure = factory(ProjectStructure::class)->create(
+        factory(ProjectStructure::class)->create(
             [
                 'project_id' => $project->id,
                 'project_definition' => json_encode($projectDefinition['data'])
@@ -221,7 +224,7 @@ class ProjectControllerExportTest extends TestCase
         ]);
 
         //create basic project definition
-        $projectStructure = factory(ProjectStructure::class)->create(
+        factory(ProjectStructure::class)->create(
             [
                 'project_id' => $anotherProject->id,
                 'project_definition' => json_encode($projectDefinition['data'])
@@ -248,7 +251,7 @@ class ProjectControllerExportTest extends TestCase
         ]);
 
         try {
-            $response = $projectClient->request('GET', $projectURL . $anotherProject->slug);
+            $projectClient->request('GET', $projectURL . $anotherProject->slug);
         } catch (GuzzleException $e) {
             $this->assertEquals(404, $e->getResponse()->getStatusCode());
             $errorResponse = json_decode($e->getResponse()->getBody(), true);

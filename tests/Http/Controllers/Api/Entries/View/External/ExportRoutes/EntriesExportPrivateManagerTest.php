@@ -17,6 +17,7 @@ use ec5\Services\Mapping\ProjectMappingService;
 use ec5\Services\Project\ProjectExtraService;
 use ec5\Traits\Assertions;
 use Exception;
+use File;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Laravel\Passport\ClientRepository;
@@ -27,11 +28,18 @@ class EntriesExportPrivateManagerTest extends TestCase
 {
     use Assertions;
 
+    public function setUp(): void
+    {
+        parent::setUp();
+    }
+
     /**
      * @throws Exception
      */
     public function test_getting_OAuth2_token()
     {
+        // Reset the rate limiter for oauth-token
+        File::cleanDirectory(storage_path('framework/cache/data'));
         $name = config('testing.WEB_UPLOAD_CONTROLLER_PROJECT.name');
         $slug = config('testing.WEB_UPLOAD_CONTROLLER_PROJECT.slug');
         $email = config('testing.UNIT_TEST_RANDOM_EMAIL');
@@ -161,7 +169,6 @@ class EntriesExportPrivateManagerTest extends TestCase
     #[Depends('test_getting_OAuth2_token')] public function test_entries_export_endpoint_private($params)
     {
         $token = $params['token'];
-        $user = $params['user'];
         $project = $params['project'];
         $role = $params['role'];
         $projectDefinition = $params['projectDefinition'];
@@ -266,5 +273,6 @@ class EntriesExportPrivateManagerTest extends TestCase
             $this->logTestError($e, []);
             return false;
         }
+        return true;
     }
 }

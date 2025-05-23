@@ -86,15 +86,15 @@ return [
 
     'jwt' => [
         'secret_key' => env('APP_KEY'),
-        'expire' => env('JWT_EXPIRE', 7776000)
+        'expire' => (int) env('JWT_EXPIRE', 7776000)
     ],
     'jwt-forgot' => [
         'secret_key' => env('APP_KEY'),
-        'expire' => env('JWT_FORGOT_EXPIRE', 3600)
+        'expire' => (int) env('JWT_FORGOT_EXPIRE', 3600)
     ],
     'jwt-passwordless' => [
         'secret_key' => env('APP_KEY'),
-        'expire' => env('JWT_PASSWORDLESS_EXPIRE', 86400)
+        'expire' => (int) env('JWT_PASSWORDLESS_EXPIRE', 86400)
     ],
 
     'passwordless_token_expire' => (int) env('PASSWORDLESS_TOKEN_EXPIRES_IN', 1800),
@@ -108,10 +108,10 @@ return [
         'expire' => 7200
     ],
     'account_code' => [
-        'expire' => env('ACCOUNT_CODE_EXPIRES_IN', 7200)
+        'expire' => (int) env('ACCOUNT_CODE_EXPIRES_IN', 7200)
     ],
     'account_unverified' => [
-        'expire' => env(' ACCOUNT_UNVERIFIED_EXPIRES_IN', 3)
+        'expire' => (int) env('ACCOUNT_UNVERIFIED_EXPIRES_IN', 3)
     ],
     /*
     |--------------------------------------------------------------------------
@@ -140,7 +140,7 @@ return [
 
     'ip_whitelist' => explode(',', env('IP_WHITELIST') ?? ''),
 
-    'bcrypt_rounds' => env('BCRYPT_ROUNDS', 12),
+    'bcrypt_rounds' => (int) env('BCRYPT_ROUNDS', 12),
 
     'google' => [
         'connect_redirect_uri' => env('APP_URL').'/profile/connect-google-callback',

@@ -19,6 +19,7 @@ use Exception;
 use Faker\Factory as Faker;
 use Faker\Generator;
 use Illuminate\Http\UploadedFile;
+use Log;
 use Ramsey\Uuid\Uuid;
 use Throwable;
 
@@ -209,6 +210,7 @@ class EntryGenerator
                     'answer' => $formattedDateTime,
                     'was_jumped' => false
                 ];
+                Log::info('date', ['answer' => $answer]);
                 break;
             case 'time':
                 $formatTime = config('epicollect.mappings.carbon_formats.fake_time');
@@ -222,6 +224,7 @@ class EntryGenerator
                     'answer' => $formattedDateTime,
                     'was_jumped' => false
                 ];
+                Log::info('time', ['answer' => $answer]);
                 break;
             case 'photo':
                 $answer = [
@@ -605,11 +608,19 @@ class EntryGenerator
             }
 
             if ($input['is_title']) {
-                $titles[] = $answers[$input['ref']]['answer'];
+                $answer = $answers[$input['ref']]['answer'];
+
+                if (is_array($answer)) {
+                    if (count($answer) === 1) {
+                        $titles[] = reset($answer); // Get the single value from the array
+                    }
+                } else {
+                    $titles[] = $answer;
+                }
             }
         }
-
         $title = implode(' ', $titles);
+
         $title = $title === '' ? $uuid : $title;
 
         return [

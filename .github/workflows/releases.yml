@@ -33,9 +33,8 @@ jobs:
           fi
           
           # Escape multiline content for GitHub Actions output
+          # Escape only percent signs (necessary for GitHub Actions output)
           RELEASE_NOTES="${RELEASE_NOTES//'%'/'%25'}"
-          RELEASE_NOTES="${RELEASE_NOTES//$'\n'/'%0A'}"
-          RELEASE_NOTES="${RELEASE_NOTES//$'\r'/'%0D'}"
           
           # Write to GitHub Actions output
           echo "release_notes=${RELEASE_NOTES}" >> $GITHUB_OUTPUT

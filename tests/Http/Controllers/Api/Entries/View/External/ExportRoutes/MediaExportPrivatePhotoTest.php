@@ -11,28 +11,37 @@ use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
-use ec5\Services\Mapping\DataMappingService;
 use ec5\Services\Mapping\ProjectMappingService;
 use ec5\Services\Project\ProjectExtraService;
 use ec5\Traits\Assertions;
 use Exception;
+use File;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Storage;
 use Image;
+use Intervention\Image\Drivers\Imagick\Encoders\JpegEncoder;
 use Laravel\Passport\ClientRepository;
 use PHPUnit\Framework\Attributes\Depends;
 use Tests\TestCase;
+use Throwable;
 
 class MediaExportPrivatePhotoTest extends TestCase
 {
     use Assertions;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+    }
 
     /**
      * @throws Exception
      */
     public function test_getting_OAuth2_token()
     {
+        // Reset the rate limiter for oauth-token
+        File::cleanDirectory(storage_path('framework/cache/data'));
         $name = config('testing.WEB_UPLOAD_CONTROLLER_PROJECT.name');
         $slug = config('testing.WEB_UPLOAD_CONTROLLER_PROJECT.slug');
         $email = config('testing.UNIT_TEST_RANDOM_EMAIL');
@@ -159,6 +168,9 @@ class MediaExportPrivatePhotoTest extends TestCase
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     #[Depends('test_getting_OAuth2_token')] public function test_photos_export_endpoint_private($params)
     {
         $token = $params['token'];
@@ -170,7 +182,6 @@ class MediaExportPrivatePhotoTest extends TestCase
          * @var $entryGenerator EntryGenerator
          */
         $entryGenerator = $params['entryGenerator'];
-        $dataMappingService = new DataMappingService();
 
         //generate entries
         $formRef = array_get($projectDefinition, 'data.project.forms.0.ref');
@@ -210,10 +221,10 @@ class MediaExportPrivatePhotoTest extends TestCase
         //create a fake photo for the entry
         $landscapeWidth = config('epicollect.media.entry_original_landscape')[0];
         $landscapeHeight = config('epicollect.media.entry_original_landscape')[1];
-        $image = Image::canvas($landscapeWidth, $landscapeHeight, '#ffffff'); // Width, height, and background color
+        $image = Image::create($landscapeWidth, $landscapeHeight); // Width, height, and background color
 
         // Encode the image as JPEG or other formats
-        $imageData = (string)$image->encode('jpg');
+        $imageData = (string) $image->encode(new JpegEncoder(50));
         Storage::disk('entry_original')->put($project->ref . '/' . $filename, $imageData);
         $imagePath = Storage::disk('entry_original')->path('') . $project->ref . '/' . $filename;
 
@@ -256,7 +267,7 @@ class MediaExportPrivatePhotoTest extends TestCase
             // Get the image content from the response
             $imageContent = (string)$response->getBody();
             // Create an Intervention Image instance from the image content
-            $entryOriginal = Image::make($imageContent);
+            $entryOriginal = Image::read($imageContent);
             $this->assertEquals($entryOriginal->width(), config('epicollect.media.entry_original_landscape')[0]);
             $this->assertEquals($entryOriginal->height(), config('epicollect.media.entry_original_landscape')[1]);
             // Get the size of the image content in bytes
@@ -271,5 +282,6 @@ class MediaExportPrivatePhotoTest extends TestCase
             $this->logTestError($e, []);
             return false;
         }
+        return true;
     }
 }

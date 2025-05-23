@@ -283,7 +283,8 @@ class RuleFileEntry extends EntryValidationBase
                     $entryStructure->getFile(),
                     $fileName,
                     'entry_thumb',
-                    config('epicollect.media.entry_thumb')
+                    config('epicollect.media.entry_thumb'),
+                    50
                 );
 
                 // Check if any errors creating/saving thumb
@@ -384,7 +385,8 @@ class RuleFileEntry extends EntryValidationBase
                     $entryStructure->getFile(),
                     $fileName,
                     'orphan_entry_thumb',
-                    config('epicollect.media.entry_thumb')
+                    config('epicollect.media.entry_thumb'),
+                    50
                 );
 
                 // Check if any errors creating/saving thumb
