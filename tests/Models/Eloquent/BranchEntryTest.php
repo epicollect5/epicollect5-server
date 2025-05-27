@@ -584,4 +584,69 @@ class BranchEntryTest extends TestCase
 
         $this->assertEquals(5, $branchEntries->count());
     }
+
+    public function test_collector_should_download_archive_with_only_own_branch_entries()
+    {
+        //create fake entries
+        $numOfEntries = rand(1, 5);
+
+        //create a collector user for the project
+        $collectorA = factory(User::class)->create();
+
+        //create another collector
+        $collectorB = factory(User::class)->create();
+
+        for ($i = 0; $i < $numOfEntries; $i++) {
+            factory(BranchEntry::class)->create([
+                'project_id' => $this->project->id,
+                'user_id' => $collectorA->id,
+                'form_ref' => $this->formRef,
+                'owner_input_ref' => $this->branchInputRef,
+                'owner_entry_id' => $this->entry->id,
+                'owner_uuid' => $this->entry->uuid,
+                'title' => 'Ciao - ' . $i,
+            ]);
+        }
+
+        $this->assertEquals(0, $this->branchEntryModel->getBranchEntriesByBranchRefForArchive(
+            $this->project->id,
+            [
+                'form_ref' => $this->formRef,
+                'branch_ref' => $this->branchInputRef,
+                'user_id' => $this->user->id
+            ],
+            []
+        )->count());
+
+        $this->assertEquals(0, $this->branchEntryModel->getBranchEntriesByBranchRefForArchive(
+            $this->project->id,
+            [
+                'form_ref' => $this->formRef,
+                'branch_ref' => $this->branchInputRef,
+                'user_id' => $this->superadmin->id
+            ],
+            []
+        )->count());
+
+        $this->assertEquals($numOfEntries, $this->branchEntryModel->getBranchEntriesByBranchRefForArchive(
+            $this->project->id,
+            [
+                'form_ref' => $this->formRef,
+                'branch_ref' => $this->branchInputRef,
+                'user_id' => $collectorA->id
+            ],
+            []
+        )->count());
+
+        $this->assertEquals(0, $this->branchEntryModel->getBranchEntriesByBranchRefForArchive(
+            $this->project->id,
+            [
+                'form_ref' => $this->formRef,
+                'branch_ref' => $this->branchInputRef,
+                'user_id' => $collectorB->id
+            ],
+            []
+        )->count());
+    }
+
 }

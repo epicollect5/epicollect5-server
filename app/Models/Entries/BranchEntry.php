@@ -136,6 +136,12 @@ class BranchEntry extends Model
             ->where('project_id', '=', $projectId)
             ->where('form_ref', '=', $params['form_ref'])
             ->where('owner_input_ref', '=', $params['branch_ref'])
+            ->where(function ($query) use ($params) {
+                // If we have a user ID
+                if (!empty($params['user_id'])) {
+                    $query->where('user_id', '=', $params['user_id']);
+                }
+            })
             ->select($columns);
 
         //filtering needed for different timeframe downloads (today,month, year...)

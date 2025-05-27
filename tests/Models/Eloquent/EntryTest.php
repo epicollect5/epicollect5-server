@@ -508,4 +508,62 @@ class EntryTest extends TestCase
 
         $this->assertEquals(5, $entries->count());
     }
+
+    public function test_collector_should_download_archive_with_only_own_entries()
+    {
+        //create fake entries
+        $numOfEntries = rand(1, 5);
+
+        //create a collector user for the project
+        $collectorA = factory(User::class)->create();
+
+        //create another collector
+        $collectorB = factory(User::class)->create();
+
+        for ($i = 0; $i < $numOfEntries; $i++) {
+            factory(Entry::class)->create([
+                'project_id' => $this->project->id,
+                'user_id' => $collectorA->id,
+                'form_ref' => $this->formRef,
+                'title' => 'Ciao - ' . $i,
+            ]);
+        }
+
+        $this->assertEquals(0, $this->entryModel->getEntriesByFormForArchive(
+            $this->project->id,
+            [
+                'form_ref' => $this->formRef,
+                'user_id' => $this->user->id
+            ],
+            []
+        )->count());
+
+        $this->assertEquals(0, $this->entryModel->getEntriesByFormForArchive(
+            $this->project->id,
+            [
+                'form_ref' => $this->formRef,
+                'user_id' => $this->superadmin->id
+            ],
+            []
+        )->count());
+
+        $this->assertEquals($numOfEntries, $this->entryModel->getEntriesByFormForArchive(
+            $this->project->id,
+            [
+                'form_ref' => $this->formRef,
+                'user_id' => $collectorA->id
+            ],
+            []
+        )->count());
+
+        //collectorB should not see any entries
+        $this->assertEquals(0, $this->entryModel->getEntriesByFormForArchive(
+            $this->project->id,
+            [
+                'form_ref' => $this->formRef,
+                'user_id' => $collectorB->id
+            ],
+            []
+        )->count());
+    }
 }
