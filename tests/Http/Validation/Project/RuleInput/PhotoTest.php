@@ -2,13 +2,13 @@
 
 namespace Tests\Http\Validation\Project\RuleInput;
 
+use ec5\DTO\ProjectDTO;
 use ec5\Http\Validation\Project\RuleInput;
 
 class PhotoTest extends InputTest
 {
-
     /**
-     * @var \ec5\DTO\ProjectDTO
+     * @var ProjectDTO
      */
     protected $project;
     /**
@@ -31,7 +31,7 @@ class PhotoTest extends InputTest
         $this->reset();
     }
 
-    public function reset()
+    public function reset(): void
     {
         $this->possibleAnswers = [];
         $this->jumps = [
@@ -101,10 +101,12 @@ class PhotoTest extends InputTest
         $this->validator->validate($this->inputDetails);
         $this->validator->additionalChecks($this->parentRef);
         $this->assertTrue($this->validator->hasErrors());
-        $this->assertEquals([
+        $this->assertEquals(
+            [
             $this->inputDetails['ref'] => [
                 0 => "ec5_207"
-            ]], $this->validator->errors()
+            ]],
+            $this->validator->errors()
         );
         $this->validator->resetErrors();
         $this->reset();
@@ -113,10 +115,12 @@ class PhotoTest extends InputTest
         $this->validator->validate($this->inputDetails);
         $this->validator->additionalChecks($this->parentRef);
         $this->assertTrue($this->validator->hasErrors());
-        $this->assertEquals([
+        $this->assertEquals(
+            [
             $this->inputDetails['ref'] => [
                 0 => "ec5_207"
-            ]], $this->validator->errors()
+            ]],
+            $this->validator->errors()
         );
         $this->validator->resetErrors();
         $this->reset();
@@ -125,10 +129,12 @@ class PhotoTest extends InputTest
         $this->validator->validate($this->inputDetails);
         $this->validator->additionalChecks($this->parentRef);
         $this->assertTrue($this->validator->hasErrors());
-        $this->assertEquals([
+        $this->assertEquals(
+            [
             $this->inputDetails['ref'] => [
                 0 => "ec5_207"
-            ]], $this->validator->errors()
+            ]],
+            $this->validator->errors()
         );
         $this->validator->resetErrors();
         $this->reset();

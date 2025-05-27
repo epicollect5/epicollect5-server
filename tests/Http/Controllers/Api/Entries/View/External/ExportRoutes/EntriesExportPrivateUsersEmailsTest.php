@@ -16,6 +16,7 @@ use ec5\Services\Mapping\ProjectMappingService;
 use ec5\Services\Project\ProjectExtraService;
 use ec5\Traits\Assertions;
 use Exception;
+use File;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Laravel\Passport\ClientRepository;
@@ -30,7 +31,6 @@ class EntriesExportPrivateUsersEmailsTest extends TestCase
     /**
      * @throws Exception
      */
-    #[NoReturn]
     public function test_getting_OAuth2_token()
     {
         $name = config('testing.WEB_UPLOAD_CONTROLLER_PROJECT.name');
@@ -165,6 +165,7 @@ class EntriesExportPrivateUsersEmailsTest extends TestCase
     #[Depends('test_getting_OAuth2_token')]
     public function test_user_emails_of_entries_export_endpoint_private_($params)
     {
+        File::cleanDirectory(storage_path('framework/cache/data'));
         $token = $params['token'];
         $project = $params['project'];
         $role = $params['role'];

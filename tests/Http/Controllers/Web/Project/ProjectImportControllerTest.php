@@ -98,9 +98,16 @@ class ProjectImportControllerTest extends TestCase
         $this->validator->resetErrors();
         $this->reset();
 
+        //create a project
+        $user = factory(User::class)->create();
+        $project = factory(Project::class)->create([
+            'created_by' => $user->id
+
+        ]);
+
         //not unique
-        $this->request['name'] = 'Bestpint';
-        $this->request['slug'] = 'bestpint';
+        $this->request['name'] = $project->name;
+        $this->request['slug'] = $project->slug;
 
         $this->validator->validate($this->request);
         $this->assertTrue($this->validator->hasErrors());
@@ -117,9 +124,12 @@ class ProjectImportControllerTest extends TestCase
         $this->reset();
 
 
-        //to have a user logged in as basic
-        $user = User::find(10);
-        $this->be($user);
+        //create a user with role 'basic'
+        $user = factory(User::class)->create([
+            'server_role' => 'basic'
+        ]);
+
+        auth()->login($user);
 
         //canNOT use ec5 prefix
         $this->request['name'] = 'EC5 Bestpint';

@@ -17,11 +17,13 @@ use ec5\Services\Mapping\ProjectMappingService;
 use ec5\Services\Project\ProjectExtraService;
 use ec5\Traits\Assertions;
 use Exception;
+use File;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Laravel\Passport\ClientRepository;
 use PHPUnit\Framework\Attributes\Depends;
 use Tests\TestCase;
+use Throwable;
 
 class EntriesExportPrivateCollectorTest extends TestCase
 {
@@ -158,10 +160,14 @@ class EntriesExportPrivateCollectorTest extends TestCase
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     #[Depends('test_getting_OAuth2_token')] public function test_entries_export_endpoint_private($params)
     {
+        // Reset the rate limiter for oauth-token
+        File::cleanDirectory(storage_path('framework/cache/data'));
         $token = $params['token'];
-        $user = $params['user'];
         $project = $params['project'];
         $role = $params['role'];
         $projectDefinition = $params['projectDefinition'];
@@ -269,5 +275,6 @@ class EntriesExportPrivateCollectorTest extends TestCase
             $this->logTestError($e, []);
             return false;
         }
+        return true;
     }
 }

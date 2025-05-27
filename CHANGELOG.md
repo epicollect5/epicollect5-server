@@ -1,5 +1,17 @@
 ## Release Notes
 
+# 12.0.0
+
+- Upgraded to Laravel 12
+- Enhanced image processing with configurable quality settings.
+- Bug Fixes: branch entry deletion bug, min max data editor validation bug
+- Ensured consistent type casting of environment variables in configuration files.
+- Adjusted rate limiting to permit higher request volumes during testing.
+- Improved test reliability by clearing rate limiter caches and using dynamic test data.
+- Updated image-related tests to match new image processing methods.
+- Introduced delays in tests to prevent race conditions.
+- Removed unused variables and enhanced exception handling in tests.
+
 # 11.1.23
 
 - Improved integer and decimal min and max tests

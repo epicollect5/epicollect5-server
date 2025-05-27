@@ -11,13 +11,18 @@ use Exception;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Http\Controllers\Api\Entries\View\ViewEntriesBaseControllerTest;
+use Throwable;
 
 class EntriesExportCustomMappingJSONTest extends ViewEntriesBaseControllerTest
 {
-    use DatabaseTransactions, Assertions;
+    use DatabaseTransactions;
+    use Assertions;
 
-    private $endpoint = 'api/export/entries/';
+    private string $endpoint = 'api/export/entries/';
 
+    /**
+     * @throws Throwable
+     */
     public function test_entries_export_endpoint_parent_single_entry_custom_mapping_not_modified()
     {
         //set project as public so the endpoint is accessible without auth
@@ -101,15 +106,20 @@ class EntriesExportCustomMappingJSONTest extends ViewEntriesBaseControllerTest
             //timestamp
             $this->assertEquals(
                 str_replace(' ', 'T', $entryFromDB->created_at) . '.000Z',
-                $entryFromResponse['created_at']);
+                $entryFromResponse['created_at']
+            );
             $this->assertEquals(
                 str_replace(' ', 'T', $entryFromDB->uploaded_at) . '.000Z',
-                $entryFromResponse['uploaded_at']);
-        } catch (\Throwable $e) {
+                $entryFromResponse['uploaded_at']
+            );
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_entries_export_endpoint_parent_single_entry_custom_mapping_modified()
     {
         //set project as public so the endpoint is accessible without auth
@@ -204,15 +214,20 @@ class EntriesExportCustomMappingJSONTest extends ViewEntriesBaseControllerTest
             //timestamp
             $this->assertEquals(
                 str_replace(' ', 'T', $entryFromDB->created_at) . '.000Z',
-                $entryFromResponse['created_at']);
+                $entryFromResponse['created_at']
+            );
             $this->assertEquals(
                 str_replace(' ', 'T', $entryFromDB->uploaded_at) . '.000Z',
-                $entryFromResponse['uploaded_at']);
-        } catch (\Throwable $e) {
+                $entryFromResponse['uploaded_at']
+            );
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_entries_export_endpoint_parent_multiple_entries_custom_mapping_modified()
     {
         //set project as public so the endpoint is accessible without auth
@@ -299,13 +314,13 @@ class EntriesExportCustomMappingJSONTest extends ViewEntriesBaseControllerTest
 
             $json = json_decode($response[0]->getContent(), true);
             $this->assertCount($numOfEntries, $json['data']['entries']);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
     /**
-     * @throws Exception
+     * @throws Exception|Throwable
      */
     public function test_entries_export_endpoint_child_single_entry_custom_mapping_modified()
     {
@@ -434,17 +449,19 @@ class EntriesExportCustomMappingJSONTest extends ViewEntriesBaseControllerTest
             //timestamp
             $this->assertEquals(
                 str_replace(' ', 'T', $childEntryFromDB->created_at) . '.000Z',
-                $entryFromResponse['created_at']);
+                $entryFromResponse['created_at']
+            );
             $this->assertEquals(
                 str_replace(' ', 'T', $childEntryFromDB->uploaded_at) . '.000Z',
-                $entryFromResponse['uploaded_at']);
-        } catch (\Throwable $e) {
+                $entryFromResponse['uploaded_at']
+            );
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
     /**
-     * @throws Exception
+     * @throws Throwable
      */
     public function test_entries_export_endpoint_child_single_entry_loop()
     {
@@ -453,6 +470,9 @@ class EntriesExportCustomMappingJSONTest extends ViewEntriesBaseControllerTest
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_entries_export_endpoint_branch_of_form_0_single_entry_custom_mapping_modified()
     {
         //set project as public so the endpoint is accessible without auth
@@ -526,7 +546,8 @@ class EntriesExportCustomMappingJSONTest extends ViewEntriesBaseControllerTest
                 $formRef,
                 $branches[$randomBranchIndex]['branch'],
                 $parentEntryFromDB->uuid,
-                $branchRef);
+                $branchRef
+            );
             $entryRowBundle = $this->entryGenerator->createBranchEntryRow(
                 $this->user,
                 $this->project,
@@ -588,19 +609,24 @@ class EntriesExportCustomMappingJSONTest extends ViewEntriesBaseControllerTest
             //timestamp
             $this->assertEquals(
                 str_replace(' ', 'T', $branchEntryFromDB->created_at) . '.000Z',
-                $entryFromResponse['created_at']);
+                $entryFromResponse['created_at']
+            );
             $this->assertEquals(
                 str_replace(' ', 'T', $branchEntryFromDB->uploaded_at) . '.000Z',
-                $entryFromResponse['uploaded_at']);
+                $entryFromResponse['uploaded_at']
+            );
 
             //assert branch owner row ID
             $ownerEntry = Entry::where('uuid', $branchEntryFromDB->owner_uuid)->first();
             $this->assertEquals($branchEntryFromDB->owner_entry_id, $ownerEntry->id);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_entries_export_endpoint_branch_of_form_0_single_entry_loop()
     {
         for ($i = 0; $i < rand(5, 10); $i++) {
@@ -609,10 +635,10 @@ class EntriesExportCustomMappingJSONTest extends ViewEntriesBaseControllerTest
     }
 
     /**
-     * @param $index
      * @return void
+     * @throws Throwable
      */
-    #[DataProvider('multipleRunProvider')] public function test_entries_export_endpoint_form_0_single_entry_custom_mapping_modified_branches_count($index)
+    #[DataProvider('multipleRunProvider')] public function test_entries_export_endpoint_form_0_single_entry_custom_mapping_modified_branches_count()
     {
         $mapIndex = 1;
         //set project as public so the endpoint is accessible without auth
@@ -688,7 +714,8 @@ class EntriesExportCustomMappingJSONTest extends ViewEntriesBaseControllerTest
                     $formRef,
                     $branch['branch'],
                     $parentEntryFromDB->uuid,
-                    $branch['ref']);
+                    $branch['ref']
+                );
                 $entryRowBundle = $this->entryGenerator->createBranchEntryRow(
                     $this->user,
                     $this->project,
@@ -716,8 +743,6 @@ class EntriesExportCustomMappingJSONTest extends ViewEntriesBaseControllerTest
         $queryString = '?form_ref=' . $formRef;
         $queryString .= '&map_index=' . $mapIndex;
         $response = [];
-        $mappedInputs = [];
-        $inputsFlattened = [];
         try {
             $response[] = $this->actingAs($this->user)
                 ->get($this->endpoint . $this->project->slug . $queryString);
@@ -759,7 +784,9 @@ class EntriesExportCustomMappingJSONTest extends ViewEntriesBaseControllerTest
                     'form_index' => 0,
                     'onlyMapTheseRefs' => $onlyMapTheseRefs,
                     'projectDefinition' => $this->projectDefinition
-                ], $mapIndex);
+                ],
+                $mapIndex
+            );
 
 
             $entryFromResponse = $json['data']['entries'][0];
@@ -768,11 +795,13 @@ class EntriesExportCustomMappingJSONTest extends ViewEntriesBaseControllerTest
             //timestamp
             $this->assertEquals(
                 str_replace(' ', 'T', $entryFromDB->created_at) . '.000Z',
-                $entryFromResponse['created_at']);
+                $entryFromResponse['created_at']
+            );
             $this->assertEquals(
                 str_replace(' ', 'T', $entryFromDB->uploaded_at) . '.000Z',
-                $entryFromResponse['uploaded_at']);
-        } catch (\Throwable $e) {
+                $entryFromResponse['uploaded_at']
+            );
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
             //dd($e->getMessage(), $e->getTraceAsString(), $mappedInputs, $inputsFlattened);
 

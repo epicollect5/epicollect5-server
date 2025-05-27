@@ -25,7 +25,7 @@ class EditExistingHierarchyEntryTest extends TestCase
     use DatabaseTransactions;
     use Assertions;
 
-    private $endpoint = 'api/internal/web-upload/';
+    private string $endpoint = 'api/internal/web-upload/';
 
     public function setUp(): void
     {
@@ -93,6 +93,9 @@ class EditExistingHierarchyEntryTest extends TestCase
         $this->projectExtra = $projectExtra;
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_entry_text_by_web_upload_same_user()
     {
         //get project definition
@@ -102,7 +105,7 @@ class EditExistingHierarchyEntryTest extends TestCase
         $inputRef = '';
         $inputText = [];
         $editedInputAnswer = [];
-        foreach ($inputs as $index => $input) {
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.text')) {
                 $inputRef = $input['ref'];
                 $inputText = $input;
@@ -178,11 +181,14 @@ class EditExistingHierarchyEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($entryFromDB->user_id, $editedEntryFromDB->user_id);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_entry_integer_by_web_upload_same_user()
     {
         //get project definition
@@ -192,7 +198,7 @@ class EditExistingHierarchyEntryTest extends TestCase
         $inputRef = '';
         $inputInteger = [];
         $editedInputAnswer = [];
-        foreach ($inputs as $index => $input) {
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.integer')) {
                 $inputRef = $input['ref'];
                 $inputInteger = $input;
@@ -268,11 +274,14 @@ class EditExistingHierarchyEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($entryFromDB->user_id, $editedEntryFromDB->user_id);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_entry_decimal_by_web_upload_same_user()
     {
         //get project definition
@@ -282,7 +291,7 @@ class EditExistingHierarchyEntryTest extends TestCase
         $inputRef = '';
         $inputDecimal = [];
         $editedInputAnswer = [];
-        foreach ($inputs as $index => $input) {
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.decimal')) {
                 $inputRef = $input['ref'];
                 $inputDecimal = $input;
@@ -358,11 +367,14 @@ class EditExistingHierarchyEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($entryFromDB->user_id, $editedEntryFromDB->user_id);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_entry_phone_by_web_upload_same_user()
     {
         //get project definition
@@ -372,7 +384,7 @@ class EditExistingHierarchyEntryTest extends TestCase
         $inputRef = '';
         $inputPhone = [];
         $editedInputAnswer = [];
-        foreach ($inputs as $index => $input) {
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.phone')) {
                 $inputRef = $input['ref'];
                 $inputPhone = $input;
@@ -448,11 +460,14 @@ class EditExistingHierarchyEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($entryFromDB->user_id, $editedEntryFromDB->user_id);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_entry_date_by_web_upload_same_user()
     {
         //get project definition
@@ -462,7 +477,7 @@ class EditExistingHierarchyEntryTest extends TestCase
         $inputRef = '';
         $inputDate = [];
         $editedInputAnswer = [];
-        foreach ($inputs as $index => $input) {
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.date')) {
                 $inputRef = $input['ref'];
                 $inputDate = $input;
@@ -538,11 +553,14 @@ class EditExistingHierarchyEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($entryFromDB->user_id, $editedEntryFromDB->user_id);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_entry_time_by_web_upload_same_user()
     {
         //get project definition
@@ -552,7 +570,7 @@ class EditExistingHierarchyEntryTest extends TestCase
         $inputRef = '';
         $inputTime = [];
         $editedInputAnswer = [];
-        foreach ($inputs as $index => $input) {
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.time')) {
                 $inputRef = $input['ref'];
                 $inputTime = $input;
@@ -628,11 +646,14 @@ class EditExistingHierarchyEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($entryFromDB->user_id, $editedEntryFromDB->user_id);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_entry_dropdown_by_web_upload_same_user()
     {
         //get project definition
@@ -642,7 +663,7 @@ class EditExistingHierarchyEntryTest extends TestCase
         $inputRef = '';
         $inputDropdown = [];
         $editedInputAnswer = [];
-        foreach ($inputs as $index => $input) {
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.time')) {
                 $inputRef = $input['ref'];
                 $inputDropdown = $input;
@@ -718,11 +739,14 @@ class EditExistingHierarchyEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($entryFromDB->user_id, $editedEntryFromDB->user_id);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_entry_radio_by_web_upload_same_user()
     {
         //get project definition
@@ -732,7 +756,7 @@ class EditExistingHierarchyEntryTest extends TestCase
         $inputRef = '';
         $inputRadio = [];
         $editedInputAnswer = [];
-        foreach ($inputs as $index => $input) {
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.radio')) {
                 $inputRef = $input['ref'];
                 $inputRadio = $input;
@@ -808,11 +832,14 @@ class EditExistingHierarchyEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($entryFromDB->user_id, $editedEntryFromDB->user_id);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_entry_checkbox_by_web_upload_same_user()
     {
         //get project definition
@@ -822,7 +849,7 @@ class EditExistingHierarchyEntryTest extends TestCase
         $inputRef = '';
         $inputCheckbox = [];
         $editedInputAnswer = [];
-        foreach ($inputs as $index => $input) {
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.checkbox')) {
                 $inputRef = $input['ref'];
                 $inputCheckbox = $input;
@@ -898,11 +925,14 @@ class EditExistingHierarchyEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($entryFromDB->user_id, $editedEntryFromDB->user_id);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_entry_searchsingle_by_web_upload_same_user()
     {
         //get project definition
@@ -912,7 +942,7 @@ class EditExistingHierarchyEntryTest extends TestCase
         $inputRef = '';
         $inputSearchsingle = [];
         $editedInputAnswer = [];
-        foreach ($inputs as $index => $input) {
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.searchsingle')) {
                 $inputRef = $input['ref'];
                 $inputSearchsingle = $input;
@@ -988,11 +1018,14 @@ class EditExistingHierarchyEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($entryFromDB->user_id, $editedEntryFromDB->user_id);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_entry_searchmultiple_by_web_upload_same_user()
     {
         //get project definition
@@ -1002,7 +1035,7 @@ class EditExistingHierarchyEntryTest extends TestCase
         $inputRef = '';
         $inputSearchmultiple = [];
         $editedInputAnswer = [];
-        foreach ($inputs as $index => $input) {
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.searchmultiple')) {
                 $inputRef = $input['ref'];
                 $inputSearchmultiple = $input;
@@ -1078,11 +1111,14 @@ class EditExistingHierarchyEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($entryFromDB->user_id, $editedEntryFromDB->user_id);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_entry_textbox_by_web_upload_same_user()
     {
         //get project definition
@@ -1092,7 +1128,7 @@ class EditExistingHierarchyEntryTest extends TestCase
         $inputRef = '';
         $inputTextbox = [];
         $editedInputAnswer = [];
-        foreach ($inputs as $index => $input) {
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.textarea')) {
                 $inputRef = $input['ref'];
                 $inputTextbox = $input;
@@ -1168,11 +1204,14 @@ class EditExistingHierarchyEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($entryFromDB->user_id, $editedEntryFromDB->user_id);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_entry_location_by_web_upload_same_user()
     {
         //get project definition
@@ -1182,7 +1221,7 @@ class EditExistingHierarchyEntryTest extends TestCase
         $inputRef = '';
         $inputLocation = [];
         $editedInputAnswer = [];
-        foreach ($inputs as $index => $input) {
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.location')) {
                 $inputRef = $input['ref'];
                 $inputLocation = $input;
@@ -1258,11 +1297,14 @@ class EditExistingHierarchyEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($entryFromDB->user_id, $editedEntryFromDB->user_id);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_entry_photo_by_web_upload_same_user()
     {
         //get project definition
@@ -1272,7 +1314,7 @@ class EditExistingHierarchyEntryTest extends TestCase
         $inputRef = '';
         $inputPhoto = [];
         $editedInputAnswer = [];
-        foreach ($inputs as $index => $input) {
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.photo')) {
                 $inputRef = $input['ref'];
                 $inputPhoto = $input;
@@ -1348,11 +1390,14 @@ class EditExistingHierarchyEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($entryFromDB->user_id, $editedEntryFromDB->user_id);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_entry_audio_by_web_upload_same_user()
     {
         //get project definition
@@ -1362,7 +1407,7 @@ class EditExistingHierarchyEntryTest extends TestCase
         $inputRef = '';
         $inputAudio = [];
         $editedInputAnswer = [];
-        foreach ($inputs as $index => $input) {
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.audio')) {
                 $inputRef = $input['ref'];
                 $inputAudio = $input;
@@ -1438,11 +1483,14 @@ class EditExistingHierarchyEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($entryFromDB->user_id, $editedEntryFromDB->user_id);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_entry_video_by_web_upload_same_user()
     {
         //get project definition
@@ -1452,7 +1500,7 @@ class EditExistingHierarchyEntryTest extends TestCase
         $inputRef = '';
         $inputVideo = [];
         $editedInputAnswer = [];
-        foreach ($inputs as $index => $input) {
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.video')) {
                 $inputRef = $input['ref'];
                 $inputVideo = $input;
@@ -1528,11 +1576,14 @@ class EditExistingHierarchyEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($entryFromDB->user_id, $editedEntryFromDB->user_id);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_entry_barcode_by_web_upload_same_user()
     {
         //get project definition
@@ -1542,7 +1593,7 @@ class EditExistingHierarchyEntryTest extends TestCase
         $inputRef = '';
         $inputBarcode = [];
         $editedInputAnswer = [];
-        foreach ($inputs as $index => $input) {
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.barcode')) {
                 $inputRef = $input['ref'];
                 $inputBarcode = $input;
@@ -1618,11 +1669,14 @@ class EditExistingHierarchyEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($entryFromDB->user_id, $editedEntryFromDB->user_id);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_entry_text_by_web_upload_another_user_with_manager_role()
     {
         //add a manager to the project
@@ -1637,11 +1691,11 @@ class EditExistingHierarchyEntryTest extends TestCase
         $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
 
         //get the first text question
-        $inputRef = '';
+        $inputText = '';
         $editedInputAnswer = [];
-        foreach ($inputs as $index => $input) {
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.text')) {
-                $inputRef = $input['ref'];
+                $inputText = $input;
                 break;
             }
         }
@@ -1677,17 +1731,14 @@ class EditExistingHierarchyEntryTest extends TestCase
         //try to upload payload text answer edited (reversing the string)
         $editedAnswers = json_decode($entryFromDB->entry_data, true)['entry']['answers'];
         foreach ($editedAnswers as $ref => $existingAnswer) {
-            if ($ref === $inputRef) {
-                $editedInputAnswer = [
-                    'answer' => strrev($existingAnswer['answer']),
-                    'was_jumped' => false
-                ];
+            if ($ref === $inputText['ref']) {
+                $editedInputAnswer = $this->entryGenerator->createAnswer($inputText, $entryFromDB->uuid);
                 break;
             }
         }
 
         $payloadAnswers = $entryPayloads[0]['data']['entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $entryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswer($payloadAnswers, $entryPayloads[0], $inputText['ref'], $editedInputAnswer);
 
         $response = [];
         try {
@@ -1710,7 +1761,7 @@ class EditExistingHierarchyEntryTest extends TestCase
             //assert entry answer was edited
             $editedAnswers = json_decode($editedEntryFromDB->entry_data, true)['entry']['answers'];
             foreach ($editedAnswers as $ref => $editedAnswer) {
-                if ($ref === $inputRef) {
+                if ($ref === $inputText['ref']) {
                     $this->assertEquals($editedInputAnswer, $editedAnswer);
                     break;
                 }
@@ -1718,11 +1769,14 @@ class EditExistingHierarchyEntryTest extends TestCase
             //assert user matches?????
             $this->assertEquals($entryFromDB->user_id, $editedEntryFromDB->user_id);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_entry_text_by_web_upload_another_user_with_curator_role()
     {
         //add a curator to the project
@@ -1737,11 +1791,11 @@ class EditExistingHierarchyEntryTest extends TestCase
         $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
 
         //get the first text question
-        $inputRef = '';
+        $inputText = '';
         $editedInputAnswer = [];
-        foreach ($inputs as $index => $input) {
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.text')) {
-                $inputRef = $input['ref'];
+                $inputText = $input;
                 break;
             }
         }
@@ -1777,17 +1831,14 @@ class EditExistingHierarchyEntryTest extends TestCase
         //try to upload payload text answer edited (reversing the string)
         $editedAnswers = json_decode($entryFromDB->entry_data, true)['entry']['answers'];
         foreach ($editedAnswers as $ref => $existingAnswer) {
-            if ($ref === $inputRef) {
-                $editedInputAnswer = [
-                    'answer' => strrev($existingAnswer['answer']),
-                    'was_jumped' => false
-                ];
+            if ($ref === $inputText['ref']) {
+                $editedInputAnswer = $this->entryGenerator->createAnswer($inputText, $entryFromDB->uuid);
                 break;
             }
         }
 
         $payloadAnswers = $entryPayloads[0]['data']['entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $entryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswer($payloadAnswers, $entryPayloads[0], $inputText['ref'], $editedInputAnswer);
 
         $response = [];
         try {
@@ -1810,7 +1861,7 @@ class EditExistingHierarchyEntryTest extends TestCase
             //assert entry answer was edited
             $editedAnswers = json_decode($editedEntryFromDB->entry_data, true)['entry']['answers'];
             foreach ($editedAnswers as $ref => $editedAnswer) {
-                if ($ref === $inputRef) {
+                if ($ref === $inputText['ref']) {
                     $this->assertEquals($editedInputAnswer, $editedAnswer);
                     break;
                 }
@@ -1818,11 +1869,14 @@ class EditExistingHierarchyEntryTest extends TestCase
             //assert user matches?????
             $this->assertEquals($entryFromDB->user_id, $editedEntryFromDB->user_id);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_entry_text_by_web_upload_same_collector()
     {
         //add a collector to the project
@@ -1837,11 +1891,11 @@ class EditExistingHierarchyEntryTest extends TestCase
         $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
 
         //get the first text question
-        $inputRef = '';
+        $inputText = '';
         $editedInputAnswer = [];
-        foreach ($inputs as $index => $input) {
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.text')) {
-                $inputRef = $input['ref'];
+                $inputText = $input;
                 break;
             }
         }
@@ -1877,17 +1931,14 @@ class EditExistingHierarchyEntryTest extends TestCase
         //try to upload payload text answer edited (reversing the string)
         $editedAnswers = json_decode($entryFromDB->entry_data, true)['entry']['answers'];
         foreach ($editedAnswers as $ref => $existingAnswer) {
-            if ($ref === $inputRef) {
-                $editedInputAnswer = [
-                    'answer' => strrev($existingAnswer['answer']),
-                    'was_jumped' => false
-                ];
+            if ($ref === $inputText['ref']) {
+                $editedInputAnswer = $this->entryGenerator->createAnswer($inputText, $entryFromDB->uuid);
                 break;
             }
         }
 
         $payloadAnswers = $entryPayloads[0]['data']['entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $entryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswer($payloadAnswers, $entryPayloads[0], $inputText['ref'], $editedInputAnswer);
 
         $response = [];
         try {
@@ -1910,7 +1961,7 @@ class EditExistingHierarchyEntryTest extends TestCase
             //assert entry answer was edited
             $editedAnswers = json_decode($editedEntryFromDB->entry_data, true)['entry']['answers'];
             foreach ($editedAnswers as $ref => $editedAnswer) {
-                if ($ref === $inputRef) {
+                if ($ref === $inputText['ref']) {
                     $this->assertEquals($editedInputAnswer, $editedAnswer);
                     break;
                 }
@@ -1918,11 +1969,14 @@ class EditExistingHierarchyEntryTest extends TestCase
             //assert user matches?????
             $this->assertEquals($entryFromDB->user_id, $editedEntryFromDB->user_id);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_entry_text_by_web_upload_different_collector_must_fail()
     {
         //add a collectorA to the project
@@ -1945,11 +1999,11 @@ class EditExistingHierarchyEntryTest extends TestCase
         $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
 
         //get the first text question
-        $inputRef = '';
+        $inputText = '';
         $editedInputAnswer = [];
-        foreach ($inputs as $index => $input) {
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.text')) {
-                $inputRef = $input['ref'];
+                $inputText = $input;
                 break;
             }
         }
@@ -1985,9 +2039,9 @@ class EditExistingHierarchyEntryTest extends TestCase
         //try to upload payload text answer edited (reversing the string)
         $editedAnswers = json_decode($entryFromDB->entry_data, true)['entry']['answers'];
         foreach ($editedAnswers as $ref => $existingAnswer) {
-            if ($ref === $inputRef) {
+            if ($ref === $inputText['ref']) {
                 $editedInputAnswer = [
-                    'answer' => strrev($existingAnswer['answer']),
+                    'answer' =>  $this->entryGenerator->createAnswer($inputText, $entryFromDB->uuid),
                     'was_jumped' => false
                 ];
                 break;
@@ -1995,7 +2049,7 @@ class EditExistingHierarchyEntryTest extends TestCase
         }
 
         $payloadAnswers = $entryPayloads[0]['data']['entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $entryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswer($payloadAnswers, $entryPayloads[0], $inputText['ref'], $editedInputAnswer);
 
         $response = [];
         try {
@@ -2019,7 +2073,7 @@ class EditExistingHierarchyEntryTest extends TestCase
             //assert entry answer was NOT edited
             $editedAnswers = json_decode($editedEntryFromDB->entry_data, true)['entry']['answers'];
             foreach ($editedAnswers as $ref => $editedAnswer) {
-                if ($ref === $inputRef) {
+                if ($ref === $inputText['ref']) {
                     $this->assertNotEquals($editedInputAnswer, $editedAnswer);
                     break;
                 }
@@ -2032,6 +2086,9 @@ class EditExistingHierarchyEntryTest extends TestCase
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_entry_text_by_web_upload_jumping_branches()
     {
         //get project definition
@@ -2041,7 +2098,7 @@ class EditExistingHierarchyEntryTest extends TestCase
         $inputRef = '';
         $inputText = [];
         $editedInputAnswer = [];
-        foreach ($inputs as $index => $input) {
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.text')) {
                 $inputRef = $input['ref'];
                 $inputText = $input;
@@ -2208,7 +2265,7 @@ class EditExistingHierarchyEntryTest extends TestCase
                     $this->assertEquals(0, $branchCounts[$branchRef]);
                 }
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

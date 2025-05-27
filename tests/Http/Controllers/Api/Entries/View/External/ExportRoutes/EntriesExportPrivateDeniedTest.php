@@ -15,11 +15,13 @@ use ec5\Services\Mapping\ProjectMappingService;
 use ec5\Services\Project\ProjectExtraService;
 use ec5\Traits\Assertions;
 use Exception;
+use File;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Laravel\Passport\ClientRepository;
 use PHPUnit\Framework\Attributes\Depends;
 use Tests\TestCase;
+use Throwable;
 
 class EntriesExportPrivateDeniedTest extends TestCase
 {
@@ -157,6 +159,7 @@ class EntriesExportPrivateDeniedTest extends TestCase
 
     #[Depends('test_getting_OAuth2_token')] public function test_entries_export_endpoint_private_denied_without_token($params)
     {
+        File::cleanDirectory(storage_path('framework/cache/data'));
         $token = $params['token'];
         $user = $params['user'];
         $project = $params['project'];
@@ -233,10 +236,11 @@ class EntriesExportPrivateDeniedTest extends TestCase
                     'project' => $project,
                 ]
             );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->clearDatabase($params);
             $this->logTestError($e, []);
             return false;
         }
+        return true;
     }
 }

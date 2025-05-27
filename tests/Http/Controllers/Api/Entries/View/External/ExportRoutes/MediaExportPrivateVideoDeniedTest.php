@@ -17,11 +17,15 @@ use ec5\Traits\Assertions;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
+use Throwable;
 
 class MediaExportPrivateVideoDeniedTest extends TestCase
 {
     use Assertions;
 
+    /**
+     * @throws Throwable
+     */
     public function test_videos_export_endpoint_denied_without_token()
     {
         parent::setUp();
@@ -164,7 +168,7 @@ class MediaExportPrivateVideoDeniedTest extends TestCase
                     'project' => $project,
                 ]
             );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Storage::disk('audio')->deleteDirectory($project->ref);
             $this->clearDatabase(
                 [

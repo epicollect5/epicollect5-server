@@ -23,6 +23,9 @@ class MediaExportPrivatePhotoDeniedTest extends TestCase
 {
     use Assertions;
 
+    /**
+     * @throws Throwable
+     */
     public function test_photos_export_endpoint_denied_without_token()
     {
         parent::setUp();

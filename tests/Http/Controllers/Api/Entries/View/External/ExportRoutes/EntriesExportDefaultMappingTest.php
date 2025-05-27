@@ -9,13 +9,18 @@ use ec5\Traits\Assertions;
 use Exception;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\Http\Controllers\Api\Entries\View\ViewEntriesBaseControllerTest;
+use Throwable;
 
 class EntriesExportDefaultMappingTest extends ViewEntriesBaseControllerTest
 {
-    use DatabaseTransactions, Assertions;
+    use DatabaseTransactions;
+    use Assertions;
 
-    private $endpoint = 'api/export/entries/';
+    private string $endpoint = 'api/export/entries/';
 
+    /**
+     * @throws Throwable
+     */
     public function test_parent_entry_row_stored_to_db()
     {
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
@@ -35,6 +40,9 @@ class EntriesExportDefaultMappingTest extends ViewEntriesBaseControllerTest
 
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_multiple_parent_entry_rows_stored_to_db()
     {
         $count = rand(5, 10);
@@ -43,6 +51,9 @@ class EntriesExportDefaultMappingTest extends ViewEntriesBaseControllerTest
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_entries_export_endpoint_parent_single_entry()
     {
         //set project as public so the endpoint is accessible without auth
@@ -109,15 +120,20 @@ class EntriesExportDefaultMappingTest extends ViewEntriesBaseControllerTest
             //timestamp
             $this->assertEquals(
                 str_replace(' ', 'T', $entryFromDB->created_at) . '.000Z',
-                $entryFromResponse['created_at']);
+                $entryFromResponse['created_at']
+            );
             $this->assertEquals(
                 str_replace(' ', 'T', $entryFromDB->uploaded_at) . '.000Z',
-                $entryFromResponse['uploaded_at']);
-        } catch (\Throwable $e) {
+                $entryFromResponse['uploaded_at']
+            );
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_entries_export_endpoint_parent_single_entry_loop()
     {
         for ($i = 0; $i < rand(10, 50); $i++) {
@@ -125,6 +141,9 @@ class EntriesExportDefaultMappingTest extends ViewEntriesBaseControllerTest
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_entries_export_endpoint_parent_multiple_entries()
     {
         //set project as public so the endpoint is accessible without auth
@@ -183,13 +202,13 @@ class EntriesExportDefaultMappingTest extends ViewEntriesBaseControllerTest
 
             $json = json_decode($response[0]->getContent(), true);
             $this->assertCount($numOfEntries, $json['data']['entries']);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
     /**
-     * @throws Exception
+     * @throws Throwable
      */
     public function test_entries_export_endpoint_child_single_entry()
     {
@@ -288,19 +307,22 @@ class EntriesExportDefaultMappingTest extends ViewEntriesBaseControllerTest
             //timestamp
             $this->assertEquals(
                 str_replace(' ', 'T', $childEntryFromDB->created_at) . '.000Z',
-                $entryFromResponse['created_at']);
+                $entryFromResponse['created_at']
+            );
             $this->assertEquals(
                 str_replace(' ', 'T', $childEntryFromDB->uploaded_at) . '.000Z',
-                $entryFromResponse['uploaded_at']);
+                $entryFromResponse['uploaded_at']
+            );
 
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
     /**
      * @throws Exception
+     * @throws Throwable
      */
     public function test_entries_export_endpoint_child_single_entry_loop()
     {
@@ -309,6 +331,9 @@ class EntriesExportDefaultMappingTest extends ViewEntriesBaseControllerTest
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_entries_export_endpoint_branch_of_form_0_single_entry()
     {
         //set project as public so the endpoint is accessible without auth
@@ -359,7 +384,8 @@ class EntriesExportDefaultMappingTest extends ViewEntriesBaseControllerTest
                 $formRef,
                 $branches[$randomBranchIndex]['branch'],
                 $parentEntryFromDB->uuid,
-                $branchRef);
+                $branchRef
+            );
             $entryRowBundle = $this->entryGenerator->createBranchEntryRow(
                 $this->user,
                 $this->project,
@@ -415,19 +441,24 @@ class EntriesExportDefaultMappingTest extends ViewEntriesBaseControllerTest
             //timestamp
             $this->assertEquals(
                 str_replace(' ', 'T', $branchEntryFromDB->created_at) . '.000Z',
-                $entryFromResponse['created_at']);
+                $entryFromResponse['created_at']
+            );
             $this->assertEquals(
                 str_replace(' ', 'T', $branchEntryFromDB->uploaded_at) . '.000Z',
-                $entryFromResponse['uploaded_at']);
+                $entryFromResponse['uploaded_at']
+            );
 
             //assert branch owner row ID
             $ownerEntry = Entry::where('uuid', $branchEntryFromDB->owner_uuid)->first();
             $this->assertEquals($branchEntryFromDB->owner_entry_id, $ownerEntry->id);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_entries_export_endpoint_branch_of_form_0_single_entry_loop()
     {
         for ($i = 0; $i < rand(5, 10); $i++) {

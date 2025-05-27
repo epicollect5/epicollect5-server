@@ -10,7 +10,6 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Response;
 use Log;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
 
 class ViewEntriesDataController extends ViewEntriesControllerBase
@@ -19,7 +18,7 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
     /**
      * @throws Throwable
      */
-    public function export(): JsonResponse|StreamedResponse
+    public function export()
     {
         //Slow down api responses to avoid overloading the server
         sleep(config('epicollect.setup.api_sleep_time.entries'));

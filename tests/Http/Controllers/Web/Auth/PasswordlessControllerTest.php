@@ -103,6 +103,8 @@ class PasswordlessControllerTest extends TestCase
                 'expires_at' => Carbon::now()->addSeconds($tokenExpiresAt)->toDateTimeString()
             ]);
 
+
+
         $response = $this->post('/login/passwordless/verification', [
             'email' => $email,
             'code' => $code

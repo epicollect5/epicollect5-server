@@ -25,10 +25,10 @@ class ProjectCreateControllerTest extends TestCase
 
     public const string DRIVER = 'web';
 
-    protected $request;
+    protected array $request;
     protected RuleCreateRequest $validator;
     protected array $access;
-    protected $projectNameMaxLength;
+    protected int $projectNameMaxLength;
 
     public function setUp(): void
     {
@@ -126,9 +126,13 @@ class ProjectCreateControllerTest extends TestCase
         $this->validator->resetErrors();
         $this->reset();
 
+        //create fake project
+        $project = factory(Project::class)->create([
+        ]);
+
         //not unique
-        $this->request['name'] = 'Bestpint';
-        $this->request['slug'] = 'bestpint';
+        $this->request['name'] = $project->name;
+        $this->request['slug'] = $project->slug;
 
         $this->validator->validate($this->request);
         $this->assertTrue($this->validator->hasErrors());
@@ -144,10 +148,14 @@ class ProjectCreateControllerTest extends TestCase
         $this->validator->resetErrors();
         $this->reset();
 
-
+        //create a basic user
+        $user = factory(User::class)->create(
+            [
+                'server_role' => config('epicollect.strings.server_roles.basic')
+            ]
+        );
         //to have a user logged in as basic
-        $user = User::where('server_role', config('epicollect.strings.server_roles.basic'))->first();
-        $this->be($user);
+        auth()->login($user);
 
         //canNOT use ec5 prefix
         $this->request['name'] = 'EC5 Bestpint';

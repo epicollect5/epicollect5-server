@@ -22,20 +22,21 @@ class ArchiveProjectTest extends TestCase
 
         for ($i = 0; $i < $repeatCount; $i++) {
 
-            $userId = rand(1, 100);
+            $user = factory(User::class)->create();
+
             // Create a test project
             $name = 'EC5 Unit Test ' . $i;
             $slug = Str::slug($name);
             $project = factory(Project::class)->create([
                 'name' => $name,
                 'slug' => $slug,
-                'created_by' => $userId
+                'created_by' => $user->id
             ]);
 
             //assign user as creator
             factory(ProjectRole::class)->create([
                 'project_id' => $project->id,
-                'user_id' => $userId,
+                'user_id' => $user->id,
                 'role' => config('epicollect.strings.project_roles.creator')
             ]);
 

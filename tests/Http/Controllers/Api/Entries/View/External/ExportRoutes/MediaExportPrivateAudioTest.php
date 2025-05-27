@@ -16,6 +16,7 @@ use ec5\Services\Mapping\ProjectMappingService;
 use ec5\Services\Project\ProjectExtraService;
 use ec5\Traits\Assertions;
 use Exception;
+use File;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Log;
@@ -23,6 +24,7 @@ use Illuminate\Support\Facades\Storage;
 use Laravel\Passport\ClientRepository;
 use PHPUnit\Framework\Attributes\Depends;
 use Tests\TestCase;
+use Throwable;
 
 class MediaExportPrivateAudioTest extends TestCase
 {
@@ -159,8 +161,12 @@ class MediaExportPrivateAudioTest extends TestCase
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     #[Depends('test_getting_OAuth2_token')] public function test_audios_export_endpoint_private($params)
     {
+        File::cleanDirectory(storage_path('framework/cache/data'));
         $token = $params['token'];
         $user = $params['user'];
         $project = $params['project'];
@@ -251,5 +257,6 @@ class MediaExportPrivateAudioTest extends TestCase
             $this->logTestError($e, []);
             return false;
         }
+        return true;
     }
 }

@@ -196,8 +196,7 @@ return [
         Laravel\Socialite\SocialiteServiceProvider::class,
         // Ldap
         \ec5\Libraries\Auth\Ldap\LdapServiceProvider::class,
-        // Image Intervention
-        Intervention\Image\ImageServiceProvider::class,
+
         // Laravel Passport
         Laravel\Passport\PassportServiceProvider::class,
         //Avatar
