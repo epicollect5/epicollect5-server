@@ -109,20 +109,14 @@ class BranchEntry extends Model
     }
 
     /**
-     * Retrieves branch entries for archive downloads
+     * Builds a query to retrieve branch entries for archive downloads, filtered by project, form reference, branch reference, and optionally user.
      *
-     * This method builds a query on the branch entries table (as defined in configuration)
-     * filtered by the provided project ID, form reference, and branch reference.
-     * It ensures that the 'id' column is always included in the selection.
+     * Ensures the 'id' column is included in the selection and applies a forced index for optimized performance. No sorting is applied, but time-based filtering is handled for archive purposes.
      *
-     *  No sorting as this is for downloading archive only
-     *
-     * @param int $projectId The identifier of the project.
-     * @param array $params Associative array with keys:
-     *                      - 'form_ref': The form reference used for filtering.
-     *                      - 'branch_ref': The branch (owner input) reference for filtering.
-     * @param array $columns The list of columns to select; defaults to all columns.
-     * @return Builder The query builder instance for the branch entries.
+     * @param int $projectId The project identifier.
+     * @param array $params Must include 'form_ref' (form reference) and 'branch_ref' (branch/owner input reference); may include 'user_id' for user-specific filtering.
+     * @param array $columns Columns to select; 'id' is always included.
+     * @return Builder Query builder instance for further chaining or execution.
      */
     public function getBranchEntriesByBranchRefForArchive(int $projectId, array $params, array $columns = array('*')): Builder
     {
