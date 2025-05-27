@@ -31,9 +31,11 @@ class RuleDelete extends ValidationBase
     ];
 
     /**
-     * @param ProjectDTO $project
-     * @param EntryStructureDTO $entryStructure
-     * @return bool
+     * Performs additional validation checks for deleting an entry based on project and entry structure data.
+     *
+     * Ensures the form reference exists in the project, verifies parent or owner UUIDs as required by the entry's context, and checks for the existence of a branch if applicable.
+     *
+     * @return bool True if all additional checks pass; false if any validation fails.
      */
     public function additionalChecks(ProjectDTO $project, EntryStructureDTO $entryStructure): bool
     {
