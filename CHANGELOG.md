@@ -1,5 +1,10 @@
 ## Release Notes
 
+# 12.0.1
+
+- Fixed regression bugs introduced in the previous release.
+- Archive downloads now correctly filters entries based on user role i.e collectors can only download their own entries.
+
 # 12.0.0
 
 - Upgraded to Laravel 12
