@@ -3,12 +3,8 @@
 namespace ec5\Http\Controllers\Web\Auth;
 
 use Auth;
-use Carbon\Carbon;
-use DB;
 use ec5\Http\Validation\Auth\RulePasswordlessApiLogin;
 use ec5\Http\Validation\Auth\RulePasswordlessWeb;
-use ec5\Libraries\Utilities\Generators;
-use ec5\Mail\UserPasswordlessApiMail;
 use ec5\Models\User\User;
 use ec5\Models\User\UserPasswordlessWeb;
 use ec5\Services\User\UserService;
@@ -17,8 +13,6 @@ use ec5\Traits\Auth\ReCaptchaValidation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Log;
-use Mail;
-use PDOException;
 use Throwable;
 
 class PasswordlessController extends AuthController
@@ -41,7 +35,6 @@ class PasswordlessController extends AuthController
      */
     public function sendCode(Request $request, RulePasswordlessWeb $rulePasswordlessWeb)
     {
-        $tokenExpiresAt = config('auth.passwordless_token_expire', 300);
         $params = $request->all();
 
         //validate request
@@ -73,63 +66,20 @@ class PasswordlessController extends AuthController
         }
 
         $email = $params['email'];
-        $code = Generators::randomNumber(6, 1);
-
-        try {
-            DB::beginTransaction();
-            //remove any code for this user (if found)
-            $userPasswordless = UserPasswordlessWeb::where('email', $email);
-            if ($userPasswordless !== null) {
-                $userPasswordless->delete();
-            }
-
-            //add token to db
-            $userPasswordless = new UserPasswordlessWeb();
-            $userPasswordless->email = $email;
-            $userPasswordless->token = bcrypt($code, ['rounds' => config('auth.bcrypt_rounds')]);
-            $userPasswordless->expires_at = Carbon::now()->addSeconds($tokenExpiresAt)->toDateTimeString();
-            $userPasswordless->save();
-
-            DB::commit();
-        } catch (PDOException $e) {
-            Log::error('Error generating passwordless access code web');
-            DB::rollBack();
-
-            return redirect()->back()->withErrors([
-                'exception' => $e->getMessage(),
-                'passwordless-request-code' => ['ec5_104']
-            ]);
-        } catch (Throwable $e) {
-            Log::error('Error generating passwordless access code web');
-            DB::rollBack();
-
-            return redirect()->back()->withErrors([
-                'exception' => $e->getMessage(),
-                'passwordless-request-code' => ['ec5_104']
-            ]);
+        //check if email is whitelisted
+        if (!UserService::isAuthenticationDomainAllowed($email)) {
+            Log::error('Email not whitelisted', ['email' => $email]);
+            return redirect()->back()->withErrors(['ec5_266']);
         }
 
-        //send email with verification code
-        try {
-            Mail::to($email)->send(new UserPasswordlessApiMail($code));
-        } catch (Throwable $e) {
-            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
-            return redirect()->back()->withErrors([
-                'exception' => $e->getMessage(),
-                'passwordless-request-code' => ['ec5_116']
-            ]);
-        }
-
-        //send success response (email sent) and show validation screen
-        return view(
-            'auth.verification_passwordless',
-            [
-                'email' => $email
-            ]
-        );
+        return $this->dispatchAuthToken($email);
     }
 
     //try to authenticate user by checking provided numeric OTP
+
+    /**
+     * @throws Throwable
+     */
     public function authenticateWithCode(Request $request, RulePasswordlessApiLogin $validator)
     {
         $providerPasswordless = config('epicollect.strings.providers.passwordless');
@@ -153,6 +103,12 @@ class PasswordlessController extends AuthController
 
         $code = $params['code'];
         $email = $params['email'];
+
+        //check if email is whitelisted
+        if (!UserService::isAuthenticationDomainAllowed($email)) {
+            Log::error('Email not whitelisted', ['email' => $email]);
+            return redirect()->route('login')->withErrors(['ec5_266']);
+        }
 
         //get token from db for comparison (passwordless web table)
         //imp: we use the web table for legacy reasons and also to avoid

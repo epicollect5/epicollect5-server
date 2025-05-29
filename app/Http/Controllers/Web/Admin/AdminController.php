@@ -79,7 +79,8 @@ class AdminController extends Controller
             'CGPSVersion' => $CGPSVersion,
             'currentVersion' => $currentVersion,
             'update' => version_compare($currentVersion, $CGPSVersion, '<'),
-            'systemEmail' => config('epicollect.setup.system.email')
+            'systemEmail' => config('epicollect.setup.system.email'),
+            'authAllowedDomains' => join(', ', config('auth.auth_allowed_domains'))
         ];
 
         // Return view with relevant params

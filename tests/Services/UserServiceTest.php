@@ -5,17 +5,19 @@ namespace Tests\Services;
 use ec5\Models\User\User;
 use ec5\Services\User\UserService;
 use Faker\Factory as Faker;
+use Faker\Generator;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
+use Throwable;
 
 class UserServiceTest extends TestCase
 {
     use DatabaseTransactions;
 
-    protected $faker;
-    protected $googleUser;
+    protected Generator $faker;
+    protected object $googleUser;
 
-    public function setUp():void
+    public function setUp(): void
     {
         parent::setUp();
         $this->faker = Faker::create();
@@ -42,6 +44,9 @@ class UserServiceTest extends TestCase
         ];
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_should_create_passwordless_user()
     {
         $email = 'fake@email.com';
@@ -75,6 +80,9 @@ class UserServiceTest extends TestCase
         ]);
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_should_update_unverified_user_with_passwordless()
     {
         /*
@@ -91,7 +99,6 @@ class UserServiceTest extends TestCase
                 'last_name' => '',
                 'state' => config('epicollect.strings.user_state.unverified')
             ]
-
         );
 
         $this->assertDatabaseHas('users', [
@@ -123,6 +130,9 @@ class UserServiceTest extends TestCase
         ]);
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_should_create_google_user_with_empty_name_and_last_name()
     {
         //empty name and last name
@@ -145,6 +155,9 @@ class UserServiceTest extends TestCase
         ]);
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_should_create_google_user()
     {
         $user = UserService::createGoogleUser($this->googleUser);
@@ -164,6 +177,9 @@ class UserServiceTest extends TestCase
         ]);
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_should_create_apple_user()
     {
         $name = 'Apple name';
@@ -190,6 +206,9 @@ class UserServiceTest extends TestCase
         ]);
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_should_update_unverified_user_with_google()
     {
         /*
@@ -206,7 +225,6 @@ class UserServiceTest extends TestCase
                 'state' => config('epicollect.strings.user_state.unverified'),
                 'server_role' => config('epicollect.strings.server_roles.basic')
             ]
-
         );
 
         $this->assertDatabaseHas('users', [
@@ -239,6 +257,9 @@ class UserServiceTest extends TestCase
         ]);
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_should_update_apple_user_with_provider()
     {
         //create a fake user and save it to DB
@@ -271,6 +292,9 @@ class UserServiceTest extends TestCase
         ]);
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_should_update_unverified_user_with_apple()
     {
         /*
@@ -325,6 +349,32 @@ class UserServiceTest extends TestCase
             'user_id' => $user->id,
             'provider' => config('epicollect.strings.providers.apple')
         ]);
+    }
+
+    public function test_authentication_domain_allowed()
+    {
+        // Test with no allowed domains configured (all domains should be allowed)
+        config(['auth.auth_allowed_domains' => []]);
+        $this->assertTrue(UserService::isAuthenticationDomainAllowed('user@example.com'));
+        $this->assertTrue(UserService::isAuthenticationDomainAllowed('user@gmail.com'));
+        $this->assertTrue(UserService::isAuthenticationDomainAllowed('user@company.org'));
+
+        // Test with specific allowed domains
+        config(['auth.auth_allowed_domains' => ['gmail.com', 'company.org']]);
+        $this->assertFalse(UserService::isAuthenticationDomainAllowed('user@example.com'));
+        $this->assertTrue(UserService::isAuthenticationDomainAllowed('user@gmail.com'));
+        $this->assertTrue(UserService::isAuthenticationDomainAllowed('user@company.org'));
+
+        // Test with a single allowed domain
+        config(['auth.auth_allowed_domains' => ['gmail.com']]);
+        $this->assertFalse(UserService::isAuthenticationDomainAllowed('user@example.com'));
+        $this->assertTrue(UserService::isAuthenticationDomainAllowed('user@gmail.com'));
+        $this->assertFalse(UserService::isAuthenticationDomainAllowed('user@company.org'));
+
+        // Test with subdomains
+        config(['auth.auth_allowed_domains' => ['company.org']]);
+        $this->assertTrue(UserService::isAuthenticationDomainAllowed('user@company.org'));
+        $this->assertFalse(UserService::isAuthenticationDomainAllowed('user@sub.company.org'));
     }
 
     private function getRandomGoogleUserId(): int

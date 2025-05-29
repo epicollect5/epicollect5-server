@@ -66,15 +66,8 @@
                 <div class="panel-body">
                     <div class="row">
                         <div class="col-md-6">
-                            <input type="text" class="form-control" placeholder="Email..." value="{{$systemEmail}}">
-                        </div>
-                        <div class="col-md-6 text-right">
-                            <div class="btn-group">
-                                <div data-setting-type="system-email" data-value="Save"
-                                     class="btn btn-default btn-sm btn-action">
-                                    Save
-                                </div>
-                            </div>
+                            <input type="text" class="form-control" placeholder="Email..." value="{{$systemEmail}}"
+                                   readonly>
                         </div>
                     </div>
                     <small><em>Used to send system events and notifications.</em></small>
@@ -85,25 +78,23 @@
 
         <div class="col-lg-12 col-md-12">
             <div class="panel panel-default">
-                <div class="panel-heading">Authentication Allowed Domains</div>
+                <div class="panel-heading">Authentication Allowed Domains<sup><small>&nbsp;BETA</small></sup></div>
                 <div class="panel-body">
                     <div class="row">
                         <div class="col-md-6">
                             <span>Comma separated list of domains to whitelist</span>
-                            <input type="text" class="form-control" placeholder="All domains allowed" value="">
+                            <input type="text"
+                                   class="form-control"
+                                   placeholder="All domains allowed"
+                                   value="{{$authAllowedDomains}}"
+                                   readonly
+                            >
                         </div>
-                        <div class="col-md-6 text-right">
-                            <div class="btn-group">
-                                <div data-setting-type="system-email" data-value="Save"
-                                     class="btn btn-default btn-sm btn-action">
-                                    Save
-                                </div>
-                            </div>
-                        </div>
+
                     </div>
                     <small><em>Leave empty to allow all domains.</em></small>
                 </div>
-
+                <div class="panel-footer"><code>AUTH_ALLOWED_DOMAINS</code></div>
             </div>
         </div>
 

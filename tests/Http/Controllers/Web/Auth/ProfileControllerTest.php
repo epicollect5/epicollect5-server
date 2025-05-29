@@ -11,7 +11,7 @@ class ProfileControllerTest extends TestCase
 {
     use DatabaseTransactions;
 
-    const DRIVER = 'web';
+    public const string DRIVER = 'web';
 
     public function test_profile_page_renders_correctly()
     {
@@ -61,7 +61,8 @@ class ProfileControllerTest extends TestCase
                 'user_id' => $user->id,
                 'email' => $user->email,
                 'provider' => config('epicollect.strings.providers.google')
-            ]);
+            ]
+        );
 
         $this->assertDatabaseHas('users_providers', [
             'user_id' => $user->id,
@@ -93,7 +94,8 @@ class ProfileControllerTest extends TestCase
                 'user_id' => $user->id,
                 'email' => $user->email,
                 'provider' => config('epicollect.strings.providers.apple')
-            ]);
+            ]
+        );
 
         $this->assertDatabaseHas('users_providers', [
             'user_id' => $user->id,

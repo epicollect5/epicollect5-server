@@ -10,7 +10,7 @@ class VerificationCodeControllerTest extends TestCase
 {
     use DatabaseTransactions;
 
-    const DRIVER = 'web';
+    public const string DRIVER = 'web';
 
     //routes to enter 6-digit code when account email clashes
     public function test_page_renders_correctly()
@@ -18,9 +18,7 @@ class VerificationCodeControllerTest extends TestCase
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
 
-        $response = $this->actingAs($user, self::DRIVER)->get(route('verification-code'));
-        //todo: need a lot of stuff
+        $this->actingAs($user, self::DRIVER)->get(route('verification-code'));
         $this->assertTrue(true);
-        //$response->assertStatus(200); // Ensure the response is successful
     }
 }

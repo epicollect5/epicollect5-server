@@ -313,4 +313,16 @@ class UserService
         // now paginate users
         return $users->simplePaginate($perPage);
     }
+
+    public static function isAuthenticationDomainAllowed($email): bool
+    {
+        $allowedDomains = config('auth.auth_allowed_domains');
+        //if empty, all domains are allowed
+        if (empty($allowedDomains)) {
+            return true;
+        }
+
+        $emailDomain = explode('@', $email)[1];
+        return in_array($emailDomain, $allowedDomains);
+    }
 }

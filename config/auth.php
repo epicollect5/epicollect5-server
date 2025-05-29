@@ -121,7 +121,21 @@ return [
     | Supported: "local", "google", "ldap", "apple", "passwordless"
     */
 
-    'auth_methods' => explode(',', env('AUTH_METHODS') ?? ''),
+    'auth_methods' => array_filter(
+        explode(',', env('AUTH_METHODS', '')),
+        fn ($method) => trim($method) !== ''
+    ),
+    /*
+    |--------------------------------------------------------------------------
+    | Auth Allowed Domains
+    |--------------------------------------------------------------------------
+    | The domains allowed for authentication
+    | If empty, all domains are allowed
+    */
+    'auth_allowed_domains' => array_filter(
+        explode(',', env('AUTH_ALLOWED_DOMAINS', '')),
+        fn ($domain) => trim($domain) !== ''
+    ),
 
 
     /**

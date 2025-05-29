@@ -54,6 +54,8 @@ class Authenticate
             return redirect()->guest('login')->withErrors(['ec5_212']);
         }
 
+
+
         return $next($request);
     }
 }

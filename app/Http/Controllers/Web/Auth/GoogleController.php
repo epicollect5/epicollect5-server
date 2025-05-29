@@ -67,6 +67,12 @@ class GoogleController extends AuthController
             // Find the Google user
             $googleUser = Socialite::with($provider)->user();
 
+            //check if email is whitelisted
+            if (!UserService::isAuthenticationDomainAllowed($googleUser->email)) {
+                Log::error('Email not whitelisted', ['email' => $googleUser->email]);
+                return redirect()->back()->withErrors(['ec5_266']);
+            }
+
             // If we found a Google user
             if ($googleUser) {
                 // Check user exists in Epicollect5 system and is active
