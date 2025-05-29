@@ -69,7 +69,7 @@ class AppleController extends AuthController
             //check if email is whitelisted
             if (!UserService::isAuthenticationDomainAllowed($email)) {
                 Log::error('Email not whitelisted', ['email' => $email]);
-                return Response::apiErrorCode(400, ['passwordless-request-code' => ['ec5_266']]);
+                return Response::apiErrorCode(400, ['api-login-apple' => ['ec5_266']]);
             }
 
 

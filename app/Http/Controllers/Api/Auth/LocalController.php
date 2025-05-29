@@ -38,7 +38,7 @@ class LocalController extends AuthController
             //check if email is whitelisted
             if (!UserService::isAuthenticationDomainAllowed($credentials['username'])) {
                 Log::error('Email not whitelisted', ['email' => $credentials['username']]);
-                return Response::apiErrorCode(400, ['passwordless-request-code' => ['ec5_266']]);
+                return Response::apiErrorCode(400, ['api-local-login' => ['ec5_266']]);
             }
 
             // Verify user, without setting cookie

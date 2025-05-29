@@ -55,7 +55,7 @@ class GoogleController extends AuthController
                 //check if email is whitelisted
                 if (!UserService::isAuthenticationDomainAllowed($googleUser->email)) {
                     Log::error('Email not whitelisted', ['email' => $googleUser->email]);
-                    return Response::apiErrorCode(400, ['passwordless-request-code' => ['ec5_266']]);
+                    return Response::apiErrorCode(400, ['api-login-google' => ['ec5_266']]);
                 }
 
                 // Check user exists in Epicollect5 system and is active
