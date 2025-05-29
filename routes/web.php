@@ -58,7 +58,6 @@ Route::group(['middleware' => 'auth.admin'], function () {
     Route::get('admin/phpinfo', 'Web\Admin\AdminController@showPHPInfo')->name('admin-phpinfo-show');
 
 
-    Route::post('admin/update-user-state', 'Web\Admin\AdminUsersController@updateUserState');
     Route::post('admin/add-user', 'Web\Admin\AdminUsersController@addUser');
 
     Route::post('admin/update-user-project-role', 'Web\Admin\AdminUserRolesController@update');
@@ -100,7 +99,6 @@ Route::group(['middleware' => 'auth.admin'], function () {
 
     Route::get('admin/tools/db/users-today', 'Web\Admin\Tools\DBToolsController@getUsersToday');
 
-    Route::get('admin/tools/csv', 'Web\Admin\Tools\PHPToolsController@testCSV');
 
     Route::get('admin/tools/hash-password', 'Web\Admin\Tools\AuthToolsController@show');
     Route::post('admin/tools/hash-password', 'Web\Admin\Tools\AuthToolsController@hash');
@@ -115,8 +113,6 @@ Route::group(['middleware' => 'auth.admin'], function () {
     Route::get('admin/tools/codes/{howMany?}', 'Web\Admin\Tools\PHPToolsController@codes');
 
     Route::get('admin/tools/count-media/{days?}', 'Web\Admin\Tools\SearchToolsController@countMedia');
-
-    Route::get('admin/tools/apple', 'Web\Admin\Tools\PHPToolsController@decodeAppleToken');
 
     Route::get('admin/tools/carbon', 'Web\Admin\Tools\PHPToolsController@carbon');
 });

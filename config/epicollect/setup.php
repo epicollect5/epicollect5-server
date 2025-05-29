@@ -79,4 +79,5 @@ return [
         'entries' => (int) env('API_SLEEP_TIME_ENTRIES', 1),
         'media' => (int) env('API_SLEEP_TIME_MEDIA', 1),
     ]
+
 ];

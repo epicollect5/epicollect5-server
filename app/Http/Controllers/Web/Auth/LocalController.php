@@ -6,12 +6,14 @@ use Auth;
 use ec5\Http\Validation\Auth\RuleLogin as LoginValidator;
 use ec5\Models\User\User;
 use ec5\Models\User\UserProvider;
+use ec5\Services\User\UserService;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Log;
 
 class LocalController extends AuthController
 {
@@ -65,6 +67,12 @@ class LocalController extends AuthController
             if ($lockedOut = $this->hasTooManyLoginAttempts($request)) {
                 $this->fireLockoutEvent($request);
                 return redirect()->back()->withErrors(['ec5_37']);
+            }
+
+            //check if email is whitelisted
+            if (!UserService::isAuthenticationDomainAllowed($input['email'])) {
+                Log::error('Email not whitelisted', ['email' => $input['email']]);
+                return redirect()->back()->withErrors(['ec5_266']);
             }
 
             // Check credentials ie email, password

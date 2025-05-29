@@ -34,6 +34,9 @@ class AppleController extends AuthController
         parent::__construct();
     }
 
+    /**
+     * @throws Throwable
+     */
     public function handleAppleCallback(Request $request)
     {
         $nonce = session('nonce');
@@ -60,6 +63,12 @@ class AppleController extends AuthController
         if (!isset($parsed_id_token['email'])) {
             Log::error(__METHOD__ . ' failed.', ['Apple Sign In' => 'email missing in payload']);
             return redirect()->route('login')->withErrors(['ec5_386']);
+        }
+
+        //check if email is whitelisted
+        if (!UserService::isAuthenticationDomainAllowed($parsed_id_token['email'])) {
+            Log::error('Email not whitelisted', ['email' => $parsed_id_token['email']]);
+            return redirect()->back()->withErrors(['ec5_266']);
         }
 
         if ($parsed_id_token['nonce'] === $nonce) {

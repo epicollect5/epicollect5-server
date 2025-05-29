@@ -48,7 +48,7 @@ class AuthControllerTest extends TestCase
         $startingUrl = '/project/' . $project->slug . '/data'; // Set the starting URL
 
         // Visit the dataviewer URL and perform an action (e.g., logging out)
-        $response = $this->actingAs($user)->get($startingUrl);
+        $this->actingAs($user)->get($startingUrl);
 
         $response = $this->actingAs($user)->get(route('logout'));
 
@@ -70,7 +70,7 @@ class AuthControllerTest extends TestCase
         $startingUrl = '/project/' . $project->slug . '/data'; // Set the starting URL
 
         // Visit the dataviewer URL and perform an action (e.g., logging out)
-        $response = $this->actingAs($user)->get($startingUrl);
+        $this->actingAs($user)->get($startingUrl);
 
         $response = $this->actingAs($user)->get(route('logout'));
 

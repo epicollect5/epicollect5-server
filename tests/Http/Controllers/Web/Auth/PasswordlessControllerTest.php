@@ -3,6 +3,7 @@
 namespace Tests\Http\Controllers\Web\Auth;
 
 use Carbon\Carbon;
+use Config;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Mail\UserPasswordlessApiMail;
 use ec5\Models\User\UserPasswordlessWeb;
@@ -92,6 +93,7 @@ class PasswordlessControllerTest extends TestCase
 
     public function test_login()
     {
+        Config::set('auth.auth_allowed_domains', []);
         $email = config('testing.MANAGER_EMAIL');
         $tokenExpiresAt = config('testing.PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
         $code = Generators::randomNumber(6, 1);
@@ -102,8 +104,6 @@ class PasswordlessControllerTest extends TestCase
                 'token' => bcrypt($code, ['rounds' => config('testing.BCRYPT_ROUNDS')]),
                 'expires_at' => Carbon::now()->addSeconds($tokenExpiresAt)->toDateTimeString()
             ]);
-
-
 
         $response = $this->post('/login/passwordless/verification', [
             'email' => $email,
@@ -116,6 +116,33 @@ class PasswordlessControllerTest extends TestCase
         //user should be logged in
         $this->assertTrue(Auth::check());
         $this->assertEquals(Auth::user()->email, $email);
+    }
+
+    public function test_login_disallowed_domain()
+    {
+        Config::set('auth.auth_allowed_domains', ['example.com']);
+        $email = config('testing.MANAGER_EMAIL');
+        $tokenExpiresAt = config('testing.PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
+        $code = Generators::randomNumber(6, 1);
+
+        factory(UserPasswordlessWeb::class)
+            ->create([
+                'email' => $email,
+                'token' => bcrypt($code, ['rounds' => config('testing.BCRYPT_ROUNDS')]),
+                'expires_at' => Carbon::now()->addSeconds($tokenExpiresAt)->toDateTimeString()
+            ]);
+
+        $response = $this->post('/login/passwordless/verification', [
+            'email' => $email,
+            'code' => $code
+        ], []);
+
+        //user should not be logged in
+        $this->assertFalse(Auth::check());
+
+        $response->assertStatus(302); //redirect to login page
+        $response->assertRedirect(route('login'));
+        $this->assertEquals('ec5_266', session('errors')->getBag('default')->first());
     }
 
     public function test_failed_login()
@@ -359,4 +386,5 @@ class PasswordlessControllerTest extends TestCase
         $this->assertTrue(Auth::check());
         $this->assertEquals(Auth::user()->email, $email);
     }
+
 }
