@@ -70,7 +70,7 @@ class GoogleController extends AuthController
             //check if email is whitelisted
             if (!UserService::isAuthenticationDomainAllowed($googleUser->email)) {
                 Log::error('Email not whitelisted', ['email' => $googleUser->email]);
-                return redirect()->back()->withErrors(['ec5_266']);
+                return redirect()->route('login')->withErrors(['ec5_266']);
             }
 
             // If we found a Google user

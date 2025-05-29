@@ -1,5 +1,12 @@
 ## Release Notes
 
+# 12.1.0
+
+- Added config to restrict auth to specific email domains.
+- All auth methods now enforce domain whitelisting.
+- Admin page shows system email and allowed domains (read-only).
+- Improved errors and redirects for disallowed domains.
+
 # 12.0.1
 
 - Fixed regression bugs introduced in the previous release.
