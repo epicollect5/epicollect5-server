@@ -66,6 +66,13 @@ class AppleController extends AuthController
 
             //get Apple user email, always sent in the token
             $email = $parsed_id_token['email'];
+            //check if email is whitelisted
+            if (!UserService::isAuthenticationDomainAllowed($email)) {
+                Log::error('Email not whitelisted', ['email' => $email]);
+                return Response::apiErrorCode(400, ['passwordless-request-code' => ['ec5_266']]);
+            }
+
+
             //look for the user
             $userModel = new User();
             $user = $userModel->where('email', $email)->first();

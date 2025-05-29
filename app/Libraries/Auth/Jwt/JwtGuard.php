@@ -225,7 +225,7 @@ class JwtGuard implements Guard
          * This is mainly to avoid building a custom guard just
          * to have a different jwt expiry time for the passwordless auth on mobile devices
          */
-        $isPasswordless = Route::currentRouteName() === 'passwordless-auth';
+        $isPasswordless = Route::currentRouteName() === 'passwordless-auth-api';
 
         $jwtConfig = config('auth.jwt');
 

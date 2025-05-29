@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection DuplicatedCode */
+
 namespace ec5\Http\Controllers\Api\Auth;
 
 use Auth;
@@ -36,7 +38,6 @@ class PasswordlessController extends AuthController
     public function sendCode(RulePasswordlessApiCode $validator)
     {
         $tokenExpiresAt = config('auth.passwordless_token_expire', 300);
-
         $inputs = request()->all();
 
         //validate request
@@ -47,8 +48,13 @@ class PasswordlessController extends AuthController
         }
 
         $email = $inputs['email'];
-        $code = Generators::randomNumber(6, 1);
+        //check if email is whitelisted
+        if (!UserService::isAuthenticationDomainAllowed($email)) {
+            Log::error('Email not whitelisted', ['email' => $email]);
+            return Response::apiErrorCode(400, ['passwordless-request-code' => ['ec5_266']]);
+        }
 
+        $code = Generators::randomNumber(6, 1);
         try {
             DB::beginTransaction();
             //remove any code for this user (if found)
@@ -92,8 +98,9 @@ class PasswordlessController extends AuthController
         //send success response (email sent)
         return Response::apiSuccessCode('ec5_372');
     }
-
-    //try to authenticate user
+    /**
+     * @throws Throwable
+     */
     public function login(RulePasswordlessApiLogin $validator)
     {
         //validate request
@@ -108,6 +115,12 @@ class PasswordlessController extends AuthController
 
             $code = $inputs['code'];
             $email = $inputs['email'];
+
+            //check if email is whitelisted
+            if (!UserService::isAuthenticationDomainAllowed($email)) {
+                Log::error('Email not whitelisted', ['email' => $email]);
+                return Response::apiErrorCode(400, ['passwordless-api' => ['ec5_266']]);
+            }
 
             //get token from db for comparison
             $userPasswordless = UserPasswordlessApi::where('email', $email)->first();

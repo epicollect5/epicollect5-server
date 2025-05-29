@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
-class PasswordlessControllerTest extends TestCase
+class PasswordlessControllerWebTest extends TestCase
 {
     use DatabaseTransactions;
 

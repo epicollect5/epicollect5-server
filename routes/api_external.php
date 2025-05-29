@@ -11,16 +11,16 @@
 
 //request a code to be sent by email (mobile app)
 Route::group(['middleware' => ['throttle:passwordless']], function () {
-    Route::post('api/login/passwordless/code', 'Api\Auth\PasswordlessController@sendCode');
+    Route::post('api/login/passwordless/code', 'Api\Auth\PasswordlessController@sendCode')->name('passwordless-token-api');
 });
 
 //validate a login code (mobile app)
 //important: this route uses a hack in the login() method of JwtGuard
 //to have a shorter jwt expiry time. (instead of building a custom guard for 1 endpoint)
 //************************************************
-//do not change its name otherwise it will break!
+//imp: do not change its name otherwise it will break!
 Route::post('api/login/passwordless', 'Api\Auth\PasswordlessController@login')
-    ->name('passwordless-auth');
+    ->name('passwordless-auth-api');
 Route::post('api/login/verify-google', 'Api\Auth\GoogleController@verifyUserEmail')
     ->name('verify-google');
 Route::post('api/login/verify-apple', 'Api\Auth\AppleController@verifyUserEmail')

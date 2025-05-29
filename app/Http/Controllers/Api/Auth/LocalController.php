@@ -4,6 +4,7 @@ namespace ec5\Http\Controllers\Api\Auth;
 
 use Auth;
 use ec5\Libraries\Auth\Jwt\JwtUserProvider;
+use ec5\Services\User\UserService;
 use Log;
 use Response;
 
@@ -33,6 +34,12 @@ class LocalController extends AuthController
 
         //do we accept local auth?
         if (in_array('local', $this->authMethods) || $this->isAuthApiLocalEnabled) {
+
+            //check if email is whitelisted
+            if (!UserService::isAuthenticationDomainAllowed($credentials['username'])) {
+                Log::error('Email not whitelisted', ['email' => $credentials['username']]);
+                return Response::apiErrorCode(400, ['passwordless-request-code' => ['ec5_266']]);
+            }
 
             // Verify user, without setting cookie
             if (Auth::guard()->attempt([
