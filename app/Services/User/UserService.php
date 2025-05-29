@@ -322,7 +322,9 @@ class UserService
             return true;
         }
 
-        $emailDomain = explode('@', $email)[1];
+        $emailParts = explode('@', $email);
+        $emailDomain = end($emailParts); // Gets the last part safely
+
         return in_array($emailDomain, $allowedDomains);
     }
 }
