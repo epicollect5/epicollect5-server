@@ -54,4 +54,19 @@ class RuleInputBase extends ValidationBase
     {
         return $answer;
     }
+
+    protected function setMinMaxRule(array $inputDetails, array|string|null $answer, ProjectDTO $project): void
+    {
+        if ($inputDetails['min'] != null) {
+            $this->rules[$inputDetails['ref']][] = 'min:' . $inputDetails['min'];
+        }
+        if ($inputDetails['max'] != null) {
+            $this->rules[$inputDetails['ref']][] = 'max:' . $inputDetails['max'];
+        }
+
+        // If we have a regex set, add to rules
+        if ($inputDetails['regex'] != null) {
+            $this->rules[$inputDetails['ref']][] = 'regex:' . '/' . $inputDetails['regex'] . '/';
+        }
+    }
 }
