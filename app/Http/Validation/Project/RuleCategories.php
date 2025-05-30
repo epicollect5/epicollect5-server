@@ -3,11 +3,10 @@
 namespace ec5\Http\Validation\Project;
 
 use ec5\Http\Validation\ValidationBase;
-use Config;
 
 class RuleCategories extends ValidationBase
 {
-    protected $rules = [];
+    protected array $rules = [];
 
     public function __construct()
     {

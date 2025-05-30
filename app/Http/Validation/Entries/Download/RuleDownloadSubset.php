@@ -7,7 +7,7 @@ use ec5\Http\Validation\ValidationBase;
 
 class RuleDownloadSubset extends ValidationBase
 {
-    protected $rules = [
+    protected array $rules = [
         'map_index' => 'numeric|min:0',
         'filename' => 'required'
     ];

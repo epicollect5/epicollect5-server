@@ -6,8 +6,7 @@ use ec5\Http\Validation\ValidationBase;
 
 class RuleTransferOwnership extends ValidationBase
 {
-
-    protected $rules = [
+    protected array $rules = [
         'manager' => 'required|min:1|numeric'
     ];
 

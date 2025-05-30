@@ -7,19 +7,21 @@ use DB;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Mail\UserPasswordlessApiMail;
 use ec5\Models\User\UserPasswordlessApi;
-use Exception;
 use Log;
 use Mail;
 use PDOException;
+use Throwable;
 
 class VerificationCodeController extends AuthController
 {
-
     public function __construct()
     {
         parent::__construct();
     }
 
+    /**
+     * @throws Throwable
+     */
     public function show()
     {
         //getting here with email in session, send verification code via email
@@ -62,11 +64,11 @@ class VerificationCodeController extends AuthController
 
                 DB::commit();
             } catch (PDOException $e) {
-                Log::error('Error generating passwordless access code via appi');
+                Log::error('Error generating passwordless access code via api', ['exception' => $e->getMessage()]);
                 DB::rollBack();
                 return redirect()->route('login')->withErrors(['ec5_104']);
-            } catch (\Throwable $e) {
-                Log::error('Error generating password access code via api');
+            } catch (Throwable $e) {
+                Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
                 DB::rollBack();
                 return redirect()->route('login')->withErrors(['ec5_104']);
             }
@@ -74,7 +76,8 @@ class VerificationCodeController extends AuthController
             //send email with verification token
             try {
                 Mail::to($email)->send(new UserPasswordlessApiMail($code));
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
+                Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
                 return redirect()->route('login')->withErrors(['ec5_116']);
             }
 

@@ -6,7 +6,7 @@ use ec5\Http\Validation\ValidationBase;
 
 class RuleAudio extends ValidationBase
 {
-    protected $rules = [
+    protected array $rules = [
         'file' => 'required|mimes:mp4,wav|max:100000'
     ];
 

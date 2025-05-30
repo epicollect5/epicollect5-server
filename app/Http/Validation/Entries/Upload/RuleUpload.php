@@ -7,11 +7,10 @@ use ec5\DTO\ProjectDTO;
 use ec5\Http\Validation\ValidationBase;
 use ec5\Libraries\Utilities\Arrays;
 use ec5\Libraries\Utilities\Strings;
-use Illuminate\Support\Facades\Log;
 
 class RuleUpload extends ValidationBase
 {
-    protected $rules = [
+    protected array $rules = [
         'type' => 'required|in:entry,branch_entry,file_entry',
         'entry' => 'required_if:type,entry',
         'branch_entry' => 'required_if:type,branch_entry',
@@ -55,7 +54,7 @@ class RuleUpload extends ValidationBase
         'relationships.branch.data.owner_entry_uuid' => 'min:36|max:36'
     ];
 
-    protected $messages = [
+    protected array $messages = [
         'in' => 'ec5_29',
         'required' => 'ec5_20',
         'array' => 'ec5_87',
@@ -106,8 +105,7 @@ class RuleUpload extends ValidationBase
         RuleBranchEntry $ruleBranchEntry,
         RuleAnswers     $ruleAnswers,
         RuleFileEntry   $ruleFileEntry
-    )
-    {
+    ) {
         $this->ruleEntry = $ruleEntry;
         $this->ruleBranchEntry = $ruleBranchEntry;
         $this->ruleAnswers = $ruleAnswers;

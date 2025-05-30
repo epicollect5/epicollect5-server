@@ -7,8 +7,7 @@ use ec5\Http\Validation\ValidationBase;
 
 class RuleMappingDelete extends ValidationBase
 {
-
-    protected $rules = [
+    protected array $rules = [
         'map_index' => 'required|integer|not_in:0',
     ];
 

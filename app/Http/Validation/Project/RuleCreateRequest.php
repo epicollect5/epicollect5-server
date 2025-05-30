@@ -3,12 +3,11 @@
 namespace ec5\Http\Validation\Project;
 
 use ec5\Http\Validation\ValidationBase;
-use Config;
 use ec5\Libraries\Utilities\Common;
 
 class RuleCreateRequest extends ValidationBase
 {
-    protected $rules = [
+    protected array $rules = [
         'name' => 'required|alpha_num_under_spaces|min:3|max:50|ec5_unreserved_name|unique_except_archived:projects,name',
         'slug' => 'required|not_in:create|unique_except_archived:projects,slug',
         'small_description' => 'required|min:15|max:100',

@@ -8,10 +8,9 @@ use League\Csv\Reader;
 
 class RuleSignup extends ValidationBase
 {
-
     //see password regex here https://stackoverflow.com/questions/31539727/laravel-password-validation-rule
     // pass1234# works, at least a letter, a number and a symbol
-    protected $rules = [
+    protected array $rules = [
         'name' => 'required|string|min:3|max:25',
         'email' => 'required|string|email|max:255|unique:users',
         'password' => 'required|string|min:10|confirmed|regex:/^[ A-Za-z0-9_@.\/#!?£&+$%^*-]*$/',
@@ -33,12 +32,12 @@ class RuleSignup extends ValidationBase
         $email = $inputs['email'];
 
         //password cannot be email
-        if(strtolower($email) === strtolower($password)) {
+        if (strtolower($email) === strtolower($password)) {
             $this->addAdditionalError('password', 'ec5_36');
         }
 
         //cannot have "epicollect"
-        if(Str::contains(strtolower($password), 'epicollect')) {
+        if (Str::contains(strtolower($password), 'epicollect')) {
             $this->addAdditionalError('password', 'ec5_377');
         }
 
@@ -46,7 +45,7 @@ class RuleSignup extends ValidationBase
         $reader = Reader::createFromPath(public_path() . '/csv/repetitive-passwords.csv', 'r');
         $records = $reader->getRecords();
         foreach ($records as $offset => $record) {
-            if($record[0] === $password){
+            if ($record[0] === $password) {
                 $this->addAdditionalError('password', 'ec5_377');
                 break;
             }
@@ -56,7 +55,7 @@ class RuleSignup extends ValidationBase
         $reader = Reader::createFromPath(public_path() . '/csv/sequential-passwords.csv', 'r');
         $records = $reader->getRecords();
         foreach ($records as $offset => $record) {
-            if($record[0] === $password){
+            if ($record[0] === $password) {
                 $this->addAdditionalError('password', 'ec5_377');
                 break;
             }
@@ -66,7 +65,7 @@ class RuleSignup extends ValidationBase
         $reader = Reader::createFromPath(public_path() . '/csv/words-passwords.csv', 'r');
         $records = $reader->getRecords();
         foreach ($records as $offset => $record) {
-            if($record[0] === $password){
+            if ($record[0] === $password) {
                 $this->addAdditionalError('password', 'ec5_377');
                 break;
             }
@@ -77,7 +76,7 @@ class RuleSignup extends ValidationBase
         $reader = Reader::createFromPath(public_path() . '/csv/common-passwords.csv', 'r');
         $records = $reader->getRecords();
         foreach ($records as $offset => $record) {
-            if($record[0] === $password){
+            if ($record[0] === $password) {
                 $this->addAdditionalError('password', 'ec5_377');
                 break;
             }

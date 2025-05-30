@@ -68,7 +68,7 @@ class AppleController extends AuthController
         //check if email is whitelisted
         if (!UserService::isAuthenticationDomainAllowed($parsed_id_token['email'])) {
             Log::error('Email not whitelisted', ['email' => $parsed_id_token['email']]);
-            return redirect()->back()->withErrors(['ec5_266']);
+            return redirect()->route('login')->withErrors(['ec5_266']);
         }
 
         if ($parsed_id_token['nonce'] === $nonce) {

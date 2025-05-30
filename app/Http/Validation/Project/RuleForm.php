@@ -3,12 +3,10 @@
 namespace ec5\Http\Validation\Project;
 
 use ec5\Http\Validation\ValidationBase;
-use Config;
-use Log;
 
 class RuleForm extends ValidationBase
 {
-    protected $rules = [
+    protected array $rules = [
         'ref' => 'required',
         'type' => 'required|in:hierarchy',
         'slug' => 'required',
@@ -48,10 +46,11 @@ class RuleForm extends ValidationBase
             $this->errors[$form['ref']] = ['ec5_29'];
         }
 
-        if ($form['name'])
+        if ($form['name']) {
             if ($this->hasErrors()) {
                 return;
             }
+        }
 
         $inputs = $form['inputs'];
 

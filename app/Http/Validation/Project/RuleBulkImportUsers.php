@@ -8,7 +8,7 @@ use ec5\Libraries\Utilities\Common;
 
 class RuleBulkImportUsers extends ValidationBase
 {
-    protected $rules = [
+    protected array $rules = [
         // Allowed roles that can be added for a user (note: 'creator' is not a role that can be assigned after project creation)
         'emails' => 'required|array|min:1|max:100',
         'emails.*' => 'required|email'

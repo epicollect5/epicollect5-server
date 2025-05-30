@@ -21,13 +21,13 @@ class RuleInputBase extends ValidationBase
     /**
      * @var array
      */
-    protected $rules = [];
+    protected array $rules = [];
 
     /**
      * Set common messages used by all input type rules
      * @var array
      */
-    protected $messages = [
+    protected array $messages = [
         'regex' => 'ec5_29',
         'array' => 'ec5_29',
         'date' => 'ec5_79',
@@ -53,5 +53,20 @@ class RuleInputBase extends ValidationBase
     public function additionalChecks(array $inputDetails, string|array|null $answer, ProjectDTO $project, EntryStructureDTO $entryStructure): array|string|null
     {
         return $answer;
+    }
+
+    protected function setMinMaxRule(array $inputDetails, array|string|null $answer, ProjectDTO $project): void
+    {
+        if ($inputDetails['min'] != null) {
+            $this->rules[$inputDetails['ref']][] = 'min:' . $inputDetails['min'];
+        }
+        if ($inputDetails['max'] != null) {
+            $this->rules[$inputDetails['ref']][] = 'max:' . $inputDetails['max'];
+        }
+
+        // If we have a regex set, add to rules
+        if ($inputDetails['regex'] != null) {
+            $this->rules[$inputDetails['ref']][] = 'regex:' . '/' . $inputDetails['regex'] . '/';
+        }
     }
 }

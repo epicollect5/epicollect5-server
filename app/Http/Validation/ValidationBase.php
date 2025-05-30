@@ -2,6 +2,7 @@
 
 namespace ec5\Http\Validation;
 
+use Throwable;
 use Validator;
 use Auth;
 use Log;
@@ -10,10 +11,9 @@ use Illuminate\Support\Facades\DB;
 
 abstract class ValidationBase
 {
-
-    protected $rules = []; //overwrite in child
-    public $errors = [];
-    protected $messages = [
+    protected array $rules = []; //overwrite in child
+    public array $errors = [];
+    protected array $messages = [
         'required' => 'ec5_21',
         'confirmed' => 'ec5_40',
         'unique' => 'ec5_134',
@@ -41,32 +41,19 @@ abstract class ValidationBase
         'ec5_unreserved_name' => 'ec5_235'
     ];
 
-    protected $data = [];
+    protected array $data = [];
 
-    /**
-     * Reset the class errors
-     */
-    public function resetErrors()
+    public function resetErrors(): void
     {
         $this->errors = [];
     }
 
-    /**
-     * return the errors array
-     *
-     * @return array
-     */
-    public function errors()
+    public function errors(): array
     {
         return $this->errors;
     }
 
-    /**
-     * return count of errors array
-     *
-     * @return boolean
-     */
-    public function hasErrors()
+    public function hasErrors(): bool
     {
         return count($this->errors) > 0;
     }
@@ -80,18 +67,19 @@ abstract class ValidationBase
      * @param bool $checkKeys
      * @return bool
      */
-    public function validate(&$data, bool $checkKeys = false): bool
+    public function validate($data, bool $checkKeys = false): bool
     {
         try {
             $this->errors = [];
-            $this->data = $data;
 
             // Check data is an array
-            if (!is_array($this->data)) {
+            if (!is_array($data)) {
                 //return error as 'data' should be defined and array
                 $this->errors['validation'] = ['ec5_269'];
                 return false;
             }
+
+            $this->data = $data;
 
             // Make sure only the keys we defined
             if ($checkKeys) {
@@ -118,7 +106,7 @@ abstract class ValidationBase
             }
             // Validation pass
             return true;
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
             //catch regex invalid or malformed (preg_match() throwing error)
             if (Str::contains($e->getMessage(), 'preg_match()')) {
                 //get input ref of question throwing exception
@@ -133,7 +121,7 @@ abstract class ValidationBase
                 return false;
             }
 
-            //default error 
+            //default error
             $this->errors['validation'] = ['ec5_116'];
             return false;
         }
@@ -143,7 +131,7 @@ abstract class ValidationBase
      * @param $ref
      * @param $code
      */
-    protected function addAdditionalError($ref, $code)
+    protected function addAdditionalError($ref, $code): void
     {
         $this->errors[$ref] = [$code];
     }
@@ -151,7 +139,7 @@ abstract class ValidationBase
     protected function isValidRef($ref): bool
     {
         $inputRef = (isset($this->data['ref'])) ? $this->data['ref'] : '';
-        if (!preg_match("/^{$ref}+_[a-zA-Z0-9]{13}$/", $inputRef)) {
+        if (!preg_match("/^$ref+_[a-zA-Z0-9]{13}$/", $inputRef)) {
             $this->errors[$inputRef] = ['ec5_243'];
             return false;
         }
@@ -162,18 +150,18 @@ abstract class ValidationBase
     /**
      * Add custom rules for validation by extending the Validator
      */
-    protected function addCustomRules()
+    protected function addCustomRules(): void
     {
 
         /* IMPLICIT RULES */
         // We use extendImplicit() because we want these rules to run even when we have empty values
 
-        Validator::extendImplicit('alpha_num_under_spaces', function ($attribute, $value, $parameters) {
+        Validator::extendImplicit('alpha_num_under_spaces', function ($attribute, $value) {
             return preg_match('/(^[A-Za-z0-9_\s]*$)+/', $value);
             //return preg_match('/(^[A-Za-z0-9_\s\x{00A0}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFEF}]+$)+/', $value);
         });
 
-        Validator::extendImplicit('ec5_unreserved_name', function ($attribute, $value, $parameters) {
+        Validator::extendImplicit('ec5_unreserved_name', function ($attribute, $value) {
 
             // Admins/Superadmins can use reserved words
             if (in_array(
@@ -195,9 +183,9 @@ abstract class ValidationBase
 
         // No html symbols "<", ">" allowed
         // USE: ec5_no_html
-        Validator::extendImplicit('ec5_no_html', function ($attribute, $value, $parameters) {
+        Validator::extendImplicit('ec5_no_html', function ($attribute, $value) {
             // If there are any html chars, return false
-            return !preg_match('/(<|>)+/', $value);
+            return !preg_match('/([<>])+/', $value);
         });
 
         // USE: 'ec5_max_length:max'
@@ -220,9 +208,9 @@ abstract class ValidationBase
         // We use extend() because we don't want these rules to run when we have empty values
 
         // USE: 'ec5_integer'
-        Validator::extend('ec5_integer', function ($attribute, $value, $parameters) {
+        Validator::extend('ec5_integer', function ($attribute, $value) {
             // ec5_integer allows any positive or negative integer and integers with leading zeros
-            return preg_match('/^[\-]?[0-9]+$/', $value);
+            return preg_match('/^-?[0-9]+$/', $value);
         });
 
         //check slug is unique in projects table but skipping archived projects
@@ -231,12 +219,10 @@ abstract class ValidationBase
             $table = $parameters[0];
             $column = $attribute;
 
-            $isUnique = DB::table($table)
+            return DB::table($table)
                     ->where($column, $value)
                     ->where('status', '<>', 'archived')
                     ->count() === 0;
-
-            return $isUnique;
         });
     }
 }

@@ -8,7 +8,7 @@ use ec5\Http\Validation\ValidationBase;
 
 class RuleMappingStructure extends ValidationBase
 {
-    protected $rules = [
+    protected array $rules = [
         'name' => 'required|string|min:3|max:20|regex:/^[A-Za-z0-9 \-\_]+$/',
         'forms' => 'required|array',
         'is_default' => 'required|boolean',

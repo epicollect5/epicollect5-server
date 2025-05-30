@@ -4,11 +4,10 @@ namespace ec5\Http\Validation\Project;
 
 use ec5\Http\Validation\ValidationBase;
 use Illuminate\Validation\Rule;
-use Config;
 
 class RuleSearch extends ValidationBase
 {
-    protected $rules = [];
+    protected array $rules = [];
 
     public function __construct()
     {

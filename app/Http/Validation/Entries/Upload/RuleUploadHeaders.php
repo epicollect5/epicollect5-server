@@ -10,7 +10,7 @@ class RuleUploadHeaders extends ValidationBase
     /**F
      * @var array
      */
-    protected $rules = [
+    protected array $rules = [
         'map_index' => 'required|numeric|min:0',
         'form_index' => 'required|numeric|min:0|max:4',
         'branch_ref' => 'present|string',
