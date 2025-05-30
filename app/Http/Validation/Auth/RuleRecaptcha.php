@@ -6,7 +6,7 @@ use ec5\Http\Validation\ValidationBase;
 
 class RuleRecaptcha extends ValidationBase
 {
-    protected $rules = [
+    protected array $rules = [
         'success' => 'boolean',
         'challenge_ts' => 'present',
         'hostname' => 'present',

@@ -6,7 +6,7 @@ use ec5\Http\Validation\ValidationBase;
 
 class RuleProjectRole extends ValidationBase
 {
-    protected $rules = [
+    protected array $rules = [
         'email' => 'required|email'
     ];
 

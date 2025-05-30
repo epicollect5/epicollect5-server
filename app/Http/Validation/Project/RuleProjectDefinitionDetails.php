@@ -8,9 +8,9 @@ use ec5\Libraries\Utilities\Common;
 class RuleProjectDefinitionDetails extends ValidationBase
 {
     //rules are set dynamically from config parameters
-    protected $rules = [];
+    protected array $rules = [];
 
-    protected $messages = [
+    protected array $messages = [
         'integer' => 'ec5_27',
         'required' => 'ec5_21',
         'max' => 'ec5_206',

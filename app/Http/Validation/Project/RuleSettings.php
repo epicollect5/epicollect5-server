@@ -6,7 +6,7 @@ use ec5\Http\Validation\ValidationBase;
 
 class RuleSettings extends ValidationBase
 {
-    protected $rules = [
+    protected array $rules = [
         'access' => '',
         'visibility' => '',
         'status' => '',

@@ -2,32 +2,24 @@
 
 namespace Tests\Http\Validation\Entries\Upload\InputRules;
 
+use ec5\DTO\ProjectDTO;
 use ec5\Http\Validation\Entries\Upload\InputRules\RuleIntegerInput;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Random\RandomException;
 use Tests\TestCase;
 
 class RuleIntegerInputTest extends TestCase
 {
-    /**
-     * @var \ec5\DTO\ProjectDTO
-     */
-    protected $project;
-    /**
-     * @var RuleIntegerInput
-     */
-    protected $validator;
-
-    /**
-     * @var array
-     */
-    protected $inputDetails;
+    protected ProjectDTO $project;
+    protected RuleIntegerInput $ruleIntegerInput;
+    protected array $inputDetails;
 
     public function setUp(): void
     {
         // This method will automatically be called prior to any of your test cases
         parent::setUp();
 
-        $this->validator = new RuleIntegerInput();
+        $this->ruleIntegerInput = new RuleIntegerInput();
 
         $this->reset();
 
@@ -37,7 +29,7 @@ class RuleIntegerInputTest extends TestCase
     /**
      * Reset test conditions
      */
-    private function reset()
+    private function reset(): void
     {
         $this->inputDetails = [
             'ref' => 'xxx',
@@ -50,77 +42,67 @@ class RuleIntegerInputTest extends TestCase
 
     /**
      *
+     * @throws RandomException
      */
     public function test_is_int()
     {
-        // Valid answer
-        $answer = 100;
-        $this->validator->setRules($this->inputDetails, $answer, $this->project);
+        // Generate 100 random integers between PHP_INT_MIN and PHP_INT_MAX
+        for ($i = 0; $i < 100; $i++) {
+            $answer = random_int(PHP_INT_MIN, PHP_INT_MAX);
 
-        $data = [$this->inputDetails['ref'] => $answer];
-        $this->validator->validate($data);
-        $this->assertFalse($this->validator->hasErrors());
-        $this->validator->resetErrors();
+            $this->ruleIntegerInput->setRules($this->inputDetails, $answer, $this->project);
 
-        // Valid answer
-        $answer = 0;
-        $this->validator->setRules($this->inputDetails, $answer, $this->project);
+            $data = [$this->inputDetails['ref'] => $answer];
+            $this->ruleIntegerInput->validate($data);
 
-        $data = [$this->inputDetails['ref'] => $answer];
-        $this->validator->validate($data);
-        $this->assertFalse($this->validator->hasErrors());
-        $this->validator->resetErrors();
+            $this->assertFalse(
+                $this->ruleIntegerInput->hasErrors(),
+                "Failed asserting that '{$answer}' is a valid integer input."
+            );
 
-        // Valid answer
-        $answer = -100;
-        $this->validator->setRules($this->inputDetails, $answer, $this->project);
-
-        $data = [$this->inputDetails['ref'] => $answer];
-        $this->validator->validate($data);
-        $this->assertFalse($this->validator->hasErrors());
-        $this->validator->resetErrors();
+            $this->ruleIntegerInput->resetErrors();
+        }
 
         $this->reset();
     }
 
-    /**
-     *
-     */
+
     public function test_is_not_int()
     {
-        // Invalid answer
-        $answer = 100.1;
-        $this->validator->setRules($this->inputDetails, $answer, $this->project);
+        $invalidAnswers = [
+            100.1,
+            -42.99,
+            '£',
+            'dd',
+            '3.14',
+            null,
+            true,
+            false,
+            '123abc',
+            '0.0',
+            '1e3',
+            ' 42 ', // whitespace
+        ];
 
-        $data = [$this->inputDetails['ref'] => $answer];
-        $this->validator->validate($data);
-        $this->assertTrue($this->validator->hasErrors());
-        $this->validator->resetErrors();
+        foreach ($invalidAnswers as $answer) {
+            $this->ruleIntegerInput->setRules($this->inputDetails, $answer, $this->project);
 
-        // Invalid answer
-        $answer = "£";
-        $this->validator->setRules($this->inputDetails, $answer, $this->project);
+            $data = [$this->inputDetails['ref'] => $answer];
+            $this->ruleIntegerInput->validate($data);
 
-        $data = [$this->inputDetails['ref'] => $answer];
-        $this->validator->validate($data);
-        $this->assertTrue($this->validator->hasErrors());
-        $this->validator->resetErrors();
+            $this->assertTrue(
+                $this->ruleIntegerInput->hasErrors(),
+                "Failed asserting that '{$answer}' is rejected as an invalid integer input."
+            );
 
-        // Invalid answer
-        $answer = "dd";
-        $this->validator->setRules($this->inputDetails, $answer, $this->project);
-
-        $data = [$this->inputDetails['ref'] => $answer];
-        $this->validator->validate($data);
-        $this->assertTrue($this->validator->hasErrors());
-        $this->validator->resetErrors();
+            $this->ruleIntegerInput->resetErrors();
+        }
 
         $this->reset();
     }
 
-    /**
-     *
-     */
+
+
     public function test_min_max_answer_valid()
     {
         // Valid answer
@@ -129,12 +111,12 @@ class RuleIntegerInputTest extends TestCase
         $this->inputDetails['min'] = '50';
         $this->inputDetails['max'] = '200';
 
-        $this->validator->setRules($this->inputDetails, $answer, $this->project);
+        $this->ruleIntegerInput->setRules($this->inputDetails, $answer, $this->project);
 
         $data = [$this->inputDetails['ref'] => $answer];
-        $this->validator->validate($data);
-        $this->assertFalse($this->validator->hasErrors());
-        $this->validator->resetErrors();
+        $this->ruleIntegerInput->validate($data);
+        $this->assertFalse($this->ruleIntegerInput->hasErrors());
+        $this->ruleIntegerInput->resetErrors();
 
         $this->reset();
     }
@@ -150,12 +132,12 @@ class RuleIntegerInputTest extends TestCase
         $this->inputDetails['min'] = '50';
         $this->inputDetails['max'] = '200';
 
-        $this->validator->setRules($this->inputDetails, $answer, $this->project);
+        $this->ruleIntegerInput->setRules($this->inputDetails, $answer, $this->project);
 
         $data = [$this->inputDetails['ref'] => $answer];
-        $this->validator->validate($data);
-        $this->assertTrue($this->validator->hasErrors());
-        $this->validator->resetErrors();
+        $this->ruleIntegerInput->validate($data);
+        $this->assertTrue($this->ruleIntegerInput->hasErrors());
+        $this->ruleIntegerInput->resetErrors();
 
         $this->reset();
     }
@@ -171,12 +153,12 @@ class RuleIntegerInputTest extends TestCase
         $this->inputDetails['min'] = '50';
         $this->inputDetails['max'] = '200';
 
-        $this->validator->setRules($this->inputDetails, $answer, $this->project);
+        $this->ruleIntegerInput->setRules($this->inputDetails, $answer, $this->project);
 
         $data = [$this->inputDetails['ref'] => $answer];
-        $this->validator->validate($data);
-        $this->assertTrue($this->validator->hasErrors());
-        $this->validator->resetErrors();
+        $this->ruleIntegerInput->validate($data);
+        $this->assertTrue($this->ruleIntegerInput->hasErrors());
+        $this->ruleIntegerInput->resetErrors();
     }
 
     #[DataProvider('outOfBoundsIntDataProvider')]
@@ -185,10 +167,10 @@ class RuleIntegerInputTest extends TestCase
         $this->inputDetails['min'] = (string) $min;
         $this->inputDetails['max'] = (string) $max;
 
-        $this->validator->setRules($this->inputDetails, $answer, $this->project);
+        $this->ruleIntegerInput->setRules($this->inputDetails, $answer, $this->project);
 
         $data = [$this->inputDetails['ref'] => $answer];
-        $this->validator->validate($data);
+        $this->ruleIntegerInput->validate($data);
 
         if ($answer < $min) {
             echo "Caught: {$answer} is lower than min {$min}\n";
@@ -196,9 +178,9 @@ class RuleIntegerInputTest extends TestCase
             echo "Caught: {$answer} is greater than max {$max}\n";
         }
 
-        $this->assertTrue($this->validator->hasErrors(), "Expected error for value={$answer}, min={$min}, max={$max}");
+        $this->assertTrue($this->ruleIntegerInput->hasErrors(), "Expected error for value={$answer}, min={$min}, max={$max}");
 
-        $this->validator->resetErrors();
+        $this->ruleIntegerInput->resetErrors();
         $this->reset();
     }
 }

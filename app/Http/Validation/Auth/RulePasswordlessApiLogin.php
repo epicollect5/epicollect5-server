@@ -6,7 +6,7 @@ use ec5\Http\Validation\ValidationBase;
 
 class RulePasswordlessApiLogin extends ValidationBase
 {
-    protected $rules = [
+    protected array $rules = [
         'email' => 'required|email',
         'code' => 'required|string|size:6|regex:/^[0-9]+$/'
     ];

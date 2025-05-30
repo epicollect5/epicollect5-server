@@ -10,7 +10,7 @@ class RuleCanBulkUpload extends ValidationBase
     /**F
      * @var array
      */
-    protected $rules = [
+    protected array $rules = [
 
     ];
 

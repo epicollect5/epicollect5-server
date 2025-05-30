@@ -9,14 +9,14 @@ use ec5\Models\Counters\EntryCounter;
 
 class RuleEntryLimits extends ValidationBase
 {
-    protected $rules = [
+    protected array $rules = [
         'setLimit' => 'required|in:true,false',//as it comes as a string in the post request
         'limitTo' => 'required|integer|min:0|max:50000',
         'formRef' => 'required',
         'branchRef' => 'present'
     ];
 
-    protected $messages = [
+    protected array $messages = [
         'integer' => 'ec5_27',
         'required' => 'ec5_21',
         'max' => 'ec5_335'
@@ -28,7 +28,7 @@ class RuleEntryLimits extends ValidationBase
      * @param $ref
      * @param $data
      */
-    public function additionalChecks(ProjectDTO $project, $ref, $data)
+    public function additionalChecks(ProjectDTO $project, $ref, $data): void
     {
         $projectExtra = $project->getProjectExtra();
         $isBranch = false;

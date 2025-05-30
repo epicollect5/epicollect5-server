@@ -21,13 +21,13 @@ class RuleInputBase extends ValidationBase
     /**
      * @var array
      */
-    protected $rules = [];
+    protected array $rules = [];
 
     /**
      * Set common messages used by all input type rules
      * @var array
      */
-    protected $messages = [
+    protected array $messages = [
         'regex' => 'ec5_29',
         'array' => 'ec5_29',
         'date' => 'ec5_79',

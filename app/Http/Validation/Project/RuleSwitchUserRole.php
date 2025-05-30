@@ -3,11 +3,10 @@
 namespace ec5\Http\Validation\Project;
 
 use ec5\Http\Validation\ValidationBase;
-use Config;
 
 class RuleSwitchUserRole extends ValidationBase
 {
-    protected $rules = [
+    protected array $rules = [
         'email' => 'required|email:filter'
     ];
 

@@ -11,7 +11,7 @@ class RuleDelete extends ValidationBase
     /**
      * @var array
      */
-    protected $rules = [
+    protected array $rules = [
         'type' => 'required|string|in:delete',
         'id' => 'required|string|min:36|max:36',
         'attributes' => 'required|array',

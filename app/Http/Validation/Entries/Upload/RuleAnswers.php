@@ -32,12 +32,12 @@ class RuleAnswers extends ValidationBase
     /**
      * @var array
      */
-    protected $rules = [
+    protected array $rules = [
         'was_jumped' => 'required|boolean',
         'answer' => 'present'
     ];
 
-    protected $messages = [
+    protected array $messages = [
         'required' => 'ec5_21',
         'boolean' => 'ec5_29',
         'present' => 'ec5_21'

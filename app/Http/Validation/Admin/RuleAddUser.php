@@ -7,7 +7,7 @@ use ec5\Models\User\UserProvider;
 
 class RuleAddUser extends ValidationBase
 {
-    protected $rules = [
+    protected array $rules = [
         'first_name' => 'required|max:100',
         'last_name' => 'required|max:100',
         //uniqueness on email AND provider in users_providers

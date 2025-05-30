@@ -6,7 +6,7 @@ use ec5\Http\Validation\ValidationBase;
 
 class RuleInput extends ValidationBase
 {
-    protected $rules = [
+    protected array $rules = [
         'ref' => 'required',
         'question' => 'required', // Question length checked in additionalChecks()
         'is_title' => 'boolean',
@@ -157,8 +157,10 @@ class RuleInput extends ValidationBase
     private function additionalRuleInteger()
     {
         // Check default answer is valid, ie empty string, string zero or an integer
-        if ($this->data['default'] !== '' && $this->data['default'] !== '0' && filter_var($this->data['default'],
-                FILTER_VALIDATE_INT) === false
+        if ($this->data['default'] !== '' && $this->data['default'] !== '0' && filter_var(
+            $this->data['default'],
+            FILTER_VALIDATE_INT
+        ) === false
         ) {
             $this->addAdditionalError($this->data['ref'], 'ec5_339');
         }

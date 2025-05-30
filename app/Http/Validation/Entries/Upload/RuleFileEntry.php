@@ -16,13 +16,13 @@ use Illuminate\Support\Facades\Storage;
 
 class RuleFileEntry extends EntryValidationBase
 {
-    protected $rules = [
+    protected array $rules = [
         'type' => 'required|in:audio,video,photo',
         'name' => 'required',
         'input_ref' => 'required'
     ];
 
-    protected $messages = [
+    protected array $messages = [
         'required' => 'ec5_20',
         'in' => 'ec5_47'
     ];

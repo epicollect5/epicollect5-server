@@ -3,15 +3,13 @@
 namespace ec5\Http\Validation\Project\Mapping;
 
 use ec5\Http\Validation\ValidationBase;
-use Config;
 
 class RuleMappingInput extends ValidationBase
 {
-
     /**
      * @var array
      */
-    protected $rules = [
+    protected array $rules = [
         'hide' => 'required|boolean',
         'group' => 'present|array',
         'branch' => 'present|array',

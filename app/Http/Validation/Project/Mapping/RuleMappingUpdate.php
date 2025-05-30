@@ -7,8 +7,7 @@ use ec5\Http\Validation\ValidationBase;
 
 class RuleMappingUpdate extends ValidationBase
 {
-
-    protected $rules = [
+    protected array $rules = [
         'action' => 'required|string|in:make-default,rename,update',
         'map_index' => 'required|integer',
         'is_default' => 'required_if:action,set_default|boolean',

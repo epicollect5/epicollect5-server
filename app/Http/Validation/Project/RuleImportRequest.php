@@ -3,12 +3,11 @@
 namespace ec5\Http\Validation\Project;
 
 use ec5\Http\Validation\ValidationBase;
-use Config;
 use ec5\Libraries\Utilities\Common;
 
 class RuleImportRequest extends ValidationBase
 {
-    protected $rules = [
+    protected array $rules = [
         'name' => 'required|alpha_num_under_spaces|min:3|max:50|unique_except_archived:projects,name|ec5_unreserved_name',
         'file' => 'required|max:1000',
         'slug' => 'not_in:create|unique_except_archived:projects,slug',

@@ -3,13 +3,11 @@
 namespace ec5\Http\Validation\Entries\View;
 
 use ec5\DTO\ProjectDTO;
-use ec5\DTO\ProjectExtraDTO;
 use ec5\Http\Validation\ValidationBase;
-
 
 class RuleQueryString extends ValidationBase
 {
-    protected $rules = [
+    protected array $rules = [
         'page' => 'integer',
         'per_page' => 'integer',
         'form_ref' => 'nullable|string',

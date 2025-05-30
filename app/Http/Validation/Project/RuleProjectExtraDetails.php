@@ -6,7 +6,7 @@ use ec5\Http\Validation\ValidationBase;
 
 class RuleProjectExtraDetails extends ValidationBase
 {
-    protected $rules = [
+    protected array $rules = [
         'name' => 'required|alpha_num_under_spaces|min:3|max:100',
         'slug' => 'not_in:create',
         'ref' => 'required',

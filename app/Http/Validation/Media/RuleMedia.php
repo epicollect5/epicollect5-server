@@ -10,7 +10,7 @@ class RuleMedia extends ValidationBase
     /**
      * @var array
      */
-    protected $rules = [
+    protected array $rules = [
         'type' => 'required|in:photo,audio,video',
         'name' => 'required|string'
     ];
@@ -21,7 +21,7 @@ class RuleMedia extends ValidationBase
     public function __construct()
     {
         // Add the format check to rules, from media config file
-        $this->rules['format'] = 'required|in:' . implode(',', config('epicollect.media.formats'),);
+        $this->rules['format'] = 'required|in:' . implode(',', config('epicollect.media.formats'), );
     }
 
     /**
