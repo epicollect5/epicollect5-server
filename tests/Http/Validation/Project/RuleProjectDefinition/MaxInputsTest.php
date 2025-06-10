@@ -5,13 +5,10 @@ namespace Tests\Http\Validation\Project\RuleProjectDefinition;
 use ec5\DTO\ProjectDTO;
 use ec5\Services\Mapping\ProjectMappingService;
 use Exception;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Throwable;
 
 class MaxInputsTest extends RuleProjectDefinitionBaseTest
 {
-    use DatabaseTransactions;
-
     public function setUp(): void
     {
         parent::setUp();

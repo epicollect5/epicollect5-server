@@ -5,12 +5,9 @@ namespace Tests\Http\Validation\Project\RuleProjectDefinition;
 use ec5\DTO\ProjectDTO;
 use ec5\Services\Mapping\ProjectMappingService;
 use Exception;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 class MaxTitlesFormTest extends RuleProjectDefinitionBaseTest
 {
-    use DatabaseTransactions;
-
     public function setUp(): void
     {
         // This method will automatically be called prior to any of your test cases
@@ -60,19 +57,6 @@ class MaxTitlesFormTest extends RuleProjectDefinitionBaseTest
 
         $this->ruleProjectDefinition->validate($project);
         $this->assertFalse($this->ruleProjectDefinition->hasErrors());
-
-        //        //add one more title input
-        //        $projectMock['forms'][0]['inputs'][$this->inputsLimit] = $this->getInputMock($projectMock['forms'][0]['ref']);
-        //        $projectMock['forms'][0]['inputs'][$this->inputsLimit]['is_title'] = true;
-        //
-        //        //add inputs to project definition
-        //        $project->addProjectDefinition([
-        //            'id' => $projectMock['ref'],
-        //            'project' => $projectMock
-        //        ]);
-        //
-        //        $this->assertTrue($this->ruleProjectDefinition->hasErrors());
-        //        $this->assertEquals('ec5_251', $this->ruleProjectDefinition->errors['validation'][0]);
     }
 
     /**

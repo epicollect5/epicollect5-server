@@ -5,12 +5,9 @@ namespace Tests\Http\Validation\Project\RuleProjectDefinition;
 use ec5\DTO\ProjectDTO;
 use ec5\Services\Mapping\ProjectMappingService;
 use Exception;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 class MaxTitlesBranchTest extends RuleProjectDefinitionBaseTest
 {
-    use DatabaseTransactions;
-
     public function setUp(): void
     {
         // This method will automatically be called prior to any of your test cases
@@ -114,7 +111,7 @@ class MaxTitlesBranchTest extends RuleProjectDefinitionBaseTest
         $this->ruleProjectDefinition->validate($project);
         $this->assertFalse($this->ruleProjectDefinition->hasErrors());
 
-        //add anoither branch input
+        //add another branch input
         $projectMock['forms'][0]['inputs'][5] = $this->getInputMock($projectMock['forms'][0]['ref']);
         $projectMock['forms'][0]['inputs'][5]['type'] = 'branch';
         //add 50 branch inputs
@@ -255,7 +252,7 @@ class MaxTitlesBranchTest extends RuleProjectDefinitionBaseTest
         $this->ruleProjectDefinition->validate($project);
         $this->assertFalse($this->ruleProjectDefinition->hasErrors());
 
-        //add anoither branch input
+        //add another branch input
         $projectMock['forms'][1]['inputs'][5] = $this->getInputMock($projectMock['forms'][1]['ref']);
         $projectMock['forms'][1]['inputs'][5]['type'] = 'branch';
         //add 50 branch inputs

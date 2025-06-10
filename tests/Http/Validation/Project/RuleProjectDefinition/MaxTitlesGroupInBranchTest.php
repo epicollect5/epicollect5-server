@@ -5,13 +5,9 @@ namespace Tests\Http\Validation\Project\RuleProjectDefinition;
 use ec5\DTO\ProjectDTO;
 use ec5\Services\Mapping\ProjectMappingService;
 use Exception;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
-use JetBrains\PhpStorm\NoReturn;
 
 class MaxTitlesGroupInBranchTest extends RuleProjectDefinitionBaseTest
 {
-    use DatabaseTransactions;
-
     public function setUp(): void
     {
         // This method will automatically be called prior to any of your test cases
@@ -22,7 +18,6 @@ class MaxTitlesGroupInBranchTest extends RuleProjectDefinitionBaseTest
     /**
      * @throws Exception
      */
-    #[NoReturn]
     public function test_correct_number_of_titles_group_in_branch_in_parent_form()
     {
         $project = new ProjectDTO(

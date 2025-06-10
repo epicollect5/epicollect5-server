@@ -5,12 +5,9 @@ namespace Tests\Http\Validation\Project\RuleProjectDefinition;
 use ec5\DTO\ProjectDTO;
 use ec5\Services\Mapping\ProjectMappingService;
 use Exception;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 class MaxTitlesGroupTest extends RuleProjectDefinitionBaseTest
 {
-    use DatabaseTransactions;
-
     public function setUp(): void
     {
         // This method will automatically be called prior to any of your test cases
@@ -116,7 +113,7 @@ class MaxTitlesGroupTest extends RuleProjectDefinitionBaseTest
         $this->ruleProjectDefinition->validate($project);
         $this->assertFalse($this->ruleProjectDefinition->hasErrors());
 
-        //add anoither branch input
+        //add another branch input
         $projectMock['forms'][0]['inputs'][5] = $this->getInputMock($projectMock['forms'][0]['ref']);
         $projectMock['forms'][0]['inputs'][5]['type'] = 'group';
         //add 50 branch inputs
@@ -204,9 +201,9 @@ class MaxTitlesGroupTest extends RuleProjectDefinitionBaseTest
         $this->ruleProjectDefinition->validate($project);
         $this->assertFalse($this->ruleProjectDefinition->hasErrors());
 
-        //Child form add first branch as 5th input, first 3 inputs of the form are set as titles
+        //Child form add first group as 5th input, first 3 inputs of the form are set as titles
         $projectMock['forms'][1]['inputs'][4]['type'] = 'group';
-        //add 50 branch inputs
+        //add 5 group inputs
         for ($i = 0; $i < 5; $i++) {
             $groupRef =  $projectMock['forms'][1]['inputs'][4]['ref'];
             $projectMock['forms'][1]['inputs'][4]['group'][$i] = $this->getInputMock($groupRef);
@@ -227,7 +224,7 @@ class MaxTitlesGroupTest extends RuleProjectDefinitionBaseTest
         $this->assertFalse($this->ruleProjectDefinition->hasErrors());
 
 
-        //add one more title input to the branch
+        //add one more title input to the group
         $projectMock['forms'][1]['inputs'][4]['group'][5] = $this->getInputMock($groupRef);
         $projectMock['forms'][1]['inputs'][4]['group'][5]['is_title'] = true;
 
@@ -242,7 +239,7 @@ class MaxTitlesGroupTest extends RuleProjectDefinitionBaseTest
         $this->assertTrue($this->ruleProjectDefinition->hasErrors());
         $this->assertEquals('ec5_211', $this->ruleProjectDefinition->errors[$projectMock['forms'][1]['inputs'][4]['group'][5]['ref']][0]);
 
-        //remove title from branch input
+        //remove title from group input
         $projectMock['forms'][1]['inputs'][4]['group'][5]['is_title'] = false;
         //reset errors
         $this->ruleProjectDefinition->errors = [];
@@ -257,7 +254,7 @@ class MaxTitlesGroupTest extends RuleProjectDefinitionBaseTest
         $this->ruleProjectDefinition->validate($project);
         $this->assertFalse($this->ruleProjectDefinition->hasErrors());
 
-        //add anoither branch input
+        //add another branch input
         $projectMock['forms'][1]['inputs'][5] = $this->getInputMock($projectMock['forms'][1]['ref']);
         $projectMock['forms'][1]['inputs'][5]['type'] = 'group';
         //add 50 branch inputs
@@ -281,7 +278,7 @@ class MaxTitlesGroupTest extends RuleProjectDefinitionBaseTest
         $this->ruleProjectDefinition->validate($project);
         $this->assertFalse($this->ruleProjectDefinition->hasErrors());
 
-        //add one more title input to the branch
+        //add one more title input to the group
         $projectMock['forms'][1]['inputs'][5]['group'][5] = $this->getInputMock($groupRef);
         $projectMock['forms'][1]['inputs'][5]['group'][5]['is_title'] = true;
 
