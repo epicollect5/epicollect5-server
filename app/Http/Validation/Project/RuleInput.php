@@ -32,12 +32,8 @@ class RuleInput extends ValidationBase
         $this->rules['datetime_format'] = 'nullable|in:' . implode(',', array_keys(config('epicollect.strings.datetime_format')));
     }
 
-    /**
-     * Add any additional rules to validate against
-     *
-     * @param bool $isBranchInput
-     */
-    public function addAdditionalRules($isBranchInput)
+    //Add any additional rules to validate against
+    public function addAdditionalRules(bool $isBranchInput): void
     {
         if ($isBranchInput) {
             $this->rules['uniqueness'] = 'required|in:none,form';
@@ -46,10 +42,7 @@ class RuleInput extends ValidationBase
         }
     }
 
-    /**
-     * @param $parentRef
-     */
-    public function additionalChecks($parentRef)
+    public function additionalChecks(string $parentRef): void
     {
         // Check has parent ref in its ref
         $this->isValidRef($parentRef);
@@ -99,66 +92,68 @@ class RuleInput extends ValidationBase
 
     }
 
-    private function additionalRulePhoto()
+    private function additionalRulePhoto(): void
     {
         $this->validateMediaType();
     }
 
-    private function additionalRuleAudio()
+    private function additionalRuleAudio(): void
     {
         $this->validateMediaType();
     }
 
-    private function additionalRuleVideo()
+    private function additionalRuleVideo(): void
     {
         $this->validateMediaType();
     }
 
     /**
      */
-    private function additionalRuleDate()
+    private function additionalRuleDate(): void
     {
         $this->validateDateTimeFormat();
     }
 
-    private function additionalRuleTime()
+    private function additionalRuleTime(): void
     {
         $this->validateDateTimeFormat();
     }
 
-    private function additionalRuleDropdown()
+    private function additionalRuleDropdown(): void
     {
         $this->validatePossibleAnswersCount('ec5_338');
         $this->validatePossibleAnswers();
     }
 
-    private function additionalRuleRadio()
+    private function additionalRuleRadio(): void
     {
         $this->validatePossibleAnswersCount('ec5_337');
         $this->validatePossibleAnswers();
     }
 
-    private function additionalRuleCheckbox()
+    private function additionalRuleCheckbox(): void
     {
         $this->validatePossibleAnswersCount('ec5_336');
         $this->validatePossibleAnswers();
     }
 
-    private function additionalRuleSearchsingle()
+    private function additionalRuleSearchsingle(): void
     {
         $this->validateSearchType();
     }
 
-    private function additionalRuleSearchmultiple()
+    private function additionalRuleSearchmultiple(): void
     {
         $this->validateSearchType();
     }
 
-    private function additionalRuleInteger()
+    private function additionalRuleInteger(): void
     {
         // Check default answer is valid, ie empty string, string zero or an integer
-        if ($this->data['default'] !== '' && $this->data['default'] !== '0' && filter_var($this->data['default'],
-                FILTER_VALIDATE_INT) === false
+        if ($this->data['default'] !== '' && $this->data['default'] !== '0' && filter_var(
+            $this->data['default'],
+            FILTER_VALIDATE_INT
+        ) === false
         ) {
             $this->addAdditionalError($this->data['ref'], 'ec5_339');
         }
@@ -166,7 +161,7 @@ class RuleInput extends ValidationBase
         $this->ifNotEmptyDefaultMinAndMax();
     }
 
-    private function additionalRuleDecimal()
+    private function additionalRuleDecimal(): void
     {
         // Check default answer is valid, ie empty string or a number (int or decimal)
         if ($this->data['default'] !== '' && !is_numeric($this->data['default'])) {
@@ -176,7 +171,7 @@ class RuleInput extends ValidationBase
         $this->ifNotEmptyDefaultMinAndMax();
     }
 
-    private function checkJumps()
+    private function checkJumps(): void
     {
         $jumps = $this->data['jumps'];
         $jump_keys = array_keys(config('epicollect.strings.jump_keys'));
@@ -198,7 +193,7 @@ class RuleInput extends ValidationBase
                         // Check answer ref is valid in the jump
                         $match = false;
                         // Search for a match
-                        foreach ($this->data['possible_answers'] as $possibleAnswer => $possibleAnswerDetails) {
+                        foreach ($this->data['possible_answers'] as $possibleAnswerDetails) {
                             if ($jump['answer_ref'] == $possibleAnswerDetails['answer_ref']) {
                                 $match = true;
                             }
@@ -263,9 +258,8 @@ class RuleInput extends ValidationBase
         $this->validatePossibleAnswers();
     }
 
-    private function validatePossibleAnswersCount($code)
+    private function validatePossibleAnswersCount($code): void
     {
-
         if (count($this->data['possible_answers']) == 0) {
             $this->addAdditionalError($this->data['ref'], $code);
             $this->addAdditionalError('question', $this->data['question']);
@@ -277,11 +271,11 @@ class RuleInput extends ValidationBase
         }
     }
 
-    private function validatePossibleAnswers()
+    private function validatePossibleAnswers(): void
     {
         $match = false;
 
-        foreach ($this->data['possible_answers'] as $key => $value) {
+        foreach ($this->data['possible_answers'] as $value) {
             if ($value['answer_ref'] == $this->data['default']) {
                 $match = true;
             }
@@ -306,7 +300,7 @@ class RuleInput extends ValidationBase
         }
     }
 
-    private function validateMediaType()
+    private function validateMediaType(): void
     {
         if (count($this->data['possible_answers']) > 0) {
             $this->addAdditionalError($this->data['ref'], 'ec5_398');
@@ -314,7 +308,7 @@ class RuleInput extends ValidationBase
         }
     }
 
-    private function validateDateTimeFormat()
+    private function validateDateTimeFormat(): void
     {
         if ($this->data['datetime_format'] == '') {
             $this->addAdditionalError($this->data['ref'], 'ec5_79');
