@@ -407,7 +407,7 @@ class MaxTitlesFormTest extends RuleProjectDefinitionBaseTest
             $projectMock['forms'][2]['inputs'][$i] = $this->getInputMock($projectMock['forms'][2]['ref']);
 
 
-            //add title to each input beyond limit only to form two
+            //add title to each input beyond limit only to form three
             if ($i < (config('epicollect.limits.titlesMaxCount') + 1)) {
                 $projectMock['forms'][2]['inputs'][$i]['is_title'] = true;
                 $inputRef = $projectMock['forms'][2]['inputs'][$i]['ref'];
@@ -461,7 +461,7 @@ class MaxTitlesFormTest extends RuleProjectDefinitionBaseTest
             $projectMock['forms'][2]['inputs'][$i] = $this->getInputMock($projectMock['forms'][2]['ref']);
             $projectMock['forms'][3]['inputs'][$i] = $this->getInputMock($projectMock['forms'][3]['ref']);
 
-            //add title to each input beyond limit only to form two
+            //add title to each input beyond limit only to form four
             if ($i < (config('epicollect.limits.titlesMaxCount') + 1)) {
                 $projectMock['forms'][3]['inputs'][$i]['is_title'] = true;
                 $inputRef = $projectMock['forms'][3]['inputs'][$i]['ref'];
@@ -517,7 +517,7 @@ class MaxTitlesFormTest extends RuleProjectDefinitionBaseTest
             $projectMock['forms'][3]['inputs'][$i] = $this->getInputMock($projectMock['forms'][3]['ref']);
             $projectMock['forms'][4]['inputs'][$i] = $this->getInputMock($projectMock['forms'][4]['ref']);
 
-            //add title to each input beyond limit only to form two
+            //add title to each input beyond limit only to form five
             if ($i < (config('epicollect.limits.titlesMaxCount') + 1)) {
                 $projectMock['forms'][4]['inputs'][$i]['is_title'] = true;
                 $inputRef = $projectMock['forms'][4]['inputs'][$i]['ref'];
