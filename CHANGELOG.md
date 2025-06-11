@@ -1,5 +1,11 @@
 ## Release Notes
 
+# 12.1.0
+
+- Fixed regression bugs introduced in the previous release.
+- Fixed too many titles bug https://github.com/epicollect5/epicollect5-development-plan/issues/199
+- Added whitelist email domain feature
+
 # 12.0.1
 
 - Fixed regression bugs introduced in the previous release.
