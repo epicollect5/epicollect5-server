@@ -281,7 +281,7 @@ class RuleProjectDefinition
     /**
      * Validate an input
      */
-    private function isInputValid($ownerRef, $input, $branchRef = null): bool
+    private function isInputValid($ownerRef, $input, $branchRef = ''): bool
     {
         // Add additional rules to validate (differentiate between a form and a branch)
         $this->ruleInput->addAdditionalRules(!empty($branchRef));
