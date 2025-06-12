@@ -3,7 +3,6 @@
 namespace ec5\Http\Validation\Project;
 
 use ec5\Http\Validation\ValidationBase;
-use Config;
 use ec5\Libraries\Utilities\Common;
 
 class RuleBulkImportUsers extends ValidationBase
@@ -75,7 +74,6 @@ class RuleBulkImportUsers extends ValidationBase
             // $requestedUser can only perform actions against certain roles, set in permissions config
             if (!in_array($existingUserRole, config('epicollect.permissions.projects.roles.' . $projectAdminRole))) {
                 $this->errors['user'] = ['ec5_91'];
-                return;
             }
         }
     }

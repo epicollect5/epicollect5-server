@@ -20,7 +20,7 @@ class RuleMappingInput extends ValidationBase
     /**
      * @var array
      */
-    protected $uniqueMappedNames = [];
+    protected array $uniqueMappedNames = [];
 
     /**
      * @param $mapToName ]
@@ -53,7 +53,7 @@ class RuleMappingInput extends ValidationBase
      * We want to do this every time we come
      * across a new form mapping
      */
-    public function resetUniqueMappedNames()
+    public function resetUniqueMappedNames(): void
     {
         $this->uniqueMappedNames = [];
     }

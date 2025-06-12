@@ -27,7 +27,7 @@ class RuleMappingDelete extends ValidationBase
      * @param ProjectMappingDTO $projectMapping
      * @param $newMapDetails
      */
-    public function additionalChecks(ProjectMappingDTO $projectMapping, $newMapDetails)
+    public function additionalChecks(ProjectMappingDTO $projectMapping, $newMapDetails): void
     {
         // Check the map_index exists
         if (isset($newMapDetails['map_index'])) {

@@ -2,27 +2,8 @@
 
 namespace Tests\Http\Validation\Project\RuleInput;
 
-use ec5\DTO\ProjectDTO;
-use ec5\Http\Validation\Project\RuleInput;
-
 class PhotoTest extends InputTest
 {
-    /**
-     * @var ProjectDTO
-     */
-    protected $project;
-    /**
-     * @var RuleInput
-     */
-    protected $validator;
-
-    /**
-     * @var array
-     */
-    protected $inputDetails;
-
-    protected $parentRef;
-
     public function setUp(): void
     {
         // This method will automatically be called prior to any of your test cases

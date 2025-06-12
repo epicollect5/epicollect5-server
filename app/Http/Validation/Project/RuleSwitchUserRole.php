@@ -30,13 +30,13 @@ class RuleSwitchUserRole extends ValidationBase
      * Additional validation checks that a user is allowed to change another user's role
      * We compare the new role and the existing role (if there is one), against the admin user's
      *
-     * @param $adminUser
-     * @param $user
-     * @param $adminUserRole
-     * @param $newUserRole
-     * @param $existingUserRole
+     * @param $currentActiveUser
+     * @param $userToSwitch
+     * @param $currentActiveUserRole
+     * @param $userToSwitchNewRole
+     * @param $userToSwitchCurrentRole
      */
-    public function additionalChecks($currentActiveUser, $userToSwitch, $currentActiveUserRole, $userToSwitchNewRole = null, $userToSwitchCurrentRole)
+    public function additionalChecks($currentActiveUser, $userToSwitch, $currentActiveUserRole, $userToSwitchNewRole, $userToSwitchCurrentRole): void
     {
         // We must have at least one role supplied
         if (!($userToSwitchNewRole || $userToSwitchCurrentRole)) {
@@ -71,7 +71,6 @@ class RuleSwitchUserRole extends ValidationBase
              */
             if (!in_array($userToSwitchCurrentRole, config('epicollect.permissions.projects.roles.' . $currentActiveUserRole))) {
                 $this->errors['user'] = ['ec5_91'];
-                return;
             }
         }
     }

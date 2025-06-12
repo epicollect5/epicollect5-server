@@ -19,7 +19,7 @@ class RuleIntegerInput extends RuleInputBase
         $this->rules[$inputDetails['ref']] = ['ec5_integer', 'numeric'];
 
         // If we have a min and max set, add to rules
-        $this->setMinMaxRule($inputDetails, $answer, $project);
+        $this->setMinMaxRule($inputDetails);
     }
 
 

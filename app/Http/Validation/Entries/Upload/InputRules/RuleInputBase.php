@@ -55,7 +55,7 @@ class RuleInputBase extends ValidationBase
         return $answer;
     }
 
-    protected function setMinMaxRule(array $inputDetails, array|string|null $answer, ProjectDTO $project): void
+    protected function setMinMaxRule(array $inputDetails): void
     {
         if ($inputDetails['min'] != null) {
             $this->rules[$inputDetails['ref']][] = 'min:' . $inputDetails['min'];

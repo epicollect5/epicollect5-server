@@ -36,11 +36,11 @@ class RuleProjectDefinitionDetails extends ValidationBase
 
         // Build dynamic rules
         $this->rules = [
-            'description' => "ec5_no_html|between:{$projectDescriptionMinLength},{$projectDescriptionMaxLength}",
-            'small_description' => "required|ec5_no_html|between:{$projectSmallDescMinLength},{$projectSmallDescMaxLength}",
-            'logo_url' => "mimes:jpeg,jpg,gif,png|max:{$logoMaxSize}",
-            'logo_width' => "integer|max:{$logoMaxWidth}",
-            'logo_height' => "integer|max:{$logoMaxHeight}",
+            'description' => "ec5_no_html|between:$projectDescriptionMinLength,$projectDescriptionMaxLength",
+            'small_description' => "required|ec5_no_html|between:$projectSmallDescMinLength,$projectSmallDescMaxLength",
+            'logo_url' => "mimes:jpeg,jpg,gif,png|max:$logoMaxSize",
+            'logo_width' => "integer|max:$logoMaxWidth",
+            'logo_height' => "integer|max:$logoMaxHeight",
         ];
 
         //show meaningful error when description is out of range

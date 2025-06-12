@@ -6,24 +6,7 @@ use ec5\Http\Validation\Project\RuleInput;
 
 class CheckboxTest extends InputTest
 {
-
-    /**
-     * @var \ec5\DTO\ProjectDTO
-     */
-    protected $project;
-    /**
-     * @var RuleInput
-     */
-    protected $validator;
-
-    /**
-     * @var array
-     */
-    protected $inputDetails;
-
-    protected $parentRef;
-
-    public function setUp():void
+    public function setUp(): void
     {
         // This method will automatically be called prior to any of your test cases
         parent::setUp();
@@ -33,7 +16,7 @@ class CheckboxTest extends InputTest
         $this->reset();
     }
 
-    public function reset()
+    public function reset(): void
     {
         $this->possibleAnswers = [
             [

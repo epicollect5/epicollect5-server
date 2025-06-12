@@ -28,7 +28,7 @@ class RuleProjectRole extends ValidationBase
      * @param null $userToAddRole
      * @param null $existingUserRole
      */
-    public function additionalChecks($projectAdmin, $userToAdd, $projectAdminRole, $userToAddRole = null, $existingUserRole = null)
+    public function additionalChecks($projectAdmin, $userToAdd, $projectAdminRole, $userToAddRole = null, $existingUserRole = null): void
     {
         // We must have at least one role supplied
         if (!$userToAddRole && !$existingUserRole) {
@@ -62,7 +62,6 @@ class RuleProjectRole extends ValidationBase
             // $requestedUser can only perform actions against certain roles, set in permissions config
             if (!in_array($existingUserRole, config('epicollect.permissions.projects.roles.' . $projectAdminRole))) {
                 $this->errors['user'] = ['ec5_344'];
-                return;
             }
         }
     }

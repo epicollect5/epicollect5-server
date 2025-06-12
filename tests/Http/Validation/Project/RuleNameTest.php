@@ -10,9 +10,10 @@ use Tests\TestCase;
 
 class RuleNameTest extends TestCase
 {
-    use DatabaseTransactions, Assertions;
+    use DatabaseTransactions;
+    use Assertions;
 
-    private $ruleName;
+    private RuleName $ruleName;
 
     public function setUp(): void
     {

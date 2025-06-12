@@ -17,8 +17,6 @@ use Ramsey\Uuid\Uuid;
 
 class SearchMaxCountTest extends InputTest
 {
-    protected $validator;
-    protected $project;
     protected $projectExtraDetailsValidator;
     protected $formValidator;
     protected $inputValidator;
@@ -108,12 +106,12 @@ class SearchMaxCountTest extends InputTest
     /**
      *
      */
-    public function setUp():void
+    public function setUp(): void
     {
         // This method will automatically be called prior to any of your test cases
         parent::setUp();
 
-        $this->projectExtraDetailsValidator = new  RuleProjectExtraDetails();
+        $this->projectExtraDetailsValidator = new RuleProjectExtraDetails();
         $this->formValidator = new RuleForm();
         $this->inputValidator = new RuleInput();
         $this->projectExtra = new ProjectExtraDTO();

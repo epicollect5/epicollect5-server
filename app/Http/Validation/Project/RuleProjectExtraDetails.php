@@ -30,7 +30,7 @@ class RuleProjectExtraDetails extends ValidationBase
      *
      * @param $projectRef
      */
-    public function additionalChecks($projectRef)
+    public function additionalChecks($projectRef): void
     {
         if ($this->data['ref'] != $projectRef) {
             $this->addAdditionalError($projectRef, 'ec5_321');

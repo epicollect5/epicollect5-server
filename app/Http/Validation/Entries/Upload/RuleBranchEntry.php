@@ -20,12 +20,11 @@ class RuleBranchEntry extends EntryValidationBase
      *
      * @param ProjectDTO $project
      * @param EntryStructureDTO $branchEntryStructure
+     *
      */
-    public function additionalChecks(ProjectDTO $project, EntryStructureDTO $branchEntryStructure)
+    public function additionalChecks(ProjectDTO $project, EntryStructureDTO $branchEntryStructure): void
     {
         $projectExtra = $project->getProjectExtra();
-
-        //$branchEntryStructure->setAsBranch();
 
         $formRef = $branchEntryStructure->getFormRef();
 

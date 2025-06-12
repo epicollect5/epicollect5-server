@@ -22,7 +22,7 @@ class RuleQueryStringLocations extends ValidationBase
      * @param ProjectDTO $project
      * @param $params
      */
-    public function additionalChecks(ProjectDTO $project, $params)
+    public function additionalChecks(ProjectDTO $project, $params): void
     {
         $projectExtra = $project->getProjectExtra();
 
@@ -46,7 +46,6 @@ class RuleQueryStringLocations extends ValidationBase
         // Check branch exists
         if (!empty($params['branch_ref']) && !$projectExtra->branchExists($params['form_ref'], $params['branch_ref'])) {
             $this->errors[$params['branch_ref']] = ['ec5_99'];
-            return;
         }
     }
 }

@@ -15,8 +15,8 @@ class RuleMappingStructure extends ValidationBase
         'map_index' => 'required|integer'
     ];
 
-    protected $ruleMappingInput;
-    protected $ruleMappingPossibleAnswer;
+    protected RuleMappingInput $ruleMappingInput;
+    protected RuleMappingPossibleAnswer $ruleMappingPossibleAnswer;
 
     public function __construct(RuleMappingInput $ruleMappingInput, RuleMappingPossibleAnswer $ruleMappingPossibleAnswer)
     {

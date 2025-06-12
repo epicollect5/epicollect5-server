@@ -36,7 +36,7 @@ class RuleQueryString extends ValidationBase
      * @param ProjectDTO $project
      * @param $params
      */
-    public function additionalChecks(ProjectDTO $project, $params)
+    public function additionalChecks(ProjectDTO $project, $params): void
     {
         $projectExtra = $project->getProjectExtra();
 

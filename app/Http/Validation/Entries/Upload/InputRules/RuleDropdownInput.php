@@ -25,7 +25,7 @@ class RuleDropdownInput extends RuleInputBase
     {
         if (!empty($answer)) {
 
-            if(!is_string($answer)) {
+            if (!is_string($answer)) {
                 $this->errors[$inputDetails['ref']] = ['ec5_25'];
                 return $answer;
             }

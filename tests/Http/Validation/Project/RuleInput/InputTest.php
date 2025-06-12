@@ -3,43 +3,32 @@
 namespace Tests\Http\Validation\Project\RuleInput;
 
 use ec5\Http\Validation\Project\RuleInput;
+use Mockery;
 use Tests\TestCase;
 
-class InputTest extends TestCase
+abstract class InputTest extends TestCase
 {
-    /**
-     * @var \ec5\DTO\ProjectDTO
-     */
-    protected $project;
-    /**
-     * @var RuleInput
-     */
-    protected $validator;
-
-    /**
-     * @var array
-     */
-    protected $inputDetails;
-
-    protected $parentRef;
-
-    protected $type;
-    protected $jumps = [];
-    protected $possibleAnswers = [];
+    protected mixed $project;
+    protected mixed $validator;
+    protected array $inputDetails;
+    protected string $parentRef;
+    protected string $type;
+    protected array $jumps = [];
+    protected array $possibleAnswers = [];
 
     public function setUp(): void
     {
         // This method will automatically be called prior to any of your test cases
         parent::setUp();
         $this->validator = new RuleInput();
-        $this->project = \Mockery::mock('\ec5\DTO\ProjectDTO');
+        $this->project = Mockery::mock('\ec5\DTO\ProjectDTO');
     }
 
     /**
      * Reset test conditions
      *
      */
-    protected function reset()
+    protected function reset(): void
     {
         $this->inputDetails = [
             'ref' => 'xxx_123456789abcd',
@@ -55,10 +44,5 @@ class InputTest extends TestCase
         ];
 
         $this->parentRef = 'xxx';
-    }
-    
-    public function test_to_remove_warning()
-    {
-        $this->assertTrue(true);
     }
 }

@@ -68,30 +68,10 @@ class RuleUpload extends ValidationBase
         'boolean' => 'ec5_29'
     ];
 
-    /**
-     * @var RuleEntry
-     */
-    protected $ruleEntry;
-
-    /**
-     * @var RuleBranchEntry
-     */
-    protected $ruleBranchEntry;
-
-    /**
-     * @var RuleAnswers
-     */
-    protected $ruleAnswers;
-
-    /**
-     * @var RuleFileEntry
-     */
-    protected $ruleFileEntry;
-
-    /**
-     * @var bool
-     */
-    protected $hasAnswers;
+    protected RuleEntry $ruleEntry;
+    protected RuleBranchEntry $ruleBranchEntry;
+    protected RuleAnswers $ruleAnswers;
+    protected RuleFileEntry $ruleFileEntry;
 
     /**
      * RuleUpload constructor.
@@ -116,7 +96,7 @@ class RuleUpload extends ValidationBase
      * @param $data
      * @param ProjectDTO $project
      * @param EntryStructureDTO $entryStructure
-     * @return null
+     * @return bool|null
      */
     public function additionalChecks($data, ProjectDTO $project, EntryStructureDTO $entryStructure): ?bool
     {
@@ -163,12 +143,6 @@ class RuleUpload extends ValidationBase
         // Check form exists
         if (count($form) == 0) {
             $this->errors[$formRef] = ['ec5_15'];
-            return false;
-        }
-
-        //Bail out if the upload entry type is invalid
-        if (!$validator) {
-            $this->errors['upload'] = ['ec5_52'];
             return false;
         }
 

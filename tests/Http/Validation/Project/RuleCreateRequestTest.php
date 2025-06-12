@@ -12,9 +12,10 @@ use Tests\TestCase;
 
 class RuleCreateRequestTest extends TestCase
 {
-    use DatabaseTransactions, Assertions;
+    use DatabaseTransactions;
+    use Assertions;
 
-    private $ruleCreateRequest;
+    private RuleCreateRequest $ruleCreateRequest;
 
     public function setUp(): void
     {

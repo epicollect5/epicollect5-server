@@ -7,21 +7,8 @@ use Tests\TestCase;
 
 class RuleFormTest extends TestCase
 {
-
-    /*
-    |--------------------------------------------------------------------------
-    | RuleFormTest
-    |--------------------------------------------------------------------------
-    |
-    |
-    |
-    */
-    /**
-     * @var RuleForm
-     */
-    protected $validator;
-
-    protected $form;
+    protected RuleForm $validator;
+    protected array $form;
 
     /**
      *

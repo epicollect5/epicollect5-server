@@ -19,7 +19,7 @@ class RuleMappingUpdate extends ValidationBase
      * @param ProjectMappingDTO $projectMapping
      * @param $newMapDetails
      */
-    public function additionalChecks(ProjectMappingDTO $projectMapping, $newMapDetails)
+    public function additionalChecks(ProjectMappingDTO $projectMapping, $newMapDetails): void
     {
         // Cant rename or update the default mapping (map_index 0)
         if (($this->data['action'] === 'rename' || $this->data['action'] === 'update') && $newMapDetails['map_index'] == 0) {
@@ -38,7 +38,7 @@ class RuleMappingUpdate extends ValidationBase
         // Check not renaming to an existing name
         if (isset($newMapDetails['name'])) {
             // Check this map name is unique
-            foreach ($projectMapping->getData() as $mappingIndex => $mapping) {
+            foreach ($projectMapping->getData() as $mapping) {
                 if ($mapping['name'] == $newMapDetails['name']) {
                     $this->addAdditionalError('mapping', 'ec5_228');
                     return;

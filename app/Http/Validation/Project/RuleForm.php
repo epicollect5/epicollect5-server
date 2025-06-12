@@ -28,7 +28,7 @@ class RuleForm extends ValidationBase
      * @param $projectRef
      * @param $form
      */
-    public function additionalChecks($projectRef, $form)
+    public function additionalChecks($projectRef, $form): void
     {
         $this->isValidRef($projectRef);
 
@@ -62,7 +62,7 @@ class RuleForm extends ValidationBase
     /**
      * @param array $inputs
      */
-    public function validateJumps(array $inputs)
+    public function validateJumps(array $inputs): void
     {
 
         $inputRefs = [];
@@ -85,7 +85,7 @@ class RuleForm extends ValidationBase
                 case 'group':
                     $groupInputs = $input['group'];
                     // Group jumps are not allowed
-                    foreach ($groupInputs as $groupPosition => $groupInput) {
+                    foreach ($groupInputs as $groupInput) {
                         if (count($groupInput['jumps']) > 0) {
                             $this->addAdditionalError($groupInput['ref'], 'ec5_320');
                             return;
@@ -98,7 +98,7 @@ class RuleForm extends ValidationBase
             // If this input has jumps
             if (count($input['jumps']) > 0) {
 
-                foreach ($input['jumps'] as $jump => $jumpDetails) {
+                foreach ($input['jumps'] as $jumpDetails) {
 
                     // END of form is ok
                     if ($jumpDetails['to'] == 'END') {

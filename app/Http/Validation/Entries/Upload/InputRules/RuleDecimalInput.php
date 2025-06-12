@@ -21,6 +21,6 @@ class RuleDecimalInput extends RuleInputBase
         // Set rules based on the input details
         // Source will be the input ref
         $this->rules[$inputDetails['ref']] = ['numeric'];
-        $this->setMinMaxRule($inputDetails, $answer, $project);
+        $this->setMinMaxRule($inputDetails);
     }
 }

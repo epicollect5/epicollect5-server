@@ -27,7 +27,7 @@ class RuleLocationInput extends RuleInputBase
      * @param $answer
      * @param ProjectDTO $project
      * @param EntryStructureDTO $entryStructure
-     * @return array|string
+     * @return array|string|null
      */
     public function additionalChecks($inputDetails, $answer, ProjectDTO $project, EntryStructureDTO $entryStructure): array|string|null
     {

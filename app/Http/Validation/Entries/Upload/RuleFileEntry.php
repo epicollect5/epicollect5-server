@@ -11,8 +11,8 @@ use ec5\Http\Validation\Entries\Upload\FileRules\RuleVideo;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use ec5\Services\PhotoSaverService;
-use File;
 use Illuminate\Support\Facades\Storage;
+use Throwable;
 
 class RuleFileEntry extends EntryValidationBase
 {
@@ -27,25 +27,10 @@ class RuleFileEntry extends EntryValidationBase
         'in' => 'ec5_47'
     ];
 
-    /**
-     * @var RulePhotoApp
-     */
-    protected $rulePhotoApp;
-
-    /**
-     * @var RulePhotoWeb
-     */
-    protected $rulePhotoWeb;
-
-    /**
-     * @var RuleVideo
-     */
-    protected $ruleVideo;
-
-    /**
-     * @var RuleAudio
-     */
-    protected $ruleAudio;
+    protected RulePhotoApp $rulePhotoApp;
+    protected RulePhotoWeb $rulePhotoWeb;
+    protected RuleVideo $ruleVideo;
+    protected RuleAudio $ruleAudio;
 
     public function __construct(
         RulePhotoApp $rulePhotoApp,
@@ -70,7 +55,7 @@ class RuleFileEntry extends EntryValidationBase
      * @param ProjectDTO $project
      * @param EntryStructureDTO $entryStructure
      */
-    public function additionalChecks(ProjectDTO $project, EntryStructureDTO $entryStructure)
+    public function additionalChecks(ProjectDTO $project, EntryStructureDTO $entryStructure): void
     {
         if (!$this->isValidFile($entryStructure)) {
             return;
@@ -116,7 +101,7 @@ class RuleFileEntry extends EntryValidationBase
      * @param bool $isWebFile
      * @return bool
      */
-    public function isValidFile(EntryStructureDTO $entryStructure, $isWebFile = false): bool
+    public function isValidFile(EntryStructureDTO $entryStructure, bool $isWebFile = false): bool
     {
         // Get the entry data
         $fileEntry = $entryStructure->getEntry();
@@ -159,7 +144,7 @@ class RuleFileEntry extends EntryValidationBase
                 // Add to input array to be validated
                 $data['width'] = $width;
                 $data['height'] = $height;
-            } catch (\Throwable $e) {
+            } catch (Throwable) {
                 $this->errors[$entryUuid] = ['ec5_83'];
                 return false;
             }
@@ -222,7 +207,7 @@ class RuleFileEntry extends EntryValidationBase
      * @param ProjectDTO $project
      * @param EntryStructureDTO $entryStructure
      */
-    public function moveFile(ProjectDTO $project, EntryStructureDTO $entryStructure)
+    public function moveFile(ProjectDTO $project, EntryStructureDTO $entryStructure): void
     {
         $projectRef = $project->ref;
 
@@ -298,108 +283,6 @@ class RuleFileEntry extends EntryValidationBase
 
                 // Get the driver specified in config - media.php
                 $driver = $fileType;
-                // Store the file into storage location, using driver based on the file type
-                $fileSaved = Storage::disk($driver)->put(
-                    $projectRef . '/' . $fileName,
-                    file_get_contents($entryStructure->getFile()->getRealPath()),
-                    [
-                        'visibility' => 'public',
-                        'directory_visibility' => 'public'
-                    ]
-                );
-
-                // Check if put was successful
-                if (!$fileSaved) {
-                    $this->errors[$inputRef] = ['ec5_83'];
-                    return;
-                }
-        }
-    }
-
-    //not used, here for reference
-    public function removeOrphanFile(EntryStructureDTO $entryStructure): bool
-    {
-        $fileRealPath = $entryStructure->getFile()->getRealPath();
-        File::delete($fileRealPath);
-        return true;
-    }
-
-    //legacy, not used anymore
-    public function moveOrphanFile(ProjectDTO $project, EntryStructureDTO $entryStructure)
-    {
-        $projectRef = $project->ref;
-
-        // Get the entry data
-        $fileEntry = $entryStructure->getEntry();
-        $fileType = $fileEntry['type'];
-        $fileName = $fileEntry['name'];
-        $inputRef = $fileEntry['input_ref'];
-
-        // Process each file type
-        switch ($fileType) {
-
-            case 'photo':
-
-                // Entry original image
-                list($width, $height) = getimagesize($entryStructure->getFile()->getRealPath());
-
-                // Check if it's landscape
-                if ($width > $height) {
-                    // Set landscape dimensions
-                    $dimensions = config('epicollect.media.entry_original_landscape');
-                } else {
-                    // Otherwise it's portrait (or square)
-                    // Set portrait dimensions
-                    $dimensions = config('epicollect.media.entry_original_portrait');
-                }
-
-                // If dimensions are already as desired, no need to resize
-                // $dimensions[0] is always width, $dimensions[1] is always height
-                if ($width == $dimensions[0] && $height == $dimensions[1]) {
-                    // Reset the dimensions param to empty array to pass to saveImage() function
-                    $dimensions = [];
-                }
-
-                // Attempt to save the original image (resized if necessary) keeping 100% quality
-                $original = PhotoSaverService::saveImage(
-                    $projectRef,
-                    $entryStructure->getFile(),
-                    $fileName,
-                    'orphan_entry_original',
-                    $dimensions,
-                    100
-                );
-
-                // Check if any errors creating/saving original image
-                if (!$original) {
-                    $this->errors[$inputRef] = ['ec5_82'];
-                    return;
-                }
-
-                // Entry thumb image
-
-                // Create and save entry thumbnail image for photos, using 'entry_thumb' driver
-                $thumb = PhotoSaverService::saveImage(
-                    $projectRef,
-                    $entryStructure->getFile(),
-                    $fileName,
-                    'orphan_entry_thumb',
-                    config('epicollect.media.entry_thumb')
-                );
-
-                // Check if any errors creating/saving thumb
-                if (!$thumb) {
-                    $this->errors[$inputRef] = ['ec5_82'];
-                    return;
-                }
-
-                break;
-
-            default:
-
-                // Get the driver specified in config - media.php
-                $driver = 'orphan_' . $fileType;
-
                 // Store the file into storage location, using driver based on the file type
                 $fileSaved = Storage::disk($driver)->put(
                     $projectRef . '/' . $fileName,

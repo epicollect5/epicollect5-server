@@ -11,9 +11,10 @@ use Tests\TestCase;
 
 class RuleImportRequestTest extends TestCase
 {
-    use DatabaseTransactions, Assertions;
+    use DatabaseTransactions;
+    use Assertions;
 
-    private $ruleImportRequest;
+    private RuleImportRequest $ruleImportRequest;
 
     public function setUp(): void
     {

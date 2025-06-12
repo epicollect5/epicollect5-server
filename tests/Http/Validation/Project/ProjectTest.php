@@ -7,7 +7,7 @@ use Tests\TestCase;
 
 class ProjectTest extends TestCase
 {
-    protected $validator;
+    protected RuleCreateRequest $validator;
 
     public function setUp(): void
     {

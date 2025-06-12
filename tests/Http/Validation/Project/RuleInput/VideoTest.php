@@ -2,26 +2,8 @@
 
 namespace Tests\Http\Validation\Project\RuleInput;
 
-use ec5\Http\Validation\Project\RuleInput;
-
 class VideoTest extends InputTest
 {
-    /**
-     * @var \ec5\DTO\ProjectDTO
-     */
-    protected $project;
-    /**
-     * @var RuleInput
-     */
-    protected $validator;
-
-    /**
-     * @var array
-     */
-    protected $inputDetails;
-
-    protected $parentRef;
-
     public function setUp(): void
     {
         parent::setUp();
@@ -29,7 +11,7 @@ class VideoTest extends InputTest
         $this->reset();
     }
 
-    public function reset()
+    public function reset(): void
     {
         $this->possibleAnswers = [];
         $this->jumps = [
@@ -99,10 +81,12 @@ class VideoTest extends InputTest
         $this->validator->validate($this->inputDetails);
         $this->validator->additionalChecks($this->parentRef);
         $this->assertTrue($this->validator->hasErrors());
-        $this->assertEquals([
+        $this->assertEquals(
+            [
             $this->inputDetails['ref'] => [
                 0 => "ec5_207"
-            ]], $this->validator->errors()
+            ]],
+            $this->validator->errors()
         );
         $this->validator->resetErrors();
         $this->reset();
@@ -111,10 +95,12 @@ class VideoTest extends InputTest
         $this->validator->validate($this->inputDetails);
         $this->validator->additionalChecks($this->parentRef);
         $this->assertTrue($this->validator->hasErrors());
-        $this->assertEquals([
+        $this->assertEquals(
+            [
             $this->inputDetails['ref'] => [
                 0 => "ec5_207"
-            ]], $this->validator->errors()
+            ]],
+            $this->validator->errors()
         );
         $this->validator->resetErrors();
         $this->reset();
@@ -123,10 +109,12 @@ class VideoTest extends InputTest
         $this->validator->validate($this->inputDetails);
         $this->validator->additionalChecks($this->parentRef);
         $this->assertTrue($this->validator->hasErrors());
-        $this->assertEquals([
+        $this->assertEquals(
+            [
             $this->inputDetails['ref'] => [
                 0 => "ec5_207"
-            ]], $this->validator->errors()
+            ]],
+            $this->validator->errors()
         );
         $this->validator->resetErrors();
         $this->reset();

@@ -16,7 +16,7 @@ class RuleMappingCreate extends ValidationBase
      * @param ProjectMappingDTO $projectMapping
      * @param $newMapDetails
      */
-    public function additionalChecks(ProjectMappingDTO $projectMapping, $newMapDetails)
+    public function additionalChecks(ProjectMappingDTO $projectMapping, $newMapDetails): void
     {
         // Check we haven't reached the max count of maps
         if ($projectMapping->getMapCount() == config('epicollect.limits.project_mappings.max_count')) {

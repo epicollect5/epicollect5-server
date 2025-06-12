@@ -22,7 +22,7 @@ class RuleEntry extends EntryValidationBase
      * @param ProjectDTO $project
      * @param EntryStructureDTO $entryStructure
      */
-    public function additionalChecks(ProjectDTO $project, EntryStructureDTO $entryStructure)
+    public function additionalChecks(ProjectDTO $project, EntryStructureDTO $entryStructure): void
     {
         $projectExtra = $project->getProjectExtra();
         $projectDefinition = $project->getProjectDefinition();
