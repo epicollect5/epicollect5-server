@@ -18,8 +18,8 @@ class RuleProjectDefinition
     protected ProjectDefinitionDTO $projectDefinition;
     protected array $counterTitles = [];
     protected string $currentFormRef = ''; //when looping, which form
-    protected int $counterFormInputs;
-    protected int $counterSearchInputs;
+    protected int $counterFormInputs = 0;
+    protected int $counterSearchInputs = 0;
     protected array $hasJumps = [];
     protected array $hasLocation = [];
     protected array $formNames = []; //test for duplicate for names

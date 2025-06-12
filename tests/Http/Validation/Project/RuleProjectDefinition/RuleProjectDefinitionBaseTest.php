@@ -16,7 +16,7 @@ use Illuminate\Support\Str;
 use Ramsey\Uuid\Uuid;
 use Tests\TestCase;
 
-class RuleProjectDefinitionBaseTest extends TestCase
+abstract class RuleProjectDefinitionBaseTest extends TestCase
 {
     use DatabaseTransactions;
 
@@ -117,10 +117,4 @@ class RuleProjectDefinitionBaseTest extends TestCase
 
         $this->inputsLimit = config('epicollect.limits.formlimits.inputs');
     }
-
-    public function test_rule_project_definition_base()
-    {
-        $this->assertTrue(true);
-    }
-
 }

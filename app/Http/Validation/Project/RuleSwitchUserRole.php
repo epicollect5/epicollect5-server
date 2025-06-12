@@ -3,6 +3,7 @@
 namespace ec5\Http\Validation\Project;
 
 use ec5\Http\Validation\ValidationBase;
+use ec5\Models\User\User;
 
 class RuleSwitchUserRole extends ValidationBase
 {
@@ -29,14 +30,8 @@ class RuleSwitchUserRole extends ValidationBase
     /**
      * Additional validation checks that a user is allowed to change another user's role
      * We compare the new role and the existing role (if there is one), against the admin user's
-     *
-     * @param $currentActiveUser
-     * @param $userToSwitch
-     * @param $currentActiveUserRole
-     * @param $userToSwitchNewRole
-     * @param $userToSwitchCurrentRole
      */
-    public function additionalChecks($currentActiveUser, $userToSwitch, $currentActiveUserRole, $userToSwitchNewRole, $userToSwitchCurrentRole): void
+    public function additionalChecks(User $currentActiveUser, ?User $userToSwitch, ?string $currentActiveUserRole, ?string $userToSwitchNewRole, ?string $userToSwitchCurrentRole): void
     {
         // We must have at least one role supplied
         if (!($userToSwitchNewRole || $userToSwitchCurrentRole)) {

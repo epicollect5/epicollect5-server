@@ -14,9 +14,4 @@ class ProjectTest extends TestCase
         parent::setUp();
         $this->validator = new RuleCreateRequest();
     }
-
-    public function test_request()
-    {
-        $this->assertTrue(true);
-    }
 }

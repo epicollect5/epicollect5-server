@@ -13,10 +13,17 @@ class EmailSendingTest extends TestCase
 
     public function test_send_email()
     {
+        // Fake the mail system
+        Mail::fake();
+
         $email = config('testing.SUPER_ADMIN_EMAIL');
 
+        // Trigger the email
         Mail::to($email)->send(new DebugEmailSending());
 
-        $this->assertTrue(true);
+        // Assert the email was sent
+        Mail::assertSent(DebugEmailSending::class, function ($mail) use ($email) {
+            return $mail->hasTo($email);
+        });
     }
 }

@@ -45,4 +45,11 @@ abstract class InputTest extends TestCase
 
         $this->parentRef = 'xxx';
     }
+
+    public function tearDown(): void
+    {
+        // Close all mocks before PHPUnit cleans up
+        Mockery::close();
+        parent::tearDown();
+    }
 }

@@ -13,9 +13,7 @@ class RuleIntegerInput extends RuleInputBase
         $this->messages['max'] = 'ec5_216';
         $this->messages['regex'] = 'ec5_27';
 
-        // Set rules based on the input details
-        // Source will be the input ref
-
+        //we use a custom rule because Laravel's "integer" rule does NOT accept numbers as string
         $this->rules[$inputDetails['ref']] = ['ec5_integer', 'numeric'];
 
         // If we have a min and max set, add to rules

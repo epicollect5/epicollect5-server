@@ -15,11 +15,7 @@ class RuleMappingUpdate extends ValidationBase
         'mapping' => 'required_if:action,update|array'
     ];
 
-    /**
-     * @param ProjectMappingDTO $projectMapping
-     * @param $newMapDetails
-     */
-    public function additionalChecks(ProjectMappingDTO $projectMapping, $newMapDetails): void
+    public function additionalChecks(ProjectMappingDTO $projectMapping, array $newMapDetails): void
     {
         // Cant rename or update the default mapping (map_index 0)
         if (($this->data['action'] === 'rename' || $this->data['action'] === 'update') && $newMapDetails['map_index'] == 0) {
