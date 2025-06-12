@@ -26,6 +26,7 @@ class MediaControllerTest extends TestCase
 
     private User $user;
     private Project $project;
+    private string $role;
     private array $projectDefinition;
     private EntryGenerator $entryGenerator;
 
@@ -520,7 +521,7 @@ class MediaControllerTest extends TestCase
         //audio in streaming (206 partial, not sure how to test it in PHPUnit)
         $queryString = '?type=audio&name=' . $filename . '&format=audio';
 
-        $response = $this  ->withHeaders([
+        $response = $this->withHeaders([
             'Range' => 'bytes=0-10'
         ])->get('api/internal/media/' . $this->project->slug . $queryString);
 
@@ -547,7 +548,7 @@ class MediaControllerTest extends TestCase
         //audio in streaming (206 partial, not sure how to test it in PHPUnit)
         $queryString = '?type=video&name=' . $filename . '&format=video';
 
-        $response = $this  ->withHeaders([
+        $response = $this->withHeaders([
             'Range' => 'bytes=0-10'
         ])->get('api/internal/media/' . $this->project->slug . $queryString);
         // Assert the response is a partial response
