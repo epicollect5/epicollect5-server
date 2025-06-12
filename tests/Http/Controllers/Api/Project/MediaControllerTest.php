@@ -22,9 +22,8 @@ use Throwable;
 class MediaControllerTest extends TestCase
 {
     use DatabaseTransactions;
-
-    use DatabaseTransactions;
     use Assertions;
+
     private User $user;
     private Project $project;
     private array $projectDefinition;
