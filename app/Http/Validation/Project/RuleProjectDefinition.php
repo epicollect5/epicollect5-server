@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 
 class RuleProjectDefinition
 {
-    protected RuleProjectExtraDetails $ruleProjectExtraDetails;
+    protected RuleProjectExtraDetails $projectExtraDetailsValidator;
     protected RuleForm $ruleForm;
     protected RuleInput $ruleInput;
     public array $errors = [];
@@ -35,7 +35,7 @@ class RuleProjectDefinition
 
         $this->projectExtra = $projectExtra;
         $this->projectDefinition = $projectDefinition;
-        $this->ruleProjectExtraDetails = $projectExtraDetailsValidator;
+        $this->projectExtraDetailsValidator = $projectExtraDetailsValidator;
         $this->ruleForm = $ruleForm;
         $this->ruleInput = $ruleInput;
     }
@@ -99,6 +99,7 @@ class RuleProjectDefinition
         $this->formRefs = [];
         //search inputs currently 5 max per project
         $this->counterSearchInputs = 0;
+        $this->counterTitles = [];
         foreach ($forms as $form) {
             //cannot have a form name empty
             if (empty($form['name'])) {
@@ -217,25 +218,25 @@ class RuleProjectDefinition
     private function validateProjectDetails($parentRef, $data): bool
     {
         // Test against project validation rules
-        $this->ruleProjectExtraDetails->validate($data, true);
+        $this->projectExtraDetailsValidator->validate($data, true);
         // If failed, just add errors from validationHandler as well and bail
-        if ($this->ruleProjectExtraDetails->hasErrors()) {
+        if ($this->projectExtraDetailsValidator->hasErrors()) {
             return $this->errorHelper(
                 'projectExtraDetailsValidator',
                 'ec5_63',
                 '',
-                $this->ruleProjectExtraDetails->errors()
+                $this->projectExtraDetailsValidator->errors()
             );
         }
         // Test against project validation rules
-        $this->ruleProjectExtraDetails->additionalChecks($parentRef);
+        $this->projectExtraDetailsValidator->additionalChecks($parentRef);
         // If failed, just add errors from validationHandler as well and bail
-        if ($this->ruleProjectExtraDetails->hasErrors()) {
+        if ($this->projectExtraDetailsValidator->hasErrors()) {
             return $this->errorHelper(
                 'projectExtraDetailsValidator',
                 'ec5_63',
                 '',
-                $this->ruleProjectExtraDetails->errors()
+                $this->projectExtraDetailsValidator->errors()
             );
         }
         // Create and add the project extra details
@@ -280,7 +281,7 @@ class RuleProjectDefinition
     /**
      * Validate an input
      */
-    private function isInputValid($ownerRef, $input, $branchRef = null): bool
+    private function isInputValid($ownerRef, $input, $branchRef = ''): bool
     {
         // Add additional rules to validate (differentiate between a form and a branch)
         $this->ruleInput->addAdditionalRules(!empty($branchRef));
@@ -300,9 +301,9 @@ class RuleProjectDefinition
         }
         // Check number of titles hasn't exceeded the allowed total
         if ($input['is_title']) {
-            // If we have a branch ref, use this to check the title max count
+            // If we have a branch ref (not empty string), use this to check the title max count
             // i.e., we have a group in a branch, so the group input is added to the branch title count
-            if ($this->isValidTitlesCount($branchRef ?? $ownerRef)) {
+            if ($this->isValidTitlesCount($branchRef ?: $ownerRef)) {
                 return $this->errorHelper('ruleInput', 'ec5_211', $inputRef, $this->ruleInput->errors());
             }
         }
@@ -329,10 +330,10 @@ class RuleProjectDefinition
      * @param $formRef
      * @param $inputRef - input ref of the group itself
      * @param $groupInputs
-     * @param string $branchRef
+     * @param string|null $branchRef
      * @return bool
      */
-    private function areValidGroupInputs($formRef, $inputRef, $groupInputs, string $branchRef = ''): bool
+    private function areValidGroupInputs($formRef, $inputRef, $groupInputs, ?string $branchRef = ''): bool
     {
         $valid = true;
         $hasInputs = (empty($groupInputs)) ? 0 : count($groupInputs);

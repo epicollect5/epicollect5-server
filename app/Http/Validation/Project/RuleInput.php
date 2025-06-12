@@ -32,11 +32,7 @@ class RuleInput extends ValidationBase
         $this->rules['datetime_format'] = 'nullable|in:' . implode(',', array_keys(config('epicollect.strings.datetime_format')));
     }
 
-    /**
-     * Add any additional rules to validate against
-     *
-     * @param bool $isBranchInput
-     */
+    //Add any additional rules to validate against
     public function addAdditionalRules(bool $isBranchInput): void
     {
         if ($isBranchInput) {
@@ -46,10 +42,7 @@ class RuleInput extends ValidationBase
         }
     }
 
-    /**
-     * @param $parentRef
-     */
-    public function additionalChecks($parentRef): void
+    public function additionalChecks(string $parentRef): void
     {
         // Check has parent ref in its ref
         $this->isValidRef($parentRef);
@@ -267,7 +260,6 @@ class RuleInput extends ValidationBase
 
     private function validatePossibleAnswersCount($code): void
     {
-
         if (count($this->data['possible_answers']) == 0) {
             $this->addAdditionalError($this->data['ref'], $code);
             $this->addAdditionalError('question', $this->data['question']);

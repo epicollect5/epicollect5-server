@@ -1,7 +1,16 @@
 ## Release Notes
 
+# 12.1.1
+
+- Fixed regression bugs introduced in the previous release.
+- Fix audio and video not downloading via the
+  browser https://github.com/epicollect5/epicollect5-development-plan/issues/200
+- Improved tests
+
 # 12.1.0
 
+- Fixed regression bugs introduced in the previous release.
+- Fixed too many titles bug https://github.com/epicollect5/epicollect5-development-plan/issues/199
 - Added config to restrict auth to specific email domains.
 - All auth methods now enforce domain whitelisting.
 - Admin page shows system email and allowed domains (read-only).

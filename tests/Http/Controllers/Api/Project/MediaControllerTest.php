@@ -2,6 +2,7 @@
 
 namespace Tests\Http\Controllers\Api\Project;
 
+use ec5\Libraries\Generators\EntryGenerator;
 use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
@@ -9,22 +10,31 @@ use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
+use ec5\Traits\Assertions;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Storage;
 use Image;
 use Intervention\Image\Drivers\Imagick\Encoders\JpegEncoder;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
+use Throwable;
 
 class MediaControllerTest extends TestCase
 {
     use DatabaseTransactions;
+    use Assertions;
+
     private User $user;
     private Project $project;
+    private string $role;
+    private array $projectDefinition;
+    private EntryGenerator $entryGenerator;
 
     public function setUp(): void
     {
         parent::setUp();
+
+        $roles = config('epicollect.strings.project_roles');
 
         //create fake user for testing
         $user = factory(User::class)->create();
@@ -61,7 +71,10 @@ class MediaControllerTest extends TestCase
         );
 
         $this->user = $user;
+        $this->role = $roles[array_rand($roles)];
         $this->project = $project;
+        $this->projectDefinition = $projectDefinition;
+        $this->entryGenerator = new EntryGenerator($projectDefinition);
     }
 
     #[DataProvider('multipleRunProvider')] public function test_should_give_private_project_error()
@@ -493,7 +506,8 @@ class MediaControllerTest extends TestCase
     }
 
 
-    #[DataProvider('multipleRunProvider')] public function test_audio_file_is_returned_using_streamed_response()
+    #[DataProvider('multipleRunProvider')]
+    public function test_audio_file_is_returned_using_streamed_response()
     {
         //create a fake entry
         $entry = factory(Entry::class)->create([
@@ -501,13 +515,15 @@ class MediaControllerTest extends TestCase
             'form_ref' => $this->project->ref . '_' . uniqid()
         ]);
 
-        //create a fake photo for the entry
+        //create a fake audio for the entry
         $filename = $entry->uuid . '_' . time() . '.mp4';
-        Storage::disk('audio')->put($this->project->ref . '/' . $filename, '');
+        Storage::disk('audio')->put($this->project->ref . '/' . $filename, str_repeat('a', 1000000));
         //audio in streaming (206 partial, not sure how to test it in PHPUnit)
         $queryString = '?type=audio&name=' . $filename . '&format=audio';
 
-        $response = $this->get('api/internal/media/' . $this->project->slug . $queryString);
+        $response = $this->withHeaders([
+            'Range' => 'bytes=0-10'
+        ])->get('api/internal/media/' . $this->project->slug . $queryString);
 
         // Assert the response is a partial response
         $response->assertStatus(206);//
@@ -527,12 +543,14 @@ class MediaControllerTest extends TestCase
         $filename = $entry->uuid . '_' . time() . '.mp4';
 
         //create a fake photo for the entry
-        Storage::disk('video')->put($this->project->ref . '/' . $filename, '');
+        Storage::disk('video')->put($this->project->ref . '/' . $filename, str_repeat('a', 1000000));
 
         //audio in streaming (206 partial, not sure how to test it in PHPUnit)
         $queryString = '?type=video&name=' . $filename . '&format=video';
 
-        $response = $this->get('api/internal/media/' . $this->project->slug . $queryString);
+        $response = $this->withHeaders([
+            'Range' => 'bytes=0-10'
+        ])->get('api/internal/media/' . $this->project->slug . $queryString);
         // Assert the response is a partial response
         $response->assertStatus(206);
         $response->assertHeader('Content-Type', config('epicollect.media.content_type.video'));
@@ -916,13 +934,15 @@ class MediaControllerTest extends TestCase
 
         $filename = $entry->uuid . '_' . time() . '.mp4';
 
-        //create a fake photo for the entry
-        Storage::disk('temp')->put('audio/' . $this->project->ref . '/' . $filename, '');
+        //create a fake audio of 2KB
+        Storage::disk('temp')->put('audio/' . $this->project->ref . '/' . $filename, str_repeat('A', 2048));
 
         //audio in streaming (206 partial, not sure how to test it in PHPUnit)
         $queryString = '?type=audio&name=' . $filename . '&format=audio';
 
-        $response = $this->get('api/internal/temp-media/' . $this->project->slug . $queryString);
+        $response = $this->withHeaders([
+            'Range' => 'bytes=0-10'
+        ])->get('api/internal/temp-media/' . $this->project->slug . $queryString);
 
         $response->assertStatus(206);//
         $response->assertHeader('Content-Type', config('epicollect.media.content_type.audio'));
@@ -940,17 +960,206 @@ class MediaControllerTest extends TestCase
 
         $filename = $entry->uuid . '_' . time() . '.mp4';
 
-        //create a fake photo for the entry
-        Storage::disk('temp')->put('video/' . $this->project->ref . '/' . $filename, '');
+        //create a fake video of 2KB
+        Storage::disk('temp')->put('video/' . $this->project->ref . '/' . $filename, str_repeat('A', 2048));
 
         //audio in streaming (206 partial, not sure how to test it in PHPUnit)
         $queryString = '?type=video&name=' . $filename . '&format=video';
 
-        $response = $this->get('api/internal/temp-media/' . $this->project->slug . $queryString);
+        $response = $this->withHeaders([
+            'Range' => 'bytes=0-10'
+        ])->get('api/internal/temp-media/' . $this->project->slug . $queryString);
 
         $response->assertStatus(206);//
         $response->assertHeader('Content-Type', config('epicollect.media.content_type.video'));
         //delete fake files
         Storage::disk('temp')->deleteDirectory('video/' . $this->project->ref);
+    }
+
+    /**
+     * @throws Throwable
+     */
+    public function test_parent_entry_audio_is_playable()
+    {
+        $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
+        $entryPayload = $this->entryGenerator->createParentEntryPayload($formRef);
+        $entryRowBundle = $this->entryGenerator->createParentEntryRow(
+            $this->user,
+            $this->project,
+            $this->role,
+            $this->projectDefinition,
+            $entryPayload
+        );
+
+
+        $this->assertEntryRowAgainstPayload(
+            $entryRowBundle,
+            $entryPayload
+        );
+
+        //add fake audio to the entry, with 2KB size to make the range header work
+        $entryUuid = $entryPayload['data']['id'];
+        $audioFilename = $entryUuid. '_' . time() . '.mp4';
+        Storage::disk('audio')->put($this->project->ref . '/' . $audioFilename, str_repeat('A', 2048));
+
+        //try to get the audio file using a range request to get 206 response
+        $queryString = '?type=audio&name=' . $audioFilename . '&format=audio';
+        $response = [];
+        try {
+            $response[] = $this->actingAs($this->user)
+                ->withHeaders([
+                    'Range' => 'bytes=0-10'
+                ])
+                ->get('api/internal/media/' . $this->project->slug . $queryString);
+            $response[0]->assertStatus(206);
+
+            //now remove all the leftover fake files
+            Storage::disk('audio')->deleteDirectory($this->project->ref);
+            Storage::disk('video')->deleteDirectory($this->project->ref);
+        } catch (Throwable $e) {
+            $this->logTestError($e, $response);
+        }
+    }
+
+    /**
+     * @throws Throwable
+     */
+    public function test_parent_entry_audio_is_downloadable()
+    {
+        $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
+        $entryPayload = $this->entryGenerator->createParentEntryPayload($formRef);
+        $entryRowBundle = $this->entryGenerator->createParentEntryRow(
+            $this->user,
+            $this->project,
+            $this->role,
+            $this->projectDefinition,
+            $entryPayload
+        );
+
+
+        $this->assertEntryRowAgainstPayload(
+            $entryRowBundle,
+            $entryPayload
+        );
+
+        //add fake audio to the entry, with 2KB size
+        $entryUuid = $entryPayload['data']['id'];
+        $audioFilename = $entryUuid. '_' . time() . '.mp4';
+        $audioContent = str_repeat('A', 2048);
+        Storage::disk('audio')->put($this->project->ref . '/' . $audioFilename, $audioContent);
+
+        //try to get the audio file
+        $queryString = '?type=audio&name=' . $audioFilename . '&format=audio';
+        $response = [];
+        try {
+            $response[] = $this->actingAs($this->user)
+                ->get('api/internal/media/' . $this->project->slug . $queryString);
+            $response[0]->assertStatus(200);
+
+            // Assert headers
+            $response[0]->assertHeader('Content-Type', 'audio/mp4');
+            $response[0]->assertHeader('Content-Length', (string) strlen($audioContent));
+            $response[0]->assertHeader('Accept-Ranges', 'bytes');
+
+            //now remove all the leftover fake files
+            Storage::disk('audio')->deleteDirectory($this->project->ref);
+            Storage::disk('video')->deleteDirectory($this->project->ref);
+        } catch (Throwable $e) {
+            $this->logTestError($e, $response);
+        }
+    }
+
+    /**
+     * @throws Throwable
+     */
+    public function test_parent_entry_video_is_playable()
+    {
+        $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
+        $entryPayload = $this->entryGenerator->createParentEntryPayload($formRef);
+        $entryRowBundle = $this->entryGenerator->createParentEntryRow(
+            $this->user,
+            $this->project,
+            $this->role,
+            $this->projectDefinition,
+            $entryPayload
+        );
+
+
+        $this->assertEntryRowAgainstPayload(
+            $entryRowBundle,
+            $entryPayload
+        );
+
+        //add fake video to the entry, with 2KB size to make the range header work
+        $entryUuid = $entryPayload['data']['id'];
+        $videoFilename = $entryUuid. '_' . time() . '.mp4';
+        Storage::disk('video')->put($this->project->ref . '/' . $videoFilename, str_repeat('A', 2048));
+
+        //try to get the video file using a range request to get 206 response
+        $queryString = '?type=video&name=' . $videoFilename . '&format=video';
+        $response = [];
+        try {
+            $response[] = $this->actingAs($this->user)
+                ->withHeaders([
+                    'Range' => 'bytes=0-10'
+                ])
+                ->get('api/internal/media/' . $this->project->slug . $queryString);
+            $response[0]->assertStatus(206);
+
+            //now remove all the leftover fake files
+            Storage::disk('audio')->deleteDirectory($this->project->ref);
+            Storage::disk('video')->deleteDirectory($this->project->ref);
+        } catch (Throwable $e) {
+            $this->logTestError($e, $response);
+        }
+    }
+
+    /**
+     * @throws Throwable
+     */
+    public function test_parent_entry_video_is_downloadable()
+    {
+        $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
+        $entryPayload = $this->entryGenerator->createParentEntryPayload($formRef);
+        $entryRowBundle = $this->entryGenerator->createParentEntryRow(
+            $this->user,
+            $this->project,
+            $this->role,
+            $this->projectDefinition,
+            $entryPayload
+        );
+
+
+        $this->assertEntryRowAgainstPayload(
+            $entryRowBundle,
+            $entryPayload
+        );
+
+        //add fake video to the entry, with 2KB size
+        $entryUuid = $entryPayload['data']['id'];
+        $videoFilename = $entryUuid. '_' . time() . '.mp4';
+        $videoContent = str_repeat('A', 2048);
+        Storage::disk('video')->put($this->project->ref . '/' . $videoFilename, $videoContent);
+
+        //try to get the video file
+        $queryString = '?type=video&name=' . $videoFilename . '&format=video';
+        $response = [];
+        try {
+            $response[] = $this->actingAs($this->user)
+                ->get('api/internal/media/' . $this->project->slug . $queryString);
+            $response[0]->assertStatus(200);
+
+            // Assert headers
+            $response[0]->assertHeader('Content-Type', 'video/mp4');
+            $response[0]->assertHeader('Content-Length', (string) strlen($videoContent));
+            $response[0]->assertHeader('Accept-Ranges', 'bytes');
+
+
+            //now remove all the leftover fake files
+            Storage::disk('audio')->deleteDirectory($this->project->ref);
+            Storage::disk('video')->deleteDirectory($this->project->ref);
+        } catch (Throwable $e) {
+            $this->logTestError($e, $response);
+        }
     }
 }

@@ -15,25 +15,26 @@ use ec5\Services\Mapping\ProjectMappingService;
 use ec5\Services\Project\ProjectExtraService;
 use ec5\Traits\Assertions;
 use Faker\Factory as Faker;
+use Faker\Generator;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
-class ViewEntriesBaseControllerTest extends TestCase
+abstract class ViewEntriesBaseControllerTest extends TestCase
 {
     use DatabaseTransactions;
     use Assertions;
 
-    protected $faker;
-    protected $user;
-    protected $project;
-    protected $role;
-    protected $projectDefinition;
-    protected $projectExtra;
-    protected $entryGenerator;
-    protected $entryPayload;
-    protected $entryStored;
-    protected $locationInputRefs;
-    protected $dataMappingService;
+    protected Generator $faker;
+    protected User $user;
+    protected Project $project;
+    protected string $role;
+    protected array $projectDefinition;
+    protected array $projectExtra;
+    protected EntryGenerator $entryGenerator;
+    protected array $entryPayload;
+    protected array $entryStored;
+    protected array $locationInputRefs;
+    protected DataMappingService $dataMappingService;
 
     public function setUp(): void
     {
@@ -99,10 +100,4 @@ class ViewEntriesBaseControllerTest extends TestCase
         //get location inputs
         $this->locationInputRefs = Common::getLocationInputRefs($projectDefinition);
     }
-
-    public function test_to_remove_warning()
-    {
-        $this->assertTrue(true);
-    }
-
 }
