@@ -1,5 +1,12 @@
 ## Release Notes
 
+# 12.1.1
+
+- Fixed regression bugs introduced in the previous release.
+- Fix audio and video not downloading via the
+  browser https://github.com/epicollect5/epicollect5-development-plan/issues/200
+- Improved tests
+
 # 12.1.0
 
 - Fixed regression bugs introduced in the previous release.
