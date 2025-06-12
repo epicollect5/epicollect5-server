@@ -11,6 +11,14 @@ use Throwable;
 
 class ToMediaStreamMacro extends ServiceProvider
 {
+    /**
+     * Registers the 'toMediaStream' macro for streaming media files with HTTP byte-range support.
+     *
+     * The macro enables efficient media delivery by handling partial content requests via the 'Range' header,
+     * returning either the full file or the requested byte range as a streamed response. Sets appropriate headers
+     * for content type, content length, accept-ranges, and content-range (for partial content). Returns a JSON API
+     * error response with status 404 if the file cannot be streamed.
+     */
     public function boot(): void
     {
         Response::macro('toMediaStream', function (Request $request, $realFilepath, $inputType) {
