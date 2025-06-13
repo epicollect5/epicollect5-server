@@ -1,5 +1,10 @@
 ## Release Notes
 
+# 12.1.2
+
+- Refactored validation classes
+- Improved tests for validation classes
+
 # 12.1.1
 
 - Fixed regression bugs introduced in the previous release.
