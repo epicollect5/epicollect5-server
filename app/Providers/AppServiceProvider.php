@@ -31,7 +31,7 @@ class AppServiceProvider extends ServiceProvider
         }
 
         // Check if we are in production and using production bucket
-        $host = request()->getHost(); // Real-time HTTP host
+        $host = request()->getHost() ?? ''; // Real-time HTTP host
         $bucket = config('filesystems.disks.project_thumb.bucket');
         $productionBucket = 'epicollect5-production-media-space';
 

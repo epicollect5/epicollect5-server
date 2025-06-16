@@ -10,13 +10,13 @@ use Throwable;
 
 class PhotoSaverService
 {
-    public static function saveImage(string $projectRef, mixed $image, string $fileName, string $driver, array $dimensions = [], int $quality = 50): bool
+    public static function saveImage(string $projectRef, mixed $image, string $fileName, string $disk, array $dimensions = [], int $quality = 50): bool
     {
         $storageDriver = config('filesystems.default');
         if ($storageDriver === 's3') {
-            return self::saveImageS3($projectRef, $image, $fileName, $driver, $dimensions, $quality);
+            return self::saveImageS3($projectRef, $image, $fileName, $disk, $dimensions, $quality);
         } else {
-            return self::saveImageLocal($projectRef, $image, $fileName, $driver, $dimensions, $quality);
+            return self::saveImageLocal($projectRef, $image, $fileName, $disk, $dimensions, $quality);
         }
     }
 
@@ -27,12 +27,12 @@ class PhotoSaverService
      * @param string $projectRef Project reference identifier
      * @param mixed $image Image data (file or path)
      * @param string $fileName Target filename
-     * @param string $driver Storage driver
+     * @param string $disk Storage driver
      * @param array $dimensions Optional dimensions [width, height]
      * @param int $quality JPEG quality (1-100)
      * @return bool Success status
      */
-    public static function saveImageLocal(string $projectRef, mixed $image, string $fileName, string $driver, array $dimensions = [], int $quality = 50): bool
+    public static function saveImageLocal(string $projectRef, mixed $image, string $fileName, string $disk, array $dimensions = [], int $quality = 50): bool
     {
         try {
             // Get the image path (handles both uploaded files and direct paths)
@@ -42,7 +42,7 @@ class PhotoSaverService
             $encodedImage = self::processImage($imagePath, $dimensions, $quality);
 
             // Store the image into the storage location with the specified driver
-            Storage::disk($driver)->put(
+            Storage::disk($disk)->put(
                 $projectRef . '/' . $fileName,
                 $encodedImage,
                 [
@@ -59,7 +59,7 @@ class PhotoSaverService
         }
     }
 
-    public static function saveImageS3(string $projectRef, mixed $image, string $fileName, string $driver, array $dimensions = [], int $quality = 50): bool
+    public static function saveImageS3(string $projectRef, mixed $image, string $fileName, string $disk, array $dimensions = [], int $quality = 50): bool
     {
         try {
             // Get the image path (handles both uploaded files and direct paths)
@@ -68,7 +68,7 @@ class PhotoSaverService
             $processedImage = self::processImage($imagePath, $dimensions, $quality);
 
             // Upload to S3
-            Storage::disk($driver)->put(
+            Storage::disk($disk)->put(
                 $projectRef . '/' . $fileName,
                 $processedImage,
                 [

@@ -38,7 +38,7 @@ class MediaController
     }
 
     /**
-     * @param ruleMedia $ruleMedia
+     * @param RuleMedia $ruleMedia
      * @return JsonResponse|\Illuminate\Http\Response|StreamedResponse|null
      */
     public function getMediaLocal(RuleMedia $ruleMedia)
