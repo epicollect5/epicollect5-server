@@ -15,9 +15,14 @@ class PhotoSaverService
         $storageDriver = config('filesystems.default');
         if ($storageDriver === 's3') {
             return self::saveImageS3($projectRef, $image, $fileName, $disk, $dimensions, $quality);
-        } else {
+        }
+
+        if ($storageDriver === 'local') {
             return self::saveImageLocal($projectRef, $image, $fileName, $disk, $dimensions, $quality);
         }
+
+        Log::error('Storage driver not supported', ['driver' => $storageDriver]);
+        return false;
     }
 
 
@@ -27,7 +32,7 @@ class PhotoSaverService
      * @param string $projectRef Project reference identifier
      * @param mixed $image Image data (file or path)
      * @param string $fileName Target filename
-     * @param string $disk Storage driver
+     * @param string $disk Storage disk
      * @param array $dimensions Optional dimensions [width, height]
      * @param int $quality JPEG quality (1-100)
      * @return bool Success status

@@ -25,16 +25,20 @@ class MediaController
     */
     use RequestAttributes;
 
-
     public function getMedia(RuleMedia $ruleMedia)
     {
         $driver = config('filesystems.default'); // or wherever you store your driver setting
 
         if ($driver === 's3') {
             return $this->getMediaS3($ruleMedia);
-        } else {
+        }
+
+        if ($driver === 'local') {
             return $this->getMediaLocal($ruleMedia);
         }
+
+        Log::error('Storage driver not supported', ['driver' => $driver]);
+        return Response::apiErrorCode(400, ['media-controller' => ['ec5_103']]);
     }
 
     /**

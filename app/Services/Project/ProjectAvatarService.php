@@ -29,13 +29,18 @@ class ProjectAvatarService
 
     public function generate($projectRef, $projectName): bool
     {
-        $driver = config('filesystems.default'); // or wherever you store your driver setting
+        $driver = config('filesystems.default');
 
         if ($driver === 's3') {
             return $this->generateS3($projectRef, $projectName);
-        } else {
+        }
+
+        if ($driver === 'local') {
             return $this->generateLocal($projectRef, $projectName);
         }
+
+        Log::error('Storage driver not supported', ['driver' => $driver]);
+        return false;
     }
 
     protected function generateLocal($projectRef, $projectName): bool
