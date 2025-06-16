@@ -10,6 +10,17 @@ use Throwable;
 
 class PhotoSaverService
 {
+    public static function saveImage(string $projectRef, mixed $image, string $fileName, string $driver, array $dimensions = [], int $quality = 50): bool
+    {
+        $storageDriver = config('filesystems.default');
+        if ($storageDriver === 's3') {
+            return self::saveImageS3($projectRef, $image, $fileName, $driver, $dimensions, $quality);
+        } else {
+            return self::saveImageLocal($projectRef, $image, $fileName, $driver, $dimensions, $quality);
+        }
+    }
+
+
     /**
      * Save a photo to specific dimensions and store it in the storage location
      *
@@ -21,7 +32,7 @@ class PhotoSaverService
      * @param int $quality JPEG quality (1-100)
      * @return bool Success status
      */
-    public static function saveImage(string $projectRef, mixed $image, string $fileName, string $driver, array $dimensions = [], int $quality = 50): bool
+    public static function saveImageLocal(string $projectRef, mixed $image, string $fileName, string $driver, array $dimensions = [], int $quality = 50): bool
     {
         try {
             // Get the image path (handles both uploaded files and direct paths)
@@ -44,6 +55,31 @@ class PhotoSaverService
         } catch (Throwable $e) {
             // Log the exception in case of an error
             Log::error('Cannot save image', ['exception' => $e]);
+            return false;
+        }
+    }
+
+    public static function saveImageS3(string $projectRef, mixed $image, string $fileName, string $driver, array $dimensions = [], int $quality = 50): bool
+    {
+        try {
+            // Get the image path (handles both uploaded files and direct paths)
+            $imagePath = is_string($image) ? $image : $image->getRealPath();
+            // Temporarily process the image in memory
+            $processedImage = self::processImage($imagePath, $dimensions, $quality);
+
+            // Upload to S3
+            Storage::disk($driver)->put(
+                $projectRef . '/' . $fileName,
+                $processedImage,
+                [
+                    'visibility' => 'private',
+                    'directory_visibility' => 'private'
+                ]
+            );
+
+            return true;
+        } catch (Throwable $e) {
+            Log::error('Cannot save image to S3', ['exception' => $e]);
             return false;
         }
     }

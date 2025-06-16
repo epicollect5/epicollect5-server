@@ -21,16 +21,16 @@ class ToMediaStreamMacro extends ServiceProvider
      */
     public function boot(): void
     {
-        Response::macro('toMediaStream', function (Request $request, $realFilepath, $inputType) {
+        Response::macro('toMediaStream', function (Request $request, $filepath, $inputType) {
             try {
                 $contentType = config('epicollect.media.content_type.' . $inputType);
-                $filesize = filesize($realFilepath);
+                $filesize = filesize($filepath);
                 $start = 0;
                 $end = $filesize - 1;
                 $status = 200;
 
-                $callback = function () use ($realFilepath) {
-                    $stream = fopen($realFilepath, 'rb');
+                $callback = function () use ($filepath) {
+                    $stream = fopen($filepath, 'rb');
                     fpassthru($stream);
                     fclose($stream);
                 };
@@ -47,8 +47,8 @@ class ToMediaStreamMacro extends ServiceProvider
                             $length = $end - $start + 1;
                             $status = 206;
 
-                            $callback = function () use ($realFilepath, $start, $length) {
-                                $stream = fopen($realFilepath, 'rb');
+                            $callback = function () use ($filepath, $start, $length) {
+                                $stream = fopen($filepath, 'rb');
                                 fseek($stream, $start);
                                 echo fread($stream, $length);
                                 fclose($stream);

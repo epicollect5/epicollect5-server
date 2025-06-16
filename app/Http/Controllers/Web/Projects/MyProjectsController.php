@@ -5,10 +5,11 @@ namespace ec5\Http\Controllers\Web\Projects;
 use ec5\Http\Controllers\Controller;
 use ec5\Models\Project\Project;
 use Illuminate\Http\Request;
+use Throwable;
 
 class MyProjectsController extends Controller
 {
-    private $projectModel;
+    private Project $projectModel;
 
     public function __construct(Project $projectModel)
     {
@@ -16,6 +17,10 @@ class MyProjectsController extends Controller
     }
 
     //Display a listing of user projects, any role
+
+    /**
+     * @throws Throwable
+     */
     public function show(Request $request)
     {
         $data = $request->all();
@@ -32,7 +37,8 @@ class MyProjectsController extends Controller
         if ($request->ajax()) {
             return response()->json(view('projects.project_cards', ['projects' => $projects])->render());
         }
-        return view('projects.my_projects',
+        return view(
+            'projects.my_projects',
             [
                 'projects' => $projects,
                 //exposing email so users know what email they are logged in with

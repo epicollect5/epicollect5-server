@@ -2,6 +2,7 @@
 
 namespace ec5\Services\Project;
 
+use Intervention\Image\Drivers\Imagick\Encoders\JpegEncoder;
 use Laravolt\Avatar\Facade as Avatar;
 use Log;
 use Storage;
@@ -26,8 +27,18 @@ class ProjectAvatarService
         $this->fontSize = config('epicollect.media.project_avatar.font_size');
     }
 
-
     public function generate($projectRef, $projectName): bool
+    {
+        $driver = config('filesystems.default'); // or wherever you store your driver setting
+
+        if ($driver === 's3') {
+            return $this->generateS3($projectRef, $projectName);
+        } else {
+            return $this->generateLocal($projectRef, $projectName);
+        }
+    }
+
+    protected function generateLocal($projectRef, $projectName): bool
     {
         try {
             //get thumb and mobile path
@@ -58,6 +69,34 @@ class ProjectAvatarService
             return true;
         } catch (Throwable $e) {
             Log::error('Error creating project avatar', ['exception' => $e]);
+            return false;
+        }
+
+    }
+
+    protected function generateS3(string $projectRef, string $projectName): bool
+    {
+        try {
+            $imageThumb = Avatar::create($projectName)
+                ->setDimension($this->width['thumb'])
+                ->setFontSize($this->fontSize['thumb'])
+                ->getImageObject();
+
+            $imageMobile = Avatar::create($projectName)
+                ->setDimension($this->width['mobile'])
+                ->setFontSize($this->fontSize['mobile'])
+                ->getImageObject();
+
+            $imageThumbEncoded = $imageThumb->encode(new JpegEncoder(100));  // encodes image as jpg with 100% quality
+            $imageMobileEncoded = $imageMobile->encode(new JpegEncoder(100));  // encodes image as jpg with 100% quality
+
+            // Then upload using Storage:put()
+            Storage::disk('project_thumb')->put($projectRef . '/' . $this->filename, (string) $imageThumbEncoded);
+            Storage::disk('project_mobile_logo')->put($projectRef . '/' . $this->filename, (string) $imageMobileEncoded);
+
+            return true;
+        } catch (Throwable $e) {
+            Log::error('Error creating and uploading project avatar', ['exception' => $e]);
             return false;
         }
     }

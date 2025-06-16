@@ -11,11 +11,11 @@ return [
     | by the framework. A "local" driver, as well as a variety of cloud
     | based drivers are available for your choosing. Just store away!
     |
-    | Supported: "local", "ftp", "s3", "rackspace"
+    | Supported: "local", "s3"
     |
     */
 
-    'default' => 'local',
+    'default' => config('epicollect.setup.system.storage_driver'),
 
     /*
     |--------------------------------------------------------------------------
@@ -117,7 +117,9 @@ return [
         //see https://github.com/laravel/docs/pull/8003
         'project_thumb' => [
             'driver' => config('epicollect.setup.system.storage_driver'),
-            'root' => storage_path('app/projects/project_thumb'),
+            'root' => config('epicollect.setup.system.storage_driver') === 'local'
+                ? storage_path('app/projects/project_thumb')
+                : 'app/projects/project_thumb',
             'throw' => true,
             'permissions' => [
                 'file' => [
@@ -128,14 +130,21 @@ return [
                     'public' => 0755,
                     'private' => 0700,
                 ],
-            ]
+            ],
+            'region' => env('DO_SPACES_REGION'),
+            'bucket' => env('DO_SPACES_BUCKET'),
+            'endpoint' => env('DO_SPACES_ENDPOINT'),
+            'key' => env('DO_SPACES_KEY'),
+            'secret' => env('DO_SPACES_SECRET')
         ],
 
         //imp: Laravel Team is against having a permission different from 755 on public folders
         //see https://github.com/laravel/docs/pull/8003
         'project_mobile_logo' => [
             'driver' => config('epicollect.setup.system.storage_driver'),
-            'root' => storage_path('app/projects/project_mobile_logo'),
+            'root' => config('epicollect.setup.system.storage_driver') === 'local'
+                ? storage_path('app/projects/project_mobile_logo')
+                : 'app/projects/project_mobile_logo',
             'throw' => true,
             'permissions' => [
                 'file' => [
@@ -146,7 +155,12 @@ return [
                     'public' => 0755,
                     'private' => 0700,
                 ],
-            ]
+            ],
+            'region' => env('DO_SPACES_REGION'),
+            'bucket' => env('DO_SPACES_BUCKET'),
+            'endpoint' => env('DO_SPACES_ENDPOINT'),
+            'key' => env('DO_SPACES_KEY'),
+            'secret' => env('DO_SPACES_SECRET')
         ],
 
         //imp: Laravel Team is against having a permission different from 755 on public folders
@@ -307,22 +321,12 @@ return [
 
         's3' => [
             'driver' => 's3',
-            'key' => 'your-key',
-            'secret' => 'your-secret',
-            'region' => 'your-region',
-            'bucket' => 'your-bucket',
+            'key' => env('DO_SPACES_KEY'),
+            'secret' => env('DO_SPACES_SECRET'),
+            'region' => env('DO_SPACES_REGION'),
+            'bucket' => env('DO_SPACES_BUCKET'),
+            'endpoint' => env('DO_SPACES_ENDPOINT'),
+            'use_path_style_endpoint' => env('DO_SPACES_USE_PATH_STYLE_ENDPOINT', false),
         ],
-
-        'rackspace' => [
-            'driver' => 'rackspace',
-            'username' => 'your-username',
-            'key' => 'your-key',
-            'container' => 'your-container',
-            'endpoint' => 'https://identity.api.rackspacecloud.com/v2.0/',
-            'region' => 'IAD',
-            'url_type' => 'publicURL',
-        ],
-
-    ],
-
+    ]
 ];

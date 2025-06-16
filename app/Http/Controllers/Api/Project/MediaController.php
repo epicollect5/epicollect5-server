@@ -25,11 +25,23 @@ class MediaController
     */
     use RequestAttributes;
 
+
+    public function getMedia(RuleMedia $ruleMedia)
+    {
+        $driver = config('filesystems.default'); // or wherever you store your driver setting
+
+        if ($driver === 's3') {
+            return $this->getMediaS3($ruleMedia);
+        } else {
+            return $this->getMediaLocal($ruleMedia);
+        }
+    }
+
     /**
      * @param ruleMedia $ruleMedia
      * @return JsonResponse|\Illuminate\Http\Response|StreamedResponse|null
      */
-    public function getMedia(RuleMedia $ruleMedia)
+    public function getMediaLocal(RuleMedia $ruleMedia)
     {
         // todo get the uuid if the media is entry media
         // so collectors can only view their own media
@@ -44,8 +56,8 @@ class MediaController
 
         $inputType = $params['type'];
         $format = $params['format'];
-        if ($format === config('epicollect.media.project_mobile_logo')) {
-            //randomly slow down api responses to avoid out of memory errors
+        if ($format === config('epicollect.media.formats.entry_thumb')) {
+            //randomly slow down api responses for photo thumbs to avoid out of memory errors
             $delay = mt_rand(250000000, 500000000);
             time_nanosleep(0, $delay);
         }
@@ -112,6 +124,77 @@ class MediaController
 
         return $response;
     }
+
+    public function getMediaS3(RuleMedia $ruleMedia)
+    {
+        $params = request()->all();
+        $ruleMedia->validate($params);
+
+        if ($ruleMedia->hasErrors()) {
+            return Response::apiErrorCode(400, $ruleMedia->errors());
+        }
+
+        $inputType = $params['type'];
+        $format = $params['format'];
+        $defaultName = config('epicollect.media.photo_placeholder.filename');
+
+        if ($format === config('epicollect.media.formats.entry_thumb')) {
+            time_nanosleep(0, mt_rand(250000000, 500000000));
+        }
+
+        switch ($inputType) {
+            case config('epicollect.strings.inputs_type.audio'):
+                $contentType = config('epicollect.media.content_type.audio');
+                break;
+            case config('epicollect.strings.inputs_type.video'):
+                $contentType = config('epicollect.media.content_type.video');
+                break;
+            default:
+                $contentType = config('epicollect.media.content_type.photo');
+        }
+
+        try {
+            if (!empty($params['name'])) {
+                $path = $this->requestedProject()->ref . '/' . $params['name'];
+                $disk = Storage::disk($format);
+
+                if (!$disk->exists($path)) {
+                    throw new FileNotFoundException("File not found on S3: $path");
+                }
+
+                // Stream for audio, video, standard 200 for photo
+                if ($inputType !== config('epicollect.strings.inputs_type.photo')) {
+                    // For S3, get a streamable response (Laravel >=9 supports streamDownload())
+                    return Response::toMediaStream(request(), $path, $inputType);
+                } else {
+                    // Photo: normal 200 OK
+                    $file = $disk->get($path);
+                    $response = Response::make($file);
+                    $response->header('Content-Type', $contentType);
+                    sleep(config('epicollect.setup.api_sleep_time.media'));
+                    return $response;
+                }
+            }
+        } catch (FileNotFoundException) {
+            if ($inputType === config('epicollect.strings.inputs_type.photo')) {
+                $file = Storage::disk('public')->get($defaultName);
+                $response = Response::make($file);
+                $response->header('Content-Type', $contentType);
+                return $response;
+            }
+
+            $error['api-media-controller'] = ['ec5_69'];
+            return Response::apiErrorCode(404, $error);
+        } catch (Throwable $e) {
+            Log::error('Cannot get S3 media file', ['exception' => $e]);
+        }
+
+        $file = Storage::disk('public')->get($defaultName);
+        $response = Response::make($file);
+        $response->header('Content-Type', $contentType);
+        return $response;
+    }
+
 
     /**
      * @param ruleMedia $ruleMedia
