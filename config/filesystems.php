@@ -23,7 +23,7 @@ return [
     |
     */
 
-    'default' => config('epicollect.setup.system.storage_driver'),
+    'default' => config('epicollect.setup.system.storage_driver', 'local'),
 
 
 

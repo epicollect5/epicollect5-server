@@ -11,7 +11,7 @@ class MyProjectsController extends Controller
 {
     private Project $projectModel;
 
-    /****
+    /**
      * Initializes the controller with a Project model instance.
      *
      * @param Project $projectModel The Project model to be used by the controller.

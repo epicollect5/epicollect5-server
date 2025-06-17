@@ -30,7 +30,7 @@ class UploadWebController extends UploadControllerBase
     |
     */
 
-    /****
+    /**
      * Handles the upload of a single entry, including associated media files and branch entries.
      *
      * Validates and processes the entry upload, determines if the entry is new or updated, moves any associated media files to permanent storage (local or S3), and removes any leftover branch entries skipped due to form logic. Returns an appropriate HTTP response code based on the operation outcome.

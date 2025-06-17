@@ -316,10 +316,13 @@ class RuleFileEntry extends EntryValidationBase
                     ]);
                     fclose($stream);
                 } else {
-                    $fileSaved = Storage::disk($driver)->put($targetPath, file_get_contents($file->getRealPath()), [
+                    $stream = fopen($file->getRealPath(), 'rb');
+                    $fileSaved = Storage::disk($driver)
+                        ->put($targetPath, $stream, [
                         'visibility' => 'public',
                         'directory_visibility' => 'public'
                     ]);
+                    fclose($stream);
                 }
 
                 if (!$fileSaved) {
