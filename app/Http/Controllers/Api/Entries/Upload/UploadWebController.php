@@ -88,13 +88,24 @@ class UploadWebController extends UploadControllerBase
                 $groupInputs = $projectExtra->getGroupInputs($formRef, $inputRef);
                 foreach ($groupInputs as $groupInputRef) {
                     $groupInput = $projectExtra->getInputData($groupInputRef);
-                    $this->moveFile($rootFolder, $groupInput);
+
+                    if ($this->storageDriver === 's3') {
+                        $this->moveFileS3($rootFolder, $groupInput);
+                    }
+                    if ($this->storageDriver === 'local') {
+                        $this->moveFileLocal($rootFolder, $groupInput);
+                    }
                     if (sizeof($this->errors) > 0) {
                         return Response::apiErrorCode(400, $this->errors);
                     }
                 }
             } else {
-                $this->moveFile($rootFolder, $input);
+                if ($this->storageDriver === 's3') {
+                    $this->moveFileS3($rootFolder, $input);
+                }
+                if ($this->storageDriver === 'local') {
+                    $this->moveFileLocal($rootFolder, $input);
+                }
                 if (sizeof($this->errors) > 0) {
                     return Response::apiErrorCode(400, $this->errors);
                 }
@@ -128,6 +139,8 @@ class UploadWebController extends UploadControllerBase
      * Let's call the web upload controller @store method
      * We do this because the @storeBulk endpoint goes through
      * a middleware to check for bulk upload permissions
+     *
+     * @throws Throwable
      */
     public function storeBulk()
     {
@@ -140,7 +153,7 @@ class UploadWebController extends UploadControllerBase
      * @param $input
      * @return void
      */
-    private function moveFile($rootFolder, $input): void
+    private function moveFileLocal($rootFolder, $input): void
     {
         // If we don't have a media input type
         if (!in_array($input['type'], array_keys(config('epicollect.strings.media_input_types')))) {
@@ -165,24 +178,13 @@ class UploadWebController extends UploadControllerBase
             );
         } catch (Throwable $e) {
             // File doesn't exist
+            Log::error('File does not exist', ['exception' => $e->getMessage()]);
             $this->errors['web upload'] = ['ec5_231'];
             return;
         }
 
         // Load everything into an entry structure model
-        $entryStructure = new EntryStructureDTO();
-
-        $entryData = config('epicollect.structures.entry_data');
-        $entryData['id'] = $this->entryStructure->getEntryUuid();
-        $entryData['type'] = config('epicollect.strings.entry_types.file_entry');
-        $entryData[$entryData['type']] = [
-            'type' => $input['type'],
-            'name' => $fileName,
-            'input_ref' => $input['ref']
-        ];
-
-        $entryStructure->createStructure($entryData);
-        $entryStructure->setFile($file);
+        $entryStructure = $this->setUpEntryStructure($input, $fileName, $file);
 
         // Move file
         // Note: the file has already been validated on initial upload to temp folder
@@ -195,6 +197,51 @@ class UploadWebController extends UploadControllerBase
         // Delete file from temp folder
         File::delete($filePath);
 
+    }
+
+    private function moveFileS3($rootFolder, $input): void
+    {
+        if (!in_array($input['type'], array_keys(config('epicollect.strings.media_input_types')))) {
+            return;
+        }
+
+        $fileName = $this->entryStructure->getValidatedAnswer($input['ref'])['answer'];
+        $projectRef = $this->requestedProject()->ref;
+
+        $sourcePath = $rootFolder . $input['type'] . '/' . $projectRef . '/' . $fileName;
+
+
+        $disk = Storage::disk('s3');
+
+        if (empty($fileName) || !$disk->exists($sourcePath)) {
+            return;
+        }
+
+        try {
+            // Move file in S3
+            /// $disk->move($sourcePath, $destinationPath);
+
+            // Construct file metadata manually (you can customize structure)
+            $file = [
+                'path' => $sourcePath,
+                'name' => $fileName,
+                'mime' => $disk->mimeType($sourcePath),
+                'size' => $disk->size($sourcePath),
+                'disk' => 's3',
+            ];
+        } catch (Throwable $e) {
+            Log::error('Cannot move file in S3', ['exception' => $e->getMessage()]);
+            $this->errors['web upload'] = ['ec5_232'];
+            return;
+        }
+
+        // Set up entry structure
+        $entryStructure = $this->setUpEntryStructure($input, $fileName, $file);
+
+        $this->ruleFileEntry->moveFile($this->requestedProject(), $entryStructure);
+        if ($this->ruleFileEntry->hasErrors()) {
+            $this->errors = $this->ruleFileEntry->errors();
+        }
     }
 
     private function removeLeftoverBranchEntries($formRef, $projectExtra)
@@ -251,10 +298,6 @@ class UploadWebController extends UploadControllerBase
                 ->whereIn('owner_input_ref', $skippedBranchRefs)
                 ->get();
 
-            $allBranchEntries = BranchEntry::where('owner_uuid', $this->entryStructure->getEntryUuid())
-                ->get();
-
-
             $leftoverBranchEntries->each(function ($entry) {
                 $entry->delete();
             });
@@ -269,12 +312,29 @@ class UploadWebController extends UploadControllerBase
             if (!$entryCounter->updateCounters($this->requestedProject(), $this->entryStructure)) {
                 throw new Exception('Cannot update branch entries counters after leftover deletion');
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error('Could not delete leftover branches', [
                 'owner_uuid' => $this->entryStructure->getEntryUuid(),
                 'owner_input_ref(s)' => $skippedBranchRefs,
                 'exception' => $e->getMessage()
             ]);
         }
+    }
+
+    private function setUpEntryStructure($input, mixed $fileName, array|UploadedFile $file): EntryStructureDTO
+    {
+        $entryStructure = new EntryStructureDTO();
+        $entryData = config('epicollect.structures.entry_data');
+        $entryData['id'] = $this->entryStructure->getEntryUuid();
+        $entryData['type'] = config('epicollect.strings.entry_types.file_entry');
+        $entryData[$entryData['type']] = [
+            'type' => $input['type'],
+            'name' => $fileName,
+            'input_ref' => $input['ref']
+        ];
+
+        $entryStructure->createStructure($entryData);
+        $entryStructure->setFile($file);
+        return $entryStructure;
     }
 }

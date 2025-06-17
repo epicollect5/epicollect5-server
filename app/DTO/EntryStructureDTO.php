@@ -23,7 +23,7 @@ class EntryStructureDTO
     protected int $branchOwnerEntryRowId;
     protected array $possibleAnswers = [];
     protected Entry|BranchEntry|null $existingEntry = null;
-    protected UploadedFile|null $file = null;
+    protected UploadedFile|array|null $file = null;
 
     public function init($payload, $projectId, $requestedUser, $requestedProjectRole): void
     {
@@ -408,17 +408,17 @@ class EntryStructureDTO
     }
 
     /**
-     * Load an uploaded file into the entry structure
+     * Accept either an UploadedFile instance or a file metadata array (for S3).
      */
-    public function setFile(UploadedFile $file): void
+    public function setFile(UploadedFile|array $file): void
     {
         $this->file = $file;
     }
 
     /**
-     * @return UploadedFile|null
+     * Return the file
      */
-    public function getFile(): UploadedFile|null
+    public function getFile(): UploadedFile|array|null
     {
         return $this->file ?? null;
     }

@@ -54,10 +54,17 @@ return [
 
         'temp' => [
             'driver' => config('epicollect.setup.system.storage_driver'),
-            'root' => storage_path('app/temp'),
+            'root' => config('epicollect.setup.system.storage_driver') === 'local'
+                ? storage_path('app/temp')
+                : 'app/temp',
             'throw' => true,
             'visibility' => 'public',
             'directory_visibility' => 'public',
+            'region' => env('DO_SPACES_REGION'),
+            'bucket' => env('DO_SPACES_BUCKET'),
+            'endpoint' => env('DO_SPACES_ENDPOINT'),
+            'key' => env('DO_SPACES_KEY'),
+            'secret' => env('DO_SPACES_SECRET')
         ],
 
         //todo: is this actually needed?
@@ -81,7 +88,9 @@ return [
         //see https://github.com/laravel/docs/pull/8003
         'entry_original' => [
             'driver' => config('epicollect.setup.system.storage_driver'),
-            'root' => storage_path('app/entries/photo/entry_original'),
+            'root' => config('epicollect.setup.system.storage_driver') === 'local'
+                ? storage_path('app/entries/photo/entry_original')
+                : 'app/entries/photo/entry_original',
             'throw' => true,
             'permissions' => [
                 'file' => [
@@ -92,14 +101,21 @@ return [
                     'public' => 0755,
                     'private' => 0700,
                 ],
-            ]
+            ],
+            'region' => env('DO_SPACES_REGION'),
+            'bucket' => env('DO_SPACES_BUCKET'),
+            'endpoint' => env('DO_SPACES_ENDPOINT'),
+            'key' => env('DO_SPACES_KEY'),
+            'secret' => env('DO_SPACES_SECRET')
         ],
 
         //imp: Laravel Team is against having a permission different from 755 on public folders
         //see https://github.com/laravel/docs/pull/8003
         'entry_thumb' => [
             'driver' => config('epicollect.setup.system.storage_driver'),
-            'root' => storage_path('app/entries/photo/entry_thumb'),
+            'root' => config('epicollect.setup.system.storage_driver') === 'local'
+                ? storage_path('app/entries/photo/entry_thumb')
+                : 'app/entries/photo/entry_thumb',
             'throw' => true,
             'permissions' => [
                 'file' => [
@@ -110,7 +126,12 @@ return [
                     'public' => 0755,
                     'private' => 0700,
                 ]
-            ]
+            ],
+            'region' => env('DO_SPACES_REGION'),
+            'bucket' => env('DO_SPACES_BUCKET'),
+            'endpoint' => env('DO_SPACES_ENDPOINT'),
+            'key' => env('DO_SPACES_KEY'),
+            'secret' => env('DO_SPACES_SECRET')
         ],
 
         //imp: Laravel Team is against having a permission different from 755 on public folders

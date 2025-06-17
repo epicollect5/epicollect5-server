@@ -2,10 +2,15 @@
 
 namespace ec5\Services;
 
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Drivers\Imagick\Driver;
 use Intervention\Image\Drivers\Imagick\Encoders\JpegEncoder;
+use Intervention\Image\ImageManager;
 use Intervention\Image\Laravel\Facades\Image;
+use InvalidArgumentException;
 use Log;
+use RuntimeException;
 use Throwable;
 
 class PhotoSaverService
@@ -16,7 +21,6 @@ class PhotoSaverService
         if ($storageDriver === 's3') {
             return self::saveImageS3($projectRef, $image, $fileName, $disk, $dimensions, $quality);
         }
-
         if ($storageDriver === 'local') {
             return self::saveImageLocal($projectRef, $image, $fileName, $disk, $dimensions, $quality);
         }
@@ -58,28 +62,39 @@ class PhotoSaverService
 
             return true;
         } catch (Throwable $e) {
-            // Log the exception in case of an error
             Log::error('Cannot save image', ['exception' => $e]);
             return false;
         }
     }
 
-    public static function saveImageS3(string $projectRef, mixed $image, string $fileName, string $disk, array $dimensions = [], int $quality = 50): bool
-    {
+    public static function saveImageS3(
+        string $projectRef,
+        mixed $image,
+        string $fileName,
+        string $disk,
+        array $dimensions = [],
+        int $quality = 50
+    ): bool {
         try {
-            // Get the image path (handles both uploaded files and direct paths)
-            $imagePath = is_string($image) ? $image : $image->getRealPath();
-            // Temporarily process the image in memory
-            $processedImage = self::processImage($imagePath, $dimensions, $quality);
+            if ($image instanceof UploadedFile) {
+                // Local uploaded file
+                $imageContent = self::processImage($image->getRealPath(), $dimensions, $quality);
+            } elseif (is_string($image)) {
+                $stream = Storage::disk('s3')->readStream($image);
+                if (!$stream) {
+                    throw new RuntimeException("Could not open stream from S3 path: $image");
+                }
 
-            // Upload to S3
+                $imageContent = self::processImageS3($stream, $dimensions, $quality);
+                fclose($stream);
+            } else {
+                throw new InvalidArgumentException('Unsupported image type.');
+            }
+
+            // Upload processed image to S3
             Storage::disk($disk)->put(
                 $projectRef . '/' . $fileName,
-                $processedImage,
-                [
-                    'visibility' => 'private',
-                    'directory_visibility' => 'private'
-                ]
+                $imageContent
             );
 
             return true;
@@ -88,6 +103,7 @@ class PhotoSaverService
             return false;
         }
     }
+
 
     /**
      * Process the image: resize, crop, and encode it
@@ -117,4 +133,28 @@ class PhotoSaverService
 
         return (string)$encodedImage;
     }
+
+    private static function processImageS3($stream, array $dimensions = [], int $quality = 50): string
+    {
+        if (!$stream) {
+            throw new RuntimeException("Could not open stream for S3 path: $stream");
+        }
+
+        $manager = new ImageManager(new Driver());
+        $image = $manager->read($stream);
+
+        // Apply resizing if needed
+        if (!empty($dimensions)) {
+            $width = $dimensions[0];
+            $height = $dimensions[1] ?? $width;
+            $image->cover($width, $height);
+        }
+
+        $encoded = $image->toJpeg($quality);
+
+        unset($image);
+
+        return (string) $encoded;
+    }
+
 }

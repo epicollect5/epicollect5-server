@@ -20,6 +20,7 @@ abstract class UploadControllerBase
     protected EntryStructureDTO $entryStructure;
     protected array $errors = [];
     protected RuleUpload $ruleUpload;
+    protected string $storageDriver;
 
     /**
      * @param EntryStructureDTO $entryStructure
@@ -40,5 +41,6 @@ abstract class UploadControllerBase
             $this->ruleUpload,
             $this->isBulkUpload
         );
+        $this->storageDriver = config('filesystems.default');
     }
 }

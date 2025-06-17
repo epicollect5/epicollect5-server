@@ -25,16 +25,36 @@ class MediaController
     */
     use RequestAttributes;
 
-    public function getMedia(RuleMedia $ruleMedia)
-    {
-        $driver = config('filesystems.default'); // or wherever you store your driver setting
+    private RuleMedia $ruleMedia;
 
-        if ($driver === 's3') {
-            return $this->getMediaS3($ruleMedia);
+    public function __construct(RuleMedia $ruleMedia)
+    {
+        $this->ruleMedia = $ruleMedia;
+    }
+
+    private function isMediaRequestValid()
+    {
+        $params = request()->all();
+        // Validate request params
+        $this->ruleMedia->validate($params);
+        if ($this->ruleMedia->hasErrors()) {
+            return false;
+        }
+        return true;
+    }
+
+    public function getMedia()
+    {
+        if (!$this->isMediaRequestValid()) {
+            return Response::apiErrorCode(400, $this->ruleMedia->errors());
         }
 
+        $driver = config('filesystems.default'); // or wherever you store your driver setting
+        if ($driver === 's3') {
+            return $this->getMediaS3(request()->all());
+        }
         if ($driver === 'local') {
-            return $this->getMediaLocal($ruleMedia);
+            return $this->getMediaLocal(request()->all());
         }
 
         Log::error('Storage driver not supported', ['driver' => $driver]);
@@ -42,22 +62,10 @@ class MediaController
     }
 
     /**
-     * @param RuleMedia $ruleMedia
      * @return JsonResponse|\Illuminate\Http\Response|StreamedResponse|null
      */
-    public function getMediaLocal(RuleMedia $ruleMedia)
+    public function getMediaLocal($params)
     {
-        // todo get the uuid if the media is entry media
-        // so collectors can only view their own media
-        // Check permissions
-        $params = request()->all();
-
-        // Validate request params
-        $ruleMedia->validate($params);
-        if ($ruleMedia->hasErrors()) {
-            return Response::apiErrorCode(400, $ruleMedia->errors());
-        }
-
         $inputType = $params['type'];
         $format = $params['format'];
         if ($format === config('epicollect.media.formats.entry_thumb')) {
@@ -92,14 +100,14 @@ class MediaController
                     throw new FileNotFoundException("File does not exist at path: " . $realFilepath);
                 }
 
-                $file = File::get($realFilepath);
                 //stream only audio and video
                 if ($inputType !== config('epicollect.strings.inputs_type.photo')) {
                     //serve as 206  partial response to load file faster
                     return Response::toMediaStream(request(), $realFilepath, $inputType);
                 } else {
                     //photo response is the usual 200
-                    $response = Response::make($file);
+                    $content = file_get_contents($realFilepath);
+                    $response = Response::make($content);
                     $response->header('Content-Type', $contentType);
                     sleep(config('epicollect.setup.api_sleep_time.media'));
                     return $response;
@@ -129,15 +137,8 @@ class MediaController
         return $response;
     }
 
-    public function getMediaS3(RuleMedia $ruleMedia)
+    public function getMediaS3($params)
     {
-        $params = request()->all();
-        $ruleMedia->validate($params);
-
-        if ($ruleMedia->hasErrors()) {
-            return Response::apiErrorCode(400, $ruleMedia->errors());
-        }
-
         $inputType = $params['type'];
         $format = $params['format'];
         $defaultName = config('epicollect.media.photo_placeholder.filename');
@@ -200,19 +201,31 @@ class MediaController
     }
 
 
-    /**
-     * @param ruleMedia $ruleMedia
-     * @return JsonResponse|\Illuminate\Http\Response
-     */
-    public function getTempMedia(RuleMedia $ruleMedia)
+    public function getTempMedia()
     {
-        $params = request()->all();
-        // Validate request params
-        $ruleMedia->validate($params);
-        if ($ruleMedia->hasErrors()) {
-            return Response::apiErrorCode(400, $ruleMedia->errors());
+        if (!$this->isMediaRequestValid()) {
+            return Response::apiErrorCode(400, $this->ruleMedia->errors());
         }
 
+        $driver = config('filesystems.default'); // or wherever you store your driver setting
+
+        if ($driver === 's3') {
+            return $this->getTempMediaS3(request()->all());
+        }
+
+        if ($driver === 'local') {
+            return $this->getTempMediaLocal(request()->all());
+        }
+
+        Log::error('Storage driver not supported', ['driver' => $driver]);
+        return Response::apiErrorCode(400, ['temp-media-controller' => ['ec5_103']]);
+    }
+
+    /**
+     * @return JsonResponse|\Illuminate\Http\Response
+     */
+    public function getTempMediaLocal(array $params)
+    {
         $inputType = $params['type'];
 
         // Set up type and content type
@@ -245,7 +258,8 @@ class MediaController
                     return Response::toMediaStream(request(), $realFilepath, $inputType);
                 } else {
                     //photo response is as usual
-                    $response = Response::make($realFilepath);
+                    $content = file_get_contents($realFilepath);
+                    $response = Response::make($content);
                     $response->header('Content-Type', $contentType);
                     return $response;
                 }
@@ -256,7 +270,59 @@ class MediaController
                  * Imp: This handles the case when a user is editing an existing web entry
                  * Imp: If the temporary file is unavailable, display the stored file instead
                  */
-                return $this->getMedia($ruleMedia);
+                return $this->getMedia();
+            }
+        }
+
+        return Response::apiErrorCode(400, ['temp-media-controller' => ['ec5_69']]);
+    }
+
+    public function getTempMediaS3($params)
+    {
+        $inputType = $params['type'];
+
+        // Set up type and content type
+        switch ($inputType) {
+            case config('epicollect.strings.inputs_type.audio'):
+                $contentType = config('epicollect.media.content_type.audio');
+                break;
+            case config('epicollect.strings.inputs_type.video'):
+                $contentType = config('epicollect.media.content_type.video');
+                break;
+            default:
+                $contentType = config('epicollect.media.content_type.photo');
+        }
+        // If a name was supplied, attempt to find file
+        if (!empty($params['name'])) {
+            // Attempt to retrieve media
+            try {
+                $path = $inputType. '/' . $this->requestedProject()->ref . '/' . $params['name'];
+                $disk = Storage::disk('temp');
+
+                // Check if the file exists using absolute path
+                if (!$disk->exists($path)) {
+                    Log::error($disk->url($path));
+                    throw new FileNotFoundException("File not found on S3: $path");
+                }
+
+                //stream only audio and video (not in unit tests!)
+                if ($inputType !== config('epicollect.strings.inputs_type.photo')) {
+                    return Response::toMediaStream(request(), $path, $inputType);
+                } else {
+                    //photo response is as usual
+                    $file = $disk->get($path);
+                    $response = Response::make($file);
+                    $response->header('Content-Type', $contentType);
+                    return $response;
+                }
+            } catch (Throwable $e) {
+                Log::info('Temp media error', ['exception' => $e->getMessage()]);
+                /**
+                 * Imp: If the file is not found, check for its existence in the non-temporary folders
+                 * Imp: This handles the case when a user is editing an existing web entry
+                 * Imp: If the temporary file is unavailable, display the stored file instead
+                 */
+                return $this->getMedia();
             }
         }
 
