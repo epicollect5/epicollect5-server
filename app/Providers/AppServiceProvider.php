@@ -13,15 +13,12 @@ use Throwable;
 class AppServiceProvider extends ServiceProvider
 {
     /**
-     * Bootstraps key application services.
+     * Bootstraps core application services and enforces environment-specific configuration.
      *
-     * This method conditionally registers the IDE helper when running locally, configures
-     * a rate limiter for passwordless authentication based on the client's IP address and
-     * application settings, sets the pagination style to Bootstrap 3, and disables Blade
-     * component tags.
+     * Registers the IDE helper service provider in local environments, ensures the production media bucket is not used outside the production domain, sets pagination to use Bootstrap 3, and disables Blade component tags globally.
      *
      * @return void
-     * @throws Throwable
+     * @throws Throwable If the production media bucket is configured outside the production domain.
      */
     public function boot(): void
     {

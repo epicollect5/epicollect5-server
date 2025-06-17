@@ -28,11 +28,21 @@ class MediaController
 
     private RuleMedia $ruleMedia;
 
+    /**
+     * Initializes the MediaController with a RuleMedia validation instance.
+     *
+     * @param RuleMedia $ruleMedia The media validation rule instance.
+     */
     public function __construct(RuleMedia $ruleMedia)
     {
         $this->ruleMedia = $ruleMedia;
     }
 
+    /**
+     * Validates the current media request parameters.
+     *
+     * @return bool True if the request parameters are valid; false if validation errors are present.
+     */
     private function isMediaRequestValid()
     {
         $params = request()->all();
@@ -44,6 +54,13 @@ class MediaController
         return true;
     }
 
+    /**
+     * Serves a media file (photo, audio, or video) for a project from the configured storage driver.
+     *
+     * Validates the incoming media request and retrieves the requested file from either local storage or Amazon S3, depending on configuration. Returns an error response if validation fails or if the storage driver is unsupported.
+     *
+     * @return \Illuminate\Http\Response|StreamedResponse JSON error response, file response, or streamed media content.
+     */
     public function getMedia()
     {
         if (!$this->isMediaRequestValid()) {
@@ -63,10 +80,14 @@ class MediaController
     }
 
     /**
-     * @param $params
+     * Retrieves a media file (photo, audio, or video) from local storage and returns it as an HTTP response.
+     *
+     * If the requested file is a photo thumbnail, introduces a random delay to mitigate server load. Streams audio and video files with partial content responses, and returns photo files with full content. If the file is not found, returns a default placeholder image for photos or a 404 error for audio and video. If no filename is provided, always returns the default placeholder image.
+     *
+     * @param array $params Parameters specifying media type, format, and filename.
      * @return JsonResponse|BinaryFileResponse|StreamedResponse
      */
-    public function getMediaLocal($params)
+    public function getMediaLocal(array $params)
     {
         $inputType = $params['type'];
         $format = $params['format'];
@@ -136,7 +157,14 @@ class MediaController
         return $response;
     }
 
-    public function getMediaS3($params)
+    /**
+     * Retrieves a media file from Amazon S3 storage and returns it as an HTTP response.
+     *
+     * Streams audio and video files or returns photo files with the appropriate content type. If the requested file does not exist, returns a default placeholder image for photos or a 404 error for audio and video. Introduces a random delay for photo thumbnail requests. Logs and handles exceptions, always returning a valid HTTP response.
+     *
+     * @param array $params Media request parameters, including 'type', 'format', and 'name'.
+     */
+    public function getMediaS3(array $params)
     {
         $inputType = $params['type'];
         $format = $params['format'];
@@ -174,7 +202,7 @@ class MediaController
                     // Photo: normal 200 OK
                     sleep(config('epicollect.setup.api_sleep_time.media'));
                     // For S3, get a streamable response
-                    return $disk->response($path);
+                    return $disk->response($path, null, ['Content-Type' => $contentType]);
                 }
             }
         } catch (FileNotFoundException) {
@@ -198,6 +226,13 @@ class MediaController
     }
 
 
+    /**
+     * Retrieves a temporary media file from the configured storage driver.
+     *
+     * Validates the media request and serves the requested temporary media file from either local storage or Amazon S3, depending on the application's configuration. Returns an error response if validation fails or if the storage driver is unsupported.
+     *
+     * @return \Illuminate\Http\Response|StreamedResponse JSON error response or media file response.
+     */
     public function getTempMedia()
     {
         if (!$this->isMediaRequestValid()) {
@@ -219,8 +254,14 @@ class MediaController
     }
 
     /**
-     * @param array $params
+     * <<<<<<< HEAD
+     * @param array $params Media request parameters, including 'type' and 'name'.
      * @return JsonResponse|BinaryFileResponse|StreamedResponse
+     * =======
+     * Retrieves a temporary media file (photo, audio, or video) from local storage.
+     *
+     * If the specified temporary file exists, returns it with the appropriate content type. Audio and video files are streamed, while photos are returned as full content. If the file is not found or an error occurs, attempts to retrieve the corresponding permanent media file as a fallback. Returns a 400 error if no file name is provided.
+     *
      */
     public function getTempMediaLocal(array $params)
     {
@@ -273,7 +314,17 @@ class MediaController
         return Response::apiErrorCode(400, ['temp-media-controller' => ['ec5_69']]);
     }
 
-    public function getTempMediaS3($params)
+    /**
+     * Retrieves a temporary media file from S3 storage and returns it as an HTTP response.
+     *
+     * If the requested file exists, streams audio and video files or returns photo files with the correct content type.
+     * If the file is not found or an error occurs, falls back to retrieving the permanent media file.
+     * Returns a 400 error if no file name is provided.
+     *
+     * @param array $params Media request parameters, including 'type' and 'name'.
+     * @return \Illuminate\Http\Response|StreamedResponse
+     */
+    public function getTempMediaS3(array $params)
     {
         $inputType = $params['type'];
 
@@ -307,7 +358,7 @@ class MediaController
                     //photo response is as usual
                     sleep(config('epicollect.setup.api_sleep_time.media'));
                     // For S3, get a streamable response
-                    return $disk->response($path);
+                    return $disk->response($path, null, ['Content-Type' => $contentType]);
                 }
             } catch (Throwable $e) {
                 Log::info('Temp media error', ['exception' => $e->getMessage()]);

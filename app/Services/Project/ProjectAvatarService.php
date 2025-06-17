@@ -17,6 +17,11 @@ class ProjectAvatarService
     protected array $drivers;
     protected array $fontSize;
 
+    /**
+     * Initializes project avatar service configuration from application settings.
+     *
+     * Loads avatar dimensions, quality, filename, storage drivers, and font sizes from configuration.
+     */
     public function __construct()
     {
         $this->width = config('epicollect.media.project_avatar.width');
@@ -27,6 +32,15 @@ class ProjectAvatarService
         $this->fontSize = config('epicollect.media.project_avatar.font_size');
     }
 
+    /**
+     * Generates and stores project avatar images using the configured storage driver.
+     *
+     * Selects the appropriate avatar generation method based on the default filesystem driver configuration. Supports both local and S3 storage. Returns false if the storage driver is unsupported or if avatar generation fails.
+     *
+     * @param string $projectRef Unique reference identifier for the project.
+     * @param string $projectName Name of the project used for avatar generation.
+     * @return bool True on successful avatar generation and storage, false otherwise.
+     */
     public function generate($projectRef, $projectName): bool
     {
         $driver = config('filesystems.default');
@@ -43,6 +57,15 @@ class ProjectAvatarService
         return false;
     }
 
+    /**
+     * Generates and saves project avatar images locally for both thumbnail and mobile formats.
+     *
+     * Creates avatar images using the project name and stores them in project-specific directories on local storage disks for thumbnails and mobile logos. Returns true on success, or false if an error occurs.
+     *
+     * @param string $projectRef Unique reference identifier for the project.
+     * @param string $projectName Name of the project to be used in the avatar image.
+     * @return bool True if avatars are generated and saved successfully; false otherwise.
+     */
     protected function generateLocal($projectRef, $projectName): bool
     {
         try {
@@ -79,6 +102,15 @@ class ProjectAvatarService
 
     }
 
+    /**
+     * Generates and uploads project avatar images to S3 storage.
+     *
+     * Creates thumbnail and mobile avatar images for the given project name, encodes them as JPEGs, and uploads them to their respective S3 storage disks. Returns true on success, or false if an error occurs.
+     *
+     * @param string $projectRef Unique reference identifier for the project.
+     * @param string $projectName Name of the project used to generate the avatar.
+     * @return bool True if avatars are successfully generated and uploaded; false otherwise.
+     */
     protected function generateS3(string $projectRef, string $projectName): bool
     {
         try {
