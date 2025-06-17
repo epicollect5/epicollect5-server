@@ -30,10 +30,15 @@ class UploadWebController extends UploadControllerBase
     |
     */
 
-    /**
-     * @throws ContainerExceptionInterface
-     * @throws Throwable
-     * @throws NotFoundExceptionInterface
+    /****
+     * Handles the upload of a single entry, including associated media files and branch entries.
+     *
+     * Validates and processes the entry upload, determines if the entry is new or updated, moves any associated media files to permanent storage (local or S3), and removes any leftover branch entries skipped due to form logic. Returns an appropriate HTTP response code based on the operation outcome.
+     *
+     * @throws ContainerExceptionInterface If a container error occurs.
+     * @throws Throwable If an unexpected error occurs during upload or file handling.
+     * @throws NotFoundExceptionInterface If a required resource is not found.
+     * @return \Illuminate\Http\JsonResponse API response indicating success or failure.
      */
     public function store()
     {
@@ -135,12 +140,11 @@ class UploadWebController extends UploadControllerBase
     }
 
     /**
+     * Handles bulk upload requests by delegating to the store method.
      *
-     * Let's call the web upload controller @store method
-     * We do this because the @storeBulk endpoint goes through
-     * a middleware to check for bulk upload permissions
+     * Marks the upload as a bulk operation and invokes the standard entry upload logic. This method is intended for endpoints that require bulk upload permission checks.
      *
-     * @throws Throwable
+     * @throws Throwable If an error occurs during the upload process.
      */
     public function storeBulk()
     {
@@ -149,9 +153,10 @@ class UploadWebController extends UploadControllerBase
     }
 
     /**
-     * @param $rootFolder
-     * @param $input
-     * @return void
+     * Moves a media file from the local temporary folder to permanent storage for a given input.
+     *
+     * If the input is not a media type, or if the file does not exist in the temporary folder, the method returns early.
+     * On successful move, the file is deleted from the temporary folder. Errors encountered during the process are recorded.
      */
     private function moveFileLocal($rootFolder, $input): void
     {
@@ -199,6 +204,11 @@ class UploadWebController extends UploadControllerBase
 
     }
 
+    /**
+     * Handles moving a media file from temporary to permanent storage on S3 for a given input.
+     *
+     * If the input is a supported media type and the file exists in the S3 temporary location, constructs file metadata and delegates the move operation. Records errors if the file cannot be found or moved.
+     */
     private function moveFileS3($rootFolder, $input): void
     {
         if (!in_array($input['type'], array_keys(config('epicollect.strings.media_input_types')))) {
@@ -244,6 +254,11 @@ class UploadWebController extends UploadControllerBase
         }
     }
 
+    /**
+     * Removes leftover branch entries that were skipped due to form logic jumps during entry editing.
+     *
+     * Identifies branch input references that were skipped ("jumped") in the validated answers and deletes any associated branch entries for the current owner entry. Updates branch entry counters after deletion. No action is taken if the entry is a branch, not an edit, or if no branches were skipped.
+     */
     private function removeLeftoverBranchEntries($formRef, $projectExtra)
     {
         //if this is a branch, bail out (cannot have branches within branches)
@@ -321,6 +336,16 @@ class UploadWebController extends UploadControllerBase
         }
     }
 
+    /**
+     * Creates and configures an EntryStructureDTO for a file input.
+     *
+     * Initializes the entry structure with the current entry UUID, sets the type to "file_entry", and attaches file metadata and the file object.
+     *
+     * @param array $input The input definition for the file field.
+     * @param mixed $fileName The name of the file being processed.
+     * @param array|UploadedFile $file The file object or metadata array.
+     * @return EntryStructureDTO The configured entry structure for the file input.
+     */
     private function setUpEntryStructure($input, mixed $fileName, array|UploadedFile $file): EntryStructureDTO
     {
         $entryStructure = new EntryStructureDTO();

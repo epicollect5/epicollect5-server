@@ -11,6 +11,11 @@ class MyProjectsController extends Controller
 {
     private Project $projectModel;
 
+    /****
+     * Initializes the controller with a Project model instance.
+     *
+     * @param Project $projectModel The Project model to be used by the controller.
+     */
     public function __construct(Project $projectModel)
     {
         $this->projectModel = $projectModel;
@@ -19,6 +24,10 @@ class MyProjectsController extends Controller
     //Display a listing of user projects, any role
 
     /**
+     * Displays the authenticated user's projects with optional search and filtering.
+     *
+     * Retrieves and paginates the user's projects based on request parameters. Returns either a rendered HTML view or a JSON response with project cards, depending on whether the request is AJAX.
+     *
      * @throws Throwable
      */
     public function show(Request $request)

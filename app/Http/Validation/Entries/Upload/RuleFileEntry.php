@@ -187,6 +187,13 @@ class RuleFileEntry extends EntryValidationBase
         return true;
     }
 
+    /**
+     * Checks if the input reference for a file exists in the project's metadata.
+     *
+     * Returns false and sets an error if the input reference is missing or invalid.
+     *
+     * @return bool True if the input reference exists; false otherwise.
+     */
     public function fileInputExists(ProjectDTO $project, EntryStructureDTO $entryStructure): bool
     {
         $projectExtra = $project->getProjectExtra();
@@ -205,6 +212,11 @@ class RuleFileEntry extends EntryValidationBase
         return true;
     }
 
+    /**
+     * Stores an uploaded media file (photo, audio, or video) for a project entry, handling resizing and thumbnail creation for photos.
+     *
+     * For photo files, determines orientation, resizes if necessary, and saves both the original and a thumbnail image using the appropriate storage (local or S3). For audio and video files, saves the file to the designated storage disk with public visibility. Sets error codes if file reading or saving fails.
+     */
     public function moveFile(ProjectDTO $project, EntryStructureDTO $entryStructure): void
     {
         $projectRef = $project->ref;
