@@ -10,6 +10,7 @@ use Response;
 use Storage;
 use Log;
 use ec5\Traits\Requests\RequestAttributes;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
 
@@ -49,7 +50,7 @@ class MediaController
             return Response::apiErrorCode(400, $this->ruleMedia->errors());
         }
 
-        $driver = config('filesystems.default'); // or wherever you store your driver setting
+        $driver = config('filesystems.default');
         if ($driver === 's3') {
             return $this->getMediaS3(request()->all());
         }
@@ -62,7 +63,8 @@ class MediaController
     }
 
     /**
-     * @return JsonResponse|\Illuminate\Http\Response|StreamedResponse|null
+     * @param $params
+     * @return JsonResponse|BinaryFileResponse|StreamedResponse
      */
     public function getMediaLocal($params)
     {
@@ -106,11 +108,8 @@ class MediaController
                     return Response::toMediaStream(request(), $realFilepath, $inputType);
                 } else {
                     //photo response is the usual 200
-                    $content = file_get_contents($realFilepath);
-                    $response = Response::make($content);
-                    $response->header('Content-Type', $contentType);
                     sleep(config('epicollect.setup.api_sleep_time.media'));
-                    return $response;
+                    return Response::file($realFilepath, ['Content-Type' => $contentType]);
                 }
             } catch (FileNotFoundException) {
                 if ($inputType === config('epicollect.strings.inputs_type.photo')) {
@@ -173,11 +172,9 @@ class MediaController
                     return Response::toMediaStream(request(), $path, $inputType);
                 } else {
                     // Photo: normal 200 OK
-                    $file = $disk->get($path);
-                    $response = Response::make($file);
-                    $response->header('Content-Type', $contentType);
                     sleep(config('epicollect.setup.api_sleep_time.media'));
-                    return $response;
+                    // For S3, get a streamable response
+                    return $disk->response($path);
                 }
             }
         } catch (FileNotFoundException) {
@@ -207,7 +204,7 @@ class MediaController
             return Response::apiErrorCode(400, $this->ruleMedia->errors());
         }
 
-        $driver = config('filesystems.default'); // or wherever you store your driver setting
+        $driver = config('filesystems.default');
 
         if ($driver === 's3') {
             return $this->getTempMediaS3(request()->all());
@@ -222,7 +219,8 @@ class MediaController
     }
 
     /**
-     * @return JsonResponse|\Illuminate\Http\Response
+     * @param array $params
+     * @return JsonResponse|BinaryFileResponse|StreamedResponse
      */
     public function getTempMediaLocal(array $params)
     {
@@ -258,10 +256,8 @@ class MediaController
                     return Response::toMediaStream(request(), $realFilepath, $inputType);
                 } else {
                     //photo response is as usual
-                    $content = file_get_contents($realFilepath);
-                    $response = Response::make($content);
-                    $response->header('Content-Type', $contentType);
-                    return $response;
+                    sleep(config('epicollect.setup.api_sleep_time.media'));
+                    return Response::file($realFilepath, ['Content-Type' => $contentType]);
                 }
             } catch (Throwable $e) {
                 Log::info('Temp media error', ['exception' => $e->getMessage()]);
@@ -301,7 +297,6 @@ class MediaController
 
                 // Check if the file exists using absolute path
                 if (!$disk->exists($path)) {
-                    Log::error($disk->url($path));
                     throw new FileNotFoundException("File not found on S3: $path");
                 }
 
@@ -310,10 +305,9 @@ class MediaController
                     return Response::toMediaStream(request(), $path, $inputType);
                 } else {
                     //photo response is as usual
-                    $file = $disk->get($path);
-                    $response = Response::make($file);
-                    $response->header('Content-Type', $contentType);
-                    return $response;
+                    sleep(config('epicollect.setup.api_sleep_time.media'));
+                    // For S3, get a streamable response
+                    return $disk->response($path);
                 }
             } catch (Throwable $e) {
                 Log::info('Temp media error', ['exception' => $e->getMessage()]);
