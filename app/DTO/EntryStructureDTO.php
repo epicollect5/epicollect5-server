@@ -23,8 +23,18 @@ class EntryStructureDTO
     protected int $branchOwnerEntryRowId;
     protected array $possibleAnswers = [];
     protected Entry|BranchEntry|null $existingEntry = null;
-    protected UploadedFile|null $file = null;
+    protected UploadedFile|array|null $file = null;
 
+    /**
+     * Initializes the entry structure with data from the provided payload and context.
+     *
+     * Sets user ID, project ID, project role, and loads an uploaded file if present in the request.
+     *
+     * @param mixed $payload The request payload containing entry data.
+     * @param int $projectId The ID of the project associated with the entry.
+     * @param mixed $requestedUser The user making the request; if null, user ID is set to 0.
+     * @param string $requestedProjectRole The project role of the requesting user.
+     */
     public function init($payload, $projectId, $requestedUser, $requestedProjectRole): void
     {
         // Get current user (from $requestedUser since we do not know what guard was used)
@@ -402,23 +412,32 @@ class EntryStructureDTO
         return isset($this->getEntry()['title']) && !empty($this->getEntry()['title']) ? $this->getEntry()['title'] : $this->getEntryUuid();
     }
 
+    /**
+     * Retrieves the project version associated with the entry.
+     *
+     * @return string The project version, or an empty string if not set.
+     */
     public function getProjectVersion(): string
     {
         return $this->getEntry()['project_version'] ?? '';
     }
 
     /**
-     * Load an uploaded file into the entry structure
+     * Sets the file associated with the entry, accepting either an UploadedFile instance or a file metadata array.
+     *
+     * @param UploadedFile|array $file The file to associate, either as an UploadedFile object or a metadata array (e.g., from S3).
      */
-    public function setFile(UploadedFile $file): void
+    public function setFile(UploadedFile|array $file): void
     {
         $this->file = $file;
     }
 
     /**
-     * @return UploadedFile|null
+     * Retrieves the uploaded file or file metadata associated with the entry.
+     *
+     * @return UploadedFile|array|null The uploaded file as an UploadedFile instance, file metadata as an array, or null if no file is set.
      */
-    public function getFile(): UploadedFile|null
+    public function getFile(): UploadedFile|array|null
     {
         return $this->file ?? null;
     }

@@ -1,5 +1,13 @@
 <?php
 
+$doSpaces = [
+    'region'   => env('DO_SPACES_REGION'),
+    'bucket'   => env('DO_SPACES_BUCKET'),
+    'endpoint' => env('DO_SPACES_ENDPOINT'),
+    'key'      => env('DO_SPACES_KEY'),
+    'secret'   => env('DO_SPACES_SECRET'),
+];
+
 return [
 
     /*
@@ -11,11 +19,13 @@ return [
     | by the framework. A "local" driver, as well as a variety of cloud
     | based drivers are available for your choosing. Just store away!
     |
-    | Supported: "local", "ftp", "s3", "rackspace"
+    | Supported: "local", "s3"
     |
     */
 
-    'default' => 'local',
+    'default' => config('epicollect.setup.system.storage_driver', 'local'),
+
+
 
     /*
     |--------------------------------------------------------------------------
@@ -52,13 +62,16 @@ return [
             'directory_visibility' => 'public',
         ],
 
-        'temp' => [
+        'temp' => array_merge([
             'driver' => config('epicollect.setup.system.storage_driver'),
-            'root' => storage_path('app/temp'),
+            'root' => config('epicollect.setup.system.storage_driver') === 'local'
+                ? storage_path('app/temp')
+                : 'app/temp',
             'throw' => true,
             'visibility' => 'public',
             'directory_visibility' => 'public',
-        ],
+
+        ], $doSpaces),
 
         //todo: is this actually needed?
         'local' => [
@@ -79,9 +92,11 @@ return [
 
         //imp: Laravel Team is against having a permission different from 755 on public folders
         //see https://github.com/laravel/docs/pull/8003
-        'entry_original' => [
+        'entry_original' => array_merge([
             'driver' => config('epicollect.setup.system.storage_driver'),
-            'root' => storage_path('app/entries/photo/entry_original'),
+            'root' => config('epicollect.setup.system.storage_driver') === 'local'
+                ? storage_path('app/entries/photo/entry_original')
+                : 'app/entries/photo/entry_original',
             'throw' => true,
             'permissions' => [
                 'file' => [
@@ -93,13 +108,16 @@ return [
                     'private' => 0700,
                 ],
             ]
-        ],
+
+        ], $doSpaces),
 
         //imp: Laravel Team is against having a permission different from 755 on public folders
         //see https://github.com/laravel/docs/pull/8003
-        'entry_thumb' => [
+        'entry_thumb' => array_merge([
             'driver' => config('epicollect.setup.system.storage_driver'),
-            'root' => storage_path('app/entries/photo/entry_thumb'),
+            'root' => config('epicollect.setup.system.storage_driver') === 'local'
+                ? storage_path('app/entries/photo/entry_thumb')
+                : 'app/entries/photo/entry_thumb',
             'throw' => true,
             'permissions' => [
                 'file' => [
@@ -111,13 +129,16 @@ return [
                     'private' => 0700,
                 ]
             ]
-        ],
+
+        ], $doSpaces),
 
         //imp: Laravel Team is against having a permission different from 755 on public folders
         //see https://github.com/laravel/docs/pull/8003
-        'project_thumb' => [
+        'project_thumb' => array_merge([
             'driver' => config('epicollect.setup.system.storage_driver'),
-            'root' => storage_path('app/projects/project_thumb'),
+            'root' => config('epicollect.setup.system.storage_driver') === 'local'
+                ? storage_path('app/projects/project_thumb')
+                : 'app/projects/project_thumb',
             'throw' => true,
             'permissions' => [
                 'file' => [
@@ -129,13 +150,15 @@ return [
                     'private' => 0700,
                 ],
             ]
-        ],
+        ], $doSpaces),
 
         //imp: Laravel Team is against having a permission different from 755 on public folders
         //see https://github.com/laravel/docs/pull/8003
-        'project_mobile_logo' => [
+        'project_mobile_logo' => array_merge([
             'driver' => config('epicollect.setup.system.storage_driver'),
-            'root' => storage_path('app/projects/project_mobile_logo'),
+            'root' => config('epicollect.setup.system.storage_driver') === 'local'
+                ? storage_path('app/projects/project_mobile_logo')
+                : 'app/projects/project_mobile_logo',
             'throw' => true,
             'permissions' => [
                 'file' => [
@@ -147,7 +170,7 @@ return [
                     'private' => 0700,
                 ],
             ]
-        ],
+        ], $doSpaces),
 
         //imp: Laravel Team is against having a permission different from 755 on public folders
         //see https://github.com/laravel/docs/pull/8003
@@ -291,38 +314,9 @@ return [
             ],
         ],
 
-        'ftp' => [
-            'driver' => 'ftp',
-            'host' => 'ftp.example.com',
-            'username' => 'your-username',
-            'password' => 'your-password',
-
-            // Optional FTP Settings...
-            // 'port'     => 21,
-            // 'root'     => '',
-            // 'passive'  => true,
-            // 'ssl'      => true,
-            // 'timeout'  => 30,
-        ],
-
-        's3' => [
+        's3' => array_merge([
             'driver' => 's3',
-            'key' => 'your-key',
-            'secret' => 'your-secret',
-            'region' => 'your-region',
-            'bucket' => 'your-bucket',
-        ],
-
-        'rackspace' => [
-            'driver' => 'rackspace',
-            'username' => 'your-username',
-            'key' => 'your-key',
-            'container' => 'your-container',
-            'endpoint' => 'https://identity.api.rackspacecloud.com/v2.0/',
-            'region' => 'IAD',
-            'url_type' => 'publicURL',
-        ],
-
-    ],
-
+            'use_path_style_endpoint' => env('DO_SPACES_USE_PATH_STYLE_ENDPOINT', false),
+        ], $doSpaces)
+]
 ];

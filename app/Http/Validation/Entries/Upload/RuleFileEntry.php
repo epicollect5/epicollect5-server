@@ -12,6 +12,8 @@ use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use ec5\Services\PhotoSaverService;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Drivers\Imagick\Driver;
+use Intervention\Image\ImageManager;
 use Throwable;
 
 class RuleFileEntry extends EntryValidationBase
@@ -185,6 +187,13 @@ class RuleFileEntry extends EntryValidationBase
         return true;
     }
 
+    /**
+     * Checks if the input reference for a file exists in the project's metadata.
+     *
+     * Returns false and sets an error if the input reference is missing or invalid.
+     *
+     * @return bool True if the input reference exists; false otherwise.
+     */
     public function fileInputExists(ProjectDTO $project, EntryStructureDTO $entryStructure): bool
     {
         $projectExtra = $project->getProjectExtra();
@@ -204,8 +213,9 @@ class RuleFileEntry extends EntryValidationBase
     }
 
     /**
-     * @param ProjectDTO $project
-     * @param EntryStructureDTO $entryStructure
+     * Stores an uploaded media file (photo, audio, or video) for a project entry, handling resizing and thumbnail creation for photos.
+     *
+     * For photo files, determines orientation, resizes if necessary, and saves both the original and a thumbnail image using the appropriate storage (local or S3). For audio and video files, saves the file to the designated storage disk with public visibility. Sets error codes if file reading or saving fails.
      */
     public function moveFile(ProjectDTO $project, EntryStructureDTO $entryStructure): void
     {
@@ -218,60 +228,69 @@ class RuleFileEntry extends EntryValidationBase
         $fileName = $fileEntry['name'];
         $inputRef = $fileEntry['input_ref'];
 
+        $file = $entryStructure->getFile();
+
+        $isS3 = is_array($file) && ($file['disk'] ?? '') === 's3';
 
         // Process each file type
         switch ($fileType) {
 
             case config('epicollect.strings.inputs_type.photo'):
 
-                // Entry original image
-                list($width, $height) = getimagesize($entryStructure->getFile()->getRealPath());
+                // === Get image dimensions ===
+                $manager = new ImageManager(new Driver());
 
-                // Check if it's landscape
-                if ($width > $height) {
-                    // Set landscape dimensions
-                    $dimensions = config('epicollect.media.entry_original_landscape');
+                if ($isS3) {
+                    $stream = Storage::disk('s3')->readStream($file['path']);
+
+                    if (!$stream) {
+                        $this->errors[$inputRef] = ['ec5_83'];
+                        return;
+                    }
+
+                    $image = $manager->read($stream);
+                    fclose($stream);
                 } else {
-                    // Otherwise it's portrait (or square)
-                    // Set portrait dimensions
-                    $dimensions = config('epicollect.media.entry_original_portrait');
+                    $image = $manager->read($file->getRealPath());
                 }
 
-                // If dimensions are already as desired, no need to resize
-                // $dimensions[0] is always width, $dimensions[1] is always height
-                if ($width == $dimensions[0] && $height == $dimensions[1]) {
-                    // Reset the dimensions param to empty array to pass to saveImage() function
+                $width = $image->width();
+                $height = $image->height();
+
+                // === Choose dimensions ===
+                $dimensions = ($width > $height)
+                    ? config('epicollect.media.entry_original_landscape')
+                    : config('epicollect.media.entry_original_portrait');
+
+                // Skip resizing if dimensions match
+                if ($width === $dimensions[0] && $height === $dimensions[1]) {
                     $dimensions = [];
                 }
 
-                // Attempt to save the original image (resized if necessary) keeping 100% quality
+                // === Save original image ===
                 $original = PhotoSaverService::saveImage(
                     $projectRef,
-                    $entryStructure->getFile(),
+                    $isS3 ? $file['path'] : $file,
                     $fileName,
                     'entry_original',
                     $dimensions,
                     100
                 );
 
-                // Check if any errors creating/saving original image
                 if (!$original) {
                     $this->errors[$inputRef] = ['ec5_82'];
                     return;
                 }
 
-                // Entry thumb image
-
-                // Create and save entry thumbnail image for photos, using 'entry_thumb' driver
+                // === Save thumbnail image ===
                 $thumb = PhotoSaverService::saveImage(
                     $projectRef,
-                    $entryStructure->getFile(),
+                    $isS3 ? $file['path'] : $file,
                     $fileName,
                     'entry_thumb',
                     config('epicollect.media.entry_thumb')
                 );
 
-                // Check if any errors creating/saving thumb
                 if (!$thumb) {
                     $this->errors[$inputRef] = ['ec5_82'];
                     return;
@@ -280,24 +299,38 @@ class RuleFileEntry extends EntryValidationBase
                 break;
 
             default:
-
-                // Get the driver specified in config - media.php
+                // === Save non-photo files ===
                 $driver = $fileType;
-                // Store the file into storage location, using driver based on the file type
-                $fileSaved = Storage::disk($driver)->put(
-                    $projectRef . '/' . $fileName,
-                    file_get_contents($entryStructure->getFile()->getRealPath()),
-                    [
+                $targetPath = $projectRef . '/' . $fileName;
+
+                if ($isS3) {
+                    $stream = Storage::disk('s3')->readStream($file['path']);
+                    if (!$stream) {
+                        $this->errors[$inputRef] = ['ec5_83'];
+                        return;
+                    }
+
+                    $fileSaved = Storage::disk($driver)->put($targetPath, $stream, [
                         'visibility' => 'public',
                         'directory_visibility' => 'public'
-                    ]
-                );
+                    ]);
+                    fclose($stream);
+                } else {
+                    $stream = fopen($file->getRealPath(), 'rb');
+                    $fileSaved = Storage::disk($driver)
+                        ->put($targetPath, $stream, [
+                        'visibility' => 'public',
+                        'directory_visibility' => 'public'
+                    ]);
+                    fclose($stream);
+                }
 
-                // Check if put was successful
                 if (!$fileSaved) {
                     $this->errors[$inputRef] = ['ec5_83'];
                     return;
                 }
+
+                break;
         }
     }
 }

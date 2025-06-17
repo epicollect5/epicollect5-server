@@ -5,17 +5,31 @@ namespace ec5\Http\Controllers\Web\Projects;
 use ec5\Http\Controllers\Controller;
 use ec5\Models\Project\Project;
 use Illuminate\Http\Request;
+use Throwable;
 
 class MyProjectsController extends Controller
 {
-    private $projectModel;
+    private Project $projectModel;
 
+    /**
+     * Initializes the controller with a Project model instance.
+     *
+     * @param Project $projectModel The Project model to be used by the controller.
+     */
     public function __construct(Project $projectModel)
     {
         $this->projectModel = $projectModel;
     }
 
     //Display a listing of user projects, any role
+
+    /**
+     * Displays the authenticated user's projects with optional search and filtering.
+     *
+     * Retrieves and paginates the user's projects based on request parameters. Returns either a rendered HTML view or a JSON response with project cards, depending on whether the request is AJAX.
+     *
+     * @throws Throwable
+     */
     public function show(Request $request)
     {
         $data = $request->all();
@@ -32,7 +46,8 @@ class MyProjectsController extends Controller
         if ($request->ajax()) {
             return response()->json(view('projects.project_cards', ['projects' => $projects])->render());
         }
-        return view('projects.my_projects',
+        return view(
+            'projects.my_projects',
             [
                 'projects' => $projects,
                 //exposing email so users know what email they are logged in with
