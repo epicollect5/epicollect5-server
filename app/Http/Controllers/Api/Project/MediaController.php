@@ -27,11 +27,21 @@ class MediaController
 
     private RuleMedia $ruleMedia;
 
+    /**
+     * Initializes the MediaController with a RuleMedia validation instance.
+     *
+     * @param RuleMedia $ruleMedia The media validation rule instance.
+     */
     public function __construct(RuleMedia $ruleMedia)
     {
         $this->ruleMedia = $ruleMedia;
     }
 
+    /**
+     * Validates the current media request parameters.
+     *
+     * @return bool True if the request parameters are valid; false if validation errors are present.
+     */
     private function isMediaRequestValid()
     {
         $params = request()->all();
@@ -43,6 +53,13 @@ class MediaController
         return true;
     }
 
+    /**
+     * Serves a media file (photo, audio, or video) for a project from the configured storage driver.
+     *
+     * Validates the incoming media request and retrieves the requested file from either local storage or Amazon S3, depending on configuration. Returns an error response if validation fails or if the storage driver is unsupported.
+     *
+     * @return \Illuminate\Http\Response|\Symfony\Component\HttpFoundation\StreamedResponse JSON error response, file response, or streamed media content.
+     */
     public function getMedia()
     {
         if (!$this->isMediaRequestValid()) {
@@ -62,7 +79,12 @@ class MediaController
     }
 
     /**
-     * @return JsonResponse|\Illuminate\Http\Response|StreamedResponse|null
+     * Retrieves a media file (photo, audio, or video) from local storage and returns it as an HTTP response.
+     *
+     * If the requested file is a photo thumbnail, introduces a random delay to mitigate server load. Streams audio and video files with partial content responses, and returns photo files with full content. If the file is not found, returns a default placeholder image for photos or a 404 error for audio and video. If no filename is provided, always returns the default placeholder image.
+     *
+     * @param array $params Parameters specifying media type, format, and filename.
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response|\Symfony\Component\HttpFoundation\StreamedResponse|null The HTTP response containing the media file, a placeholder image, or an error.
      */
     public function getMediaLocal($params)
     {
@@ -137,6 +159,14 @@ class MediaController
         return $response;
     }
 
+    /**
+     * Retrieves a media file from Amazon S3 storage and returns it as an HTTP response.
+     *
+     * Streams audio and video files or returns photo files with the appropriate content type. If the requested file does not exist, returns a default placeholder image for photos or a 404 error for audio and video. Introduces a random delay for photo thumbnail requests. Logs and handles exceptions, always returning a valid HTTP response.
+     *
+     * @param array $params Media request parameters, including 'type', 'format', and 'name'.
+     * @return \Illuminate\Http\Response HTTP response containing the requested media or a fallback.
+     */
     public function getMediaS3($params)
     {
         $inputType = $params['type'];
@@ -201,6 +231,13 @@ class MediaController
     }
 
 
+    /**
+     * Retrieves a temporary media file from the configured storage driver.
+     *
+     * Validates the media request and serves the requested temporary media file from either local storage or Amazon S3, depending on the application's configuration. Returns an error response if validation fails or if the storage driver is unsupported.
+     *
+     * @return \Illuminate\Http\Response|\Symfony\Component\HttpFoundation\StreamedResponse JSON error response or media file response.
+     */
     public function getTempMedia()
     {
         if (!$this->isMediaRequestValid()) {
@@ -222,7 +259,12 @@ class MediaController
     }
 
     /**
-     * @return JsonResponse|\Illuminate\Http\Response
+     * Retrieves a temporary media file (photo, audio, or video) from local storage.
+     *
+     * If the specified temporary file exists, returns it with the appropriate content type. Audio and video files are streamed, while photos are returned as full content. If the file is not found or an error occurs, attempts to retrieve the corresponding permanent media file as a fallback. Returns a 400 error if no file name is provided.
+     *
+     * @param array $params Media request parameters, including 'type' and 'name'.
+     * @return JsonResponse|\Illuminate\Http\Response The media file response, a fallback response, or an error response.
      */
     public function getTempMediaLocal(array $params)
     {
@@ -277,6 +319,16 @@ class MediaController
         return Response::apiErrorCode(400, ['temp-media-controller' => ['ec5_69']]);
     }
 
+    /**
+     * Retrieves a temporary media file from S3 storage and returns it as an HTTP response.
+     *
+     * If the requested file exists, streams audio and video files or returns photo files with the correct content type.
+     * If the file is not found or an error occurs, falls back to retrieving the permanent media file.
+     * Returns a 400 error if no file name is provided.
+     *
+     * @param array $params Media request parameters, including 'type' and 'name'.
+     * @return \Illuminate\Http\Response|\Symfony\Component\HttpFoundation\StreamedResponse
+     */
     public function getTempMediaS3($params)
     {
         $inputType = $params['type'];
