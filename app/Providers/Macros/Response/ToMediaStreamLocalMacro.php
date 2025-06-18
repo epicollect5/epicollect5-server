@@ -9,10 +9,10 @@ use Illuminate\Support\ServiceProvider;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
 
-class ToMediaStreamMacro extends ServiceProvider
+class ToMediaStreamLocalMacro extends ServiceProvider
 {
     /**
-     * Registers the 'toMediaStream' macro to enable streaming of media files with HTTP byte-range support.
+     * Registers the 'toMediaStreamLocal' macro to enable streaming of media files with HTTP byte-range support.
      *
      * The macro allows clients to request either the entire media file or a specific byte range using the 'Range' header.
      * It sets appropriate HTTP headers for content type, content length, and byte ranges, and returns a streamed response.
@@ -20,7 +20,7 @@ class ToMediaStreamMacro extends ServiceProvider
      */
     public function boot(): void
     {
-        Response::macro('toMediaStream', function (Request $request, $filepath, $inputType) {
+        Response::macro('toMediaStreamLocal', function (Request $request, $filepath, $inputType) {
             try {
                 $contentType = config('epicollect.media.content_type.' . $inputType);
                 $filesize = filesize($filepath);

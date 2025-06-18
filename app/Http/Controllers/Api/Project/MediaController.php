@@ -126,7 +126,7 @@ class MediaController
                 //stream only audio and video
                 if ($inputType !== config('epicollect.strings.inputs_type.photo')) {
                     //serve as 206  partial response to load file faster
-                    return Response::toMediaStream(request(), $realFilepath, $inputType);
+                    return Response::toMediaStreamLocal(request(), $realFilepath, $inputType);
                 } else {
                     //photo response is the usual 200
                     sleep(config('epicollect.setup.api_sleep_time.media'));
@@ -197,7 +197,8 @@ class MediaController
                 // Stream for audio, video, standard 200 for photo
                 if ($inputType !== config('epicollect.strings.inputs_type.photo')) {
                     // For S3, get a streamable response (Laravel >=9 supports streamDownload())
-                    return Response::toMediaStream(request(), $path, $inputType);
+                    $path = 'app/entries/' . $format . '/' . $path;
+                    return Response::toMediaStreamS3(request(), $path, $inputType);
                 } else {
                     // Photo: normal 200 OK
                     sleep(config('epicollect.setup.api_sleep_time.media'));
@@ -294,7 +295,7 @@ class MediaController
 
                 //stream only audio and video (not in unit tests!)
                 if ($inputType !== config('epicollect.strings.inputs_type.photo')) {
-                    return Response::toMediaStream(request(), $realFilepath, $inputType);
+                    return Response::toMediaStreamLocal(request(), $realFilepath, $inputType);
                 } else {
                     //photo response is as usual
                     sleep(config('epicollect.setup.api_sleep_time.media'));
@@ -341,9 +342,9 @@ class MediaController
         }
         // If a name was supplied, attempt to find file
         if (!empty($params['name'])) {
-            // Attempt to retrieve media
+            // Attempt to retrieve media from temp
             try {
-                $path = $inputType. '/' . $this->requestedProject()->ref . '/' . $params['name'];
+                $path = 'app/temp/'. $inputType. '/' . $this->requestedProject()->ref . '/' . $params['name'];
                 $disk = Storage::disk('temp');
 
                 // Check if the file exists using absolute path
@@ -353,7 +354,7 @@ class MediaController
 
                 //stream only audio and video (not in unit tests!)
                 if ($inputType !== config('epicollect.strings.inputs_type.photo')) {
-                    return Response::toMediaStream(request(), $path, $inputType);
+                    return Response::toMediaStreamS3(request(), $path, $inputType);
                 } else {
                     //photo response is as usual
                     sleep(config('epicollect.setup.api_sleep_time.media'));
