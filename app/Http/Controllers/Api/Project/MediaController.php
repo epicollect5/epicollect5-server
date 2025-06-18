@@ -255,10 +255,8 @@ class MediaController
     }
 
     /**
-     * <<<<<<< HEAD
      * @param array $params Media request parameters, including 'type' and 'name'.
      * @return JsonResponse|BinaryFileResponse|StreamedResponse
-     * =======
      * Retrieves a temporary media file (photo, audio, or video) from local storage.
      *
      * If the specified temporary file exists, returns it with the appropriate content type. Audio and video files are streamed, while photos are returned as full content. If the file is not found or an error occurs, attempts to retrieve the corresponding permanent media file as a fallback. Returns a 400 error if no file name is provided.
