@@ -20,11 +20,16 @@ abstract class UploadControllerBase
     protected EntryStructureDTO $entryStructure;
     protected array $errors = [];
     protected RuleUpload $ruleUpload;
+    protected string $storageDriver;
 
     /**
-     * @param EntryStructureDTO $entryStructure
-     * @param RuleFileEntry $ruleFileEntry
-     * @param RuleUpload $ruleUpload
+     * Initializes the base upload controller with entry structure, file entry rules, and upload rules.
+     *
+     * Sets up the entries upload service and determines the default storage driver from configuration.
+     *
+     * @param EntryStructureDTO $entryStructure Data transfer object representing the entry structure.
+     * @param RuleFileEntry $ruleFileEntry Validation rules for file entries.
+     * @param RuleUpload $ruleUpload Validation rules for the upload process.
      */
     public function __construct(
         EntryStructureDTO $entryStructure,
@@ -40,5 +45,6 @@ abstract class UploadControllerBase
             $this->ruleUpload,
             $this->isBulkUpload
         );
+        $this->storageDriver = config('filesystems.default');
     }
 }
