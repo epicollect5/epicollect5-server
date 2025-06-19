@@ -65,9 +65,6 @@ Route::group(['middleware' => 'auth.admin'], function () {
     Route::get('admin/tools/resize-entry-images', 'Web\Admin\Tools\ImageToolsController@resizeEntryImages');
     Route::get('admin/tools/create-entry-extra-images', 'Web\Admin\Tools\ImageToolsController@createEntryExtraImages');
 
-    Route::get('admin/tools/api/entries', 'Web\Admin\Tools\ApiPrivateEntriesController@getEntries');
-    Route::get('admin/tools/api/media', 'Web\Admin\Tools\ApiPrivateEntriesController@getMedia');
-
     Route::get('admin/tools/opcache', 'Web\Admin\Tools\PHPToolsController@resetOpcache');
     Route::get('admin/tools/projects-stats', 'Web\Admin\Tools\PHPToolsController@showProjectsStats');
 
