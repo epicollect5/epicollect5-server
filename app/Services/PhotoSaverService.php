@@ -32,7 +32,7 @@ class PhotoSaverService
     {
         $storageDriver = config('filesystems.default');
         if ($storageDriver === 's3') {
-            return self::saveImageS3($projectRef, $image, $fileName, $dimensions, $quality);
+            return self::saveImageS3($projectRef, $image, $fileName, $disk, $dimensions, $quality);
         }
         if ($storageDriver === 'local') {
             return self::saveImageLocal($projectRef, $image, $fileName, $disk, $dimensions, $quality);
@@ -90,6 +90,7 @@ class PhotoSaverService
      * @param string $projectRef Project reference used as the directory path in S3.
      * @param mixed $image Uploaded file or S3 object path to be processed and saved.
      * @param string $fileName Name for the saved image file.
+
      * @param array $dimensions Optional width and height for resizing and cropping.
      * @param int $quality JPEG encoding quality (default 50).
      * @return bool True on success, false if saving fails.
@@ -98,12 +99,14 @@ class PhotoSaverService
         string $projectRef,
         mixed $image,
         string $fileName,
+        string $disk,
         array $dimensions = [],
         int $quality = 50
     ): bool {
         try {
             if ($image instanceof UploadedFile) {
                 // Local uploaded file
+                //todo: are mobile uplooads also UploadedFile?
                 $imageContent = self::processImage($image->getRealPath(), $dimensions, $quality);
             } elseif (is_string($image)) {
                 $stream = Storage::disk('s3')->readStream($image);
@@ -118,7 +121,7 @@ class PhotoSaverService
             }
 
             // Upload processed image to S3
-            Storage::disk('s3')->put(
+            Storage::disk($disk)->put(
                 $projectRef . '/' . $fileName,
                 $imageContent
             );

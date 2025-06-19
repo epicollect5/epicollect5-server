@@ -342,7 +342,7 @@ class MediaController
         if (!empty($params['name'])) {
             // Attempt to retrieve media from temp
             try {
-                $path = 'app/temp/'. $inputType. '/' . $this->requestedProject()->ref . '/' . $params['name'];
+                $path = $inputType. '/' . $this->requestedProject()->ref . '/' . $params['name'];
                 $disk = Storage::disk('temp');
 
                 // Check if the file exists using absolute path
@@ -352,6 +352,8 @@ class MediaController
 
                 //stream only audio and video (not in unit tests!)
                 if ($inputType !== config('epicollect.strings.inputs_type.photo')) {
+                    // prepend app/temp/ to the path for S3
+                    $path = 'app/temp/' . $path;
                     return Response::toMediaStreamS3(request(), $path, $inputType);
                 } else {
                     //photo response is as usual
