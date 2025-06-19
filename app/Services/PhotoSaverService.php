@@ -90,7 +90,7 @@ class PhotoSaverService
      * @param string $projectRef Project reference used as the directory path in S3.
      * @param mixed $image Uploaded file or S3 object path to be processed and saved.
      * @param string $fileName Name for the saved image file.
-
+     * @param string $disk S3 disk name where the image will be saved.
      * @param array $dimensions Optional width and height for resizing and cropping.
      * @param int $quality JPEG encoding quality (default 50).
      * @return bool True on success, false if saving fails.
@@ -105,8 +105,7 @@ class PhotoSaverService
     ): bool {
         try {
             if ($image instanceof UploadedFile) {
-                // Local uploaded file
-                //todo: are mobile uplooads also UploadedFile?
+                //Mobile uploads are UploadedFile instances
                 $imageContent = self::processImage($image->getRealPath(), $dimensions, $quality);
             } elseif (is_string($image)) {
                 $stream = Storage::disk('s3')->readStream($image);
@@ -175,7 +174,12 @@ class PhotoSaverService
     private static function processImageS3($stream, array $dimensions = [], int $quality = 50): string
     {
         if (!$stream) {
-            throw new RuntimeException("Could not open stream for S3 path: $stream");
+            throw new RuntimeException("Could not open stream for S3 image processing");
+        }
+
+        if (!is_resource($stream)) {
+            Log::error('Cannot process image from S3', ['exception' => 'Invalid stream resource']);
+            throw new InvalidArgumentException("Expected stream resource, got " . gettype($stream));
         }
 
         $manager = new ImageManager(new Driver());

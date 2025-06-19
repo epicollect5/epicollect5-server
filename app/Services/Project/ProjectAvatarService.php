@@ -41,7 +41,7 @@ class ProjectAvatarService
      * @param string $projectName Name of the project used for avatar generation.
      * @return bool True on successful avatar generation and storage, false otherwise.
      */
-    public function generate($projectRef, $projectName): bool
+    public function generate(string $projectRef, string $projectName): bool
     {
         $driver = config('filesystems.default');
 
@@ -66,7 +66,7 @@ class ProjectAvatarService
      * @param string $projectName Name of the project to be used in the avatar image.
      * @return bool True if avatars are generated and saved successfully; false otherwise.
      */
-    protected function generateLocal($projectRef, $projectName): bool
+    private function generateLocal(string $projectRef, string $projectName): bool
     {
         try {
             //get thumb and mobile path
@@ -111,7 +111,7 @@ class ProjectAvatarService
      * @param string $projectName Name of the project used to generate the avatar.
      * @return bool True if avatars are successfully generated and uploaded; false otherwise.
      */
-    protected function generateS3(string $projectRef, string $projectName): bool
+    private function generateS3(string $projectRef, string $projectName): bool
     {
         try {
             $imageThumb = Avatar::create($projectName)

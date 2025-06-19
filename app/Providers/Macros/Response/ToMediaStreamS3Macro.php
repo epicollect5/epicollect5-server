@@ -35,10 +35,17 @@ class ToMediaStreamS3Macro extends ServiceProvider
 
                 $bucket = config('filesystems.disks.s3.bucket');
 
-                $head = $s3->headObject([
-                    'Bucket' => $bucket,
-                    'Key' => $filepath,
-                ]);
+                try {
+                    $head = $s3->headObject([
+                        'Bucket' => $bucket,
+                        'Key' => $filepath,
+                    ]);
+                } catch (Throwable $e) {
+                    Log::error('Cannot get S3 file head', ['exception' => $e->getMessage()]);
+                    $error['api-media-controller'] = ['ec5_103'];
+                    return Response::apiErrorCode(404, $error);
+                }
+
                 $filesize = $head['ContentLength'];
                 $contentType = config('epicollect.media.content_type.' . $inputType, 'application/octet-stream');
 
