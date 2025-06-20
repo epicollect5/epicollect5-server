@@ -1,5 +1,13 @@
 <?php
 
+$doSpaces = [
+    'region'   => env('DO_SPACES_REGION'),
+    'bucket'   => env('DO_SPACES_BUCKET'),
+    'endpoint' => env('DO_SPACES_ENDPOINT'),
+    'key'      => env('DO_SPACES_KEY'),
+    'secret'   => env('DO_SPACES_SECRET'),
+];
+
 return [
 
     /*
@@ -11,11 +19,13 @@ return [
     | by the framework. A "local" driver, as well as a variety of cloud
     | based drivers are available for your choosing. Just store away!
     |
-    | Supported: "local", "ftp", "s3", "rackspace"
+    | Supported: "local", "s3"
     |
     */
 
-    'default' => 'local',
+    'default' => config('epicollect.setup.system.storage_driver', 'local'),
+
+
 
     /*
     |--------------------------------------------------------------------------
@@ -52,13 +62,16 @@ return [
             'directory_visibility' => 'public',
         ],
 
-        'temp' => [
+        'temp' => array_merge([
             'driver' => config('epicollect.setup.system.storage_driver'),
-            'root' => storage_path('app/temp'),
+            'root' => config('epicollect.setup.system.storage_driver') === 'local'
+                ? storage_path('app/temp')
+                : 'app/temp',
             'throw' => true,
             'visibility' => 'public',
             'directory_visibility' => 'public',
-        ],
+
+        ], $doSpaces),
 
         //todo: is this actually needed?
         'local' => [
@@ -79,9 +92,11 @@ return [
 
         //imp: Laravel Team is against having a permission different from 755 on public folders
         //see https://github.com/laravel/docs/pull/8003
-        'entry_original' => [
+        'entry_original' => array_merge([
             'driver' => config('epicollect.setup.system.storage_driver'),
-            'root' => storage_path('app/entries/photo/entry_original'),
+            'root' => config('epicollect.setup.system.storage_driver') === 'local'
+                ? storage_path('app/entries/photo/entry_original')
+                : 'app/entries/photo/entry_original',
             'throw' => true,
             'permissions' => [
                 'file' => [
@@ -93,13 +108,16 @@ return [
                     'private' => 0700,
                 ],
             ]
-        ],
+
+        ], $doSpaces),
 
         //imp: Laravel Team is against having a permission different from 755 on public folders
         //see https://github.com/laravel/docs/pull/8003
-        'entry_thumb' => [
+        'entry_thumb' => array_merge([
             'driver' => config('epicollect.setup.system.storage_driver'),
-            'root' => storage_path('app/entries/photo/entry_thumb'),
+            'root' => config('epicollect.setup.system.storage_driver') === 'local'
+                ? storage_path('app/entries/photo/entry_thumb')
+                : 'app/entries/photo/entry_thumb',
             'throw' => true,
             'permissions' => [
                 'file' => [
@@ -111,13 +129,16 @@ return [
                     'private' => 0700,
                 ]
             ]
-        ],
+
+        ], $doSpaces),
 
         //imp: Laravel Team is against having a permission different from 755 on public folders
         //see https://github.com/laravel/docs/pull/8003
-        'project_thumb' => [
+        'project_thumb' => array_merge([
             'driver' => config('epicollect.setup.system.storage_driver'),
-            'root' => storage_path('app/projects/project_thumb'),
+            'root' => config('epicollect.setup.system.storage_driver') === 'local'
+                ? storage_path('app/projects/project_thumb')
+                : 'app/projects/project_thumb',
             'throw' => true,
             'permissions' => [
                 'file' => [
@@ -129,13 +150,15 @@ return [
                     'private' => 0700,
                 ],
             ]
-        ],
+        ], $doSpaces),
 
         //imp: Laravel Team is against having a permission different from 755 on public folders
         //see https://github.com/laravel/docs/pull/8003
-        'project_mobile_logo' => [
+        'project_mobile_logo' => array_merge([
             'driver' => config('epicollect.setup.system.storage_driver'),
-            'root' => storage_path('app/projects/project_mobile_logo'),
+            'root' => config('epicollect.setup.system.storage_driver') === 'local'
+                ? storage_path('app/projects/project_mobile_logo')
+                : 'app/projects/project_mobile_logo',
             'throw' => true,
             'permissions' => [
                 'file' => [
@@ -147,13 +170,15 @@ return [
                     'private' => 0700,
                 ],
             ]
-        ],
+        ], $doSpaces),
 
         //imp: Laravel Team is against having a permission different from 755 on public folders
         //see https://github.com/laravel/docs/pull/8003
-        'video' => [
+        'video' => array_merge([
             'driver' => config('epicollect.setup.system.storage_driver'),
-            'root' => storage_path('app/entries/video'),
+            'root' => config('epicollect.setup.system.storage_driver') === 'local'
+                ? storage_path('app/entries/video')
+                : 'app/entries/video',
             'throw' => true,
             'permissions' => [
                 'file' => [
@@ -165,13 +190,15 @@ return [
                     'private' => 0700,
                 ],
             ]
-        ],
+        ], $doSpaces),
 
         //imp: Laravel Team is against having a permission different from 755 on public folders
         //see https://github.com/laravel/docs/pull/8003
-        'audio' => [
+        'audio' => array_merge([
             'driver' => config('epicollect.setup.system.storage_driver'),
-            'root' => storage_path('app/entries/audio'),
+            'root' => config('epicollect.setup.system.storage_driver') === 'local'
+                ? storage_path('app/entries/audio')
+                : 'app/entries/audio',
             'throw' => true,
             'permissions' => [
                 'file' => [
@@ -183,7 +210,7 @@ return [
                     'private' => 0700,
                 ],
             ]
-        ],
+        ], $doSpaces),
 
         //imp: Laravel Team is against having a permission different from 755 on public folders
         //see https://github.com/laravel/docs/pull/8003
@@ -203,126 +230,14 @@ return [
             ]
         ],
 
-        /**
-         * add orphan files in proper own folders
-         * we use these folders to store media file which
-         * are not linked to any entry data row (so they are "orphan")
-         * we had to do this due to a bug no the app not deleting media files
-         * when a data entry was deleted
-         * */
-
-        'orphan_entry_original' => [
-            'driver' => 'local',
-            'root' => storage_path('app/orphans/photo/entry_original'),
-            'throw' => true,
-            'permissions' => [
-                'file' => [
-                    'public' => 0644,
-                    'private' => 0600,
-                ],
-                'dir' => [
-                    'public' => 0755,
-                    'private' => 0700,
-                ],
-            ],
-        ],
-
-        'orphan_entry_thumb' => [
-            'driver' => 'local',
-            'root' => storage_path('app/orphans/photo/entry_thumb'),
-            'throw' => true,
-            'permissions' => [
-                'file' => [
-                    'public' => 0644,
-                    'private' => 0600,
-                ],
-                'dir' => [
-                    'public' => 0755,
-                    'private' => 0700,
-                ],
-            ],
-        ],
-
-        'orphan_video' => [
-            'driver' => 'local',
-            'root' => storage_path('app/orphans/video'),
-            'throw' => true,
-            'permissions' => [
-                'file' => [
-                    'public' => 0644,
-                    'private' => 0600,
-                ],
-                'dir' => [
-                    'public' => 0755,
-                    'private' => 0700,
-                ],
-            ],
-        ],
-
-        'orphan_audio' => [
-            'driver' => 'local',
-            'root' => storage_path('app/orphans/audio'),
-            'throw' => true,
-            'permissions' => [
-                'file' => [
-                    'public' => 0644,
-                    'private' => 0600,
-                ],
-                'dir' => [
-                    'public' => 0755,
-                    'private' => 0700,
-                ],
-            ],
-        ],
-
-        'debug' => [
-            'driver' => 'local',
-            'root' => storage_path('app/debug'),
-            'throw' => true,
-            'permissions' => [
-                'file' => [
-                    'public' => 0644,
-                    'private' => 0600,
-                ],
-                'dir' => [
-                    'public' => 0755,
-                    'private' => 0700,
-                ],
-            ],
-        ],
-
-        'ftp' => [
-            'driver' => 'ftp',
-            'host' => 'ftp.example.com',
-            'username' => 'your-username',
-            'password' => 'your-password',
-
-            // Optional FTP Settings...
-            // 'port'     => 21,
-            // 'root'     => '',
-            // 'passive'  => true,
-            // 'ssl'      => true,
-            // 'timeout'  => 30,
-        ],
-
         's3' => [
             'driver' => 's3',
-            'key' => 'your-key',
-            'secret' => 'your-secret',
-            'region' => 'your-region',
-            'bucket' => 'your-bucket',
-        ],
-
-        'rackspace' => [
-            'driver' => 'rackspace',
-            'username' => 'your-username',
-            'key' => 'your-key',
-            'container' => 'your-container',
-            'endpoint' => 'https://identity.api.rackspacecloud.com/v2.0/',
-            'region' => 'IAD',
-            'url_type' => 'publicURL',
-        ],
-
-    ],
-
+            'use_path_style_endpoint' => env('DO_SPACES_USE_PATH_STYLE_ENDPOINT', false),
+            'region'   => env('DO_SPACES_REGION'),
+            'bucket'   => env('DO_SPACES_BUCKET'),
+            'endpoint' => env('DO_SPACES_ENDPOINT'),
+            'key'      => env('DO_SPACES_KEY'),
+            'secret'   => env('DO_SPACES_SECRET'),
+        ]
+]
 ];
