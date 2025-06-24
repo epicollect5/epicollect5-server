@@ -56,9 +56,20 @@ class DeleteEntryService
 
             //5. Delete media files
             //imp: merge hierarchy uuids with branch entries uuids
-            if (!$this->deleteMediaFiles($project->ref, array_merge($entryUuids, $branchEntryUuids))) {
-                throw new Exception('Cannot delete media files');
+            //4. Delete media files
+            if (config("filesystems.default") === 's3') {
+                if (!$this->deleteMediaFilesS3($project->ref, array_merge($entryUuids, $branchEntryUuids))) {
+                    throw new Exception('Cannot delete media files S3');
+                }
             }
+            if (config("filesystems.default") === 'local') {
+                if (!$this->deleteMediaFilesLocal($project->ref, array_merge($entryUuids, $branchEntryUuids))) {
+                    throw new Exception('Cannot delete media files local');
+                }
+            }
+            //            if (!$this->deleteMediaFilesLocal($project->ref, array_merge($entryUuids, $branchEntryUuids))) {
+            //                throw new Exception('Cannot delete media files');
+            //            }
 
             // Now finally commit
             DB::commit();
@@ -105,8 +116,15 @@ class DeleteEntryService
             }
 
             //4. Delete media files
-            if (!$this->deleteMediaFiles($project->ref, [$branchEntryUuid])) {
-                throw new Exception('Cannot delete media files');
+            if (config("filesystems.default") === 's3') {
+                if (!$this->deleteMediaFilesS3($project->ref, [$branchEntryUuid])) {
+                    throw new Exception('Cannot delete media files S3');
+                }
+            }
+            if (config("filesystems.default") === 'local') {
+                if (!$this->deleteMediaFilesLocal($project->ref, [$branchEntryUuid])) {
+                    throw new Exception('Cannot delete media files local');
+                }
             }
 
             // If we don't want to keep open the transaction for further processing
@@ -122,7 +140,7 @@ class DeleteEntryService
         return true;
     }
 
-    private function deleteMediaFiles(string $projectRef, array $uuids): bool
+    private function deleteMediaFilesLocal(string $projectRef, array $uuids): bool
     {
         //delete all files for this entry (matching the starting uuid)
         // Use DirectoryIterator to iterate through files one by one
@@ -158,6 +176,43 @@ class DeleteEntryService
                         }
                     }
                 }
+            }
+        }
+
+        return true;
+    }
+
+    private function deleteMediaFilesS3(string $projectRef, array $uuids): bool
+    {
+        $drivers = config('epicollect.media.entries_deletable');
+        foreach ($drivers as $driver) {
+
+            $disk = Storage::disk($driver);
+            $prefix = rtrim($projectRef, '/') . '/';
+
+            try {
+                // List all files under the S3 "directory"
+                $allFiles = $disk->files($prefix);
+
+                // Filter only files that start with one of the UUIDs
+                $filesToDelete = array_filter($allFiles, function ($path) use ($uuids) {
+                    $filename = basename($path);
+
+                    foreach ($uuids as $uuid) {
+                        if (str_starts_with($filename, $uuid)) {
+                            return true;
+                        }
+                    }
+
+                    return false;
+                });
+
+                if (!empty($filesToDelete)) {
+                    $disk->delete($filesToDelete);
+                }
+            } catch (Throwable $e) {
+                Log::error("deleteMediaFilesS3 failed for driver [$driver], project [$projectRef]: " . $e->getMessage());
+                return false;
             }
         }
 

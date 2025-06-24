@@ -274,7 +274,7 @@ class RuleFileEntry extends EntryValidationBase
                     $fileName,
                     'entry_original',
                     $dimensions,
-                    100
+                    70
                 );
 
                 if (!$original) {

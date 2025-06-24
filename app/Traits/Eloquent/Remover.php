@@ -100,7 +100,14 @@ trait Remover
             //if we have 0 entries left, delete all media files
             $totalEntries = ProjectStats::where('project_id', $projectId)->value('total_entries');
             if ($totalEntries === 0) {
-                $this->removeAllTheEntriesMediaFolders($projectRef);
+                //delete all the entries media folders on S3 bucket
+                if (config("filesystems.default") === 's3') {
+                    $this->removeAllTheEntriesMediaFoldersS3($projectRef);
+                }
+                //delete all the entries media folders on local storage
+                if (config("filesystems.default") === 'local') {
+                    $this->removeAllTheEntriesMediaFoldersLocal($projectRef);
+                }
             }
 
             return true;
@@ -115,7 +122,7 @@ trait Remover
         }
     }
 
-    public function removeAllTheEntriesMediaFolders($projectRef): void
+    public function removeAllTheEntriesMediaFoldersLocal($projectRef): void
     {
         //remove all the entries media folders
         $drivers = config('epicollect.media.entries_deletable');
@@ -127,4 +134,30 @@ trait Remover
             File::deleteDirectory($pathPrefix . $projectRef);
         }
     }
+    public function removeAllTheEntriesMediaFoldersS3($projectRef): void
+    {
+        // Remove all the entries media folders from configured disks
+        $drivers = config('epicollect.media.entries_deletable');
+
+        foreach ($drivers as $driver) {
+            $disk = Storage::disk($driver);
+
+            // Get all files under the projectRef "folder" (prefix)
+            $files = $disk->allFiles($projectRef);
+
+            if (!empty($files)) {
+                $disk->delete($files);
+            }
+
+            // Optionally, delete empty "directories" (prefixes) - mostly cosmetic in S3
+            $directories = $disk->allDirectories($projectRef);
+            foreach ($directories as $dir) {
+                $disk->deleteDirectory($dir);
+            }
+
+            // Finally, delete the top-level folder (prefix) itself if it exists as a zero-byte object
+            $disk->delete($projectRef);
+        }
+    }
+
 }

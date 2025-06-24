@@ -26,7 +26,7 @@ use PHPUnit\Framework\Attributes\Depends;
 use Tests\TestCase;
 use Throwable;
 
-class MediaExportPrivatePhotoTest extends TestCase
+class MediaExportPrivatePhotoOriginalLocalTest extends TestCase
 {
     use Assertions;
 
@@ -171,8 +171,17 @@ class MediaExportPrivatePhotoTest extends TestCase
     /**
      * @throws Throwable
      */
-    #[Depends('test_getting_OAuth2_token')] public function test_photos_export_endpoint_private($params)
+    #[Depends('test_getting_OAuth2_token')]
+    public function test_photos_export_endpoint_private($params)
     {
+        config([
+            'filesystems.default' => 'local',
+            'filesystems.disks.temp.driver' => 'local',
+            'filesystems.disks.temp.root' => storage_path('app/temp'),
+            'filesystems.disks.entry_original.driver' => 'local',
+            'filesystems.disks.entry_original.root' => storage_path('app/entries/photo/entry_original'),
+        ]);
+
         $token = $params['token'];
         $user = $params['user'];
         $project = $params['project'];
@@ -199,7 +208,7 @@ class MediaExportPrivatePhotoTest extends TestCase
         for ($i = 0; $i < 1; $i++) {
             $entryPayloads[$i] = $entryGenerator->createParentEntryPayload($formRef);
 
-            $photoAnswers[] = $entryPayloads[0]['data']['entry']['answers'][$photoRefs[0]];
+            $photoAnswers[] = $entryPayloads[$i]['data']['entry']['answers'][$photoRefs[0]];
 
             $entryRowBundle = $entryGenerator->createParentEntryRow(
                 $user,
@@ -228,6 +237,9 @@ class MediaExportPrivatePhotoTest extends TestCase
         Storage::disk('entry_original')->put($project->ref . '/' . $filename, $imageData);
         $imagePath = Storage::disk('entry_original')->path('') . $project->ref . '/' . $filename;
 
+        $relativePath = $project->ref . '/' . $filename;
+        $this->assertTrue(Storage::disk('entry_original')->exists($relativePath), "File was not created at: $relativePath");
+
         //assert row is created
         $this->assertCount(
             1,
@@ -242,13 +254,16 @@ class MediaExportPrivatePhotoTest extends TestCase
         $entriesURL = config('testing.LOCAL_SERVER') . '/api/export/media/';
         $entriesClient = new Client([
             'headers' => [
+                //Guzzle will use the .env instead of .env.testing since it is an external request
+                //therefore we need to override it using header (and related middleware)
+                'X-Disk-Override' => 'local',
                 //imp: without this, does not work
                 'Content-Type' => 'application/vnd.api+json',
                 'Authorization' => 'Bearer ' . $token //this will last for 2 hours!
             ]
         ]);
 
-        $queryString = '?type=photo&name=' . $filename . '&format=entry_original';
+        $queryString = '?type=photo&name=' . $filename . '&format=entry_original'.'&XDEBUG_SESSION_START=phpstorm';
 
         try {
             $response = $entriesClient->request('GET', $entriesURL . $project->slug . $queryString);

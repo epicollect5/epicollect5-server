@@ -19,7 +19,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 use Throwable;
 
-class MediaControllerTest extends TestCase
+class MediaControllerLocalTest extends TestCase
 {
     use DatabaseTransactions;
     use Assertions;
@@ -75,6 +75,25 @@ class MediaControllerTest extends TestCase
         $this->project = $project;
         $this->projectDefinition = $projectDefinition;
         $this->entryGenerator = new EntryGenerator($projectDefinition);
+
+        //set storage (and all disks) to local
+        config([
+            'filesystems.default' => 'local',
+            'filesystems.disks.temp.driver' => 'local',
+            'filesystems.disks.temp.root' => storage_path('app/temp'),
+            'filesystems.disks.entry_original.driver' => 'local',
+            'filesystems.disks.entry_original.root' => storage_path('app/entries/photo/entry_original'),
+            'filesystems.disks.entry_thumb.driver' => 'local',
+            'filesystems.disks.entry_thumb.root' => storage_path('app/entries/photo/entry_thumb'),
+            'filesystems.disks.project_thumb.driver' => 'local',
+            'filesystems.disks.project_thumb.root' => storage_path('app/projects/project_thumb'),
+            'filesystems.disks.project_mobile_logo.driver' => 'local',
+            'filesystems.disks.project_mobile_logo.root' => storage_path('app/projects/project_mobile_logo'),
+            'filesystems.disks.audio.driver' => 'local',
+            'filesystems.disks.audio.root' => storage_path('app/entries/audio'),
+            'filesystems.disks.video.driver' => 'local',
+            'filesystems.disks.video.root' => storage_path('app/entries/video')
+        ]);
     }
 
     #[DataProvider('multipleRunProvider')] public function test_should_give_private_project_error()
@@ -376,7 +395,8 @@ class MediaControllerTest extends TestCase
         $response->assertHeader('Content-Type', config('epicollect.media.content_type.photo'));
     }
 
-    #[DataProvider('multipleRunProvider')] public function test_photo_file_is_returned_landscape()
+    #[DataProvider('multipleRunProvider')]
+    public function test_photo_file_is_returned_landscape()
     {
         //create a fake entry
         $entry = factory(Entry::class)->create([
@@ -393,21 +413,25 @@ class MediaControllerTest extends TestCase
 
         // Encode the image as JPEG or other formats
         $imageData = (string)$image->encode(new JpegEncoder(50));
+        $relativePath = $this->project->ref . '/' . $filename;
         Storage::disk('entry_original')->put($this->project->ref . '/' . $filename, $imageData);
+        $this->assertTrue(Storage::disk('entry_original')->exists($relativePath), "File was not created at: $relativePath");
+
 
         $thumbWidth = config('epicollect.media.entry_thumb')[0];
         $thumbHeight = config('epicollect.media.entry_thumb')[1];
         $thumb = Image::create($thumbWidth, $thumbHeight); // Width, height, and background color
         // Encode the image as JPEG or other formats
         $thumbData = (string)$thumb->encode(new JpegEncoder(50));
+        $relativePath = $this->project->ref . '/' . $filename;
         Storage::disk('entry_thumb')->put($this->project->ref . '/' . $filename, $thumbData);
+        $this->assertTrue(Storage::disk('entry_thumb')->exists($relativePath), "File was not created at: $relativePath");
 
         //entry_original
         $queryString = '?type=photo&name=' . $filename . '&format=entry_original';
         $response = $this->json('GET', 'api/internal/media/' . $this->project->slug . $queryString)
             ->assertStatus(200);
         $response->assertHeader('Content-Type', config('epicollect.media.content_type.photo'));
-
 
         // Get the image content from the response
         $imageContent = $response->getContent();
@@ -418,7 +442,10 @@ class MediaControllerTest extends TestCase
 
         //entry_thumb
         $queryString = '?type=photo&name=' . $filename . '&format=entry_thumb';
-        $response = $this->json('GET', 'api/internal/media/' . $this->project->slug . $queryString)
+        $response = $this->json(
+            'GET',
+            'api/internal/media/' . $this->project->slug . $queryString
+        )
             ->assertStatus(200);
         $response->assertHeader('Content-Type', config('epicollect.media.content_type.photo'));
 

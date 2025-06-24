@@ -53,7 +53,7 @@ return [
 
     'disks' => [
 
-        //todo: is this actually needed?
+        //this is needed to server the image placeholder for example
         'public' => [
             'driver' => 'local',
             'root' => public_path('images'),
@@ -214,8 +214,9 @@ return [
 
         //imp: Laravel Team is against having a permission different from 755 on public folders
         //see https://github.com/laravel/docs/pull/8003
+        //zip archve are stored locally, served and deleted straight away
         'entries_zip' => [
-            'driver' => config('epicollect.setup.system.storage_driver'),
+            'driver' => 'local',
             'root' => storage_path('app/entries/zip'),
             'throw' => true,
             'permissions' => [

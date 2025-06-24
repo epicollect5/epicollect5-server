@@ -7,6 +7,7 @@ use ec5\Http\Middleware\Authenticate;
 use ec5\Http\Middleware\BasicAuthenticate;
 use ec5\Http\Middleware\EncryptCookies;
 use ec5\Http\Middleware\IpMiddleware;
+use ec5\Http\Middleware\OverrideDiskForTesting;
 use ec5\Http\Middleware\PreventRequestsDuringMaintenance;
 use ec5\Http\Middleware\ProjectPermissions;
 use ec5\Http\Middleware\ProjectPermissionsApi;
@@ -84,6 +85,7 @@ class Kernel extends HttpKernel
         'project.permissions.viewer.role' => ProjectPermissionsViewerRole::class,
         'project.permissions.api' => ProjectPermissionsApi::class,
         'project.permissions.bulk-upload' => ProjectPermissionsBulkUpload::class,
-        'ip.filtering' => IpMiddleware::class
+        'ip.filtering' => IpMiddleware::class,
+        'override.disks' => OverrideDiskForTesting::class
     ];
 }

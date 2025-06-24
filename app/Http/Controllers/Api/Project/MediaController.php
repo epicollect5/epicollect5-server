@@ -130,7 +130,13 @@ class MediaController
                 } else {
                     //photo response is the usual 200
                     sleep(config('epicollect.setup.api_sleep_time.media'));
-                    return Response::file($realFilepath, ['Content-Type' => $contentType]);
+                    //we load the file in  memory, we are aware of the limitations but images are small
+                    //around 500kb to 1MB max
+                    return Response::make(
+                        file_get_contents($realFilepath),
+                        200,
+                        ['Content-Type' => $contentType]
+                    );
                 }
             } catch (FileNotFoundException) {
                 if ($inputType === config('epicollect.strings.inputs_type.photo')) {
@@ -203,7 +209,15 @@ class MediaController
                     // Photo: normal 200 OK
                     sleep(config('epicollect.setup.api_sleep_time.media'));
                     // For S3, get a streamable response
-                    return $disk->response($path, null, ['Content-Type' => $contentType]);
+                    $stream = Storage::disk($format)->readStream($path);
+                    $imageContent = stream_get_contents($stream);
+                    fclose($stream); // Close the stream manually
+                    //we load the images in memory, we are aware of the limitations but images are small
+                    //around 500kb to 1MB max
+                    //otherwise it would be -> return $disk->response($path, null, ['Content-Type' => $contentType]);
+                    return response($imageContent, 200, [
+                        'Content-Type' => $contentType,
+                    ]);
                 }
             }
         } catch (FileNotFoundException) {
@@ -297,7 +311,13 @@ class MediaController
                 } else {
                     //photo response is as usual
                     sleep(config('epicollect.setup.api_sleep_time.media'));
-                    return Response::file($realFilepath, ['Content-Type' => $contentType]);
+                    //we load the file in  memory, we are aware of the limitations but images are small
+                    //around 500kb to 1MB max
+                    return Response::make(
+                        file_get_contents($realFilepath),
+                        200,
+                        ['Content-Type' => $contentType]
+                    );
                 }
             } catch (Throwable $e) {
                 Log::info('Temp media error', ['exception' => $e->getMessage()]);
@@ -359,7 +379,15 @@ class MediaController
                     //photo response is as usual
                     sleep(config('epicollect.setup.api_sleep_time.media'));
                     // For S3, get a streamable response
-                    return $disk->response($path, null, ['Content-Type' => $contentType]);
+                    $stream = $disk->readStream($path);
+                    $imageContent = stream_get_contents($stream);
+                    fclose($stream); // Close the stream manually
+                    //we load the images in memory, we are aware of the limitations but images are small
+                    //around 500kb to 1MB max
+                    //otherwise it would be -> return $disk->response($path, null, ['Content-Type' => $contentType]);
+                    return response($imageContent, 200, [
+                        'Content-Type' => $contentType,
+                    ]);
                 }
             } catch (Throwable $e) {
                 Log::info('Temp media error', ['exception' => $e->getMessage()]);

@@ -19,13 +19,14 @@ use Exception;
 use File;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Passport\ClientRepository;
 use PHPUnit\Framework\Attributes\Depends;
 use Tests\TestCase;
 use Throwable;
 
-class MediaExportPrivateVideoTest extends TestCase
+class MediaExportPrivateAudioS3Test extends TestCase
 {
     use Assertions;
 
@@ -34,9 +35,6 @@ class MediaExportPrivateVideoTest extends TestCase
      */
     public function test_getting_OAuth2_token()
     {
-
-        // Reset the rate limiter for oauth-token
-        File::cleanDirectory(storage_path('framework/cache/data'));
         $name = config('testing.WEB_UPLOAD_CONTROLLER_PROJECT.name');
         $slug = config('testing.WEB_UPLOAD_CONTROLLER_PROJECT.slug');
         $email = config('testing.UNIT_TEST_RANDOM_EMAIL');
@@ -166,8 +164,9 @@ class MediaExportPrivateVideoTest extends TestCase
     /**
      * @throws Throwable
      */
-    #[Depends('test_getting_OAuth2_token')] public function test_videos_export_endpoint_private($params)
+    #[Depends('test_getting_OAuth2_token')] public function test_audios_export_endpoint_private($params)
     {
+        File::cleanDirectory(storage_path('framework/cache/data'));
         $token = $params['token'];
         $user = $params['user'];
         $project = $params['project'];
@@ -182,18 +181,18 @@ class MediaExportPrivateVideoTest extends TestCase
         $formRef = array_get($projectDefinition, 'data.project.forms.0.ref');
         $inputs = array_get($projectDefinition, 'data.project.forms.0.inputs');
 
-        $videoRefs = array_values(array_map(function ($input) {
+        $audioRefs = array_values(array_map(function ($input) {
             return $input['ref'];
         }, array_filter($inputs, function ($input) {
-            return $input['type'] === config('epicollect.strings.inputs_type.video');
+            return $input['type'] === config('epicollect.strings.inputs_type.audio');
         })));
 
         $entryPayloads = [];
-        $videoAnswers = [];
+        $audioAnswers = [];
         for ($i = 0; $i < 1; $i++) {
             $entryPayloads[$i] = $entryGenerator->createParentEntryPayload($formRef);
 
-            $videoAnswers[] = $entryPayloads[0]['data']['entry']['answers'][$videoRefs[0]];
+            $audioAnswers[] = $entryPayloads[0]['data']['entry']['answers'][$audioRefs[0]];
 
             $entryRowBundle = $entryGenerator->createParentEntryRow(
                 $user,
@@ -210,11 +209,11 @@ class MediaExportPrivateVideoTest extends TestCase
         }
 
         //add the fake audio
-        $filename = $videoAnswers[0]['answer'];
+        $filename = $audioAnswers[0]['answer'];
 
         //create a fake audio for the entry
-        $videoContent = MediaGenerator::getFakeVideoContentBase64();
-        Storage::disk('video')->put($project->ref . '/' . $filename, $videoContent);
+        $audioContent = MediaGenerator::getFakeAudioContentBase64();
+        Storage::disk('audio')->put($project->ref . '/' . $filename, $audioContent);
 
         //assert row is created
         $this->assertCount(
@@ -230,14 +229,16 @@ class MediaExportPrivateVideoTest extends TestCase
         $entriesURL = config('testing.LOCAL_SERVER') . '/api/export/media/';
         $entriesClient = new Client([
             'headers' => [
+                //Guzzle will use the .env instead of .env.testing since it is an external request
+                'X-Disk-Override' => 's3',
                 //imp: without this, does not work
                 'Content-Type' => 'application/vnd.api+json',
                 'Authorization' => 'Bearer ' . $token //this will last for 2 hours!
             ]
         ]);
 
-        $queryString = '?type=video&name=' . $filename . '&format=video';
-
+        $queryString = '?type=audio&name=' . $filename . '&format=audio'.'&XDEBUG_SESSION_START=phpstorm';
+        Log::info(__METHOD__, ['uri' => $entriesURL . $project->slug . $queryString]);
         try {
             $response = $entriesClient->request('GET', $entriesURL . $project->slug . $queryString);
 
@@ -245,12 +246,13 @@ class MediaExportPrivateVideoTest extends TestCase
             $headers = $response->getHeaders();
             // Assert that the Content-Type header exists and has the expected value
             $this->assertArrayHasKey('Content-Type', $headers);
-            $this->assertEquals(config('epicollect.media.content_type.video'), $headers['Content-Type'][0]);
+            $this->assertEquals(config('epicollect.media.content_type.audio'), $headers['Content-Type'][0]);
 
             // Assert that the content length is greater than 0
             $this->assertGreaterThan(0, $response->getBody()->getSize());
 
-            Storage::disk('video')->deleteDirectory($project->ref);
+            Storage::disk('audio')->deleteDirectory($project->ref);
+
             $this->clearDatabase($params);
         } catch (GuzzleException $e) {
             $this->clearDatabase($params);

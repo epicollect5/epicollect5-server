@@ -15,6 +15,8 @@ use ec5\Traits\Requests\RequestAttributes;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use Log;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Storage;
 use Throwable;
 
@@ -31,6 +33,10 @@ class DownloadController
     |
     */
 
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     public function index(Request $request, RuleDownload $ruleDownload, EntriesViewService $viewEntriesService)
     {
         $user = Auth::user();

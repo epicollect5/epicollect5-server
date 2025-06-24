@@ -76,7 +76,7 @@ class EntriesSeeder extends Seeder
                         $entry->delete();
                     });
                 //delete all media files
-                $this->removeAllTheEntriesMediaFolders($project->ref);
+                $this->removeAllTheEntriesMediaFoldersLocal($project->ref);
             }
         }
 

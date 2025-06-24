@@ -41,9 +41,6 @@ Route::group(['middleware' => ['project.permissions']], function () {
     // Entry upload header (returns a JSON response)
     Route::get('api/internal/upload-headers/{project_slug}', 'Api\Entries\DownloadTemplateController@sendTemplateResponseJSON');
 
-    // Entry Media downloads
-    Route::get('api/internal/download-media/{project_slug}', 'Api\Entries\DownloadController@media');
-
     // Entries for table (dataviewer)
     Route::get('api/internal/entries/{project_slug}', 'Api\Entries\View\ViewEntriesDataController@show');
 

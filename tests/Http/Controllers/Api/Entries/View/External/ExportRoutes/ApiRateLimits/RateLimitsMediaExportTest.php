@@ -146,7 +146,7 @@ class RateLimitsMediaExportTest extends TestCase
         for ($i = 0; $i < $numOfEntries; $i++) {
             $entryPayloads[$i] = $entryGenerator->createParentEntryPayload($formRef);
 
-            $videoAnswers[] = $entryPayloads[0]['data']['entry']['answers'][$videoRefs[0]];
+            $videoAnswers[] = $entryPayloads[$i]['data']['entry']['answers'][$videoRefs[0]];
 
             $entryRowBundle = $entryGenerator->createParentEntryRow(
                 $this->user,
@@ -164,7 +164,7 @@ class RateLimitsMediaExportTest extends TestCase
             //add the fake videos
             $filename = $videoAnswers[$i]['answer'];
 
-            //create a fake audio for the entry
+            //create a fake video for the entry
             $videoContent = MediaGenerator::getFakeVideoContentBase64();
             Storage::disk('video')->put($this->project->ref . '/' . $filename, $videoContent);
         }
@@ -175,22 +175,24 @@ class RateLimitsMediaExportTest extends TestCase
             Entry::where('project_id', $this->project->id)->get()
         );
 
-        //todo: assert files are created
-
+        //assert files are created
+        $videos = Storage::disk('video')->files($this->project->ref);
+        $this->assertCount($numOfEntries, $videos);
 
         $entriesURL = config('testing.LOCAL_SERVER') . '/api/export/media/';
         $entriesClient = new Client([
             'headers' => [
+                //Guzzle will use the .env instead of .env.testing since it is an external request
+                'X-Disk-Override' => 's3',
                 //imp: without this, does not work
                 'Content-Type' => 'application/vnd.api+json'
             ]
         ]);
 
         try {
-            //  Config::set('cache.default', 'file'); // or 'redis' if you're using Redis
             for ($i = 1; $i <= $apiMediaRateLimit; $i++) {
                 $filename = $videoAnswers[$i]['answer'];
-                $queryString = '?type=video&name=' . $filename . '&format=video';
+                $queryString = '?type=video&name=' . $filename . '&format=video'.'&XDEBUG_SESSION_START=phpstorm';
                 $response = $entriesClient->request('GET', $entriesURL . $this->project->slug . $queryString);
                 // Get the response headers
                 $headers = $response->getHeaders();
@@ -222,6 +224,7 @@ class RateLimitsMediaExportTest extends TestCase
             $this->logTestError($e, []);
             return false;
         }
+        return true;
     }
 
     private function cleanUp()

@@ -122,7 +122,7 @@ Route::group(['middleware' => ['throttle:600,1']], function () {
 Route::group(['middleware' => ['throttle:api-export-entries']], function () {
     /* Export endpoints */
     // Set project permissions api middleware
-    Route::group(['middleware' => ['project.permissions.api']], function () {
+    Route::group(['middleware' => ['project.permissions.api', 'override.disks']], function () {
         // Export Entries
         Route::get('api/export/entries/{project_slug}', 'Api\Entries\View\ViewEntriesDataController@export');
     });
@@ -139,14 +139,14 @@ Route::group(['middleware' => ['throttle:oauth-token']], function () {
 // Throttle documented project READ endpoints - 60 requests per minute
 Route::group(['middleware' => ['throttle:api-export-project']], function () {
     // Set project permissions api middleware
-    Route::group(['middleware' => ['project.permissions.api']], function () {
+    Route::group(['middleware' => ['project.permissions.api', 'override.disks']], function () {
         // Export Project
         Route::get('api/export/project/{project_slug}', 'Api\Project\ProjectController@export');
     });
 });
 
 Route::group(['middleware' => ['throttle:api-export-media']], function () {
-    Route::group(['middleware' => ['project.permissions.api']], function () {
+    Route::group(['middleware' => ['project.permissions.api', 'override.disks']], function () {
         // Export Entry Media
         Route::get('api/export/media/{project_slug}', 'Api\Project\MediaController@getMedia');
     });
