@@ -1,5 +1,10 @@
 ## Release Notes
 
+# 12.2.0
+
+- Added S3 for media storage
+- Added tests for S3 storage
+
 # 12.1.2
 
 - Refactored validation classes
