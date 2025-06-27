@@ -89,6 +89,7 @@ class MediaController
      */
     public function getMediaLocal(array $params)
     {
+        $photoPlaceholderFilename = config('epicollect.media.photo_placeholder.filename');
         $inputType = $params['type'];
         $format = $params['format'];
         if ($format === config('epicollect.media.formats.entry_thumb')) {
@@ -108,7 +109,6 @@ class MediaController
             default:
                 $contentType = config('epicollect.media.content_type.photo');
         }
-        $defaultName = config('epicollect.media.photo_placeholder.filename');
 
         // If a name was supplied, attempt to find file
         if (!empty($params['name'])) {
@@ -141,7 +141,8 @@ class MediaController
             } catch (FileNotFoundException) {
                 if ($inputType === config('epicollect.strings.inputs_type.photo')) {
                     //Return default placeholder image for photo questions
-                    $file = Storage::disk('public')->get($defaultName);
+                    $photoNotSyncedFilename = config('epicollect.media.photo_not_synced_placeholder.filename');
+                    $file = Storage::disk('public')->get($photoNotSyncedFilename);
                     $response = Response::make($file);
                     $response->header('Content-Type', $contentType);
                     return $response;
@@ -156,7 +157,7 @@ class MediaController
         }
 
         // Otherwise return default placeholder media
-        $file = Storage::disk('public')->get($defaultName);
+        $file = Storage::disk('public')->get($photoPlaceholderFilename);
         $response = Response::make($file);
         $response->header('Content-Type', $contentType);
 
@@ -174,7 +175,7 @@ class MediaController
     {
         $inputType = $params['type'];
         $format = $params['format'];
-        $defaultName = config('epicollect.media.photo_placeholder.filename');
+        $defaultName = config('epicollect.media.photo_unsynced_placeholder.filename');
 
         if ($format === config('epicollect.media.formats.entry_thumb')) {
             time_nanosleep(0, mt_rand(250000000, 500000000));
