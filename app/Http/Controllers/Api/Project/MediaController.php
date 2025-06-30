@@ -175,7 +175,9 @@ class MediaController
     {
         $inputType = $params['type'];
         $format = $params['format'];
-        $defaultName = config('epicollect.media.photo_unsynced_placeholder.filename');
+        $photoPlaceholderFilename = config('epicollect.media.photo_placeholder.filename');
+        $photoNotSyncedFilename = config('epicollect.media.photo_not_synced_placeholder.filename');
+
 
         if ($format === config('epicollect.media.formats.entry_thumb')) {
             time_nanosleep(0, mt_rand(250000000, 500000000));
@@ -223,7 +225,7 @@ class MediaController
             }
         } catch (FileNotFoundException) {
             if ($inputType === config('epicollect.strings.inputs_type.photo')) {
-                $file = Storage::disk('public')->get($defaultName);
+                $file = Storage::disk('public')->get($photoNotSyncedFilename);
                 $response = Response::make($file);
                 $response->header('Content-Type', $contentType);
                 return $response;
@@ -235,12 +237,11 @@ class MediaController
             Log::error('Cannot get S3 media file', ['exception' => $e]);
         }
 
-        $file = Storage::disk('public')->get($defaultName);
+        $file = Storage::disk('public')->get($photoPlaceholderFilename);
         $response = Response::make($file);
         $response->header('Content-Type', $contentType);
         return $response;
     }
-
 
     /**
      * Retrieves a temporary media file from the configured storage driver.
