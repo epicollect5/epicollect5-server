@@ -385,15 +385,48 @@ class MediaControllerS3Test extends TestCase
         // Create an Intervention Image instance from the image content
         $image = Image::read($imageContent);
 
-        $this->assertEquals($image->width(), config('epicollect.media.photo_placeholder.width'));
-        $this->assertEquals($image->height(), config('epicollect.media.photo_placeholder.width'));
+        $this->assertEquals($image->width(), config('epicollect.media.photo_not_synced_placeholder.width'));
+        $this->assertEquals($image->height(), config('epicollect.media.photo_not_synced_placeholder.width'));
 
         // Get image size in bytes
         $imageSizeInBytes = strlen($imageContent);
-        $this->assertEquals($imageSizeInBytes, config('epicollect.media.photo_placeholder.size_in_bytes'));
+        $this->assertEquals($imageSizeInBytes, config('epicollect.media.photo_not_synced_placeholder.size_in_bytes'));
 
         $response->assertHeader('Content-Type', config('epicollect.media.content_type.photo'));
     }
+
+    #[DataProvider('multipleRunProvider')] public function test_project_placeholder_is_returned()
+    {
+        $response = $this->get('api/internal/media/' . $this->project->slug . '?type=photo&name=logo.jpg&format=project_thumb')
+            ->assertStatus(200);
+
+        // Get the image content from the response
+        $imageContent = $response->getContent();
+        // Create an Intervention Image instance from the image content
+        $image = Image::read($imageContent);
+
+        $this->assertEquals($image->width(), config('epicollect.media.photo_placeholder.width'));
+        $this->assertEquals($image->height(), config('epicollect.media.photo_placeholder.height'));
+
+        $response->assertHeader('Content-Type', config('epicollect.media.content_type.photo'));
+    }
+
+    #[DataProvider('multipleRunProvider')] public function test_project_mobile_logo_is_returned()
+    {
+        $response = $this->get('api/internal/media/' . $this->project->slug . '?type=photo&name=logo.jpg&format=project_mobile_logo')
+            ->assertStatus(200);
+
+        // Get the image content from the response
+        $imageContent = $response->getContent();
+        // Create an Intervention Image instance from the image content
+        $image = Image::read($imageContent);
+
+        $this->assertEquals($image->width(), config('epicollect.media.photo_placeholder.width'));
+        $this->assertEquals($image->height(), config('epicollect.media.photo_placeholder.height'));
+
+        $response->assertHeader('Content-Type', config('epicollect.media.content_type.photo'));
+    }
+
 
     #[DataProvider('multipleRunProvider')]
     public function test_photo_file_is_returned_landscape()
@@ -859,12 +892,12 @@ class MediaControllerS3Test extends TestCase
         // Create an Intervention Image instance from the image content
         $image = Image::read($imageContent);
 
-        $this->assertEquals($image->width(), config('epicollect.media.photo_placeholder.width'));
-        $this->assertEquals($image->height(), config('epicollect.media.photo_placeholder.width'));
+        $this->assertEquals($image->width(), config('epicollect.media.photo_not_synced_placeholder.width'));
+        $this->assertEquals($image->height(), config('epicollect.media.photo_not_synced_placeholder.width'));
 
         // Get image size in bytes
         $imageSizeInBytes = strlen($imageContent);
-        $this->assertEquals($imageSizeInBytes, config('epicollect.media.photo_placeholder.size_in_bytes'));
+        $this->assertEquals($imageSizeInBytes, config('epicollect.media.photo_not_synced_placeholder.size_in_bytes'));
 
         $response->assertHeader('Content-Type', config('epicollect.media.content_type.photo'));
     }

@@ -64,10 +64,10 @@ return [
         'size_in_bytes' => 3735
     ],
     'photo_not_synced_placeholder' => [
-        'filename' => 'ec5-photo-unsynced-placeholder-256x256.jpg',
-        'width' => 256,
-        'height' => 256,
-        'size_in_bytes' => 3735
+        'filename' => 'ec5-photo-unsynced-placeholder-512x512.jpg',
+        'width' => 512,
+        'height' => 512,
+        'size_in_bytes' => 40073
     ],
     'content_type' => [
         'audio' => 'audio/mp4',

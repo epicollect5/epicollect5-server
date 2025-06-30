@@ -140,9 +140,14 @@ class MediaController
                 }
             } catch (FileNotFoundException) {
                 if ($inputType === config('epicollect.strings.inputs_type.photo')) {
-                    //Return default placeholder image for photo questions
-                    $photoNotSyncedFilename = config('epicollect.media.photo_not_synced_placeholder.filename');
-                    $file = Storage::disk('public')->get($photoNotSyncedFilename);
+                    if ($params['name'] !== config('epicollect.media.project_avatar.filename')) {
+                        //Return default placeholder image for photo questions
+                        $photoNotSyncedFilename = config('epicollect.media.photo_not_synced_placeholder.filename');
+                        $file = Storage::disk('public')->get($photoNotSyncedFilename);
+                    } else {
+                        //Return default placeholder image for logo
+                        $file = Storage::disk('public')->get($photoPlaceholderFilename);
+                    }
                     $response = Response::make($file);
                     $response->header('Content-Type', $contentType);
                     return $response;
@@ -225,7 +230,13 @@ class MediaController
             }
         } catch (FileNotFoundException) {
             if ($inputType === config('epicollect.strings.inputs_type.photo')) {
-                $file = Storage::disk('public')->get($photoNotSyncedFilename);
+                if ($params['name'] !== config('epicollect.media.project_avatar.filename')) {
+                    //Return default placeholder image for photo questions
+                    $file = Storage::disk('public')->get($photoNotSyncedFilename);
+                } else {
+                    //Return default placeholder image for project logo
+                    $file = Storage::disk('public')->get($photoPlaceholderFilename);
+                }
                 $response = Response::make($file);
                 $response->header('Content-Type', $contentType);
                 return $response;
