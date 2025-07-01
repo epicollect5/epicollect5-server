@@ -386,7 +386,7 @@ class MediaControllerS3Test extends TestCase
         $image = Image::read($imageContent);
 
         $this->assertEquals($image->width(), config('epicollect.media.photo_not_synced_placeholder.width'));
-        $this->assertEquals($image->height(), config('epicollect.media.photo_not_synced_placeholder.width'));
+        $this->assertEquals($image->height(), config('epicollect.media.photo_not_synced_placeholder.height'));
 
         // Get image size in bytes
         $imageSizeInBytes = strlen($imageContent);
@@ -893,7 +893,7 @@ class MediaControllerS3Test extends TestCase
         $image = Image::read($imageContent);
 
         $this->assertEquals($image->width(), config('epicollect.media.photo_not_synced_placeholder.width'));
-        $this->assertEquals($image->height(), config('epicollect.media.photo_not_synced_placeholder.width'));
+        $this->assertEquals($image->height(), config('epicollect.media.photo_not_synced_placeholder.height'));
 
         // Get image size in bytes
         $imageSizeInBytes = strlen($imageContent);
