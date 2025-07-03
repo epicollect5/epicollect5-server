@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 12.2.1
+
+- New photo not synced placeholder when a photo is not synced yet
+
 # 12.2.0
 
 - Added S3 for media storage
