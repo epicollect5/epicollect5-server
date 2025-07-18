@@ -45,8 +45,6 @@ class RateLimitsEntriesExportTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
-        //to clear limits counter, wait 1 minute and 1 second
-        sleep(61);
 
         $name = config('testing.API_RATE_LIMITS_ENTRIES.name');
         $this->slug = config('testing.API_RATE_LIMITS_ENTRIES.slug');
@@ -184,6 +182,9 @@ class RateLimitsEntriesExportTest extends TestCase
                 'Content-Type' => 'application/vnd.api+json'
             ]
         ]);
+
+        // Reset the rate limiter on the Laravel server before making requests
+        $this->actingAs($this->user)->post(config('testing.LOCAL_SERVER') . '/test/reset-api-rate-limit/entries');
 
         try {
             for ($i = 1; $i <= $apiEntriesRateLimit; $i++) {

@@ -47,7 +47,6 @@ class RateLimitsMediaExportTest extends TestCase
     {
         parent::setUp();
         //to clear limits counter, wait 1 minute and 1 second
-        sleep(61);
 
         $name = config('testing.API_RATE_LIMITS_MEDIA.name');
         $this->slug = config('testing.API_RATE_LIMITS_MEDIA.slug');
@@ -127,13 +126,15 @@ class RateLimitsMediaExportTest extends TestCase
      */
     public function test_rate_limit_api_media()
     {
-        //generate entries
-        $apiMediaRateLimit =  config('epicollect.setup.api.rate_limit_per_minute.media');
+        // Get the configured per-minute rate limit for media exports
+        $apiMediaRateLimit = config('epicollect.setup.api.rate_limit_per_minute.media');
+
         $entryGenerator = new EntryGenerator($this->projectDefinition);
 
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
 
+        // Extract the refs of all video-type inputs for use in entries
         $videoRefs = array_values(array_map(function ($input) {
             return $input['ref'];
         }, array_filter($inputs, function ($input) {
@@ -142,12 +143,18 @@ class RateLimitsMediaExportTest extends TestCase
 
         $entryPayloads = [];
         $videoAnswers = [];
+
+        // Generate more entries than the allowed rate limit to test the overflow
         $numOfEntries = $apiMediaRateLimit + 10;
+
         for ($i = 0; $i < $numOfEntries; $i++) {
+            // Create entry payload
             $entryPayloads[$i] = $entryGenerator->createParentEntryPayload($formRef);
 
+            // Extract the video answer reference for media testing
             $videoAnswers[] = $entryPayloads[$i]['data']['entry']['answers'][$videoRefs[0]];
 
+            // Persist entry row to database
             $entryRowBundle = $entryGenerator->createParentEntryRow(
                 $this->user,
                 $this->project,
@@ -156,74 +163,80 @@ class RateLimitsMediaExportTest extends TestCase
                 $entryPayloads[$i]
             );
 
+            // Validate entry row content against payload
             $this->assertEntryRowAgainstPayload(
                 $entryRowBundle,
                 $entryPayloads[$i]
             );
 
-            //add the fake videos
+            // Create a fake video file associated with the entry
             $filename = $videoAnswers[$i]['answer'];
-
-            //create a fake video for the entry
             $videoContent = MediaGenerator::getFakeVideoContentBase64();
             Storage::disk('video')->put($this->project->ref . '/' . $filename, $videoContent);
         }
 
-        //assert rows are created
+        // Confirm entries are stored in the database
         $this->assertCount(
             $numOfEntries,
             Entry::where('project_id', $this->project->id)->get()
         );
 
-        //assert files are created
+        // Confirm video files are saved on disk
         $videos = Storage::disk('video')->files($this->project->ref);
         $this->assertCount($numOfEntries, $videos);
 
+        // API endpoint for exporting media
         $entriesURL = config('testing.LOCAL_SERVER') . '/api/export/media/';
+
+        // Guzzle client for simulating real external HTTP requests
         $entriesClient = new Client([
             'headers' => [
-                //Guzzle will use the .env instead of .env.testing since it is an external request
+                // Override disk for test to simulate real-world storage (e.g., S3)
                 'X-Disk-Override' => 's3',
-                //imp: without this, does not work
                 'Content-Type' => 'application/vnd.api+json'
             ]
         ]);
 
+        // Reset the rate limiter on the Laravel server before making requests
+        $this->actingAs($this->user)->post(config('testing.LOCAL_SERVER') . '/test/reset-api-rate-limit/media');
         try {
+            // Send up to the limit number of media export requests
             for ($i = 1; $i <= $apiMediaRateLimit; $i++) {
                 $filename = $videoAnswers[$i]['answer'];
-                $queryString = '?type=video&name=' . $filename . '&format=video'.'&XDEBUG_SESSION_START=phpstorm';
+                $queryString = '?type=video&name=' . $filename . '&format=video' . '&XDEBUG_SESSION_START=phpstorm';
+
                 $response = $entriesClient->request('GET', $entriesURL . $this->project->slug . $queryString);
-                // Get the response headers
+
                 $headers = $response->getHeaders();
-                // Check for X-RateLimit headers
+
+                // Validate rate limit headers exist and match expected values
                 $this->assertArrayHasKey('X-RateLimit-Limit', $headers);
                 $this->assertArrayHasKey('X-RateLimit-Remaining', $headers);
 
-                // Optionally, you can assert specific values if you know what they should be
                 $this->assertEquals($apiMediaRateLimit, $headers['X-RateLimit-Limit'][0]);
                 $this->assertEquals($apiMediaRateLimit - $i, $headers['X-RateLimit-Remaining'][0]);
             }
 
-            //when the limit is hit, should return status 429
+            // One additional request should exceed the rate limit and return a 429 response
             try {
                 $filename = $videoAnswers[0]['answer'];
                 $queryString = '?type=video&name=' . $filename . '&format=video';
                 $entriesClient->request('GET', $entriesURL . $this->project->slug . $queryString);
-                // Optionally, check response for other status codes or data
             } catch (Throwable $e) {
                 if ($e->hasResponse()) {
                     $response = $e->getResponse();
-                    // Assert the status code
                     $this->assertEquals(429, $response->getStatusCode());
                 }
             }
+
             $this->cleanUp();
         } catch (GuzzleException $e) {
+            // On exception, log and clean up
             $this->cleanUp();
             $this->logTestError($e, []);
             return false;
         }
+
         return true;
     }
 
