@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 12.2.2
+
+- Fixed wrong permissions of folders project_thumb and project_mobile_logo (700 instead of 755)
+
 # 12.2.1
 
 - New photo not synced placeholder when a photo is not synced yet

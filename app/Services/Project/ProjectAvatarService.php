@@ -72,9 +72,12 @@ class ProjectAvatarService
             //get thumb and mobile path
             $thumbPathPrefix = Storage::disk('project_thumb')->path('');
             $mobilePathPrefix = Storage::disk('project_mobile_logo')->path('');
+
             //create folder for this project ref
             Storage::disk($this->drivers['project_thumb'])->makeDirectory($projectRef);
+            Storage::disk($this->drivers['project_thumb'])->setVisibility($projectRef, 'public');
             Storage::disk($this->drivers['project_mobile_logo'])->makeDirectory($projectRef);
+            Storage::disk($this->drivers['project_mobile_logo'])->setVisibility($projectRef, 'public');
 
             //generate thumb avatar
             Avatar::create($projectName)
