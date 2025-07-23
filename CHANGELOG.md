@@ -1,5 +1,11 @@
 ## Release Notes
 
+# 12.2.3
+
+- Fixed tampered created_at when performing bulk edit via csv
+  uploads -> https://github.com/epicollect5/epicollect5-development-plan/issues/210
+- Fixed API rate limiting tests by properly clearing rate limiter caches
+
 # 12.2.2
 
 - Fixed wrong permissions of folders project_thumb and project_mobile_logo (700 instead of 755)
