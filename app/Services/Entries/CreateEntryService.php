@@ -60,11 +60,15 @@ class CreateEntryService
                      * on the front end with the current date at the time of upload
                      */
                     $createdAt = $existingEntry->created_at; //existing value
-                    //add the missing "T" so the date format matches Javascript format (like an entry uploaded. MySQL format does not have the "T" but a space " ")
-                    $createdAt = str_replace(' ', 'T', $createdAt);
-                    $entryData['entry']['created_at'] = $createdAt; //override uploaded entry
+                    //Add the missing "T" so the date format matches Javascript format
+                    //to mimic an entry uploaded. MySQL format does not have the "T" but a space " ")
+                    if ($entryStructure->isBranch()) {
+                        $entryData['branch_entry']['created_at'] = $createdAt->format('Y-m-d\TH:i:s.000\Z'); //override uploaded entry
+                    } else {
+                        $entryData['entry']['created_at'] = $createdAt->format('Y-m-d\TH:i:s.000\Z'); //override uploaded entry
+                    }
+
                     $entry['entry_data'] = json_encode($entryData); //encode entry
-                    //todo does the above not fail for branches as should be 'branch-entry' type?
 
                     /**
                      * Skip media files by getting existing answers (files) and

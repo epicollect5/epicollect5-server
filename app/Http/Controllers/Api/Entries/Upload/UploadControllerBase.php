@@ -15,7 +15,6 @@ abstract class UploadControllerBase
     use RequestAttributes;
 
     protected RuleFileEntry $ruleFileEntry;
-    protected bool $isBulkUpload;
     protected EntriesUploadService $entriesUploadService;
     protected EntryStructureDTO $entryStructure;
     protected array $errors = [];
@@ -39,11 +38,9 @@ abstract class UploadControllerBase
         $this->ruleFileEntry = $ruleFileEntry;
         $this->entryStructure = $entryStructure;
         $this->ruleUpload = $ruleUpload;
-        $this->isBulkUpload = false;
         $this->entriesUploadService = new EntriesUploadService(
             $this->entryStructure,
-            $this->ruleUpload,
-            $this->isBulkUpload
+            $this->ruleUpload
         );
         $this->storageDriver = config('filesystems.default');
     }

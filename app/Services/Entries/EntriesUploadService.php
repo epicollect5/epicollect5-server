@@ -16,13 +16,12 @@ class EntriesUploadService
 
     public array $errors;
     public EntryStructureDTO $entryStructure;
-    private bool $isBulkUpload;
+    public bool $isBulkUpload = false;
     private RuleUpload $ruleUpload;
 
-    public function __construct(EntryStructureDTO $entryStructure, RuleUpload $ruleUpload, $isBulkUpload = false)
+    public function __construct(EntryStructureDTO $entryStructure, RuleUpload $ruleUpload)
     {
         $this->entryStructure = $entryStructure;
-        $this->isBulkUpload = $isBulkUpload;
         $this->ruleUpload = $ruleUpload;
     }
 

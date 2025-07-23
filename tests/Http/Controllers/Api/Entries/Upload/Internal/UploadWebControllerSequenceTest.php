@@ -15,6 +15,7 @@ use Exception;
 use Faker\Factory as Faker;
 use PHPUnit\Framework\Attributes\Depends;
 use Tests\TestCase;
+use Throwable;
 
 /* We cannot do multiple post requests in the same test method,
    as the app boots only once, and we are going to have side effects
@@ -24,7 +25,7 @@ use Tests\TestCase;
 
 class UploadWebControllerSequenceTest extends TestCase
 {
-    private $endpoint = 'api/internal/web-upload/';
+    private string $endpoint = 'api/internal/web-upload/';
 
     public function setUp(): void
     {
@@ -160,7 +161,7 @@ class UploadWebControllerSequenceTest extends TestCase
                 'project' => $project,
                 'entryGenerator' => $entryGenerator
             ];
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project
@@ -216,7 +217,7 @@ class UploadWebControllerSequenceTest extends TestCase
                 'project' => $project,
                 'entryGenerator' => $entryGenerator
             ];
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project
@@ -278,7 +279,7 @@ class UploadWebControllerSequenceTest extends TestCase
                 'project' => $project,
                 'entryGenerator' => $entryGenerator
             ];
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project
@@ -346,7 +347,7 @@ class UploadWebControllerSequenceTest extends TestCase
                 'project' => $project,
                 'entryGenerator' => $entryGenerator
             ];
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project
@@ -417,7 +418,7 @@ class UploadWebControllerSequenceTest extends TestCase
                 'project' => $project,
                 'entryGenerator' => $entryGenerator
             ];
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project
@@ -514,7 +515,7 @@ class UploadWebControllerSequenceTest extends TestCase
                 'project' => $project,
                 'entryGenerator' => $entryGenerator
             ];
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project
@@ -607,7 +608,7 @@ class UploadWebControllerSequenceTest extends TestCase
                 'project' => $project,
                 'entryGenerator' => $entryGenerator
             ];
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project
@@ -700,7 +701,7 @@ class UploadWebControllerSequenceTest extends TestCase
                 'project' => $project,
                 'entryGenerator' => $entryGenerator
             ];
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project
@@ -792,7 +793,7 @@ class UploadWebControllerSequenceTest extends TestCase
                 'project' => $project,
                 'entryGenerator' => $entryGenerator
             ];
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project
@@ -874,7 +875,7 @@ class UploadWebControllerSequenceTest extends TestCase
                 'user' => $user,
                 'project' => $project
             ]);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->clearDatabase([
                 'user' => $user,
                 'project' => $project

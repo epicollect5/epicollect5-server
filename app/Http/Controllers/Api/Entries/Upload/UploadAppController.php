@@ -45,7 +45,7 @@ class UploadAppController extends UploadControllerBase
         if (!App::isLocal()) {
             return Response::apiErrorCode(400, ['bulk-upload' => ['ec5_363']]);
         }
-        $this->isBulkUpload = true;
+        $this->entriesUploadService->isBulkUpload = true;
         return $this->postUpload();
     }
 
@@ -63,7 +63,7 @@ class UploadAppController extends UploadControllerBase
         }
 
         /* UPLOAD AND CHECK IT WAS SUCCESSFUL */
-        $entriesUploadService = new EntriesUploadService($this->entryStructure, $this->ruleUpload, $this->isBulkUpload);
+        $entriesUploadService = new EntriesUploadService($this->entryStructure, $this->ruleUpload);
         if (!$entriesUploadService->upload()) {
             return Response::apiErrorCode(400, $entriesUploadService->errors);
         }

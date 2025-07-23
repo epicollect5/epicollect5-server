@@ -13,11 +13,16 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use Redirect;
 use Response;
+use Throwable;
 
 class ProjectEntriesController
 {
-    use RequestAttributes, StatsRefresher;
+    use RequestAttributes;
+    use StatsRefresher;
 
+    /**
+     * @throws Throwable
+     */
     public function show()
     {
         if (!$this->requestedProjectRole()->canEditProject()) {

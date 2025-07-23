@@ -30,12 +30,12 @@ class EntryStructureDTO
      *
      * Sets user ID, project ID, project role, and loads an uploaded file if present in the request.
      *
-     * @param mixed $payload The request payload containing entry data.
+     * @param array $payload The request payload containing entry data.
      * @param int $projectId The ID of the project associated with the entry.
      * @param mixed $requestedUser The user making the request; if null, user ID is set to 0.
-     * @param string $requestedProjectRole The project role of the requesting user.
+     * @param ProjectRoleDTO $requestedProjectRole The project role of the requesting user.
      */
-    public function init($payload, $projectId, $requestedUser, $requestedProjectRole): void
+    public function init(array $payload, int $projectId, mixed $requestedUser, ProjectRoleDTO $requestedProjectRole): void
     {
         // Get current user (from $requestedUser since we do not know what guard was used)
         $user = $requestedUser;

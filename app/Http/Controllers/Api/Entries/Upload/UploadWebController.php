@@ -11,6 +11,7 @@ use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use Exception;
 use File;
+use Illuminate\Http\JsonResponse;
 use Log;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -38,7 +39,7 @@ class UploadWebController extends UploadControllerBase
      * @throws ContainerExceptionInterface If a container error occurs.
      * @throws Throwable If an unexpected error occurs during upload or file handling.
      * @throws NotFoundExceptionInterface If a required resource is not found.
-     * @return \Illuminate\Http\JsonResponse API response indicating success or failure.
+     * @return JsonResponse API response indicating success or failure.
      */
     public function store()
     {
@@ -148,7 +149,8 @@ class UploadWebController extends UploadControllerBase
      */
     public function storeBulk()
     {
-        $this->isBulkUpload = true;
+        //flag that this is  bulk upload (to skip create_at override)
+        $this->entriesUploadService->isBulkUpload = true;
         return $this->store();
     }
 
@@ -346,7 +348,7 @@ class UploadWebController extends UploadControllerBase
      * @param array|UploadedFile $file The file object or metadata array.
      * @return EntryStructureDTO The configured entry structure for the file input.
      */
-    private function setUpEntryStructure($input, mixed $fileName, array|UploadedFile $file): EntryStructureDTO
+    private function setUpEntryStructure(array $input, mixed $fileName, array|UploadedFile $file): EntryStructureDTO
     {
         $entryStructure = new EntryStructureDTO();
         $entryData = config('epicollect.structures.entry_data');
