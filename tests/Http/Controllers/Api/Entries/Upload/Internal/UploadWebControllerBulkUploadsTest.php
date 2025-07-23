@@ -139,7 +139,7 @@ class UploadWebControllerBulkUploadsTest extends TestCase
             $createdAtBefore = $entryRowBundle['entryStructure']->getEntryCreatedAt();
 
             //perform a web upload
-            $response[] = $this->actingAs($this->user)->post('api/internal/bulk-upload/' . $this->project->slug, $entry);
+            $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $entry);
             $response[0]->assertStatus(200)
                 ->assertExactJson(
                     [
@@ -200,7 +200,7 @@ class UploadWebControllerBulkUploadsTest extends TestCase
             $userIdBefore = $entryRowBundle['entryStructure']->getUserId();
 
             //perform a web upload
-            $response[] = $this->actingAs($this->user)->post('api/internal/bulk-upload/' . $this->project->slug, $entry);
+            $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $entry);
             $response[0]->assertStatus(200)
                 ->assertExactJson(
                     [
@@ -306,7 +306,7 @@ class UploadWebControllerBulkUploadsTest extends TestCase
         //assert response passing the form ref and the branch ref
         $response = [];
         try {
-            $response[] = $this->actingAs($this->user)->post('api/internal/bulk-upload/' . $this->project->slug, $branchEntryPayloads[0]);
+            $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $branchEntryPayloads[0]);
             $response[0]->assertStatus(200)
                 ->assertExactJson(
                     [
@@ -412,7 +412,7 @@ class UploadWebControllerBulkUploadsTest extends TestCase
         $response = [];
         try {
             //CREATOR bulk upload overriding COLLECTOR entry, but user_is not touched
-            $response[] = $this->actingAs($this->user)->post('api/internal/bulk-upload/' . $this->project->slug, $branchEntryPayloads[0]);
+            $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $branchEntryPayloads[0]);
             $response[0]->assertStatus(200)
                 ->assertExactJson(
                     [
