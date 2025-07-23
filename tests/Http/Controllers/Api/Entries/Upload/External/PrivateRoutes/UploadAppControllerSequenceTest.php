@@ -174,7 +174,6 @@ class UploadAppControllerSequenceTest extends TestCase
                 'user' => $user,
                 'project' => $project
             ]);
-            //dd($e->getMessage(), $response, json_encode($entry), json_encode($projectDefinition));
             $this->logTestError($e, $response);
         }
     }

@@ -144,7 +144,6 @@ class UploadWebControllerMultipleTest extends TestCase
                     ->get()
             );
         } catch (Throwable $e) {
-            //dd($e->getMessage(), $response, json_encode($entry), json_encode($projectDefinition));
             $this->logTestError($e, $response);
         }
     }
@@ -199,7 +198,6 @@ class UploadWebControllerMultipleTest extends TestCase
                     ->get()
             );
         } catch (Throwable $e) {
-            //dd($e->getMessage(), $response, json_encode($entry), json_encode($projectDefinition));
             $this->logTestError($e, $response);
         }
     }

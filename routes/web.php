@@ -269,12 +269,12 @@ Route::post('test/reset-api-rate-limit/{key}', function (Request $request, strin
 
     // The full rate limit key format is: {rateLimiterName}|{ip}
     $rateLimiterName = 'api-export-' . $key;
-    $ip = $request->ip();
-    $fullKey = $rateLimiterName . '|' . $ip;
+    $requestIp = $request->ip();
+    $fullKey = $rateLimiterName . '|' . $requestIp;
 
-    \Log::info('Resetting rate limiter', [
+    Log::info('Resetting rate limiter', [
         'key' => $fullKey,
-        'ip' => $request->ip()
+        'ip' => $requestIp
     ]);
 
     foreach (['127.0.0.1', '::1'] as $ip) {
@@ -285,6 +285,6 @@ Route::post('test/reset-api-rate-limit/{key}', function (Request $request, strin
     return response()->json([
         'status' => 'cleared',
         'key' => $fullKey,
-        'ip' => $ip,
+        'ip' => $requestIp
     ]);
 });
