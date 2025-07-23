@@ -184,7 +184,7 @@ class RateLimitsEntriesExportTest extends TestCase
         ]);
 
         // Reset the rate limiter on the Laravel server before making requests
-        $this->actingAs($this->user)->post(config('testing.LOCAL_SERVER') . '/test/reset-api-rate-limit/entries');
+        $this->actingAs($this->user)->post('/test/reset-api-rate-limit/entries');
 
         try {
             for ($i = 1; $i <= $apiEntriesRateLimit; $i++) {

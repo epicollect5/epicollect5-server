@@ -10,7 +10,7 @@
 */
 
 
-use Illuminate\Cache\RateLimiter;
+use Illuminate\Http\Request;
 
 Route::get('/', 'Web\HomeController@index')->name('home');
 //Tell me more routes
@@ -260,18 +260,27 @@ Route::group(['middleware' => 'project.permissions.open'], function () {
 |
 */
 // routes/web.php (or routes/test.php if separated)
-Route::post('/test/reset-api-rate-limit/{key}', function (Request $request, string $key) {
+Route::post('test/reset-api-rate-limit/{key}', function (Request $request, string $key) {
     // Only allow in testing environment
     if (!app()->environment('testing')) {
         abort(403, 'Forbidden');
     }
+
 
     // The full rate limit key format is: {rateLimiterName}|{ip}
     $rateLimiterName = 'api-export-' . $key;
     $ip = $request->ip();
     $fullKey = $rateLimiterName . '|' . $ip;
 
-    RateLimiter::clear($fullKey);
+    \Log::info('Resetting rate limiter', [
+        'key' => $fullKey,
+        'ip' => $request->ip()
+    ]);
+
+    foreach (['127.0.0.1', '::1'] as $ip) {
+        $fullKey = $rateLimiterName . '|' . $ip;
+        app('Illuminate\Cache\RateLimiter')->clear($fullKey);
+    }
 
     return response()->json([
         'status' => 'cleared',

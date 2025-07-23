@@ -51,11 +51,11 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
      * additional context—such as a JSON representation of response details—if applicable. Finally,
      * it marks the test as failed with a formatted error message that includes the relative file path.
      *
-     * @param Exception $e The exception encountered during the test.
+     * @param mixed $e The exception encountered during the test.
      * @param mixed     $response Additional context for the error, which may include a test response
      *                            object with diagnostic details.
      */
-    public function logTestError(Exception $e, $response): void
+    public function logTestError(mixed $e, $response): void
     {
         $expected = '';
         $actual = '';

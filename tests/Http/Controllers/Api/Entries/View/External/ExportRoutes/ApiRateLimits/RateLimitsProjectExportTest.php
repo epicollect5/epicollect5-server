@@ -186,10 +186,11 @@ class RateLimitsProjectExportTest extends TestCase
         ]);
 
         // Reset the rate limiter on the Laravel server before making requests
-        $this->actingAs($this->user)->post(config('testing.LOCAL_SERVER') . '/test/reset-api-rate-limit/projects');
+        $this->actingAs($this->user)->post('/test/reset-api-rate-limit/projects');
 
         try {
             for ($i = 1; $i <= $apiProjectRateLimit; $i++) {
+                sleep(0.5);
                 $response = $entriesClient->request('GET', $entriesURL . $this->project->slug);
                 // Get the response headers
                 $headers = $response->getHeaders();
@@ -215,6 +216,7 @@ class RateLimitsProjectExportTest extends TestCase
             $this->logTestError($e, []);
             return false;
         }
+        return true;
     }
 
     private function cleanUp()

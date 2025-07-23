@@ -46,7 +46,6 @@ class RateLimitsMediaExportTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
-        //to clear limits counter, wait 1 minute and 1 second
 
         $name = config('testing.API_RATE_LIMITS_MEDIA.name');
         $this->slug = config('testing.API_RATE_LIMITS_MEDIA.slug');
@@ -198,10 +197,19 @@ class RateLimitsMediaExportTest extends TestCase
         ]);
 
         // Reset the rate limiter on the Laravel server before making requests
-        $this->actingAs($this->user)->post(config('testing.LOCAL_SERVER') . '/test/reset-api-rate-limit/media');
+        $resetResponse = $this->actingAs($this->user)->post(
+            '/test/reset-api-rate-limit/media'
+        );
+
+        if ($resetResponse->getStatusCode() !== 200) {
+            $this->cleanUp();
+            $this->fail('Failed to reset API rate limit');
+        }
+
         try {
             // Send up to the limit number of media export requests
             for ($i = 1; $i <= $apiMediaRateLimit; $i++) {
+                sleep(0.5);
                 $filename = $videoAnswers[$i]['answer'];
                 $queryString = '?type=video&name=' . $filename . '&format=video' . '&XDEBUG_SESSION_START=phpstorm';
 
