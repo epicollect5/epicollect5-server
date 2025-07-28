@@ -4,7 +4,7 @@ namespace ec5\Http\Controllers\Web\Admin\Tools;
 
 use ec5\Http\Controllers\Controller;
 use ec5\Libraries\DirectoryGenerator\DirectoryGenerator;
-use ec5\Services\PhotoSaverService;
+use ec5\Services\Media\PhotoSaverService;
 use Storage;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 

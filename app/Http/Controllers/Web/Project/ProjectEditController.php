@@ -7,7 +7,7 @@ use ec5\Http\Validation\Project\RuleProjectDefinitionDetails;
 use ec5\Http\Validation\Project\RuleSettings;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectStructure;
-use ec5\Services\PhotoSaverService;
+use ec5\Services\Media\PhotoSaverService;
 use ec5\Traits\Requests\RequestAttributes;
 use Exception;
 use Illuminate\Contracts\View\Factory;

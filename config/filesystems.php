@@ -73,7 +73,7 @@ return [
 
         ], $doSpaces),
 
-        //todo: is this actually needed?
+
         'local' => [
             'driver' => config('epicollect.setup.system.storage_driver'),
             'root' => storage_path('app'),

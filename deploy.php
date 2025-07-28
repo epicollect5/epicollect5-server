@@ -31,8 +31,6 @@ set('writable_dirs', [
     'bootstrap/cache',
     'storage',
     'storage/app',
-    'storage/app/projects',
-    'storage/app/temp',
     'storage/framework',
     'storage/framework/cache',
     'storage/framework/cache/data',

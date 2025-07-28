@@ -10,7 +10,8 @@ use ec5\Http\Validation\Entries\Upload\FileRules\RulePhotoWeb;
 use ec5\Http\Validation\Entries\Upload\FileRules\RuleVideo;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
-use ec5\Services\PhotoSaverService;
+use ec5\Services\Media\AudioVideoSaverService;
+use ec5\Services\Media\PhotoSaverService;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Drivers\Imagick\Driver;
 use Intervention\Image\ImageManager;
@@ -300,30 +301,12 @@ class RuleFileEntry extends EntryValidationBase
 
             default:
                 // === Save non-photo files ===
-                $driver = $fileType;
-                $targetPath = $projectRef . '/' . $fileName;
-
-                if ($isS3) {
-                    $stream = Storage::disk('s3')->readStream($file['path']);
-                    if (!$stream) {
-                        $this->errors[$inputRef] = ['ec5_83'];
-                        return;
-                    }
-
-                    $fileSaved = Storage::disk($driver)->put($targetPath, $stream, [
-                        'visibility' => 'public',
-                        'directory_visibility' => 'public'
-                    ]);
-                    fclose($stream);
-                } else {
-                    $stream = fopen($file->getRealPath(), 'rb');
-                    $fileSaved = Storage::disk($driver)
-                        ->put($targetPath, $stream, [
-                        'visibility' => 'public',
-                        'directory_visibility' => 'public'
-                    ]);
-                    fclose($stream);
-                }
+                $fileSaved = AudioVideoSaverService::saveFile(
+                    $projectRef,
+                    $file,
+                    $fileName,
+                    $fileType// -> audio,video
+                );
 
                 if (!$fileSaved) {
                     $this->errors[$inputRef] = ['ec5_83'];

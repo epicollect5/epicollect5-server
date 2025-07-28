@@ -1,7 +1,8 @@
 <?php
 
-namespace ec5\Services;
+namespace ec5\Services\Media;
 
+use ec5\Libraries\Utilities\Common;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Drivers\Imagick\Driver;
@@ -64,6 +65,20 @@ class PhotoSaverService
 
             // Process the image (crop, resize, and encode)
             $encodedImage = self::processImage($imagePath, $dimensions, $quality);
+
+            // Ensure directory exists with correct permissions ()
+            if (!Storage::disk($disk)->exists($projectRef)) {
+                Storage::disk($disk)->makeDirectory($projectRef);
+
+                // For local driver, fix permissions for entire chain
+                $diskRoot = Storage::disk($disk)->path('');
+
+                // Build full folder path to newly created directory
+                $newDirFullPath = $diskRoot . $projectRef;
+
+                // Fix folder chain permissions up to app/ to fix laravel 700 issue since 9+
+                Common::setPermissionsRecursiveUp($newDirFullPath);
+            }
 
             // Store the image into the storage location with the specified driver
             Storage::disk($disk)->put(

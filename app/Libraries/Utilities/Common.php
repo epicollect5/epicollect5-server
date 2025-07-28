@@ -7,6 +7,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Str;
+use Log;
 use Random\RandomException;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -329,5 +330,38 @@ class Common
             $content = 'An unexpected error occurred.';
         }
         return Response::toTXTFile($content, $filename);
+    }
+
+    /**
+     * Recursively set 755 permissions on directories from $path up to $stopAt
+     *
+     * Fix for Laravel default 700 on new folders since Laravel 9+
+     *
+     * @param string $path Full path of the directory to start setting permissions
+     */
+    public static function setPermissionsRecursiveUp(string $path): void
+    {
+        $path = rtrim($path, DIRECTORY_SEPARATOR);
+        $stopAt = config('filesystems.disks.local.root');
+
+        while (str_starts_with($path, $stopAt)) {
+            if (is_dir($path)) {
+                if (@chmod($path, 0755)) {
+                    Log::info("Successfully set permissions to 0755 on: $path");
+                } else {
+                    $error = error_get_last();
+                    Log::error("Failed to set permissions on: $path", [
+                        'error' => $error['message'] ?? 'Unknown error'
+                    ]);
+                }
+            } else {
+                Log::warning("Path is not a directory: $path");
+            }
+
+            if ($path === $stopAt) {
+                break;
+            }
+            $path = dirname($path);
+        }
     }
 }

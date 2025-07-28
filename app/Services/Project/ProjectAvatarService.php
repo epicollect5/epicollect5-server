@@ -2,6 +2,7 @@
 
 namespace ec5\Services\Project;
 
+use ec5\Libraries\Utilities\Common;
 use Intervention\Image\Drivers\Imagick\Encoders\JpegEncoder;
 use Laravolt\Avatar\Facade as Avatar;
 use Log;
@@ -69,40 +70,67 @@ class ProjectAvatarService
     private function generateLocal(string $projectRef, string $projectName): bool
     {
         try {
-            //get thumb and mobile path
-            $thumbPathPrefix = Storage::disk('project_thumb')->path('');
-            $mobilePathPrefix = Storage::disk('project_mobile_logo')->path('');
+            $disks = ['project_thumb', 'project_mobile_logo'];
 
-            //create folder for this project ref
-            Storage::disk($this->drivers['project_thumb'])->makeDirectory($projectRef);
-            Storage::disk($this->drivers['project_thumb'])->setVisibility($projectRef, 'public');
-            Storage::disk($this->drivers['project_mobile_logo'])->makeDirectory($projectRef);
-            Storage::disk($this->drivers['project_mobile_logo'])->setVisibility($projectRef, 'public');
+            foreach ($disks as $disk) {
+                if (!Storage::disk($disk)->exists($projectRef)) {
+                    Log::info("Creating directory $disk/$projectRef");
 
-            //generate thumb avatar
-            Avatar::create($projectName)
+                    Storage::disk($disk)->makeDirectory($projectRef);
+
+                    $fullPath = Storage::disk($disk)->path($projectRef);
+
+                    if (is_dir($fullPath)) {
+                        // Recursively set 755 permissions up to storage/app (fix Laravel default 700 on new folders)
+                        Common::setPermissionsRecursiveUp($fullPath);
+                        Log::info("Permissions set recursively on: $fullPath");
+                    } else {
+                        Log::error("Directory not found after creation: $fullPath");
+                    }
+                } else {
+                    Log::error("Directory already exists: $disk/$projectRef");
+                }
+            }
+
+            // Generate and save avatars
+
+            // Thumb avatar
+            $thumbAvatar = Avatar::create($projectName)
                 ->setDimension($this->width['thumb'])
                 ->setFontSize($this->fontSize['thumb'])
-                ->save(
-                    $thumbPathPrefix . $projectRef . '/' . $this->filename,
-                    100
-                );
+                ->getImageObject();
 
-            //generate mobile avatar
-            Avatar::create($projectName)
+            $thumbImageData = $thumbAvatar->encode(new JpegEncoder(quality: $this->quality));
+            Storage::disk('project_thumb')->put(
+                $projectRef . '/' . $this->filename,
+                $thumbImageData->toString(),
+                [
+                    'visibility' => 'public',
+                    'directory_visibility' => 'public',
+                ]
+            );
+
+            // Mobile avatar
+            $mobileAvatar = Avatar::create($projectName)
                 ->setDimension($this->width['mobile'])
                 ->setFontSize($this->fontSize['mobile'])
-                ->save(
-                    $mobilePathPrefix . $projectRef . '/' . $this->filename,
-                    100
-                );
+                ->getImageObject();
+
+            $mobileImageData = $mobileAvatar->encode(new JpegEncoder(quality: $this->quality));
+            Storage::disk('project_mobile_logo')->put(
+                $projectRef . '/' . $this->filename,
+                $mobileImageData->toString(),
+                [
+                    'visibility' => 'public',
+                    'directory_visibility' => 'public',
+                ]
+            );
 
             return true;
         } catch (Throwable $e) {
             Log::error('Error creating project avatar', ['exception' => $e]);
             return false;
         }
-
     }
 
     /**
