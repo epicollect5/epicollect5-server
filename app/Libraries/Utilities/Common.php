@@ -341,11 +341,27 @@ class Common
      */
     public static function setPermissionsRecursiveUp(string $path): void
     {
-        $path = rtrim($path, DIRECTORY_SEPARATOR);
-        $stopAt = config('filesystems.disks.local.root');
+        $resolvedPath = realpath(trim($path));
+        $resolvedStopAt = realpath(trim(config('filesystems.disks.local.root')));
+
+        if ($resolvedPath === false || $resolvedStopAt === false) {
+            Log::error("Invalid path(s):", [
+                'path' => $path,
+                'stopAt' => config('filesystems.disks.local.root'),
+            ]);
+            return;
+        }
+
+        $path = rtrim($resolvedPath, DIRECTORY_SEPARATOR);
+        $stopAt = rtrim($resolvedStopAt, DIRECTORY_SEPARATOR);
 
         while (str_starts_with($path, $stopAt)) {
             if (is_dir($path)) {
+
+                if ($path === $stopAt) {
+                    break;
+                }
+
                 if (chmod($path, 0755)) {
                     Log::info("Successfully set permissions to 0755 on: $path");
                 } else {
@@ -358,9 +374,11 @@ class Common
                 Log::warning("Path is not a directory: $path");
             }
 
-            if ($path === $stopAt) {
-                break;
-            }
+            Log::debug("Comparing paths", [
+                'current' => $path,
+                'stopAt' => $stopAt,
+            ]);
+
             $path = dirname($path);
         }
     }

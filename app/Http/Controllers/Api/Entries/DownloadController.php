@@ -154,6 +154,22 @@ class DownloadController
         $storage = Storage::disk('entries_zip');
         $storagePrefix = $storage->path('');
         $projectDir = $storagePrefix . $this->requestedProject()->ref;
+
+        //fix permissions if path does not exist
+        // Ensure directory exists with correct permissions ()
+        if (!$storage->exists($this->requestedProject()->ref.'/' . $user->id)) {
+            $storage->makeDirectory($this->requestedProject()->ref.'/' . $user->id);
+
+            // For local driver, fix permissions for entire chain
+            $diskRoot = $storage->path('');
+
+            // Build full folder path to newly created directory
+            $newDirFullPath = $diskRoot . $this->requestedProject()->ref.'/' . $user->id;
+
+            // Fix folder chain permissions up to app/ to fix laravel 700 issue since 9+
+            Common::setPermissionsRecursiveUp($newDirFullPath);
+        }
+
         //append user ID to handle concurrency -> MUST be logged in to download!
         return $projectDir . '/' . $user->id;
     }
