@@ -305,7 +305,8 @@ class RuleFileEntry extends EntryValidationBase
                     $projectRef,
                     $file,
                     $fileName,
-                    $fileType// -> audio,video
+                    $fileType,// -> audio,video
+                    $isS3
                 );
 
                 if (!$fileSaved) {

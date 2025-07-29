@@ -83,12 +83,9 @@ class ProjectAvatarService
                     if (is_dir($fullPath)) {
                         // Recursively set 755 permissions up to storage/app (fix Laravel default 700 on new folders)
                         Common::setPermissionsRecursiveUp($fullPath);
-                        Log::info("Permissions set recursively on: $fullPath");
                     } else {
                         Log::error("Directory not found after creation: $fullPath");
                     }
-                } else {
-                    Log::error("Directory already exists: $disk/$projectRef");
                 }
             }
 

@@ -18,7 +18,7 @@ class AudioVideoSaverService
      * @param mixed $file UploadedFile or array with 'path' key (for S3).
      * @param string $fileName Desired name of the saved file.
      * @param string $disk Storage disk name (e.g., 'local', 's3', 'entry_original', etc.).
-     * @param bool $isS3 Whether the source file is already stored in S3.
+     * @param bool $isS3 Whether the source file is stored in S3.
      * @return bool True if saved successfully, false on failure.
      */
     public static function saveFile(string $projectRef, mixed $file, string $fileName, string $disk, bool $isS3 = false): bool
@@ -57,7 +57,7 @@ class AudioVideoSaverService
                 fclose($stream);
             }
 
-            return $fileSaved;
+            return (bool) $fileSaved;
         } catch (Throwable $e) {
             Log::error('Failed to save file', [
                 'exception' => $e,

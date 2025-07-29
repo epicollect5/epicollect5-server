@@ -346,7 +346,7 @@ class Common
 
         while (str_starts_with($path, $stopAt)) {
             if (is_dir($path)) {
-                if (@chmod($path, 0755)) {
+                if (chmod($path, 0755)) {
                     Log::info("Successfully set permissions to 0755 on: $path");
                 } else {
                     $error = error_get_last();
