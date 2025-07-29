@@ -1,5 +1,14 @@
 ## Release Notes
 
+# 12.2.4
+
+- Added a utility to recursively set directory permissions, improving compatibility with newer Laravel versions.
+- Introduced a service for saving audio and video files, supporting both local and S3 storage.
+- Improved avatar generation to ensure proper directory creation, permissions, and image encoding.
+- Updated media file handling to use the new audio/video saving service.
+- Enhanced photo saving to ensure correct directory permissions.
+- Cleaned up configuration and deployment files by removing unused comments and outdated writable directory entries.
+
 # 12.2.3
 
 - Fixed tampered created_at when performing bulk edit via csv
