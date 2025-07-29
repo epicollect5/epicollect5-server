@@ -65,6 +65,28 @@ class DownloadController
             return Response::apiErrorCode(400, ['download-entries' => ['ec5_29']]);
         }
         $projectDir = $this->getArchivePath($user);
+
+        // Fix permissions if path does not exist
+        // Ensure directory exists with correct permissions ()
+        $storage =  Storage::disk('entries_zip');
+        if (!$storage->exists($this->requestedProject()->ref.'/' . $user->id)) {
+            $storage->makeDirectory($this->requestedProject()->ref.'/' . $user->id);
+
+            // For local driver, fix permissions for entire chain
+            $diskRoot = $storage->path('');
+
+            // Build full folder path to newly created directory
+            $newDirFullPath = $diskRoot . $this->requestedProject()->ref.'/' . $user->id;
+
+            // Fix folder chain permissions up to app/ to fix laravel 700 issue since 9+
+            try {
+                Common::setPermissionsRecursiveUp($newDirFullPath);
+            } catch (Throwable $e) {
+                Log::error('Failed to set permissions on: ' . $newDirFullPath, ['exception' => $e->getMessage()]);
+                return Response::apiErrorCode(400, ['download-entries' => ['ec5_83']]);
+            }
+        }
+
         // Try and create the files
         return $this->createArchive($projectDir, $params, $timestamp);
     }
@@ -154,21 +176,6 @@ class DownloadController
         $storage = Storage::disk('entries_zip');
         $storagePrefix = $storage->path('');
         $projectDir = $storagePrefix . $this->requestedProject()->ref;
-
-        //fix permissions if path does not exist
-        // Ensure directory exists with correct permissions ()
-        if (!$storage->exists($this->requestedProject()->ref.'/' . $user->id)) {
-            $storage->makeDirectory($this->requestedProject()->ref.'/' . $user->id);
-
-            // For local driver, fix permissions for entire chain
-            $diskRoot = $storage->path('');
-
-            // Build full folder path to newly created directory
-            $newDirFullPath = $diskRoot . $this->requestedProject()->ref.'/' . $user->id;
-
-            // Fix folder chain permissions up to app/ to fix laravel 700 issue since 9+
-            Common::setPermissionsRecursiveUp($newDirFullPath);
-        }
 
         //append user ID to handle concurrency -> MUST be logged in to download!
         return $projectDir . '/' . $user->id;
