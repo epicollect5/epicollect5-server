@@ -1,5 +1,10 @@
 ## Release Notes
 
+# 12.2.5
+
+- Fixed regression bugs introduced in the previous release.
+- Enhanced zip archive saving to ensure correct directory permissions.
+
 # 12.2.4
 
 - Added a utility to recursively set directory permissions, improving compatibility with newer Laravel versions.
