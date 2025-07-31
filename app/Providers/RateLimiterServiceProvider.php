@@ -83,10 +83,10 @@ class RateLimiterServiceProvider extends ServiceProvider
     {
         RateLimiter::for($name, function (Request $request) use ($name, $configKey) {
 
-            \Log::info('RateLimiter key used', [
-                'key' => $name . '|' . $request->ip(),
-                'ip' => $request->ip()
-            ]);
+            //            \Log::info('RateLimiter key used', [
+            //                'key' => $name . '|' . $request->ip(),
+            //                'ip' => $request->ip()
+            //            ]);
 
             return Limit::perMinute(
                 config("epicollect.limits.api_export.$configKey")

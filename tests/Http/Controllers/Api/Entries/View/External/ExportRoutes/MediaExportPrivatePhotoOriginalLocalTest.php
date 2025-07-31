@@ -235,7 +235,8 @@ class MediaExportPrivatePhotoOriginalLocalTest extends TestCase
         // Encode the image as JPEG or other formats
         $imageData = (string) $image->encode(new JpegEncoder(50));
         Storage::disk('entry_original')->put($project->ref . '/' . $filename, $imageData);
-        $imagePath = Storage::disk('entry_original')->path('') . $project->ref . '/' . $filename;
+        $diskRoot = config('filesystems.disks.entry_original.root').'/';
+        $imagePath = $diskRoot . $project->ref . '/' . $filename;
 
         $relativePath = $project->ref . '/' . $filename;
         $this->assertTrue(Storage::disk('entry_original')->exists($relativePath), "File was not created at: $relativePath");

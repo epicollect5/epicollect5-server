@@ -16,7 +16,6 @@ use Log;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Response;
-use Storage;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Throwable;
 
@@ -80,8 +79,7 @@ class UploadWebController extends UploadControllerBase
             $inputs = $projectExtra->getBranchInputs($formRef, $this->entryStructure->getOwnerInputRef());
         }
 
-        $disk = Storage::disk('temp');
-        $rootFolder = $disk->path('');
+        $diskRoot = config('filesystems.disks.temp.root').'/';
 
         // Get all media for this particular entry by looping the inputs
         foreach ($inputs as $inputRef) {
@@ -95,22 +93,18 @@ class UploadWebController extends UploadControllerBase
                 foreach ($groupInputs as $groupInputRef) {
                     $groupInput = $projectExtra->getInputData($groupInputRef);
 
-                    if ($this->storageDriver === 's3') {
-                        $this->moveFileS3($rootFolder, $groupInput);
-                    }
-                    if ($this->storageDriver === 'local') {
-                        $this->moveFileLocal($rootFolder, $groupInput);
+                    //On web upload, media files are always saved to local temp folder before being moved to S3
+                    if ($this->storageDriver === 'local' || $this->storageDriver === 's3') {
+                        $this->moveFileLocal($diskRoot, $groupInput);
                     }
                     if (sizeof($this->errors) > 0) {
                         return Response::apiErrorCode(400, $this->errors);
                     }
                 }
             } else {
-                if ($this->storageDriver === 's3') {
-                    $this->moveFileS3($rootFolder, $input);
-                }
-                if ($this->storageDriver === 'local') {
-                    $this->moveFileLocal($rootFolder, $input);
+                //On web upload, media files are always saved to local temp folder before being moved to S3
+                if ($this->storageDriver === 'local' || $this->storageDriver === 's3') {
+                    $this->moveFileLocal($diskRoot, $input);
                 }
                 if (sizeof($this->errors) > 0) {
                     return Response::apiErrorCode(400, $this->errors);
@@ -203,57 +197,6 @@ class UploadWebController extends UploadControllerBase
 
         // Delete file from temp folder
         File::delete($filePath);
-
-    }
-
-    /**
-     * Handles moving a media file from temporary to permanent storage on S3 for a given input.
-     *
-     * If the input is a supported media type and the file exists in the S3 temporary location, constructs file metadata and delegates the move operation. Records errors if the file cannot be found or moved.
-     */
-    private function moveFileS3($rootFolder, $input): void
-    {
-        if (!in_array($input['type'], array_keys(config('epicollect.strings.media_input_types')))) {
-            return;
-        }
-
-        $fileName = $this->entryStructure->getValidatedAnswer($input['ref'])['answer'];
-        $projectRef = $this->requestedProject()->ref;
-
-        $sourcePath = $rootFolder . $input['type'] . '/' . $projectRef . '/' . $fileName;
-
-
-        $disk = Storage::disk('s3');
-
-        if (empty($fileName) || !$disk->exists($sourcePath)) {
-            return;
-        }
-
-        try {
-            // Move file in S3
-            /// $disk->move($sourcePath, $destinationPath);
-
-            // Construct file metadata manually (you can customize structure)
-            $file = [
-                'path' => $sourcePath,
-                'name' => $fileName,
-                'mime' => $disk->mimeType($sourcePath),
-                'size' => $disk->size($sourcePath),
-                'disk' => 's3',
-            ];
-        } catch (Throwable $e) {
-            Log::error('Cannot move file in S3', ['exception' => $e->getMessage()]);
-            $this->errors['web upload'] = ['ec5_232'];
-            return;
-        }
-
-        // Set up entry structure
-        $entryStructure = $this->setUpEntryStructure($input, $fileName, $file);
-
-        $this->ruleFileEntry->moveFile($this->requestedProject(), $entryStructure);
-        if ($this->ruleFileEntry->hasErrors()) {
-            $this->errors = $this->ruleFileEntry->errors();
-        }
     }
 
     /**

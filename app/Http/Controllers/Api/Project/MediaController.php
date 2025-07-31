@@ -115,7 +115,7 @@ class MediaController
             // Attempt to retrieve media
             try {
                 //get storage prefix
-                $storagePathPrefix = Storage::disk($format)->path('');
+                $storagePathPrefix = config("filesystems.disks.$format.root").'/';
                 //get file real path
                 $realFilepath = $storagePathPrefix . $this->requestedProject()->ref . '/' . $params['name'];
                 // Check if the file exists using real (absolute) path
@@ -257,7 +257,9 @@ class MediaController
     /**
      * Retrieves a temporary media file from the configured storage driver.
      *
-     * Validates the media request and serves the requested temporary media file from either local storage or Amazon S3, depending on the application's configuration. Returns an error response if validation fails or if the storage driver is unsupported.
+     * Validates the media request and serves the requested temporary media file
+     * from local storage regardless of the application's configuration.
+     * Returns an error response if validation fails or if the storage driver is unsupported.
      *
      * @return \Illuminate\Http\Response|StreamedResponse JSON error response or media file response.
      */
@@ -269,8 +271,9 @@ class MediaController
 
         $driver = config('filesystems.default');
 
+        //Currently, we store the temp files locally only, however, in the future we might want to store them on S3 as well
         if ($driver === 's3') {
-            return $this->getTempMediaS3(request()->all());
+            return $this->getTempMediaLocal(request()->all());
         }
 
         if ($driver === 'local') {
@@ -308,8 +311,7 @@ class MediaController
         if (!empty($params['name'])) {
             // Attempt to retrieve media
             try {
-                // Use the provided 'format' as the driver
-                $filepathPrefix = Storage::disk('temp')->path('');
+                $filepathPrefix = config("filesystems.disks.temp.root").'/';
                 //get file real path
                 $realFilepath = $filepathPrefix . $inputType . '/' . $this->requestedProject()->ref . '/' . $params['name'];
 
@@ -331,76 +333,6 @@ class MediaController
                         200,
                         ['Content-Type' => $contentType]
                     );
-                }
-            } catch (Throwable $e) {
-                Log::info('Temp media error', ['exception' => $e->getMessage()]);
-                /**
-                 * Imp: If the file is not found, check for its existence in the non-temporary folders
-                 * Imp: This handles the case when a user is editing an existing web entry
-                 * Imp: If the temporary file is unavailable, display the stored file instead
-                 */
-                return $this->getMedia();
-            }
-        }
-
-        return Response::apiErrorCode(400, ['temp-media-controller' => ['ec5_69']]);
-    }
-
-    /**
-     * Retrieves a temporary media file from S3 storage and returns it as an HTTP response.
-     *
-     * If the requested file exists, streams audio and video files or returns photo files with the correct content type.
-     * If the file is not found or an error occurs, falls back to retrieving the permanent media file.
-     * Returns a 400 error if no file name is provided.
-     *
-     * @param array $params Media request parameters, including 'type' and 'name'.
-     * @return \Illuminate\Http\Response|StreamedResponse
-     */
-    public function getTempMediaS3(array $params)
-    {
-        $inputType = $params['type'];
-
-        // Set up type and content type
-        switch ($inputType) {
-            case config('epicollect.strings.inputs_type.audio'):
-                $contentType = config('epicollect.media.content_type.audio');
-                break;
-            case config('epicollect.strings.inputs_type.video'):
-                $contentType = config('epicollect.media.content_type.video');
-                break;
-            default:
-                $contentType = config('epicollect.media.content_type.photo');
-        }
-        // If a name was supplied, attempt to find file
-        if (!empty($params['name'])) {
-            // Attempt to retrieve media from temp
-            try {
-                $path = $inputType. '/' . $this->requestedProject()->ref . '/' . $params['name'];
-                $disk = Storage::disk('temp');
-
-                // Check if the file exists using absolute path
-                if (!$disk->exists($path)) {
-                    throw new FileNotFoundException("File not found on S3: $path");
-                }
-
-                //stream only audio and video (not in unit tests!)
-                if ($inputType !== config('epicollect.strings.inputs_type.photo')) {
-                    // prepend app/temp/ to the path for S3
-                    $path = 'app/temp/' . $path;
-                    return Response::toMediaStreamS3(request(), $path, $inputType);
-                } else {
-                    //photo response is as usual
-                    sleep(config('epicollect.setup.api_sleep_time.media'));
-                    // For S3, get a streamable response
-                    $stream = $disk->readStream($path);
-                    $imageContent = stream_get_contents($stream);
-                    fclose($stream); // Close the stream manually
-                    //we load the images in memory, we are aware of the limitations but images are small
-                    //around 500kb to 1MB max
-                    //otherwise it would be -> return $disk->response($path, null, ['Content-Type' => $contentType]);
-                    return response($imageContent, 200, [
-                        'Content-Type' => $contentType,
-                    ]);
                 }
             } catch (Throwable $e) {
                 Log::info('Temp media error', ['exception' => $e->getMessage()]);

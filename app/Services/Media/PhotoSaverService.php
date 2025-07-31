@@ -3,7 +3,7 @@
 namespace ec5\Services\Media;
 
 use ec5\Libraries\Utilities\Common;
-use Illuminate\Http\UploadedFile;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Drivers\Imagick\Driver;
 use Intervention\Image\Drivers\Imagick\Encoders\JpegEncoder;
@@ -71,7 +71,7 @@ class PhotoSaverService
                 Storage::disk($disk)->makeDirectory($projectRef);
 
                 // For local driver, fix permissions for entire chain
-                $diskRoot = Storage::disk($disk)->path('');
+                $diskRoot = config('filesystems.disks.' . $disk . '.root').'/';
 
                 // Build full folder path to newly created directory
                 $newDirFullPath = $diskRoot . $projectRef;
@@ -119,9 +119,18 @@ class PhotoSaverService
         int $quality = 50
     ): bool {
         try {
-            if ($image instanceof UploadedFile) {
-                //Mobile uploads are UploadedFile instances
-                $imageContent = self::processImage($image->getRealPath(), $dimensions, $quality);
+            Log::debug('Checking image type', ['type' => gettype($image), 'class' => is_object($image) ? get_class($image) : null]);
+            if (
+                //Mobile uploads are instances of UploadedFile
+                $image instanceof UploadedFile
+            ) {
+                $realPath = $image->getRealPath();
+
+                if (!$realPath || !file_exists($realPath)) {
+                    throw new RuntimeException('Invalid or missing temporary file path.');
+                }
+
+                $imageContent = self::processImage($realPath, $dimensions, $quality);
             } elseif (is_string($image)) {
                 $stream = Storage::disk('s3')->readStream($image);
                 if (!$stream) {
@@ -131,7 +140,7 @@ class PhotoSaverService
                 $imageContent = self::processImageS3($stream, $dimensions, $quality);
                 fclose($stream);
             } else {
-                throw new InvalidArgumentException('Unsupported image type.');
+                throw new InvalidArgumentException('Unsupported image type: ' . (is_object($image) ? get_class($image) : gettype($image)));
             }
 
             // Upload processed image to S3

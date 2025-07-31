@@ -374,11 +374,6 @@ class Common
                 Log::warning("Path is not a directory: $path");
             }
 
-            Log::debug("Comparing paths", [
-                'current' => $path,
-                'stopAt' => $stopAt,
-            ]);
-
             $path = dirname($path);
         }
     }

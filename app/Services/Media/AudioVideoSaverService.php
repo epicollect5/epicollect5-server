@@ -45,7 +45,8 @@ class AudioVideoSaverService
                 if (!Storage::disk($disk)->exists($projectRef)) {
                     Storage::disk($disk)->makeDirectory($projectRef);
 
-                    $diskRoot = Storage::disk($disk)->path('');
+                    $diskRoot = config('filesystems.disks.' . $disk . '.root').'/';
+
                     $newDirFullPath = $diskRoot . $projectRef;
                     Common::setPermissionsRecursiveUp($newDirFullPath);
                 }

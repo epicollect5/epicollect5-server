@@ -147,11 +147,9 @@ class DeleteEntryService
         $drivers = config('epicollect.media.entries_deletable');
         foreach ($drivers as $driver) {
             // Get disk, path prefix and all directories for this driver
-            $disk = Storage::disk($driver);
-            $pathPrefix = $disk->path('');
-
+            $diskRoot = config('filesystems.disks.' . $driver . '.root').'/';
             try {
-                $directory = new DirectoryIterator($pathPrefix . $projectRef);
+                $directory = new DirectoryIterator($diskRoot . $projectRef);
             } catch (Throwable) {
                 //directory not found, so no media files, can skip safely
                 continue;

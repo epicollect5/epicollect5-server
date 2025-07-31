@@ -235,7 +235,8 @@ class MediaExportPrivatePhotoThumbLocalTest extends TestCase
         // Encode the image as JPEG or other formats
         $imageData = (string) $image->encode(new JpegEncoder(50));
         Storage::disk('entry_thumb')->put($project->ref . '/' . $filename, $imageData);
-        $imagePath = Storage::disk('entry_thumb')->path('') . $project->ref . '/' . $filename;
+        $diskRoot = config('filesystems.disks.entry_thumb.root').'/';
+        $imagePath = $diskRoot. $project->ref . '/' . $filename;
 
         $relativePath = $project->ref . '/' . $filename;
         $this->assertTrue(Storage::disk('entry_thumb')->exists($relativePath), "File was not created at: $relativePath");

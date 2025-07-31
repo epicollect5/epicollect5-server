@@ -73,7 +73,7 @@ class DownloadController
             $storage->makeDirectory($this->requestedProject()->ref.'/' . $user->id);
 
             // For local driver, fix permissions for entire chain
-            $diskRoot = $storage->path('');
+            $diskRoot = config('filesystems.disks.entries_zip.root').'/';
 
             // Build full folder path to newly created directory
             $newDirFullPath = $diskRoot . $this->requestedProject()->ref.'/' . $user->id;
@@ -173,10 +173,8 @@ class DownloadController
     private function getArchivePath(User $user)
     {
         // Setup storage
-        $storage = Storage::disk('entries_zip');
-        $storagePrefix = $storage->path('');
-        $projectDir = $storagePrefix . $this->requestedProject()->ref;
-
+        $diskRoot = config('filesystems.disks.entries_zip.root').'/';
+        $projectDir = $diskRoot . $this->requestedProject()->ref;
         //append user ID to handle concurrency -> MUST be logged in to download!
         return $projectDir . '/' . $user->id;
     }

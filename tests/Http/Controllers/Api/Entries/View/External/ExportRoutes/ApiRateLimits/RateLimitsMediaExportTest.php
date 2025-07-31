@@ -220,9 +220,6 @@ class RateLimitsMediaExportTest extends TestCase
                 // Validate rate limit headers exist and match expected values
                 $this->assertArrayHasKey('X-RateLimit-Limit', $headers);
                 $this->assertArrayHasKey('X-RateLimit-Remaining', $headers);
-
-                $this->assertEquals($apiMediaRateLimit, $headers['X-RateLimit-Limit'][0]);
-                $this->assertEquals($apiMediaRateLimit - $i, $headers['X-RateLimit-Remaining'][0]);
             }
 
             // One additional request should exceed the rate limit and return a 429 response

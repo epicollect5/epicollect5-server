@@ -41,10 +41,9 @@ trait Remover
             $drivers = config('epicollect.media.entries_deletable');
             foreach ($drivers as $driver) {
                 // Get disk, path prefix and all directories for this driver
-                $disk = Storage::disk($driver);
-                $pathPrefix = $disk->path('');
+                $diskRoot = config('filesystems.disks.' . $driver . '.root').'/';
                 // Note: need to use File facade here, as Storage doesn't delete
-                File::deleteDirectory($pathPrefix . $projectRef);
+                File::deleteDirectory($diskRoot . $projectRef);
             }
             return true;
         } catch (Throwable $e) {
@@ -128,10 +127,9 @@ trait Remover
         $drivers = config('epicollect.media.entries_deletable');
         foreach ($drivers as $driver) {
             // Get disk, path prefix and all directories for this driver
-            $disk = Storage::disk($driver);
-            $pathPrefix = $disk->path('');
+            $diskRoot = config('filesystems.disks.' . $driver . '.root').'/';
             // Note: need to use File facade here, as Storage doesn't delete
-            File::deleteDirectory($pathPrefix . $projectRef);
+            File::deleteDirectory($diskRoot . $projectRef);
         }
     }
     public function removeAllTheEntriesMediaFoldersS3($projectRef): void

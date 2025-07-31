@@ -62,11 +62,10 @@ return [
             'directory_visibility' => 'public',
         ],
 
+        //temp files are always stored locally
         'temp' => array_merge([
-            'driver' => config('epicollect.setup.system.storage_driver'),
-            'root' => config('epicollect.setup.system.storage_driver') === 'local'
-                ? storage_path('app/temp')
-                : 'app/temp',
+            'driver' => 'local',
+            'root' => storage_path('app/temp'),
             'throw' => true,
             'visibility' => 'public',
             'directory_visibility' => 'public',
