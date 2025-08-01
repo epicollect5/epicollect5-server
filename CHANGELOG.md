@@ -1,5 +1,12 @@
 ## Release Notes
 
+# 12.2.6
+
+- Refactored file handling to use root paths and unified local file moving across all storage drivers.
+- Removed S3 temp file support, shifting all temporary media storage and access to local disk only.
+- Cleaned up unused code, including the image tools admin controller and various debug logs.
+- Updated tests to align with new file path logic and removed obsolete S3-related test cases.
+
 # 12.2.5
 
 - Fixed regression bugs introduced in the previous release.
