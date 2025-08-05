@@ -21,10 +21,6 @@
     margin-bottom: 15px;
   }
 
-  .project-logo {
-    margin: 0 auto;
-    border: 2px solid $deep-purple;
-  }
   .project-logo-wrapper {
     @include project-logo-wrapper(256px, 256px);
   }

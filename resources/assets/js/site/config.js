@@ -65,8 +65,5 @@ $(document).ready(function () {
             ? this.slice(0, n - 1) + '...'
             : this;
     };
-
-    //debounce helper
-
 });
 
