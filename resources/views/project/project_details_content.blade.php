@@ -30,40 +30,58 @@
                 @endif
             </div>
             <div class="panel-body">
-                <div class="details-view__logo-wrapper">
-                    <img class="img-responsive img-thumbnail img-circle pull-left" width="128" height="128"
-                         alt="Project logo"
-                         src=" @if ($requestAttributes->requestedProject->logo_url == '') {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
-                @else
-                    {{ url('/api/internal/media/' . $requestAttributes->requestedProject->slug . '?type=photo&name=logo.jpg&format=project_thumb') }} @endif">
-                </div>
+                <div class="row">
+                    <div class="col-sm-3 col-md-3">
+                        <div class="project-logo-wrapper">
+                            <img class="project-logo img-responsive img-circle" width="128" height="128"
+                                 alt="Project logo"
+                                 src="@if($requestAttributes->requestedProject->logo_url == '')
+                         {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
+                              @else
+                              {{ url('/api/internal/media/'.$requestAttributes->requestedProject->slug . '?type=photo&name=logo.jpg&format=project_thumb') }}
+                              @endif"
+                            >
 
-                <div class="details-view__project-details">
-                    <h5 class="details-view__project-details__small-description">
-                        <i class="material-icons">
-                            &#xE0C9;
-                        </i>&nbsp;
-                        {{ $requestAttributes->requestedProject->small_description }}
-                    </h5>
-                    <h5 class="details-view__project-details__created-at">
-                        <i class="material-icons">
-                            &#xE878;
-                        </i>&nbsp;Created on
-                        {{ \Carbon\Carbon::parse($requestAttributes->requestedProject->created_at)->setTimezone('UTC')->format('l d M Y, H:i') }}
-                        UTC
-                    </h5>
+                            <div class="loader"></div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-9 col-md-9">
+                        <div class="details-view__project-details">
+                            <h5 class="details-view__project-details__small-description">
+                                <i class="material-icons">
+                                    assignment
+                                </i>
+                                &nbsp;{{ $requestAttributes->requestedProject->small_description }}
+                            </h5>
+                            <h5 class="details-view__project-details__created-at">
+                                <i class="material-icons">
+                                    calendar_today
+                                </i>
+                                &nbsp;Created on
+                                {{ \Carbon\Carbon::parse($requestAttributes->requestedProject->created_at)->setTimezone('UTC')->format('D M Y, H:i') }}
+                                UTC
+                            </h5>
+                        </div>
+                    </div>
+
                 </div>
 
                 <div class="clearfix"></div>
-                @if ($requestAttributes->requestedProject->description === '')
-                    <p class="text-center">
-                        {{ trans('site.no_desc_yet') }}
-                    </p>
-                @else
-                    <p class="details-view__project-details__description">
-                        {!! nl2br(e($requestAttributes->requestedProject->description)) !!}
-                    </p>
-                @endif
+
+                <div class="row">
+                    <div class="col-md-12">
+                        @if ($requestAttributes->requestedProject->description === '')
+                            <p class="well margin-top-lg text-center">
+                                {{ trans('site.no_desc_yet') }}
+                            </p>
+                        @else
+                            <p class="well details-view__project-details__description margin-top-lg">
+                                {!! nl2br(e($requestAttributes->requestedProject->description)) !!}
+                            </p>
+                        @endif
+                    </div>
+                </div>
             </div>
         </div>
 

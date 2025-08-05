@@ -24,11 +24,27 @@
     }
   }
 
-  .details-view__logo-wrapper {
+  .project-logo-wrapper {
+    border: 2px solid $deep-purple !important;
+    border-radius: 50%;
+    margin: 0 auto;
+    width: 128px; // fix width same as image
+    height: 128px; // fix height same as image
+    position: relative;
+    display: block;
+    .loader {
+      position: absolute;
+      z-index: 21;
+    }
     img {
-      min-height: 130px;
+      opacity: 0;
+      z-index: 22;
+      position: relative;
+      //min-height: 256px;
+      margin: 0 auto;
     }
   }
+
 
   .table-project-settings, .table-app-link-settings {
     th {
@@ -141,16 +157,14 @@
       margin-top: -14px;
     }
     img {
-      margin: 20px 20px 30px 20px;
+      // margin: 20px 20px 30px 20px;
     }
     .project-long-description {
       border: 1px solid $light-grey;
       box-shadow: none;
     }
   }
-  .details-view__project-details {
-    margin-top: 40px;
-  }
+
   .form-group.file-upload-input {
     input[type="text"] {
       &:hover {

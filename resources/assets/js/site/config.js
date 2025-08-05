@@ -49,7 +49,7 @@ $(document).ready(function () {
 
     //fade in project logo thumbnails all over the site (not my projects and project search, as it has got another way to render, from server generated markup)
     if ($('.page-my-projects').length === 0 && $('.page-search-projects').length === 0 && $('.page-formbuilder').length === 0) {
-        $('.thumbnail, .intro-thumbnail, .project-home__logo-wrapper, .project-open__logo-wrapper').imagesLoaded().progress(function (instance, image) {
+        $('.thumbnail, .intro-thumbnail, .project-logo-wrapper, .project-open__logo-wrapper').imagesLoaded().progress(function (instance, image) {
             if (image.isLoaded) {
                 //fade in image and remove loader when it is done
                 $(image.img).fadeTo(250, 1, function () {

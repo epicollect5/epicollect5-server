@@ -13,8 +13,8 @@
                 <div class="panel panel-default ">
                     <div class="panel-body">
                         <a href="{{url('project/' . $requestAttributes->requestedProject->slug . '/data')}}"
-                           class="project-home__logo-wrapper">
-                            <img class="project-home__logo img-responsive img-circle" width="256" height="256"
+                           class="project-logo-wrapper">
+                            <img class="project-logo img-responsive img-circle" width="256" height="256"
                                  alt="Project logo"
                                  src="@if($requestAttributes->requestedProject->logo_url == '') {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
                                  @else
