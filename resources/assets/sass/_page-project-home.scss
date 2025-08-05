@@ -1,3 +1,5 @@
+@import "mixins";
+
 .page-project-home {
   .h1, .h2, .h3, h1, h2, h3 {
     margin: 0;
@@ -6,24 +8,7 @@
     margin: 0 auto;
   }
   .project-logo-wrapper {
-    border: 2px solid $deep-purple !important;
-    border-radius: 50%;
-    margin: 0 auto;
-    width: 256px; // fix width same as image
-    height: 256px; // fix height same as image
-    position: relative;
-    display: block;
-    .loader {
-      position: absolute;
-      z-index: 21;
-    }
-    img {
-      opacity: 0;
-      z-index: 22;
-      position: relative;
-      //min-height: 256px;
-      margin: 0 auto;
-    }
+    @include project-logo-wrapper(256px, 256px);
   }
   .project-home__project-view-btn {
     text-align: center;

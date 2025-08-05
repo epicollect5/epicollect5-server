@@ -6,22 +6,6 @@
     margin: 0 auto;
     border: 2px solid $deep-purple;
   }
-  .project-open__logo-wrapper {
-    border: none;
-    position: relative;
-    display: block;
-    .loader {
-      position: absolute;
-      z-index: 21;
-    }
-    img {
-      opacity: 0;
-      z-index: 22;
-      position: relative;
-      //min-height: 256px;
-      margin: 0 auto;
-    }
-  }
   .project-open__project-view-btn {
     text-align: center;
   }

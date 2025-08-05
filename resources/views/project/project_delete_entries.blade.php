@@ -9,16 +9,19 @@
 
         <div class="row">
             <div href="#" class="col-sm-12 col-md-6 col-lg-6 col-md-offset-3 col-lg-offset-3">
-                <div id="" class="panel panel-default ">
+                <div class="panel panel-default ">
 
                     <div class="panel-body">
-                        <a href="{{ url('project/' . $requestAttributes->requestedProject->slug . '/data') }}">
-                            <img class="project-home__logo img-responsive img-circle" width="256" height="256"
+                        <div class="project-logo-wrapper">
+                            <img class="project-logo img-responsive img-circle" width="256" height="256"
                                  alt="Project logo"
-                                 src="@if ($requestAttributes->requestedProject->logo_url == '') {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
+                                 src="@if($requestAttributes->requestedProject->logo_url == '') {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
                                  @else
-                                 {{ url('/api/internal/media/' . $requestAttributes->requestedProject->slug . '?type=photo&name=logo.jpg&format=project_thumb') }} @endif">
-                        </a>
+                                 {{ url('/api/internal/media/'.$requestAttributes->requestedProject->slug . '?type=photo&name=logo.jpg&format=project_thumb') }}
+                                 @endif">
+
+                            <div class="loader"></div>
+                        </div>
                     </div>
 
                     <div class="panel-body text-center">

@@ -1,3 +1,5 @@
+@import "mixins";
+
 .page-project-details {
   min-height: 620px;
   .page-title {
@@ -25,24 +27,7 @@
   }
 
   .project-logo-wrapper {
-    border: 2px solid $deep-purple !important;
-    border-radius: 50%;
-    margin: 0 auto;
-    width: 128px; // fix width same as image
-    height: 128px; // fix height same as image
-    position: relative;
-    display: block;
-    .loader {
-      position: absolute;
-      z-index: 21;
-    }
-    img {
-      opacity: 0;
-      z-index: 22;
-      position: relative;
-      //min-height: 256px;
-      margin: 0 auto;
-    }
+    @include project-logo-wrapper(128px, 128px);
   }
 
 

@@ -1,3 +1,5 @@
+@import "mixins";
+
 .page-entries-deletion {
   .h1,
   .h2,
@@ -19,25 +21,12 @@
     margin-bottom: 15px;
   }
 
-  .project-home__logo {
+  .project-logo {
     margin: 0 auto;
     border: 2px solid $deep-purple;
   }
-  .project-home__logo-wrapper {
-    border: none;
-    position: relative;
-    display: block;
-    .loader {
-      position: absolute;
-      z-index: 21;
-    }
-    img {
-      opacity: 0;
-      z-index: 22;
-      position: relative;
-      min-height: 256px;
-      margin: 0 auto;
-    }
+  .project-logo-wrapper {
+    @include project-logo-wrapper(256px, 256px);
   }
 
   .project-home__project-view-btn {
