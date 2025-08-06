@@ -1,5 +1,12 @@
 ## Release Notes
 
+# 12.2.7
+
+- Updated logo and wrapper classes for consistency, applied circular borders, fixed sizing, and improved loader effects.
+- Renamed CSS classes, unified logo wrappers, and reorganized project layouts for better maintainability.
+- Fixed targeting for image loading and fade-in effects.
+- Cleaned up invalid HTML attributes to enhance markup quality.
+
 # 12.2.6
 
 - Refactored file handling to use root paths and unified local file moving across all storage drivers.
