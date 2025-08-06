@@ -10,8 +10,8 @@
         @include('modals/modal_leave')
 
         <div class="row">
-            <div href="#" class="project-home-wrapper col-sm-12 col-md-6 col-lg-6 col-md-offset-3 col-lg-offset-3">
-                <div id="" class="panel panel-default ">
+            <div class="project-home-wrapper col-sm-12 col-md-6 col-lg-6 col-md-offset-3 col-lg-offset-3">
+                <div class="panel panel-default ">
 
                     <div class="panel-body">
                         <a href="{{url('project/' . $requestAttributes->requestedProject->slug . '/data')}}">
