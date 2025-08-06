@@ -3,24 +3,23 @@
 namespace ec5\Libraries\Generators;
 
 use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Facades\Image;
+use Intervention\Image\Laravel\Facades\Image;
 
 class MediaGenerator
 {
-    public static function generateAndStorePhotoFiles($projectRef, $filename, $format = 'jpg'): void
+    public static function generateAndStorePhotoFiles($projectRef, $filename): void
     {
         // Pick a random background
         $backgrounds = ['#673C90', '#87C7A6', '#C159B3'];
         $background = $backgrounds[array_rand($backgrounds)];
 
         // Create the canvas
-        $img = Image::canvas(
+        $img = Image::create(
             config('epicollect.media.entry_original_landscape')[0],
-            config('epicollect.media.entry_original_landscape')[1],
-            $background
-        );
+            config('epicollect.media.entry_original_landscape')[1]
+        )->fill($background);
 
-        // Generate a random number of stars (1 to 3)
+        // Generate a random number of stars (1 to 7)
         $numStars = rand(1, 7);
 
         for ($i = 0; $i < $numStars; $i++) {
@@ -46,24 +45,32 @@ class MediaGenerator
                 $points[] = $rotatedPoint['y'];
             }
 
-            // Draw the star polygon
-            $img->polygon($points, function ($draw) {
-                $draw->background('#' . dechex(rand(0x000000, 0xFFFFFF)));
+            // Generate random color for the star
+            $starColor = '#' . str_pad(dechex(rand(0x000000, 0xFFFFFF)), 6, '0', STR_PAD_LEFT);
+
+            // Draw the star polygon using closure
+            $img->drawPolygon(function ($polygon) use ($points, $starColor) {
+                // Convert flat array to point pairs and add to polygon
+                for ($k = 0; $k < count($points); $k += 2) {
+                    $polygon->point($points[$k], $points[$k + 1]);
+                }
+                $polygon->background($starColor);
             });
         }
 
-        // Create entry_original stream
-        $entryOriginalStream = $img->stream($format);
+        // Create entry_original encoded data
+        $entryOriginalData = $img->toJpeg();
 
-        // Create entry_thumb stream by cropping and resizing from the center
-        $entryThumbStream = Image::make($entryOriginalStream)->fit(
+        // Create entry_thumb by cropping and resizing from the center
+        $entryThumbImg = Image::read($entryOriginalData)->cover(
             config('epicollect.media.entry_thumb')[0],
             config('epicollect.media.entry_thumb')[1]
         );
+        $entryThumbData = $entryThumbImg->toJpeg();
 
         // Store both entry_original and entry_thumb
-        Storage::disk('entry_original')->put($projectRef . '/' . $filename, $entryOriginalStream);
-        Storage::disk('entry_thumb')->put($projectRef . '/' . $filename, $entryThumbStream->stream($format));
+        Storage::disk('entry_original')->put($projectRef . '/' . $filename, $entryOriginalData);
+        Storage::disk('entry_thumb')->put($projectRef . '/' . $filename, $entryThumbData);
     }
 
     /**
