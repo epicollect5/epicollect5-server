@@ -2,6 +2,7 @@
 
 namespace ec5\Traits\Eloquent;
 
+use Aws\S3\S3Client;
 use ec5\Libraries\Utilities\Common;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
@@ -29,45 +30,21 @@ trait Remover
         }
     }
 
-    public function removeEntries($projectId, $projectRef): bool
-    {
-        try {
-            foreach (Entry::where('project_id', $projectId)->take(10000)->cursor() as $row) {
-                // Delete the row
-                $row->delete();
-            }
-
-            //remove all the entries media folders
-            $drivers = config('epicollect.media.entries_deletable');
-            foreach ($drivers as $driver) {
-                // Get disk, path prefix and all directories for this driver
-                $diskRoot = config('filesystems.disks.' . $driver . '.root').'/';
-                // Note: need to use File facade here, as Storage doesn't delete
-                File::deleteDirectory($diskRoot . $projectRef);
-            }
-            return true;
-        } catch (Throwable $e) {
-            Log::error(__METHOD__ . ' failed.', [
-                'exception' => $e->getMessage()
-            ]);
-            return false;
-        }
-    }
-
     /**
      * @throws Throwable
      */
-    public function removeEntriesChunk($projectId, $projectRef): bool
+    public function removeEntriesChunk($projectId): bool
     {
         $initialMemoryUsage = memory_get_usage();
         $peakMemoryUsage = memory_get_peak_usage();
         $projectStats = new ProjectStats();
+
         try {
             DB::beginTransaction();
 
             //imp: branch entries are removed by FK constraint ON DELETE CASCADE
             Entry::where('project_id', $projectId)
-                ->limit(config('epicollect.setup.bulk_deletion.chunk_size'))
+                ->limit(config('epicollect.setup.bulk_deletion.chunk_size_entries'))
                 ->delete();
             if (!$projectStats->updateProjectStats($projectId)) {
                 throw new Exception('Failed to count entries after archive');
@@ -95,22 +72,7 @@ trait Remover
             DB::commit();
             // Pause for a few seconds to avoid overloading/locking the database
             sleep(3);
-
-            //if we have 0 entries left, delete all media files
-            $totalEntries = ProjectStats::where('project_id', $projectId)->value('total_entries');
-            if ($totalEntries === 0) {
-                //delete all the entries media folders on S3 bucket
-                if (config("filesystems.default") === 's3') {
-                    $this->removeAllTheEntriesMediaFoldersS3($projectRef);
-                }
-                //delete all the entries media folders on local storage
-                if (config("filesystems.default") === 'local') {
-                    $this->removeAllTheEntriesMediaFoldersLocal($projectRef);
-                }
-            }
-
             return true;
-
         } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed.', [
                 'exception' => $e->getMessage(),
@@ -132,30 +94,269 @@ trait Remover
             File::deleteDirectory($diskRoot . $projectRef);
         }
     }
+
     public function removeAllTheEntriesMediaFoldersS3($projectRef): void
     {
-        // Remove all the entries media folders from configured disks
         $drivers = config('epicollect.media.entries_deletable');
 
         foreach ($drivers as $driver) {
             $disk = Storage::disk($driver);
+            $diskRoot = config('filesystems.disks.' . $driver . '.root').'/';
 
-            // Get all files under the projectRef "folder" (prefix)
-            $files = $disk->allFiles($projectRef);
+            // Track initial memory usage
+            $initialMemoryUsage = memory_get_usage(true);
+            $peakMemoryBefore = memory_get_peak_usage(true);
 
-            if (!empty($files)) {
-                $disk->delete($files);
+            try {
+                // Create S3 client using disk configuration
+                $config = config("filesystems.disks.$driver");
+                $s3Client = $this->createS3Client($config);
+                $bucket = $config['bucket'];
+
+                // Delete using batch operations
+                $prefix = $diskRoot.$projectRef;
+                $this->bulkDeleteByPrefix($s3Client, $bucket, $prefix);
+
+            } catch (Exception $e) {
+                Log::error("Failed to delete entries for project $projectRef on disk $driver: " . $e->getMessage());
+
+                // Fallback to original method if batch delete fails
+                Log::info("Falling back to deleteDirectory for disk: $driver");
+                $disk->deleteDirectory($projectRef);
             }
 
-            // Optionally, delete empty "directories" (prefixes) - mostly cosmetic in S3
-            $directories = $disk->allDirectories($projectRef);
-            foreach ($directories as $dir) {
-                $disk->deleteDirectory($dir);
-            }
+            // Track final memory usage
+            $finalMemoryUsage = memory_get_usage(true);
+            $peakMemoryAfter = memory_get_peak_usage(true);
+            $memoryUsed = $finalMemoryUsage - $initialMemoryUsage;
+            $peakMemoryUsed = $peakMemoryAfter - $peakMemoryBefore;
 
-            // Finally, delete the top-level folder (prefix) itself if it exists as a zero-byte object
-            $disk->delete($projectRef);
+            // Log memory usage details
+            Log::info("Memory Usage for Deleting Entries on disk: $driver");
+            Log::info("Initial Memory Usage: " . Common::formatBytes($initialMemoryUsage));
+            Log::info("Final Memory Usage: " . Common::formatBytes($finalMemoryUsage));
+            Log::info("Memory Used: " . Common::formatBytes($memoryUsed));
+            Log::info("Peak Memory Usage: " . Common::formatBytes($peakMemoryAfter));
+            Log::info("Peak Memory Growth During Process: " . Common::formatBytes($peakMemoryUsed));
         }
     }
 
+    /**
+     * Create S3 client from Laravel filesystem disk configuration
+     */
+    private function createS3Client(array $config): S3Client
+    {
+        $clientConfig = [
+            'version' => 'latest',
+            'region' => $config['region'],
+            'credentials' => [
+                'key' => $config['key'],
+                'secret' => $config['secret'],
+            ],
+        ];
+
+        // Add endpoint for DigitalOcean Spaces or other S3-compatible services
+        if (!empty($config['endpoint'])) {
+            $clientConfig['endpoint'] = $config['endpoint'];
+        }
+
+        // Set path style endpoint if specified
+        if (isset($config['use_path_style_endpoint'])) {
+            $clientConfig['use_path_style_endpoint'] = $config['use_path_style_endpoint'];
+        }
+
+        return new S3Client($clientConfig);
+    }
+
+    /**
+     * Bulk delete all objects with a given prefix using S3 batch operations
+     */
+    private function bulkDeleteByPrefix(S3Client $s3Client, string $bucket, string $prefix): bool
+    {
+        $continuationToken = null;
+        $totalDeleted = 0;
+
+        do {
+            // List objects with the prefix
+            $listParams = [
+                'Bucket' => $bucket,
+                'Prefix' => $prefix,
+                'MaxKeys' => 1000
+            ];
+
+            if ($continuationToken) {
+                $listParams['ContinuationToken'] = $continuationToken;
+            }
+
+            $result = $s3Client->listObjectsV2($listParams);
+
+            // If no objects found, we're done
+            if (empty($result['Contents'])) {
+                break;
+            }
+
+            // Prepare objects for deletion
+            $objects = [];
+            foreach ($result['Contents'] as $object) {
+                $objects[] = ['Key' => $object['Key']];
+            }
+
+            // Batch delete objects (up to 1000 at a time)
+            if (!empty($objects)) {
+                $deleteResult = $s3Client->deleteObjects([
+                    'Bucket' => $bucket,
+                    'Delete' => [
+                        'Objects' => $objects,
+                        'Quiet' => true // Don't return info about successful deletions
+                    ]
+                ]);
+
+                // Log any errors
+                if (!empty($deleteResult['Errors'])) {
+                    Log::error("S3 bulk delete errors for prefix $prefix:", $deleteResult['Errors']);
+                }
+
+                $totalDeleted += count($objects);
+                Log::info("Deleted " . count($objects) . " objects with prefix: $prefix (Total: $totalDeleted)");
+            }
+
+            // Get continuation token for next batch
+            $continuationToken = $result['NextContinuationToken'] ?? null;
+
+            // Memory cleanup - unset large variables
+            unset($result, $objects);
+
+            // Optional: Force garbage collection for very large operations
+            if ($totalDeleted % 10000 === 0) {
+                gc_collect_cycles();
+            }
+
+        } while ($continuationToken);
+
+        Log::info("Total objects deleted with prefix $prefix: $totalDeleted");
+        return true;
+    }
+
+    /**
+     * Check if media files exist for this project across all configured drivers
+     * Works for both local and S3/cloud storage
+     */
+
+
+    /**
+     * @throws Exception
+     */
+    public function removeMediaChunk(string $projectRef): int
+    {
+        $drivers = config('epicollect.media.entries_deletable');
+
+        foreach ($drivers as $driver) {
+            try {
+                $config = config("filesystems.disks.$driver");
+
+                // Check if this is S3 or local storage
+                if ($config['driver'] === 's3') {
+                    $diskRoot = config('filesystems.disks.' . $driver . '.root').'/';
+                    $s3Client = $this->createS3Client($config);
+                    $bucket = $config['bucket'];
+                    $prefix = $diskRoot . $projectRef;
+                    $deletedCount = $this->deleteOneBatchByPrefixS3($s3Client, $bucket, $prefix);
+                } else {
+                    // Handle local storage using Laravel Storage facade
+                    $deletedCount = $this->deleteOneBatchByPrefixLocal($driver, $projectRef);
+                }
+
+                if ($deletedCount > 0) {
+                    Log::info("Deleted $deletedCount entries for $projectRef on disk $driver.");
+                    return $deletedCount; // ✅ Stop once we delete something
+                }
+
+            } catch (Exception $e) {
+                Log::error("Failed batch delete for $projectRef on disk $driver: " . $e->getMessage());
+                throw $e;
+            }
+        }
+
+        return 0; // nothing deleted
+    }
+
+    private function deleteOneBatchByPrefixS3(S3Client $s3Client, string $bucket, string $prefix): int
+    {
+        $listParams = [
+            'Bucket' => $bucket,
+            'Prefix' => $prefix,
+            'MaxKeys' => 1000,
+        ];
+
+        $result = $s3Client->listObjectsV2($listParams);
+
+        if (empty($result['Contents'])) {
+            return 0;
+        }
+
+        $objects = array_map(fn ($obj) => ['Key' => $obj['Key']], $result['Contents']);
+
+        $deleteResult = $s3Client->deleteObjects([
+            'Bucket' => $bucket,
+            'Delete' => [
+                'Objects' => $objects,
+                'Quiet' => true,
+            ],
+        ]);
+
+        if (!empty($deleteResult['Errors'])) {
+            Log::error("Errors deleting S3 objects with prefix $prefix:", $deleteResult['Errors']);
+        }
+
+        return count($objects);
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function deleteOneBatchByPrefixLocal(string $disk, string $projectRef): int
+    {
+        $deletedCount = 0;
+        $maxFiles = 1000; // Match S3 batch size
+
+        $storage = Storage::disk($disk);
+
+        if (!$storage->exists($projectRef)) {
+            return 0;
+        }
+
+        // Get all files in the directory
+        $files = $storage->files($projectRef);
+
+        foreach ($files as $file) {
+            if ($deletedCount >= $maxFiles) {
+                break;
+            }
+
+            try {
+                // Laravel's delete() returns true if file was deleted or didn't exist
+                if ($storage->delete($file)) {
+                    $deletedCount++;
+                } else {
+                    // This would be a real error (permissions, etc.)
+                    Log::error("Failed to delete file: $file");
+                    throw new Exception("Failed to delete file: $file");
+                }
+            } catch (Exception $e) {
+                Log::error("Error deleting file $file: " . $e->getMessage());
+                throw $e;
+            }
+        }
+
+        // Try to remove the directory if it's now empty
+        try {
+            if ($storage->exists($projectRef) && empty($storage->files($projectRef))) {
+                $storage->deleteDirectory($projectRef);
+            }
+        } catch (Exception $e) {
+            Log::warning("Failed to remove directory: $projectRef - " . $e->getMessage());
+        }
+
+        return $deletedCount;
+    }
 }

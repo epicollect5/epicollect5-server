@@ -6,24 +6,51 @@
                 <h4 class="modal-title text-center">Deleting, please wait...</h4>
             </div>
             <div class="modal-body">
-                <div class="progress" style="height: 20px;">
-                    <div class="progress-bar progress-bar__modal-deletion progress-bar-striped active"
-                         role="progressbar" aria-valuenow="100"
-                         aria-valuemin="0"
-                         aria-valuemax="100"
-                         style="width: 100%;">
+                <div class="progress">
+                    <div class="progress-bar progress-bar__modal-deletion__entries progress-bar-striped active"
+                         role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="50"
+                         style="width: 50%">
+                    </div>
+                    <div class="progress-bar progress-bar__modal-deletion__media progress-bar-striped active"
+                         role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="50"
+                         style="width: 50%">
                     </div>
                     <div class="clearfix"></div>
                 </div>
-                <div class="counter-wrapper text-center">
-                    <strong><span class="counter-percentage">0%</span></strong>
-                    <span>Complete</span>
-                    <br/>
-                    <span>Deleted&nbsp;</span>
-                    <span class="counter-deleted">0</span>
-                    <span> of </span>
-                    <span class="counter-total"></span>
-                </div>
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Progress</th>
+                        <th>Deleted</th>
+                        <th>Total</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr class="progress-media">
+                        <td>
+                            <span class="color-indicator color-media"></span>
+                            Media
+                        </td>
+                        <td><strong><span class="counter-percentage">0%</span></strong></td>
+                        <td><span class="counter-deleted">0</span></td>
+                        <td>
+                            <span class="spinner text-center"></span>
+                            <span class="counter-total hidden">0</span>
+                        </td>
+                    </tr>
+                    <tr class="progress-entries">
+                        <td>
+                            <span class="color-indicator color-entries"></span>
+                            Entries
+                        </td>
+                        <td><strong><span class="counter-percentage">0%</span></strong></td>
+                        <td><span class="counter-deleted">0</span></td>
+                        <td><span class="counter-total">0</span></td>
+                    </tr>
+                    </tbody>
+                </table>
+
 
             </div>
             <div class="modal-footer">

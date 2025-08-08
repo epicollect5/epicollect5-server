@@ -4,7 +4,9 @@
 @section('content')
 
     <div class='container-fluid page-entries-deletion'
-         data-chunk-size="{{config('epicollect.setup.bulk_deletion.chunk_size')}}">
+         data-chunk-size-entries="{{config('epicollect.setup.bulk_deletion.chunk_size_entries')}}"
+         data-chunk-size-media="{{config('epicollect.setup.bulk_deletion.chunk_size_media')}}"
+    >
         @include('modals/modal_deletion')
 
         <div class="row">
@@ -28,7 +30,9 @@
                         <h2 class="project-name">{{ $requestAttributes->requestedProject->name }}</h2>
                         <p class="warning-well">{!! trans('site.confirm_deletion_entries', ['totalEntries' => $totalEntries]) !!}</p>
 
-                        <div class="delete-entries-wrapper" data-total-entries="{{$totalEntries}}">
+                        <div class="delete-entries-wrapper"
+                             data-total-entries="{{$totalEntries}}"
+                        >
                             <div class="form-group">
                                 <label for="project-name"
                                        class="control-label">{{ trans('site.confirm_project_name') }}</label>
