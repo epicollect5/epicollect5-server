@@ -119,6 +119,42 @@ class DeleteController extends Controller
     }
 
     /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
+    private function validateDeletionRequest()
+    {
+        // Validate the request
+        $data = request()->get('data');
+        $projectName = $data['project-name'];
+
+        //no project name passed?
+        if (!isset($projectName)) {
+            $this->errors[] = ['deletion-entries' => ['ec5_399']];
+            return false;
+        }
+
+        //if we are sending the wrong project name, bail out
+        if (trim($this->requestedProject()->name) !== $projectName) {
+            $this->errors[] = ['deletion-entries' => ['ec5_399']];
+            return false;
+        }
+
+        //do we have the right permissions?
+        if (!$this->requestedProjectRole()->canDeleteEntries()) {
+            $this->errors[] = ['errors' => ['ec5_91']];
+            return false;
+        }
+
+        //is the project locked? Otherwise, bail out
+        if ($this->requestedProject()->status !== config('epicollect.strings.project_status.locked')) {
+            $this->errors[] = ['deletion-entries' => ['ec5_91']];
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * Delete a chunk of entries
      *
      * @return JsonResponse
@@ -128,27 +164,8 @@ class DeleteController extends Controller
     public function deleteEntries()
     {
         // Validate the request
-        $data = request()->get('data');
-        $projectName = $data['project-name'];
-
-        //no project name passed?
-        if (!isset($projectName)) {
-            return Response::apiErrorCode(400, ['deletion-entries' => ['ec5_399']]);
-        }
-
-        //if we are sending the wrong project name, bail out
-        if (trim($this->requestedProject()->name) !== $projectName) {
-            return Response::apiErrorCode(400, ['deletion-entries' => ['ec5_399']]);
-        }
-
-        //do we have the right permissions?
-        if (!$this->requestedProjectRole()->canDeleteEntries()) {
-            return Response::apiErrorCode(400, ['errors' => ['ec5_91']]);
-        }
-
-        //is the project locked? Otherwise, bail out
-        if ($this->requestedProject()->status !== config('epicollect.strings.project_status.locked')) {
-            return Response::apiErrorCode(400, ['deletion-entries' => ['ec5_91']]);
+        if (!$this->validateDeletionRequest()) {
+            return Response::apiErrorCode(400, $this->errors[0]);
         }
 
         $userId = $this->requestedUser()->id;
@@ -158,7 +175,7 @@ class DeleteController extends Controller
         if ($lock->get()) {
             try {
                 // Attempt to remove a chunk of entries
-                if (!$this->removeEntriesChunk($this->requestedProject()->getId(), $this->requestedProject()->ref)) {
+                if (!$this->removeEntriesChunk($this->requestedProject()->getId())) {
                     return Response::apiErrorCode(400, ['errors' => ['ec5_104']]);
                 }
                 // Success!
@@ -174,4 +191,40 @@ class DeleteController extends Controller
             return Response::apiErrorCode(400, ['errors' => ['ec5_255']]);
         }
     }
+
+
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
+    public function deleteMedia()
+    {
+        // Validate the request
+        if (!$this->validateDeletionRequest()) {
+            return Response::apiErrorCode(400, $this->errors);
+        }
+
+        $userId = $this->requestedUser()->id;
+        $userCacheKey = 'bulk_entries_deletion_user_' . $userId;
+        $lock = Cache::lock($userCacheKey, config('epicollect.setup.locks.duration_bulk_entries_deletion_lock'));
+
+        if ($lock->get()) {
+            try {
+                // Attempt to remove a chunk of media files
+                $deleted = $this->removeMediaChunk($this->requestedProject()->ref);
+                // Success!
+                return Response::apiResponse(['code' =>  'ec5_407','deleted' => $deleted]);
+            } catch (Throwable $e) {
+                Log::error('Error deleting media', ['exception' => $e->getMessage()]);
+                return Response::apiErrorCode(400, ['errors' => ['ec5_104']]);
+            } finally {
+                // Release the lock
+                $lock->release();
+            }
+        } else {
+            return Response::apiErrorCode(400, ['errors' => ['ec5_255']]);
+        }
+    }
+
+
 }

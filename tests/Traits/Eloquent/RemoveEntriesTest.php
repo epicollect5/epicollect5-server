@@ -17,7 +17,7 @@ class RemoveEntriesTest extends TestCase
     public function test_it_delete_entries_chunk_and_updates_stats()
     {
         $repeatCount = 10; // Number of times to repeat the test case
-        $chunkSize = config('epicollect.setup.bulk_deletion.chunk_size');
+        $chunkSize = config('epicollect.setup.bulk_deletion.chunk_size_entries');
 
         for ($i = 0; $i < $repeatCount; $i++) {
 

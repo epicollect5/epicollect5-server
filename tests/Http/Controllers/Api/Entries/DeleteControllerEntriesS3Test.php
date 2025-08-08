@@ -177,7 +177,7 @@ class DeleteControllerEntriesS3Test extends TestCase
         }
     }
 
-    public function test_it_should_delete_all_entries_and_media()
+    public function test_it_should_delete_all_entries_but_leave_media_in_place()
     {
         $formRef = $this->projectDefinition['data']['project']['forms'][0]['ref'];
 
@@ -253,15 +253,15 @@ class DeleteControllerEntriesS3Test extends TestCase
                 ->value('form_counts'), true);
             $this->assertEquals([], $formCounts);
 
-            //assert media files are deleted
+            //assert media files are not deleted (dedicate endpoint for media)
             $photos = Storage::disk('entry_original')->files($this->project->ref);
-            $this->assertCount(0, $photos);
+            $this->assertCount($numOfEntries, $photos);
 
             $audios = Storage::disk('audio')->files($this->project->ref);
-            $this->assertCount(0, $audios);
+            $this->assertCount($numOfEntries, $audios);
 
             $videos = Storage::disk('video')->files($this->project->ref);
-            $this->assertCount(0, $videos);
+            $this->assertCount($numOfEntries, $videos);
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
@@ -270,7 +270,7 @@ class DeleteControllerEntriesS3Test extends TestCase
     public function test_it_should_delete_entries_chunk_and_leave_media()
     {
         $formRef = $this->projectDefinition['data']['project']['forms'][0]['ref'];
-        $chunkSize = config('epicollect.setup.bulk_deletion.chunk_size');
+        $chunkSize = config('epicollect.setup.bulk_deletion.chunk_size_entries');
 
         $numOfEntries = rand(20000, 50000);
         $mediaUuids = [];
@@ -363,7 +363,7 @@ class DeleteControllerEntriesS3Test extends TestCase
         }
     }
 
-    public function test_it_should_delete_entries_and_child_entries_and_media()
+    public function test_it_should_delete_entries_and_child_entries_but_leave_media_in_place()
     {
         $formRef = $this->projectDefinition['data']['project']['forms'][0]['ref'];
         $entry = factory(Entry::class)->create(
@@ -466,18 +466,18 @@ class DeleteControllerEntriesS3Test extends TestCase
 
             //assert media files are deleted
             $photos = Storage::disk('entry_original')->files($this->project->ref);
-            $this->assertCount(0, $photos);
+            $this->assertCount(1 + $numOfEntries, $photos);
             $audios = Storage::disk('audio')->files($this->project->ref);
-            $this->assertCount(0, $audios);
+            $this->assertCount(1 + $numOfEntries, $audios);
             $videos = Storage::disk('video')->files($this->project->ref);
-            $this->assertCount(0, $videos);
+            $this->assertCount(1 + $numOfEntries, $videos);
 
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
-    public function test_it_should_delete_entry_and_branch_entries_and_media()
+    public function test_it_should_delete_entry_and_branch_entries_but_leave_media_in_place()
     {
         $branchUuids = [];
         $forms = $this->projectDefinition['data']['project']['forms'];
@@ -567,11 +567,11 @@ class DeleteControllerEntriesS3Test extends TestCase
 
             //assert media files are deleted
             $photos = Storage::disk('entry_original')->files($this->project->ref);
-            $this->assertCount(0, $photos);
+            $this->assertCount(1 + $numOfBranchEntries, $photos);
             $audios = Storage::disk('audio')->files($this->project->ref);
-            $this->assertCount(0, $audios);
+            $this->assertCount(1 + $numOfBranchEntries, $audios);
             $videos = Storage::disk('video')->files($this->project->ref);
-            $this->assertCount(0, $videos);
+            $this->assertCount(1 + $numOfBranchEntries, $videos);
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }

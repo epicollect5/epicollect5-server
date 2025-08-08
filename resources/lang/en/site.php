@@ -251,7 +251,7 @@ return [
     'join_community' => 'Join our community',
     'deletion' => 'Deletion',
     'entries_deletion_description' => 'Delete all entries (data and media)',
-    'confirm_deletion_entries' => 'Are you sure to delete :totalEntries entries? <br/> This action CANNOT be undone!',
+    'confirm_deletion_entries' => 'Are you sure to delete :totalEntries entries and all associated media? <br/> This action CANNOT be undone!',
     'switch_role' => 'Switch Role',
     'cannot_switch_role' => 'Cannot switch role',
     'user_guide' => 'User Guide',

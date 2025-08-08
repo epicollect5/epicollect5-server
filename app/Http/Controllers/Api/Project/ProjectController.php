@@ -7,6 +7,7 @@ use ec5\Http\Validation\Entries\Upload\RuleCanBulkUpload;
 use ec5\Http\Validation\Project\RuleName;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectStats;
+use ec5\Services\Media\MediaCounterService;
 use ec5\Traits\Requests\RequestAttributes;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
@@ -190,6 +191,12 @@ class ProjectController
             ]
         ];
         return Response::apiData($data);
+    }
+
+    public function countersMedia()
+    {
+        $mediaCounterService = new MediaCounterService();
+        return Response::apiData($mediaCounterService->countersMedia($this->requestedProject()->ref));
     }
 
     public function updateCanBulkUpload(RuleCanBulkUpload $ruleCanBulkUpload)

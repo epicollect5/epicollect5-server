@@ -1,30 +1,36 @@
-$(document).ready(function () {
+/**@var {string} window.EC5.SITE_URL*/
+/**@var {Object} response.data.counters*/
+/**@var {Object} response.data.deleted*/
+
+document.addEventListener('DOMContentLoaded', function () {
 
     var page = $('.page-entries-deletion');
 
     //enable only on page-entries-deletion
     if (page.length > 0) {
-
         var projectName = page.find('.project-name').text();
         var wrapper = $('.delete-entries-wrapper');
-        var counterWrapper = $('.counter-wrapper');
+        var counterWrapperEntries = $('.progress-entries')
+        var counterWrapperMedia = $('.progress-media');
         var modal = $('#modal-deletion');
         var backURL = $('.btn-cancel-deletion').attr('href');
-        var chunkSize = page.data('chunk-size');
+        var chunkSizeEntries = page.data('chunk-size-entries');
+        var projectSlug = window.EC5.projectUtils.slugify(projectName.trim());
+        var endpointEntries = window.EC5.SITE_URL + '/api/internal/deletion/entries/' + projectSlug;
+        var endpointMedia = window.EC5.SITE_URL + '/api/internal/deletion/media/' + projectSlug;
 
         wrapper.on('click', '.btn-delete-entries', function (e) {
             // Don't allow user to submit if the project
             // name they've typed is incorrect
             if (projectName.trim() !== $('#project-name').val().trim()) {
                 e.preventDefault();
+                window.EC5.projectUtils.showErrors('Project name incorrect. Please try again.');
             }
 
-            var projectSlug = window.EC5.projectUtils.slugify(projectName.trim());
-            var endpoint = window.EC5.SITE_URL + '/api/internal/deletion/entries/' + projectSlug;
 
             var payload = {
                 data: {
-                    'project-name': projectName.trim(),
+                    'project-name': projectName.trim()
                 }
             }
 
@@ -32,8 +38,21 @@ $(document).ready(function () {
             // Add the event listener to the beforeunload event
             window.addEventListener('beforeunload', handleBeforeUnload);
 
-            // Call the recursive function to start the deletion process
-            _deleteEntriesRecursively(endpoint, payload, projectSlug);
+            //get total media count
+            $.get(window.EC5.SITE_URL + '/api/internal/counters/media/' + projectSlug, function (response) {
+                totalMedia = response.data.counters.total;
+                counterWrapperMedia.find('.spinner')
+                    .addClass('hidden') // hidden class will use visibility: hidden;
+                    .fadeOut(function () {
+                        counterWrapperMedia.find('.counter-total')
+                            .text(totalMedia)
+                            .removeClass('hidden')
+                            .fadeIn();
+                    });
+
+                // Call the recursive function to start the deletion process (media first, then entries)
+                _deleteMediaRecursively(endpointMedia, payload, projectSlug);
+            });
         });
 
         wrapper.on('keyup', '#project-name', function (e) {
@@ -51,29 +70,35 @@ $(document).ready(function () {
             event.returnValue = 'ciao'; // Triggers the confirmation prompt
         }
 
-        var deleted = 0;
-        var total = parseInt(wrapper.data('total-entries'));
-        var remaining = total;
-        counterWrapper.find('.counter-total').text(remaining);
+        var deletedEntries = 0;
+        var deletedMedia = 0;
+        var totalEntries = parseInt(wrapper.data('total-entries'));
+        var totalMedia = parseInt(wrapper.data('total-media'));
+        var remainingEntries = totalEntries;
+        var remainingMedia = totalMedia;
+        var progressBarEntries = $('.progress-bar__modal-deletion__entries');
+        var progressBarMedia = $('.progress-bar__modal-deletion__media');
+        counterWrapperEntries.find('.counter-total').text(remainingEntries);
+        counterWrapperMedia.find('.counter-total').text(remainingMedia);
 
         function _deleteEntriesRecursively(endpoint, payload, projectSlug) {
             // Make the POST request to delete entries
             $.when(window.EC5.projectUtils.postRequest(endpoint, payload))
-                .done(function (response) {
-                    if (remaining > chunkSize) {
-                        deleted += chunkSize;
+                .done(function () {
+                    if (remainingEntries > chunkSizeEntries) {
+                        deletedEntries += chunkSizeEntries;
                     } else {
-                        deleted += remaining;
+                        deletedEntries += remainingEntries;
                     }
 
-                    updateProgressBar(deleted, remaining, total);
+                    updateProgressBarEntries(deletedEntries, remainingEntries, totalEntries);
 
                     // Check if there are more entries to delete
                     $.get(window.EC5.SITE_URL + '/api/internal/counters/entries/' + projectSlug, function (response) {
                         try {
                             if (response.data.counters.total > 0) {
                                 // If there are more entries to delete, call the function recursively
-                                remaining = response.data.counters.total;
+                                remainingEntries = response.data.counters.total;
                                 _deleteEntriesRecursively(endpoint, payload, projectSlug);
                             } else {
                                 // To remove the confirmation dialog, remove the event listener
@@ -103,28 +128,99 @@ $(document).ready(function () {
                 });
         }
 
-        // Function to update the progress bar
-        function updateProgressBar(deleted, remaining, total) {
+        function _deleteMediaRecursively(endpoint, payload, projectSlug) {
+            // Make the POST request to delete entries
+            $.when(window.EC5.projectUtils.postRequest(endpoint, payload))
+                .done(function (response) {
+                    //if any unknown errors, bail out
+                    if (
+                        response &&
+                        response.data &&
+                        response.data.code !== 'ec5_407'
+                    ) {
+                        // Show errors to the user if the request fails
+                        window.EC5.projectUtils.showErrors(response);
+                        // Always hide the modal
+                        modal.modal('hide');
+                        return;
+                    }
+
+                    var deleted = response.data.deleted;
+                    if (deleted > 0) {
+                        remainingMedia = totalMedia - deleted;
+                        deletedMedia += deleted;
+                    } else {
+                        if (totalMedia === deletedMedia) {
+                            remainingMedia = 0;
+                        }
+                    }
+                    updateProgressBarMedia(deletedMedia, remainingMedia, totalMedia);
+
+                    if (remainingMedia === 0) {
+                        //all media deleted, start deleting entries
+                        _deleteEntriesRecursively(endpointEntries, payload, projectSlug);
+                    } else {
+                        // If there are more media to delete, call the function recursively
+                        _deleteMediaRecursively(endpointMedia, payload, projectSlug);
+                    }
+                })
+                .fail(function (e) {
+                    // Show errors to the user if the request fails
+                    window.EC5.projectUtils.showErrors(e);
+                    // Always hide the modal
+                    modal.modal('hide');
+                });
+        }
+
+
+        // Function to update the progress bar entries
+        function updateProgressBarEntries(deleted, remaining, total) {
             //no entries? bail out
             if (remaining === 0) {
-                counterWrapper.find('.counter-percentage').text('100%');
-                counterWrapper.find('.counter-deleted').text(total);
+                counterWrapperEntries.find('.counter-percentage').text('100%');
+                counterWrapperEntries.find('.counter-deleted').text(total);
+                progressBarEntries.attr('aria-valuenow', 0);
+                progressBarEntries.css('width', 0 + '%');
                 return;
             }
             // Calculate the percentage of progress
-            var percentage = ((deleted / total) * 100).toFixed(2);
-            var percentageReverse = ((1 - (deleted / total)) * 100).toFixed(2);
+            var percentage = ((deleted / total) * 50).toFixed(1);
+            var percentageReverse = ((1 - (deleted / total)) * 50).toFixed(1);
             // Get the progress bar element
-            var progressBar = $('.progress-bar__modal-deletion');
+
 
             // Update the aria-valuenow attribute and the style width
-            progressBar.attr('aria-valuenow', percentageReverse);
-            progressBar.css('width', percentageReverse + '%');
+            progressBarEntries.attr('aria-valuenow', percentageReverse);
+            progressBarEntries.css('width', percentageReverse + '%');
 
             // Update the text inside the progress bar
-            counterWrapper.find('.counter-percentage').text(percentage + '%');
-            counterWrapper.find('.counter-deleted').text(deleted);
-            counterWrapper.find('.counter-total').text(total);
+            counterWrapperEntries.find('.counter-percentage').text(percentage * 2 + '%');
+            counterWrapperEntries.find('.counter-deleted').text(deleted);
+            counterWrapperEntries.find('.counter-total').text(total);
+        }
+
+        function updateProgressBarMedia(deleted, remaining, total) {
+            //no media? bail out
+            if (remaining === 0) {
+                counterWrapperMedia.find('.counter-percentage').text('100%');
+                counterWrapperMedia.find('.counter-deleted').text(total);
+                progressBarMedia.attr('aria-valuenow', 0);
+                progressBarMedia.css('width', 0 + '%');
+                return;
+            }
+            // Calculate the percentage of progress
+            var percentage = ((deleted / total) * 50).toFixed(1);
+            var percentageReverse = ((1 - (deleted / total)) * 50).toFixed(1);
+            // Get the progress bar element
+
+            // Update the aria-valuenow attribute and the style width
+            progressBarMedia.attr('aria-valuenow', percentageReverse);
+            progressBarMedia.css('width', percentageReverse + '%');
+
+            // Update the text inside the progress bar
+            counterWrapperMedia.find('.counter-percentage').text(percentage * 2 + '%');
+            counterWrapperMedia.find('.counter-deleted').text(deleted);
+            counterWrapperMedia.find('.counter-total').text(total);
         }
     }
 });

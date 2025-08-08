@@ -71,7 +71,12 @@ Route::group(['middleware' => ['project.permissions']], function () {
         //Delete all entries for a project
         Route::post('api/internal/deletion/entries/{project_slug}', 'Api\Entries\DeleteController@deleteEntries');
 
+        //Delete all media for a project
+        Route::post('api/internal/deletion/media/{project_slug}', 'Api\Entries\DeleteController@deleteMedia');
+
         Route::get('api/internal/counters/entries/{project_slug}', 'Api\Project\ProjectController@countersEntries');
+
+        Route::get('api/internal/counters/media/{project_slug}', 'Api\Project\ProjectController@countersMedia');
 
     });
 

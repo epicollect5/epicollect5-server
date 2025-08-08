@@ -340,5 +340,6 @@ return [
     "ec5_403" => "Logo file size too large. Max file size is :max",
     "ec5_404" => "The website is currently undergoing maintenance.  \n Please export your form(s) and retry later.",
     "ec5_405" => "Session expired. Please login again.",
-    "ec5_406" => "Only one project download is allowed per user to prevent system overload."
+    "ec5_406" => "Only one project download is allowed per user to prevent system overload.",
+    "ec5_407" => "Chunk media deleted successfully."
 ];
