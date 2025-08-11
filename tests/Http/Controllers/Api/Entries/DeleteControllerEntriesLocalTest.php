@@ -466,7 +466,7 @@ class DeleteControllerEntriesLocalTest extends TestCase
             //also check parent entry child count was updated
             $this->assertEquals(0, Entry::where('uuid', $entry->uuid)->value('child_counts'));
 
-            //assert media files are deleted
+            //assert media files are not deleted
             $photos = Storage::disk('entry_original')->files($this->project->ref);
             $this->assertCount(1 + $numOfEntries, $photos);
             $audios = Storage::disk('audio')->files($this->project->ref);

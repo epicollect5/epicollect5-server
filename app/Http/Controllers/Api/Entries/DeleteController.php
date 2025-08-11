@@ -126,23 +126,21 @@ class DeleteController extends Controller
     {
         // Validate the request
         $data = request()->get('data');
-        $projectName = $data['project-name'];
-
         //no project name passed?
-        if (!isset($projectName)) {
+        if (!isset($data['project-name'])) {
             $this->errors[] = ['deletion-entries' => ['ec5_399']];
             return false;
         }
 
         //if we are sending the wrong project name, bail out
-        if (trim($this->requestedProject()->name) !== $projectName) {
+        if (trim($this->requestedProject()->name) !== $data['project-name']) {
             $this->errors[] = ['deletion-entries' => ['ec5_399']];
             return false;
         }
 
         //do we have the right permissions?
         if (!$this->requestedProjectRole()->canDeleteEntries()) {
-            $this->errors[] = ['errors' => ['ec5_91']];
+            $this->errors[] = ['deletion-entries' => ['ec5_91']];
             return false;
         }
 
@@ -201,7 +199,7 @@ class DeleteController extends Controller
     {
         // Validate the request
         if (!$this->validateDeletionRequest()) {
-            return Response::apiErrorCode(400, $this->errors);
+            return Response::apiErrorCode(400, $this->errors[0]);
         }
 
         $userId = $this->requestedUser()->id;

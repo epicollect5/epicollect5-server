@@ -464,7 +464,7 @@ class DeleteControllerEntriesS3Test extends TestCase
             //also check parent entry child count was updated
             $this->assertEquals(0, Entry::where('uuid', $entry->uuid)->value('child_counts'));
 
-            //assert media files are deleted
+            //assert media files are not deleted
             $photos = Storage::disk('entry_original')->files($this->project->ref);
             $this->assertCount(1 + $numOfEntries, $photos);
             $audios = Storage::disk('audio')->files($this->project->ref);
@@ -565,7 +565,7 @@ class DeleteControllerEntriesS3Test extends TestCase
                 $this->assertCount(0, BranchEntry::where('uuid', $branchUuid)->get());
             }
 
-            //assert media files are deleted
+            //assert media files are not deleted
             $photos = Storage::disk('entry_original')->files($this->project->ref);
             $this->assertCount(1 + $numOfBranchEntries, $photos);
             $audios = Storage::disk('audio')->files($this->project->ref);

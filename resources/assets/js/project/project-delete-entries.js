@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var counterWrapperMedia = $('.progress-media');
         var modal = $('#modal-deletion');
         var backURL = $('.btn-cancel-deletion').attr('href');
-        var chunkSizeEntries = page.data('chunk-size-entries');
+        var chunkSizeEntries = parseInt(page.data('chunk-size-entries'), 10);
         var projectSlug = window.EC5.projectUtils.slugify(projectName.trim());
         var endpointEntries = window.EC5.SITE_URL + '/api/internal/deletion/entries/' + projectSlug;
         var endpointMedia = window.EC5.SITE_URL + '/api/internal/deletion/media/' + projectSlug;

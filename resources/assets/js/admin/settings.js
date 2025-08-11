@@ -32,7 +32,7 @@ $(document).ready(function () {
             window.EC5.overlay.fadeOut();
         });
 
-        return deferred.promise;
+        return deferred.promise();
     }
 
     $('[data-setting-type]').on('click', function () {

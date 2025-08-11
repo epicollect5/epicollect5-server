@@ -4,10 +4,10 @@ namespace ec5\Http\Controllers\Web\Project;
 
 use Cache;
 use ec5\Models\Project\ProjectStats;
-use ec5\Services\Media\MediaCounterService;
 use ec5\Traits\Eloquent\Archiver;
 use ec5\Traits\Eloquent\StatsRefresher;
 use ec5\Traits\Requests\RequestAttributes;
+use Throwable;
 
 class ProjectDeleteEntriesController
 {
@@ -18,7 +18,7 @@ class ProjectDeleteEntriesController
     protected array $errors = [];
 
     /**
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function show()
     {
@@ -40,10 +40,6 @@ class ProjectDeleteEntriesController
 
         //refresh stats to get the latest entries and branch entries counts
         $this->refreshProjectStats($this->requestedProject());
-
-        //        $mediaCounterService = new MediaCounterService();
-        //        $mediaCounters = $mediaCounterService->countersMedia($this->requestedProject()->ref);
-        //        $totalMedia = $mediaCounters['counters']['total'];
 
         $projectStats = ProjectStats::where('project_id', $this->requestedProject()->getId())->first();
         return view('project.project_delete_entries', [

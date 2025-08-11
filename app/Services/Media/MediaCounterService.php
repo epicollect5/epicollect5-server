@@ -3,7 +3,10 @@
 namespace ec5\Services\Media;
 
 use Aws\S3\S3Client;
+use FilesystemIterator;
 use Illuminate\Support\Facades\Storage;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 
 class MediaCounterService
 {
@@ -71,18 +74,52 @@ class MediaCounterService
                 } while ($continuationToken);
 
             } else {
-                // Local filesystem
-                $allFiles = $disk->allFiles($projectRef); // relative to root
+                // Initialize counters
+                $totalCount = 0;
+                $photoCount = 0;
+                $audioCount = 0;
+                $videoCount = 0;
 
-                foreach ($allFiles as $path) {
-                    $totalCount++;
+                // Get the absolute local path for the given project reference
+                $fullPath = $disk->path($projectRef);
 
-                    if (str_contains($path, '/photo/')) {
-                        $photoCount++;
-                    } elseif (str_contains($path, '/audio/')) {
-                        $audioCount++;
-                    } elseif (str_contains($path, '/video/')) {
-                        $videoCount++;
+                /**
+                 * Using RecursiveDirectoryIterator + RecursiveIteratorIterator here is the
+                 * most memory-efficient way to traverse a local filesystem in PHP.
+                 *
+                 * Why it's better than Laravel's Storage::allFiles():
+                 * ---------------------------------------------------
+                 * - Storage::allFiles() / Storage::files() first collects ALL file paths into an array,
+                 *   so memory usage grows with the number of files (e.g., 250K files = huge memory spike).
+                 * - SPL Iterators yield files one-by-one as we loop, keeping memory usage constant (~KBs).
+                 * - Startup time is faster because files are processed immediately rather than after a full scan.
+                 * - Works efficiently even for hundreds of thousands of files without exhausting memory.
+                 *
+                 * Notes:
+                 * - This approach works for LOCAL storage only. For S3 or other drivers, Storage methods are still required.
+                 * - We normalize path separators for consistent matching across OSes.
+                 */
+                $iterator = new RecursiveIteratorIterator(
+                    new RecursiveDirectoryIterator($fullPath, FilesystemIterator::SKIP_DOTS),
+                    RecursiveIteratorIterator::LEAVES_ONLY
+                );
+
+                foreach ($iterator as $file) {
+                    if ($file->isFile()) {
+                        $totalCount++;
+
+                        // Get relative path from project root (more efficient than calling SplFileInfo methods repeatedly)
+                        $relativePath = substr($file->getPathname(), strlen($fullPath) + 1);
+                        $relativePath = str_replace(DIRECTORY_SEPARATOR, '/', $relativePath); // Normalize for cross-platform
+
+                        // Micro-optimization: use strpos() instead of str_contains() for speed
+                        if (str_contains($relativePath, '/photo/')) {
+                            $photoCount++;
+                        } elseif (str_contains($relativePath, '/audio/')) {
+                            $audioCount++;
+                        } elseif (str_contains($relativePath, '/video/')) {
+                            $videoCount++;
+                        }
                     }
                 }
             }

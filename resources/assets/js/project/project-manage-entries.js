@@ -7,7 +7,6 @@ $(document).ready(function () {
     var limitsForm = $('.page-manage-entries #limits-form');
     var limitsFormUpdateBtn = $('.page-manage-entries .limits-form__update-btn');
     var bulkUploadBtns = $('.page-manage-entries .bulk-upload-btns');
-    var bulkDeletionBtn = $('.page-manage-entries a.entries-deletion');
     var projectSlug = bulkUploadBtns.data('project-slug');
     var canBulkUploadURL = window.EC5.SITE_URL + '/api/internal/can-bulk-upload/' + projectSlug;
 

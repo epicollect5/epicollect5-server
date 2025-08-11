@@ -21,7 +21,7 @@ window.EC5.admin.projects = window.EC5.admin.projects || {};
             url: window.EC5.SITE_URL + '/admin/update-user-project-role',
             type: 'POST',
             dataType: 'json',
-            data: { role: role, project_id: projectId }
+            data: {role: role, project_id: projectId}
         }).done(function (data) {
             window.EC5.toast.showSuccess(data.data.title);
         }).fail(window.EC5.showError);
@@ -145,6 +145,7 @@ $(document).ready(function () {
     //intercept click on pagination links to send ajax request
     //important: re-bind event as empty() removes it!!!!
     $('.pagination').on('click', 'a', onPaginationClick);
+
     function onPaginationClick(e) {
         e.preventDefault();
 
@@ -154,7 +155,7 @@ $(document).ready(function () {
         params.page = $(e.target).attr('href').split('page=')[1];
         params.name = searchBar.val().trim();
         params.access = access === 'any' ? '' : access;
-        params.visibility = visibility === 'any' ?  '' : visibility;
+        params.visibility = visibility === 'any' ? '' : visibility;
 
         _filterProjects(0);
     }
@@ -214,7 +215,7 @@ $(document).ready(function () {
             window.EC5.overlay.fadeOut();
         });
 
-        return deferred.promise;
+        return deferred.promise();
     }
 
     $('[data-setting-type]').on('click', function () {

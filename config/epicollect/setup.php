@@ -57,8 +57,8 @@ return [
         'user_name_attribute' => env('LDAP_USER_NAME_ATTRIBUTE'), // The attribute containing user detail to store ie uid, mail, sAMAccountName
     ],
     'bulk_deletion' => [
-        'chunk_size_entries' => env('BULK_DELETION_CHUNK_SIZE_ENTRIES', 100),
-        'chunk_size_media' => env('BULK_DELETION_CHUNK_SIZE_MEDIA', 1000),
+        'chunk_size_entries' => (int) env('BULK_DELETION_CHUNK_SIZE_ENTRIES', 100),
+        'chunk_size_media' => (int) env('BULK_DELETION_CHUNK_SIZE_MEDIA', 1000),
     ],
     'cookies' => [
         'download_entries' => 'epicollect5-download-entries'
