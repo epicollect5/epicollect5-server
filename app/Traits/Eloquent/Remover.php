@@ -9,8 +9,11 @@ use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectStats;
 use Exception;
 use File;
+use FilesystemIterator;
 use Illuminate\Support\Facades\DB;
 use Log;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 use Storage;
 use Throwable;
 
@@ -240,19 +243,24 @@ trait Remover
     /**
      * Check if media files exist for this project across all configured drivers
      * Works for both local and S3/cloud storage
-     */
-
-
-    /**
      * @throws Exception
      */
+
+
     public function removeMediaChunk(string $projectRef): int
     {
         $drivers = config('epicollect.media.entries_deletable');
+        $totalDeleted = 0;
+        $maxFiles = 1000;
 
         foreach ($drivers as $driver) {
+            if ($totalDeleted >= $maxFiles) {
+                break; // We've hit our batch limit
+            }
+
             try {
                 $config = config("filesystems.disks.$driver");
+                $remainingCapacity = $maxFiles - $totalDeleted;
 
                 // Check if this is S3 or local storage
                 if ($config['driver'] === 's3') {
@@ -260,15 +268,15 @@ trait Remover
                     $s3Client = $this->createS3Client($config);
                     $bucket = $config['bucket'];
                     $prefix = $diskRoot . $projectRef;
-                    $deletedCount = $this->deleteOneBatchByPrefixS3($s3Client, $bucket, $prefix);
+                    $deletedCount = $this->deleteOneBatchByPrefixS3($s3Client, $bucket, $prefix, $remainingCapacity);
                 } else {
                     // Handle local storage using Laravel Storage facade
-                    $deletedCount = $this->deleteOneBatchByPrefixLocal($driver, $projectRef);
+                    $deletedCount = $this->deleteOneBatchByPrefixLocal($driver, $projectRef, $remainingCapacity);
                 }
 
                 if ($deletedCount > 0) {
-                    Log::info("Deleted $deletedCount entries for $projectRef on disk $driver.");
-                    return $deletedCount; // ✅ Stop once we delete something
+                    $totalDeleted += $deletedCount;
+                    Log::info("Deleted $deletedCount entries for $projectRef on disk $driver. Total so far: $totalDeleted");
                 }
 
             } catch (Exception $e) {
@@ -277,15 +285,19 @@ trait Remover
             }
         }
 
-        return 0; // nothing deleted
+        if ($totalDeleted > 0) {
+            Log::info("Total deleted $totalDeleted entries for $projectRef across all drivers.");
+        }
+
+        return $totalDeleted;
     }
 
-    private function deleteOneBatchByPrefixS3(S3Client $s3Client, string $bucket, string $prefix): int
+    private function deleteOneBatchByPrefixS3(S3Client $s3Client, string $bucket, string $prefix, int $maxFiles = 1000): int
     {
         $listParams = [
             'Bucket' => $bucket,
             'Prefix' => $prefix,
-            'MaxKeys' => 1000,
+            'MaxKeys' => $maxFiles,
         ];
 
         $result = $s3Client->listObjectsV2($listParams);
@@ -294,7 +306,12 @@ trait Remover
             return 0;
         }
 
-        $objects = array_map(fn ($obj) => ['Key' => $obj['Key']], $result['Contents']);
+        // Ensure we don't exceed the maxFiles limit, even if S3 returns more
+        $objects = array_slice(
+            array_map(fn ($obj) => ['Key' => $obj['Key']], $result['Contents']),
+            0,
+            $maxFiles
+        );
 
         $deleteResult = $s3Client->deleteObjects([
             'Bucket' => $bucket,
@@ -314,10 +331,9 @@ trait Remover
     /**
      * @throws Exception
      */
-    private function deleteOneBatchByPrefixLocal(string $disk, string $projectRef): int
+    private function deleteOneBatchByPrefixLocal(string $disk, string $projectRef, int $maxFiles = 1000): int
     {
         $deletedCount = 0;
-        $maxFiles = 1000; // Match S3 batch size
 
         $storage = Storage::disk($disk);
 
@@ -325,26 +341,39 @@ trait Remover
             return 0;
         }
 
-        // Get all files in the directory
-        $files = $storage->files($projectRef);
+        $fullPath = $storage->path($projectRef);
 
-        foreach ($files as $file) {
+        // Use iterator to avoid loading all files into memory
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($fullPath, FilesystemIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::LEAVES_ONLY
+        );
+
+        foreach ($iterator as $file) {
             if ($deletedCount >= $maxFiles) {
-                break;
+                break; // Stop before exceeding the limit
             }
 
-            try {
-                // Laravel's delete() returns true if file was deleted or didn't exist
-                if ($storage->delete($file)) {
-                    $deletedCount++;
-                } else {
-                    // This would be a real error (permissions, etc.)
-                    Log::error("Failed to delete file: $file");
-                    throw new Exception("Failed to delete file: $file");
+            if ($file->isFile()) {
+                try {
+                    // Get relative path from the project root
+                    $relativePath = str_replace($fullPath . DIRECTORY_SEPARATOR, '', $file->getPathname());
+                    $relativePath = str_replace(DIRECTORY_SEPARATOR, '/', $relativePath); // Normalize path separators
+
+                    // Use Laravel Storage to delete (maintains consistency with Laravel's file handling)
+                    $fullRelativePath = $projectRef . '/' . $relativePath;
+
+                    if ($storage->delete($fullRelativePath)) {
+                        $deletedCount++;
+                    } else {
+                        // This would be a real error (permissions, etc.)
+                        Log::error("Failed to delete file: $fullRelativePath");
+                        throw new Exception("Failed to delete file: $fullRelativePath");
+                    }
+                } catch (Exception $e) {
+                    Log::error("Error deleting file {$file->getPathname()}: " . $e->getMessage());
+                    throw $e;
                 }
-            } catch (Exception $e) {
-                Log::error("Error deleting file $file: " . $e->getMessage());
-                throw $e;
             }
         }
 

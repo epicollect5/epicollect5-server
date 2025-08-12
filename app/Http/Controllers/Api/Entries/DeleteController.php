@@ -211,7 +211,11 @@ class DeleteController extends Controller
                 // Attempt to remove a chunk of media files
                 $deleted = $this->removeMediaChunk($this->requestedProject()->ref);
                 // Success!
-                return Response::apiResponse(['code' =>  'ec5_407','deleted' => $deleted]);
+                return Response::apiResponse([
+                    'code' =>  'ec5_407',
+                    'title' => 'Chunk media deleted successfully.',
+                    'deleted' => $deleted
+                ]);
             } catch (Throwable $e) {
                 Log::error('Error deleting media', ['exception' => $e->getMessage()]);
                 return Response::apiErrorCode(400, ['errors' => ['ec5_104']]);
