@@ -224,7 +224,7 @@ class DeleteControllerMediaS3Test extends TestCase
             ]);
             $this->assertCount($numOfEntries, Entry::where('project_id', $this->project->id)->get());
 
-            //assert media files are deleted (a chuck is 1000 entries so we delete all media)
+            //assert media files are deleted (a chunk is 1000 entries so we delete all media)
             $photos = Storage::disk('entry_original')->files($this->project->ref);
             $this->assertCount(0, $photos);
 
@@ -255,7 +255,7 @@ class DeleteControllerMediaS3Test extends TestCase
                 ]
             );
 
-            //add 1100 files for testing (no need to add 20.000, chuck size is 1000)
+            //add 1100 files for testing (no need to add 20.000, chunk size is 1000)
             if ($i < ($chunkSize + 100)) {
                 //photo
                 Storage::disk('entry_original')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
@@ -293,14 +293,14 @@ class DeleteControllerMediaS3Test extends TestCase
 
             //assert media files are deleted, up to 1000
             $photos = Storage::disk('entry_original')->files($this->project->ref);
-            $photos_thumbs = Storage::disk('entry_thumb')->files($this->project->ref);
+            $photosThumbs = Storage::disk('entry_thumb')->files($this->project->ref);
             $audios = Storage::disk('audio')->files($this->project->ref);
             $videos = Storage::disk('video')->files($this->project->ref);
 
-            $totalRemaining = sizeof($photos) + sizeof($photos_thumbs) +  sizeof($audios) + sizeof($videos);
+            $totalRemaining = sizeof($photos) + sizeof($photosThumbs) +  sizeof($audios) + sizeof($videos);
             $this->assertEquals(4 * ($chunkSize  + 100) - $chunkSize, $totalRemaining, 'Total remaining media files count mismatch');
             $this->assertCount(100, $photos, 'Unexpected number of photo files remaining');
-            $this->assertCount($chunkSize + 100, $photos_thumbs, 'Unexpected number of photo thumbnails remaining');
+            $this->assertCount($chunkSize + 100, $photosThumbs, 'Unexpected number of photo thumbnails remaining');
             $this->assertCount($chunkSize + 100, $audios, 'Unexpected number of audio files remaining');
             $this->assertCount($chunkSize + 100, $videos, 'Unexpected number of video files remaining');
 
@@ -331,7 +331,7 @@ class DeleteControllerMediaS3Test extends TestCase
                 ]
             );
 
-            //add 1000 files in total for testing (no need to add 20.000, chuck size is 1000)
+            //add 1000 files in total for testing (no need to add 20.000, chunk size is 1000)
             if ($i < (250)) {
                 //photo
                 Storage::disk('entry_original')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
@@ -369,14 +369,14 @@ class DeleteControllerMediaS3Test extends TestCase
 
             //assert media files are all deleted
             $photos = Storage::disk('entry_original')->files($this->project->ref);
-            $photos_thumbs = Storage::disk('entry_thumb')->files($this->project->ref);
+            $photosThumbs = Storage::disk('entry_thumb')->files($this->project->ref);
             $audios = Storage::disk('audio')->files($this->project->ref);
             $videos = Storage::disk('video')->files($this->project->ref);
 
-            $totalRemaining = sizeof($photos) + sizeof($photos_thumbs) +  sizeof($audios) + sizeof($videos);
+            $totalRemaining = sizeof($photos) + sizeof($photosThumbs) +  sizeof($audios) + sizeof($videos);
             $this->assertEquals(0, $totalRemaining, 'Total remaining media files count mismatch');
             $this->assertCount(0, $photos, 'Unexpected number of photo files remaining');
-            $this->assertCount(0, $photos_thumbs, 'Unexpected number of photo thumbnails remaining');
+            $this->assertCount(0, $photosThumbs, 'Unexpected number of photo thumbnails remaining');
             $this->assertCount(0, $audios, 'Unexpected number of audio files remaining');
             $this->assertCount(0, $videos, 'Unexpected number of video files remaining');
 
@@ -407,7 +407,7 @@ class DeleteControllerMediaS3Test extends TestCase
                 ]
             );
 
-            //add 1100 files for testing (no need to add 20.000, chuck size is 1000)
+            //add 1100 files for testing (no need to add 20.000, chunk size is 1000)
             if ($i < ($chunkSize + 100)) {
                 //audio
                 Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
@@ -469,7 +469,7 @@ class DeleteControllerMediaS3Test extends TestCase
                 ]
             );
 
-            //add 1100 files for testing (no need to add 20.000, chuck size is 1000)
+            //add 1100 files for testing (no need to add 20.000, chunk size is 1000)
             if ($i < ($chunkSize + 100)) {
                 //video
                 Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
@@ -505,7 +505,7 @@ class DeleteControllerMediaS3Test extends TestCase
 
             $totalRemaining =  sizeof($videos);
             $this->assertEquals(1 * ($chunkSize  + 100) - $chunkSize, $totalRemaining, 'Total remaining media files count mismatch');
-            $this->assertCount(100, $videos, 'Unexpected number of audio files remaining');
+            $this->assertCount(100, $videos, 'Unexpected number of video files remaining');
 
             //now remove all the leftover fake files
             Storage::disk('video')->deleteDirectory($this->project->ref);
@@ -521,7 +521,6 @@ class DeleteControllerMediaS3Test extends TestCase
         $formRef = $this->projectDefinition['data']['project']['forms'][0]['ref'];
         $numOfEntries = rand(2000, 5000);
         $mediaUuids = [];
-        $entry = [];
         for ($i = 0; $i < $numOfEntries; $i++) {
             $entry = factory(Entry::class)->create(
                 [

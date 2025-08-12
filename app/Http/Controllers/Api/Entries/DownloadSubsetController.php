@@ -167,7 +167,7 @@ class DownloadSubsetController
 
             //write headers
             $csv->insertOne($this->dataMappingService->getHeaderRowCSV());
-            //chuck feature keeps memory usage low
+            //chunk feature keeps memory usage low
             $query->chunk($exportChunk, function ($entries) use ($csv, $access) {
                 foreach ($entries as $entry) {
                     $csv->insertOne($this->dataMappingService->getMappedEntryCSV(
