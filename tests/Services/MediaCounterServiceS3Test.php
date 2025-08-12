@@ -97,7 +97,7 @@ class MediaCounterServiceS3Test extends TestCase
         $numOfAudios = rand(2, 10);
         for ($i = 0; $i < $numOfAudios; $i++) {
             sleep(1);//to avoid overriding the file names due to time()
-            Storage::disk('audio')->put($this->project->ref . '/' . $this->entry->uuid . '_' . time() . '.jpg', '');
+            Storage::disk('audio')->put($this->project->ref . '/' . $this->entry->uuid . '_' . time() . '.mp4', '');
         }
 
         $mediaCounterService = new MediaCounterService();
@@ -114,7 +114,7 @@ class MediaCounterServiceS3Test extends TestCase
         $numOfVideos = rand(2, 10);
         for ($i = 0; $i < $numOfVideos; $i++) {
             sleep(1);//to avoid overriding the file names due to time()
-            Storage::disk('video')->put($this->project->ref . '/' . $this->entry->uuid . '_' . time() . '.jpg', '');
+            Storage::disk('video')->put($this->project->ref . '/' . $this->entry->uuid . '_' . time() . '.mp4', '');
         }
 
         $mediaCounterService = new MediaCounterService();
