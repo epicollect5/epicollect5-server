@@ -22,7 +22,7 @@ class MediaCounterServiceS3Test extends TestCase
     {
         parent::setUp();
 
-        //set storage (and all disks) to local storage
+        //set storage (and all disks) to s3 storage
         config([
             'filesystems.default' => 's3',
             'filesystems.disks.temp.driver' => 's3',
