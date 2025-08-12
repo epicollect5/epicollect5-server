@@ -545,7 +545,7 @@ class DownloadControllerTest extends TestCase
         // Convert data array to JSON
         $jsonData = json_encode($projectDefinition);
         // Gzip Compression
-        $gzippedData = gzencode($jsonData); ]
+        $gzippedData = gzencode($jsonData);
         // Base64 Encoding
         $base64EncodedData = base64_encode($gzippedData);
 

@@ -417,7 +417,7 @@ class ProjectDTO
         return $this->can_bulk_upload;
     }
 
-    public function isAppLinkShown(): string
+    public function isAppLinkShown(): bool
     {
         if (!config('epicollect.setup.system.app_link_enabled')) {
             return false;

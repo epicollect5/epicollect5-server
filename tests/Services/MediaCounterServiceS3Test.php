@@ -62,7 +62,7 @@ class MediaCounterServiceS3Test extends TestCase
         );
     }
 
-    public function test_count_media_local_no_folders()
+    public function test_count_media_s3_no_folders()
     {
         $mediaCounterService = new MediaCounterService();
         $counters = $mediaCounterService->countersMedia($this->project->ref);
@@ -72,7 +72,7 @@ class MediaCounterServiceS3Test extends TestCase
         $this->assertEquals(0, $counters['counters']['video']);
     }
 
-    public function test_count_media_local_with_photos()
+    public function test_count_media_s3_with_photos()
     {
         //add some fake photos
         $numOfPhotos = rand(2, 10);
@@ -91,7 +91,7 @@ class MediaCounterServiceS3Test extends TestCase
         $this->assertEquals(0, $counters['counters']['video']);
     }
 
-    public function test_count_media_local_with_audios()
+    public function test_count_media_s3_with_audios()
     {
         //add some fake audios
         $numOfAudios = rand(2, 10);
@@ -108,7 +108,7 @@ class MediaCounterServiceS3Test extends TestCase
         $this->assertEquals(0, $counters['counters']['video']);
     }
 
-    public function test_count_media_local_with_videos()
+    public function test_count_media_s3_with_videos()
     {
         //add some fake videos
         $numOfVideos = rand(2, 10);
@@ -125,7 +125,7 @@ class MediaCounterServiceS3Test extends TestCase
         $this->assertEquals($numOfVideos, $counters['counters']['video']);
     }
 
-    public function test_count_media_local_with_all_media_types()
+    public function test_count_media_s3_with_all_media_types()
     {
         //add some fake media
         $numOfMedia = rand(2, 10);
