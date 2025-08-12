@@ -86,7 +86,7 @@ class UploadWebControllerSequenceTest extends TestCase
             // Convert data array to JSON
             $jsonData = json_encode($projectDefinition);
             // Gzip Compression
-            $gzippedData = gzencode($jsonData); // '9' is the compression level (0-9, where 9 is highest)
+            $gzippedData = gzencode($jsonData);
             // Base64 Encoding
             $base64EncodedData = base64_encode($gzippedData);
 

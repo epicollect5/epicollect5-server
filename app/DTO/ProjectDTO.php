@@ -419,6 +419,10 @@ class ProjectDTO
 
     public function isAppLinkShown(): string
     {
+        if (!config('epicollect.setup.system.app_link_enabled')) {
+            return false;
+        }
+
         return $this->app_link_visibility === config('epicollect.strings.app_link_visibility.shown');
     }
 

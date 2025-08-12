@@ -10,12 +10,19 @@ use RecursiveIteratorIterator;
 
 class MediaCounterService
 {
-    public function countersMedia($projectRef): array
+    private int $totalCount = 0;
+    private int $photoCount = 0;
+    private int $audioCount = 0;
+    private int $videoCount = 0;
+
+    private int $totalSize = 0;
+    private int $photoSize = 0;
+    private int $audioSize = 0;
+    private int $videoSize = 0;
+
+    public function countersMedia(string $projectRef): array
     {
-        $totalCount = 0;
-        $photoCount = 0;
-        $audioCount = 0;
-        $videoCount = 0;
+        $this->resetCounters();
 
         $drivers = config('epicollect.media.entries_deletable');
 
@@ -25,103 +32,9 @@ class MediaCounterService
             $prefix = $diskRoot . $projectRef;
 
             if (config("filesystems.default") === 's3') {
-                $config = config("filesystems.disks.$driver");
-
-                $s3Client = new S3Client([
-                    'version'     => 'latest',
-                    'region'      => $config['region'],
-                    'endpoint'    => $config['endpoint'] ?? null,
-                    'use_path_style_endpoint' => $config['use_path_style_endpoint'] ?? false,
-                    'credentials' => [
-                        'key'    => $config['key'],
-                        'secret' => $config['secret'],
-                    ],
-                ]);
-
-                $bucket = $config['bucket'];
-                $continuationToken = null;
-
-                do {
-                    $params = [
-                        'Bucket' => $bucket,
-                        'Prefix' => $prefix . '/',
-                        'MaxKeys' => 1000,
-                    ];
-
-                    if ($continuationToken) {
-                        $params['ContinuationToken'] = $continuationToken;
-                    }
-
-                    $result = $s3Client->listObjectsV2($params);
-
-                    if (!empty($result['Contents'])) {
-                        foreach ($result['Contents'] as $object) {
-                            $key = $object['Key'];
-
-                            $totalCount++;
-
-                            if (str_contains($key, '/photo/')) {
-                                $photoCount++;
-                            } elseif (str_contains($key, '/audio/')) {
-                                $audioCount++;
-                            } elseif (str_contains($key, '/video/')) {
-                                $videoCount++;
-                            }
-                        }
-                    }
-
-                    $continuationToken = $result['IsTruncated'] ? $result['NextContinuationToken'] ?? null : null;
-                } while ($continuationToken);
-
+                $this->countMediaS3($driver, $prefix);
             } else {
-                // Initialize counters
-                $totalCount = 0;
-                $photoCount = 0;
-                $audioCount = 0;
-                $videoCount = 0;
-
-                // Get the absolute local path for the given project reference
-                $fullPath = $disk->path($projectRef);
-
-                /**
-                 * Using RecursiveDirectoryIterator + RecursiveIteratorIterator here is the
-                 * most memory-efficient way to traverse a local filesystem in PHP.
-                 *
-                 * Why it's better than Laravel's Storage::allFiles():
-                 * ---------------------------------------------------
-                 * - Storage::allFiles() / Storage::files() first collects ALL file paths into an array,
-                 *   so memory usage grows with the number of files (e.g., 250K files = huge memory spike).
-                 * - SPL Iterators yield files one-by-one as we loop, keeping memory usage constant (~KBs).
-                 * - Startup time is faster because files are processed immediately rather than after a full scan.
-                 * - Works efficiently even for hundreds of thousands of files without exhausting memory.
-                 *
-                 * Notes:
-                 * - This approach works for LOCAL storage only. For S3 or other drivers, Storage methods are still required.
-                 * - We normalize path separators for consistent matching across OSes.
-                 */
-                $iterator = new RecursiveIteratorIterator(
-                    new RecursiveDirectoryIterator($fullPath, FilesystemIterator::SKIP_DOTS),
-                    RecursiveIteratorIterator::LEAVES_ONLY
-                );
-
-                foreach ($iterator as $file) {
-                    if ($file->isFile()) {
-                        $totalCount++;
-
-                        // Get relative path from project root (more efficient than calling SplFileInfo methods repeatedly)
-                        $relativePath = substr($file->getPathname(), strlen($fullPath) + 1);
-                        $relativePath = str_replace(DIRECTORY_SEPARATOR, '/', $relativePath); // Normalize for cross-platform
-
-                        // Micro-optimization: use strpos() instead of str_contains() for speed
-                        if (str_contains($relativePath, '/photo/')) {
-                            $photoCount++;
-                        } elseif (str_contains($relativePath, '/audio/')) {
-                            $audioCount++;
-                        } elseif (str_contains($relativePath, '/video/')) {
-                            $videoCount++;
-                        }
-                    }
-                }
+                $this->countMediaLocal($disk, $projectRef);
             }
         }
 
@@ -129,12 +42,116 @@ class MediaCounterService
             'type' => 'counters-project-media',
             'id' => $projectRef,
             'counters' => [
-                'total' => $totalCount,
-                'photo' => $photoCount,
-                'audio' => $audioCount,
-                'video' => $videoCount,
+                'total' => $this->totalCount,
+                'photo' => $this->photoCount,
+                'audio' => $this->audioCount,
+                'video' => $this->videoCount
+            ],
+            'sizes' => [
+                'total_bytes' => $this->totalSize,
+                'photo_bytes' => $this->photoSize,
+                'audio_bytes' => $this->audioSize,
+                'video_bytes' => $this->videoSize
             ]
         ];
     }
 
+    private function resetCounters(): void
+    {
+        $this->totalCount = $this->photoCount = $this->audioCount = $this->videoCount = 0;
+        $this->totalSize = $this->photoSize = $this->audioSize = $this->videoSize = 0;
+    }
+
+    private function countMediaLocal($disk, string $projectRef): void
+    {
+        $fullPath = $disk->path($projectRef);
+
+        if (!is_dir($fullPath)) {
+            return;
+        }
+
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($fullPath, FilesystemIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::LEAVES_ONLY
+        );
+
+        foreach ($iterator as $file) {
+            if ($file->isFile()) {
+                $size = $file->getSize(); // already available from SplFileInfo
+                $this->totalCount++;
+                $this->totalSize += $size;
+
+                $path = $file->getPathname();
+
+                if (str_contains($path, '/' . config('epicollect.strings.media_input_types.photo') . '/')) {
+                    $this->photoCount++;
+                    $this->photoSize += $size;
+                } elseif (str_contains($path, '/' . config('epicollect.strings.media_input_types.audio') . '/')) {
+                    $this->audioCount++;
+                    $this->audioSize += $size;
+                } elseif (str_contains($path, '/' . config('epicollect.strings.media_input_types.video') . '/')) {
+                    $this->videoCount++;
+                    $this->videoSize += $size;
+                }
+            }
+        }
+    }
+
+    private function countMediaS3(string $driver, string $prefix): void
+    {
+        $config = config("filesystems.disks.$driver");
+
+        $s3Client = new S3Client([
+            'version' => 'latest',
+            'region' => $config['region'],
+            'endpoint' => $config['endpoint'] ?? null,
+            'use_path_style_endpoint' => $config['use_path_style_endpoint'] ?? false,
+            'credentials' => [
+                'key' => $config['key'],
+                'secret' => $config['secret'],
+            ],
+        ]);
+
+        $bucket = $config['bucket'];
+        $continuationToken = null;
+
+        do {
+            $params = [
+                'Bucket' => $bucket,
+                'Prefix' => $prefix . '/',
+                'MaxKeys' => 1000,
+            ];
+
+            if ($continuationToken) {
+                $params['ContinuationToken'] = $continuationToken;
+            }
+
+            $result = $s3Client->listObjectsV2($params);
+
+            if (!empty($result['Contents'])) {
+                foreach ($result['Contents'] as $object) {
+                    $size = $object['Size'];
+                    $key = $object['Key'];
+
+                    $this->totalCount++;
+                    $this->totalSize += $size;
+
+                    if (str_contains($key, '/photo/')) {
+                        $this->photoCount++;
+                        $this->photoSize += $size;
+                    } elseif (str_contains($key, '/audio/')) {
+                        $this->audioCount++;
+                        $this->audioSize += $size;
+                    } elseif (str_contains($key, '/video/')) {
+                        $this->videoCount++;
+                        $this->videoSize += $size;
+                    }
+                }
+            }
+
+            $continuationToken = $result['IsTruncated']
+                ? ($result['NextContinuationToken'] ?? null)
+                : null;
+        } while ($continuationToken);
+    }
 }

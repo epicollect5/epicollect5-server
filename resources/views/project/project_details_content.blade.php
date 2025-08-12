@@ -288,7 +288,6 @@
 
 
 </div><!-- end row -->
-
 @if(config('epicollect.setup.system.app_link_enabled'))
     <div class="row flexbox">
         <div class="col-sm-12 col-md-12 col-lg-7 app-link-view__wrapper equal-height">

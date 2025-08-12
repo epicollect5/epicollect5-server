@@ -2,6 +2,7 @@
 
 namespace ec5\Traits\Eloquent;
 
+use Aws\S3\Exception\S3Exception;
 use Aws\S3\S3Client;
 use ec5\Libraries\Utilities\Common;
 use ec5\Models\Entries\Entry;
@@ -178,6 +179,8 @@ trait Remover
     {
         $continuationToken = null;
         $totalDeleted = 0;
+        $maxRetries = 3;
+        $retryDelay = 1; // seconds
 
         do {
             // List objects with the prefix
@@ -191,7 +194,18 @@ trait Remover
                 $listParams['ContinuationToken'] = $continuationToken;
             }
 
-            $result = $s3Client->listObjectsV2($listParams);
+            $result = null;
+            for ($retry = 0; $retry <= $maxRetries; $retry++) {
+                try {
+                    $result = $s3Client->listObjectsV2($listParams);
+                    break;
+                } catch (S3Exception $e) {
+                    if ($retry === $maxRetries || !$this->isRetryableError($e)) {
+                        throw $e;
+                    }
+                    sleep($retryDelay * pow(2, $retry));
+                }
+            }
 
             // If no objects found, we're done
             if (empty($result['Contents'])) {
@@ -387,5 +401,11 @@ trait Remover
         }
 
         return $deletedCount;
+    }
+
+    private function isRetryableError(S3Exception $e): bool
+    {
+        $code = $e->getAwsErrorCode();
+        return in_array($code, ['RequestTimeout', 'ServiceUnavailable', 'SlowDown', 'RequestLimitExceeded']);
     }
 }

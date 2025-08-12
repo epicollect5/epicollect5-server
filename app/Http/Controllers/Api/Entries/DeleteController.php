@@ -227,6 +227,4 @@ class DeleteController extends Controller
             return Response::apiErrorCode(400, ['errors' => ['ec5_255']]);
         }
     }
-
-
 }
