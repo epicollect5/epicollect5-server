@@ -99,51 +99,6 @@ trait Remover
         }
     }
 
-    public function removeAllTheEntriesMediaFoldersS3($projectRef): void
-    {
-        $drivers = config('epicollect.media.entries_deletable');
-
-        foreach ($drivers as $driver) {
-            $disk = Storage::disk($driver);
-            $diskRoot = config('filesystems.disks.' . $driver . '.root').'/';
-
-            // Track initial memory usage
-            $initialMemoryUsage = memory_get_usage(true);
-            $peakMemoryBefore = memory_get_peak_usage(true);
-
-            try {
-                // Create S3 client using disk configuration
-                $config = config("filesystems.disks.$driver");
-                $s3Client = $this->createS3Client($config);
-                $bucket = $config['bucket'];
-
-                // Delete using batch operations
-                $prefix = $diskRoot.$projectRef;
-                $this->bulkDeleteByPrefix($s3Client, $bucket, $prefix);
-
-            } catch (Exception $e) {
-                Log::error("Failed to delete entries for project $projectRef on disk $driver: " . $e->getMessage());
-
-                // Fallback to original method if batch delete fails
-                Log::info("Falling back to deleteDirectory for disk: $driver");
-                $disk->deleteDirectory($projectRef);
-            }
-
-            // Track final memory usage
-            $finalMemoryUsage = memory_get_usage(true);
-            $peakMemoryAfter = memory_get_peak_usage(true);
-            $memoryUsed = $finalMemoryUsage - $initialMemoryUsage;
-            $peakMemoryUsed = $peakMemoryAfter - $peakMemoryBefore;
-
-            // Log memory usage details
-            Log::info("Memory Usage for Deleting Entries on disk: $driver");
-            Log::info("Initial Memory Usage: " . Common::formatBytes($initialMemoryUsage));
-            Log::info("Final Memory Usage: " . Common::formatBytes($finalMemoryUsage));
-            Log::info("Memory Used: " . Common::formatBytes($memoryUsed));
-            Log::info("Peak Memory Usage: " . Common::formatBytes($peakMemoryAfter));
-            Log::info("Peak Memory Growth During Process: " . Common::formatBytes($peakMemoryUsed));
-        }
-    }
 
     /**
      * Create S3 client from Laravel filesystem disk configuration
@@ -172,106 +127,10 @@ trait Remover
         return new S3Client($clientConfig);
     }
 
-    /**
-     * Bulk delete all objects with a given prefix using S3 batch operations
-     */
-    private function bulkDeleteByPrefix(S3Client $s3Client, string $bucket, string $prefix): bool
-    {
-        $continuationToken = null;
-        $totalDeleted = 0;
-        $maxRetries = 3;
-        $retryDelay = 1; // seconds
-
-        do {
-            // List objects with the prefix
-            $listParams = [
-                'Bucket' => $bucket,
-                'Prefix' => $prefix,
-                'MaxKeys' => 1000
-            ];
-
-            if ($continuationToken) {
-                $listParams['ContinuationToken'] = $continuationToken;
-            }
-
-            $result = null;
-            for ($retry = 0; $retry <= $maxRetries; $retry++) {
-                try {
-                    $result = $s3Client->listObjectsV2($listParams);
-                    break;
-                } catch (S3Exception $e) {
-                    if ($retry === $maxRetries || !$this->isRetryableError($e)) {
-                        throw $e;
-                    }
-                    sleep($retryDelay * pow(2, $retry));
-                }
-            }
-
-            // If no objects found, we're done
-            if (empty($result['Contents'])) {
-                break;
-            }
-
-            // Prepare objects for deletion
-            $objects = [];
-            foreach ($result['Contents'] as $object) {
-                $objects[] = ['Key' => $object['Key']];
-            }
-
-            // Batch delete objects (up to 1000 at a time)
-            if (!empty($objects)) {
-                $deleteResult = null;
-                for ($retry = 0; $retry <= $maxRetries; $retry++) {
-                    try {
-                        $deleteResult = $s3Client->deleteObjects([
-                            'Bucket' => $bucket,
-                            'Delete' => [
-                                'Objects' => $objects,
-                                'Quiet' => true // Don't return info about successful deletions
-                            ]
-                        ]);
-                        break;
-                    } catch (S3Exception $e) {
-                        if ($retry === $maxRetries || !$this->isRetryableError($e)) {
-                            throw $e;
-                        }
-                        sleep($retryDelay * pow(2, $retry));
-                    }
-                }
-
-                // Log any errors
-                if (!empty($deleteResult['Errors'])) {
-                    Log::error("S3 bulk delete errors for prefix $prefix:", $deleteResult['Errors']);
-                }
-
-                $totalDeleted += count($objects);
-                Log::info("Deleted " . count($objects) . " objects with prefix: $prefix (Total: $totalDeleted)");
-            }
-
-            // Get continuation token for next batch
-            $continuationToken = $result['NextContinuationToken'] ?? null;
-
-            // Memory cleanup - unset large variables
-            unset($result, $objects);
-
-            // Optional: Force garbage collection for very large operations
-            if ($totalDeleted % 10000 === 0) {
-                gc_collect_cycles();
-            }
-
-        } while ($continuationToken);
-
-        Log::info("Total objects deleted with prefix $prefix: $totalDeleted");
-        return true;
-    }
 
     /**
-     * Check if media files exist for this project across all configured drivers
-     * Works for both local and S3/cloud storage
      * @throws Exception
      */
-
-
     public function removeMediaChunk(string $projectRef): int
     {
         $drivers = config('epicollect.media.entries_deletable');

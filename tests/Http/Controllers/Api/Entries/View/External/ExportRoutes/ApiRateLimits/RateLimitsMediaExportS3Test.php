@@ -42,8 +42,8 @@ class RateLimitsMediaExportS3Test extends TestCase
     private User $user;
     private Project $project;
     private array $projectDefinition;
-    private String $slug;
-    private String $email;
+    private string $slug;
+    private string $email;
 
     public function setUp(): void
     {

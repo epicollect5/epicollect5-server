@@ -39,8 +39,8 @@ class RateLimitsProjectExportTest extends TestCase
     private User $user;
     private Project $project;
     private array $projectDefinition;
-    private String $slug;
-    private String $email;
+    private string $slug;
+    private string $email;
 
     public function setUp(): void
     {
@@ -168,10 +168,10 @@ class RateLimitsProjectExportTest extends TestCase
         $successfulRequests = 0;
         try {
             for ($i = 1; $i <= $apiProjectRateLimit; $i++) {
-                $successfulRequests++;
                 $response = $entriesClient->request('GET', $entriesURL . $this->project->slug);
                 // Verify we get a successful response
                 $this->assertEquals(200, $response->getStatusCode());
+                $successfulRequests++;
             }
 
             $this->assertEquals($apiProjectRateLimit, $successfulRequests);
