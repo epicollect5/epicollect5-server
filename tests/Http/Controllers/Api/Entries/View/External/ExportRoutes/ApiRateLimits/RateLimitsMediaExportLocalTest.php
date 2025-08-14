@@ -41,8 +41,8 @@ class RateLimitsMediaExportLocalTest extends TestCase
     private User $user;
     private Project $project;
     private array $projectDefinition;
-    private String $slug;
-    private String $email;
+    private string $slug;
+    private string $email;
 
     public function setUp(): void
     {
@@ -129,7 +129,7 @@ class RateLimitsMediaExportLocalTest extends TestCase
     public function test_rate_limit_api_media()
     {
         // Get the configured per-minute rate limit for media exports
-        $apiMediaRateLimit = config('epicollect.setup.api.rate_limit_per_minute.media');
+        $apiMediaRateLimit = config('epicollect.limits.api_export.media');
 
         $entryGenerator = new EntryGenerator($this->projectDefinition);
 
@@ -176,12 +176,9 @@ class RateLimitsMediaExportLocalTest extends TestCase
             Storage::disk('video')->put($this->project->ref . '/' . $filename, $videoContent);
             // Log the absolute path Laravel actually wrote to
             $diskRoot = Storage::disk('video')->path($this->project->ref . '/' . $filename);
-            Log::info("File saved to disk at: $diskRoot");
-            Log::info('Path (storage::path): ' . $diskRoot);
-            Log::info('file_exists: ' . (file_exists($diskRoot) ? 'yes' : 'no'));
-            Log::info('is_dir(parent): ' . (is_dir(dirname($diskRoot)) ? 'yes' : 'no'));
-            Log::info('realpath: ' . (@realpath($diskRoot) ?: 'realpath returned false'));
-            Log::info('scandir parent: ' . json_encode(@scandir(dirname($diskRoot)) ?: []));
+            if (!file_exists($diskRoot)) {
+                Log::warning("Expected media file not found at: $diskRoot");
+            }
         }
 
         // Confirm entries are stored in the database
@@ -204,7 +201,7 @@ class RateLimitsMediaExportLocalTest extends TestCase
         $rootPath = Storage::disk('video')->path('');
         Log::info('files paths', [
             'disk_root' => $rootPath,
-            'files'     => array_map(fn ($file) => Storage::disk('video')->path($file), $videos)
+            'files' => array_map(fn ($file) => Storage::disk('video')->path($file), $videos)
         ]);
 
         // API endpoint for exporting media
@@ -232,7 +229,6 @@ class RateLimitsMediaExportLocalTest extends TestCase
         try {
             // Send up to the limit number of media export requests
             for ($i = 1; $i <= $apiMediaRateLimit; $i++) {
-                sleep(0.5);
                 Log::info('filename: ' . $videoAnswers[$i]['answer']);
                 Log::info('project ref: ' . $this->project->ref);
                 $filename = $videoAnswers[$i]['answer'];
@@ -281,5 +277,11 @@ class RateLimitsMediaExportLocalTest extends TestCase
                 'project' => Project::where('slug', $this->slug)->first()
             ]
         );
+    }
+
+    public function tearDown(): void
+    {
+        parent::tearDown();
+        $this->cleanUp();
     }
 }

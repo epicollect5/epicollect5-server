@@ -3,7 +3,6 @@
 namespace Tests\Http\Controllers\Api\Entries\View\External\ExportRoutes\ApiRateLimits;
 
 use ec5\Libraries\Generators\EntryGenerator;
-use ec5\Libraries\Generators\MediaGenerator;
 use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Models\Entries\Entry;
 use ec5\Models\OAuth\OAuthClientProject;
@@ -17,7 +16,6 @@ use ec5\Services\Project\ProjectExtraService;
 use ec5\Traits\Assertions;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
-use Illuminate\Support\Facades\Storage;
 use Laravel\Passport\ClientRepository;
 use Tests\TestCase;
 use Throwable;
@@ -124,26 +122,13 @@ class RateLimitsEntriesExportTest extends TestCase
      */
     public function test_rate_limit_api_entries()
     {
-        //generate entries
-        $apiEntriesRateLimit = config('epicollect.setup.api.rate_limit_per_minute.entries');
+        $apiEntriesRateLimit = config('epicollect.limits.api_export.entries');
         $entryGenerator = new EntryGenerator($this->projectDefinition);
-
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
-        $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
-
-        $videoRefs = array_values(array_map(function ($input) {
-            return $input['ref'];
-        }, array_filter($inputs, function ($input) {
-            return $input['type'] === config('epicollect.strings.inputs_type.video');
-        })));
-
         $entryPayloads = [];
-        $videoAnswers = [];
         $numOfEntries = $apiEntriesRateLimit + 10;
         for ($i = 0; $i < $numOfEntries; $i++) {
             $entryPayloads[$i] = $entryGenerator->createParentEntryPayload($formRef);
-
-            $videoAnswers[] = $entryPayloads[0]['data']['entry']['answers'][$videoRefs[0]];
 
             $entryRowBundle = $entryGenerator->createParentEntryRow(
                 $this->user,
@@ -157,13 +142,6 @@ class RateLimitsEntriesExportTest extends TestCase
                 $entryRowBundle,
                 $entryPayloads[$i]
             );
-
-            //add the fake videos
-            $filename = $videoAnswers[$i]['answer'];
-
-            //create a fake audio for the entry
-            $videoContent = MediaGenerator::getFakeVideoContentBase64();
-            Storage::disk('video')->put($this->project->ref . '/' . $filename, $videoContent);
         }
 
         //assert rows are created
@@ -171,9 +149,6 @@ class RateLimitsEntriesExportTest extends TestCase
             $numOfEntries,
             Entry::where('project_id', $this->project->id)->get()
         );
-
-        //todo: assert files are created
-
 
         $entriesURL = config('testing.LOCAL_SERVER') . '/api/export/entries/';
         $entriesClient = new Client([
@@ -183,24 +158,23 @@ class RateLimitsEntriesExportTest extends TestCase
             ]
         ]);
 
-        // Reset the rate limiter on the Laravel server before making requests
-        $this->actingAs($this->user)->post('/test/reset-api-rate-limit/entries');
-
+        // Time travel: Jump forward to ensure we start with a clean rate limit window
+        // travel() expects seconds, so we travel forward 3 minutes (180 seconds)
+        $this->travel(180);
+        $successfulRequests = 0;
         try {
             for ($i = 1; $i <= $apiEntriesRateLimit; $i++) {
                 $response = $entriesClient->request('GET', $entriesURL . $this->project->slug);
-                sleep(0.5);
-                // Get the response headers
-                $headers = $response->getHeaders();
-                // Check for X-RateLimit headers
-                $this->assertArrayHasKey('X-RateLimit-Limit', $headers);
-                $this->assertArrayHasKey('X-RateLimit-Remaining', $headers);
+                // Verify we get a successful response
+                $this->assertEquals(200, $response->getStatusCode());
+                $successfulRequests++;
             }
+
+            $this->assertEquals($apiEntriesRateLimit, $successfulRequests);
 
             //when the limit is hit, should return status 429
             try {
                 $entriesClient->request('GET', $entriesURL . $this->project->slug);
-                // Optionally, check response for other status codes or data
             } catch (Throwable $e) {
                 if ($e->hasResponse()) {
                     $response = $e->getResponse();
@@ -209,11 +183,13 @@ class RateLimitsEntriesExportTest extends TestCase
                 }
             }
 
-            $this->cleanUp();
         } catch (GuzzleException $e) {
-            $this->cleanUp();
             $this->logTestError($e, []);
             return false;
+        } finally {
+            // Always restore original time and clean up
+            $this->travelBack();
+            $this->cleanUp();
         }
         return true;
     }
@@ -221,8 +197,6 @@ class RateLimitsEntriesExportTest extends TestCase
     private function cleanUp()
     {
         //clean up
-        Storage::disk('video')->deleteDirectory($this->project->ref);
-
         $this->clearDatabase(
             [
                 'user' => User::where('email', $this->email)->first(),

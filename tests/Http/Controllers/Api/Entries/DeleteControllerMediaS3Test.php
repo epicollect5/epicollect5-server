@@ -194,6 +194,7 @@ class DeleteControllerMediaS3Test extends TestCase
             ]
         ];
         $response = [];
+        $mediaFolders = config('epicollect.media.entries_deletable');
         try {
             $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $payload);
             $response[0]->assertStatus(200);
@@ -201,7 +202,7 @@ class DeleteControllerMediaS3Test extends TestCase
                 "data" => [
                     "code" => "ec5_407",
                     "title" => "Chunk media deleted successfully.",
-                    "deleted" => 4 * $numOfEntries, //4 media folders
+                    "deleted" => sizeof($mediaFolders) * $numOfEntries, //4 media folders
                 ]
             ]);
             $this->assertCount($numOfEntries, Entry::where('project_id', $this->project->id)->get());

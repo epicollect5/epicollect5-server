@@ -3,7 +3,6 @@
 namespace Tests\Http\Controllers\Web\Auth;
 
 use Carbon\Carbon;
-use Config;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Mail\UserPasswordlessApiMail;
 use ec5\Models\User\UserPasswordlessWeb;
@@ -93,7 +92,7 @@ class PasswordlessControllerWebTest extends TestCase
 
     public function test_login()
     {
-        Config::set('auth.auth_allowed_domains', []);
+        config('auth.auth_allowed_domains', []);
         $email = config('testing.MANAGER_EMAIL');
         $tokenExpiresAt = config('testing.PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
         $code = Generators::randomNumber(6, 1);
@@ -120,7 +119,7 @@ class PasswordlessControllerWebTest extends TestCase
 
     public function test_login_disallowed_domain()
     {
-        Config::set('auth.auth_allowed_domains', ['example.com']);
+        config('auth.auth_allowed_domains', ['example.com']);
         $email = config('testing.MANAGER_EMAIL');
         $tokenExpiresAt = config('testing.PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
         $code = Generators::randomNumber(6, 1);

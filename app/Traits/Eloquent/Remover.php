@@ -220,13 +220,24 @@ trait Remover
 
             // Batch delete objects (up to 1000 at a time)
             if (!empty($objects)) {
-                $deleteResult = $s3Client->deleteObjects([
-                    'Bucket' => $bucket,
-                    'Delete' => [
-                        'Objects' => $objects,
-                        'Quiet' => true // Don't return info about successful deletions
-                    ]
-                ]);
+                $deleteResult = null;
+                for ($retry = 0; $retry <= $maxRetries; $retry++) {
+                    try {
+                        $deleteResult = $s3Client->deleteObjects([
+                            'Bucket' => $bucket,
+                            'Delete' => [
+                                'Objects' => $objects,
+                                'Quiet' => true // Don't return info about successful deletions
+                            ]
+                        ]);
+                        break;
+                    } catch (S3Exception $e) {
+                        if ($retry === $maxRetries || !$this->isRetryableError($e)) {
+                            throw $e;
+                        }
+                        sleep($retryDelay * pow(2, $retry));
+                    }
+                }
 
                 // Log any errors
                 if (!empty($deleteResult['Errors'])) {
@@ -265,7 +276,12 @@ trait Remover
     {
         $drivers = config('epicollect.media.entries_deletable');
         $totalDeleted = 0;
-        $maxFiles = 1000;
+        $maxFiles = config('epicollect.setup.bulk_deletion.chunk_size_media');
+
+        //if S3, max files must be 1000 due to S3 listObjects operations limit
+        if (config("filesystems.default") === 's3') {
+            $maxFiles = 1000;
+        }
 
         foreach ($drivers as $driver) {
             if ($totalDeleted >= $maxFiles) {
@@ -308,6 +324,9 @@ trait Remover
 
     private function deleteOneBatchByPrefixS3(S3Client $s3Client, string $bucket, string $prefix, int $maxFiles = 1000): int
     {
+        $maxRetries = 3;
+        $retryDelay = 1; // seconds
+
         $listParams = [
             'Bucket' => $bucket,
             'Prefix' => $prefix,
@@ -327,13 +346,24 @@ trait Remover
             $maxFiles
         );
 
-        $deleteResult = $s3Client->deleteObjects([
-            'Bucket' => $bucket,
-            'Delete' => [
-                'Objects' => $objects,
-                'Quiet' => true,
-            ],
-        ]);
+        $deleteResult = null;
+        for ($retry = 0; $retry <= $maxRetries; $retry++) {
+            try {
+                $deleteResult = $s3Client->deleteObjects([
+                    'Bucket' => $bucket,
+                    'Delete' => [
+                        'Objects' => $objects,
+                        'Quiet' => true,
+                    ],
+                ]);
+                break;
+            } catch (S3Exception $e) {
+                if ($retry === $maxRetries || !$this->isRetryableError($e)) {
+                    throw $e;
+                }
+                sleep($retryDelay * pow(2, $retry));
+            }
+        }
 
         if (!empty($deleteResult['Errors'])) {
             Log::error("Errors deleting S3 objects with prefix $prefix:", $deleteResult['Errors']);

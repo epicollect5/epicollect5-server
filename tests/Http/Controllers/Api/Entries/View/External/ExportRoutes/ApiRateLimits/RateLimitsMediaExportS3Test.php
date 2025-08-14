@@ -16,9 +16,11 @@ use ec5\Services\Mapping\ProjectMappingService;
 use ec5\Services\Project\ProjectExtraService;
 use ec5\Traits\Assertions;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Passport\ClientRepository;
+use Log;
 use Tests\TestCase;
 use Throwable;
 
@@ -125,10 +127,11 @@ class RateLimitsMediaExportS3Test extends TestCase
     /**
      * @throws Throwable
      */
+
     public function test_rate_limit_api_media()
     {
         // Get the configured per-minute rate limit for media exports
-        $apiMediaRateLimit = config('epicollect.setup.api.rate_limit_per_minute.media');
+        $apiMediaRateLimit = config('epicollect.limits.api_export.media');
 
         $entryGenerator = new EntryGenerator($this->projectDefinition);
 
@@ -146,7 +149,7 @@ class RateLimitsMediaExportS3Test extends TestCase
         $videoAnswers = [];
 
         // Generate more entries than the allowed rate limit to test the overflow
-        $numOfEntries = $apiMediaRateLimit + 10;
+        $numOfEntries = $apiMediaRateLimit + 5;
 
         for ($i = 0; $i < $numOfEntries; $i++) {
             // Create entry payload
@@ -198,50 +201,98 @@ class RateLimitsMediaExportS3Test extends TestCase
             ]
         ]);
 
-        // Reset the rate limiter on the Laravel server before making requests
-        $resetResponse = $this->actingAs($this->user)->post(
-            '/test/reset-api-rate-limit/media'
-        );
-
-        if ($resetResponse->getStatusCode() !== 200) {
-            $this->cleanUp();
-            $this->fail('Failed to reset API rate limit');
-        }
-
         try {
-            // Send up to the limit number of media export requests
-            for ($i = 1; $i <= $apiMediaRateLimit; $i++) {
-                sleep(0.5);
+            // Time travel: Jump forward to ensure we start with a clean rate limit window
+            // travel() expects seconds, so we travel forward 2 minutes (120 seconds)
+            $this->travel(120);
+
+            // Send requests up to the rate limit
+            $successfulRequests = 0;
+            for ($i = 0; $i < $apiMediaRateLimit; $i++) {
                 $filename = $videoAnswers[$i]['answer'];
-                $queryString = '?type=video&name=' . $filename . '&format=video' . '&XDEBUG_SESSION_START=phpstorm';
-
-                $response = $entriesClient->request('GET', $mediaURL . $this->project->slug . $queryString);
-
-                $headers = $response->getHeaders();
-
-                // Validate rate limit headers exist and match expected values
-                $this->assertArrayHasKey('X-RateLimit-Limit', $headers);
-                $this->assertArrayHasKey('X-RateLimit-Remaining', $headers);
-            }
-
-            // One additional request should exceed the rate limit and return a 429 response
-            try {
-                $filename = $videoAnswers[0]['answer'];
                 $queryString = '?type=video&name=' . $filename . '&format=video';
-                $entriesClient->request('GET', $mediaURL . $this->project->slug . $queryString);
-            } catch (Throwable $e) {
-                if ($e->hasResponse()) {
-                    $response = $e->getResponse();
-                    $this->assertEquals(429, $response->getStatusCode());
+
+                try {
+                    $response = $entriesClient->request('GET', $mediaURL . $this->project->slug . $queryString);
+
+                    // Verify we get a successful response
+                    $this->assertEquals(200, $response->getStatusCode());
+                    $successfulRequests++;
+
+                    $headers = $response->getHeaders();
+
+                    // Log headers for debugging
+                    Log::info("Request $i headers", $headers);
+
+                    // Validate rate limit headers exist and match expected values
+                    $this->assertArrayHasKey('X-RateLimit-Limit', $headers);
+                    $this->assertArrayHasKey('X-RateLimit-Remaining', $headers);
+
+                    // Check that remaining count decreases
+                    $remaining = (int) $headers['X-RateLimit-Remaining'][0];
+                    $expected = $apiMediaRateLimit - $successfulRequests;
+
+                    Log::info("Rate limit check", [
+                        'request' => $i,
+                        'remaining' => $remaining,
+                        'expected' => $expected,
+                        'successful_requests' => $successfulRequests
+                    ]);
+
+                    $this->assertEquals($expected, $remaining);
+
+                } catch (GuzzleException $e) {
+                    $this->cleanUp();
+                    $this->fail("Unexpected error on request $i: " . $e->getMessage());
                 }
             }
 
+            // Verify we made all allowed requests successfully
+            $this->assertEquals($apiMediaRateLimit, $successfulRequests);
+
+            // Now the next request should exceed the rate limit and return 429
+            $filename = $videoAnswers[$apiMediaRateLimit]['answer'];
+            $queryString = '?type=video&name=' . $filename . '&format=video';
+
+            try {
+                $response = $entriesClient->request('GET', $mediaURL . $this->project->slug . $queryString);
+                // If we get here, the rate limit wasn't enforced properly
+                $this->fail('Expected rate limit to be exceeded, but request succeeded with status: ' . $response->getStatusCode());
+            } catch (ClientException $e) {
+                if ($e->hasResponse() && $e->getResponse()->getStatusCode() === 429) {
+                    // Test passed - we got the expected 429 response
+                    $headers = $e->getResponse()->getHeaders();
+
+                    // Log the 429 response headers for debugging
+                    Log::info('429 Response headers', $headers);
+
+                    // Some rate limiters may not include headers in 429 responses
+                    // Just verify we got the 429 - that's the main goal
+                    $this->assertTrue(true, 'Rate limit correctly enforced with 429 response');
+
+                    // Optional: Check headers if they exist
+                    if (isset($headers['X-RateLimit-Remaining'])) {
+                        $this->assertEquals('0', $headers['X-RateLimit-Remaining'][0]);
+                    }
+                } else {
+                    $this->cleanUp();
+                    $this->fail('Expected 429 status code, got: ' . ($e->hasResponse() ? $e->getResponse()->getStatusCode() : 'no response'));
+                }
+            } catch (GuzzleException $e) {
+                $this->cleanUp();
+                $this->fail('Unexpected Guzzle exception: ' . $e->getMessage());
+            }
+
+            // Test complete - rate limiting is working correctly
+            Log::info('Rate limit test completed successfully', [
+                'successful_requests' => $successfulRequests,
+                'rate_limit_enforced' => true
+            ]);
+
+        } finally {
+            // Always restore original time and clean up
+            $this->travelBack();
             $this->cleanUp();
-        } catch (GuzzleException $e) {
-            // On exception, log and clean up
-            $this->cleanUp();
-            $this->logTestError($e, []);
-            return false;
         }
 
         return true;

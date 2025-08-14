@@ -3,7 +3,6 @@
 namespace Tests\Http\Controllers\Web\Project;
 
 use Auth;
-use Config;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
@@ -993,7 +992,7 @@ class ProjectControllerTest extends TestCase
             ['project_id' => $project->id]
         );
 
-        Config::set(['epicollect.setup.system.app_link_enabled' => true]);
+        config(['epicollect.setup.system.app_link_enabled' => true]);
         $response = $this
             ->actingAs($user, self::DRIVER)
             ->get('project/' . $project->slug)
@@ -1035,7 +1034,7 @@ class ProjectControllerTest extends TestCase
         );
 
 
-        Config::set('epicollect.setup.system.app_link_enabled', true);
+        config('epicollect.setup.system.app_link_enabled', true);
         $response = $this
             ->get('project/' . $project->slug)
             ->assertStatus(200);
@@ -1076,7 +1075,7 @@ class ProjectControllerTest extends TestCase
         );
 
 
-        Config::set('epicollect.setup.system.app_link_enabled', false);
+        config('epicollect.setup.system.app_link_enabled', false);
         $response = $this
             ->get('project/' . $project->slug)
             ->assertStatus(200);
@@ -1115,7 +1114,7 @@ class ProjectControllerTest extends TestCase
             ['project_id' => $project->id]
         );
 
-        Config::set(['epicollect.setup.system.app_link_enabled' => true]);
+        config(['epicollect.setup.system.app_link_enabled' => true]);
         $response = $this
             ->actingAs($user, self::DRIVER)
             ->get('project/' . $project->slug)

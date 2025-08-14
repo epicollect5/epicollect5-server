@@ -10,7 +10,6 @@
 */
 
 
-use Illuminate\Http\Request;
 
 Route::get('/', 'Web\HomeController@index')->name('home');
 //Tell me more routes
@@ -244,47 +243,4 @@ Route::group(['middleware' => 'project.permissions'], function () {
 Route::group(['middleware' => 'project.permissions.open'], function () {
     Route::get('open/project/{project_slug?}', 'Web\Project\ProjectController@open')
         ->name('project-open');
-});
-
-/*
-|--------------------------------------------------------------------------
-| Reset API Media Rate Limit (Test-only Route)
-|--------------------------------------------------------------------------
-|
-| This route is ONLY available in the 'testing' environment and is used to
-| manually clear the rate limit counter for the current IP.
-|
-| We use this to simulate external requests in test cases (e.g., Guzzle),
-| because Guzzle triggers Laravel’s rate limiters the same way a real
-| client would, and Laravel doesn’t automatically reset limits per test.
-|
-*/
-// routes/web.php (or routes/test.php if separated)
-Route::post('test/reset-api-rate-limit/{key}', function (Request $request, string $key) {
-    // Only allow in testing environment
-    if (!app()->environment('testing')) {
-        abort(403, 'Forbidden');
-    }
-
-
-    // The full rate limit key format is: {rateLimiterName}|{ip}
-    $rateLimiterName = 'api-export-' . $key;
-    $requestIp = $request->ip();
-    $fullKey = $rateLimiterName . '|' . $requestIp;
-
-    Log::info('Resetting rate limiter', [
-        'key' => $fullKey,
-        'ip' => $requestIp
-    ]);
-
-    foreach (['127.0.0.1', '::1'] as $ip) {
-        $fullKey = $rateLimiterName . '|' . $ip;
-        app('Illuminate\Cache\RateLimiter')->clear($fullKey);
-    }
-
-    return response()->json([
-        'status' => 'cleared',
-        'key' => $fullKey,
-        'ip' => $requestIp
-    ]);
 });

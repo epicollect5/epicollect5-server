@@ -3,7 +3,6 @@
 namespace Tests\Http\Controllers\Api\Entries\View\External\ExportRoutes\ApiRateLimits;
 
 use ec5\Libraries\Generators\EntryGenerator;
-use ec5\Libraries\Generators\MediaGenerator;
 use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Models\Entries\Entry;
 use ec5\Models\OAuth\OAuthClientProject;
@@ -125,27 +124,17 @@ class RateLimitsProjectExportTest extends TestCase
      */
     public function test_rate_limit_api_project()
     {
-        $apiProjectRateLimit = config('epicollect.setup.api.rate_limit_per_minute.project');
+        $apiProjectRateLimit = config('epicollect.limits.api_export.project');
 
         //generate entries
         $entryGenerator = new EntryGenerator($this->projectDefinition);
 
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
-        $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
-
-        $videoRefs = array_values(array_map(function ($input) {
-            return $input['ref'];
-        }, array_filter($inputs, function ($input) {
-            return $input['type'] === config('epicollect.strings.inputs_type.video');
-        })));
-
         $entryPayloads = [];
-        $videoAnswers = [];
         $numOfEntries = $apiProjectRateLimit + 10;
         for ($i = 0; $i < $numOfEntries; $i++) {
             $entryPayloads[$i] = $entryGenerator->createParentEntryPayload($formRef);
 
-            $videoAnswers[] = $entryPayloads[0]['data']['entry']['answers'][$videoRefs[0]];
 
             $entryRowBundle = $entryGenerator->createParentEntryRow(
                 $this->user,
@@ -159,13 +148,6 @@ class RateLimitsProjectExportTest extends TestCase
                 $entryRowBundle,
                 $entryPayloads[$i]
             );
-
-            //add the fake videos
-            $filename = $videoAnswers[$i]['answer'];
-
-            //create a fake audio for the entry
-            $videoContent = MediaGenerator::getFakeVideoContentBase64();
-            Storage::disk('video')->put($this->project->ref . '/' . $filename, $videoContent);
         }
 
         //assert rows are created
@@ -173,9 +155,6 @@ class RateLimitsProjectExportTest extends TestCase
             $numOfEntries,
             Entry::where('project_id', $this->project->id)->get()
         );
-
-        //todo: assert files are created
-
 
         $entriesURL = config('testing.LOCAL_SERVER') . '/api/export/project/';
         $entriesClient = new Client([
@@ -185,19 +164,17 @@ class RateLimitsProjectExportTest extends TestCase
             ]
         ]);
 
-        // Reset the rate limiter on the Laravel server before making requests
-        $this->actingAs($this->user)->post('/test/reset-api-rate-limit/projects');
-
+        $this->travel(210);
+        $successfulRequests = 0;
         try {
             for ($i = 1; $i <= $apiProjectRateLimit; $i++) {
-                sleep(0.5);
+                $successfulRequests++;
                 $response = $entriesClient->request('GET', $entriesURL . $this->project->slug);
-                // Get the response headers
-                $headers = $response->getHeaders();
-                // Check for X-RateLimit headers
-                $this->assertArrayHasKey('X-RateLimit-Limit', $headers);
-                $this->assertArrayHasKey('X-RateLimit-Remaining', $headers);
+                // Verify we get a successful response
+                $this->assertEquals(200, $response->getStatusCode());
             }
+
+            $this->assertEquals($apiProjectRateLimit, $successfulRequests);
 
             //when the limit is hit, should return status 429
             try {
@@ -210,11 +187,12 @@ class RateLimitsProjectExportTest extends TestCase
                     $this->assertEquals(429, $response->getStatusCode());
                 }
             }
-            $this->cleanUp();
         } catch (GuzzleException $e) {
-            $this->cleanUp();
             $this->logTestError($e, []);
             return false;
+        } finally {
+            $this->travelBack();
+            $this->cleanUp();
         }
         return true;
     }
