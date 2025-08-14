@@ -3,6 +3,7 @@
 namespace Tests\Http\Controllers\Web\Project;
 
 use Auth;
+use Config;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
@@ -992,6 +993,7 @@ class ProjectControllerTest extends TestCase
             ['project_id' => $project->id]
         );
 
+        Config::set(['epicollect.setup.system.app_link_enabled' => true]);
         $response = $this
             ->actingAs($user, self::DRIVER)
             ->get('project/' . $project->slug)
@@ -1032,11 +1034,54 @@ class ProjectControllerTest extends TestCase
             ['project_id' => $project->id]
         );
 
+
+        Config::set('epicollect.setup.system.app_link_enabled', true);
         $response = $this
             ->get('project/' . $project->slug)
             ->assertStatus(200);
 
         $response->assertSee('data-target="#modal-app-link"', false);
+    }
+
+    public function test_app_link_not_shown_home_page_private_public_project()
+    {
+        //create mock user
+        $user = factory(User::class)->create();
+
+        //create a fake project with that user
+        $project = factory(Project::class)->create([
+            'created_by' => $user->id,
+            'app_link_visibility' => config('epicollect.strings.app_link_visibility.shown'),
+            'access' => config('epicollect.strings.project_access.public')
+        ]);
+
+        //assign the user to that project with the CREATOR role
+        $role = config('epicollect.strings.project_roles.creator');
+        factory(ProjectRole::class)->create([
+            'user_id' => $user->id,
+            'project_id' => $project->id,
+            'role' => $role
+        ]);
+
+        //set up project stats and project structures (to make R&A middleware work, to be removed)
+        //because they are using a repository with joins
+        factory(ProjectStats::class)->create(
+            [
+                'project_id' => $project->id,
+                'total_entries' => 0
+            ]
+        );
+        factory(ProjectStructure::class)->create(
+            ['project_id' => $project->id]
+        );
+
+
+        Config::set('epicollect.setup.system.app_link_enabled', false);
+        $response = $this
+            ->get('project/' . $project->slug)
+            ->assertStatus(200);
+
+        $response->assertDontSee('data-target="#modal-app-link"', false);
     }
 
     public function test_app_link_hidden_home_page_private_project()
@@ -1070,6 +1115,7 @@ class ProjectControllerTest extends TestCase
             ['project_id' => $project->id]
         );
 
+        Config::set(['epicollect.setup.system.app_link_enabled' => true]);
         $response = $this
             ->actingAs($user, self::DRIVER)
             ->get('project/' . $project->slug)

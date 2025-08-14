@@ -23,23 +23,7 @@ class MediaCounterServiceS3Test extends TestCase
         parent::setUp();
 
         //set storage (and all disks) to s3 storage
-        config([
-            'filesystems.default' => 's3',
-            'filesystems.disks.temp.driver' => 's3',
-            'filesystems.disks.temp.root' => storage_path('app/temp'),
-            'filesystems.disks.entry_original.driver' => 's3',
-            'filesystems.disks.entry_original.root' => storage_path('app/entries/photo/entry_original'),
-            'filesystems.disks.entry_thumb.driver' => 's3',
-            'filesystems.disks.entry_thumb.root' => storage_path('app/entries/photo/entry_thumb'),
-            'filesystems.disks.project_thumb.driver' => 's3',
-            'filesystems.disks.project_thumb.root' => storage_path('app/projects/project_thumb'),
-            'filesystems.disks.project_mobile_logo.driver' => 's3',
-            'filesystems.disks.project_mobile_logo.root' => storage_path('app/projects/project_mobile_logo'),
-            'filesystems.disks.audio.driver' => 's3',
-            'filesystems.disks.audio.root' => storage_path('app/entries/audio'),
-            'filesystems.disks.video.driver' => 's3',
-            'filesystems.disks.video.root' => storage_path('app/entries/video')
-        ]);
+        $this->overrideStorageDriver('s3');
 
         //create fake user
         $user = factory(User::class)->create();

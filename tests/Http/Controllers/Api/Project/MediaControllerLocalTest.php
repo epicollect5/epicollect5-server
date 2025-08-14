@@ -77,23 +77,7 @@ class MediaControllerLocalTest extends TestCase
         $this->entryGenerator = new EntryGenerator($projectDefinition);
 
         //set storage (and all disks) to local
-        config([
-            'filesystems.default' => 'local',
-            'filesystems.disks.temp.driver' => 'local',
-            'filesystems.disks.temp.root' => storage_path('app/temp'),
-            'filesystems.disks.entry_original.driver' => 'local',
-            'filesystems.disks.entry_original.root' => storage_path('app/entries/photo/entry_original'),
-            'filesystems.disks.entry_thumb.driver' => 'local',
-            'filesystems.disks.entry_thumb.root' => storage_path('app/entries/photo/entry_thumb'),
-            'filesystems.disks.project_thumb.driver' => 'local',
-            'filesystems.disks.project_thumb.root' => storage_path('app/projects/project_thumb'),
-            'filesystems.disks.project_mobile_logo.driver' => 'local',
-            'filesystems.disks.project_mobile_logo.root' => storage_path('app/projects/project_mobile_logo'),
-            'filesystems.disks.audio.driver' => 'local',
-            'filesystems.disks.audio.root' => storage_path('app/entries/audio'),
-            'filesystems.disks.video.driver' => 'local',
-            'filesystems.disks.video.root' => storage_path('app/entries/video')
-        ]);
+        $this->overrideStorageDriver('local');
     }
 
     #[DataProvider('multipleRunProvider')] public function test_should_give_private_project_error()

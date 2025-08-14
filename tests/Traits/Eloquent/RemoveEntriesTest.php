@@ -59,7 +59,7 @@ class RemoveEntriesTest extends TestCase
 
             // Create additional branch entries that should not be archived
             foreach ($additionalEntries as $additionalEntry) {
-                $additionalBranchEntries = factory(BranchEntry::class, $numOfAdditionalBranchEntries)->create([
+                factory(BranchEntry::class, $numOfAdditionalBranchEntries)->create([
                     'project_id' => $additionalProject->id,
                     'form_ref' => $additionalProject->ref . '_' . uniqid(),
                     'user_id' => $additionalProject->created_by,

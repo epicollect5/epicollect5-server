@@ -77,23 +77,7 @@ class MediaControllerS3Test extends TestCase
         $this->entryGenerator = new EntryGenerator($projectDefinition);
 
         //set storage (and all disks) to S3
-        config([
-            'filesystems.default' => 's3',
-            'filesystems.disks.temp.driver' => 's3',
-            'filesystems.disks.temp.root' => ('app/temp'),
-            'filesystems.disks.entry_original.driver' => 's3',
-            'filesystems.disks.entry_original.root' => ('app/entries/photo/entry_original'),
-            'filesystems.disks.entry_thumb.driver' => 's3',
-            'filesystems.disks.entry_thumb.root' => ('app/entries/photo/entry_thumb'),
-            'filesystems.disks.project_thumb.driver' => 's3',
-            'filesystems.disks.project_thumb.root' => ('app/projects/project_thumb'),
-            'filesystems.disks.project_mobile_logo.driver' => 's3',
-            'filesystems.disks.project_mobile_logo.root' => ('app/projects/project_mobile_logo'),
-            'filesystems.disks.audio.driver' => 's3',
-            'filesystems.disks.audio.root' => ('app/entries/audio'),
-            'filesystems.disks.video.driver' => 's3',
-            'filesystems.disks.video.root' => ('app/entries/video')
-        ]);
+        $this->overrideStorageDriver('s3');
     }
 
     #[DataProvider('multipleRunProvider')] public function test_should_give_private_project_error()

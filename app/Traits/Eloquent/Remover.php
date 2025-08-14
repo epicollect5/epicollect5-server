@@ -148,7 +148,7 @@ trait Remover
     /**
      * Create S3 client from Laravel filesystem disk configuration
      */
-    private function createS3Client(array $config): S3Client
+    protected function createS3Client(array $config): S3Client
     {
         $clientConfig = [
             'version' => 'latest',
@@ -403,9 +403,33 @@ trait Remover
         return $deletedCount;
     }
 
-    private function isRetryableError(S3Exception $e): bool
+    public function isRetryableError(S3Exception $e): bool
     {
-        $code = $e->getAwsErrorCode();
-        return in_array($code, ['RequestTimeout', 'ServiceUnavailable', 'SlowDown', 'RequestLimitExceeded']);
+        $statusCode = $e->getStatusCode();
+
+        // Check HTTP status codes first (more reliable)
+        $retryableStatusCodes = [
+            429, // Too Many Requests
+            500, // Internal Server Error
+            502, // Bad Gateway
+            503, // Service Unavailable
+            504, // Gateway Timeout
+        ];
+
+        if (in_array($statusCode, $retryableStatusCodes)) {
+            return true;
+        }
+
+        // Fallback to AWS-specific error codes for additional cases
+        $awsErrorCode = $e->getAwsErrorCode();
+        $retryableAwsCodes = [
+            'RequestTimeout',
+            'ServiceUnavailable',
+            'SlowDown',
+            'RequestLimitExceeded',
+            'InternalError'
+        ];
+
+        return in_array($awsErrorCode, $retryableAwsCodes);
     }
 }

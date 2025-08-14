@@ -4,6 +4,7 @@ namespace ec5\Http\Middleware;
 
 use App;
 use Closure;
+use Config;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -24,41 +25,37 @@ class OverrideDiskForTesting
 
                 // Apply to specific disks you want to override during tests
                 if ($diskOverride === 'local') {
-                    config([
-                        'filesystems.default' => $diskOverride,
-                        'filesystems.disks.temp.driver' => $diskOverride,
-                        'filesystems.disks.temp.root' => storage_path('app/temp'),
-                        'filesystems.disks.entry_original.driver' => $diskOverride,
-                        'filesystems.disks.entry_original.root' => storage_path('app/entries/photo/entry_original'),
-                        'filesystems.disks.entry_thumb.driver' => $diskOverride,
-                        'filesystems.disks.entry_thumb.root' => storage_path('app/entries/photo/entry_thumb'),
-                        'filesystems.disks.project_thumb.driver' => $diskOverride,
-                        'filesystems.disks.project_thumb.root' => storage_path('app/projects/project_thumb'),
-                        'filesystems.disks.project_mobile_logo.driver' => $diskOverride,
-                        'filesystems.disks.project_mobile_logo.root' => storage_path('app/projects/project_mobile_logo'),
-                        'filesystems.disks.audio.driver' => $diskOverride,
-                        'filesystems.disks.audio.root' => storage_path('app/entries/audio'),
-                        'filesystems.disks.video.driver' => $diskOverride,
-                        'filesystems.disks.video.root' => storage_path('app/entries/video')
-                    ]);
+                    Config::set('filesystems.default', $diskOverride);
+                    Config::set('filesystems.disks.temp.driver', $diskOverride);
+                    Config::set('filesystems.disks.temp.root', storage_path('app/temp'));
+                    Config::set('filesystems.disks.entry_original.driver', $diskOverride);
+                    Config::set('filesystems.disks.entry_original.root', storage_path('app/entries/photo/entry_original'));
+                    Config::set('filesystems.disks.entry_thumb.driver', $diskOverride);
+                    Config::set('filesystems.disks.entry_thumb.root', storage_path('app/entries/photo/entry_thumb'));
+                    Config::set('filesystems.disks.project_thumb.driver', $diskOverride);
+                    Config::set('filesystems.disks.project_thumb.root', storage_path('app/projects/project_thumb'));
+                    Config::set('filesystems.disks.project_mobile_logo.driver', $diskOverride);
+                    Config::set('filesystems.disks.project_mobile_logo.root', storage_path('app/projects/project_mobile_logo'));
+                    Config::set('filesystems.disks.audio.driver', $diskOverride);
+                    Config::set('filesystems.disks.audio.root', storage_path('app/entries/audio'));
+                    Config::set('filesystems.disks.video.driver', $diskOverride);
+                    Config::set('filesystems.disks.video.root', storage_path('app/entries/video'));
                 } elseif ($diskOverride === 's3') {
-                    config([
-                        'filesystems.default' => $diskOverride,
-                        'filesystems.disks.temp.driver' => $diskOverride,
-                        'filesystems.disks.temp.root' => 'app/temp',
-                        'filesystems.disks.entry_original.driver' => $diskOverride,
-                        'filesystems.disks.entry_original.root' => 'app/entries/photo/entry_original',
-                        'filesystems.disks.entry_thumb.driver' => $diskOverride,
-                        'filesystems.disks.entry_thumb.root' => 'app/entries/photo/entry_thumb',
-                        'filesystems.disks.project_thumb.driver' => $diskOverride,
-                        'filesystems.disks.project_thumb.root' => 'app/projects/project_thumb',
-                        'filesystems.disks.project_mobile_logo.driver' => $diskOverride,
-                        'filesystems.disks.project_mobile_logo.root' => 'app/projects/project_mobile_logo',
-                        'filesystems.disks.audio.driver' => $diskOverride,
-                        'filesystems.disks.audio.root' => 'app/entries/audio',
-                        'filesystems.disks.video.driver' => $diskOverride,
-                        'filesystems.disks.video.root' => 'app/entries/video'
-                    ]);
+                    Config::set('filesystems.default', $diskOverride);
+                    Config::set('filesystems.disks.temp.driver', $diskOverride);
+                    Config::set('filesystems.disks.temp.root', 'app/temp');
+                    Config::set('filesystems.disks.entry_original.driver', $diskOverride);
+                    Config::set('filesystems.disks.entry_original.root', 'app/entries/photo/entry_original');
+                    Config::set('filesystems.disks.entry_thumb.driver', $diskOverride);
+                    Config::set('filesystems.disks.entry_thumb.root', 'app/entries/photo/entry_thumb');
+                    Config::set('filesystems.disks.project_thumb.driver', $diskOverride);
+                    Config::set('filesystems.disks.project_thumb.root', 'app/projects/project_thumb');
+                    Config::set('filesystems.disks.project_mobile_logo.driver', $diskOverride);
+                    Config::set('filesystems.disks.project_mobile_logo.root', 'app/projects/project_mobile_logo');
+                    Config::set('filesystems.disks.audio.driver', $diskOverride);
+                    Config::set('filesystems.disks.audio.root', 'app/entries/audio');
+                    Config::set('filesystems.disks.video.driver', $diskOverride);
+                    Config::set('filesystems.disks.video.root', 'app/entries/video');
                 }
             }
         }

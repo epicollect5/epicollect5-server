@@ -19,6 +19,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Passport\ClientRepository;
+use Log;
 use Tests\TestCase;
 use Throwable;
 
@@ -33,7 +34,7 @@ use Throwable;
  * While this approach works, it is not the most efficient or elegant solution. It serves the purpose of these tests
  * but is not recommended for more complex or performance-sensitive scenarios.
  */
-class RateLimitsMediaExportTest extends TestCase
+class RateLimitsMediaExportLocalTest extends TestCase
 {
     use Assertions;
 
@@ -118,6 +119,8 @@ class RateLimitsMediaExportTest extends TestCase
             'project_id' => $this->project->id,
             'client_id' => $client->id
         ]);
+
+        $this->overrideStorageDriver('local');
     }
 
     /**
@@ -145,7 +148,6 @@ class RateLimitsMediaExportTest extends TestCase
 
         // Generate more entries than the allowed rate limit to test the overflow
         $numOfEntries = $apiMediaRateLimit + 10;
-
         for ($i = 0; $i < $numOfEntries; $i++) {
             // Create entry payload
             $entryPayloads[$i] = $entryGenerator->createParentEntryPayload($formRef);
@@ -172,6 +174,14 @@ class RateLimitsMediaExportTest extends TestCase
             $filename = $videoAnswers[$i]['answer'];
             $videoContent = MediaGenerator::getFakeVideoContentBase64();
             Storage::disk('video')->put($this->project->ref . '/' . $filename, $videoContent);
+            // Log the absolute path Laravel actually wrote to
+            $diskRoot = Storage::disk('video')->path($this->project->ref . '/' . $filename);
+            Log::info("File saved to disk at: $diskRoot");
+            Log::info('Path (storage::path): ' . $diskRoot);
+            Log::info('file_exists: ' . (file_exists($diskRoot) ? 'yes' : 'no'));
+            Log::info('is_dir(parent): ' . (is_dir(dirname($diskRoot)) ? 'yes' : 'no'));
+            Log::info('realpath: ' . (@realpath($diskRoot) ?: 'realpath returned false'));
+            Log::info('scandir parent: ' . json_encode(@scandir(dirname($diskRoot)) ?: []));
         }
 
         // Confirm entries are stored in the database
@@ -184,14 +194,27 @@ class RateLimitsMediaExportTest extends TestCase
         $videos = Storage::disk('video')->files($this->project->ref);
         $this->assertCount($numOfEntries, $videos);
 
+        $videos = Storage::disk('video')->files($this->project->ref);
+        foreach ($videos as $video) {
+            $videoPath = Storage::disk('video')->path($video);
+            Log::info("Laravel sees file: $videoPath");
+        }
+
+        // Log where Laravel thinks these are stored
+        $rootPath = Storage::disk('video')->path('');
+        Log::info('files paths', [
+            'disk_root' => $rootPath,
+            'files'     => array_map(fn ($file) => Storage::disk('video')->path($file), $videos)
+        ]);
+
         // API endpoint for exporting media
-        $entriesURL = config('testing.LOCAL_SERVER') . '/api/export/media/';
+        $mediaURL = config('testing.LOCAL_SERVER') . '/api/export/media/';
 
         // Guzzle client for simulating real external HTTP requests
         $entriesClient = new Client([
             'headers' => [
                 // Override disk for test to simulate real-world storage (e.g., S3)
-                'X-Disk-Override' => 's3',
+                'X-Disk-Override' => 'local',
                 'Content-Type' => 'application/vnd.api+json'
             ]
         ]);
@@ -210,10 +233,12 @@ class RateLimitsMediaExportTest extends TestCase
             // Send up to the limit number of media export requests
             for ($i = 1; $i <= $apiMediaRateLimit; $i++) {
                 sleep(0.5);
+                Log::info('filename: ' . $videoAnswers[$i]['answer']);
+                Log::info('project ref: ' . $this->project->ref);
                 $filename = $videoAnswers[$i]['answer'];
                 $queryString = '?type=video&name=' . $filename . '&format=video' . '&XDEBUG_SESSION_START=phpstorm';
 
-                $response = $entriesClient->request('GET', $entriesURL . $this->project->slug . $queryString);
+                $response = $entriesClient->request('GET', $mediaURL . $this->project->slug . $queryString);
 
                 $headers = $response->getHeaders();
 
@@ -226,7 +251,7 @@ class RateLimitsMediaExportTest extends TestCase
             try {
                 $filename = $videoAnswers[0]['answer'];
                 $queryString = '?type=video&name=' . $filename . '&format=video';
-                $entriesClient->request('GET', $entriesURL . $this->project->slug . $queryString);
+                $entriesClient->request('GET', $mediaURL . $this->project->slug . $queryString);
             } catch (Throwable $e) {
                 if ($e->hasResponse()) {
                     $response = $e->getResponse();
