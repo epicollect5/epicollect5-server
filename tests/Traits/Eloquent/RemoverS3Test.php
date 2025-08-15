@@ -3,6 +3,7 @@
 namespace Tests\Traits\Eloquent;
 
 use ec5\Http\Controllers\Api\Entries\DeleteController;
+use ec5\Libraries\Utilities\Common;
 use Exception;
 use ec5\Libraries\Utilities\Generators;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -188,8 +189,6 @@ class RemoverS3Test extends TestCase
      */
     public function test_is_retryable_error_returns_true_for_retryable_s3_exceptions()
     {
-        $controller = app(DeleteController::class);
-
         // 1️⃣ Test retryable HTTP status codes
         $retryableHttpCodes = [429, 500, 502, 503, 504];
         foreach ($retryableHttpCodes as $statusCode) {
@@ -198,7 +197,7 @@ class RemoverS3Test extends TestCase
             $exception->method('getAwsErrorCode')->willReturn(null);
 
             $this->assertTrue(
-                $controller->isRetryableError($exception),
+                Common::isRetryableError($exception),
                 "Expected HTTP $statusCode to be retryable"
             );
         }
@@ -218,7 +217,7 @@ class RemoverS3Test extends TestCase
             $exception->method('getAwsErrorCode')->willReturn($awsCode);
 
             $this->assertTrue(
-                $controller->isRetryableError($exception),
+                Common::isRetryableError($exception),
                 "Expected AWS error code $awsCode to be retryable"
             );
         }
@@ -229,7 +228,7 @@ class RemoverS3Test extends TestCase
         $nonRetryable->method('getAwsErrorCode')->willReturn(null);
 
         $this->assertFalse(
-            $controller->isRetryableError($nonRetryable),
+            Common::isRetryableError($nonRetryable),
             "Expected non-retryable error to return false"
         );
     }

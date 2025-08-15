@@ -73,8 +73,7 @@ class RemoveEntriesTest extends TestCase
 
             // Run the function
             $result = $this->app->call('ec5\Http\Controllers\Api\Entries\DeleteController@removeEntriesChunk', [
-                'projectId' => $project->id,
-                'projectRef' => $project->ref
+                'projectId' => $project->id
             ]);
 
             // Assert that the function returned true

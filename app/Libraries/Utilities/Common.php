@@ -2,6 +2,7 @@
 
 namespace ec5\Libraries\Utilities;
 
+use Aws\S3\Exception\S3Exception;
 use Cookie;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
@@ -376,5 +377,35 @@ class Common
 
             $path = dirname($path);
         }
+    }
+
+    public static function isRetryableError(S3Exception $e): bool
+    {
+        $statusCode = $e->getStatusCode();
+
+        // Check HTTP status codes first (more reliable)
+        $retryableStatusCodes = [
+            429, // Too Many Requests
+            500, // Internal Server Error
+            502, // Bad Gateway
+            503, // Service Unavailable
+            504, // Gateway Timeout
+        ];
+
+        if (in_array($statusCode, $retryableStatusCodes)) {
+            return true;
+        }
+
+        // Fallback to AWS-specific error codes for additional cases
+        $awsErrorCode = $e->getAwsErrorCode();
+        $retryableAwsCodes = [
+            'RequestTimeout',
+            'ServiceUnavailable',
+            'SlowDown',
+            'RequestLimitExceeded',
+            'InternalError'
+        ];
+
+        return in_array($awsErrorCode, $retryableAwsCodes);
     }
 }
