@@ -1,5 +1,15 @@
 ## Release Notes
 
+# 12.3.0
+
+- Bulk media deletion endpoint and per-project media counters.
+- Two-stage deletion UI with separate media and entries progress/counters.
+- Confirmation text now warns about deleting associated media.
+- Separate configurable chunk sizes for entries and media; clearer chunked-deletion success messaging.
+- Centralized validation and lock-based error responses to prevent concurrent deletion conflicts.
+- Frontend scripts and deletion flows modularized for clarity and maintainability.
+- Extensive new and updated tests for media deletion, counters, chunking, storage drivers and concurrency.
+
 # 12.2.7
 
 - Updated logo and wrapper classes for consistency, applied circular borders, fixed sizing, and improved loader effects.
