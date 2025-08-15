@@ -192,7 +192,18 @@ trait Remover
             'MaxKeys' => $maxFiles,
         ];
 
-        $result = $s3Client->listObjectsV2($listParams);
+        $result = null;
+        for ($retry = 0; $retry <= $maxRetries; $retry++) {
+            try {
+                $result = $s3Client->listObjectsV2($listParams);
+                break;
+            } catch (S3Exception $e) {
+                if ($retry === $maxRetries || !$this->isRetryableError($e)) {
+                    throw $e;
+                }
+                sleep($retryDelay * pow(2, $retry));
+            }
+        }
 
         if (empty($result['Contents'])) {
             return 0;

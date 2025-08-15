@@ -992,7 +992,7 @@ class ProjectControllerTest extends TestCase
             ['project_id' => $project->id]
         );
 
-        config(['epicollect.setup.system.app_link_enabled' => true]);
+        config()->set('epicollect.setup.system.app_link_enabled', true);
         $response = $this
             ->actingAs($user, self::DRIVER)
             ->get('project/' . $project->slug)
@@ -1034,7 +1034,7 @@ class ProjectControllerTest extends TestCase
         );
 
 
-        config('epicollect.setup.system.app_link_enabled', true);
+        config()->set('epicollect.setup.system.app_link_enabled', true);
         $response = $this
             ->get('project/' . $project->slug)
             ->assertStatus(200);
@@ -1075,7 +1075,7 @@ class ProjectControllerTest extends TestCase
         );
 
 
-        config('epicollect.setup.system.app_link_enabled', false);
+        config()->set('epicollect.setup.system.app_link_enabled', false);
         $response = $this
             ->get('project/' . $project->slug)
             ->assertStatus(200);
@@ -1114,7 +1114,7 @@ class ProjectControllerTest extends TestCase
             ['project_id' => $project->id]
         );
 
-        config(['epicollect.setup.system.app_link_enabled' => true]);
+        config()->set('epicollect.setup.system.app_link_enabled', true);
         $response = $this
             ->actingAs($user, self::DRIVER)
             ->get('project/' . $project->slug)

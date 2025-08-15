@@ -15,12 +15,10 @@ use ec5\Models\User\User;
 use ec5\Services\Mapping\ProjectMappingService;
 use ec5\Services\Project\ProjectExtraService;
 use ec5\Traits\Assertions;
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\ClientException;
-use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Passport\ClientRepository;
-use Log;
+use Laravel\Passport\Passport;
+use Laravel\Passport\Client as PassportClient;
 use Tests\TestCase;
 use Throwable;
 
@@ -44,6 +42,7 @@ class RateLimitsMediaExportS3Test extends TestCase
     private array $projectDefinition;
     private string $slug;
     private string $email;
+    private PassportClient $passportClient;
 
     public function setUp(): void
     {
@@ -110,7 +109,7 @@ class RateLimitsMediaExportS3Test extends TestCase
 
         //add the project and client
         $clientRepository = new ClientRepository();
-        $client = $clientRepository->create(
+        $this->passportClient = $clientRepository->create(
             $this->user->id,
             'Test App',
             ''
@@ -118,7 +117,7 @@ class RateLimitsMediaExportS3Test extends TestCase
 
         factory(OAuthClientProject::class)->create([
             'project_id' => $this->project->id,
-            'client_id' => $client->id
+            'client_id' => $this->passportClient->id
         ]);
 
         $this->overrideStorageDriver('s3');
@@ -127,10 +126,10 @@ class RateLimitsMediaExportS3Test extends TestCase
     /**
      * @throws Throwable
      */
-
-    public function test_rate_limit_api_media()
+    public function test_rate_limit_api_media_s3()
     {
-        // Get the configured per-minute rate limit for media exports
+        Storage::fake('s3'); // <-- Use a fake disk
+
         $apiMediaRateLimit = config('epicollect.limits.api_export.media');
 
         $entryGenerator = new EntryGenerator($this->projectDefinition);
@@ -138,7 +137,6 @@ class RateLimitsMediaExportS3Test extends TestCase
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
 
-        // Extract the refs of all video-type inputs for use in entries
         $videoRefs = array_values(array_map(function ($input) {
             return $input['ref'];
         }, array_filter($inputs, function ($input) {
@@ -148,17 +146,13 @@ class RateLimitsMediaExportS3Test extends TestCase
         $entryPayloads = [];
         $videoAnswers = [];
 
-        // Generate more entries than the allowed rate limit to test the overflow
         $numOfEntries = $apiMediaRateLimit + 5;
 
         for ($i = 0; $i < $numOfEntries; $i++) {
-            // Create entry payload
             $entryPayloads[$i] = $entryGenerator->createParentEntryPayload($formRef);
 
-            // Extract the video answer reference for media testing
             $videoAnswers[] = $entryPayloads[$i]['data']['entry']['answers'][$videoRefs[0]];
 
-            // Persist entry row to database
             $entryRowBundle = $entryGenerator->createParentEntryRow(
                 $this->user,
                 $this->project,
@@ -167,142 +161,76 @@ class RateLimitsMediaExportS3Test extends TestCase
                 $entryPayloads[$i]
             );
 
-            // Validate entry row content against payload
             $this->assertEntryRowAgainstPayload(
                 $entryRowBundle,
                 $entryPayloads[$i]
             );
 
-            // Create a fake video file associated with the entry
             $filename = $videoAnswers[$i]['answer'];
             $videoContent = MediaGenerator::getFakeVideoContentBase64();
             Storage::disk('video')->put($this->project->ref . '/' . $filename, $videoContent);
         }
 
-        // Confirm entries are stored in the database
         $this->assertCount(
             $numOfEntries,
             Entry::where('project_id', $this->project->id)->get()
         );
 
-        // Confirm video files are saved on disk
         $videos = Storage::disk('video')->files($this->project->ref);
         $this->assertCount($numOfEntries, $videos);
 
-        // API endpoint for exporting media
-        $mediaURL = config('testing.LOCAL_SERVER') . '/api/export/media/';
+        // Simulate an authenticated user for the 'api_external' guard using Passport.
+        // Normally, we would use actingAsClient() for API clients, but this endpoint is public,
+        // so no actual token is required. We're only testing the rate limiter and expecting
+        // 429 "Too Many Requests" responses after hitting the limit.
+        Passport::actingAs($this->user, [], 'api_external');
 
-        // Guzzle client for simulating real external HTTP requests
-        $entriesClient = new Client([
-            'headers' => [
-                // Override disk for test to simulate real-world storage (e.g., S3)
-                'X-Disk-Override' => 's3',
-                'Content-Type' => 'application/vnd.api+json'
-            ]
-        ]);
+        // Advance time to reset any prior rate limit tracking (other tests...)
+        $this->travel(120);
 
-        try {
-            // Time travel: Jump forward to ensure we start with a clean rate limit window
-            // travel() expects seconds, so we travel forward 2 minutes (120 seconds)
-            $this->travel(120);
-
-            // Send requests up to the rate limit
-            $successfulRequests = 0;
-            for ($i = 0; $i < $apiMediaRateLimit; $i++) {
-                $filename = $videoAnswers[$i]['answer'];
-                $queryString = '?type=video&name=' . $filename . '&format=video';
-
-                try {
-                    $response = $entriesClient->request('GET', $mediaURL . $this->project->slug . $queryString);
-
-                    // Verify we get a successful response
-                    $this->assertEquals(200, $response->getStatusCode());
-                    $successfulRequests++;
-
-                    $headers = $response->getHeaders();
-
-                    // Log headers for debugging
-                    Log::info("Request $i headers", $headers);
-
-                    // Validate rate limit headers exist and match expected values
-                    $this->assertArrayHasKey('X-RateLimit-Limit', $headers);
-                    $this->assertArrayHasKey('X-RateLimit-Remaining', $headers);
-
-                    // Check that remaining count decreases
-                    $remaining = (int) $headers['X-RateLimit-Remaining'][0];
-                    $expected = $apiMediaRateLimit - $successfulRequests;
-
-                    Log::info("Rate limit check", [
-                        'request' => $i,
-                        'remaining' => $remaining,
-                        'expected' => $expected,
-                        'successful_requests' => $successfulRequests
-                    ]);
-
-                    $this->assertEquals($expected, $remaining);
-
-                } catch (GuzzleException $e) {
-                    $this->cleanUp();
-                    $this->fail("Unexpected error on request $i: " . $e->getMessage());
-                }
-            }
-
-            // Verify we made all allowed requests successfully
-            $this->assertEquals($apiMediaRateLimit, $successfulRequests);
-
-            // Now the next request should exceed the rate limit and return 429
-            $filename = $videoAnswers[$apiMediaRateLimit]['answer'];
+        $successfulRequests = 0;
+        for ($i = 0; $i < $apiMediaRateLimit; $i++) {
+            $filename = $videoAnswers[$i]['answer'];
             $queryString = '?type=video&name=' . $filename . '&format=video';
 
-            try {
-                $response = $entriesClient->request('GET', $mediaURL . $this->project->slug . $queryString);
-                // If we get here, the rate limit wasn't enforced properly
-                $this->fail('Expected rate limit to be exceeded, but request succeeded with status: ' . $response->getStatusCode());
-            } catch (ClientException $e) {
-                if ($e->hasResponse() && $e->getResponse()->getStatusCode() === 429) {
-                    // Test passed - we got the expected 429 response
-                    $headers = $e->getResponse()->getHeaders();
+            $response = $this->getJson(
+                '/api/export/media/' . $this->project->slug . $queryString,
+                [
+                    'X-Disk-Override' => 's3', // Simulate S3 storage
+                ]
+            );
 
-                    // Log the 429 response headers for debugging
-                    Log::info('429 Response headers', $headers);
-
-                    // Some rate limiters may not include headers in 429 responses
-                    // Just verify we got the 429 - that's the main goal
-                    $this->assertTrue(true, 'Rate limit correctly enforced with 429 response');
-
-                    // Optional: Check headers if they exist
-                    if (isset($headers['X-RateLimit-Remaining'])) {
-                        $this->assertEquals('0', $headers['X-RateLimit-Remaining'][0]);
-                    }
-                } else {
-                    $this->cleanUp();
-                    $this->fail('Expected 429 status code, got: ' . ($e->hasResponse() ? $e->getResponse()->getStatusCode() : 'no response'));
-                }
-            } catch (GuzzleException $e) {
-                $this->cleanUp();
-                $this->fail('Unexpected Guzzle exception: ' . $e->getMessage());
-            }
-
-            // Test complete - rate limiting is working correctly
-            Log::info('Rate limit test completed successfully', [
-                'successful_requests' => $successfulRequests,
-                'rate_limit_enforced' => true
-            ]);
-
-        } finally {
-            // Always restore original time and clean up
-            $this->travelBack();
-            $this->cleanUp();
+            $response->assertStatus(200);
+            $successfulRequests++;
         }
+
+        $this->assertEquals($apiMediaRateLimit, $successfulRequests);
+
+        // This request should hit the rate limit
+        $filename = $videoAnswers[$apiMediaRateLimit]['answer'];
+        $queryString = '?type=video&name=' . $filename . '&format=video';
+
+        $response = $this->getJson(
+            '/api/export/media/' . $this->project->slug . $queryString,
+            [
+                'X-Disk-Override' => 's3',
+            ]
+        );
+        $response->assertStatus(429);
+        $this->assertEquals('Too Many Attempts.', $response->exception->getMessage());
+        $this->assertEquals(429, $response->exception->getStatusCode());
+
+        $this->travelBack();
+        $this->cleanUp();
 
         return true;
     }
+
 
     private function cleanUp()
     {
         //clean up
         Storage::disk('video')->deleteDirectory($this->project->ref);
-
         $this->clearDatabase(
             [
                 'user' => User::where('email', $this->email)->first(),

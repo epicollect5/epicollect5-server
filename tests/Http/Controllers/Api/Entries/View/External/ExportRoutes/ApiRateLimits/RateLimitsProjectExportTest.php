@@ -134,8 +134,6 @@ class RateLimitsProjectExportTest extends TestCase
         $numOfEntries = $apiProjectRateLimit + 10;
         for ($i = 0; $i < $numOfEntries; $i++) {
             $entryPayloads[$i] = $entryGenerator->createParentEntryPayload($formRef);
-
-
             $entryRowBundle = $entryGenerator->createParentEntryRow(
                 $this->user,
                 $this->project,

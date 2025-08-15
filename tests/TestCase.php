@@ -14,7 +14,6 @@ use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use ec5\Models\User\UserProvider;
-use Exception;
 use Faker\Factory as Faker;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Foundation\Application;
@@ -55,7 +54,7 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
      * @param mixed     $response Additional context for the error, which may include a test response
      *                            object with diagnostic details.
      */
-    public function logTestError(mixed $e, $response): void
+    public function logTestError(mixed $e, mixed $response): void
     {
         $expected = '';
         $actual = '';
@@ -115,7 +114,7 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
      *                entries, branch entries, and OAuth client projects will be deleted.
      *   - 'client_id': (optional) A client ID used to delete corresponding OAuth access tokens.
      */
-    public function clearDatabase($params): void
+    public function clearDatabase(array $params): void
     {
         $user = $params['user'] ?? null;
         $project = $params['project'] ?? null;

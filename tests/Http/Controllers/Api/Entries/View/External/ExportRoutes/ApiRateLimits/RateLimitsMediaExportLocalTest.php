@@ -15,11 +15,10 @@ use ec5\Models\User\User;
 use ec5\Services\Mapping\ProjectMappingService;
 use ec5\Services\Project\ProjectExtraService;
 use ec5\Traits\Assertions;
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Passport\ClientRepository;
-use Log;
+use Laravel\Passport\Passport;
+use Laravel\Passport\Client as PassportClient;
 use Tests\TestCase;
 use Throwable;
 
@@ -43,6 +42,7 @@ class RateLimitsMediaExportLocalTest extends TestCase
     private array $projectDefinition;
     private string $slug;
     private string $email;
+    private PassportClient $passportClient;
 
     public function setUp(): void
     {
@@ -109,7 +109,7 @@ class RateLimitsMediaExportLocalTest extends TestCase
 
         //add the project and client
         $clientRepository = new ClientRepository();
-        $client = $clientRepository->create(
+        $this->passportClient = $clientRepository->create(
             $this->user->id,
             'Test App',
             ''
@@ -117,7 +117,7 @@ class RateLimitsMediaExportLocalTest extends TestCase
 
         factory(OAuthClientProject::class)->create([
             'project_id' => $this->project->id,
-            'client_id' => $client->id
+            'client_id' => $this->passportClient->id
         ]);
 
         $this->overrideStorageDriver('local');
@@ -126,9 +126,10 @@ class RateLimitsMediaExportLocalTest extends TestCase
     /**
      * @throws Throwable
      */
-    public function test_rate_limit_api_media()
+    public function test_rate_limit_api_media_local()
     {
-        // Get the configured per-minute rate limit for media exports
+        Storage::fake('local'); // <-- Use a fake disk
+
         $apiMediaRateLimit = config('epicollect.limits.api_export.media');
 
         $entryGenerator = new EntryGenerator($this->projectDefinition);
@@ -136,7 +137,6 @@ class RateLimitsMediaExportLocalTest extends TestCase
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
 
-        // Extract the refs of all video-type inputs for use in entries
         $videoRefs = array_values(array_map(function ($input) {
             return $input['ref'];
         }, array_filter($inputs, function ($input) {
@@ -146,16 +146,13 @@ class RateLimitsMediaExportLocalTest extends TestCase
         $entryPayloads = [];
         $videoAnswers = [];
 
-        // Generate more entries than the allowed rate limit to test the overflow
-        $numOfEntries = $apiMediaRateLimit + 10;
+        $numOfEntries = $apiMediaRateLimit + 5;
+
         for ($i = 0; $i < $numOfEntries; $i++) {
-            // Create entry payload
             $entryPayloads[$i] = $entryGenerator->createParentEntryPayload($formRef);
 
-            // Extract the video answer reference for media testing
             $videoAnswers[] = $entryPayloads[$i]['data']['entry']['answers'][$videoRefs[0]];
 
-            // Persist entry row to database
             $entryRowBundle = $entryGenerator->createParentEntryRow(
                 $this->user,
                 $this->project,
@@ -164,124 +161,81 @@ class RateLimitsMediaExportLocalTest extends TestCase
                 $entryPayloads[$i]
             );
 
-            // Validate entry row content against payload
             $this->assertEntryRowAgainstPayload(
                 $entryRowBundle,
                 $entryPayloads[$i]
             );
 
-            // Create a fake video file associated with the entry
             $filename = $videoAnswers[$i]['answer'];
             $videoContent = MediaGenerator::getFakeVideoContentBase64();
             Storage::disk('video')->put($this->project->ref . '/' . $filename, $videoContent);
-            // Log the absolute path Laravel actually wrote to
-            $diskRoot = Storage::disk('video')->path($this->project->ref . '/' . $filename);
-            if (!file_exists($diskRoot)) {
-                Log::warning("Expected media file not found at: $diskRoot");
-            }
         }
 
-        // Confirm entries are stored in the database
         $this->assertCount(
             $numOfEntries,
             Entry::where('project_id', $this->project->id)->get()
         );
 
-        // Confirm video files are saved on disk
         $videos = Storage::disk('video')->files($this->project->ref);
         $this->assertCount($numOfEntries, $videos);
 
-        $videos = Storage::disk('video')->files($this->project->ref);
-        foreach ($videos as $video) {
-            $videoPath = Storage::disk('video')->path($video);
-            Log::info("Laravel sees file: $videoPath");
+        // Simulate an authenticated user for the 'api_external' guard using Passport.
+        // Normally, we would use actingAsClient() for API clients, but this endpoint is public,
+        // so no actual token is required. We're only testing the rate limiter and expecting
+        // 429 "Too Many Requests" responses after hitting the limit.
+        Passport::actingAs($this->user, [], 'api_external');
+
+        // Advance time to reset any prior rate limit tracking (other tests...)
+        $this->travel(120);
+
+        $successfulRequests = 0;
+        for ($i = 0; $i < $apiMediaRateLimit; $i++) {
+            $filename = $videoAnswers[$i]['answer'];
+            $queryString = '?type=video&name=' . $filename . '&format=video';
+
+            $response = $this->getJson(
+                '/api/export/media/' . $this->project->slug . $queryString,
+                [
+                    'X-Disk-Override' => 'local', // Simulate local storage
+                ]
+            );
+
+            $response->assertStatus(200);
+            $successfulRequests++;
         }
 
-        // Log where Laravel thinks these are stored
-        $rootPath = Storage::disk('video')->path('');
-        Log::info('files paths', [
-            'disk_root' => $rootPath,
-            'files' => array_map(fn ($file) => Storage::disk('video')->path($file), $videos)
-        ]);
+        $this->assertEquals($apiMediaRateLimit, $successfulRequests);
 
-        // API endpoint for exporting media
-        $mediaURL = config('testing.LOCAL_SERVER') . '/api/export/media/';
+        // This request should hit the rate limit
+        $filename = $videoAnswers[$apiMediaRateLimit]['answer'];
+        $queryString = '?type=video&name=' . $filename . '&format=video';
 
-        // Guzzle client for simulating real external HTTP requests
-        $entriesClient = new Client([
-            'headers' => [
-                // Override disk for test to simulate real-world storage (e.g., S3)
+        $response = $this->getJson(
+            '/api/export/media/' . $this->project->slug . $queryString,
+            [
                 'X-Disk-Override' => 'local',
-                'Content-Type' => 'application/vnd.api+json'
             ]
-        ]);
-
-        // Reset the rate limiter on the Laravel server before making requests
-        $resetResponse = $this->actingAs($this->user)->post(
-            '/test/reset-api-rate-limit/media'
         );
+        $response->assertStatus(429);
+        $this->assertEquals('Too Many Attempts.', $response->exception->getMessage());
+        $this->assertEquals(429, $response->exception->getStatusCode());
 
-        if ($resetResponse->getStatusCode() !== 200) {
-            $this->cleanUp();
-            $this->fail('Failed to reset API rate limit');
-        }
-
-        try {
-            // Send up to the limit number of media export requests
-            for ($i = 1; $i <= $apiMediaRateLimit; $i++) {
-                Log::info('filename: ' . $videoAnswers[$i]['answer']);
-                Log::info('project ref: ' . $this->project->ref);
-                $filename = $videoAnswers[$i]['answer'];
-                $queryString = '?type=video&name=' . $filename . '&format=video' . '&XDEBUG_SESSION_START=phpstorm';
-
-                $response = $entriesClient->request('GET', $mediaURL . $this->project->slug . $queryString);
-
-                $headers = $response->getHeaders();
-
-                // Validate rate limit headers exist and match expected values
-                $this->assertArrayHasKey('X-RateLimit-Limit', $headers);
-                $this->assertArrayHasKey('X-RateLimit-Remaining', $headers);
-            }
-
-            // One additional request should exceed the rate limit and return a 429 response
-            try {
-                $filename = $videoAnswers[0]['answer'];
-                $queryString = '?type=video&name=' . $filename . '&format=video';
-                $entriesClient->request('GET', $mediaURL . $this->project->slug . $queryString);
-            } catch (Throwable $e) {
-                if ($e->hasResponse()) {
-                    $response = $e->getResponse();
-                    $this->assertEquals(429, $response->getStatusCode());
-                }
-            }
-
-            $this->cleanUp();
-        } catch (GuzzleException $e) {
-            // On exception, log and clean up
-            $this->cleanUp();
-            $this->logTestError($e, []);
-            return false;
-        }
+        $this->travelBack();
+        $this->cleanUp();
 
         return true;
     }
+
 
     private function cleanUp()
     {
         //clean up
         Storage::disk('video')->deleteDirectory($this->project->ref);
-
         $this->clearDatabase(
             [
                 'user' => User::where('email', $this->email)->first(),
                 'project' => Project::where('slug', $this->slug)->first()
             ]
         );
-    }
-
-    public function tearDown(): void
-    {
-        parent::tearDown();
-        $this->cleanUp();
     }
 }

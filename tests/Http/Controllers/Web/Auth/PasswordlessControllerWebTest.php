@@ -92,7 +92,7 @@ class PasswordlessControllerWebTest extends TestCase
 
     public function test_login()
     {
-        config('auth.auth_allowed_domains', []);
+        config()->set('auth.auth_allowed_domains', []);
         $email = config('testing.MANAGER_EMAIL');
         $tokenExpiresAt = config('testing.PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
         $code = Generators::randomNumber(6, 1);
@@ -119,7 +119,7 @@ class PasswordlessControllerWebTest extends TestCase
 
     public function test_login_disallowed_domain()
     {
-        config('auth.auth_allowed_domains', ['example.com']);
+        config()->set('auth.auth_allowed_domains', ['example.com']);
         $email = config('testing.MANAGER_EMAIL');
         $tokenExpiresAt = config('testing.PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
         $code = Generators::randomNumber(6, 1);
