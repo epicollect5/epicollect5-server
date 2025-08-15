@@ -102,9 +102,18 @@ trait Remover
 
     /**
      * Create S3 client from Laravel filesystem disk configuration
+     * @throws Exception
      */
     protected function createS3Client(array $config): S3Client
     {
+        //check config values are defined
+        $requiredKeys = ['region', 'bucket', 'key', 'secret'];
+        foreach ($requiredKeys as $key) {
+            if (!isset($config[$key])) {
+                throw new Exception("Missing required config key $key for S3 disk");
+            }
+        }
+
         $clientConfig = [
             'version' => 'latest',
             'region' => $config['region'],
