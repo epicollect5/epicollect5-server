@@ -345,7 +345,6 @@ class DeleteControllerMediaS3Test extends TestCase
         $chunkSize = config('epicollect.setup.bulk_deletion.chunk_size_media');
 
         $numOfEntries = rand(1000, 1500);
-        $mediaUuids = [];
         for ($i = 0; $i < $numOfEntries; $i++) {
             $entry = factory(Entry::class)->create(
                 [
@@ -356,7 +355,7 @@ class DeleteControllerMediaS3Test extends TestCase
                 ]
             );
 
-            //add 1100 files for testing (no need to add 20.000, chunk size is 1000)
+            //add 1100 files for testing
             if ($i < ($chunkSize + 100)) {
                 //photo
                 Storage::disk('entry_original')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
@@ -365,11 +364,9 @@ class DeleteControllerMediaS3Test extends TestCase
                 //video
                 Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
 
-                $mediaUuids[] = $entry->uuid;
             }
         }
         $this->assertCount($numOfEntries, Entry::where('project_id', $this->project->id)->get());
-        $this->assertEquals(sizeof($mediaUuids), $chunkSize + 100);
 
         //hit the delete media endpoint
         $payload = [

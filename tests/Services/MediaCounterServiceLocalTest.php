@@ -134,7 +134,6 @@ class MediaCounterServiceLocalTest extends TestCase
         $disks = [
             'entry_original',
             'project_thumb',
-            'project_mobile_logo',
             'audio',
             'video',
             'temp',

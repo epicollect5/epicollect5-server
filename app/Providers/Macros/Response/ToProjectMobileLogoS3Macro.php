@@ -1,0 +1,87 @@
+<?php
+
+namespace ec5\Providers\Macros\Response;
+
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\ServiceProvider;
+use Intervention\Image\Laravel\Facades\Image;
+use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
+use Throwable;
+
+class ToProjectMobileLogoS3Macro extends ServiceProvider
+{
+    /**
+     * Registers the 'ToProjectMobileLogoS3' macro
+     * to generate project mobile logos
+     * from S3 storage at runtime.
+     */
+    public function boot(): void
+    {
+        Response::macro('ToProjectMobileLogoS3', function ($projectRef, $filename) {
+            $disk = Storage::disk('project_mobile_logo');
+            $photoPlaceholderFilename = config('epicollect.media.photo_placeholder.filename');
+
+            if (!empty($filename)) {
+                try {
+                    // Get original image path from S3
+                    $path = $projectRef . '/' . $filename;
+
+                    if (!$disk->exists($path)) {
+                        throw new FileNotFoundException("Project mobile logo file not found on S3: $path");
+                    }
+
+                    // Read image from S3 and create 100x100 thumbnail
+                    $stream = null;
+                    try {
+                        $stream = $disk->readStream($path);
+                        $image = Image::read($stream);
+                    } finally {
+                        if (is_resource($stream)) {
+                            fclose($stream);
+                        }
+                    }
+
+                    $thumbnail = $image->cover(
+                        config('epicollect.media.project_mobile_logo')[0],
+                        config('epicollect.media.project_mobile_logo')[1]
+                    );
+                    $thumbnailData = $thumbnail->toJpeg(70);
+
+                    return response($thumbnailData, 200, [
+                        'Content-Type' => config('epicollect.media.content_type.photo')
+                    ]);
+
+                } catch (FileNotFoundException $e) {
+                    Log::error('Cannot find S3 project mobile logo', ['exception' => $e]);
+
+                } catch (Throwable $e) {
+                    Log::error('Cannot generate S3 project mobile logo', ['exception' => $e]);
+                }
+            }
+
+            // Default placeholder
+            $file = Storage::disk('public')->get($photoPlaceholderFilename);
+            // Read image from S3 and create project mobile logo
+            $stream = null;
+            try {
+                $stream = $disk->readStream($file);
+                $image = Image::read($stream);
+            } finally {
+                if (is_resource($stream)) {
+                    fclose($stream);
+                }
+            }
+            $thumbnail = $image->cover(
+                config('epicollect.media.project_mobile_logo')[0],
+                config('epicollect.media.project_mobile_logo')[1]
+            );
+            $thumbnailData = $thumbnail->toJpeg(70);
+
+            return response($thumbnailData, 200, [
+                'Content-Type' => config('epicollect.media.content_type.photo')
+            ]);
+        });
+    }
+}

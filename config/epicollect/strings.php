@@ -285,6 +285,8 @@ return [
     'media_formats' => [
         'entry_original' => 'entry_original',
         'entry_thumb' => 'entry_thumb',
+        'project_thumb' => 'project_thumb',
+        'project_mobile_logo' => 'project_mobile_logo',
         'audio' => 'audio',
         'video' => 'video'
     ],

@@ -46,7 +46,6 @@ return [
     'project_deletable' => [
         'entry_original',
         'project_thumb',
-        'project_mobile_logo',
         'audio',
         'video'
     ],

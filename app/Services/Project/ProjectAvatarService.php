@@ -70,7 +70,7 @@ class ProjectAvatarService
     private function generateLocal(string $projectRef, string $projectName): bool
     {
         try {
-            $disks = ['project_thumb', 'project_mobile_logo'];
+            $disks = ['project_thumb'];
 
             foreach ($disks as $disk) {
                 if (!Storage::disk($disk)->exists($projectRef)) {
@@ -106,23 +106,6 @@ class ProjectAvatarService
                     'directory_visibility' => 'public',
                 ]
             );
-
-            // Mobile avatar
-            $mobileAvatar = Avatar::create($projectName)
-                ->setDimension($this->width['mobile'])
-                ->setFontSize($this->fontSize['mobile'])
-                ->getImageObject();
-
-            $mobileImageData = $mobileAvatar->encode(new JpegEncoder(quality: $this->quality));
-            Storage::disk('project_mobile_logo')->put(
-                $projectRef . '/' . $this->filename,
-                $mobileImageData->toString(),
-                [
-                    'visibility' => 'public',
-                    'directory_visibility' => 'public',
-                ]
-            );
-
             return true;
         } catch (Throwable $e) {
             Log::error('Error creating project avatar', ['exception' => $e]);
@@ -147,17 +130,10 @@ class ProjectAvatarService
                 ->setFontSize($this->fontSize['thumb'])
                 ->getImageObject();
 
-            $imageMobile = Avatar::create($projectName)
-                ->setDimension($this->width['mobile'])
-                ->setFontSize($this->fontSize['mobile'])
-                ->getImageObject();
-
-            $imageThumbEncoded = $imageThumb->encode(new JpegEncoder(100));  // encodes image as jpg with 100% quality
-            $imageMobileEncoded = $imageMobile->encode(new JpegEncoder(100));  // encodes image as jpg with 100% quality
+            $imageThumbEncoded = $imageThumb->encode(new JpegEncoder(75));  // encodes image as jpg with 100% quality
 
             // Then upload using Storage:put()
             Storage::disk('project_thumb')->put($projectRef . '/' . $this->filename, (string) $imageThumbEncoded);
-            Storage::disk('project_mobile_logo')->put($projectRef . '/' . $this->filename, (string) $imageMobileEncoded);
 
             return true;
         } catch (Throwable $e) {

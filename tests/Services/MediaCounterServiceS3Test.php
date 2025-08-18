@@ -133,7 +133,6 @@ class MediaCounterServiceS3Test extends TestCase
         // Disks to clear
         $disks = [
             'entry_original',
-            'project_mobile_logo',
             'audio',
             'video',
             'temp',

@@ -189,6 +189,8 @@ return [
         ec5\Providers\Macros\Response\ToMediaStreamS3Macro::class,
         ec5\Providers\Macros\Response\ToEntryThumbLocalMacro::class,
         ec5\Providers\Macros\Response\ToEntryThumbS3Macro::class,
+        ec5\Providers\Macros\Response\ToProjectMobileLogoLocalMacro::class,
+        ec5\Providers\Macros\Response\ToProjectMobileLogoS3Macro::class,
 
         //Rate Limiter
         ec5\Providers\RateLimiterServiceProvider::class,

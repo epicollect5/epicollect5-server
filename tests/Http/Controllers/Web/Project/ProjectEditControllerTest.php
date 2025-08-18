@@ -202,9 +202,8 @@ class ProjectEditControllerTest extends TestCase
 
     public function test_should_detect_file_size_too_big()
     {
-        // Fake the local storage for project_thumb and project_mobile_logo
+        // Fake the local storage for project_thumb
         Storage::fake('project_thumb');
-        Storage::fake('project_mobile_logo');
 
         // Create a fake image file (100x100 pixels, 200 KB)
         $file = UploadedFile::fake()->image(
@@ -239,9 +238,8 @@ class ProjectEditControllerTest extends TestCase
 
     public function test_should_detect_logo_resolution_too_high_both_width_and_height()
     {
-        // Fake the local storage for project_thumb and project_mobile_logo
+        // Fake the local storage for project_thumb
         Storage::fake('project_thumb');
-        Storage::fake('project_mobile_logo');
 
         // Create a fake image file (100x100 pixels, 200 KB)
         $file = UploadedFile::fake()->image('logo.jpg', 5000, 5000)->size(200);
@@ -269,17 +267,12 @@ class ProjectEditControllerTest extends TestCase
         $response[0]->assertSessionHasErrors([
             'logo_height' => 'ec5_332'
         ]);
-
-        // Assert that the image was stored in the correct directories
-        //Storage::disk('project_thumb')->assertExists('test-project/logo.jpg');
-        //Storage::disk('project_mobile_logo')->assertExists('test-project/logo.jpg');
     }
 
     public function test_should_detect_logo_resolution_too_high_width()
     {
-        // Fake the local storage for project_thumb and project_mobile_logo
+        // Fake the local storage for project_thumb
         Storage::fake('project_thumb');
-        Storage::fake('project_mobile_logo');
 
         // Create a fake image file (100x100 pixels, 200 KB)
         $file = UploadedFile::fake()->image('logo.jpg', 5000, 100)->size(200);
@@ -304,17 +297,12 @@ class ProjectEditControllerTest extends TestCase
         $response[0]->assertSessionHasErrors([
             'logo_width' => 'ec5_332'
         ]);
-
-        // Assert that the image was stored in the correct directories
-        //Storage::disk('project_thumb')->assertExists('test-project/logo.jpg');
-        //Storage::disk('project_mobile_logo')->assertExists('test-project/logo.jpg');
     }
 
     public function test_should_detect_logo_resolution_too_high_height()
     {
-        // Fake the local storage for project_thumb and project_mobile_logo
+        // Fake the local storage for project_thumb
         Storage::fake('project_thumb');
-        Storage::fake('project_mobile_logo');
 
         // Create a fake image file (100x100 pixels, 200 KB)
         $file = UploadedFile::fake()->image('logo.jpg', 300, 5000)->size(200);
@@ -343,9 +331,8 @@ class ProjectEditControllerTest extends TestCase
 
     public function test_should_detect_description_too_long()
     {
-        // Fake the local storage for project_thumb and project_mobile_logo
+        // Fake the local storage for project_thumb
         Storage::fake('project_thumb');
-        Storage::fake('project_mobile_logo');
 
         // Create a fake image file (100x100 pixels, 200 KB)
         $file = UploadedFile::fake()->image('logo.jpg', 300, 300)->size(500);
@@ -374,9 +361,8 @@ class ProjectEditControllerTest extends TestCase
 
     public function test_should_detect_description_too_short()
     {
-        // Fake the local storage for project_thumb and project_mobile_logo
+        // Fake the local storage for project_thumb
         Storage::fake('project_thumb');
-        Storage::fake('project_mobile_logo');
 
         // Create a fake image file (100x100 pixels, 200 KB)
         $file = UploadedFile::fake()->image('logo.jpg', 300, 300)->size(500);
@@ -405,9 +391,8 @@ class ProjectEditControllerTest extends TestCase
 
     public function test_should_update_project_details()
     {
-        // Fake the local storage for project_thumb and project_mobile_logo
+        // Fake the local storage for project_thumb
         Storage::fake('project_thumb');
-        Storage::fake('project_mobile_logo');
 
         // Create a fake image file within the limits
         $file = UploadedFile::fake()->image(
@@ -437,7 +422,6 @@ class ProjectEditControllerTest extends TestCase
 
         // Assert that the image was stored in the correct directories
         Storage::disk('project_thumb')->assertExists($this->project->ref . '/logo.jpg');
-        Storage::disk('project_mobile_logo')->assertExists($this->project->ref . '/logo.jpg');
 
         //assert small desc and description were updated
         $projectAfterUpdate = Project::find($this->project->id);
@@ -448,9 +432,8 @@ class ProjectEditControllerTest extends TestCase
 
     public function test_should_detect_small_description_too_long()
     {
-        // Fake the local storage for project_thumb and project_mobile_logo
+        // Fake the local storage for project_thumb
         Storage::fake('project_thumb');
-        Storage::fake('project_mobile_logo');
 
         // Create a fake image file within the limits
         $file = UploadedFile::fake()->image(
@@ -484,9 +467,8 @@ class ProjectEditControllerTest extends TestCase
 
     public function test_should_detect_small_description_too_short()
     {
-        // Fake the local storage for project_thumb and project_mobile_logo
+        // Fake the local storage for project_thumb
         Storage::fake('project_thumb');
-        Storage::fake('project_mobile_logo');
 
         // Create a fake image file within the limits
         $file = UploadedFile::fake()->image(

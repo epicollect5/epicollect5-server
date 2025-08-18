@@ -21,7 +21,7 @@ sudo mkdir -p ${DIR}/{app,debugbar,framework,logs}
 
 sudo mkdir -p ${DIR}/app/{entries,orphans,projects,public,temp}
 
-sudo mkdir -p ${DIR}/app/projects/{project_mobile_logo,project_thumb}
+sudo mkdir -p ${DIR}/app/projects/project_thumb
 
 sudo mkdir -p ${DIR}/app/entries/{audio,photo,video}
 

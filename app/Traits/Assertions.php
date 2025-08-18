@@ -190,18 +190,10 @@ trait Assertions
     {
         //assert avatar is created
         $filename = config('epicollect.media.project_avatar.filename');
-        $avatarMobile = Storage::disk('project_mobile_logo')->files($project->ref);
         $avatarThumb = Storage::disk('project_thumb')->files($project->ref);
 
-        $this->assertGreaterThan(0, count($avatarMobile));
-        $this->assertCount(1, $avatarMobile);
         $this->assertGreaterThan(0, count($avatarThumb));
         $this->assertCount(1, $avatarThumb);
-
-        $this->assertEquals(
-            $project->ref . '/' . $filename,
-            $avatarMobile[0]
-        );
 
         $this->assertEquals(
             $project->ref . '/' . $filename,

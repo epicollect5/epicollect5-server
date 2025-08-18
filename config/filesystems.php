@@ -132,26 +132,6 @@ return [
 
         //imp: Laravel Team is against having a permission different from 755 on public folders
         //see https://github.com/laravel/docs/pull/8003
-        'project_mobile_logo' => array_merge([
-            'driver' => config('epicollect.setup.system.storage_driver'),
-            'root' => config('epicollect.setup.system.storage_driver') === 'local'
-                ? storage_path('app/projects/project_mobile_logo')
-                : 'app/projects/project_mobile_logo',
-            'throw' => true,
-            'permissions' => [
-                'file' => [
-                    'public' => 0644,
-                    'private' => 0600,
-                ],
-                'dir' => [
-                    'public' => 0755,
-                    'private' => 0700,
-                ],
-            ]
-        ], $doSpaces),
-
-        //imp: Laravel Team is against having a permission different from 755 on public folders
-        //see https://github.com/laravel/docs/pull/8003
         'video' => array_merge([
             'driver' => config('epicollect.setup.system.storage_driver'),
             'root' => config('epicollect.setup.system.storage_driver') === 'local'
