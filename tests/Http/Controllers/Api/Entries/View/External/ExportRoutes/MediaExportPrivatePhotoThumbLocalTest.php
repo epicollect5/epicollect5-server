@@ -174,14 +174,8 @@ class MediaExportPrivatePhotoThumbLocalTest extends TestCase
     #[Depends('test_getting_OAuth2_token')]
     public function test_photos_export_endpoint_private($params)
     {
-        config([
-            'filesystems.default' => 'local',
-            'filesystems.disks.temp.driver' => 'local',
-            'filesystems.disks.temp.root' => storage_path('app/temp'),
-            'filesystems.disks.entry_thumb.driver' => 'local',
-            'filesystems.disks.entry_thumb.root' => storage_path('app/entries/photo/entry_thumb'),
-        ]);
-
+        $this->overrideStorageDriver('local');
+        Storage::fake('local');
         $token = $params['token'];
         $user = $params['user'];
         $project = $params['project'];
@@ -207,9 +201,7 @@ class MediaExportPrivatePhotoThumbLocalTest extends TestCase
         $photoAnswers = [];
         for ($i = 0; $i < 1; $i++) {
             $entryPayloads[$i] = $entryGenerator->createParentEntryPayload($formRef);
-
             $photoAnswers[] = $entryPayloads[$i]['data']['entry']['answers'][$photoRefs[0]];
-
             $entryRowBundle = $entryGenerator->createParentEntryRow(
                 $user,
                 $project,
@@ -217,7 +209,6 @@ class MediaExportPrivatePhotoThumbLocalTest extends TestCase
                 $projectDefinition,
                 $entryPayloads[$i]
             );
-
             $this->assertEntryRowAgainstPayload(
                 $entryRowBundle,
                 $entryPayloads[$i]
@@ -228,18 +219,16 @@ class MediaExportPrivatePhotoThumbLocalTest extends TestCase
         $filename = $photoAnswers[0]['answer'];
 
         //create a fake photo for the entry
-        $landscapeWidth = config('epicollect.media.entry_thumb')[0];
-        $landscapeHeight = config('epicollect.media.entry_thumb')[1];
+        $landscapeWidth = config('epicollect.media.entry_original')[0];
+        $landscapeHeight = config('epicollect.media.entry_original')[1];
         $image = Image::create($landscapeWidth, $landscapeHeight); // Width, height, and background color
 
         // Encode the image as JPEG or other formats
         $imageData = (string) $image->encode(new JpegEncoder(50));
-        Storage::disk('entry_thumb')->put($project->ref . '/' . $filename, $imageData);
-        $diskRoot = config('filesystems.disks.entry_thumb.root').'/';
-        $imagePath = $diskRoot. $project->ref . '/' . $filename;
+        Storage::disk('entry_original')->put($project->ref . '/' . $filename, $imageData);
 
         $relativePath = $project->ref . '/' . $filename;
-        $this->assertTrue(Storage::disk('entry_thumb')->exists($relativePath), "File was not created at: $relativePath");
+        $this->assertTrue(Storage::disk('entry_original')->exists($relativePath), "File was not created at: $relativePath");
 
         //assert row is created
         $this->assertCount(
@@ -283,14 +272,10 @@ class MediaExportPrivatePhotoThumbLocalTest extends TestCase
             // Get the image content from the response
             $imageContent = (string)$response->getBody();
             // Create an Intervention Image instance from the image content
-            $entryOriginal = Image::read($imageContent);
-            $this->assertEquals($entryOriginal->width(), config('epicollect.media.entry_thumb')[0]);
-            $this->assertEquals($entryOriginal->height(), config('epicollect.media.entry_thumb')[1]);
-            // Get the size of the image content in bytes
-            $fileSize = strlen($imageContent);
-            $this->assertEquals($fileSize, filesize($imagePath));
-
-            Storage::disk('entry_thumb')->deleteDirectory($project->ref);
+            $entryThumb = Image::read($imageContent);
+            $this->assertEquals(config('epicollect.media.entry_thumb')[0], $entryThumb->width());
+            $this->assertEquals(config('epicollect.media.entry_thumb')[1], $entryThumb->height());
+            Storage::disk('entry_original')->deleteDirectory($project->ref);
 
             $this->clearDatabase($params);
         } catch (GuzzleException $e) {

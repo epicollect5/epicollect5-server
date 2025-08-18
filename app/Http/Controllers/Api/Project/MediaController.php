@@ -92,10 +92,16 @@ class MediaController
         $photoPlaceholderFilename = config('epicollect.media.photo_placeholder.filename');
         $inputType = $params['type'];
         $format = $params['format'];
-        if ($format === config('epicollect.media.formats.entry_thumb')) {
+        if ($format === config('epicollect.strings.media_formats.entry_thumb')) {
             //randomly slow down api responses for photo thumbs to avoid out of memory errors
             $delay = mt_rand(250000000, 500000000);
             time_nanosleep(0, $delay);
+
+            //build thumb at run time from original
+            return Response::toEntryThumbLocal(
+                $this->requestedProject()->ref,
+                $params['name']
+            );
         }
 
         // Set up type and content type
@@ -184,8 +190,12 @@ class MediaController
         $photoNotSyncedFilename = config('epicollect.media.photo_not_synced_placeholder.filename');
 
 
-        if ($format === config('epicollect.media.formats.entry_thumb')) {
+        if ($format === config('epicollect.strings.media_formats.entry_thumb')) {
             time_nanosleep(0, mt_rand(250000000, 500000000));
+            return Response::toEntryThumbS3(
+                $this->requestedProject()->ref,
+                $params['name']
+            );
         }
 
         switch ($inputType) {
@@ -347,4 +357,5 @@ class MediaController
 
         return Response::apiErrorCode(400, ['temp-media-controller' => ['ec5_69']]);
     }
+
 }

@@ -282,6 +282,12 @@ return [
         'hierarchy' => 'hierarchy',
         'branch' => 'branch'
     ],
+    'media_formats' => [
+        'entry_original' => 'entry_original',
+        'entry_thumb' => 'entry_thumb',
+        'audio' => 'audio',
+        'video' => 'video'
+    ],
     'media_input_types' => [
         'photo' => 'photo',
         'audio' => 'audio',

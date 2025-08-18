@@ -174,11 +174,8 @@ class MediaExportPrivatePhotoThumbS3Test extends TestCase
     #[Depends('test_getting_OAuth2_token')]
     public function test_photos_export_endpoint_private($params)
     {
-        config([
-            'filesystems.default' => 's3',
-            'filesystems.disks.entry_thumb.driver' => 's3',
-            'filesystems.disks.entry_thumb.root' => 'app/entries/photo/entry_thumb',
-        ]);
+        $this->overrideStorageDriver('s3');
+        Storage::fake('s3');
 
         $token = $params['token'];
         $user = $params['user'];
@@ -226,19 +223,15 @@ class MediaExportPrivatePhotoThumbS3Test extends TestCase
         $filename = $photoAnswers[0]['answer'];
 
         //create a fake photo for the entry
-        $landscapeWidth = config('epicollect.media.entry_thumb')[0];
-        $landscapeHeight = config('epicollect.media.entry_thumb')[1];
+        $landscapeWidth = config('epicollect.media.entry_original_landscape')[0];
+        $landscapeHeight = config('epicollect.media.entry_original_landscape')[1];
         $image = Image::create($landscapeWidth, $landscapeHeight); // Width, height, and background color
 
         // Encode the image as JPEG or other formats
         $imageData = (string) $image->encode(new JpegEncoder(50));
-        Storage::disk('entry_thumb')->put($project->ref . '/' . $filename, $imageData);
-        $diskRoot = config('filesystems.disks.entry_thumb.root').'/';
-
-        $imagePath = $diskRoot . $project->ref . '/' . $filename;
-
+        Storage::disk('entry_original')->put($project->ref . '/' . $filename, $imageData);
         $relativePath = $project->ref . '/' . $filename;
-        $this->assertTrue(Storage::disk('entry_thumb')->exists($relativePath), "File was not created at: $relativePath");
+        $this->assertTrue(Storage::disk('entry_original')->exists($relativePath), "File was not created at: $relativePath");
 
         //assert row is created
         $this->assertCount(
@@ -276,24 +269,15 @@ class MediaExportPrivatePhotoThumbS3Test extends TestCase
 
             // Assert that the content type is as expected
             $this->assertStringContainsString('image', $response->getHeaderLine('Content-Type'));
-            // Assert that the content length is greater than 0
-            $this->assertGreaterThan(0, $response->getBody()->getSize());
 
             // Get the image content from the response
             $imageContent = (string)$response->getBody();
             // Create an Intervention Image instance from the image content
             $entryOriginal = Image::read($imageContent);
-            $this->assertEquals($entryOriginal->width(), config('epicollect.media.entry_thumb')[0]);
-            $this->assertEquals($entryOriginal->height(), config('epicollect.media.entry_thumb')[1]);
-            // Get the size of the image content in bytes
-            // Get the size of the image content in bytes
-            $fileSize = strlen($imageContent);
-            $disk = Storage::disk(config('filesystems.default'));
-            $this->assertEquals($fileSize, $disk->size($imagePath));
+            $this->assertEquals(config('epicollect.media.entry_thumb')[0], $entryOriginal->width());
+            $this->assertEquals(config('epicollect.media.entry_thumb')[1], $entryOriginal->height());
 
-
-            Storage::disk('entry_thumb')->deleteDirectory($project->ref);
-
+            Storage::disk('entry_original')->deleteDirectory($project->ref);
             $this->clearDatabase($params);
         } catch (GuzzleException $e) {
             $this->clearDatabase($params);

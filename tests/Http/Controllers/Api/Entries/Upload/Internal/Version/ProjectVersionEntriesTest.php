@@ -234,8 +234,6 @@ class ProjectVersionEntriesTest extends TestCase
             //assert file is NOT uploaded
             $photos = Storage::disk('entry_original')->files($this->project->ref);
             $this->assertCount(0, $photos);
-            $photos = Storage::disk('entry_thumb')->files($this->project->ref);
-            $this->assertCount(0, $photos);
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }

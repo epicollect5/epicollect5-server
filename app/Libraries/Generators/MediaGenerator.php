@@ -60,17 +60,8 @@ class MediaGenerator
 
         // Create entry_original encoded data
         $entryOriginalData = $img->toJpeg();
-
-        // Create entry_thumb by cropping and resizing from the center
-        $entryThumbImg = Image::read($entryOriginalData)->cover(
-            config('epicollect.media.entry_thumb')[0],
-            config('epicollect.media.entry_thumb')[1]
-        );
-        $entryThumbData = $entryThumbImg->toJpeg();
-
         // Store both entry_original and entry_thumb
         Storage::disk('entry_original')->put($projectRef . '/' . $filename, $entryOriginalData);
-        Storage::disk('entry_thumb')->put($projectRef . '/' . $filename, $entryThumbData);
     }
 
     /**

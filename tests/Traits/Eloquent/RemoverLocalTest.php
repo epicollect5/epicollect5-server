@@ -87,7 +87,7 @@ class RemoverLocalTest extends TestCase
         $deletedCount = $controller->removeMediaChunk($projectRef);
 
         // We had 4 files total (1 per disk)
-        $this->assertEquals(4, $deletedCount);
+        $this->assertEquals(3, $deletedCount);
 
         foreach (config('epicollect.media.entries_deletable') as $disk) {
             $this->assertFalse(Storage::disk($disk)->exists("$projectRef/test.test"));

@@ -214,9 +214,9 @@ class RuleFileEntry extends EntryValidationBase
     }
 
     /**
-     * Stores an uploaded media file (photo, audio, or video) for a project entry, handling resizing and thumbnail creation for photos.
+     * Stores an uploaded media file (photo, audio, or video) for a project entry, handling resizing  for photos.
      *
-     * For photo files, determines orientation, resizes if necessary, and saves both the original and a thumbnail image using the appropriate storage (local or S3). For audio and video files, saves the file to the designated storage disk with public visibility. Sets error codes if file reading or saving fails.
+     * For photo files, determines orientation, resizes if necessary, and saves the original image using the appropriate storage (local or S3). For audio and video files, saves the file to the designated storage disk with public visibility. Sets error codes if file reading or saving fails.
      */
     public function moveFile(ProjectDTO $project, EntryStructureDTO $entryStructure): void
     {
@@ -282,21 +282,6 @@ class RuleFileEntry extends EntryValidationBase
                     $this->errors[$inputRef] = ['ec5_82'];
                     return;
                 }
-
-                // === Save thumbnail image ===
-                $thumb = PhotoSaverService::saveImage(
-                    $projectRef,
-                    $isS3 ? $file['path'] : $file,
-                    $fileName,
-                    'entry_thumb',
-                    config('epicollect.media.entry_thumb')
-                );
-
-                if (!$thumb) {
-                    $this->errors[$inputRef] = ['ec5_82'];
-                    return;
-                }
-
                 break;
 
             default:

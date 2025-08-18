@@ -178,7 +178,6 @@ class DeleteControllerMediaS3Test extends TestCase
             //add a fake file per each entry (per each media type)
             //photo
             Storage::disk('entry_original')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
-            Storage::disk('entry_thumb')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
             //audio
             Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
             //video
@@ -221,12 +220,131 @@ class DeleteControllerMediaS3Test extends TestCase
         }
     }
 
+    public function test_it_should_delete_a_media_chunk_across_all_media_types_and_leave_entries_in_place()
+    {
+        $formRef = $this->projectDefinition['data']['project']['forms'][0]['ref'];
+        $chunkSize = config('epicollect.setup.bulk_deletion.chunk_size_media');
+
+        $photosCount = 0;
+        $audiosCount = 0;
+        $videosCount = 0;
+
+        $numOfEntries = rand(1500, 2000);
+        for ($i = 0; $i < $numOfEntries; $i++) {
+            $entry = factory(Entry::class)->create(
+                [
+                    'project_id' => $this->project->id,
+                    'user_id' => $this->user->id,
+                    'form_ref' => $formRef,
+                    'uuid' => Uuid::uuid4()->toString()
+                ]
+            );
+
+            //add files distributed across all 3 media types up to chunk size + 100
+            if ($i < $chunkSize + 100) {
+                $mediaType = $i % 3; // Rotate between 0, 1, 2
+
+                switch ($mediaType) {
+                    case 0:
+                        //photo
+                        Storage::disk('entry_original')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+                        $photosCount++;
+                        break;
+                    case 1:
+                        //audio
+                        Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
+                        $audiosCount++;
+                        break;
+                    case 2:
+                        //video
+                        Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
+                        $videosCount++;
+                        break;
+                }
+            }
+        }
+
+        $totalMediaFiles = $photosCount + $audiosCount + $videosCount;
+        $this->assertCount($numOfEntries, Entry::where('project_id', $this->project->id)->get());
+
+        //hit the delete media endpoint
+        $payload = [
+            'data' => [
+                'project-name' => $this->project->name
+            ]
+        ];
+        $response = [];
+        try {
+            //delete a chunk of media across all media types (photo, audio, video)
+            $response[] = $this->actingAs($this->user)->post($this->endpoint . $this->project->slug, $payload);
+            $response[0]->assertStatus(200);
+            $response[0]->assertExactJson([
+                "data" => [
+                    "code" => "ec5_407",
+                    "deleted" => $chunkSize,
+                    "title" => "Chunk media deleted successfully."
+                ]
+            ]);
+            $this->assertCount($numOfEntries, Entry::where('project_id', $this->project->id)->get());
+
+            // Assert media files are deleted across all folders
+            $audios = Storage::disk('audio')->files($this->project->ref);
+            $photos = Storage::disk('entry_original')->files($this->project->ref);
+            $videos = Storage::disk('video')->files($this->project->ref);
+
+            $actualRemainingFiles = count($audios) + count($photos) + count($videos);
+
+            $this->assertEquals($chunkSize, $totalMediaFiles - $actualRemainingFiles, 'Should delete exactly chunk size files');
+
+            // Deletion process: delete up to chunkSize files, stopping when quota is exhausted
+            // Process folders in order: photos → audios → videos
+            // If first folder has >= chunkSize files, delete chunkSize from it and stop
+
+            $remainingQuota = $chunkSize;
+            $expectedPhotosRemaining = $photosCount;
+            $expectedAudiosRemaining = $audiosCount;
+            $expectedVideosRemaining = $videosCount;
+
+            // Photos folder is processed first
+            if ($remainingQuota > 0) {
+                $filesDeletedFromPhotos = min($photosCount, $remainingQuota);
+                $expectedPhotosRemaining = $photosCount - $filesDeletedFromPhotos;
+                $remainingQuota -= $filesDeletedFromPhotos;
+            }
+
+            // Audios folder is processed second (only if quota remaining)
+            if ($remainingQuota > 0) {
+                $filesDeletedFromAudios = min($audiosCount, $remainingQuota);
+                $expectedAudiosRemaining = $audiosCount - $filesDeletedFromAudios;
+                $remainingQuota -= $filesDeletedFromAudios;
+            }
+
+            // Videos folder is processed third (only if quota remaining)
+            if ($remainingQuota > 0) {
+                $filesDeletedFromVideos = min($videosCount, $remainingQuota);
+                $expectedVideosRemaining = $videosCount - $filesDeletedFromVideos;
+            }
+
+            $this->assertCount($expectedPhotosRemaining, $photos, 'Unexpected number of photo files remaining');
+            $this->assertCount($expectedAudiosRemaining, $audios, 'Unexpected number of audio files remaining');
+            $this->assertCount($expectedVideosRemaining, $videos, 'Unexpected number of video files remaining');
+
+            //now remove all the leftover fake files
+            Storage::disk('audio')->deleteDirectory($this->project->ref);
+            Storage::disk('entry_original')->deleteDirectory($this->project->ref);
+            Storage::disk('video')->deleteDirectory($this->project->ref);
+
+        } catch (Throwable $e) {
+            $this->logTestError($e, $response);
+        }
+    }
+
     public function test_it_should_delete_entry_original_media_chunk_and_leave_entries_in_place()
     {
         $formRef = $this->projectDefinition['data']['project']['forms'][0]['ref'];
         $chunkSize = config('epicollect.setup.bulk_deletion.chunk_size_media');
 
-        $numOfEntries = rand(20000, 50000);
+        $numOfEntries = rand(1000, 1500);
         $mediaUuids = [];
         for ($i = 0; $i < $numOfEntries; $i++) {
             $entry = factory(Entry::class)->create(
@@ -242,7 +360,6 @@ class DeleteControllerMediaS3Test extends TestCase
             if ($i < ($chunkSize + 100)) {
                 //photo
                 Storage::disk('entry_original')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
-                Storage::disk('entry_thumb')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
                 //audio
                 Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
                 //video
@@ -276,20 +393,17 @@ class DeleteControllerMediaS3Test extends TestCase
 
             //assert media files are deleted, up to 1000
             $photos = Storage::disk('entry_original')->files($this->project->ref);
-            $photosThumbs = Storage::disk('entry_thumb')->files($this->project->ref);
             $audios = Storage::disk('audio')->files($this->project->ref);
             $videos = Storage::disk('video')->files($this->project->ref);
 
-            $totalRemaining = sizeof($photos) + sizeof($photosThumbs) +  sizeof($audios) + sizeof($videos);
-            $this->assertEquals(4 * ($chunkSize  + 100) - $chunkSize, $totalRemaining, 'Total remaining media files count mismatch');
+            $totalRemaining = sizeof($photos) +  sizeof($audios) + sizeof($videos);
+            $this->assertEquals(3 * ($chunkSize  + 100) - $chunkSize, $totalRemaining, 'Total remaining media files count mismatch');
             $this->assertCount(100, $photos, 'Unexpected number of photo files remaining');
-            $this->assertCount($chunkSize + 100, $photosThumbs, 'Unexpected number of photo thumbnails remaining');
             $this->assertCount($chunkSize + 100, $audios, 'Unexpected number of audio files remaining');
             $this->assertCount($chunkSize + 100, $videos, 'Unexpected number of video files remaining');
 
             //now remove all the leftover fake files
             Storage::disk('entry_original')->deleteDirectory($this->project->ref);
-            Storage::disk('entry_thumb')->deleteDirectory($this->project->ref);
             Storage::disk('audio')->deleteDirectory($this->project->ref);
             Storage::disk('video')->deleteDirectory($this->project->ref);
         } catch (Throwable $e) {
@@ -302,8 +416,7 @@ class DeleteControllerMediaS3Test extends TestCase
         $formRef = $this->projectDefinition['data']['project']['forms'][0]['ref'];
         $chunkSize = config('epicollect.setup.bulk_deletion.chunk_size_media');
 
-        $numOfEntries = rand(20000, 50000);
-        $mediaUuids = [];
+        $numOfEntries = rand(1500, 1600);
         for ($i = 0; $i < $numOfEntries; $i++) {
             $entry = factory(Entry::class)->create(
                 [
@@ -314,21 +427,18 @@ class DeleteControllerMediaS3Test extends TestCase
                 ]
             );
 
-            //add 1000 files in total for testing (no need to add 20.000, chunk size is 1000)
-            if ($i < (250)) {
+            //add ~1000 files in total for testing (no need to add 20.000, chunk size is 1000)
+            if ($i < (350)) {
                 //photo
                 Storage::disk('entry_original')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
-                Storage::disk('entry_thumb')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
                 //audio
                 Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
                 //video
                 Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
 
-                $mediaUuids[] = $entry->uuid;
             }
         }
         $this->assertCount($numOfEntries, Entry::where('project_id', $this->project->id)->get());
-        $this->assertEquals(4 * sizeof($mediaUuids), $chunkSize);
 
         //hit the delete media endpoint
         $payload = [
@@ -350,22 +460,19 @@ class DeleteControllerMediaS3Test extends TestCase
             ]);
             $this->assertCount($numOfEntries, Entry::where('project_id', $this->project->id)->get());
 
-            //assert media files are all deleted
+            //assert only $chunkSize media files are deleted
             $photos = Storage::disk('entry_original')->files($this->project->ref);
-            $photosThumbs = Storage::disk('entry_thumb')->files($this->project->ref);
             $audios = Storage::disk('audio')->files($this->project->ref);
             $videos = Storage::disk('video')->files($this->project->ref);
 
-            $totalRemaining = sizeof($photos) + sizeof($photosThumbs) +  sizeof($audios) + sizeof($videos);
-            $this->assertEquals(0, $totalRemaining, 'Total remaining media files count mismatch');
+            $totalRemaining = sizeof($photos) +  sizeof($audios) + sizeof($videos);
+            $this->assertEquals(50, $totalRemaining, 'Total remaining media files count mismatch');
             $this->assertCount(0, $photos, 'Unexpected number of photo files remaining');
-            $this->assertCount(0, $photosThumbs, 'Unexpected number of photo thumbnails remaining');
             $this->assertCount(0, $audios, 'Unexpected number of audio files remaining');
-            $this->assertCount(0, $videos, 'Unexpected number of video files remaining');
+            $this->assertCount(50, $videos, 'Unexpected number of video files remaining');
 
             //now remove all the leftover fake files
             Storage::disk('entry_original')->deleteDirectory($this->project->ref);
-            Storage::disk('entry_thumb')->deleteDirectory($this->project->ref);
             Storage::disk('audio')->deleteDirectory($this->project->ref);
             Storage::disk('video')->deleteDirectory($this->project->ref);
         } catch (Throwable $e) {
@@ -496,8 +603,6 @@ class DeleteControllerMediaS3Test extends TestCase
             $this->logTestError($e, $response);
         }
     }
-
-
 
     public function test_it_should_catch_deletion_process_already_running()
     {

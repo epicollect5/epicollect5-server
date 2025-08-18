@@ -64,13 +64,12 @@ class MediaCounterServiceS3Test extends TestCase
             //photo
             sleep(1);//to void overriding the file names due to time()
             Storage::disk('entry_original')->put($this->project->ref . '/' . $this->entry->uuid . '_' . time() . '.jpg', '');
-            Storage::disk('entry_thumb')->put($this->project->ref . '/' . $this->entry->uuid . '_' . time() . '.jpg', '');
         }
 
         $mediaCounterService = new MediaCounterService();
         $counters = $mediaCounterService->countersMedia($this->project->ref);
-        $this->assertEquals($numOfPhotos * 2, $counters['counters']['total']);
-        $this->assertEquals($numOfPhotos * 2, $counters['counters']['photo']);
+        $this->assertEquals($numOfPhotos, $counters['counters']['total']);
+        $this->assertEquals($numOfPhotos, $counters['counters']['photo']);
         $this->assertEquals(0, $counters['counters']['audio']);
         $this->assertEquals(0, $counters['counters']['video']);
     }
@@ -117,15 +116,14 @@ class MediaCounterServiceS3Test extends TestCase
             //photo
             sleep(1);//to avoid overriding the file names due to time()
             Storage::disk('entry_original')->put($this->project->ref . '/' . $this->entry->uuid . '_' . time() . '.jpg', '');
-            Storage::disk('entry_thumb')->put($this->project->ref . '/' . $this->entry->uuid . '_' . time() . '.jpg', '');
             Storage::disk('audio')->put($this->project->ref . '/' . $this->entry->uuid . '_' . time() . '.mp4', '');
             Storage::disk('video')->put($this->project->ref . '/' . $this->entry->uuid . '_' . time() . '.mp4', '');
         }
 
         $mediaCounterService = new MediaCounterService();
         $counters = $mediaCounterService->countersMedia($this->project->ref);
-        $this->assertEquals($numOfMedia * 4, $counters['counters']['total']);
-        $this->assertEquals($numOfMedia * 2, $counters['counters']['photo']);
+        $this->assertEquals($numOfMedia * 3, $counters['counters']['total']);
+        $this->assertEquals($numOfMedia, $counters['counters']['photo']);
         $this->assertEquals($numOfMedia, $counters['counters']['audio']);
         $this->assertEquals($numOfMedia, $counters['counters']['video']);
     }
@@ -135,8 +133,6 @@ class MediaCounterServiceS3Test extends TestCase
         // Disks to clear
         $disks = [
             'entry_original',
-            'entry_thumb',
-            'project_thumb',
             'project_mobile_logo',
             'audio',
             'video',

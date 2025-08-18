@@ -608,7 +608,6 @@ class SearchToolsController extends Controller
                 $projectName = $project[$projectRef];
                 $drivers = [
                     'entry_original',
-                    'entry_thumb',
                     'project_thumb',
                     'project_mobile_logo',
                     'video',
@@ -692,9 +691,6 @@ class SearchToolsController extends Controller
                             switch ($driver) {
                                 case 'entry_original':
                                     $project['photo'] = $data[$ref];
-                                    break;
-                                case 'entry_thumb':
-                                    $project['photo'] += $data[$ref];
                                     break;
                                 case 'project_thumb':
                                     $project['photo'] += $data[$ref];
