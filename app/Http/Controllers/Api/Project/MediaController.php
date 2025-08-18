@@ -93,10 +93,7 @@ class MediaController
         $inputType = $params['type'];
         $format = $params['format'];
         if ($format === config('epicollect.strings.media_formats.entry_thumb')) {
-            //randomly slow down api responses for photo thumbs to avoid out of memory errors
-            $delay = mt_rand(250000000, 500000000);
-            time_nanosleep(0, $delay);
-
+            $this->throttleThumbResponse();
             //build thumb at run time from original
             return Response::toEntryThumbLocal(
                 $this->requestedProject()->ref,
@@ -356,6 +353,13 @@ class MediaController
         }
 
         return Response::apiErrorCode(400, ['temp-media-controller' => ['ec5_69']]);
+    }
+
+    private function throttleThumbResponse(): void
+    {
+        //randomly slow down api responses for photo thumbs to avoid out of memory errors
+        $delay = mt_rand(250000000, 500000000);
+        time_nanosleep(0, $delay);
     }
 
 }

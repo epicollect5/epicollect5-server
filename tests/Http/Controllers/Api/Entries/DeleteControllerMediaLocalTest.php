@@ -504,7 +504,7 @@ class DeleteControllerMediaLocalTest extends TestCase
 
             //add files distributed across all 3 media types up to chunk size + 100
             if ($i < $chunkSize + 100) {
-                Storage::disk('entry_original')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
+                Storage::disk('entry_original')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
                 $photoCount++;
             }
         }
@@ -533,9 +533,9 @@ class DeleteControllerMediaLocalTest extends TestCase
             $this->assertCount($numOfEntries, Entry::where('project_id', $this->project->id)->get());
 
             // Assert media files are deleted across all folders
-            $audios = Storage::disk('entry_original')->files($this->project->ref);
+            $photos = Storage::disk('entry_original')->files($this->project->ref);
 
-            $actualRemainingFiles = count($audios);
+            $actualRemainingFiles = count($photos);
 
             $this->assertEquals($chunkSize, $totalMediaFiles - $actualRemainingFiles, 'Should delete exactly chunk size files');
 
@@ -552,7 +552,7 @@ class DeleteControllerMediaLocalTest extends TestCase
                 $expectedPhotosRemaining = $photoCount - $filesDeletedFromAudios;
             }
 
-            $this->assertCount($expectedPhotosRemaining, $audios, 'Unexpected number of audio files remaining');
+            $this->assertCount($expectedPhotosRemaining, $photos, 'Unexpected number of audio files remaining');
 
             //now remove all the leftover fake files
             Storage::disk('entry_original')->deleteDirectory($this->project->ref);

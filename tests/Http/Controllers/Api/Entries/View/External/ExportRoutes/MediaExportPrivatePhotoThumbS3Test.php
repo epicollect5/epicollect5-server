@@ -273,9 +273,9 @@ class MediaExportPrivatePhotoThumbS3Test extends TestCase
             // Get the image content from the response
             $imageContent = (string)$response->getBody();
             // Create an Intervention Image instance from the image content
-            $entryOriginal = Image::read($imageContent);
-            $this->assertEquals(config('epicollect.media.entry_thumb')[0], $entryOriginal->width());
-            $this->assertEquals(config('epicollect.media.entry_thumb')[1], $entryOriginal->height());
+            $entryThumb = Image::read($imageContent);
+            $this->assertEquals(config('epicollect.media.entry_thumb')[0], $entryThumb->width());
+            $this->assertEquals(config('epicollect.media.entry_thumb')[1], $entryThumb->height());
 
             Storage::disk('entry_original')->deleteDirectory($project->ref);
             $this->clearDatabase($params);

@@ -32,9 +32,15 @@ class ToEntryThumbS3Macro extends ServiceProvider
                     }
 
                     // Read image from S3 and create 100x100 thumbnail
-                    $stream = $disk->readStream($path);
-                    $image = Image::read($stream);
-                    fclose($stream);
+                    $stream = null;
+                    try {
+                        $stream = $disk->readStream($path);
+                        $image = Image::read($stream);
+                    } finally {
+                        if (is_resource($stream)) {
+                            fclose($stream);
+                        }
+                    }
 
                     $thumbnail = $image->cover(
                         config('epicollect.media.entry_thumb')[0],

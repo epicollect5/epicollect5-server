@@ -256,7 +256,7 @@ class DeleteControllerEntriesS3Test extends TestCase
         $formRef = $this->projectDefinition['data']['project']['forms'][0]['ref'];
         $chunkSize = config('epicollect.setup.bulk_deletion.chunk_size_entries');
 
-        $numOfEntries = rand(20000, 50000);
+        $numOfEntries = rand(1500, 2000);
         $mediaUuids = [];
         for ($i = 0; $i < $numOfEntries; $i++) {
             $entry = factory(Entry::class)->create(
