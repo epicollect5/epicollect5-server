@@ -1,5 +1,13 @@
 ## Release Notes
 
+# 12.3.1
+
+- On-demand photo thumbnails generated at runtime for local and S3 requests, with placeholder fallbacks.
+- Thumbnails are no longer stored; uploads save only resized originals.
+- Admin tools and media counters now exclude thumbnails; totals reflect photos, audio, and video only.
+- Dedicated thumbnail storage removed and related config simplified.
+- Tests updated to stop creating thumbnail files and to validate runtime thumbnail generation
+
 # 12.3.0
 
 - Bulk media deletion endpoint and per-project media counters.
