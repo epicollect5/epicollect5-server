@@ -2,6 +2,7 @@
 
 namespace ec5\Services\Media;
 
+use Aws\S3\Exception\S3Exception;
 use ec5\Libraries\Utilities\Common;
 use Log;
 use Storage;
@@ -34,10 +35,25 @@ class AudioVideoSaverService
                     return false;
                 }
 
-                $fileSaved = Storage::disk($disk)->put($targetPath, $stream, [
-                    'visibility' => 'public',
-                    'directory_visibility' => 'public'
-                ]);
+                // Upload to S3 with retries
+                $maxRetries = 3;
+                $retryDelay = 1; // seconds
+
+                for ($retry = 0; $retry <= $maxRetries; $retry++) {
+                    try {
+                        $fileSaved = Storage::disk($disk)->put($targetPath, $stream, [
+                            'visibility' => 'public',
+                            'directory_visibility' => 'public'
+                        ]);
+                        break; // Success, exit retry loop
+                    } catch (Throwable $e) {
+                        if ($retry === $maxRetries || !($e instanceof S3Exception && Common::isRetryableError($e))) {
+                            fclose($stream);
+                            throw $e; // Re-throw if max retries reached or non-retryable error
+                        }
+                        sleep($retryDelay * pow(2, $retry)); // Exponential backoff
+                    }
+                }
                 fclose($stream);
             } else {
                 $stream = fopen($file->getRealPath(), 'rb');

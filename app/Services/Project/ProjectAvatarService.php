@@ -2,6 +2,7 @@
 
 namespace ec5\Services\Project;
 
+use Aws\S3\Exception\S3Exception;
 use ec5\Libraries\Utilities\Common;
 use Intervention\Image\Drivers\Imagick\Encoders\JpegEncoder;
 use Laravolt\Avatar\Facade as Avatar;
@@ -134,8 +135,21 @@ class ProjectAvatarService
 
             $imageThumbEncoded = $imageThumb->encode(new JpegEncoder(75));
 
-            // Then upload using Storage:put()
-            Storage::disk('project_thumb')->put($projectRef . '/' . $this->filename, (string) $imageThumbEncoded);
+            // Then upload using Storage::put() with retries
+            $maxRetries = 3;
+            $retryDelay = 1; // seconds
+
+            for ($retry = 0; $retry <= $maxRetries; $retry++) {
+                try {
+                    Storage::disk('project_thumb')->put($projectRef . '/' . $this->filename, (string) $imageThumbEncoded);
+                    break; // Success, exit retry loop
+                } catch (Throwable $e) {
+                    if ($retry === $maxRetries || !($e instanceof S3Exception && Common::isRetryableError($e))) {
+                        throw $e; // Re-throw if max retries reached or non-retryable error
+                    }
+                    sleep($retryDelay * pow(2, $retry)); // Exponential backoff
+                }
+            }
 
             return true;
         } catch (Throwable $e) {

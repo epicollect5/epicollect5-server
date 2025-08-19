@@ -2,6 +2,7 @@
 
 namespace ec5\Services\Media;
 
+use Aws\S3\Exception\S3Exception;
 use ec5\Libraries\Utilities\Common;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -143,11 +144,24 @@ class PhotoSaverService
                 throw new InvalidArgumentException('Unsupported image type: ' . (is_object($image) ? get_class($image) : gettype($image)));
             }
 
-            // Upload processed image to S3
-            Storage::disk($disk)->put(
-                $projectRef . '/' . $fileName,
-                $imageContent
-            );
+            // Upload processed image to S3 with retries
+            $maxRetries = 3;
+            $retryDelay = 1; // seconds
+
+            for ($retry = 0; $retry <= $maxRetries; $retry++) {
+                try {
+                    Storage::disk($disk)->put(
+                        $projectRef . '/' . $fileName,
+                        $imageContent
+                    );
+                    break; // Success, exit retry loop
+                } catch (Throwable $e) {
+                    if ($retry === $maxRetries || !($e instanceof S3Exception && Common::isRetryableError($e))) {
+                        throw $e; // Re-throw if max retries reached or non-retryable error
+                    }
+                    sleep($retryDelay * pow(2, $retry)); // Exponential backoff
+                }
+            }
 
             return true;
         } catch (Throwable $e) {
