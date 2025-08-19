@@ -36,7 +36,9 @@ class ProjectAvatarService
     /**
      * Generates and stores project avatar images using the configured storage driver.
      *
-     * Selects the appropriate avatar generation method based on the default filesystem driver configuration. Supports both local and S3 storage. Returns false if the storage driver is unsupported or if avatar generation fails.
+     * Selects the appropriate avatar generation method based on the default filesystem driver configuration.
+     * Supports both local and S3 storage.
+     * Returns false if the storage driver is unsupported or if avatar generation fails.
      *
      * @param string $projectRef Unique reference identifier for the project.
      * @param string $projectName Name of the project used for avatar generation.
@@ -61,7 +63,8 @@ class ProjectAvatarService
     /**
      * Generates and saves project avatar images locally for both thumbnail and mobile formats.
      *
-     * Creates avatar images using the project name and stores them in project-specific directories on local storage disks for thumbnails and mobile logos. Returns true on success, or false if an error occurs.
+     * Creates avatar images using the project name and stores them in project-specific directory on local storage disk.
+     * Returns true on success, or false if an error occurs.
      *
      * @param string $projectRef Unique reference identifier for the project.
      * @param string $projectName Name of the project to be used in the avatar image.
@@ -70,35 +73,31 @@ class ProjectAvatarService
     private function generateLocal(string $projectRef, string $projectName): bool
     {
         try {
-            $disks = ['project_thumb'];
+            $disk = 'project_thumb';
 
-            foreach ($disks as $disk) {
-                if (!Storage::disk($disk)->exists($projectRef)) {
-                    Log::info("Creating directory $disk/$projectRef");
+            if (!Storage::disk($disk)->exists($projectRef)) {
+                Log::info("Creating directory $disk/$projectRef");
 
-                    Storage::disk($disk)->makeDirectory($projectRef);
+                Storage::disk($disk)->makeDirectory($projectRef);
 
-                    $fullPath = Storage::disk($disk)->path($projectRef);
+                $fullPath = Storage::disk($disk)->path($projectRef);
 
-                    if (is_dir($fullPath)) {
-                        // Recursively set 755 permissions up to storage/app (fix Laravel default 700 on new folders)
-                        Common::setPermissionsRecursiveUp($fullPath);
-                    } else {
-                        Log::error("Directory not found after creation: $fullPath");
-                    }
+                if (is_dir($fullPath)) {
+                    // Recursively set 755 permissions up to storage/app (fix Laravel default 700 on new folders)
+                    Common::setPermissionsRecursiveUp($fullPath);
+                } else {
+                    Log::error("Directory not found after creation: $fullPath");
                 }
             }
 
-            // Generate and save avatars
-
-            // Thumb avatar
+            // Generate and save avatar
             $thumbAvatar = Avatar::create($projectName)
                 ->setDimension($this->width['thumb'])
                 ->setFontSize($this->fontSize['thumb'])
                 ->getImageObject();
 
             $thumbImageData = $thumbAvatar->encode(new JpegEncoder(quality: $this->quality));
-            Storage::disk('project_thumb')->put(
+            Storage::disk($disk)->put(
                 $projectRef . '/' . $this->filename,
                 $thumbImageData->toString(),
                 [
@@ -116,7 +115,10 @@ class ProjectAvatarService
     /**
      * Generates and uploads project avatar images to S3 storage.
      *
-     * Creates thumbnail and mobile avatar images for the given project name, encodes them as JPEGs, and uploads them to their respective S3 storage disks. Returns true on success, or false if an error occurs.
+     * Creates  avatar images for the given project name, encodes them as JPEGs,
+     * and uploads them to their respective S3 storage disk.
+     * The mobile logo is generated at runtime and is not persisted or uploaded.
+     * Returns true on success, or false if an error occurs.
      *
      * @param string $projectRef Unique reference identifier for the project.
      * @param string $projectName Name of the project used to generate the avatar.

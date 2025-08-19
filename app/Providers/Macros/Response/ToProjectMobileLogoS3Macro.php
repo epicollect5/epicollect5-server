@@ -22,6 +22,7 @@ class ToProjectMobileLogoS3Macro extends ServiceProvider
         Response::macro('ToProjectMobileLogoS3', function ($projectRef, $filename) {
             $disk = Storage::disk('project_thumb');
             $photoPlaceholderFilename = config('epicollect.media.photo_placeholder.filename');
+            [$w, $h] = config('epicollect.media.project_mobile_logo');
 
             if (!empty($filename)) {
                 try {
@@ -44,8 +45,8 @@ class ToProjectMobileLogoS3Macro extends ServiceProvider
                     }
 
                     $thumbnail = $image->cover(
-                        config('epicollect.media.project_mobile_logo')[0],
-                        config('epicollect.media.project_mobile_logo')[1]
+                        $w,
+                        $h
                     );
                     $thumbnailData = $thumbnail->toJpeg(70);
 
@@ -66,8 +67,8 @@ class ToProjectMobileLogoS3Macro extends ServiceProvider
             // Read bytes and create project mobile logo
             $image = Image::read($file);
             $thumbnail = $image->cover(
-                config('epicollect.media.project_mobile_logo')[0],
-                config('epicollect.media.project_mobile_logo')[1]
+                $w,
+                $h
             );
             $thumbnailData = $thumbnail->toJpeg(70);
 
