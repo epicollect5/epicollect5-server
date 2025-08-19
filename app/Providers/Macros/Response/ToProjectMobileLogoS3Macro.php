@@ -19,7 +19,7 @@ class ToProjectMobileLogoS3Macro extends ServiceProvider
      */
     public function boot(): void
     {
-        Response::macro('ToProjectMobileLogoS3', function ($projectRef, $filename) {
+        Response::macro('toProjectMobileLogoS3', function ($projectRef, $filename) {
             $disk = Storage::disk('project_thumb');
             $photoPlaceholderFilename = config('epicollect.media.photo_placeholder.filename');
             [$w, $h] = config('epicollect.media.project_mobile_logo');

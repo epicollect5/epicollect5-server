@@ -379,7 +379,7 @@ class MediaControllerS3Test extends TestCase
 
     #[DataProvider('multipleRunProvider')] public function test_project_placeholder_is_returned()
     {
-        //Reuest logo with actually adding one
+        //Request logo without actually adding one
         $response = $this->get('api/internal/media/' . $this->project->slug . '?type=photo&name=logo.jpg&format=project_thumb')
             ->assertStatus(200);
 

@@ -104,7 +104,7 @@ class MediaController
         if ($format === config('epicollect.strings.media_formats.project_mobile_logo')) {
             $this->throttleThumbResponse();
             //build thumb at run time from project_thumb
-            return Response::ToProjectMobileLogoLocal(
+            return Response::toProjectMobileLogoLocal(
                 $this->requestedProject()->ref,
                 $params['name']
             );
@@ -204,10 +204,11 @@ class MediaController
             );
         }
 
+        //test spelling
         if ($format === config('epicollect.strings.media_formats.project_mobile_logo')) {
             $this->throttleThumbResponse();
             //build project mobile logo at run time from project_thumb
-            return Response::ToProjectMobileLogoS3(
+            return Response::toProjectMobileLogoS3(
                 $this->requestedProject()->ref,
                 $params['name']
             );

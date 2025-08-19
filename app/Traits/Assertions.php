@@ -204,7 +204,7 @@ trait Assertions
         Storage::disk('project_thumb')->deleteDirectory($project->ref);
     }
 
-    public function assertEntriesResponse($response, $isBranch = false)
+    public function assertEntriesResponse($response, $isBranch = false): void
     {
         $json = json_decode($response->getContent(), true);
 
@@ -421,7 +421,7 @@ trait Assertions
         $this->assertLinks($json['links']);
     }
 
-    public function assertEntriesExportResponseCSV($response, $mapping, $params, $mapIndex = 0)
+    public function assertEntriesExportResponseCSV($response, $mapping, $params, $mapIndex = 0): void
     {
         $access = $params['projectDefinition']['data']['project']['access'];
 
@@ -552,7 +552,7 @@ trait Assertions
         }
     }
 
-    public function assertEntriesLocationsResponse($response)
+    public function assertEntriesLocationsResponse($response): void
     {
         $response->assertJsonStructure([
             'data' => [
@@ -603,7 +603,7 @@ trait Assertions
 
     }
 
-    private function assertLinks($links)
+    private function assertLinks($links): void
     {
         foreach ($links as $link) {
             if ($link !== null) {
