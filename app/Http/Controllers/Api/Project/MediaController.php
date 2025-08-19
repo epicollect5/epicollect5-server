@@ -197,8 +197,17 @@ class MediaController
 
 
         if ($format === config('epicollect.strings.media_formats.entry_thumb')) {
-            time_nanosleep(0, mt_rand(250000000, 500000000));
+            $this->throttleThumbResponse();
             return Response::toEntryThumbS3(
+                $this->requestedProject()->ref,
+                $params['name']
+            );
+        }
+
+        if ($format === config('epicollect.strings.media_formats.project_mobile_logo')) {
+            $this->throttleThumbResponse();
+            //build project mobile logo at run time from project_thumb
+            return Response::ToProjectMobileLogoS3(
                 $this->requestedProject()->ref,
                 $params['name']
             );

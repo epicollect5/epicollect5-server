@@ -97,8 +97,6 @@ class MediaControllerS3Test extends TestCase
             ]);
     }
 
-    //assert getMedia
-
     #[DataProvider('multipleRunProvider')] public function test_missing_params_in_request()
     {
         $response = $this->json('GET', 'api/internal/media/' . $this->project->slug);
@@ -381,6 +379,7 @@ class MediaControllerS3Test extends TestCase
 
     #[DataProvider('multipleRunProvider')] public function test_project_placeholder_is_returned()
     {
+        //Reuest logo with actually adding one
         $response = $this->get('api/internal/media/' . $this->project->slug . '?type=photo&name=logo.jpg&format=project_thumb')
             ->assertStatus(200);
 
@@ -389,6 +388,7 @@ class MediaControllerS3Test extends TestCase
         // Create an Intervention Image instance from the image content
         $image = Image::read($imageContent);
 
+        //Assert the placeholder is returned
         $this->assertEquals($image->width(), config('epicollect.media.photo_placeholder.width'));
         $this->assertEquals($image->height(), config('epicollect.media.photo_placeholder.height'));
 
@@ -397,6 +397,19 @@ class MediaControllerS3Test extends TestCase
 
     #[DataProvider('multipleRunProvider')] public function test_project_mobile_logo_is_returned()
     {
+        //add logo to project
+        $image = Image::create(
+            config('epicollect.media.project_thumb')[0],
+            config('epicollect.media.project_thumb')[1]
+        )->fill('#673C90');
+
+        $imageData = $image->toJpeg(70);
+        Storage::disk('project_thumb')
+            ->put(
+                $this->project->ref . '/logo.jpg',
+                $imageData
+            );
+
         $response = $this->get('api/internal/media/' . $this->project->slug . '?type=photo&name=logo.jpg&format=project_mobile_logo')
             ->assertStatus(200);
 
@@ -405,8 +418,37 @@ class MediaControllerS3Test extends TestCase
         // Create an Intervention Image instance from the image content
         $image = Image::read($imageContent);
 
-        $this->assertEquals($image->width(), config('epicollect.media.photo_placeholder.width'));
-        $this->assertEquals($image->height(), config('epicollect.media.photo_placeholder.height'));
+        $this->assertEquals(config('epicollect.media.project_mobile_logo')[0], $image->width());
+        $this->assertEquals(config('epicollect.media.project_mobile_logo')[1], $image->height());
+
+        $response->assertHeader('Content-Type', config('epicollect.media.content_type.photo'));
+    }
+
+    #[DataProvider('multipleRunProvider')] public function test_project_thumb_is_returned()
+    {
+        //add logo to project
+        $image = Image::create(
+            config('epicollect.media.project_thumb')[0],
+            config('epicollect.media.project_thumb')[1]
+        )->fill('#673C90');
+
+        $imageData = $image->toJpeg(70);
+        Storage::disk('project_thumb')
+            ->put(
+                $this->project->ref . '/logo.jpg',
+                $imageData
+            );
+
+        $response = $this->get('api/internal/media/' . $this->project->slug . '?type=photo&name=logo.jpg&format=project_thumb')
+            ->assertStatus(200);
+
+        // Get the image content from the response
+        $imageContent = $response->getContent();
+        // Create an Intervention Image instance from the image content
+        $image = Image::read($imageContent);
+
+        $this->assertEquals(config('epicollect.media.project_thumb')[0], $image->width());
+        $this->assertEquals(config('epicollect.media.project_thumb')[1], $image->height());
 
         $response->assertHeader('Content-Type', config('epicollect.media.content_type.photo'));
     }

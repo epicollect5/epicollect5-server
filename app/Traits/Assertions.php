@@ -200,8 +200,7 @@ trait Assertions
             $avatarThumb[0]
         );
 
-        //delete fake avatar files
-        Storage::disk('project_mobile_logo')->deleteDirectory($project->ref);
+        //delete fake avatar file
         Storage::disk('project_thumb')->deleteDirectory($project->ref);
     }
 
