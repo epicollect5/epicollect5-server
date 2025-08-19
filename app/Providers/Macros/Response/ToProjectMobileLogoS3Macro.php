@@ -20,7 +20,7 @@ class ToProjectMobileLogoS3Macro extends ServiceProvider
     public function boot(): void
     {
         Response::macro('ToProjectMobileLogoS3', function ($projectRef, $filename) {
-            $disk = Storage::disk('project_mobile_logo');
+            $disk = Storage::disk('project_thumb');
             $photoPlaceholderFilename = config('epicollect.media.photo_placeholder.filename');
 
             if (!empty($filename)) {
@@ -32,7 +32,7 @@ class ToProjectMobileLogoS3Macro extends ServiceProvider
                         throw new FileNotFoundException("Project mobile logo file not found on S3: $path");
                     }
 
-                    // Read image from S3 and create 100x100 thumbnail
+                    // Read image from S3 and create project mobile logo
                     $stream = null;
                     try {
                         $stream = $disk->readStream($path);
@@ -63,16 +63,8 @@ class ToProjectMobileLogoS3Macro extends ServiceProvider
 
             // Default placeholder
             $file = Storage::disk('public')->get($photoPlaceholderFilename);
-            // Read image from S3 and create project mobile logo
-            $stream = null;
-            try {
-                $stream = $disk->readStream($file);
-                $image = Image::read($stream);
-            } finally {
-                if (is_resource($stream)) {
-                    fclose($stream);
-                }
-            }
+            // Read bytes and create project mobile logo
+            $image = Image::read($file);
             $thumbnail = $image->cover(
                 config('epicollect.media.project_mobile_logo')[0],
                 config('epicollect.media.project_mobile_logo')[1]
