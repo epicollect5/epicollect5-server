@@ -62,7 +62,10 @@ class AudioVideoSaverService
                             'visibility' => 'public',
                             'directory_visibility' => 'public'
                         ]);
-                        break; // Success, exit retry loop
+                        if ($fileSaved) {
+                            break; // Success, exit retry loop
+                        }
+
                     } catch (Throwable $e) {
                         if ($retry === $maxRetries || !($e instanceof S3Exception && Common::isRetryableError($e))) {
                             fclose($stream);

@@ -153,4 +153,32 @@ class PhotoSaverServiceS3Test extends TestCase
         $result = PhotoSaverService::saveImage($projectRef, $uploadedFile, $fileName, $disk);
         $this->assertFalse($result);
     }
+
+    /**
+     * @throws Exception
+     */
+    public function test_service_handles_s3_put_returns_false()
+    {
+        $projectRef = 'test-project-ref';
+        $fileName = 'test-photo.jpg';
+        $disk = 'entry_original';
+
+        // Create a fake uploaded file
+        $uploadedFile = File::fake()->image('test.jpg', 100, 100);
+
+        // Mock Storage facade - put() returns false
+        Storage::shouldReceive('disk')
+            ->with($disk)
+            ->times(4) // Called 4 times (1 initial + 3 retries)
+            ->andReturnSelf();
+
+        Storage::shouldReceive('put')
+            ->with($projectRef . '/' . $fileName, Mockery::any())
+            ->times(4) // Expect 4 calls (1 initial + 3 retries)
+            ->andReturn(false);
+
+        // Assert service returns false when put() fails
+        $result = PhotoSaverService::saveImage($projectRef, $uploadedFile, $fileName, $disk);
+        $this->assertFalse($result);
+    }
 }

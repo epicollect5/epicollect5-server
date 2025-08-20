@@ -148,13 +148,16 @@ class PhotoSaverService
             $maxRetries = 3;
             $retryDelay = 1; // seconds
 
+            $fileSaved = false;
             for ($retry = 0; $retry <= $maxRetries; $retry++) {
                 try {
-                    Storage::disk($disk)->put(
+                    $fileSaved = Storage::disk($disk)->put(
                         $projectRef . '/' . $fileName,
                         $imageContent
                     );
-                    break; // Success, exit retry loop
+                    if ($fileSaved) {
+                        break; // Success, exit retry loop
+                    }
                 } catch (Throwable $e) {
                     if ($retry === $maxRetries || !($e instanceof S3Exception && Common::isRetryableError($e))) {
                         throw $e; // Re-throw if max retries reached or non-retryable error
@@ -163,7 +166,7 @@ class PhotoSaverService
                 }
             }
 
-            return true;
+            return (bool) $fileSaved;
         } catch (Throwable $e) {
             Log::error('Cannot save image to S3', ['exception' => $e]);
             return false;

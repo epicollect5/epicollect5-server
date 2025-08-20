@@ -132,4 +132,28 @@ class ProjectAvatarServiceS3Test extends TestCase
         $result = $service->generate($projectRef, 'Test Project');
         $this->assertTrue($result);
     }
+
+    /**
+     * @throws Exception
+     */
+    public function test_service_handles_s3_put_returns_false()
+    {
+        $projectRef = 'test-project-ref';
+
+        // Mock Storage facade - put() returns false
+        Storage::shouldReceive('disk')
+            ->with('project_thumb')
+            ->times(4) // Called 4 times (1 initial + 3 retries)
+            ->andReturnSelf();
+
+        Storage::shouldReceive('put')
+            ->times(4) // Expect 4 calls (1 initial + 3 retries)
+            ->andReturn(false);
+
+        $service = new ProjectAvatarService();
+
+        // Assert service returns false when put() fails
+        $result = $service->generate($projectRef, 'Test Project');
+        $this->assertFalse($result);
+    }
 }

@@ -139,10 +139,13 @@ class ProjectAvatarService
             $maxRetries = 3;
             $retryDelay = 1; // seconds
 
+            $fileSaved = false;
             for ($retry = 0; $retry <= $maxRetries; $retry++) {
                 try {
-                    Storage::disk('project_thumb')->put($projectRef . '/' . $this->filename, (string) $imageThumbEncoded);
-                    break; // Success, exit retry loop
+                    $fileSaved = Storage::disk('project_thumb')->put($projectRef . '/' . $this->filename, (string) $imageThumbEncoded);
+                    if ($fileSaved) {
+                        break; // Success, exit retry loop
+                    }
                 } catch (Throwable $e) {
                     if ($retry === $maxRetries || !($e instanceof S3Exception && Common::isRetryableError($e))) {
                         throw $e; // Re-throw if max retries reached or non-retryable error
@@ -151,7 +154,7 @@ class ProjectAvatarService
                 }
             }
 
-            return true;
+            return (bool) $fileSaved;
         } catch (Throwable $e) {
             Log::error('Error creating and uploading project avatar', ['exception' => $e]);
             return false;

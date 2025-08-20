@@ -185,4 +185,41 @@ class AudioVideoSaverServiceS3Test extends TestCase
         $result = AudioVideoSaverService::saveFile($projectRef, $file, $fileName, $disk, true);
         $this->assertFalse($result);
     }
+
+    /**
+     * @throws Exception
+     */
+    public function test_service_handles_s3_put_returns_false()
+    {
+        $projectRef = 'test-project-ref';
+        $fileName = 'test-audio.mp3';
+        $disk = 'audio';
+        $file = ['path' => 'temp/test-audio.mp3'];
+
+        // Mock S3 read stream with fixture data
+        Storage::shouldReceive('disk')
+            ->with('s3')
+            ->once()
+            ->andReturnSelf();
+
+        $stream = fopen('php://temp', 'r+');
+        fwrite($stream, 'fake audio content for put false test');
+        rewind($stream);
+        Storage::shouldReceive('readStream')
+            ->once()
+            ->andReturn($stream);
+
+        // Mock target disk - put() returns false
+        Storage::shouldReceive('disk')
+            ->with($disk)
+            ->times(4) // Called 4 times (1 initial + 3 retries)
+            ->andReturnSelf();
+        Storage::shouldReceive('put')
+            ->times(4) // Expect 4 calls (1 initial + 3 retries)
+            ->andReturn(false);
+
+        // Assert service returns false when put() fails
+        $result = AudioVideoSaverService::saveFile($projectRef, $file, $fileName, $disk, true);
+        $this->assertFalse($result);
+    }
 }
