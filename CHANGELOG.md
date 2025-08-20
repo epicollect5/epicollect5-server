@@ -9,10 +9,10 @@
 
 # 12.3.2
 
-Runtime generation of mobile-optimized project logos (local and S3).
-Project uploads now persist only the standard thumbnail; mobile-logo files are no longer stored.
-Removed project_mobile_logo disk/config and adjusted storage setup/scripts to use project_thumb only.
-Tests updated to validate dynamic mobile-logo generation and to mock/clean only the thumbnail storage.
+- Runtime generation of mobile-optimized project logos (local and S3).
+- Project uploads now persist only the standard thumbnail; mobile-logo files are no longer stored.
+- Removed project_mobile_logo disk/config and adjusted storage setup/scripts to use project_thumb only.
+- Tests updated to validate dynamic mobile-logo generation and to mock/clean only the thumbnail storage.
 
 # 12.3.1
 
@@ -103,7 +103,8 @@ Tests updated to validate dynamic mobile-logo generation and to mock/clean only 
 # 12.0.1
 
 - Fixed regression bugs introduced in the previous release.
-- Archive downloads now correctly filters entries based on user role i.e collectors can only download their own entries.
+- Archive downloads now correctly filters entries based on user role i.e. collectors can only download their own
+  entries.
 
 # 12.0.0
 
@@ -146,7 +147,7 @@ Tests updated to validate dynamic mobile-logo generation and to mock/clean only 
 
 # 11.1.18
 
-- Added compression to tables with json columns (for new installs)
+- Added compression to tables with json columns (for new installations)
 
 # 11.1.17
 
@@ -168,7 +169,7 @@ Tests updated to validate dynamic mobile-logo generation and to mock/clean only 
 # 11.1.13
 
 - Fixed regression bugs introduced in the previous release.
-- Removed sorting from archive CSV/JSON downloads for perfomances, using only filtering
+- Removed sorting from archive CSV/JSON downloads for performance, using only filtering
 
 # 11.1.12
 
