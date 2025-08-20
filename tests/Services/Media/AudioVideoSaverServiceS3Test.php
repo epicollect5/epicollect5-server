@@ -8,26 +8,21 @@ use Exception;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Ramsey\Uuid\Uuid;
 use Tests\TestCase;
-use Mockery;
 use Storage;
 use Aws\S3\Exception\S3Exception;
 use Aws\Command;
 use GuzzleHttp\Psr7\Response;
+use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 
 class AudioVideoSaverServiceS3Test extends TestCase
 {
     use DatabaseTransactions;
+    use MockeryPHPUnitIntegration;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->overrideStorageDriver('s3');
-    }
-
-    protected function tearDown(): void
-    {
-        Mockery::close();
-        parent::tearDown();
     }
 
     /**

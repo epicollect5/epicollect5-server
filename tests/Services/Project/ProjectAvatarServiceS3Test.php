@@ -5,8 +5,8 @@ namespace Tests\Services\Project;
 use ec5\Services\Project\ProjectAvatarService;
 use Exception;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Tests\TestCase;
-use Mockery;
 use Storage;
 use Aws\S3\Exception\S3Exception;
 use Aws\Command;
@@ -15,17 +15,12 @@ use GuzzleHttp\Psr7\Response;
 class ProjectAvatarServiceS3Test extends TestCase
 {
     use DatabaseTransactions;
+    use MockeryPHPUnitIntegration;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->overrideStorageDriver('s3');
-    }
-
-    protected function tearDown(): void
-    {
-        Mockery::close();
-        parent::tearDown();
     }
 
     /**

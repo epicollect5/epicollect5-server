@@ -6,6 +6,7 @@ use ec5\Libraries\Utilities\Generators;
 use ec5\Services\Media\PhotoSaverService;
 use Exception;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Ramsey\Uuid\Uuid;
 use Tests\TestCase;
 use Mockery;
@@ -18,17 +19,12 @@ use Illuminate\Http\Testing\File;
 class PhotoSaverServiceS3Test extends TestCase
 {
     use DatabaseTransactions;
+    use MockeryPHPUnitIntegration;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->overrideStorageDriver('s3');
-    }
-
-    protected function tearDown(): void
-    {
-        Mockery::close();
-        parent::tearDown();
     }
 
     /**
