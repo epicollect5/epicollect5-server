@@ -1,0 +1,20 @@
+# CodeRabbit configuration file
+# https://docs.coderabbit.ai/guides/review-guide
+
+reviews:
+  # Disable PHPMD (PHP Mess Detector) checks
+  tools:
+    phpmd:
+      enabled: false
+  
+  # Optional: Configure other review settings
+  auto_review:
+    enabled: true
+    drafts: false
+  
+  # Optional: Configure which files to review
+  path_filters:
+    - "!vendor/**"
+    - "!node_modules/**"
+    - "!storage/**"
+    - "!bootstrap/cache/**"
