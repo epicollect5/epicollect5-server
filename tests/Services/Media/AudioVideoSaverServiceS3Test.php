@@ -25,9 +25,6 @@ class AudioVideoSaverServiceS3Test extends TestCase
         $this->overrideStorageDriver('s3');
     }
 
-    /**
-     * @throws Exception
-     */
     public function test_service_handles_s3_429_too_many_requests_error()
     {
         $projectRef = Generators::projectRef();

@@ -6,12 +6,12 @@ reviews:
   tools:
     phpmd:
       enabled: false
-  
+
   # Optional: Configure other review settings
   auto_review:
     enabled: true
     drafts: false
-  
+
   # Optional: Configure which files to review
   path_filters:
     - "!vendor/**"

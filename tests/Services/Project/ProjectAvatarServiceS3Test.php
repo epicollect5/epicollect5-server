@@ -2,6 +2,7 @@
 
 namespace Tests\Services\Project;
 
+use ec5\Libraries\Utilities\Generators;
 use ec5\Services\Project\ProjectAvatarService;
 use Exception;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -23,12 +24,9 @@ class ProjectAvatarServiceS3Test extends TestCase
         $this->overrideStorageDriver('s3');
     }
 
-    /**
-     * @throws Exception
-     */
     public function test_service_handles_s3_429_too_many_requests_error()
     {
-        $projectRef = 'test-project-ref';
+        $projectRef = Generators::projectRef();
 
         // Mock Storage facade to throw S3Exception with 429
         Storage::shouldReceive('disk')
