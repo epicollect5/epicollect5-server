@@ -1,5 +1,12 @@
 ## Release Notes
 
+# 12.3.3
+
+- Added automatic retries with exponential backoff, better stream reopen/close handling, and retry-aware S3 error
+  handling.
+- Added tests covering success, retryable (429/503), non-retryable (403), and upload-failure scenarios for S3 uploads.
+- Added CI/review configuration to streamline automated reviews by CodeRabbit
+
 # 12.3.2
 
 Runtime generation of mobile-optimized project logos (local and S3).
