@@ -80,4 +80,56 @@ class ProjectAvatarServiceS3Test extends TestCase
         $result = $service->generate($projectRef, 'Test Project');
         $this->assertFalse($result);
     }
+
+    /**
+     * @throws Exception
+     */
+    public function test_service_handles_s3_403_forbidden_error_without_retry()
+    {
+        $projectRef = 'test-project-ref';
+
+        // Mock Storage facade - should only be called once (no retries)
+        Storage::shouldReceive('disk')
+            ->with('project_thumb')
+            ->once()
+            ->andReturnSelf();
+
+        Storage::shouldReceive('put')
+            ->once() // Expect only 1 call (no retries for 403)
+            ->andThrow(new S3Exception(
+                'Forbidden',
+                new Command('PutObject'),
+                ['response' => new Response(403)]
+            ));
+
+        $service = new ProjectAvatarService();
+
+        // Assert service returns false when non-retryable S3 error occurs
+        $result = $service->generate($projectRef, 'Test Project');
+        $this->assertFalse($result);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function test_service_successfully_generates_avatar_to_s3()
+    {
+        $projectRef = 'test-project-ref';
+
+        // Mock Storage facade for successful save
+        Storage::shouldReceive('disk')
+            ->with('project_thumb')
+            ->once()
+            ->andReturnSelf();
+
+        Storage::shouldReceive('put')
+            ->once()
+            ->andReturn(true);
+
+        $service = new ProjectAvatarService();
+
+        // Assert service returns true on successful generation
+        $result = $service->generate($projectRef, 'Test Project');
+        $this->assertTrue($result);
+    }
 }

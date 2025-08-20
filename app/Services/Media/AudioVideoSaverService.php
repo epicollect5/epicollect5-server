@@ -24,6 +24,7 @@ class AudioVideoSaverService
      */
     public static function saveFile(string $projectRef, mixed $file, string $fileName, string $disk, bool $isS3 = false): bool
     {
+        $fileSaved = false;
         $targetPath = $projectRef . '/' . $fileName;
 
         try {
@@ -41,6 +42,22 @@ class AudioVideoSaverService
 
                 for ($retry = 0; $retry <= $maxRetries; $retry++) {
                     try {
+                        // Rewind stream before each attempt (including first)
+                        if (is_resource($stream)) {
+                            $meta = stream_get_meta_data($stream);
+                            if (!empty($meta['seekable'])) {
+                                rewind($stream);
+                            } else {
+                                // Stream is not seekable, reopen it
+                                fclose($stream);
+                                $stream = Storage::disk('s3')->readStream($file['path'] ?? '');
+                                if (!$stream) {
+                                    Log::error('Failed to reopen stream from S3', ['file' => $file['path'] ?? '']);
+                                    return false;
+                                }
+                            }
+                        }
+
                         $fileSaved = Storage::disk($disk)->put($targetPath, $stream, [
                             'visibility' => 'public',
                             'directory_visibility' => 'public'
@@ -49,9 +66,9 @@ class AudioVideoSaverService
                     } catch (Throwable $e) {
                         if ($retry === $maxRetries || !($e instanceof S3Exception && Common::isRetryableError($e))) {
                             fclose($stream);
-                            throw $e; // Re-throw if max retries reached or non-retryable error
+                            throw $e;
                         }
-                        sleep($retryDelay * pow(2, $retry)); // Exponential backoff
+                        sleep($retryDelay * pow(2, $retry));
                     }
                 }
                 fclose($stream);

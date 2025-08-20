@@ -133,7 +133,7 @@ class ProjectAvatarService
                 ->setFontSize($this->fontSize['thumb'])
                 ->getImageObject();
 
-            $imageThumbEncoded = $imageThumb->encode(new JpegEncoder(75));
+            $imageThumbEncoded = $imageThumb->encode(new JpegEncoder($this->quality));
 
             // Then upload using Storage::put() with retries
             $maxRetries = 3;

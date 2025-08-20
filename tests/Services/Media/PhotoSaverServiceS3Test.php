@@ -121,4 +121,36 @@ class PhotoSaverServiceS3Test extends TestCase
         $result = PhotoSaverService::saveImage($projectRef, $uploadedFile, $fileName, $disk);
         $this->assertTrue($result);
     }
+
+    /**
+     * @throws Exception
+     */
+    public function test_service_handles_s3_403_forbidden_error_without_retry()
+    {
+        $projectRef = 'test-project-ref';
+        $fileName = 'test-photo.jpg';
+        $disk = 'entry_original';
+
+        // Create a fake uploaded file
+        $uploadedFile = File::fake()->image('test.jpg', 100, 100);
+
+        // Mock Storage facade - should only be called once (no retries)
+        Storage::shouldReceive('disk')
+            ->with($disk)
+            ->once()
+            ->andReturnSelf();
+
+        Storage::shouldReceive('put')
+            ->with($projectRef . '/' . $fileName, Mockery::any())
+            ->once() // Expect only 1 call (no retries for 403)
+            ->andThrow(new S3Exception(
+                'Forbidden',
+                new Command('PutObject'),
+                ['response' => new Response(403)]
+            ));
+
+        // Assert service returns false when non-retryable S3 error occurs
+        $result = PhotoSaverService::saveImage($projectRef, $uploadedFile, $fileName, $disk);
+        $this->assertFalse($result);
+    }
 }
