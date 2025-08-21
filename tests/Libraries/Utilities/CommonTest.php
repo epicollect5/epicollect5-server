@@ -29,7 +29,7 @@ class CommonTest extends TestCase
         $formName = 'Far far away, behind the word mountains, far from.';
 
         //form name with length 255 (max)
-        $branchName = 'Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts. Separated they live in Bookmarksgrove right at the coast of the Semantics, a large language ocean. A small river named Duden flows by thei';
+        $branchName = 'Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts. Separated they live in Bookmarksgrove right at the coast of the Semantics, a large language ocean. A small river named Duden flows by the';
 
         //generate filename (protected method, via reflection)
         $generatedFilename = Common::generateFilename($form_prefix . '-' . $form_index, $formName);

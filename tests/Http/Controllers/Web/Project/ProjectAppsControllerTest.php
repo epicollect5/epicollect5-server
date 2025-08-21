@@ -20,7 +20,7 @@ class ProjectAppsControllerTest extends TestCase
 {
     use DatabaseTransactions;
 
-    public const DRIVER = 'web';
+    public const string DRIVER = 'web';
     private $faker;
     private $user;
     private $project;

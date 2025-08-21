@@ -7,7 +7,7 @@
             @include('toasts/success')
         @endif
 
-        @include('modals/modal_deletion')
+        @include('modals/modal_deletion_project')
 
         <div class="row">
             <div href="#" class="project-home-wrapper col-sm-12 col-md-6 col-lg-6 col-md-offset-3 col-lg-offset-3">

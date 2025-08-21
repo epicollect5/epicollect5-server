@@ -7,7 +7,7 @@
          data-chunk-size-entries="{{config('epicollect.setup.bulk_deletion.chunk_size_entries')}}"
          data-chunk-size-media="{{config('epicollect.setup.bulk_deletion.chunk_size_media')}}"
     >
-        @include('modals/modal_deletion')
+        @include('modals/modal_deletion_entries')
 
         <div class="row">
             <div href="#" class="col-sm-12 col-md-6 col-lg-6 col-md-offset-3 col-lg-offset-3">

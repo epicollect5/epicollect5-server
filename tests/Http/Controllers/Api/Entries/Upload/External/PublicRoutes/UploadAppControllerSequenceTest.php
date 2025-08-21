@@ -20,6 +20,7 @@ use ec5\Traits\Assertions;
 use Exception;
 use Faker\Factory as Faker;
 use PHPUnit\Framework\Attributes\Depends;
+use Random\RandomException;
 use Tests\TestCase;
 use Throwable;
 
@@ -35,6 +36,9 @@ class UploadAppControllerSequenceTest extends TestCase
 
     private string $endpoint = 'api/upload/';
 
+    /**
+     * @throws RandomException
+     */
     public function setUp(): void
     {
         parent::setUp();

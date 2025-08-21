@@ -183,19 +183,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 progressBarEntries.css('width', 0 + '%');
                 return;
             }
-            // Calculate the percentage of progress
-            var percentage = ((deleted / total) * 50).toFixed(1);
-            var percentageReverse = ((1 - (deleted / total)) * 50).toFixed(1);
-            // Get the progress bar element
 
+            // Cap deleted at total to prevent percentage > 100%
+            var actualDeleted = Math.min(deleted, total);
+            var percentage = ((actualDeleted / total) * 50).toFixed(1);
+            var percentageReverse = ((1 - (actualDeleted / total)) * 50).toFixed(1);
 
-            // Update the aria-valuenow attribute and the style width
             progressBarEntries.attr('aria-valuenow', percentageReverse);
             progressBarEntries.css('width', percentageReverse + '%');
 
-            // Update the text inside the progress bar
             counterWrapperEntries.find('.counter-percentage').text(percentage * 2 + '%');
-            counterWrapperEntries.find('.counter-deleted').text(deleted);
+            counterWrapperEntries.find('.counter-deleted').text(actualDeleted);
             counterWrapperEntries.find('.counter-total').text(total);
         }
 
@@ -208,18 +206,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 progressBarMedia.css('width', 0 + '%');
                 return;
             }
-            // Calculate the percentage of progress
-            var percentage = ((deleted / total) * 50).toFixed(1);
-            var percentageReverse = ((1 - (deleted / total)) * 50).toFixed(1);
-            // Get the progress bar element
 
-            // Update the aria-valuenow attribute and the style width
+            // Cap deleted at total to prevent percentage > 100%
+            var actualDeleted = Math.min(deleted, total);
+            var percentage = ((actualDeleted / total) * 50).toFixed(1);
+            var percentageReverse = ((1 - (actualDeleted / total)) * 50).toFixed(1);
+
             progressBarMedia.attr('aria-valuenow', percentageReverse);
             progressBarMedia.css('width', percentageReverse + '%');
 
-            // Update the text inside the progress bar
             counterWrapperMedia.find('.counter-percentage').text(percentage * 2 + '%');
-            counterWrapperMedia.find('.counter-deleted').text(deleted);
+            counterWrapperMedia.find('.counter-deleted').text(actualDeleted);
             counterWrapperMedia.find('.counter-total').text(total);
         }
     }

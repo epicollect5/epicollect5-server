@@ -8,7 +8,6 @@ use ec5\Services\System\EntriesTotalsService;
 use ec5\Services\System\ProjectsTotalsService;
 use ec5\Services\System\UsersTotalsService;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 use Log;
 use Throwable;
 

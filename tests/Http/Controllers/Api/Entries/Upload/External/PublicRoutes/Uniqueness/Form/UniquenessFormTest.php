@@ -23,7 +23,7 @@ class UniquenessFormTest extends TestCase
     use DatabaseTransactions;
     use Assertions;
 
-    private $endpoint = 'api/upload/';
+    private string $endpoint = 'api/upload/';
 
     public function setUp(): void
     {

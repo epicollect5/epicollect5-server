@@ -19,6 +19,9 @@ class ProjectDeleteController
     use Archiver;
     use StatsRefresher;
 
+    /**
+     * @throws \Throwable
+     */
     public function show()
     {
         if (!$this->requestedProjectRole()->canDeleteProject()) {

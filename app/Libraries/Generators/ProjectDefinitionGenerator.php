@@ -24,7 +24,7 @@ class ProjectDefinitionGenerator
     private static function generateQuestion(): string
     {
         $faker = Faker::create();
-        $sentence = $faker->sentence($nbWords = 6); // Generate a sentence
+        $sentence = $faker->sentence(6); //Generate a sentence
         return rtrim($sentence, '.') . '?'; // Turn the sentence into a question
     }
 
@@ -37,7 +37,7 @@ class ProjectDefinitionGenerator
     private static function generatePossibleAnswerValue(): string
     {
         $faker = Faker::create();
-        $sentence = $faker->sentence($nbWords = 1); // Generate a sentence
+        $sentence = $faker->sentence(1); // Generate a sentence
         return rtrim($sentence, '.'); // Turn the sentence into a question
     }
 
@@ -51,11 +51,6 @@ class ProjectDefinitionGenerator
     private static function getRandomMultipleChoiceInputType(): string
     {
         return ['radio', 'dropdown', 'checkbox'][array_rand(['radio', 'dropdown', 'checkbox'])];
-    }
-
-    private static function getRandomMediaInputType(): string
-    {
-        return ['photo', 'audio', 'video'][array_rand(['photo', 'audio', 'video'])];
     }
 
     /**

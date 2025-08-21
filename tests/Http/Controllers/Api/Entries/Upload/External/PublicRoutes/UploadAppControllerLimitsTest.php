@@ -29,7 +29,7 @@ class UploadAppControllerLimitsTest extends TestCase
     private $parentUuids;
     private $branchesCounter;
 
-    private $endpoint = 'api/upload/';
+    private string $endpoint = 'api/upload/';
 
     public function setUp(): void
     {

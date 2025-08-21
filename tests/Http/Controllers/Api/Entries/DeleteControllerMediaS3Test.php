@@ -483,7 +483,7 @@ class DeleteControllerMediaS3Test extends TestCase
         $chunkSize = config('epicollect.setup.bulk_deletion.chunk_size_media');
 
         $numOfEntries = rand(1500, 2000);
-        $mediaUuids = [];
+        $numOfAudios = 0;
         for ($i = 0; $i < $numOfEntries; $i++) {
             $entry = factory(Entry::class)->create(
                 [
@@ -498,12 +498,11 @@ class DeleteControllerMediaS3Test extends TestCase
             if ($i < ($chunkSize + 100)) {
                 //audio
                 Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
-
-                $mediaUuids[] = $entry->uuid;
+                $numOfAudios++;
             }
         }
         $this->assertCount($numOfEntries, Entry::where('project_id', $this->project->id)->get());
-        $this->assertEquals(sizeof($mediaUuids), $chunkSize + 100);
+        $this->assertEquals($numOfAudios, $chunkSize + 100, 'Unexpected number of audio files created');
 
         //hit the delete media endpoint
         $payload = [
@@ -529,7 +528,7 @@ class DeleteControllerMediaS3Test extends TestCase
             $audios = Storage::disk('audio')->files($this->project->ref);
 
             $totalRemaining =  sizeof($audios);
-            $this->assertEquals(1 * ($chunkSize  + 100) - $chunkSize, $totalRemaining, 'Total remaining media files count mismatch');
+            $this->assertEquals(($chunkSize  + 100) - $chunkSize, $totalRemaining, 'Total remaining media files count mismatch');
             $this->assertCount(100, $audios, 'Unexpected number of audio files remaining');
 
             //now remove all the leftover fake files

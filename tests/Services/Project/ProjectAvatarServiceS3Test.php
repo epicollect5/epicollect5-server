@@ -79,7 +79,7 @@ class ProjectAvatarServiceS3Test extends TestCase
      */
     public function test_service_handles_s3_403_forbidden_error_without_retry()
     {
-        $projectRef = 'test-project-ref';
+        $projectRef = Generators::projectRef();
 
         // Mock Storage facade - should only be called once (no retries)
         Storage::shouldReceive('disk')
@@ -107,7 +107,7 @@ class ProjectAvatarServiceS3Test extends TestCase
      */
     public function test_service_successfully_generates_avatar_to_s3()
     {
-        $projectRef = 'test-project-ref';
+        $projectRef = Generators::projectRef();
 
         // Mock Storage facade for successful save
         Storage::shouldReceive('disk')
