@@ -5,6 +5,7 @@ namespace ec5\Http\Controllers\Web\Project;
 use DB;
 use ec5\Http\Validation\Project\RuleProjectDefinitionDetails;
 use ec5\Http\Validation\Project\RuleSettings;
+use ec5\Libraries\Utilities\Common;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Services\Media\PhotoSaverService;
@@ -148,7 +149,7 @@ class ProjectEditController
         if (request()->file('logo_url')) {
             // NOTE: store larger thumb first, then smaller mobile logo
             // As request file gets overwritten with each resize, and it's better to shrink than to enlarge
-            if (!$this->saveLogos('project_thumb')) {
+            if (!$this->saveLogos('project')) {
                 return Redirect::back()->withErrors(['message' => 'ec5_83']);
             }
 
@@ -173,12 +174,13 @@ class ProjectEditController
      */
     private function saveLogos($driver): bool
     {
+        $dimensions = Common::resolveDimensions($driver);
         return PhotoSaverService::saveImage(
             $this->requestedProject()->ref,
             request()->file('logo_url'),
             'logo.jpg',
             $driver,
-            config('epicollect.media.' . $driver)
+            $dimensions
         );
     }
 

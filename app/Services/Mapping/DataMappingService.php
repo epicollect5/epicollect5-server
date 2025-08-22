@@ -594,7 +594,7 @@ class DataMappingService
                 }
                 break;
             case 'photo':
-                $parsedAnswer = $this->getMediaUrl($type, 'entry_original', $answer);
+                $parsedAnswer = $this->getMediaUrl($type, 'photo', $answer);
                 break;
             case 'video':
                 $parsedAnswer = $this->getMediaUrl($type, 'video', $answer);

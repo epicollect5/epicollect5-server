@@ -19,13 +19,13 @@ class ToEntryThumbLocalMacro extends ServiceProvider
     public function boot(): void
     {
         Response::macro('toEntryThumbLocal', function ($projectRef, $filename) {
-            $photoPlaceholderFilename = config('epicollect.media.photo_placeholder.filename');
+            $photoPlaceholderFilename = config('epicollect.media.generic_placeholder.filename');
             $photoNotSyncedFilename = config('epicollect.media.photo_not_synced_placeholder.filename');
 
             if (!empty($filename)) {
                 try {
                     // Get original image path
-                    $storagePathPrefix = config("filesystems.disks.entry_original.root").'/';
+                    $storagePathPrefix = config("filesystems.disks.photo.root").'/';
                     $originalFilepath = $storagePathPrefix . $projectRef . '/' . $filename;
 
                     // Check if original file exists

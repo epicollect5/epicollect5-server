@@ -172,7 +172,7 @@ class DeleteControllerEntryLocalTest extends TestCase
 
         //add a fake file per each entry (per each media type)
         //photo
-        Storage::disk('entry_original')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+        Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
         //audio
         Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
         //video
@@ -218,7 +218,7 @@ class DeleteControllerEntryLocalTest extends TestCase
             $this->assertEquals([], $formCounts);
 
             //assert media files are deleted
-            $photos = Storage::disk('entry_original')->files($this->project->ref);
+            $photos = Storage::disk('photo')->files($this->project->ref);
             $this->assertCount(0, $photos);
 
             $audios = Storage::disk('audio')->files($this->project->ref);
@@ -314,7 +314,7 @@ class DeleteControllerEntryLocalTest extends TestCase
 
         //add a fake file per each entry (per each media type)
         //photo
-        Storage::disk('entry_original')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+        Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
         //audio
         Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
         //video
@@ -336,7 +336,7 @@ class DeleteControllerEntryLocalTest extends TestCase
 
         //add a fake file per each entry (per each media type)
         //photo
-        Storage::disk('entry_original')->put($this->project->ref . '/' . $childEntry->uuid . '_' . time() . '.jpg', '');
+        Storage::disk('photo')->put($this->project->ref . '/' . $childEntry->uuid . '_' . time() . '.jpg', '');
         //audio
         Storage::disk('audio')->put($this->project->ref . '/' . $childEntry->uuid . '_' . time() . '.mp4', '');
         //video
@@ -404,7 +404,7 @@ class DeleteControllerEntryLocalTest extends TestCase
             $this->assertEquals(0, Entry::where('uuid', $entry->uuid)->value('child_counts'));
 
             //test only the child entry files were deleted, parent entry files untouched
-            $photos = Storage::disk('entry_original')->files($this->project->ref);
+            $photos = Storage::disk('photo')->files($this->project->ref);
             $this->assertCount(1, $photos);
 
             $audios = Storage::disk('audio')->files($this->project->ref);
@@ -414,7 +414,7 @@ class DeleteControllerEntryLocalTest extends TestCase
             $this->assertCount(1, $videos);
 
             //delete fake files
-            Storage::disk('entry_original')->deleteDirectory($this->project->ref);
+            Storage::disk('photo')->deleteDirectory($this->project->ref);
             Storage::disk('audio')->deleteDirectory($this->project->ref);
             Storage::disk('video')->deleteDirectory($this->project->ref);
 
@@ -439,7 +439,7 @@ class DeleteControllerEntryLocalTest extends TestCase
 
         //add a fake file per each entry (per each media type)
         //photo
-        Storage::disk('entry_original')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+        Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
         //audio
         Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
         //video
@@ -462,7 +462,7 @@ class DeleteControllerEntryLocalTest extends TestCase
 
             //add a fake file per each entry (per each media type)
             //photo
-            Storage::disk('entry_original')->put($this->project->ref . '/' . $childEntry->uuid . '_' . time() . '.jpg', '');
+            Storage::disk('photo')->put($this->project->ref . '/' . $childEntry->uuid . '_' . time() . '.jpg', '');
             //audio
             Storage::disk('audio')->put($this->project->ref . '/' . $childEntry->uuid . '_' . time() . '.mp4', '');
             //video
@@ -552,7 +552,7 @@ class DeleteControllerEntryLocalTest extends TestCase
             $this->assertEquals([], $formCounts);
 
             //assert media files are deleted
-            $photos = Storage::disk('entry_original')->files($this->project->ref);
+            $photos = Storage::disk('photo')->files($this->project->ref);
             $this->assertCount(0, $photos);
 
             $audios = Storage::disk('audio')->files($this->project->ref);
@@ -582,7 +582,7 @@ class DeleteControllerEntryLocalTest extends TestCase
 
         //add a fake file per each entry (per each media type)
         //photo
-        Storage::disk('entry_original')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+        Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
         //audio
         Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
         //video
@@ -593,7 +593,7 @@ class DeleteControllerEntryLocalTest extends TestCase
         for ($j = 0; $j < $numOfFilesNotToBeDelete; $j++) {
             $uuid = Uuid::uuid4()->toString();
             //photo
-            Storage::disk('entry_original')->put($this->project->ref . '/' . $uuid . '_' . time() . '.jpg', '');
+            Storage::disk('photo')->put($this->project->ref . '/' . $uuid . '_' . time() . '.jpg', '');
             //audio
             Storage::disk('audio')->put($this->project->ref . '/' . $uuid . '_' . time() . '.mp4', '');
             //video
@@ -628,7 +628,7 @@ class DeleteControllerEntryLocalTest extends TestCase
 
             //add a fake file per each entry (per each media type)
             //photo
-            Storage::disk('entry_original')->put($this->project->ref . '/' . $branchEntry->uuid . '_' . time() . '.jpg', '');
+            Storage::disk('photo')->put($this->project->ref . '/' . $branchEntry->uuid . '_' . time() . '.jpg', '');
             //audio
             Storage::disk('audio')->put($this->project->ref . '/' . $branchEntry->uuid . '_' . time() . '.mp4', '');
             //video
@@ -674,7 +674,7 @@ class DeleteControllerEntryLocalTest extends TestCase
             }
 
             //test we still have the files belonging to other entries
-            $photos = Storage::disk('entry_original')->files($this->project->ref);
+            $photos = Storage::disk('photo')->files($this->project->ref);
             $this->assertCount($numOfFilesNotToBeDelete, $photos);
 
             $audios = Storage::disk('audio')->files($this->project->ref);
@@ -684,7 +684,7 @@ class DeleteControllerEntryLocalTest extends TestCase
             $this->assertCount($numOfFilesNotToBeDelete, $videos);
 
             //delete fake files
-            Storage::disk('entry_original')->deleteDirectory($this->project->ref);
+            Storage::disk('photo')->deleteDirectory($this->project->ref);
             Storage::disk('audio')->deleteDirectory($this->project->ref);
             Storage::disk('video')->deleteDirectory($this->project->ref);
         } catch (Throwable $e) {
@@ -707,7 +707,7 @@ class DeleteControllerEntryLocalTest extends TestCase
 
         //add a fake file per each entry (per each media type)
         //photo
-        Storage::disk('entry_original')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+        Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
         //audio
         Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
         //video
@@ -740,7 +740,7 @@ class DeleteControllerEntryLocalTest extends TestCase
                 ]
             );
             //photo
-            Storage::disk('entry_original')->put($this->project->ref . '/' . $branchUuid . '_' . time() . '.jpg', '');
+            Storage::disk('photo')->put($this->project->ref . '/' . $branchUuid . '_' . time() . '.jpg', '');
             //audio
             Storage::disk('audio')->put($this->project->ref . '/' . $branchUuid . '_' . time() . '.mp4', '');
             //video
@@ -792,7 +792,7 @@ class DeleteControllerEntryLocalTest extends TestCase
             $this->assertEquals($branchCounts, json_decode($branchCountsResult, true));
 
             //test only the branch entry files of one branch were deleted, parent entry files untouched, other branches untouched
-            $photos = Storage::disk('entry_original')->files($this->project->ref);
+            $photos = Storage::disk('photo')->files($this->project->ref);
             $this->assertCount(1 + (sizeof($branchEntries) - 1), $photos);
 
             $audios = Storage::disk('audio')->files($this->project->ref);
@@ -802,7 +802,7 @@ class DeleteControllerEntryLocalTest extends TestCase
             $this->assertCount(1 + (sizeof($branchEntries) - 1), $videos);
 
             //delete fake files
-            Storage::disk('entry_original')->deleteDirectory($this->project->ref);
+            Storage::disk('photo')->deleteDirectory($this->project->ref);
             Storage::disk('audio')->deleteDirectory($this->project->ref);
             Storage::disk('video')->deleteDirectory($this->project->ref);
 
@@ -827,7 +827,7 @@ class DeleteControllerEntryLocalTest extends TestCase
 
         //add a fake file per each entry (per each media type)
         //photo
-        Storage::disk('entry_original')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+        Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
         //audio
         Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
         //video
@@ -862,7 +862,7 @@ class DeleteControllerEntryLocalTest extends TestCase
                 ]
             );
             //photo
-            Storage::disk('entry_original')->put($this->project->ref . '/' . $branchUuid . '_' . time() . '.jpg', '');
+            Storage::disk('photo')->put($this->project->ref . '/' . $branchUuid . '_' . time() . '.jpg', '');
             //audio
             Storage::disk('audio')->put($this->project->ref . '/' . $branchUuid . '_' . time() . '.mp4', '');
             //video
@@ -915,7 +915,7 @@ class DeleteControllerEntryLocalTest extends TestCase
             $this->assertEquals($branchCounts, json_decode($branchCountsResult, true));
 
             //test only the branch entry files of one branch were deleted, parent entry files untouched, other branches untouched
-            $photos = Storage::disk('entry_original')->files($this->project->ref);
+            $photos = Storage::disk('photo')->files($this->project->ref);
             $this->assertCount(1 + (sizeof($branchEntries) - 1), $photos);
 
             $audios = Storage::disk('audio')->files($this->project->ref);
@@ -925,7 +925,7 @@ class DeleteControllerEntryLocalTest extends TestCase
             $this->assertCount(1 + (sizeof($branchEntries) - 1), $videos);
 
             //delete fake files
-            Storage::disk('entry_original')->deleteDirectory($this->project->ref);
+            Storage::disk('photo')->deleteDirectory($this->project->ref);
             Storage::disk('audio')->deleteDirectory($this->project->ref);
             Storage::disk('video')->deleteDirectory($this->project->ref);
 

@@ -178,8 +178,8 @@ class MediaExportPrivatePhotoOriginalLocalTest extends TestCase
             'filesystems.default' => 'local',
             'filesystems.disks.temp.driver' => 'local',
             'filesystems.disks.temp.root' => storage_path('app/temp'),
-            'filesystems.disks.entry_original.driver' => 'local',
-            'filesystems.disks.entry_original.root' => storage_path('app/entries/photo/entry_original'),
+            'filesystems.disks.photo.driver' => 'local',
+            'filesystems.disks.photo.root' => storage_path('app/entries/photo/entry_original'),
         ]);
 
         $token = $params['token'];
@@ -234,12 +234,12 @@ class MediaExportPrivatePhotoOriginalLocalTest extends TestCase
 
         // Encode the image as JPEG or other formats
         $imageData = (string) $image->encode(new JpegEncoder(50));
-        Storage::disk('entry_original')->put($project->ref . '/' . $filename, $imageData);
-        $diskRoot = config('filesystems.disks.entry_original.root').'/';
+        Storage::disk('photo')->put($project->ref . '/' . $filename, $imageData);
+        $diskRoot = config('filesystems.disks.photo.root').'/';
         $imagePath = $diskRoot . $project->ref . '/' . $filename;
 
         $relativePath = $project->ref . '/' . $filename;
-        $this->assertTrue(Storage::disk('entry_original')->exists($relativePath), "File was not created at: $relativePath");
+        $this->assertTrue(Storage::disk('photo')->exists($relativePath), "File was not created at: $relativePath");
 
         //assert row is created
         $this->assertCount(
@@ -290,7 +290,7 @@ class MediaExportPrivatePhotoOriginalLocalTest extends TestCase
             $fileSize = strlen($imageContent);
             $this->assertEquals($fileSize, filesize($imagePath));
 
-            Storage::disk('entry_original')->deleteDirectory($project->ref);
+            Storage::disk('photo')->deleteDirectory($project->ref);
 
             $this->clearDatabase($params);
         } catch (GuzzleException $e) {

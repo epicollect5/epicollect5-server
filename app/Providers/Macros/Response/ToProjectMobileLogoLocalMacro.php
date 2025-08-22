@@ -21,12 +21,12 @@ class ToProjectMobileLogoLocalMacro extends ServiceProvider
     public function boot(): void
     {
         Response::macro('toProjectMobileLogoLocal', function ($projectRef, $filename) {
-            $photoPlaceholderFilename = config('epicollect.media.photo_placeholder.filename');
+            $photoPlaceholderFilename = config('epicollect.media.generic_placeholder.filename');
 
             if (!empty($filename)) {
                 try {
                     // Get original image path
-                    $storagePathPrefix = config("filesystems.disks.project_thumb.root").'/';
+                    $storagePathPrefix = config("filesystems.disks.project.root").'/';
                     $originalFilepath = $storagePathPrefix . $projectRef . '/' . $filename;
 
                     // Check if original file exists

@@ -34,7 +34,7 @@ class PhotoSaverServiceS3Test extends TestCase
     {
         $projectRef = Generators::projectRef();
         $fileName = Uuid::uuid4()->toString(). '_' . time() . '.jpg';
-        $disk = 'entry_original';
+        $disk = 'photo';
 
         // Create a fake uploaded file
         $uploadedFile = File::fake()->image($fileName, 1024, 768);
@@ -66,7 +66,7 @@ class PhotoSaverServiceS3Test extends TestCase
     {
         $projectRef = Generators::projectRef();
         $fileName = Uuid::uuid4()->toString(). '_' . time() . '.jpg';
-        $disk = 'entry_original';
+        $disk = 'photo';
 
         // Create a fake uploaded file
         $uploadedFile = File::fake()->image($fileName, 1024, 768);
@@ -97,7 +97,7 @@ class PhotoSaverServiceS3Test extends TestCase
     {
         $projectRef = Generators::projectRef();
         $fileName = Uuid::uuid4()->toString(). '_' . time() . '.jpg';
-        $disk = 'entry_original';
+        $disk = 'photo';
 
         // Create a fake uploaded file
         $uploadedFile = File::fake()->image($fileName, 1024, 768);
@@ -125,7 +125,7 @@ class PhotoSaverServiceS3Test extends TestCase
     {
         $projectRef = 'test-project-ref';
         $fileName = 'test-photo.jpg';
-        $disk = 'entry_original';
+        $disk = 'photo';
 
         // Create a fake uploaded file
         $uploadedFile = File::fake()->image('test.jpg', 100, 100);
@@ -157,7 +157,7 @@ class PhotoSaverServiceS3Test extends TestCase
     {
         $projectRef = 'test-project-ref';
         $fileName = 'test-photo.jpg';
-        $disk = 'entry_original';
+        $disk = 'photo';
 
         // Create a fake uploaded file
         $uploadedFile = File::fake()->image('test.jpg', 100, 100);

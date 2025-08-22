@@ -229,9 +229,9 @@ class MediaExportPrivatePhotoThumbS3Test extends TestCase
 
         // Encode the image as JPEG or other formats
         $imageData = (string) $image->encode(new JpegEncoder(50));
-        Storage::disk('entry_original')->put($project->ref . '/' . $filename, $imageData);
+        Storage::disk('photo')->put($project->ref . '/' . $filename, $imageData);
         $relativePath = $project->ref . '/' . $filename;
-        $this->assertTrue(Storage::disk('entry_original')->exists($relativePath), "File was not created at: $relativePath");
+        $this->assertTrue(Storage::disk('photo')->exists($relativePath), "File was not created at: $relativePath");
 
         //assert row is created
         $this->assertCount(
@@ -277,7 +277,7 @@ class MediaExportPrivatePhotoThumbS3Test extends TestCase
             $this->assertEquals(config('epicollect.media.entry_thumb')[0], $entryThumb->width());
             $this->assertEquals(config('epicollect.media.entry_thumb')[1], $entryThumb->height());
 
-            Storage::disk('entry_original')->deleteDirectory($project->ref);
+            Storage::disk('photo')->deleteDirectory($project->ref);
             $this->clearDatabase($params);
         } catch (GuzzleException $e) {
             $this->clearDatabase($params);

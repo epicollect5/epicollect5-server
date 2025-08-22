@@ -167,10 +167,10 @@ class UploadAppControllerPhotoTest extends TestCase
                 );
 
             //assert file is uploaded
-            $photos = Storage::disk('entry_original')->files($this->project->ref);
+            $photos = Storage::disk('photo')->files($this->project->ref);
             $this->assertCount(1, $photos);
 
-            Storage::disk('entry_original')->deleteDirectory($this->project->ref);
+            Storage::disk('photo')->deleteDirectory($this->project->ref);
 
         } catch (\Throwable $e) {
             $this->logTestError($e, $response);
@@ -275,12 +275,12 @@ class UploadAppControllerPhotoTest extends TestCase
                 );
 
             //assert file is uploaded
-            $photos = Storage::disk('entry_original')->files($this->project->ref);
+            $photos = Storage::disk('photo')->files($this->project->ref);
             $this->assertCount(1, $photos);
 
 
             //deleted the file
-            Storage::disk('entry_original')->deleteDirectory($this->project->ref);
+            Storage::disk('photo')->deleteDirectory($this->project->ref);
 
         } catch (\Throwable $e) {
             $this->logTestError($e, $response);
@@ -352,10 +352,10 @@ class UploadAppControllerPhotoTest extends TestCase
                 );
 
             //assert file is uploaded
-            $photos = Storage::disk('entry_original')->files($this->project->ref);
+            $photos = Storage::disk('photo')->files($this->project->ref);
             $this->assertCount(1, $photos);
 
-            Storage::disk('entry_original')->deleteDirectory($this->project->ref);
+            Storage::disk('photo')->deleteDirectory($this->project->ref);
 
         } catch (\Throwable $e) {
             $this->logTestError($e, $response);
@@ -427,10 +427,10 @@ class UploadAppControllerPhotoTest extends TestCase
                 );
 
             //assert file is uploaded
-            $photos = Storage::disk('entry_original')->files($this->project->ref);
+            $photos = Storage::disk('photo')->files($this->project->ref);
             $this->assertCount(1, $photos);
 
-            Storage::disk('entry_original')->deleteDirectory($this->project->ref);
+            Storage::disk('photo')->deleteDirectory($this->project->ref);
 
         } catch (\Throwable $e) {
             $this->logTestError($e, $response);
@@ -504,7 +504,7 @@ class UploadAppControllerPhotoTest extends TestCase
                     ]
                 );
 
-            Storage::disk('entry_original')->deleteDirectory($this->project->ref);
+            Storage::disk('photo')->deleteDirectory($this->project->ref);
 
         } catch (\Throwable $e) {
             $this->logTestError($e, $response);
@@ -629,10 +629,10 @@ class UploadAppControllerPhotoTest extends TestCase
                 );
 
             //assert file is uploaded
-            $photos = Storage::disk('entry_original')->files($this->project->ref);
+            $photos = Storage::disk('photo')->files($this->project->ref);
             $this->assertCount(1, $photos);
 
-            Storage::disk('entry_original')->deleteDirectory($this->project->ref);
+            Storage::disk('photo')->deleteDirectory($this->project->ref);
         } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
@@ -759,7 +759,7 @@ class UploadAppControllerPhotoTest extends TestCase
                 );
 
             //assert file is not saved
-            $photos = Storage::disk('entry_original')->files($this->project->ref);
+            $photos = Storage::disk('photo')->files($this->project->ref);
             $this->assertCount(0, $photos);
         } catch (\Throwable $e) {
             $this->logTestError($e, $response);
@@ -832,7 +832,7 @@ class UploadAppControllerPhotoTest extends TestCase
                 );
 
             //assert file is not saved
-            $photos = Storage::disk('entry_original')->files($this->project->ref);
+            $photos = Storage::disk('photo')->files($this->project->ref);
             $this->assertCount(0, $photos);
         } catch (\Throwable $e) {
             $this->logTestError($e, $response);
@@ -923,7 +923,7 @@ class UploadAppControllerPhotoTest extends TestCase
                 );
 
             //assert file is not saved
-            $photos = Storage::disk('entry_original')->files($this->project->ref);
+            $photos = Storage::disk('photo')->files($this->project->ref);
             $this->assertCount(0, $photos);
         } catch (\Throwable $e) {
             $this->logTestError($e, $response);

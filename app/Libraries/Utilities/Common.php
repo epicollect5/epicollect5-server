@@ -33,7 +33,7 @@ class Common
          *  Truncate anything bigger than 100 chars
          *  to keep the filename unique, a prefix is passed
          *
-         *  We do this as we might have filename too long (i.e branch question of 255,
+         *  We do this as we might have filename too long (i.e. branch question of 255,
          *  then adding prefix we go over the max filename length (255)
          */
 
@@ -246,6 +246,7 @@ class Common
     }
 
     //Use a cookie to signal the download has completed and hide overlay.
+
     /**
      * Creates a cookie for download entries using the specified value.
      *
@@ -326,7 +327,7 @@ class Common
         $downloadEntriesCookie = Common::getDownloadEntriesCookie($timestamp);
         Cookie::queue($downloadEntriesCookie);
         $filename = 'epicollect5-error.txt';
-        $content = config('epicollect.codes.'.$code);
+        $content = config('epicollect.codes.' . $code);
         if (empty($content)) {
             $content = 'An unexpected error occurred.';
         }
@@ -407,5 +408,23 @@ class Common
         ];
 
         return in_array($awsErrorCode, $retryableAwsCodes);
+    }
+
+    public static function resolveDimensions($format)
+    {
+        {
+            switch ($format) {
+                case 'entry_original':
+                    return config('epicollect.media.entry_original_landscape');
+                case 'entry_thumb':
+                    return config('epicollect.media.entry_thumb');
+                case 'project_thumb':
+                    return config('epicollect.media.project_thumb');
+                case 'project_mobile_logo':
+                    return config('epicollect.media.project_mobile_logo');
+                default:
+                    return [];
+            }
+        }
     }
 }

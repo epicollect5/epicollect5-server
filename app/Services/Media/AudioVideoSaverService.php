@@ -18,7 +18,7 @@ class AudioVideoSaverService
      * @param string $projectRef Directory prefix to store the file under.
      * @param mixed $file UploadedFile or array with 'path' key (for S3).
      * @param string $fileName Desired name of the saved file.
-     * @param string $disk Storage disk name (e.g., 'local', 's3', 'entry_original', etc.).
+     * @param string $disk Storage disk name (e.g., 'local', 's3', 'photo', etc.).
      * @param bool $isS3 Whether the source file is stored in S3.
      * @return bool True if saved successfully, false on failure.
      */

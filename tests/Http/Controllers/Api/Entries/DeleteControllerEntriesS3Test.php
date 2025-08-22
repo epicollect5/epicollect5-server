@@ -177,7 +177,7 @@ class DeleteControllerEntriesS3Test extends TestCase
             );
             //add a fake file per each entry (per each media type)
             //photo
-            Storage::disk('entry_original')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+            Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
             //audio
             Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
             //video
@@ -238,7 +238,7 @@ class DeleteControllerEntriesS3Test extends TestCase
             $this->assertEquals([], $formCounts);
 
             //assert media files are not deleted (dedicate endpoint for media)
-            $photos = Storage::disk('entry_original')->files($this->project->ref);
+            $photos = Storage::disk('photo')->files($this->project->ref);
             $this->assertCount($numOfEntries, $photos);
 
             $audios = Storage::disk('audio')->files($this->project->ref);
@@ -271,7 +271,7 @@ class DeleteControllerEntriesS3Test extends TestCase
             //add 10 files for testing (no need to add 20.000)
             if ($i < 10) {
                 //photo
-                Storage::disk('entry_original')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+                Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
                 //audio
                 Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
                 //video
@@ -331,7 +331,7 @@ class DeleteControllerEntriesS3Test extends TestCase
             $this->assertEquals($numOfEntries - $chunkSize, $formCounts[$formRef]['count']);
 
             //assert media files are not touched
-            $photos = Storage::disk('entry_original')->files($this->project->ref);
+            $photos = Storage::disk('photo')->files($this->project->ref);
             $this->assertCount(sizeof($mediaUuids), $photos);
             $audios = Storage::disk('audio')->files($this->project->ref);
             $this->assertCount(sizeof($mediaUuids), $audios);
@@ -339,7 +339,7 @@ class DeleteControllerEntriesS3Test extends TestCase
             $this->assertCount(sizeof($mediaUuids), $videos);
 
             //now remove all the leftover fake files
-            Storage::disk('entry_original')->deleteDirectory($this->project->ref);
+            Storage::disk('photo')->deleteDirectory($this->project->ref);
             Storage::disk('audio')->deleteDirectory($this->project->ref);
             Storage::disk('video')->deleteDirectory($this->project->ref);
         } catch (Throwable $e) {
@@ -361,7 +361,7 @@ class DeleteControllerEntriesS3Test extends TestCase
 
         //add a fake file per each entry (per each media type)
         //photo
-        Storage::disk('entry_original')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+        Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
         //audio
         Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
         //video
@@ -384,7 +384,7 @@ class DeleteControllerEntriesS3Test extends TestCase
             );
             //add a fake file per each entry (per each media type)
             //photo
-            Storage::disk('entry_original')->put($this->project->ref . '/' . $childEntry->uuid . '_' . time() . '.jpg', '');
+            Storage::disk('photo')->put($this->project->ref . '/' . $childEntry->uuid . '_' . time() . '.jpg', '');
             //audio
             Storage::disk('audio')->put($this->project->ref . '/' . $childEntry->uuid . '_' . time() . '.mp4', '');
             //video
@@ -449,7 +449,7 @@ class DeleteControllerEntriesS3Test extends TestCase
             $this->assertEquals(0, Entry::where('uuid', $entry->uuid)->value('child_counts'));
 
             //assert media files are not deleted
-            $photos = Storage::disk('entry_original')->files($this->project->ref);
+            $photos = Storage::disk('photo')->files($this->project->ref);
             $this->assertCount(1 + $numOfEntries, $photos);
             $audios = Storage::disk('audio')->files($this->project->ref);
             $this->assertCount(1 + $numOfEntries, $audios);
@@ -477,7 +477,7 @@ class DeleteControllerEntriesS3Test extends TestCase
 
         //add a fake file per each entry (per each media type)
         //photo
-        Storage::disk('entry_original')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+        Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
         //audio
         Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
         //video
@@ -510,7 +510,7 @@ class DeleteControllerEntriesS3Test extends TestCase
 
             //add a fake file per each entry (per each media type)
             //photo
-            Storage::disk('entry_original')->put($this->project->ref . '/' . $branchEntry->uuid . '_' . time() . '.jpg', '');
+            Storage::disk('photo')->put($this->project->ref . '/' . $branchEntry->uuid . '_' . time() . '.jpg', '');
             //audio
             Storage::disk('audio')->put($this->project->ref . '/' . $branchEntry->uuid . '_' . time() . '.mp4', '');
             //video
@@ -550,7 +550,7 @@ class DeleteControllerEntriesS3Test extends TestCase
             }
 
             //assert media files are not deleted
-            $photos = Storage::disk('entry_original')->files($this->project->ref);
+            $photos = Storage::disk('photo')->files($this->project->ref);
             $this->assertCount(1 + $numOfBranchEntries, $photos);
             $audios = Storage::disk('audio')->files($this->project->ref);
             $this->assertCount(1 + $numOfBranchEntries, $audios);
@@ -580,7 +580,7 @@ class DeleteControllerEntriesS3Test extends TestCase
             //add 10 files for testing (no need to add 20.000)
             if ($i < 10) {
                 //photo
-                Storage::disk('entry_original')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+                Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
                 //audio
                 Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
                 //video
@@ -648,7 +648,7 @@ class DeleteControllerEntriesS3Test extends TestCase
                 $this->assertEquals($numOfEntries, $formCounts[$formRef]['count']);
 
                 //assert media files are not touched
-                $photos = Storage::disk('entry_original')->files($this->project->ref);
+                $photos = Storage::disk('photo')->files($this->project->ref);
                 $this->assertCount(sizeof($mediaUuids), $photos);
                 $audios = Storage::disk('audio')->files($this->project->ref);
                 $this->assertCount(sizeof($mediaUuids), $audios);
@@ -659,7 +659,7 @@ class DeleteControllerEntriesS3Test extends TestCase
                 $this->logTestError($e, $response);
             } finally {
                 //now remove all the leftover fake files
-                Storage::disk('entry_original')->deleteDirectory($this->project->ref);
+                Storage::disk('photo')->deleteDirectory($this->project->ref);
                 Storage::disk('audio')->deleteDirectory($this->project->ref);
                 Storage::disk('video')->deleteDirectory($this->project->ref);
                 $lock->release();

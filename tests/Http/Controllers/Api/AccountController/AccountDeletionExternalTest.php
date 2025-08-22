@@ -169,7 +169,7 @@ class AccountDeletionExternalTest extends TestCase
 
             //add a fake file per each entry (per each media type)
             //photo
-            Storage::disk('entry_original')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+            Storage::disk('photo')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
             //audio
             Storage::disk('audio')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
             //video
@@ -214,7 +214,7 @@ class AccountDeletionExternalTest extends TestCase
         $this->assertEquals($numOfBranchEntries * $numOfEntries, BranchEntry::where('project_id', $project->id)->count());
 
         //assert media are NOT touched
-        $photos = Storage::disk('entry_original')->files($project->ref);
+        $photos = Storage::disk('photo')->files($project->ref);
         $this->assertGreaterThan(0, count($photos));
         $this->assertCount($numOfEntries, $photos);
 
@@ -236,7 +236,7 @@ class AccountDeletionExternalTest extends TestCase
         });
 
         //delete fake files
-        Storage::disk('entry_original')->deleteDirectory($project->ref);
+        Storage::disk('photo')->deleteDirectory($project->ref);
         Storage::disk('audio')->deleteDirectory($project->ref);
         Storage::disk('video')->deleteDirectory($project->ref);
 
@@ -354,7 +354,7 @@ class AccountDeletionExternalTest extends TestCase
         });
 
         //delete fake files
-        Storage::disk('entry_original')->deleteDirectory($project->ref);
+        Storage::disk('photo')->deleteDirectory($project->ref);
         Storage::disk('audio')->deleteDirectory($project->ref);
         Storage::disk('video')->deleteDirectory($project->ref);
 
@@ -417,7 +417,7 @@ class AccountDeletionExternalTest extends TestCase
 
             //add a fake file per each entry (per each media type)
             //photo
-            Storage::disk('entry_original')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+            Storage::disk('photo')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
             //audio
             Storage::disk('audio')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
             //video
@@ -425,7 +425,7 @@ class AccountDeletionExternalTest extends TestCase
         }
 
         //assert files exist
-        $photos = Storage::disk('entry_original')->files($project->ref);
+        $photos = Storage::disk('photo')->files($project->ref);
         $this->assertGreaterThan(0, count($photos));
         $this->assertCount($numOfEntries, $photos);
 
@@ -476,7 +476,7 @@ class AccountDeletionExternalTest extends TestCase
         $this->assertEquals($numOfEntries * $numOfBranchEntries, BranchEntry::where('project_id', $project->id)->count());
 
         //assert media are NOT touched
-        $photos = Storage::disk('entry_original')->files($project->ref);
+        $photos = Storage::disk('photo')->files($project->ref);
         $this->assertGreaterThan(0, count($photos));
         $this->assertCount($numOfEntries, $photos);
 
@@ -498,7 +498,7 @@ class AccountDeletionExternalTest extends TestCase
         });
 
         //delete fake files
-        Storage::disk('entry_original')->deleteDirectory($project->ref);
+        Storage::disk('photo')->deleteDirectory($project->ref);
         Storage::disk('audio')->deleteDirectory($project->ref);
         Storage::disk('video')->deleteDirectory($project->ref);
 
@@ -561,7 +561,7 @@ class AccountDeletionExternalTest extends TestCase
 
             //add a fake file per each entry (per each media type)
             //photo
-            Storage::disk('entry_original')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+            Storage::disk('photo')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
             //audio
             Storage::disk('audio')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
             //video
@@ -569,7 +569,7 @@ class AccountDeletionExternalTest extends TestCase
         }
 
         //assert files exist
-        $photos = Storage::disk('entry_original')->files($project->ref);
+        $photos = Storage::disk('photo')->files($project->ref);
         $this->assertGreaterThan(0, count($photos));
         $this->assertCount($numOfEntries, $photos);
 
@@ -619,7 +619,7 @@ class AccountDeletionExternalTest extends TestCase
         $this->assertEquals($numOfEntries * $numOfBranchEntries, BranchEntry::where('project_id', $project->id)->count());
 
         //assert media files are not touched
-        $photos = Storage::disk('entry_original')->files($project->ref);
+        $photos = Storage::disk('photo')->files($project->ref);
         $this->assertGreaterThan(0, count($photos));
         $this->assertCount($numOfEntries, $photos);
 
@@ -641,7 +641,7 @@ class AccountDeletionExternalTest extends TestCase
         });
 
         //delete fake files
-        Storage::disk('entry_original')->deleteDirectory($project->ref);
+        Storage::disk('photo')->deleteDirectory($project->ref);
         Storage::disk('audio')->deleteDirectory($project->ref);
         Storage::disk('video')->deleteDirectory($project->ref);
 
@@ -704,7 +704,7 @@ class AccountDeletionExternalTest extends TestCase
 
             //add a fake file per each entry (per each media type)
             //photo
-            Storage::disk('entry_original')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+            Storage::disk('photo')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
             //audio
             Storage::disk('audio')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
             //video
@@ -712,7 +712,7 @@ class AccountDeletionExternalTest extends TestCase
         }
 
         //assert files exist
-        $photos = Storage::disk('entry_original')->files($project->ref);
+        $photos = Storage::disk('photo')->files($project->ref);
         $this->assertGreaterThan(0, count($photos));
         $this->assertCount($numOfEntries, $photos);
 
@@ -762,7 +762,7 @@ class AccountDeletionExternalTest extends TestCase
         $this->assertEquals($numOfEntries * $numOfBranchEntries, BranchEntry::where('project_id', $project->id)->count());
 
         //assert media files are not touched
-        $photos = Storage::disk('entry_original')->files($project->ref);
+        $photos = Storage::disk('photo')->files($project->ref);
         $this->assertGreaterThan(0, count($photos));
         $this->assertCount($numOfEntries, $photos);
 
@@ -784,7 +784,7 @@ class AccountDeletionExternalTest extends TestCase
         });
 
         //delete fake files
-        Storage::disk('entry_original')->deleteDirectory($project->ref);
+        Storage::disk('photo')->deleteDirectory($project->ref);
         Storage::disk('audio')->deleteDirectory($project->ref);
         Storage::disk('video')->deleteDirectory($project->ref);
 
@@ -847,7 +847,7 @@ class AccountDeletionExternalTest extends TestCase
 
             //add a fake file per each entry (per each media type)
             //photo
-            Storage::disk('entry_original')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+            Storage::disk('photo')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
             //audio
             Storage::disk('audio')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
             //video
@@ -855,7 +855,7 @@ class AccountDeletionExternalTest extends TestCase
         }
 
         //assert files exist
-        $photos = Storage::disk('entry_original')->files($project->ref);
+        $photos = Storage::disk('photo')->files($project->ref);
         $this->assertGreaterThan(0, count($photos));
         $this->assertCount($numOfEntries, $photos);
 
@@ -905,7 +905,7 @@ class AccountDeletionExternalTest extends TestCase
         $this->assertEquals($numOfEntries * $numOfBranchEntries, BranchEntry::where('project_id', $project->id)->count());
 
         //assert media files are not touched
-        $photos = Storage::disk('entry_original')->files($project->ref);
+        $photos = Storage::disk('photo')->files($project->ref);
         $this->assertGreaterThan(0, count($photos));
         $this->assertCount($numOfEntries, $photos);
 
@@ -927,7 +927,7 @@ class AccountDeletionExternalTest extends TestCase
         });
 
         //delete fake files
-        Storage::disk('entry_original')->deleteDirectory($project->ref);
+        Storage::disk('photo')->deleteDirectory($project->ref);
         Storage::disk('audio')->deleteDirectory($project->ref);
         Storage::disk('video')->deleteDirectory($project->ref);
 
@@ -1125,7 +1125,7 @@ class AccountDeletionExternalTest extends TestCase
 
                 //add a fake files per each entry (per each media type)
                 //photo
-                Storage::disk('entry_original')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+                Storage::disk('photo')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
                 //audio
                 Storage::disk('audio')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
                 //video
@@ -1149,7 +1149,7 @@ class AccountDeletionExternalTest extends TestCase
 
                     //add a fake file per each entry (per each media type)
                     //photo
-                    Storage::disk('entry_original')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+                    Storage::disk('photo')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
                     //audio
                     Storage::disk('audio')->put($project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
                     //video
@@ -1164,7 +1164,7 @@ class AccountDeletionExternalTest extends TestCase
                     ->count());
 
                 //assert files exist (2x, as by creator and by other role)
-                $photos = Storage::disk('entry_original')->files($project->ref);
+                $photos = Storage::disk('photo')->files($project->ref);
                 $this->assertGreaterThan(0, count($photos));
                 $this->assertCount(2 * $numOfEntries, $photos);
 
@@ -1194,7 +1194,7 @@ class AccountDeletionExternalTest extends TestCase
                     ->count());
 
                 //assert files exist (1x,  by creator since viewer cannot add entries)
-                $photos = Storage::disk('entry_original')->files($project->ref);
+                $photos = Storage::disk('photo')->files($project->ref);
                 $this->assertGreaterThan(0, count($photos));
                 $this->assertCount($numOfEntries, $photos);
 
@@ -1231,7 +1231,7 @@ class AccountDeletionExternalTest extends TestCase
             ]);
             //add s fake file per each entry (per each media type)
             //photo
-            Storage::disk('entry_original')->put($projectRoleCreatorOne->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+            Storage::disk('photo')->put($projectRoleCreatorOne->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
             //audio
             Storage::disk('audio')->put($projectRoleCreatorOne->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
             //video
@@ -1252,7 +1252,7 @@ class AccountDeletionExternalTest extends TestCase
             ]);
             //add a fake file per each entry (per each media type)
             //photo
-            Storage::disk('entry_original')->put($projectRoleCreatorTwo->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+            Storage::disk('photo')->put($projectRoleCreatorTwo->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
             //audio
             Storage::disk('audio')->put($projectRoleCreatorTwo->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
             //video
@@ -1373,7 +1373,7 @@ class AccountDeletionExternalTest extends TestCase
 
             $multiplier = ($index > 1 && $index < count($projectRefs) - 1) ? 2 : 1;
 
-            $photos = Storage::disk('entry_original')->files($projectRef);
+            $photos = Storage::disk('photo')->files($projectRef);
             $this->assertGreaterThan(0, count($photos));
             $this->assertCount($multiplier * $numOfEntries, $photos, 'ref ->' . $projectRef . '  index ' . $index);
 
@@ -1389,7 +1389,7 @@ class AccountDeletionExternalTest extends TestCase
 
         //delete fake files for all the projects
         foreach ($projectRefs as $projectRef) {
-            Storage::disk('entry_original')->deleteDirectory($projectRef);
+            Storage::disk('photo')->deleteDirectory($projectRef);
             Storage::disk('audio')->deleteDirectory($projectRef);
             Storage::disk('video')->deleteDirectory($projectRef);
         }

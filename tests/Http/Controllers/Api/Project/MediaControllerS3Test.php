@@ -293,7 +293,7 @@ class MediaControllerS3Test extends TestCase
                         [
                             "code" => "ec5_69",
                             "title" => "No File Uploaded.",
-                            "source" => "api-media-controller"
+                            "source" => "media-service"
                         ],
                     ]
                 ]
@@ -319,7 +319,7 @@ class MediaControllerS3Test extends TestCase
                         [
                             "code" => "ec5_69",
                             "title" => "No File Uploaded.",
-                            "source" => "api-media-controller"
+                            "source" => "media-service"
                         ],
                     ]
                 ]
@@ -389,8 +389,8 @@ class MediaControllerS3Test extends TestCase
         $image = Image::read($imageContent);
 
         //Assert the placeholder is returned
-        $this->assertEquals($image->width(), config('epicollect.media.photo_placeholder.width'));
-        $this->assertEquals($image->height(), config('epicollect.media.photo_placeholder.height'));
+        $this->assertEquals($image->width(), config('epicollect.media.generic_placeholder.width'));
+        $this->assertEquals($image->height(), config('epicollect.media.generic_placeholder.height'));
 
         $response->assertHeader('Content-Type', config('epicollect.media.content_type.photo'));
     }
@@ -404,7 +404,7 @@ class MediaControllerS3Test extends TestCase
         )->fill('#673C90');
 
         $imageData = $image->toJpeg(70);
-        Storage::disk('project_thumb')
+        Storage::disk('project')
             ->put(
                 $this->project->ref . '/logo.jpg',
                 $imageData
@@ -433,7 +433,7 @@ class MediaControllerS3Test extends TestCase
         )->fill('#673C90');
 
         $imageData = $image->toJpeg(70);
-        Storage::disk('project_thumb')
+        Storage::disk('project')
             ->put(
                 $this->project->ref . '/logo.jpg',
                 $imageData
@@ -472,8 +472,8 @@ class MediaControllerS3Test extends TestCase
         // Encode the image as JPEG or other formats
         $imageData = (string)$image->encode(new JpegEncoder(50));
         $relativePath = $this->project->ref . '/' . $filename;
-        Storage::disk('entry_original')->put($this->project->ref . '/' . $filename, $imageData);
-        $this->assertTrue(Storage::disk('entry_original')->exists($relativePath), "File was not created at: $relativePath");
+        Storage::disk('photo')->put($this->project->ref . '/' . $filename, $imageData);
+        $this->assertTrue(Storage::disk('photo')->exists($relativePath), "File was not created at: $relativePath");
         //entry_original
         $queryString = '?type=photo&name=' . $filename . '&format=entry_original';
         $response = $this->json('GET', 'api/internal/media/' . $this->project->slug . $queryString)
@@ -504,7 +504,7 @@ class MediaControllerS3Test extends TestCase
         $this->assertEquals($entryThumb->height(), config('epicollect.media.entry_thumb')[1]);
 
         //delete fake files
-        Storage::disk('entry_original')->deleteDirectory($this->project->ref);
+        Storage::disk('photo')->deleteDirectory($this->project->ref);
     }
 
     #[DataProvider('multipleRunProvider')] public function test_photo_file_is_returned_portrait_size_original()
@@ -524,7 +524,7 @@ class MediaControllerS3Test extends TestCase
 
         // Encode the image as JPEG or other formats
         $imageData = (string)$image->encode(new JpegEncoder(50));
-        Storage::disk('entry_original')->put($this->project->ref . '/' . $filename, $imageData);
+        Storage::disk('photo')->put($this->project->ref . '/' . $filename, $imageData);
 
         //entry_original
         $queryString = '?type=photo&name=' . $filename . '&format=entry_original';
@@ -541,7 +541,7 @@ class MediaControllerS3Test extends TestCase
         $this->assertEquals($entryOriginal->height(), config('epicollect.media.entry_original_portrait')[1]);
 
         //delete fake files
-        Storage::disk('entry_original')->deleteDirectory($this->project->ref);
+        Storage::disk('photo')->deleteDirectory($this->project->ref);
     }
 
     #[DataProvider('multipleRunProvider')] public function test_photo_file_is_returned_size_thumb()
@@ -559,7 +559,7 @@ class MediaControllerS3Test extends TestCase
         // Encode the image as JPEG or other formats
         $thumbData = (string)$thumb->encode(new JpegEncoder(50));
         $filename = $entry->uuid . '_' . time() . '.jpg';
-        Storage::disk('entry_original')->put($this->project->ref . '/' . $filename, $thumbData);
+        Storage::disk('photo')->put($this->project->ref . '/' . $filename, $thumbData);
 
         //entry_thumb
         $queryString = '?type=photo&name=' . $filename . '&format=entry_thumb';
@@ -575,7 +575,7 @@ class MediaControllerS3Test extends TestCase
         $this->assertEquals($entryThumb->height(), config('epicollect.media.entry_thumb')[1]);
 
         //delete fake files
-        Storage::disk('entry_original')->deleteDirectory($this->project->ref);
+        Storage::disk('photo')->deleteDirectory($this->project->ref);
     }
 
     #[DataProvider('multipleRunProvider')]

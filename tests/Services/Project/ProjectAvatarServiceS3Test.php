@@ -30,7 +30,7 @@ class ProjectAvatarServiceS3Test extends TestCase
 
         // Mock Storage facade to throw S3Exception with 429
         Storage::shouldReceive('disk')
-            ->with('project_thumb')
+            ->with('project')
             ->andReturnSelf();
 
         Storage::shouldReceive('put')
@@ -57,7 +57,7 @@ class ProjectAvatarServiceS3Test extends TestCase
 
         // Mock Storage facade to throw S3Exception with 503
         Storage::shouldReceive('disk')
-            ->with('project_thumb')
+            ->with('project')
             ->andReturnSelf();
 
         Storage::shouldReceive('put')
@@ -83,7 +83,7 @@ class ProjectAvatarServiceS3Test extends TestCase
 
         // Mock Storage facade - should only be called once (no retries)
         Storage::shouldReceive('disk')
-            ->with('project_thumb')
+            ->with('project')
             ->once()
             ->andReturnSelf();
 
@@ -111,7 +111,7 @@ class ProjectAvatarServiceS3Test extends TestCase
 
         // Mock Storage facade for successful save
         Storage::shouldReceive('disk')
-            ->with('project_thumb')
+            ->with('project')
             ->once()
             ->andReturnSelf();
 
@@ -135,7 +135,7 @@ class ProjectAvatarServiceS3Test extends TestCase
 
         // Mock Storage facade - put() returns false
         Storage::shouldReceive('disk')
-            ->with('project_thumb')
+            ->with('project')
             ->times(4) // Called 4 times (1 initial + 3 retries)
             ->andReturnSelf();
 

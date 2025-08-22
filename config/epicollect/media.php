@@ -43,17 +43,17 @@ return [
     ],
     // List of the directory drivers we want to delete files from when deleting a project
     'project_deletable' => [
-        'entry_original',
-        'project_thumb',
+        'photo',
+        'project',
         'audio',
         'video'
     ],
     'entries_deletable' => [
-        'entry_original',
+        'photo',
         'audio',
         'video'
     ],
-    'photo_placeholder' => [
+    'generic_placeholder' => [
         'filename' => 'ec5-placeholder-256x256.jpg',
         'width' => 256,
         'height' => 256,
@@ -69,5 +69,13 @@ return [
         'audio' => 'audio/mp4',
         'photo' => 'image/jpeg',
         'video' => 'video/mp4'
+    ],
+    'media_formats_disks' => [
+        'entry_original' => 'photo',
+        'entry_thumb' => 'photo',
+        'project_thumb' => 'project',
+        'project_mobile_logo' => 'project',
+        'audio' => 'audio',
+        'video' => 'video'
     ]
 ];

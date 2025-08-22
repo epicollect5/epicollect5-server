@@ -74,7 +74,7 @@ class ProjectAvatarService
     private function generateLocal(string $projectRef, string $projectName): bool
     {
         try {
-            $disk = 'project_thumb';
+            $disk = 'project';
 
             if (!Storage::disk($disk)->exists($projectRef)) {
                 Log::info("Creating directory $disk/$projectRef");
@@ -142,7 +142,7 @@ class ProjectAvatarService
             $fileSaved = false;
             for ($retry = 0; $retry <= $maxRetries; $retry++) {
                 try {
-                    $fileSaved = Storage::disk('project_thumb')->put($projectRef . '/' . $this->filename, (string) $imageThumbEncoded);
+                    $fileSaved = Storage::disk('project')->put($projectRef . '/' . $this->filename, (string) $imageThumbEncoded);
                     if ($fileSaved) {
                         break; // Success, exit retry loop
                     }

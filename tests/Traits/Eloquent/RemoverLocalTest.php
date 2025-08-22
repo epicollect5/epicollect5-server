@@ -36,7 +36,7 @@ class RemoverLocalTest extends TestCase
      */
     public function test_remove_media_chunk_deletes_files_from_local_storage()
     {
-        Storage::fake('entry_original');
+        Storage::fake('photo');
         $projectRef = Generators::projectRef();
         $uuid = Uuid::uuid4()->toString();
 
@@ -46,12 +46,12 @@ class RemoverLocalTest extends TestCase
         for ($i = 0; $i < $numOfFiles; $i++) {
             sleep(1);
             $files[] = $projectRef.'/'.$uuid.'_'.time().'.jpg';
-            Storage::disk('entry_original')->put($files[$i], 'content' . $i);
+            Storage::disk('photo')->put($files[$i], 'content' . $i);
         }
 
         // Override config so only our fake local disk is used
-        config()->set('epicollect.media.entries_deletable', ['entry_original']);
-        config()->set('filesystems.disks.entry_original', [
+        config()->set('epicollect.media.entries_deletable', ['photo']);
+        config()->set('filesystems.disks.photo', [
             'driver' => 'local',
             'root'   => storage_path('app/entries/photo/entry_original')
         ]);
@@ -62,11 +62,11 @@ class RemoverLocalTest extends TestCase
 
         // Assert: files were deleted
         $this->assertEquals($numOfFiles, $deletedCount);
-        $this->assertCount(0, Storage::disk('entry_original')->files($projectRef));
-        $this->assertCount(0, Storage::disk('entry_original')->allFiles($projectRef));
-        $this->assertCount(0, Storage::disk('entry_original')->directories($projectRef));
+        $this->assertCount(0, Storage::disk('photo')->files($projectRef));
+        $this->assertCount(0, Storage::disk('photo')->allFiles($projectRef));
+        $this->assertCount(0, Storage::disk('photo')->directories($projectRef));
         // The directory should also be removed
-        $this->assertFalse(Storage::disk('entry_original')->exists($projectRef));
+        $this->assertFalse(Storage::disk('photo')->exists($projectRef));
     }
 
     /**
@@ -104,7 +104,7 @@ class RemoverLocalTest extends TestCase
         $maxFiles   = config('epicollect.setup.bulk_deletion.chunk_size_media');
 
         // Only testing one disk here, but you can loop through all if needed
-        $diskName = 'entry_original';
+        $diskName = 'photo';
         Storage::fake($diskName);
 
         // Create 1500 files under this projectRef

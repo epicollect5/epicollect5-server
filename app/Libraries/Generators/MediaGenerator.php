@@ -60,8 +60,8 @@ class MediaGenerator
 
         // Create entry_original encoded data
         $entryOriginalData = $img->toJpeg();
-        // Store both entry_original and entry_thumb
-        Storage::disk('entry_original')->put($projectRef . '/' . $filename, $entryOriginalData);
+        // Store only entry_original
+        Storage::disk('photo')->put($projectRef . '/' . $filename, $entryOriginalData);
     }
 
     /**

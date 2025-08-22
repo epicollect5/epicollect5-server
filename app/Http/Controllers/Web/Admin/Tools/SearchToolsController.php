@@ -140,7 +140,7 @@ class SearchToolsController extends Controller
                         $videos = count(Storage::disk('video')
                             ->allFiles($projectDefinition->project->ref));
 
-                        $photos = count(Storage::disk('entry_original')
+                        $photos = count(Storage::disk('photo')
                             ->allFiles($projectDefinition->project->ref));
 
                         $projectsWithMedia[] = [
@@ -607,9 +607,8 @@ class SearchToolsController extends Controller
                 $projectRef = array_keys($project)[0];
                 $projectName = $project[$projectRef];
                 $drivers = [
-                    'entry_original',
-                    'project_thumb',
-                    'project_mobile_logo',
+                    'photo',
+                    'project',
                     'video',
                     'audio'
                 ];
@@ -689,13 +688,10 @@ class SearchToolsController extends Controller
                             }
 
                             switch ($driver) {
-                                case 'entry_original':
+                                case 'photo':
                                     $project['photo'] = $data[$ref];
                                     break;
-                                case 'project_thumb':
-                                    $project['photo'] += $data[$ref];
-                                    break;
-                                case 'project_mobile_logo':
+                                case 'project':
                                     $project['photo'] += $data[$ref];
                                     break;
                                 case 'audio':

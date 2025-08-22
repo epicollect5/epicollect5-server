@@ -63,7 +63,7 @@ class MediaCounterServiceLocalTest extends TestCase
         for ($i = 0; $i < $numOfPhotos; $i++) {
             //photo
             sleep(1);//to void overriding the file names due to time()
-            Storage::disk('entry_original')->put($this->project->ref . '/' . $this->entry->uuid . '_' . time() . '.jpg', '');
+            Storage::disk('photo')->put($this->project->ref . '/' . $this->entry->uuid . '_' . time() . '.jpg', '');
         }
 
         $mediaCounterService = new MediaCounterService();
@@ -115,7 +115,7 @@ class MediaCounterServiceLocalTest extends TestCase
         for ($i = 0; $i < $numOfMedia; $i++) {
             //photo
             sleep(1);//to avoid overriding the file names due to time()
-            Storage::disk('entry_original')->put($this->project->ref . '/' . $this->entry->uuid . '_' . time() . '.jpg', '');
+            Storage::disk('photo')->put($this->project->ref . '/' . $this->entry->uuid . '_' . time() . '.jpg', '');
             Storage::disk('audio')->put($this->project->ref . '/' . $this->entry->uuid . '_' . time() . '.mp4', '');
             Storage::disk('video')->put($this->project->ref . '/' . $this->entry->uuid . '_' . time() . '.mp4', '');
         }
@@ -132,8 +132,8 @@ class MediaCounterServiceLocalTest extends TestCase
     {
         // Disks to clear
         $disks = [
-            'entry_original',
-            'project_thumb',
+            'photo',
+            'project',
             'audio',
             'video',
             'temp',

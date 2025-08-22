@@ -18,14 +18,14 @@ class ToEntryThumbS3Macro extends ServiceProvider
     public function boot(): void
     {
         Response::macro('toEntryThumbS3', function ($projectRef, $filename) {
-            $photoPlaceholderFilename = config('epicollect.media.photo_placeholder.filename');
+            $photoPlaceholderFilename = config('epicollect.media.generic_placeholder.filename');
             $photoNotSyncedFilename = config('epicollect.media.photo_not_synced_placeholder.filename');
 
             if (!empty($filename)) {
                 try {
                     // Get original image path from S3
                     $path = $projectRef . '/' . $filename;
-                    $disk = Storage::disk('entry_original');
+                    $disk = Storage::disk('photo');
 
                     if (!$disk->exists($path)) {
                         throw new FileNotFoundException("Original file not found on S3: $path");

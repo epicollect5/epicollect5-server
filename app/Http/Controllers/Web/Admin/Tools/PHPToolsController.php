@@ -67,7 +67,7 @@ class PHPToolsController
         $id = Project::where('ref', $ref)->pluck('id')->first();
 
         //check there is not a logo already
-        $files = Storage::disk('project_thumb')->allFiles($ref);
+        $files = Storage::disk('project')->allFiles($ref);
 
         if (sizeof($files) === 0) {
 

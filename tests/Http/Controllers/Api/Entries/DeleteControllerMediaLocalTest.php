@@ -178,7 +178,7 @@ class DeleteControllerMediaLocalTest extends TestCase
             );
             //add a fake file per each entry (per each media type)
             //photo
-            Storage::disk('entry_original')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+            Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
             //audio
             Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
             //video
@@ -208,7 +208,7 @@ class DeleteControllerMediaLocalTest extends TestCase
             $this->assertCount($numOfEntries, Entry::where('project_id', $this->project->id)->get());
 
             //assert media files are deleted (a chunk is 1000 entries so we delete all media)
-            $photos = Storage::disk('entry_original')->files($this->project->ref);
+            $photos = Storage::disk('photo')->files($this->project->ref);
             $this->assertCount(0, $photos);
 
             $audios = Storage::disk('audio')->files($this->project->ref);
@@ -244,7 +244,7 @@ class DeleteControllerMediaLocalTest extends TestCase
                 switch ($mediaType) {
                     case 0:
                         //photo
-                        Storage::disk('entry_original')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+                        Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
                         break;
                     case 1:
                         //audio
@@ -280,7 +280,7 @@ class DeleteControllerMediaLocalTest extends TestCase
             $this->assertCount($numOfEntries, Entry::where('project_id', $this->project->id)->get());
 
             //assert media files are deleted, up to 1000
-            $photos = Storage::disk('entry_original')->files($this->project->ref);
+            $photos = Storage::disk('photo')->files($this->project->ref);
             $audios = Storage::disk('audio')->files($this->project->ref);
             $videos = Storage::disk('video')->files($this->project->ref);
 
@@ -312,13 +312,13 @@ class DeleteControllerMediaLocalTest extends TestCase
             $expectedTotalRemaining = $photosRemaining + $audiosRemaining + $videosRemaining;
 
             $totalRemaining = sizeof($photos) + sizeof($audios) + sizeof($videos);
-            $this->assertEquals($expectedTotalRemaining, $totalRemaining);
-            $this->assertCount($photosRemaining, $photos);
-            $this->assertCount($audiosRemaining, $audios);
-            $this->assertCount($videosRemaining, $videos);
+            $this->assertEquals($expectedTotalRemaining, $totalRemaining, 'Total remaining media files count mismatch');
+            $this->assertCount($photosRemaining, $photos, 'Unexpected number of photo files remaining');
+            $this->assertCount($audiosRemaining, $audios, 'Unexpected number of audio files remaining');
+            $this->assertCount($videosRemaining, $videos, 'Unexpected number of video files remaining');
 
             //now remove all the leftover fake files
-            Storage::disk('entry_original')->deleteDirectory($this->project->ref);
+            Storage::disk('photo')->deleteDirectory($this->project->ref);
             Storage::disk('audio')->deleteDirectory($this->project->ref);
             Storage::disk('video')->deleteDirectory($this->project->ref);
         } catch (Throwable $e) {
@@ -349,7 +349,7 @@ class DeleteControllerMediaLocalTest extends TestCase
                 switch ($mediaType) {
                     case 0:
                         //photo
-                        Storage::disk('entry_original')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+                        Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
                         break;
                     case 1:
                         //audio
@@ -385,7 +385,7 @@ class DeleteControllerMediaLocalTest extends TestCase
             $this->assertCount($numOfEntries, Entry::where('project_id', $this->project->id)->get());
 
             //assert media files are all deleted
-            $photos = Storage::disk('entry_original')->files($this->project->ref);
+            $photos = Storage::disk('photo')->files($this->project->ref);
             $audios = Storage::disk('audio')->files($this->project->ref);
             $videos = Storage::disk('video')->files($this->project->ref);
 
@@ -396,7 +396,7 @@ class DeleteControllerMediaLocalTest extends TestCase
             $this->assertCount(0, $videos, 'Unexpected number of video files remaining');
 
             //now remove all the leftover fake files
-            Storage::disk('entry_original')->deleteDirectory($this->project->ref);
+            Storage::disk('photo')->deleteDirectory($this->project->ref);
             Storage::disk('audio')->deleteDirectory($this->project->ref);
             Storage::disk('video')->deleteDirectory($this->project->ref);
         } catch (Throwable $e) {
@@ -476,7 +476,7 @@ class DeleteControllerMediaLocalTest extends TestCase
 
             //now remove all the leftover fake files
             Storage::disk('audio')->deleteDirectory($this->project->ref);
-            Storage::disk('entry_original')->deleteDirectory($this->project->ref);
+            Storage::disk('photo')->deleteDirectory($this->project->ref);
             Storage::disk('video')->deleteDirectory($this->project->ref);
 
         } catch (Throwable $e) {
@@ -504,7 +504,7 @@ class DeleteControllerMediaLocalTest extends TestCase
 
             //add files distributed across all 3 media types up to chunk size + 100
             if ($i < $chunkSize + 100) {
-                Storage::disk('entry_original')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+                Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
                 $photoCount++;
             }
         }
@@ -533,7 +533,7 @@ class DeleteControllerMediaLocalTest extends TestCase
             $this->assertCount($numOfEntries, Entry::where('project_id', $this->project->id)->get());
 
             // Assert media files are deleted across all folders
-            $photos = Storage::disk('entry_original')->files($this->project->ref);
+            $photos = Storage::disk('photo')->files($this->project->ref);
 
             $actualRemainingFiles = count($photos);
 
@@ -555,7 +555,7 @@ class DeleteControllerMediaLocalTest extends TestCase
             $this->assertCount($expectedPhotosRemaining, $photos, 'Unexpected number of audio files remaining');
 
             //now remove all the leftover fake files
-            Storage::disk('entry_original')->deleteDirectory($this->project->ref);
+            Storage::disk('photo')->deleteDirectory($this->project->ref);
 
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
@@ -647,7 +647,7 @@ class DeleteControllerMediaLocalTest extends TestCase
                 switch ($mediaType) {
                     case 0:
                         //photo
-                        Storage::disk('entry_original')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+                        Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
                         $photosCount++;
                         break;
                     case 1:
@@ -689,7 +689,7 @@ class DeleteControllerMediaLocalTest extends TestCase
 
             // Assert media files are deleted across all folders
             $audios = Storage::disk('audio')->files($this->project->ref);
-            $photos = Storage::disk('entry_original')->files($this->project->ref);
+            $photos = Storage::disk('photo')->files($this->project->ref);
             $videos = Storage::disk('video')->files($this->project->ref);
 
             $actualRemainingFiles = count($audios) + count($photos) + count($videos);
@@ -731,7 +731,7 @@ class DeleteControllerMediaLocalTest extends TestCase
 
             //now remove all the leftover fake files
             Storage::disk('audio')->deleteDirectory($this->project->ref);
-            Storage::disk('entry_original')->deleteDirectory($this->project->ref);
+            Storage::disk('photo')->deleteDirectory($this->project->ref);
             Storage::disk('video')->deleteDirectory($this->project->ref);
 
         } catch (Throwable $e) {
@@ -757,7 +757,7 @@ class DeleteControllerMediaLocalTest extends TestCase
             //add 10 files for testing (no need to add 20.000)
             if ($i < 10) {
                 //photo
-                Storage::disk('entry_original')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+                Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
                 //audio
                 Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
                 //video
@@ -796,7 +796,7 @@ class DeleteControllerMediaLocalTest extends TestCase
                 $this->assertCount($numOfEntries, Entry::where('project_id', $this->project->id)->get());
 
                 //assert media files are not touched
-                $photos = Storage::disk('entry_original')->files($this->project->ref);
+                $photos = Storage::disk('photo')->files($this->project->ref);
                 $this->assertCount(sizeof($mediaUuids), $photos);
                 $audios = Storage::disk('audio')->files($this->project->ref);
                 $this->assertCount(sizeof($mediaUuids), $audios);
@@ -807,7 +807,7 @@ class DeleteControllerMediaLocalTest extends TestCase
                 $this->logTestError($e, $response);
             } finally {
                 //now remove all the leftover fake files
-                Storage::disk('entry_original')->deleteDirectory($this->project->ref);
+                Storage::disk('photo')->deleteDirectory($this->project->ref);
                 Storage::disk('audio')->deleteDirectory($this->project->ref);
                 Storage::disk('video')->deleteDirectory($this->project->ref);
                 $lock->release();

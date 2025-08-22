@@ -190,7 +190,7 @@ trait Assertions
     {
         //assert avatar is created
         $filename = config('epicollect.media.project_avatar.filename');
-        $avatarThumb = Storage::disk('project_thumb')->files($project->ref);
+        $avatarThumb = Storage::disk('project')->files($project->ref);
 
         $this->assertGreaterThan(0, count($avatarThumb));
         $this->assertCount(1, $avatarThumb);
@@ -201,7 +201,7 @@ trait Assertions
         );
 
         //delete fake avatar file
-        Storage::disk('project_thumb')->deleteDirectory($project->ref);
+        Storage::disk('project')->deleteDirectory($project->ref);
     }
 
     public function assertEntriesResponse($response, $isBranch = false): void

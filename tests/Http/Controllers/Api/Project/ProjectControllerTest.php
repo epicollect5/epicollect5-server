@@ -351,12 +351,20 @@ class ProjectControllerTest extends TestCase
     //test response by getting existing projects randomly
     public function test_should_assert_response_using_existing_projects()
     {
-        $projects = Project::inRandomOrder()->take(100)->get();
-        //use superadmin account to be able to access any project
-        $superadmin = User::where('email', config('epicollect.setup.super_admin_user.email'))->first();
+        //create a few public projects
+        $projects = [];
+        for ($i = 0; $i < 10; $i++) {
+            $projects[] = factory(Project::class)->create([
+                'access' => config('epicollect.strings.project_access.public')
+            ]);
+            factory(ProjectStructure::class)->create(['project_id' => $projects[$i]->id]);
+            factory(ProjectStats::class)->create(['project_id' => $projects[$i]]);
+            factory(ProjectRole::class)->create(['project_id' => $projects[$i], 'user_id' => $this->user->id]);
+        }
+
 
         foreach ($projects as $project) {
-            $response = $this->actingAs($superadmin)
+            $response = $this->actingAs($this->user)
                 ->json('GET', 'api/internal/project/' . $project->slug)
                 ->assertStatus(200)
                 ->assertJsonStructure([

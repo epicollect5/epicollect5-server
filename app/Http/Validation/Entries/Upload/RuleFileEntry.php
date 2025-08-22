@@ -273,7 +273,7 @@ class RuleFileEntry extends EntryValidationBase
                     $projectRef,
                     $isS3 ? $file['path'] : $file,
                     $fileName,
-                    'entry_original',
+                    'photo',
                     $dimensions,
                     70
                 );

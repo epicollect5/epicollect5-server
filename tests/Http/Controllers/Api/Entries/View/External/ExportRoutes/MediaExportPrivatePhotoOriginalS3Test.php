@@ -176,8 +176,8 @@ class MediaExportPrivatePhotoOriginalS3Test extends TestCase
     {
         config([
             'filesystems.default' => 's3',
-            'filesystems.disks.entry_original.driver' => 's3',
-            'filesystems.disks.entry_original.root' => 'app/entries/photo/entry_original',
+            'filesystems.disks.photo.driver' => 's3',
+            'filesystems.disks.photo.root' => 'app/entries/photo',
         ]);
 
         $token = $params['token'];
@@ -232,12 +232,12 @@ class MediaExportPrivatePhotoOriginalS3Test extends TestCase
 
         // Encode the image as JPEG or other formats
         $imageData = (string) $image->encode(new JpegEncoder(50));
-        Storage::disk('entry_original')->put($project->ref . '/' . $filename, $imageData);
-        $diskRoot = config('filesystems.disks.entry_original.root').'/';
+        Storage::disk('photo')->put($project->ref . '/' . $filename, $imageData);
+        $diskRoot = config('filesystems.disks.photo.root').'/';
         $imagePath = $diskRoot . $project->ref . '/' . $filename;
 
         $relativePath = $project->ref . '/' . $filename;
-        $this->assertTrue(Storage::disk('entry_original')->exists($relativePath), "File was not created at: $relativePath");
+        $this->assertTrue(Storage::disk('photo')->exists($relativePath), "File was not created at: $relativePath");
 
         //assert row is created
         $this->assertCount(
@@ -291,7 +291,7 @@ class MediaExportPrivatePhotoOriginalS3Test extends TestCase
             $this->assertEquals($fileSize, $disk->size($imagePath));
 
 
-            Storage::disk('entry_original')->deleteDirectory($project->ref);
+            Storage::disk('photo')->deleteDirectory($project->ref);
 
             $this->clearDatabase($params);
         } catch (GuzzleException $e) {

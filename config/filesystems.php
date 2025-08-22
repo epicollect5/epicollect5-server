@@ -52,7 +52,6 @@ return [
     */
 
     'disks' => [
-
         //this is needed to server the image placeholder for example
         'public' => [
             'driver' => 'local',
@@ -91,11 +90,11 @@ return [
 
         //imp: Laravel Team is against having a permission different from 755 on public folders
         //see https://github.com/laravel/docs/pull/8003
-        'entry_original' => array_merge([
+        'photo' => array_merge([
             'driver' => config('epicollect.setup.system.storage_driver'),
             'root' => config('epicollect.setup.system.storage_driver') === 'local'
                 ? storage_path('app/entries/photo/entry_original')
-                : 'app/entries/photo/entry_original',
+                : 'app/entries/photo',
             'throw' => true,
             'permissions' => [
                 'file' => [
@@ -112,11 +111,11 @@ return [
 
         //imp: Laravel Team is against having a permission different from 755 on public folders
         //see https://github.com/laravel/docs/pull/8003
-        'project_thumb' => array_merge([
+        'project' => array_merge([
             'driver' => config('epicollect.setup.system.storage_driver'),
             'root' => config('epicollect.setup.system.storage_driver') === 'local'
                 ? storage_path('app/projects/project_thumb')
-                : 'app/projects/project_thumb',
+                : 'app/projects',
             'throw' => true,
             'permissions' => [
                 'file' => [
