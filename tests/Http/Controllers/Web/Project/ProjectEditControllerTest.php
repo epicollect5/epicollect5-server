@@ -202,7 +202,7 @@ class ProjectEditControllerTest extends TestCase
 
     public function test_should_detect_file_size_too_big()
     {
-        // Fake the local storage for project_thumb
+        // Fake the local storage for project
         Storage::fake('project');
 
         // Create a fake image file (100x100 pixels, 200 KB)
@@ -238,7 +238,7 @@ class ProjectEditControllerTest extends TestCase
 
     public function test_should_detect_logo_resolution_too_high_both_width_and_height()
     {
-        // Fake the local storage for project_thumb
+        // Fake the local storage for project
         Storage::fake('project');
 
         // Create a fake image file (100x100 pixels, 200 KB)
@@ -271,7 +271,7 @@ class ProjectEditControllerTest extends TestCase
 
     public function test_should_detect_logo_resolution_too_high_width()
     {
-        // Fake the local storage for project_thumb
+        // Fake the local storage for project
         Storage::fake('project');
 
         // Create a fake image file (100x100 pixels, 200 KB)
@@ -301,7 +301,7 @@ class ProjectEditControllerTest extends TestCase
 
     public function test_should_detect_logo_resolution_too_high_height()
     {
-        // Fake the local storage for project_thumb
+        // Fake the local storage for project
         Storage::fake('project');
 
         // Create a fake image file (100x100 pixels, 200 KB)
@@ -331,7 +331,7 @@ class ProjectEditControllerTest extends TestCase
 
     public function test_should_detect_description_too_long()
     {
-        // Fake the local storage for project_thumb
+        // Fake the local storage for project
         Storage::fake('project');
 
         // Create a fake image file (100x100 pixels, 200 KB)
@@ -361,8 +361,8 @@ class ProjectEditControllerTest extends TestCase
 
     public function test_should_detect_description_too_short()
     {
-        // Fake the local storage for project_thumb
-        Storage::fake('project_thumb');
+        // Fake the local storage for project
+        Storage::fake('project');
 
         // Create a fake image file (100x100 pixels, 200 KB)
         $file = UploadedFile::fake()->image('logo.jpg', 300, 300)->size(500);
@@ -391,7 +391,7 @@ class ProjectEditControllerTest extends TestCase
 
     public function test_should_update_project_details()
     {
-        // Fake the local storage for project_thumb
+        // Fake the local storage for project
         Storage::fake('project');
 
         // Create a fake image file within the limits
@@ -432,7 +432,7 @@ class ProjectEditControllerTest extends TestCase
 
     public function test_should_detect_small_description_too_long()
     {
-        // Fake the local storage for project_thumb
+        // Fake the local storage for project
         Storage::fake('project');
 
         // Create a fake image file within the limits
@@ -467,7 +467,7 @@ class ProjectEditControllerTest extends TestCase
 
     public function test_should_detect_small_description_too_short()
     {
-        // Fake the local storage for project_thumb
+        // Fake the local storage for project
         Storage::fake('project');
 
         // Create a fake image file within the limits

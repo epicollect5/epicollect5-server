@@ -12,9 +12,7 @@ return [
     'project_mobile_logo' => [128, 128],
     'project_avatar' => [
         'filename' => 'logo.jpg',
-        'driver' => [
-            'project_thumb' => 'project_thumb'
-        ],
+        'disk' => 'project',
         'width' => [
             'thumb' => 512,
             'mobile' => 128

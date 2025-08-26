@@ -16,7 +16,6 @@ class ProjectAvatarService
     protected array $height;
     protected int $quality;
     protected string $filename;
-    protected array $drivers;
     protected array $fontSize;
 
     /**
@@ -30,7 +29,6 @@ class ProjectAvatarService
         $this->height = config('epicollect.media.project_avatar.height');
         $this->quality = config('epicollect.media.project_avatar.quality');
         $this->filename = config('epicollect.media.project_avatar.filename');
-        $this->drivers = config('epicollect.media.project_avatar.driver');
         $this->fontSize = config('epicollect.media.project_avatar.font_size');
     }
 
@@ -74,7 +72,7 @@ class ProjectAvatarService
     private function generateLocal(string $projectRef, string $projectName): bool
     {
         try {
-            $disk = 'project';
+            $disk = config('epicollect.media.project_avatar.disk');
 
             if (!Storage::disk($disk)->exists($projectRef)) {
                 Log::info("Creating directory $disk/$projectRef");

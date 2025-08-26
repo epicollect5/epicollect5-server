@@ -358,8 +358,8 @@ class ProjectControllerTest extends TestCase
                 'access' => config('epicollect.strings.project_access.public')
             ]);
             factory(ProjectStructure::class)->create(['project_id' => $projects[$i]->id]);
-            factory(ProjectStats::class)->create(['project_id' => $projects[$i]]);
-            factory(ProjectRole::class)->create(['project_id' => $projects[$i], 'user_id' => $this->user->id]);
+            factory(ProjectStats::class)->create(['project_id' => $projects[$i]->id]);
+            factory(ProjectRole::class)->create(['project_id' => $projects[$i]->id, 'user_id' => $this->user->id]);
         }
 
 

@@ -3,8 +3,8 @@
 namespace ec5\Services\Media;
 
 use ec5\DTO\ProjectDTO;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
 use Throwable;
 use Response;
@@ -28,6 +28,7 @@ class TempMediaService
             return Response::apiErrorCode(400, ['temp-media' => ['ec5_103']]);
         }
 
+        //force local driver
         return $this->getTempMediaLocal($params, $project);
     }
 
@@ -43,14 +44,14 @@ class TempMediaService
         }
 
         try {
-            $realFilepath = config("filesystems.disks.temp.root")
-                . '/' . $type
-                . '/' . $projectRef
-                . '/' . $name;
+            $tempDisk = Storage::disk('temp');
+            $tempPath = $type . '/' . $projectRef . '/' . $name;
 
-            if (!File::exists($realFilepath)) {
-                throw new FileNotFoundException("File does not exist at path: $realFilepath");
+            if (!$tempDisk->exists($tempPath)) {
+                throw new FileNotFoundException("File does not exist at path: $tempPath");
             }
+
+            $realFilepath = $tempDisk->path($tempPath);
 
             // Stream audio/video, return photo as memory
             if ($type !== config('epicollect.strings.inputs_type.photo')) {

@@ -3,11 +3,11 @@
 namespace ec5\Services\Media;
 
 use ec5\DTO\ProjectDTO;
+use ec5\Libraries\Utilities\Common;
 use File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Storage;
-use InvalidArgumentException;
 use Throwable;
 
 class MediaService
@@ -65,16 +65,16 @@ class MediaService
             return $this->placeholderOrFallback($type);
         }
 
-        //resolve the real disk name from the logical format
-        $diskName = $this->resolveDisk($format);
+        // Resolve the disk and check existence via Storage
+        $diskName   = Common::resolveDisk($format);
+        $disk       = Storage::disk($diskName);
+        $pathInDisk = $projectRef . '/' . $name;
 
-        // build the full path
-        $storagePathPrefix = config("filesystems.disks.$diskName.root") . '/';
-        $realFilepath      = $storagePathPrefix . $projectRef . '/' . $name;
-
-        if (!File::exists($realFilepath)) {
+        if (!$disk->exists($pathInDisk)) {
             return $this->placeholderOrFallback($type, $name);
         }
+
+        $realFilepath = $disk->path($pathInDisk);
 
         return $this->buildResponse($type, $realFilepath);
     }
@@ -120,7 +120,7 @@ class MediaService
         }
 
         $path = $projectRef . '/' . $name;
-        $disk = Storage::disk($this->resolveDisk($format));
+        $disk = Storage::disk(Common::resolveDisk($format));
 
         if (!$disk->exists($path)) {
             return $this->placeholderOrFallback($type, $name);
@@ -206,14 +206,5 @@ class MediaService
         return Response::apiErrorCode(404, ['media-service' => ['ec5_69']]);
     }
 
-    private function resolveDisk(string $format): string
-    {
-        $map = config('epicollect.media.media_formats_disks');
 
-        if (!isset($map[$format])) {
-            throw new InvalidArgumentException("Unknown format: $format");
-        }
-
-        return $map[$format];
-    }
 }

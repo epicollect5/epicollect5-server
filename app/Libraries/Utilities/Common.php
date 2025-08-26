@@ -8,6 +8,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
 use Log;
 use Random\RandomException;
 use Symfony\Component\DomCrawler\Crawler;
@@ -410,21 +411,29 @@ class Common
         return in_array($awsErrorCode, $retryableAwsCodes);
     }
 
-    public static function resolveDimensions($format)
+    public static function resolveDimensions(string $format): array
     {
-        {
-            switch ($format) {
-                case 'entry_original':
-                    return config('epicollect.media.entry_original_landscape');
-                case 'entry_thumb':
-                    return config('epicollect.media.entry_thumb');
-                case 'project_thumb':
-                    return config('epicollect.media.project_thumb');
-                case 'project_mobile_logo':
-                    return config('epicollect.media.project_mobile_logo');
-                default:
-                    return [];
-            }
+        switch ($format) {
+            case 'entry_original':
+                return config('epicollect.media.entry_original_landscape');
+            case 'entry_thumb':
+                return config('epicollect.media.entry_thumb');
+            case 'project_thumb':
+                return config('epicollect.media.project_thumb');
+            case 'project_mobile_logo':
+                return config('epicollect.media.project_mobile_logo');
+            default:
+                throw new InvalidArgumentException("Unsupported media format '$format'");
         }
+    }
+    public static function resolveDisk(string $format): string
+    {
+        $map = config('epicollect.media.media_formats_disks');
+
+        if (!isset($map[$format])) {
+            throw new InvalidArgumentException("Unknown format: $format");
+        }
+
+        return $map[$format];
     }
 }

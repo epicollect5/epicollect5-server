@@ -146,10 +146,9 @@ class ProjectEditController
             'description' => $payload['description']
         ];
 
+        //save project logo if needed
         if (request()->file('logo_url')) {
-            // NOTE: store larger thumb first, then smaller mobile logo
-            // As request file gets overwritten with each resize, and it's better to shrink than to enlarge
-            if (!$this->saveLogos('project')) {
+            if (!$this->saveLogo('project_thumb')) {
                 return Redirect::back()->withErrors(['message' => 'ec5_83']);
             }
 
@@ -170,16 +169,17 @@ class ProjectEditController
     }
 
     /**
-     * Try and store project logos
+     * Try and store project logo
      */
-    private function saveLogos($driver): bool
+    private function saveLogo($format): bool
     {
-        $dimensions = Common::resolveDimensions($driver);
+        $dimensions = Common::resolveDimensions($format);
+        $disk = Common::resolveDisk($format);
         return PhotoSaverService::saveImage(
             $this->requestedProject()->ref,
             request()->file('logo_url'),
             'logo.jpg',
-            $driver,
+            $disk,
             $dimensions
         );
     }
