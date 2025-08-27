@@ -1,5 +1,17 @@
 ## Release Notes
 
+# 12.3.4
+
+- Added a project-specific deletion modal for clearer feedback during project deletion.
+- Clamped deletion progress bars to 100%.
+- Improved placeholder selection and media counting consistency.
+- Standardized media-related error responses.
+- Unified media serving and temporary-media handling;
+- Paths for media storage updated, dropped fromats in file paths as generated at runtime
+- Added tests for S3 upload retries and improved error handling.
+- Enhanced S3 upload error handling to include retry counts and backoff information.
+- Updated S3 upload tests to validate retry behavior and error responses.
+
 # 12.3.3
 
 - Added automatic retries with exponential backoff, better stream reopen/close handling, and retry-aware S3 error

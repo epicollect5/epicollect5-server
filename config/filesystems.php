@@ -47,7 +47,7 @@ return [
     |
     | Here you may configure as many filesystem "disks" as you wish, and you
     | may even configure multiple disks of the same driver. Defaults have
-    | been setup for each driver as an example of the required options.
+    | been set up for each driver as an example of the required options.
     |
     */
 
@@ -171,7 +171,7 @@ return [
 
         //imp: Laravel Team is against having a permission different from 755 on public folders
         //see https://github.com/laravel/docs/pull/8003
-        //zip archve are stored locally, served and deleted straight away
+        //zip archive are stored locally, served and deleted straight away
         'entries_zip' => [
             'driver' => 'local',
             'root' => storage_path('app/entries/zip'),
