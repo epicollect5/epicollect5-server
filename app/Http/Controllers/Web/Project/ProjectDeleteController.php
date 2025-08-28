@@ -2,16 +2,20 @@
 
 namespace ec5\Http\Controllers\Web\Project;
 
-use ec5\Models\Entries\Entry;
+use Aws\S3\Exception\S3Exception;
+use ec5\Libraries\Utilities\Common;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectFeatured;
 use ec5\Models\Project\ProjectStats;
 use ec5\Traits\Eloquent\Archiver;
 use ec5\Traits\Eloquent\StatsRefresher;
 use ec5\Traits\Requests\RequestAttributes;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Log;
+use Storage;
+use Throwable;
 
 class ProjectDeleteController
 {
@@ -20,7 +24,7 @@ class ProjectDeleteController
     use StatsRefresher;
 
     /**
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function show()
     {
@@ -37,6 +41,9 @@ class ProjectDeleteController
         return view('project.project_delete');
     }
 
+    /**
+     * @throws Throwable
+     */
     public function delete(Request $request)
     {
         $payload = $request->all();
@@ -96,19 +103,21 @@ class ProjectDeleteController
 
     None of them get touched
     */
+    /**
+     * @throws Throwable
+     */
     public function softDelete($projectId, $projectSlug)
     {
         return $this->archiveProject($projectId, $projectSlug);
     }
 
-    /*hard delete a project
-     The following tables have a FK to the project table with ON CASCADE DELETE:
-    - project_structures,
-    - project_stats,
-    - project_roles,
-    - oauth_client_projects,
-    - project_datasets
-    */
+    /**
+     * @param $projectId
+     * @param $projectSlug
+     * @return bool
+     * @throws Throwable
+     * @throws Exception
+     */
     public function hardDelete($projectId, $projectSlug)
     {
         try {
@@ -117,31 +126,75 @@ class ProjectDeleteController
             $trashedStatus = config('epicollect.strings.project_status.trashed');
             $project = Project::where('id', $projectId)
                 ->where('slug', $projectSlug)
-                ->where('status', $trashedStatus);
+                ->where('status', $trashedStatus)
+                ->first(); // Add ->first() to get the model instance
 
-            if ($project->delete()) {
-                DB::commit();
-                return true;
+            //delete project from db
+            if ($project && $project->delete()) {
+                //delete project logo
+                if ($this->removeProjectLogo($project->ref)) {
+                    DB::commit();
+                    return true;
+                } else {
+                    DB::rollBack();
+                    return false;
+                }
             } else {
                 DB::rollBack();
                 return false;
             }
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
             Log::error('hardDelete() project failure', ['exception' => $e->getMessage()]);
             DB::rollBack();
             return false;
         }
     }
 
-    //delete entries in chunks (branch entries are deleted by FK constraint ON CASCADE DELETE)
-    private function deleteEntries($projectId)
+    /**
+     * @throws Exception
+     */
+    private function removeProjectLogo($projectRef)
     {
-        Entry::where('project_id', $projectId)->chunk(100, function ($rows) {
-            foreach ($rows as $row) {
-                if (!$row->delete()) {
-                    throw new \Exception('Entry deletion failed');
+        $disk = config('epicollect.media.project_avatar.disk');
+        $filename = config('epicollect.media.project_avatar.filename');
+        $path = $projectRef . '/' . $filename;
+
+        // Resolve base path (local root or S3 bucket URL)
+        $root = config("filesystems.disks.$disk.root");
+        $fullPath = $root ? $root . '/' . $path : $path;
+
+        Log::debug('Attempting to delete project logo', [
+            'disk'      => $disk,
+            'relative'  => $path,
+            'full_path' => $fullPath
+        ]);
+
+        if (config("filesystems.default") === 's3') {
+            $maxRetries = 3;
+            $retryDelay = 1; // seconds
+
+            for ($retry = 0; $retry <= $maxRetries; $retry++) {
+                try {
+                    return Storage::disk($disk)->deleteDirectory($projectRef);
+                } catch (Throwable $e) {
+                    if ($retry === $maxRetries || !($e instanceof S3Exception && Common::isRetryableError($e))) {
+                        Log::error('Cannot delete project logo S3', ['exception' => $e->getMessage()]);
+                        return false;
+                    }
+                    sleep($retryDelay * pow(2, $retry)); // Exponential backoff
                 }
             }
-        });
+        }
+
+        if (config("filesystems.default") === 'local') {
+            try {
+                return Storage::disk($disk)->deleteDirectory($projectRef);
+            } catch (Throwable $e) {
+                Log::error('Cannot delete project logo local', ['exception' => $e->getMessage()]);
+                return false;
+            }
+        }
+
+        return true;
     }
 }

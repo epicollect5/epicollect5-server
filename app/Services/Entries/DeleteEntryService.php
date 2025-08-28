@@ -67,9 +67,6 @@ class DeleteEntryService
                     throw new Exception('Cannot delete media files local');
                 }
             }
-            //            if (!$this->deleteMediaFilesLocal($project->ref, array_merge($entryUuids, $branchEntryUuids))) {
-            //                throw new Exception('Cannot delete media files');
-            //            }
 
             // Now finally commit
             DB::commit();
@@ -182,15 +179,15 @@ class DeleteEntryService
 
     private function deleteMediaFilesS3(string $projectRef, array $uuids): bool
     {
-        $drivers = config('epicollect.media.entries_deletable');
-        foreach ($drivers as $driver) {
+        $disks = config('epicollect.media.entries_deletable');
+        foreach ($disks as $disk) {
 
-            $disk = Storage::disk($driver);
+            $diskPath = Storage::disk($disk);
             $prefix = rtrim($projectRef, '/') . '/';
 
             try {
                 // List all files under the S3 "directory"
-                $allFiles = $disk->files($prefix);
+                $allFiles = $diskPath->files($prefix);
 
                 // Filter only files that start with one of the UUIDs
                 $filesToDelete = array_filter($allFiles, function ($path) use ($uuids) {
@@ -206,10 +203,10 @@ class DeleteEntryService
                 });
 
                 if (!empty($filesToDelete)) {
-                    $disk->delete($filesToDelete);
+                    $diskPath->delete($filesToDelete);
                 }
             } catch (Throwable $e) {
-                Log::error("deleteMediaFilesS3 failed for driver [$driver], project [$projectRef]: " . $e->getMessage());
+                Log::error("deleteMediaFilesS3 failed for driver [$disk], project [$projectRef]: " . $e->getMessage());
                 return false;
             }
         }
