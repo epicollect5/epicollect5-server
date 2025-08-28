@@ -1,5 +1,14 @@
 ## Release Notes
 
+# 12.3.5
+
+- Hard delete now removes project logos from both local and S3 storage.
+- Deletion is transactional: projects are only removed after logo cleanup succeeds.
+- S3 logo removal retries with backoff for transient errors and improved error handling.
+- Hard-delete flow more reliable across storage backends.
+- End-to-end tests added for hard-delete with mocked and real local and S3 storage.
+- Repository review configuration and guidelines updated.
+
 # 12.3.4
 
 - Added a project-specific deletion modal for clearer feedback during project deletion.
