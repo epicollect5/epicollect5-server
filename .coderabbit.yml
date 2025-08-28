@@ -2,6 +2,12 @@
 # https://docs.coderabbit.ai/guides/review-guide
 
 reviews:
+  language: en-US
+  reviews:
+    path_instructions:
+      - path: "**/*.php"
+        instructions: |
+          This project targets PHP 8.3+. Do not flag PHP 8.3+ features like typed class constants as compatibility issues.
   # Disable PHPMD (PHP Mess Detector) checks
   tools:
     phpmd:

@@ -116,38 +116,46 @@ class ProjectDeleteController
      * @param $projectSlug
      * @return bool
      * @throws Throwable
-     * @throws Exception
      */
-    public function hardDelete($projectId, $projectSlug)
+    public function hardDelete($projectId, $projectSlug): bool
     {
         try {
             DB::beginTransaction();
-            //project must have trashed status
-            $trashedStatus = config('epicollect.strings.project_status.trashed');
-            $project = Project::where('id', $projectId)
-                ->where('slug', $projectSlug)
-                ->where('status', $trashedStatus)
-                ->first(); // Add ->first() to get the model instance
 
-            //delete project from db
-            if ($project && $project->delete()) {
-                //delete project logo
-                if ($this->removeProjectLogo($project->ref)) {
-                    DB::commit();
-                    return true;
-                } else {
-                    DB::rollBack();
-                    return false;
-                }
-            } else {
+            $project = $this->findTrashedProject($projectId, $projectSlug);
+            if (!$project) {
                 DB::rollBack();
                 return false;
             }
+
+            if (!$this->removeProjectLogo($project->ref)) {
+                DB::rollBack();
+                return false;
+            }
+
+            if (!$project->delete()) {
+                DB::rollBack();
+                return false;
+            }
+
+            DB::commit();
+            return true;
+
         } catch (Throwable $e) {
             Log::error('hardDelete() project failure', ['exception' => $e->getMessage()]);
             DB::rollBack();
             return false;
         }
+    }
+
+    private function findTrashedProject($projectId, $projectSlug): ?Project
+    {
+        $trashedStatus = config('epicollect.strings.project_status.trashed');
+
+        return Project::where('id', $projectId)
+            ->where('slug', $projectSlug)
+            ->where('status', $trashedStatus)
+            ->first();
     }
 
     /**
@@ -156,18 +164,6 @@ class ProjectDeleteController
     private function removeProjectLogo($projectRef)
     {
         $disk = config('epicollect.media.project_avatar.disk');
-        $filename = config('epicollect.media.project_avatar.filename');
-        $path = $projectRef . '/' . $filename;
-
-        // Resolve base path (local root or S3 bucket URL)
-        $root = config("filesystems.disks.$disk.root");
-        $fullPath = $root ? $root . '/' . $path : $path;
-
-        Log::debug('Attempting to delete project logo', [
-            'disk'      => $disk,
-            'relative'  => $path,
-            'full_path' => $fullPath
-        ]);
 
         if (config("filesystems.default") === 's3') {
             $maxRetries = 3;

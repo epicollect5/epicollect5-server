@@ -144,7 +144,7 @@ class ProjectDeleteControllerLocalTest extends TestCase
         );
 
         // Create a fake project logo file
-        Storage::disk('project')->put($project->ref, 'fake logo content');
+        Storage::disk('project')->put($project->ref.'/logo.jpg', 'fake logo content');
 
         //assign the user to that project with the CREATOR role
         factory(ProjectRole::class)->create([
