@@ -3,15 +3,14 @@
 
 language: en-US
 reviews:
+  # Disable PHPMD (PHP Mess Detector) checks
+  tools:
+    phpmd:
+      enabled: false
   path_instructions:
     - path: "**/*.php"
       instructions: |
         This project targets PHP 8.3+. Do not flag PHP 8.3+ features like typed class constants as compatibility issues.
-# Disable PHPMD (PHP Mess Detector) checks
-tools:
-  phpmd:
-    enabled: false
-
 # Optional: Configure other review settings
 auto_review:
   enabled: true
