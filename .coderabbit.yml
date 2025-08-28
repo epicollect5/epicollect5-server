@@ -3,6 +3,17 @@
 
 language: en-US
 reviews:
+  # Optional: Configure other review settings
+  auto_review:
+    enabled: true
+    drafts: false
+
+  # Optional: Configure which files to review
+  path_filters:
+    - "!vendor/**"
+    - "!node_modules/**"
+    - "!storage/**"
+    - "!bootstrap/cache/**"
   # Disable PHPMD (PHP Mess Detector) checks
   tools:
     phpmd:
@@ -11,14 +22,4 @@ reviews:
     - path: "**/*.php"
       instructions: |
         This project targets PHP 8.3+. Do not flag PHP 8.3+ features like typed class constants as compatibility issues.
-# Optional: Configure other review settings
-auto_review:
-  enabled: true
-  drafts: false
 
-# Optional: Configure which files to review
-path_filters:
-  - "!vendor/**"
-  - "!node_modules/**"
-  - "!storage/**"
-  - "!bootstrap/cache/**"
