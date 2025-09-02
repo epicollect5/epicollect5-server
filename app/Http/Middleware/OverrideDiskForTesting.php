@@ -20,7 +20,11 @@ class OverrideDiskForTesting
             // Allow only localhost or similar
             if (in_array($ip, ['127.0.0.1', '::1']) || str_starts_with($request->getHost(), 'localhost')) {
                 // Optional: read override from header or hardcode here
-                $diskOverride = $request->header('X-Disk-Override', 'local');
+                if ($request->hasHeader('X-Disk-Override')) {
+                    $diskOverride = $request->header('X-Disk-Override');
+                } else {
+                    $diskOverride = config('filesystems.default');
+                }
 
                 // Apply to specific disks you want to override during tests
                 if ($diskOverride === 'local') {
@@ -54,7 +58,6 @@ class OverrideDiskForTesting
                 }
             }
         }
-
 
         return $next($request);
     }
