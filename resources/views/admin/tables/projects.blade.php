@@ -12,7 +12,7 @@
                 <th class="text-center">{{ trans('site.visibility') }}</th>
                 <th class="text-center">{{ trans('site.access') }}</th>
                 <th class="text-center">{{ trans('site.entries') }}</th>
-                <th></th>
+                <th class="text-center">Storage</th>
             </tr>
             @foreach ($projects as $project)
                 <tr>
@@ -45,6 +45,12 @@
                         {{ trans('site.' . $project->access) }}
                     </td>
                     <td class="text-center">{{ $project->total_entries }}</td>
+                    <td class="text-center"
+                        data-project-slug="{{ $project->slug }}"
+                    >
+                        <span class="spinner text-center"></span>
+                        <span class="counter-total hidden">0</span>
+                    </td>
                 </tr>
             @endforeach
         </table>

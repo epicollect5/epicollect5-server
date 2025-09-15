@@ -1,3 +1,6 @@
+@import "theme";
+@import "mixins";
+
 .projects__table .project-name {
   @include card-project-name();
   display: block; //hack
@@ -55,10 +58,13 @@
 
   .projects-list {
     position: relative;
-    //320 is roughly footer height + navabr height +  page title etc... kinda working
+    //320 is roughly footer height + navbar height +  page title etc... kinda working
     min-height: calc(100vh - 320px);
     .projects-loader {
       position: absolute;
+    }
+    .spinner {
+      @include cell-spinner();
     }
   }
 

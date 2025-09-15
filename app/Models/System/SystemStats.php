@@ -22,7 +22,7 @@ class SystemStats extends Model
 
     protected $table = 'system_stats';
     public $timestamps = false;
-    private $dailyStats;
+    private mixed $dailyStats;
 
     //get daily stats to initialise the model
     public function initDailyStats(): void

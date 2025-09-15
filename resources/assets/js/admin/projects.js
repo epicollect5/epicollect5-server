@@ -21,7 +21,7 @@ window.EC5.admin.projects = window.EC5.admin.projects || {};
             url: window.EC5.SITE_URL + '/admin/update-user-project-role',
             type: 'POST',
             dataType: 'json',
-            data: { role: role, project_id: projectId }
+            data: {role: role, project_id: projectId}
         }).done(function (data) {
             window.EC5.toast.showSuccess(data.data.title);
         }).fail(window.EC5.showError);
@@ -88,6 +88,33 @@ $(document).ready(function () {
     var projectsList = $(' .page-admin .projects-list');
     var loader = $('.page-admin .projects-loader');
 
+    _getStorageStats();
+
+    // Loop through each table row that has a project reference
+    function _getStorageStats() {
+        $('table td[data-project-slug]').each(function () {
+            var $row = $(this);
+            var projectSlug = $row.data('project-slug'); // from data-project-ref attribute
+
+            // Show spinner while loading
+            $row.find('.spinner').removeClass('hidden').fadeIn();
+
+            $.get(window.EC5.SITE_URL + '/api/internal/counters/media/' + projectSlug, function (response) {
+                var totalMedia = response.data.counters.total;
+
+
+                $row.find('.spinner')
+                    .addClass('hidden')
+                    .fadeOut(function () {
+                        $row.find('.counter-total')
+                            .text(_formatBytes(totalMedia))
+                            .removeClass('hidden')
+                            .fadeIn();
+                    });
+            });
+        });
+    }
+
     projectsList.on('change', '.project-roles', function () {
 
         var projectId = $(this).data('projectId');
@@ -145,6 +172,7 @@ $(document).ready(function () {
     //intercept click on pagination links to send ajax request
     //important: re-bind event as empty() removes it!!!!
     $('.pagination').on('click', 'a', onPaginationClick);
+
     function onPaginationClick(e) {
         e.preventDefault();
 
@@ -154,9 +182,10 @@ $(document).ready(function () {
         params.page = $(e.target).attr('href').split('page=')[1];
         params.name = searchBar.val().trim();
         params.access = access === 'any' ? '' : access;
-        params.visibility = visibility === 'any' ?  '' : visibility;
+        params.visibility = visibility === 'any' ? '' : visibility;
 
         _filterProjects(0);
+        _getStorageStats();
     }
 
     //perform project filtering
@@ -177,5 +206,17 @@ $(document).ready(function () {
                 console.log(error);
             });
         }, delay);
+
+        _getStorageStats();
     }
+
+    function _formatBytes(bytes, precision) {
+        if (bytes === 0) return '0 B';
+        var k = 1024;
+        var sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+        var i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(precision)) + ' ' + sizes[i];
+    }
+
+
 });

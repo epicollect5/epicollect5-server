@@ -37,5 +37,6 @@ window.EC5.projectUtils = window.EC5.projectUtils || {};
         return text.toLowerCase().replace(/\s+/g, '-');
     }
 
+
 }(window.EC5.projectUtils));
 
