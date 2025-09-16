@@ -65,5 +65,15 @@ $(document).ready(function () {
             ? this.slice(0, n - 1) + '...'
             : this;
     };
+
+    window.EC5.common = {
+        formatBytes: function (bytes, precision) {
+            if (bytes === 0) return '0 B';
+            var k = 1024;
+            var sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+            var i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(precision)) + ' ' + sizes[i];
+        }
+    };
 });
 

@@ -216,6 +216,10 @@ Route::group(['middleware' => 'auth'], function () {
         Route::post('myprojects/{project_slug}/apps', 'Web\Project\ProjectAppsController@store');
         Route::post('myprojects/{project_slug}/app-delete', 'Web\Project\ProjectAppsController@delete');
         Route::post('myprojects/{project_slug}/app-revoke', 'Web\Project\ProjectAppsController@revoke');
+
+        // Storage
+        Route::get('myprojects/{project_slug}/storage', 'Web\Project\ProjectStorageController@show');
+
     });
 
     // Users must authenticate in order to add/edit entries, even for public projects

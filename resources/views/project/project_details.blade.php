@@ -43,6 +43,9 @@
                     @if ($includeTemplate == 'manage-entries')
                         @include('project.project_details_manage_entries')
                     @endif
+                    @if ($includeTemplate == 'storage')
+                        @include('project.project_storage')
+                    @endif
                     @if ($includeTemplate == 'api')
                         @include('project.project_api')
                     @endif

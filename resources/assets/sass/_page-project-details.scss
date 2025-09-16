@@ -254,4 +254,7 @@
   #qrcode-download {
     width: 200px;
   }
+  .spinner {
+    @include cell-spinner();
+  }
 }

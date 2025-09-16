@@ -271,5 +271,6 @@ return [
     'get_link' => 'Get link',
     'send' => 'Send',
     'server_staff_login' => 'Staff Login',
-    'leave' => 'Leave'
+    'leave' => 'Leave',
+    'storage' => 'Storage',
 ];

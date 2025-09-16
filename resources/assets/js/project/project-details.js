@@ -213,6 +213,54 @@ $(document).ready(function () {
             //do nothing
         });
     });
+
+    // Loop through all counter-media panels
+    $('.counter-media').each(function () {
+        var $wrapper = $(this);
+        var projectSlug = $wrapper.data('project-slug');
+
+        // AJAX call using EC5 conventions (jQuery)
+        $.get(window.EC5.SITE_URL + '/api/internal/counters/media/' + projectSlug)
+            .done(function (response) {
+                var counters = response.data.counters;
+                var sizes = response.data.sizes;
+
+                // hide spinner, show stats
+                $wrapper.find('.spinner').fadeOut(function () {
+                    $wrapper.find('.media-stats').removeClass('hidden').fadeIn();
+                });
+
+                var total = counters.total || 1; // prevent divide by 0
+                var photoPct = (counters.photo / total * 100).toFixed(1);
+                var audioPct = (counters.audio / total * 100).toFixed(1);
+                var videoPct = (counters.video / total * 100).toFixed(1);
+
+                $wrapper.find('.progress-bar[data-type="photo"]')
+                    .css('width', photoPct + '%')
+                    .find('.percent').text('(' + photoPct + '%)');
+                $wrapper.find('.progress-bar[data-type="audio"]')
+                    .css('width', audioPct + '%')
+                    .find('.percent').text('(' + audioPct + '%)');
+                $wrapper.find('.progress-bar[data-type="video"]')
+                    .css('width', videoPct + '%')
+                    .find('.percent').text('(' + videoPct + '%)');
+
+                // Table counts
+                $wrapper.find('.count-photo').text(counters.photo);
+                $wrapper.find('.count-audio').text(counters.audio);
+                $wrapper.find('.count-video').text(counters.video);
+                $wrapper.find('.count-total').text(counters.total);
+
+                // Table sizes
+                $wrapper.find('.size-photo').text(window.EC5.common.formatBytes(sizes.photo_bytes));
+                $wrapper.find('.size-audio').text(window.EC5.common.formatBytes(sizes.audio_bytes));
+                $wrapper.find('.size-video').text(window.EC5.common.formatBytes(sizes.video_bytes));
+                $wrapper.find('.size-total').text(window.EC5.common.formatBytes(sizes.total_bytes));
+            })
+            .fail(function () {
+                $wrapper.find('.spinner').text('Error loading data');
+            });
+    });
 });
 
 

@@ -1,0 +1,43 @@
+@import "theme";
+
+.panel-storage {
+  .progress {
+    height: 16px;
+    background-color: #f0f0f0;
+    margin-bottom: 10px;
+    .progress-bar:last-child:before {
+      background-color: #f0f0f0;
+    }
+    .progress-bar__photo {
+      background-color: $hot-pink;
+      height: 16px;
+    }
+    .progress-bar__audio {
+      background-color: $deep-purple;
+      height: 16px;
+    }
+    .progress-bar__video {
+      background-color: $solid-green;
+      height: 16px;
+    }
+  }
+  .color-indicator {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    margin-right: 4px;
+    vertical-align: text-bottom;
+
+    &.color-audio {
+      background-color: $deep-purple;
+    }
+
+    &.color-photo {
+      background-color: $hot-pink;
+    }
+    &.color-video {
+      background-color: $solid-green;
+    }
+  }
+}

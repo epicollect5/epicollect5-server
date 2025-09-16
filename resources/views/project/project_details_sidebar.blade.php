@@ -36,6 +36,15 @@
             <i class="material-icons">&#xE0DE;</i>
             {{ trans('site.manage_entries')}}
         </a>
+        @if (auth()->check() && auth()->user()->server_role == 'superadmin')
+            <a class="list-group-item"
+               href="{{ url('/myprojects/'.$requestAttributes->requestedProject->slug .'/storage')}}">
+                <span class="material-symbols-outlined">
+                    stock_media
+                </span>
+                {{ trans('site.storage')}}
+            </a>
+        @endif
 
         <a href="#" class="list-group-item disabled">
             Developers

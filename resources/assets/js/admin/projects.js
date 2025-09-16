@@ -102,12 +102,11 @@ $(document).ready(function () {
             $.get(window.EC5.SITE_URL + '/api/internal/counters/media/' + projectSlug, function (response) {
                 var totalMedia = response.data.counters.total;
 
-
                 $row.find('.spinner')
                     .addClass('hidden')
                     .fadeOut(function () {
                         $row.find('.counter-total')
-                            .text(_formatBytes(totalMedia))
+                            .text(window.EC5.common.formatBytes(totalMedia))
                             .removeClass('hidden')
                             .fadeIn();
                     });
@@ -198,7 +197,9 @@ $(document).ready(function () {
             window.EC5.admin.projects.getProjects(params).then(function (response) {
                 //hide loader and show projects
                 loader.addClass('hidden');
-                projectsList.hide().append(response).fadeIn(500);
+                projectsList.hide().append(response).fadeIn(500, function () {
+                    _getStorageStats();
+                });
 
                 //important: re-bind event as empty() removes it!!!!
                 $('.pagination').on('click', 'a', onPaginationClick);
@@ -206,17 +207,5 @@ $(document).ready(function () {
                 console.log(error);
             });
         }, delay);
-
-        _getStorageStats();
     }
-
-    function _formatBytes(bytes, precision) {
-        if (bytes === 0) return '0 B';
-        var k = 1024;
-        var sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-        var i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(precision)) + ' ' + sizes[i];
-    }
-
-
 });

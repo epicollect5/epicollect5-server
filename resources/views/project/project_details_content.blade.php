@@ -1,6 +1,6 @@
 @php
+    use Carbon\Carbon;
     $updatedAt = $requestAttributes->requestedProject->getUpdatedAt();
-    $formattedStorageBytes = Common::formatBytes($storageBytes)
 @endphp
 {{-- Success Message --}}
 @if (session('projectCreated') && session('tab') === 'create')
@@ -60,7 +60,7 @@
                                     calendar_today
                                 </i>
                                 &nbsp;Created on
-                                {{ \Carbon\Carbon::parse($requestAttributes->requestedProject->created_at)->setTimezone('UTC')->format('D M Y, H:i') }}
+                                {{ Carbon::parse($requestAttributes->requestedProject->created_at)->setTimezone('UTC')->format('D M Y, H:i') }}
                                 UTC
                             </h5>
                         </div>
@@ -414,18 +414,6 @@
                             </a>
                         </strong>
                     </p>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-sm-12 col-md-12 col-lg-12">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <span>Media Storage</span>
-                </div>
-                <div class="panel-body">
-                    {{ $formattedStorageBytes}}
                 </div>
             </div>
         </div>

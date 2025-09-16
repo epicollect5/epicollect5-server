@@ -4,7 +4,6 @@ namespace ec5\Http\Controllers\Web\Project;
 
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectStats;
-use ec5\Services\Media\MediaCounterService;
 use ec5\Traits\Eloquent\StatsRefresher;
 use ec5\Traits\Requests\RequestAttributes;
 use Response;
@@ -48,19 +47,14 @@ class ProjectController
         }
 
         $creatorEmail = '';
-        $storageBytes = 0;
         if (auth()->user()->server_role == config('epicollect.strings.server_roles.superadmin')) {
             $creatorEmail = Project::creatorEmail($this->requestedProject()->getId());
-            $mediaCounterService = new MediaCounterService();
-            $counters = $mediaCounterService->countersMedia($this->requestedProject()->ref);
-            $storageBytes = $counters['counters']['total'];
         }
 
         return view('project.project_details', [
             'includeTemplate' => 'view',
             'showPanel' => 'details-view',
-            'creatorEmail' => $creatorEmail,
-            'storageBytes' => $storageBytes
+            'creatorEmail' => $creatorEmail
         ]);
     }
 
