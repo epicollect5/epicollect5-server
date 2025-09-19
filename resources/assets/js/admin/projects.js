@@ -100,7 +100,8 @@ $(document).ready(function () {
             $row.find('.spinner').removeClass('hidden').fadeIn();
 
             $.get(window.EC5.SITE_URL + '/api/internal/counters/media/' + projectSlug, function (response) {
-                var totalMedia = response.data.counters.total;
+
+                var totalMedia = response.data.sizes.total_bytes;
 
                 $row.find('.spinner')
                     .addClass('hidden')

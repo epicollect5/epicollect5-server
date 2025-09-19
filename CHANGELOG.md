@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 12.3.8
+
+- Fixed a bug where storage total was wrong in the admin projects panel
+
 # 12.3.7
 
 - New Storage page for projects (superadmins) with quota panel
