@@ -1,5 +1,12 @@
 ## Release Notes
 
+# 12.3.7
+
+- New Storage page for projects (superadmins) with quota panel
+- New panel on project details page showing detailed media usage (photo/audio/video)
+- Project details now loads live storage statistics.
+- Admin projects list shows per-project storage totals.
+
 # 12.3.6
 
 - Fixed a bug where local storage was incorrectly set by api media endpoints using override middleware
