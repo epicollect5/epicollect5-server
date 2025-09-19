@@ -225,25 +225,33 @@ $(document).ready(function () {
                 var counters = response.data.counters;
                 var sizes = response.data.sizes;
 
-                // hide spinner, show stats
-                $wrapper.find('.spinner').fadeOut(function () {
+                // hide loader, show stats
+                $wrapper.find('.loader').fadeOut(function () {
                     $wrapper.find('.media-stats').removeClass('hidden').fadeIn();
                 });
 
-                var total = counters.total || 1; // prevent divide by 0
-                var photoPct = (counters.photo / total * 100).toFixed(1);
-                var audioPct = (counters.audio / total * 100).toFixed(1);
-                var videoPct = (counters.video / total * 100).toFixed(1);
+                var totalBytes = sizes.total_bytes;
+                var photoPct, audioPct, videoPct;
+                if (totalBytes === 0) {
+                    photoPct = audioPct = videoPct = 0;
+                } else {
+                    photoPct = (sizes.photo_bytes / totalBytes * 100).toFixed(1);
+                    audioPct = (sizes.audio_bytes / totalBytes * 100).toFixed(1);
+                    videoPct = (sizes.video_bytes / totalBytes * 100).toFixed(1);
+                }
+
 
                 $wrapper.find('.progress-bar[data-type="photo"]')
-                    .css('width', photoPct + '%')
-                    .find('.percent').text('(' + photoPct + '%)');
+                    .css('width', photoPct + '%');
+
                 $wrapper.find('.progress-bar[data-type="audio"]')
-                    .css('width', audioPct + '%')
-                    .find('.percent').text('(' + audioPct + '%)');
+                    .css('width', audioPct + '%');
+
+                if (totalBytes > 0) {
+                    videoPct = (100 - parseFloat(photoPct) - parseFloat(audioPct)).toFixed(1);
+                }
                 $wrapper.find('.progress-bar[data-type="video"]')
-                    .css('width', videoPct + '%')
-                    .find('.percent').text('(' + videoPct + '%)');
+                    .css('width', videoPct + '%');
 
                 // Table counts
                 $wrapper.find('.count-photo').text(counters.photo);
@@ -256,9 +264,19 @@ $(document).ready(function () {
                 $wrapper.find('.size-audio').text(window.EC5.common.formatBytes(sizes.audio_bytes));
                 $wrapper.find('.size-video').text(window.EC5.common.formatBytes(sizes.video_bytes));
                 $wrapper.find('.size-total').text(window.EC5.common.formatBytes(sizes.total_bytes));
+
+                //Update table text percentage
+                $wrapper.find('.ratio-photo').text(photoPct + '%');
+                $wrapper.find('.ratio-audio').text(audioPct + '%');
+                $wrapper.find('.ratio-video').text(videoPct + '%');
+                if (totalBytes === 0) {
+                    $wrapper.find('.ratio-total').text('0%');
+                } else {
+                    $wrapper.find('.ratio-total').text('100%');
+                }
             })
             .fail(function () {
-                $wrapper.find('.spinner').text('Error loading data');
+                $wrapper.find('.loader').text('Error loading data');
             });
     });
 });
