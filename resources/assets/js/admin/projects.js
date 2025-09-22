@@ -88,33 +88,6 @@ $(document).ready(function () {
     var projectsList = $(' .page-admin .projects-list');
     var loader = $('.page-admin .projects-loader');
 
-    _getStorageStats();
-
-    // Loop through each table row that has a project reference
-    function _getStorageStats() {
-        $('table td[data-project-slug]').each(function () {
-            var $row = $(this);
-            var projectSlug = $row.data('project-slug'); // from data-project-ref attribute
-
-            // Show spinner while loading
-            $row.find('.spinner').removeClass('hidden').fadeIn();
-
-            $.get(window.EC5.SITE_URL + '/api/internal/counters/media/' + projectSlug, function (response) {
-
-                var totalMedia = response.data.sizes.total_bytes;
-
-                $row.find('.spinner')
-                    .addClass('hidden')
-                    .fadeOut(function () {
-                        $row.find('.counter-total')
-                            .text(window.EC5.common.formatBytes(totalMedia))
-                            .removeClass('hidden')
-                            .fadeIn();
-                    });
-            });
-        });
-    }
-
     projectsList.on('change', '.project-roles', function () {
 
         var projectId = $(this).data('projectId');
@@ -185,7 +158,6 @@ $(document).ready(function () {
         params.visibility = visibility === 'any' ? '' : visibility;
 
         _filterProjects(0);
-        _getStorageStats();
     }
 
     //perform project filtering
@@ -198,10 +170,7 @@ $(document).ready(function () {
             window.EC5.admin.projects.getProjects(params).then(function (response) {
                 //hide loader and show projects
                 loader.addClass('hidden');
-                projectsList.hide().append(response).fadeIn(500, function () {
-                    _getStorageStats();
-                });
-
+                projectsList.hide().append(response).fadeIn(500);
                 //important: re-bind event as empty() removes it!!!!
                 $('.pagination').on('click', 'a', onPaginationClick);
             }, function (error) {

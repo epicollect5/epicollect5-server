@@ -132,6 +132,8 @@ class AdminController extends Controller
             return response()->json(view($view, $payload)->render());
         }
 
+
+
         // Return view with relevant params
         return view('admin.admin', $payload);
     }

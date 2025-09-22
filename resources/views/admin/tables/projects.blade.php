@@ -46,10 +46,8 @@
                     </td>
                     <td class="text-center">{{ $project->total_entries }}</td>
                     <td class="text-center"
-                        data-project-slug="{{ $project->slug }}"
                     >
-                        <span class="spinner text-center"></span>
-                        <span class="counter-total hidden">0</span>
+                        {{ Common::formatBytes($project->total_bytes) }}
                     </td>
                 </tr>
             @endforeach

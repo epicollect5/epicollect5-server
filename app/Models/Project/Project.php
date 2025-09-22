@@ -205,7 +205,8 @@ class Project extends Model
                 $this->getTable() . '.*',
                 'users.name as user_name',
                 'users.last_name as user_last_name',
-                $this->projectStatsTable . '.total_entries' // Explicitly select total_entries
+                $this->projectStatsTable . '.total_entries', // Explicitly select total_entries
+                $this->projectStatsTable . '.total_bytes', // Explicitly select total_bytes
             )
             ->simplePaginate($perPage);
     }
