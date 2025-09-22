@@ -12,6 +12,7 @@ return new class () extends Migration {
     {
         Schema::table('project_stats', function (Blueprint $table) {
             $table->unsignedBigInteger('total_bytes')->default(0)->after('total_entries');
+            $table->timestamp('total_bytes_updated_at')->nullable()->after('total_bytes');
         });
     }
 
@@ -22,6 +23,7 @@ return new class () extends Migration {
     {
         Schema::table('project_stats', function (Blueprint $table) {
             $table->dropColumn('total_bytes');
+            $table->dropColumn('total_bytes_updated_at');
         });
     }
 };

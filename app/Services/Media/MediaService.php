@@ -205,6 +205,4 @@ class MediaService
         // Non-photo formats (audio/video) just return API 404
         return Response::apiErrorCode(404, ['media-service' => ['ec5_69']]);
     }
-
-
 }

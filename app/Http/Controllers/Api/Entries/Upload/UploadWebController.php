@@ -188,10 +188,9 @@ class UploadWebController extends UploadControllerBase
         $entryStructure = $this->setUpEntryStructure($input, $fileName, $file);
 
         // Move file
-        // Note: the file has already been validated on initial upload to temp folder
-        $this->ruleFileEntry->moveFile($this->requestedProject(), $entryStructure);
-        if ($this->ruleFileEntry->hasErrors()) {
-            $this->errors = $this->ruleFileEntry->errors();
+        if (!$this->fileMoverService->moveFile($this->requestedProject(), $entryStructure)) {
+            $fileEntry = $entryStructure->getEntry();
+            $this->errors[ $fileEntry['input_ref']] = ['ec5_83'];
             return;
         }
 

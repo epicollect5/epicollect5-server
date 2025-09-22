@@ -5,7 +5,7 @@ namespace ec5\Console\Commands;
 use Illuminate\Console\Command;
 use ec5\Services\Media\MediaCounterService;
 use Illuminate\Support\Facades\DB;
-use Schema;
+use Illuminate\Support\Facades\Schema;
 
 class SystemProjectStorageCommand extends Command
 {
@@ -33,7 +33,7 @@ class SystemProjectStorageCommand extends Command
 
     private function processSingleProject($mediaCounterService, $projectRef): int
     {
-        $this->info("Processing project: {$projectRef}");
+        $this->info("Processing project: $projectRef");
 
         $project = DB::table('project_stats')
             ->join('projects', 'projects.id', '=', 'project_stats.project_id')
@@ -42,7 +42,7 @@ class SystemProjectStorageCommand extends Command
             ->first();
 
         if (!$project) {
-            $this->error("Project not found: {$projectRef}");
+            $this->error("Project not found: $projectRef");
             return 1;
         }
 
@@ -53,7 +53,7 @@ class SystemProjectStorageCommand extends Command
             ->where('id', $project->stats_id)
             ->update(['total_bytes' => $totalBytes]);
 
-        $this->info("Updated project {$projectRef} with {$totalBytes} total bytes");
+        $this->info("Updated project $projectRef with $totalBytes total bytes");
         return 0;
     }
 
@@ -61,7 +61,7 @@ class SystemProjectStorageCommand extends Command
     {
         $totalProjects = DB::table('project_stats')->count();
 
-        $this->info("Processing {$totalProjects} projects...");
+        $this->info("Processing $totalProjects projects...");
         $bar = $this->output->createProgressBar($totalProjects);
 
         DB::table('project_stats')

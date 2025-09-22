@@ -4,6 +4,7 @@ namespace ec5\Traits\Eloquent;
 
 use Aws\S3\Exception\S3Exception;
 use Aws\S3\S3Client;
+use ec5\DTO\ProjectDTO;
 use ec5\Libraries\Utilities\Common;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
@@ -140,7 +141,7 @@ trait Remover
     /**
      * @throws Exception
      */
-    public function removeMediaChunk(string $projectRef): int
+    public function removeMediaChunk(ProjectDTO $project): int
     {
         $drivers = config('epicollect.media.entries_deletable');
         $totalDeleted = 0;
@@ -165,32 +166,36 @@ trait Remover
                     $diskRoot = config('filesystems.disks.' . $driver . '.root').'/';
                     $s3Client = $this->createS3Client($config);
                     $bucket = $config['bucket'];
-                    $prefix = $diskRoot . $projectRef;
+                    $prefix = $diskRoot . $project->ref;
                     $deletedCount = $this->deleteOneBatchByPrefixS3($s3Client, $bucket, $prefix, $remainingCapacity);
                 } else {
                     // Handle local storage using Laravel Storage facade
-                    $deletedCount = $this->deleteOneBatchByPrefixLocal($driver, $projectRef, $remainingCapacity);
+                    $deletedCount = $this->deleteOneBatchByPrefixLocal($driver, $project->ref, $remainingCapacity);
                 }
 
-                if ($deletedCount > 0) {
-                    $totalDeleted += $deletedCount;
-                    Log::info("Deleted $deletedCount entries for $projectRef on disk $driver. Total so far: $totalDeleted");
+                if ($deletedCount['deletedFiles'] > 0) {
+                    $totalDeleted += $deletedCount['deletedFiles'];
+                    //adjust total bytes (negative delta)
+                    ProjectStats::where('project_id', $project->getId())
+                        ->first()
+                        ->adjustTotalBytes(-$deletedCount['deletedBytes']);
+                    Log::info("Deleted {{$deletedCount['deletedFiles']}} entries for $project->ref on disk $driver. Total so far: $totalDeleted");
                 }
 
             } catch (Exception $e) {
-                Log::error("Failed batch delete for $projectRef on disk $driver: " . $e->getMessage());
+                Log::error("Failed batch delete for $project->ref on disk $driver: " . $e->getMessage());
                 throw $e;
             }
         }
 
         if ($totalDeleted > 0) {
-            Log::info("Total deleted $totalDeleted entries for $projectRef across all drivers.");
+            Log::info("Total deleted $totalDeleted entries for $project->ref across all drivers.");
         }
 
         return $totalDeleted;
     }
 
-    private function deleteOneBatchByPrefixS3(S3Client $s3Client, string $bucket, string $prefix, int $maxFiles = 1000): int
+    private function deleteOneBatchByPrefixS3(S3Client $s3Client, string $bucket, string $prefix, int $maxFiles = 1000): array
     {
         $maxRetries = 3;
         $retryDelay = 1; // seconds
@@ -215,7 +220,10 @@ trait Remover
         }
 
         if (empty($result['Contents'])) {
-            return 0;
+            return [
+                'deletedFiles' => 0,
+                'deletedBytes' => 0,
+            ];
         }
 
         // Ensure we don't exceed the maxFiles limit, even if S3 returns more
@@ -248,20 +256,27 @@ trait Remover
             Log::error("Errors deleting S3 objects with prefix $prefix:", $deleteResult['Errors']);
         }
 
-        return count($objects);
+        return [
+            'deletedFiles' => count($objects),
+            'deletedBytes' => array_sum(array_column($objects, 'Size')),
+        ];
     }
 
     /**
      * @throws Exception
      */
-    private function deleteOneBatchByPrefixLocal(string $disk, string $projectRef, int $maxFiles = 1000): int
+    private function deleteOneBatchByPrefixLocal(string $disk, string $projectRef, int $maxFiles = 1000): array
     {
         $deletedCount = 0;
+        $deletedBytes = 0;
 
         $storage = Storage::disk($disk);
 
         if (!$storage->exists($projectRef)) {
-            return 0;
+            return [
+                'deletedFiles' => 0,
+                'deletedBytes' => 0,
+            ];
         }
 
         $fullPath = $storage->path($projectRef);
@@ -286,8 +301,11 @@ trait Remover
                     // Use Laravel Storage to delete (maintains consistency with Laravel's file handling)
                     $fullRelativePath = $projectRef . '/' . $relativePath;
 
+                    $fileSize = $file->getSize();
+
                     if ($storage->delete($fullRelativePath)) {
                         $deletedCount++;
+                        $deletedBytes += $fileSize;
                     } else {
                         // This would be a real error (permissions, etc.)
                         Log::error("Failed to delete file: $fullRelativePath");
@@ -309,6 +327,9 @@ trait Remover
             Log::warning("Failed to remove directory: $projectRef - " . $e->getMessage());
         }
 
-        return $deletedCount;
+        return [
+            'deletedFiles' => $deletedCount,
+            'deletedBytes' => $deletedBytes,
+        ];
     }
 }

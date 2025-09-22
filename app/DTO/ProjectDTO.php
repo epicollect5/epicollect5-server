@@ -104,6 +104,7 @@ class ProjectDTO
 
         $this->addProjectStats([
             'total_entries' => $data->total_entries ?? 0,
+            'total_bytes' => $data->total_bytes ?? 0,
             'total_users' => $data->total_users ?? 0,
             'form_counts' => isset($data->form_counts) ? json_decode($data->form_counts, true) : [],
             'branch_counts' => isset($data->branch_counts) ? json_decode($data->branch_counts, true) : [],

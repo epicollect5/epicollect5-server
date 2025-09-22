@@ -260,10 +260,11 @@ $(document).ready(function () {
                 $wrapper.find('.count-total').text(counters.total);
 
                 // Table sizes
-                $wrapper.find('.size-photo').text(window.EC5.common.formatBytes(sizes.photo_bytes));
-                $wrapper.find('.size-audio').text(window.EC5.common.formatBytes(sizes.audio_bytes));
-                $wrapper.find('.size-video').text(window.EC5.common.formatBytes(sizes.video_bytes));
-                $wrapper.find('.size-total').text(window.EC5.common.formatBytes(sizes.total_bytes));
+                $wrapper.find('.size-photo').text(window.EC5.common.formatBytes(sizes.photo_bytes, 2));
+                $wrapper.find('.size-audio').text(window.EC5.common.formatBytes(sizes.audio_bytes, 2));
+                $wrapper.find('.size-video').text(window.EC5.common.formatBytes(sizes.video_bytes, 2));
+                $wrapper.find('.size-total').text(window.EC5.common.formatBytes(sizes.total_bytes, 2));
+                
 
                 //Update table text percentage
                 $wrapper.find('.ratio-photo').text(photoPct + '%');

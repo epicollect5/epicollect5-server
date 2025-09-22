@@ -144,4 +144,17 @@ class ProjectStats extends Model
             ->where('project_id', '=', $projectId)
             ->update(['branch_counts' => json_encode($statsCount)]);
     }
+
+    public function adjustTotalBytes(int $delta): bool
+    {
+        try {
+            $this->increment('total_bytes', $delta, [
+                'total_bytes_updated_at' => now(),
+            ]);
+        } catch (Throwable $e) {
+            Log::error("Failed to adjust total_bytes for project $this->project_id: " . $e->getMessage());
+        }
+
+        return true;
+    }
 }

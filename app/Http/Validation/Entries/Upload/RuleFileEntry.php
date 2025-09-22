@@ -10,11 +10,7 @@ use ec5\Http\Validation\Entries\Upload\FileRules\RulePhotoWeb;
 use ec5\Http\Validation\Entries\Upload\FileRules\RuleVideo;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
-use ec5\Services\Media\AudioVideoSaverService;
-use ec5\Services\Media\PhotoSaverService;
-use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Drivers\Imagick\Driver;
-use Intervention\Image\ImageManager;
+use ec5\Services\Media\FileMoverService;
 use Throwable;
 
 class RuleFileEntry extends EntryValidationBase
@@ -34,18 +30,21 @@ class RuleFileEntry extends EntryValidationBase
     protected RulePhotoWeb $rulePhotoWeb;
     protected RuleVideo $ruleVideo;
     protected RuleAudio $ruleAudio;
+    protected FileMoverService $fileMoverService;
 
     public function __construct(
         RulePhotoApp $rulePhotoApp,
         RulePhotoWeb $rulePhotoWeb,
         RuleVideo    $ruleVideo,
         RuleAudio    $ruleAudio,
-        RuleAnswers  $ruleAnswers
+        RuleAnswers  $ruleAnswers,
+        FileMoverService $fileMoverService
     ) {
         $this->rulePhotoApp = $rulePhotoApp;
         $this->rulePhotoWeb = $rulePhotoWeb;
         $this->ruleVideo = $ruleVideo;
         $this->ruleAudio = $ruleAudio;
+        $this->fileMoverService = $fileMoverService;
 
         // Call to parent constructor, default to $entrySearchRepository
         parent::__construct($ruleAnswers);
@@ -96,7 +95,11 @@ class RuleFileEntry extends EntryValidationBase
             return;
         }
 
-        $this->moveFile($project, $entryStructure);
+        if (!$this->fileMoverService->moveFile($project, $entryStructure)) {
+            // Get input_ref and entry
+            $fileEntry = $entryStructure->getEntry();
+            $this->errors[ $fileEntry['input_ref']] = ['ec5_83'];
+        }
     }
 
     /**
@@ -211,95 +214,5 @@ class RuleFileEntry extends EntryValidationBase
         }
 
         return true;
-    }
-
-    /**
-     * Stores an uploaded media file (photo, audio, or video) for a project entry, handling resizing  for photos.
-     *
-     * For photo files, determines orientation, resizes if necessary, and saves the original image using the appropriate storage (local or S3). For audio and video files, saves the file to the designated storage disk with public visibility. Sets error codes if file reading or saving fails.
-     */
-    public function moveFile(ProjectDTO $project, EntryStructureDTO $entryStructure): void
-    {
-        $projectRef = $project->ref;
-
-        // Get the entry data
-        $fileEntry = $entryStructure->getEntry();
-
-        $fileType = $fileEntry['type'];
-        $fileName = $fileEntry['name'];
-        $inputRef = $fileEntry['input_ref'];
-
-        $file = $entryStructure->getFile();
-
-        $isS3 = is_array($file) && ($file['disk'] ?? '') === 's3';
-
-        // Process each file type
-        switch ($fileType) {
-
-            case config('epicollect.strings.inputs_type.photo'):
-
-                // === Get image dimensions ===
-                $manager = new ImageManager(new Driver());
-
-                if ($isS3) {
-                    $stream = Storage::disk('s3')->readStream($file['path']);
-
-                    if (!$stream) {
-                        $this->errors[$inputRef] = ['ec5_83'];
-                        return;
-                    }
-
-                    $image = $manager->read($stream);
-                    fclose($stream);
-                } else {
-                    $image = $manager->read($file->getRealPath());
-                }
-
-                $width = $image->width();
-                $height = $image->height();
-
-                // === Choose dimensions ===
-                $dimensions = ($width > $height)
-                    ? config('epicollect.media.entry_original_landscape')
-                    : config('epicollect.media.entry_original_portrait');
-
-                // Skip resizing if dimensions match
-                if ($width === $dimensions[0] && $height === $dimensions[1]) {
-                    $dimensions = [];
-                }
-
-                // === Save original image ===
-                $original = PhotoSaverService::saveImage(
-                    $projectRef,
-                    $isS3 ? $file['path'] : $file,
-                    $fileName,
-                    'photo',
-                    $dimensions,
-                    70
-                );
-
-                if (!$original) {
-                    $this->errors[$inputRef] = ['ec5_82'];
-                    return;
-                }
-                break;
-
-            default:
-                // === Save non-photo files ===
-                $fileSaved = AudioVideoSaverService::saveFile(
-                    $projectRef,
-                    $file,
-                    $fileName,
-                    $fileType,// -> audio,video
-                    $isS3
-                );
-
-                if (!$fileSaved) {
-                    $this->errors[$inputRef] = ['ec5_83'];
-                    return;
-                }
-
-                break;
-        }
     }
 }

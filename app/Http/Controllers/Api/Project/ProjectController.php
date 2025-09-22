@@ -196,7 +196,14 @@ class ProjectController
     public function countersMedia()
     {
         $mediaCounterService = new MediaCounterService();
-        return Response::apiData($mediaCounterService->countersMedia($this->requestedProject()->ref));
+
+        $counters = $mediaCounterService->countersMedia($this->requestedProject()->ref);
+
+        //adjust total bytes in project stats, in case it was not updated correctly
+        ProjectStats::where('project_id', $this->requestedProject()->getId())
+            ->update(['total_bytes' => $counters['sizes']['total_bytes']]);
+
+        return Response::apiData($counters);
     }
 
     public function updateCanBulkUpload(RuleCanBulkUpload $ruleCanBulkUpload)

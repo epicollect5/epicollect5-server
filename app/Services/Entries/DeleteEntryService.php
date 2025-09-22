@@ -58,12 +58,12 @@ class DeleteEntryService
             //imp: merge hierarchy uuids with branch entries uuids
             //4. Delete media files
             if (config("filesystems.default") === 's3') {
-                if (!$this->deleteMediaFilesS3($project->ref, array_merge($entryUuids, $branchEntryUuids))) {
+                if (!$this->deleteMediaFilesS3($project, array_merge($entryUuids, $branchEntryUuids))) {
                     throw new Exception('Cannot delete media files S3');
                 }
             }
             if (config("filesystems.default") === 'local') {
-                if (!$this->deleteMediaFilesLocal($project->ref, array_merge($entryUuids, $branchEntryUuids))) {
+                if (!$this->deleteMediaFilesLocal($project, array_merge($entryUuids, $branchEntryUuids))) {
                     throw new Exception('Cannot delete media files local');
                 }
             }
@@ -114,12 +114,12 @@ class DeleteEntryService
 
             //4. Delete media files
             if (config("filesystems.default") === 's3') {
-                if (!$this->deleteMediaFilesS3($project->ref, [$branchEntryUuid])) {
+                if (!$this->deleteMediaFilesS3($project, [$branchEntryUuid])) {
                     throw new Exception('Cannot delete media files S3');
                 }
             }
             if (config("filesystems.default") === 'local') {
-                if (!$this->deleteMediaFilesLocal($project->ref, [$branchEntryUuid])) {
+                if (!$this->deleteMediaFilesLocal($project, [$branchEntryUuid])) {
                     throw new Exception('Cannot delete media files local');
                 }
             }
@@ -137,16 +137,17 @@ class DeleteEntryService
         return true;
     }
 
-    private function deleteMediaFilesLocal(string $projectRef, array $uuids): bool
+    private function deleteMediaFilesLocal(ProjectDTO $project, array $uuids): bool
     {
         //delete all files for this entry (matching the starting uuid)
         // Use DirectoryIterator to iterate through files one by one
         $drivers = config('epicollect.media.entries_deletable');
+        $totalDeletedBytes = 0;
         foreach ($drivers as $driver) {
             // Get disk, path prefix and all directories for this driver
             $diskRoot = config('filesystems.disks.' . $driver . '.root').'/';
             try {
-                $directory = new DirectoryIterator($diskRoot . $projectRef);
+                $directory = new DirectoryIterator($diskRoot . $project->ref);
             } catch (Throwable) {
                 //directory not found, so no media files, can skip safely
                 continue;
@@ -162,28 +163,38 @@ class DeleteEntryService
                         // Get the full path of the file
                         $filePath = $file->getPathname();
                         // Delete the file
+                        $fileSize = $file->getSize();
                         if (File::exists($filePath)) {
                             if (!File::delete($filePath)) {
                                 // Log an error if file deletion fails
                                 Log::error("Failed to delete file: " . $filePath);
                                 return false;
                             }
+                            $totalDeletedBytes += $fileSize;
                         }
                     }
                 }
             }
         }
 
+        if ($totalDeletedBytes > 0) {
+            //adjust total bytes (negative delta)
+            ProjectStats::where('project_id', $project->getId())
+                ->first()
+                ->adjustTotalBytes(-$totalDeletedBytes);
+        }
+
         return true;
     }
 
-    private function deleteMediaFilesS3(string $projectRef, array $uuids): bool
+    private function deleteMediaFilesS3(ProjectDTO $project, array $uuids): bool
     {
         $disks = config('epicollect.media.entries_deletable');
+        $totalDeletedBytes = 0;
         foreach ($disks as $disk) {
 
             $diskPath = Storage::disk($disk);
-            $prefix = rtrim($projectRef, '/') . '/';
+            $prefix = rtrim($project->ref, '/') . '/';
 
             try {
                 // List all files under the S3 "directory"
@@ -203,12 +214,25 @@ class DeleteEntryService
                 });
 
                 if (!empty($filesToDelete)) {
+
+                    // Get total bytes before deletion
+                    foreach ($filesToDelete as $file) {
+                        $size = $diskPath->size($file);
+                        $totalDeletedBytes += $size;
+                    }
                     $diskPath->delete($filesToDelete);
                 }
             } catch (Throwable $e) {
-                Log::error("deleteMediaFilesS3 failed for driver [$disk], project [$projectRef]: " . $e->getMessage());
+                Log::error("deleteMediaFilesS3 failed for driver [$disk], project [$project->ref]: " . $e->getMessage());
                 return false;
             }
+        }
+
+        if ($totalDeletedBytes > 0) {
+            //adjust total bytes (negative delta)
+            ProjectStats::where('project_id', $project->getId())
+                ->first()
+                ->adjustTotalBytes(-$totalDeletedBytes);
         }
 
         return true;
