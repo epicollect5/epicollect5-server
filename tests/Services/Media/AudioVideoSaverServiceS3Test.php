@@ -2,10 +2,16 @@
 
 namespace Tests\Services\Media;
 
-use ec5\Libraries\Utilities\Generators;
+use ec5\DTO\ProjectDefinitionDTO;
+use ec5\DTO\ProjectDTO;
+use ec5\DTO\ProjectExtraDTO;
+use ec5\DTO\ProjectMappingDTO;
+use ec5\DTO\ProjectStatsDTO;
+use ec5\Services\Mapping\ProjectMappingService;
 use ec5\Services\Media\AudioVideoSaverService;
 use Exception;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Mockery;
 use Ramsey\Uuid\Uuid;
 use Tests\TestCase;
 use Storage;
@@ -27,7 +33,13 @@ class AudioVideoSaverServiceS3Test extends TestCase
 
     public function test_service_handles_s3_429_too_many_requests_error()
     {
-        $projectRef = Generators::projectRef();
+        $project = new ProjectDTO(
+            new ProjectDefinitionDTO(),
+            new ProjectExtraDTO(),
+            new ProjectMappingDTO(),
+            new ProjectStatsDTO(),
+            new ProjectMappingService()
+        );
         $fileName = Uuid::uuid4()->toString(). '_' . time() . '.mp4';
         $disk = 'audio';
         $file = ['path' => 'temp/'.$fileName];
@@ -57,7 +69,7 @@ class AudioVideoSaverServiceS3Test extends TestCase
                 ['response' => new Response(429)]
             ));
 
-        $result = AudioVideoSaverService::saveFile($projectRef, $file, $fileName, $disk, true);
+        $result = AudioVideoSaverService::saveFile($project, $file, $fileName, $disk, true);
         $this->assertFalse($result);
     }
 
@@ -66,7 +78,13 @@ class AudioVideoSaverServiceS3Test extends TestCase
      */
     public function test_service_handles_s3_503_service_unavailable_error()
     {
-        $projectRef = Generators::projectRef();
+        $project = new ProjectDTO(
+            new ProjectDefinitionDTO(),
+            new ProjectExtraDTO(),
+            new ProjectMappingDTO(),
+            new ProjectStatsDTO(),
+            new ProjectMappingService()
+        );
         $fileName = Uuid::uuid4()->toString(). '_' . time() . '.mp4';
         $disk = 'video';
         $file = ['path' => 'temp/'.$fileName];
@@ -96,7 +114,7 @@ class AudioVideoSaverServiceS3Test extends TestCase
                 ['response' => new Response(503)]
             ));
 
-        $result = AudioVideoSaverService::saveFile($projectRef, $file, $fileName, $disk, true);
+        $result = AudioVideoSaverService::saveFile($project, $file, $fileName, $disk, true);
         $this->assertFalse($result);
     }
 
@@ -105,15 +123,22 @@ class AudioVideoSaverServiceS3Test extends TestCase
      */
     public function test_service_successfully_saves_file_to_s3()
     {
-        $projectRef = Generators::projectRef();
+        $project = new ProjectDTO(
+            new ProjectDefinitionDTO(),
+            new ProjectExtraDTO(),
+            new ProjectMappingDTO(),
+            new ProjectStatsDTO(),
+            new ProjectMappingService()
+        );
         $fileName = Uuid::uuid4()->toString(). '_' . time() . '.mp4';
         $disk = 'audio';
         $file = ['path' => 'temp/'.$fileName];
+        $fileBytes = 21;
 
         // Mock S3 read stream with fixture data
         Storage::shouldReceive('disk')
             ->with('s3')
-            ->once()
+            ->twice()
             ->andReturnSelf();
 
         $stream = fopen('php://temp', 'r+');
@@ -122,6 +147,11 @@ class AudioVideoSaverServiceS3Test extends TestCase
         Storage::shouldReceive('readStream')
             ->once() // Explicit expectation: stream should be read only once
             ->andReturn($stream);
+
+        Storage::shouldReceive('size')
+            ->once()
+            ->with($file['path'])
+            ->andReturn($fileBytes); // match the size of your fake content
 
         // Mock target disk for successful save
         Storage::shouldReceive('disk')
@@ -132,8 +162,28 @@ class AudioVideoSaverServiceS3Test extends TestCase
             ->once()
             ->andReturn(true);
 
+        // Mock ProjectStats model
+        $mockStats = Mockery::mock('alias:ec5\Models\Project\ProjectStats');
+
+        // Mock the instance returned by first()
+        $mockStatsInstance = Mockery::mock();
+        $mockStatsInstance->shouldReceive('adjustTotalBytes')
+            ->once()
+            ->with($fileBytes)
+            ->andReturnTrue(); // or whatever you want
+
+        // Mock the static where() call to return a builder-like object
+        $mockStats->shouldReceive('where')
+            ->once()
+            ->with('project_id', $project->getId())
+            ->andReturnSelf();
+
+        $mockStats->shouldReceive('first')
+            ->once()
+            ->andReturn($mockStatsInstance);
+
         // Assert service returns true on successful save
-        $result = AudioVideoSaverService::saveFile($projectRef, $file, $fileName, $disk, true);
+        $result = AudioVideoSaverService::saveFile($project, $file, $fileName, $disk, true);
         $this->assertTrue($result);
     }
 
@@ -142,7 +192,13 @@ class AudioVideoSaverServiceS3Test extends TestCase
      */
     public function test_service_handles_s3_403_forbidden_error_without_retry()
     {
-        $projectRef = 'test-project-ref';
+        $project = new ProjectDTO(
+            new ProjectDefinitionDTO(),
+            new ProjectExtraDTO(),
+            new ProjectMappingDTO(),
+            new ProjectStatsDTO(),
+            new ProjectMappingService()
+        );
         $fileName = 'test-audio.mp3';
         $disk = 'audio';
         $file = ['path' => 'temp/test-audio.mp3'];
@@ -174,7 +230,7 @@ class AudioVideoSaverServiceS3Test extends TestCase
             ));
 
         // Assert service returns false when non-retryable S3 error occurs
-        $result = AudioVideoSaverService::saveFile($projectRef, $file, $fileName, $disk, true);
+        $result = AudioVideoSaverService::saveFile($project, $file, $fileName, $disk, true);
         $this->assertFalse($result);
     }
 
@@ -183,7 +239,13 @@ class AudioVideoSaverServiceS3Test extends TestCase
      */
     public function test_service_handles_s3_put_returns_false()
     {
-        $projectRef = 'test-project-ref';
+        $project = new ProjectDTO(
+            new ProjectDefinitionDTO(),
+            new ProjectExtraDTO(),
+            new ProjectMappingDTO(),
+            new ProjectStatsDTO(),
+            new ProjectMappingService()
+        );
         $fileName = 'test-audio.mp3';
         $disk = 'audio';
         $file = ['path' => 'temp/test-audio.mp3'];
@@ -211,7 +273,7 @@ class AudioVideoSaverServiceS3Test extends TestCase
             ->andReturn(false);
 
         // Assert service returns false when put() fails
-        $result = AudioVideoSaverService::saveFile($projectRef, $file, $fileName, $disk, true);
+        $result = AudioVideoSaverService::saveFile($project, $file, $fileName, $disk, true);
         $this->assertFalse($result);
     }
 }

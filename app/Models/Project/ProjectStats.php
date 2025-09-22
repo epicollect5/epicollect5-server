@@ -148,7 +148,9 @@ class ProjectStats extends Model
     public function adjustTotalBytes(int $delta): bool
     {
         try {
-            $this->increment('total_bytes', $delta, [
+            $newTotal = max(0, $this->total_bytes + $delta);
+            $this->update([
+                'total_bytes' => $newTotal,
                 'total_bytes_updated_at' => now(),
             ]);
         } catch (Throwable $e) {

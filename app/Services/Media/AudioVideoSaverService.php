@@ -3,7 +3,9 @@
 namespace ec5\Services\Media;
 
 use Aws\S3\Exception\S3Exception;
+use ec5\DTO\ProjectDTO;
 use ec5\Libraries\Utilities\Common;
+use ec5\Models\Project\ProjectStats;
 use Log;
 use Storage;
 use Throwable;
@@ -15,17 +17,17 @@ class AudioVideoSaverService
      *
      * Supports both local and S3 storage.
      *
-     * @param string $projectRef Directory prefix to store the file under.
+     * @param ProjectDTO $project
      * @param mixed $file UploadedFile or array with 'path' key (for S3).
      * @param string $fileName Desired name of the saved file.
      * @param string $disk Storage disk name (e.g., 'local', 's3', 'photo', etc.).
      * @param bool $isS3 Whether the source file is stored in S3.
      * @return bool True if saved successfully, false on failure.
      */
-    public static function saveFile(string $projectRef, mixed $file, string $fileName, string $disk, bool $isS3 = false): bool
+    public static function saveFile(ProjectDTO $project, mixed $file, string $fileName, string $disk, bool $isS3 = false): bool
     {
         $fileSaved = false;
-        $targetPath = $projectRef . '/' . $fileName;
+        $targetPath = $project->ref . '/' . $fileName;
 
         try {
             if ($isS3) {
@@ -65,7 +67,6 @@ class AudioVideoSaverService
                         if ($fileSaved) {
                             break; // Success, exit retry loop
                         }
-
                     } catch (Throwable $e) {
                         if ($retry === $maxRetries || !($e instanceof S3Exception && Common::isRetryableError($e))) {
                             fclose($stream);
@@ -78,12 +79,12 @@ class AudioVideoSaverService
             } else {
                 $stream = fopen($file->getRealPath(), 'rb');
 
-                if (!Storage::disk($disk)->exists($projectRef)) {
-                    Storage::disk($disk)->makeDirectory($projectRef);
+                if (!Storage::disk($disk)->exists($project->ref)) {
+                    Storage::disk($disk)->makeDirectory($project->ref);
 
                     $diskRoot = config('filesystems.disks.' . $disk . '.root').'/';
 
-                    $newDirFullPath = $diskRoot . $projectRef;
+                    $newDirFullPath = $diskRoot . $project->ref;
                     Common::setPermissionsRecursiveUp($newDirFullPath);
                 }
 
@@ -94,11 +95,19 @@ class AudioVideoSaverService
                 fclose($stream);
             }
 
+            if ($fileSaved) {
+                $fileBytes = $isS3 ? Storage::disk('s3')->size($file['path']) : $file->getSize();
+                //adjust total bytes
+                ProjectStats::where('project_id', $project->getId())
+                    ->first()
+                    ->adjustTotalBytes($fileBytes);
+            }
+
             return (bool) $fileSaved;
         } catch (Throwable $e) {
             Log::error('Failed to save file', [
                 'exception' => $e,
-                'projectRef' => $projectRef,
+                'projectRef' => $project->ref,
                 'fileName' => $fileName,
                 'disk' => $disk,
                 'isS3' => $isS3,

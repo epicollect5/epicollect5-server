@@ -3,7 +3,9 @@
 namespace ec5\Services\Media;
 
 use Aws\S3\Exception\S3Exception;
+use ec5\DTO\ProjectDTO;
 use ec5\Libraries\Utilities\Common;
+use ec5\Models\Project\ProjectStats;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Drivers\Imagick\Driver;
@@ -22,7 +24,7 @@ class PhotoSaverService
      *
      * Determines the default storage driver from configuration and delegates the image saving process to the appropriate method. Returns false if the storage driver is unsupported.
      *
-     * @param string $projectRef Reference identifier for the project.
+     * @param ProjectDTO $project
      * @param mixed $image Uploaded file instance or file path to the image.
      * @param string $fileName Name to assign to the saved image file.
      * @param string $disk Storage disk to use for saving the image.
@@ -30,14 +32,14 @@ class PhotoSaverService
      * @param int $quality JPEG encoding quality (default 50).
      * @return bool True on success, false on failure or if the storage driver is unsupported.
      */
-    public static function saveImage(string $projectRef, mixed $image, string $fileName, string $disk, array $dimensions = [], int $quality = 50): bool
+    public static function saveImage(ProjectDTO $project, mixed $image, string $fileName, string $disk, array $dimensions = [], int $quality = 50): bool
     {
         $storageDriver = config('filesystems.default');
         if ($storageDriver === 's3') {
-            return self::saveImageS3($projectRef, $image, $fileName, $disk, $dimensions, $quality);
+            return self::saveImageS3($project, $image, $fileName, $disk, $dimensions, $quality);
         }
         if ($storageDriver === 'local') {
-            return self::saveImageLocal($projectRef, $image, $fileName, $disk, $dimensions, $quality);
+            return self::saveImageLocal($project, $image, $fileName, $disk, $dimensions, $quality);
         }
 
         Log::error('Storage driver not supported', ['driver' => $storageDriver]);
@@ -50,7 +52,7 @@ class PhotoSaverService
      *
      * Accepts either an uploaded file or a file path as input. The processed image is stored on the specified disk with public visibility.
      *
-     * @param string $projectRef Reference identifier for the project, used as a directory prefix.
+     * @param ProjectDTO $project
      * @param mixed $image Uploaded file object or file path to the image.
      * @param string $fileName Name for the saved image file.
      * @param string $disk Storage disk name where the image will be saved.
@@ -58,7 +60,7 @@ class PhotoSaverService
      * @param int $quality JPEG encoding quality (1-100).
      * @return bool True on success, false if saving fails.
      */
-    public static function saveImageLocal(string $projectRef, mixed $image, string $fileName, string $disk, array $dimensions = [], int $quality = 50): bool
+    public static function saveImageLocal(ProjectDTO $project, mixed $image, string $fileName, string $disk, array $dimensions = [], int $quality = 50): bool
     {
         try {
             // Get the image path (handles both uploaded files and direct paths)
@@ -68,14 +70,14 @@ class PhotoSaverService
             $encodedImage = self::processImage($imagePath, $dimensions, $quality);
 
             // Ensure directory exists with correct permissions ()
-            if (!Storage::disk($disk)->exists($projectRef)) {
-                Storage::disk($disk)->makeDirectory($projectRef);
+            if (!Storage::disk($disk)->exists($project->ref)) {
+                Storage::disk($disk)->makeDirectory($project->ref);
 
                 // For local driver, fix permissions for entire chain
                 $diskRoot = config('filesystems.disks.' . $disk . '.root').'/';
 
                 // Build full folder path to newly created directory
-                $newDirFullPath = $diskRoot . $projectRef;
+                $newDirFullPath = $diskRoot . $project->ref;
 
                 // Fix folder chain permissions up to app/ to fix laravel 700 issue since 9+
                 Common::setPermissionsRecursiveUp($newDirFullPath);
@@ -83,13 +85,19 @@ class PhotoSaverService
 
             // Store the image into the storage location with the specified driver
             Storage::disk($disk)->put(
-                $projectRef . '/' . $fileName,
+                $project->ref . '/' . $fileName,
                 $encodedImage,
                 [
                     'visibility' => 'public',
                     'directory_visibility' => 'public'
                 ]
             );
+
+            $photoBytes = strlen($encodedImage); // size in bytes
+            //adjust total bytes
+            ProjectStats::where('project_id', $project->getId())
+                ->first()
+                ->adjustTotalBytes($photoBytes);
 
             return true;
         } catch (Throwable $e) {
@@ -103,7 +111,7 @@ class PhotoSaverService
      *
      * Accepts either an uploaded file or a string path referencing an S3 object. The image is processed (optionally resized and cropped, then encoded as JPEG with the specified quality) and uploaded to the specified S3 disk under the given project reference and file name.
      *
-     * @param string $projectRef Project reference used as the directory path in S3.
+     * @param ProjectDTO $project
      * @param mixed $image Uploaded file or S3 object path to be processed and saved.
      * @param string $fileName Name for the saved image file.
      * @param string $disk S3 disk name where the image will be saved.
@@ -112,7 +120,7 @@ class PhotoSaverService
      * @return bool True on success, false if saving fails.
      */
     public static function saveImageS3(
-        string $projectRef,
+        ProjectDTO $project,
         mixed $image,
         string $fileName,
         string $disk,
@@ -152,7 +160,7 @@ class PhotoSaverService
             for ($retry = 0; $retry <= $maxRetries; $retry++) {
                 try {
                     $fileSaved = Storage::disk($disk)->put(
-                        $projectRef . '/' . $fileName,
+                        $project->ref . '/' . $fileName,
                         $imageContent
                     );
                     if ($fileSaved) {
@@ -165,6 +173,12 @@ class PhotoSaverService
                     sleep($retryDelay * pow(2, $retry)); // Exponential backoff
                 }
             }
+
+            $photoBytes = strlen($imageContent); // size in bytes
+            //adjust total bytes
+            ProjectStats::where('project_id', $project->getId())
+                ->first()
+                ->adjustTotalBytes($photoBytes);
 
             return (bool) $fileSaved;
         } catch (Throwable $e) {

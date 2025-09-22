@@ -4,7 +4,6 @@ namespace ec5\Services\Media;
 
 use ec5\DTO\EntryStructureDTO;
 use ec5\DTO\ProjectDTO;
-use ec5\Models\Project\ProjectStats;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Drivers\Imagick\Driver;
 use Intervention\Image\ImageManager;
@@ -18,15 +17,10 @@ class FileMoverService
      */
     public function moveFile(ProjectDTO $project, EntryStructureDTO $entryStructure): bool
     {
-        $projectRef = $project->ref;
-
         // Get the entry data
         $fileEntry = $entryStructure->getEntry();
-
         $fileType = $fileEntry['type'];
         $fileName = $fileEntry['name'];
-        $inputRef = $fileEntry['input_ref'];
-
         $file = $entryStructure->getFile();
 
         $isS3 = is_array($file) && ($file['disk'] ?? '') === 's3';
@@ -67,7 +61,7 @@ class FileMoverService
 
                 // === Save original image ===
                 $photoSaved = PhotoSaverService::saveImage(
-                    $projectRef,
+                    $project,
                     $isS3 ? $file['path'] : $file,
                     $fileName,
                     'photo',
@@ -82,7 +76,7 @@ class FileMoverService
             default:
                 // === Save non-photo files ===
                 $fileSaved = AudioVideoSaverService::saveFile(
-                    $projectRef,
+                    $project,
                     $file,
                     $fileName,
                     $fileType,// -> audio,video
@@ -94,12 +88,6 @@ class FileMoverService
                 }
                 break;
         }
-
-        //adjust total bytes
-        ProjectStats::where('project_id', $project->getId())
-            ->first()
-            ->adjustTotalBytes($file->getSize());
-
         return true;
     }
 }
