@@ -9,6 +9,7 @@ use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectStructure;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Artisan;
 
 class MediaSeeder extends Seeder
 {
@@ -172,6 +173,13 @@ class MediaSeeder extends Seeder
         $output->writeln('...');
 
         if ($branchEntries->first() === null) {
+
+            // Running project storage usage stats
+            $output->writeln("Running project storage usage stats.");
+            Artisan::call('system:project-storage', [
+                '--project-ref' => $project->ref,
+            ]);
+
             // Final message
             $output->writeln("No branch entries found for this project.");
             $output->writeln("All done.");
@@ -216,6 +224,12 @@ class MediaSeeder extends Seeder
         $output->writeln("Added $photoCount photo files to branch entries");
         $output->writeln("Added $audioCount audio files to branch entries");
         $output->writeln("Added $videoCount video files to branch entries");
+
+        // Running project storage usage stats
+        $output->writeln("Running project storage usage stats.");
+        Artisan::call('system:project-storage', [
+            '--project-ref' => $project->ref,
+        ]);
 
         // Final message
         $output->writeln("All done.");

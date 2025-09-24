@@ -357,7 +357,6 @@ $factory->define(ProjectStats::class, function () {
     return [
         'project_id' => null,
         'total_entries' => 0,
-        'total_users' => 0,
         'form_counts' => json_encode([]),
         'branch_counts' => json_encode([])
     ];

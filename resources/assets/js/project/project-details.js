@@ -214,21 +214,103 @@ $(document).ready(function () {
         });
     });
 
-    // Loop through all counter-media panels
-    $('.counter-media').each(function () {
-        var $wrapper = $(this);
-        var projectSlug = $wrapper.data('project-slug');
+    var $counterMediaWrapper = $('.counter-media');
+    var $counterQuotaWrapper = $('.counter-quota');
+    var $panelQuotaWrapper = $('.panel-quota');
+    var projectSlug = $counterMediaWrapper.data('project-slug');
+    var refreshMediaOverviewBtn = $('.btn-refresh-media-overview');
+    refreshMediaOverviewBtn.on('click', function () {
+        updateMediaCountersAPI();
+    });
 
-        // AJAX call using EC5 conventions (jQuery)
+    updateMediaCountersDB();
+
+    function updateMediaCountersDB() {
+        //get cached media stats from database
+        var photoFiles = $counterMediaWrapper.find('.count-photo').data('photo-files');
+        var audioFiles = $counterMediaWrapper.find('.count-audio').data('audio-files');
+        var videoFiles = $counterMediaWrapper.find('.count-video').data('video-files');
+        var photoBytes = $counterMediaWrapper.find('.size-photo').data('photo-bytes');
+        var audioBytes = $counterMediaWrapper.find('.size-audio').data('audio-bytes');
+        var videoBytes = $counterMediaWrapper.find('.size-video').data('video-bytes');
+        var totalBytes = $counterMediaWrapper.find('.size-total').data('total-bytes');
+        var totalFiles = $counterMediaWrapper.find('.count-total').data('total-files');
+        var photoPct, audioPct, videoPct;
+        if (totalBytes === 0) {
+            photoPct = audioPct = videoPct = 0;
+        } else {
+            photoPct = (photoBytes / totalBytes * 100).toFixed(1);
+            audioPct = (audioBytes / totalBytes * 100).toFixed(1);
+            videoPct = (videoBytes / totalBytes * 100).toFixed(1);
+        }
+
+        $counterMediaWrapper.find('.progress-bar[data-type="photo"]')
+            .css('width', photoPct + '%');
+
+        $counterMediaWrapper.find('.progress-bar[data-type="audio"]')
+            .css('width', audioPct + '%');
+
+        if (totalBytes > 0) {
+            videoPct = (100 - parseFloat(photoPct) - parseFloat(audioPct)).toFixed(1);
+        }
+        $counterMediaWrapper.find('.progress-bar[data-type="video"]')
+            .css('width', videoPct + '%');
+
+        // Table counts
+        $counterMediaWrapper.find('.count-photo').text(photoFiles);
+        $counterMediaWrapper.find('.count-audio').text(audioFiles);
+        $counterMediaWrapper.find('.count-video').text(videoFiles);
+        $counterMediaWrapper.find('.count-total').text(totalFiles);
+
+        // Table sizes
+        $counterMediaWrapper.find('.size-photo').text(window.EC5.common.formatBytes(photoBytes, 2));
+        $counterMediaWrapper.find('.size-audio').text(window.EC5.common.formatBytes(audioBytes, 2));
+        $counterMediaWrapper.find('.size-video').text(window.EC5.common.formatBytes(videoBytes, 2));
+        $counterMediaWrapper.find('.size-total').text(window.EC5.common.formatBytes(totalBytes, 2));
+
+
+        //Update table text percentage
+        $counterMediaWrapper.find('.ratio-photo').text(photoPct + '%');
+        $counterMediaWrapper.find('.ratio-audio').text(audioPct + '%');
+        $counterMediaWrapper.find('.ratio-video').text(videoPct + '%');
+        if (totalBytes === 0) {
+            $counterMediaWrapper.find('.ratio-total').text('0%');
+        } else {
+            $counterMediaWrapper.find('.ratio-total').text('100%');
+        }
+
+        // hide loader, show stats
+        $counterMediaWrapper.find('.loader').fadeOut(function () {
+            $counterMediaWrapper.find('.media-stats').removeClass('hidden').fadeIn();
+        });
+        $counterQuotaWrapper.find('.loader').fadeOut(function () {
+            $counterQuotaWrapper.find('.quota-stats').removeClass('hidden').fadeIn();
+        });
+
+    }
+
+    // AJAX call using EC5 conventions (jQuery)
+    function updateMediaCountersAPI() {
+        window.EC5.overlay.fadeIn();
+        /* ---------- Media counter ---------- */
+        $counterMediaWrapper.find('.media-stats')
+            .addClass('hidden')      // hide instantly
+            .hide();                 // (optional) force display:none
+
+        $counterMediaWrapper.find('.loader')
+            .fadeIn();
+
+        /* ---------- Quota counter ---------- */
+        $counterQuotaWrapper.find('.quota-stats')
+            .addClass('hidden')
+            .hide();
+
+        $counterQuotaWrapper.find('.loader')
+            .fadeIn();
         $.get(window.EC5.SITE_URL + '/api/internal/counters/media/' + projectSlug)
             .done(function (response) {
                 var counters = response.data.counters;
                 var sizes = response.data.sizes;
-
-                // hide loader, show stats
-                $wrapper.find('.loader').fadeOut(function () {
-                    $wrapper.find('.media-stats').removeClass('hidden').fadeIn();
-                });
 
                 var totalBytes = sizes.total_bytes;
                 var photoPct, audioPct, videoPct;
@@ -240,46 +322,58 @@ $(document).ready(function () {
                     videoPct = (sizes.video_bytes / totalBytes * 100).toFixed(1);
                 }
 
-
-                $wrapper.find('.progress-bar[data-type="photo"]')
+                $counterMediaWrapper.find('.progress-bar[data-type="photo"]')
                     .css('width', photoPct + '%');
 
-                $wrapper.find('.progress-bar[data-type="audio"]')
+                $counterMediaWrapper.find('.progress-bar[data-type="audio"]')
                     .css('width', audioPct + '%');
 
                 if (totalBytes > 0) {
                     videoPct = (100 - parseFloat(photoPct) - parseFloat(audioPct)).toFixed(1);
                 }
-                $wrapper.find('.progress-bar[data-type="video"]')
+                $counterMediaWrapper.find('.progress-bar[data-type="video"]')
                     .css('width', videoPct + '%');
 
                 // Table counts
-                $wrapper.find('.count-photo').text(counters.photo);
-                $wrapper.find('.count-audio').text(counters.audio);
-                $wrapper.find('.count-video').text(counters.video);
-                $wrapper.find('.count-total').text(counters.total);
+                $counterMediaWrapper.find('.count-photo').text(counters.photo);
+                $counterMediaWrapper.find('.count-audio').text(counters.audio);
+                $counterMediaWrapper.find('.count-video').text(counters.video);
+                $counterMediaWrapper.find('.count-total').text(counters.total);
 
                 // Table sizes
-                $wrapper.find('.size-photo').text(window.EC5.common.formatBytes(sizes.photo_bytes, 2));
-                $wrapper.find('.size-audio').text(window.EC5.common.formatBytes(sizes.audio_bytes, 2));
-                $wrapper.find('.size-video').text(window.EC5.common.formatBytes(sizes.video_bytes, 2));
-                $wrapper.find('.size-total').text(window.EC5.common.formatBytes(sizes.total_bytes, 2));
-                
+                $counterMediaWrapper.find('.size-photo').text(window.EC5.common.formatBytes(sizes.photo_bytes, 2));
+                $counterMediaWrapper.find('.size-audio').text(window.EC5.common.formatBytes(sizes.audio_bytes, 2));
+                $counterMediaWrapper.find('.size-video').text(window.EC5.common.formatBytes(sizes.video_bytes, 2));
+                $counterMediaWrapper.find('.size-total').text(window.EC5.common.formatBytes(sizes.total_bytes, 2));
+
 
                 //Update table text percentage
-                $wrapper.find('.ratio-photo').text(photoPct + '%');
-                $wrapper.find('.ratio-audio').text(audioPct + '%');
-                $wrapper.find('.ratio-video').text(videoPct + '%');
+                $counterMediaWrapper.find('.ratio-photo').text(photoPct + '%');
+                $counterMediaWrapper.find('.ratio-audio').text(audioPct + '%');
+                $counterMediaWrapper.find('.ratio-video').text(videoPct + '%');
                 if (totalBytes === 0) {
-                    $wrapper.find('.ratio-total').text('0%');
+                    $counterMediaWrapper.find('.ratio-total').text('0%');
                 } else {
-                    $wrapper.find('.ratio-total').text('100%');
+                    $counterMediaWrapper.find('.ratio-total').text('100%');
                 }
+                //update last updated at
+                $panelQuotaWrapper.find('.bytes-updated-at span').text(response.data.updated_at_human_readable);
             })
             .fail(function () {
-                $wrapper.find('.loader').text('Error loading data');
+                $counterMediaWrapper.find('.loader').text('Error loading data');
+                $counterQuotaWrapper.find('.loader').text('Error loading data');
+            }).always(function () {
+            // hide loader, show stats
+            $counterMediaWrapper.find('.loader').fadeOut(function () {
+                $counterMediaWrapper.find('.media-stats').removeClass('hidden').fadeIn();
             });
-    });
+            $counterQuotaWrapper.find('.loader').fadeOut(function () {
+                $counterQuotaWrapper.find('.quota-stats').removeClass('hidden').fadeIn();
+            });
+
+            window.EC5.overlay.fadeOut();
+        });
+    }
 });
 
 

@@ -28,6 +28,12 @@ class AudioVideoSaverService
     {
         $fileSaved = false;
         $targetPath = $project->ref . '/' . $fileName;
+        $photoBytes = 0;
+        $audioBytes = 0;
+        $videoBytes = 0;
+        $photoFiles = 0;
+        $audioFiles = 0;
+        $videoFiles = 0;
 
         try {
             if ($isS3) {
@@ -97,10 +103,27 @@ class AudioVideoSaverService
 
             if ($fileSaved) {
                 $fileBytes = $isS3 ? Storage::disk('s3')->size($file['path']) : $file->getSize();
+                match($disk) {
+                    'photo' => $photoBytes = $fileBytes,
+                    'audio' => $audioBytes = $fileBytes,
+                    'video' => $videoBytes = $fileBytes
+                };
+                match($disk) {
+                    'photo' => $photoFiles = 1,
+                    'audio' => $audioFiles = 1,
+                    'video' => $videoFiles = 1
+                };
                 //adjust total bytes
                 ProjectStats::where('project_id', $project->getId())
                     ->first()
-                    ->adjustTotalBytes($fileBytes);
+                    ->updateMediaStorageUsage(
+                        $photoBytes,
+                        $photoFiles,
+                        $audioBytes,
+                        $audioFiles,
+                        $videoBytes,
+                        $videoFiles
+                    );
             }
 
             return (bool) $fileSaved;

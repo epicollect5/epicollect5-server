@@ -131,7 +131,6 @@ return [
         ],
         'project_stats' => [
             'total_entries',
-            'total_users',
             'form_counts',
             'branch_counts',
             'structure_last_updated'

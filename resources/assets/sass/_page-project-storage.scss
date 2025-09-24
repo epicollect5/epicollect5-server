@@ -1,15 +1,29 @@
 @import "theme";
 
+.panel-quota {
+  .loader-quota-stats {
+    top: 20px !important;
+    position: relative;
+  }
+  .panel-body {
+    height: 120px;
+  }
+}
+
 .panel-storage {
-  .loader {
+  .bytes-updated-at {
+    background-color: $hot-pink !important;
+    color: #fff !important;
+    padding: 8px !important;
+    font-weight: 700;
+  }
+  .loader-media-stats {
     top: 100px !important;
     position: relative;
   }
   .panel-body {
     height: 260px;
   }
-  
-
   .progress {
     height: 32px;
     background-color: #f0f0f0;

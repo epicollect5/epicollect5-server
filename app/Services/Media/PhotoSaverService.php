@@ -97,7 +97,14 @@ class PhotoSaverService
             //adjust total bytes
             ProjectStats::where('project_id', $project->getId())
                 ->first()
-                ->adjustTotalBytes($photoBytes);
+                ->updateMediaStorageUsage(
+                    $photoBytes,
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                );
 
             return true;
         } catch (Throwable $e) {
@@ -178,7 +185,14 @@ class PhotoSaverService
             //adjust total bytes
             ProjectStats::where('project_id', $project->getId())
                 ->first()
-                ->adjustTotalBytes($photoBytes);
+                ->updateMediaStorageUsage(
+                    $photoBytes,
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                );
 
             return (bool) $fileSaved;
         } catch (Throwable $e) {

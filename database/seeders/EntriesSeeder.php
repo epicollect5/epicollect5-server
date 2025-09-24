@@ -7,6 +7,7 @@ use ec5\Libraries\Generators\EntryGenerator;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectRole;
+use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use ec5\Traits\Eloquent\Remover;
@@ -203,6 +204,9 @@ class EntriesSeeder extends Seeder
                 'projectId' => $project->id
             ]);
         }
+
+        $projectStats = new ProjectStats();
+        $projectStats->updateProjectStats($project->id);
 
         // Final message
         $output->writeln("All done.");

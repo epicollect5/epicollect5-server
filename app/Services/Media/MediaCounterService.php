@@ -3,10 +3,16 @@
 namespace ec5\Services\Media;
 
 use Aws\S3\S3Client;
+use Carbon\Carbon;
+use Carbon\CarbonInterface;
+use ec5\DTO\ProjectDTO;
+use ec5\Models\Project\ProjectStats;
 use FilesystemIterator;
 use Illuminate\Support\Facades\Storage;
+use Log;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use Throwable;
 
 class MediaCounterService
 {
@@ -20,7 +26,7 @@ class MediaCounterService
     private int $audioSize = 0;
     private int $videoSize = 0;
 
-    public function countersMedia(string $projectRef): array
+    public function computeMediaMetrics($projectID, $projectRef): array
     {
         $this->resetCounters();
 
@@ -38,9 +44,33 @@ class MediaCounterService
             }
         }
 
+        //refresh the metrics in project stats, in case it was not updated correctly
+        try {
+            ProjectStats::where('project_id', $projectID)
+                ->first()
+                ->setMediaStorageUsage(
+                    $this->photoSize,
+                    $this->photoCount,
+                    $this->audioSize,
+                    $this->audioCount,
+                    $this->videoSize,
+                    $this->videoCount
+                );
+        } catch (Throwable $e) {
+            //ignore error, just log it, not crucial
+            Log::error('Failed to update media storage usage', ['exception' => $e->getMessage()]);
+        }
+
+        $humanReadableDate = Carbon::now()->diffForHumans([
+            'parts' => 1,   // show only 1 unit (2 min ago)
+            'short' => true, // optional: "2m ago"
+            'options' => CarbonInterface::JUST_NOW // automatically handle 0 seconds
+        ]);
         return [
             'type' => 'counters-project-media',
             'id' => $projectRef,
+            'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
+            'updated_at_human_readable' => $humanReadableDate,
             'counters' => [
                 'total' => $this->totalCount,
                 'photo' => $this->photoCount,
@@ -52,7 +82,7 @@ class MediaCounterService
                 'photo_bytes' => $this->photoSize,
                 'audio_bytes' => $this->audioSize,
                 'video_bytes' => $this->videoSize
-            ]
+            ],
         ];
     }
 
@@ -153,5 +183,28 @@ class MediaCounterService
                 ? ($result['NextContinuationToken'] ?? null)
                 : null;
         } while ($continuationToken);
+    }
+
+    public function countMediaDB(ProjectDTO $project): array
+    {
+        $projectStats = ProjectStats::where('project_id', $project->getId())
+            ->first();
+
+        return [
+            'type' => 'counters-project-media',
+            'id' => $project->ref,
+            'counters' => [
+                'total' => $projectStats->total_entries,
+                'photo' => $projectStats->photo_files,
+                'audio' => $projectStats->audio_files,
+                'video' => $projectStats->video_files
+            ],
+            'sizes' => [
+                'total_bytes' => $projectStats->total_bytes,
+                'photo_bytes' => $projectStats->photo_bytes,
+                'audio_bytes' => $projectStats->audio_bytes,
+                'video_bytes' => $projectStats->video_bytes
+            ]
+        ];
     }
 }

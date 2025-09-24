@@ -49,7 +49,7 @@ class MediaCounterServiceLocalTest extends TestCase
     public function test_count_media_local_no_folders()
     {
         $mediaCounterService = new MediaCounterService();
-        $counters = $mediaCounterService->countersMedia($this->project->ref);
+        $counters = $mediaCounterService->computeMediaMetrics($this->project->id, $this->project->ref);
         $this->assertEquals(0, $counters['counters']['total']);
         $this->assertEquals(0, $counters['counters']['photo']);
         $this->assertEquals(0, $counters['counters']['audio']);
@@ -67,7 +67,7 @@ class MediaCounterServiceLocalTest extends TestCase
         }
 
         $mediaCounterService = new MediaCounterService();
-        $counters = $mediaCounterService->countersMedia($this->project->ref);
+        $counters = $mediaCounterService->computeMediaMetrics($this->project->id, $this->project->ref);
         $this->assertEquals($numOfPhotos, $counters['counters']['total']);
         $this->assertEquals($numOfPhotos, $counters['counters']['photo']);
         $this->assertEquals(0, $counters['counters']['audio']);
@@ -84,7 +84,7 @@ class MediaCounterServiceLocalTest extends TestCase
         }
 
         $mediaCounterService = new MediaCounterService();
-        $counters = $mediaCounterService->countersMedia($this->project->ref);
+        $counters = $mediaCounterService->computeMediaMetrics($this->project->id, $this->project->ref);
         $this->assertEquals($numOfAudios, $counters['counters']['total']);
         $this->assertEquals(0, $counters['counters']['photo']);
         $this->assertEquals($numOfAudios, $counters['counters']['audio']);
@@ -101,7 +101,7 @@ class MediaCounterServiceLocalTest extends TestCase
         }
 
         $mediaCounterService = new MediaCounterService();
-        $counters = $mediaCounterService->countersMedia($this->project->ref);
+        $counters = $mediaCounterService->computeMediaMetrics($this->project->id, $this->project->ref);
         $this->assertEquals($numOfVideos, $counters['counters']['total']);
         $this->assertEquals(0, $counters['counters']['photo']);
         $this->assertEquals(0, $counters['counters']['audio']);
@@ -121,7 +121,7 @@ class MediaCounterServiceLocalTest extends TestCase
         }
 
         $mediaCounterService = new MediaCounterService();
-        $counters = $mediaCounterService->countersMedia($this->project->ref);
+        $counters = $mediaCounterService->computeMediaMetrics($this->project->id, $this->project->ref);
         $this->assertEquals($numOfMedia * 3, $counters['counters']['total']);
         $this->assertEquals($numOfMedia, $counters['counters']['photo']);
         $this->assertEquals($numOfMedia, $counters['counters']['audio']);

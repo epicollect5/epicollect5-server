@@ -167,19 +167,26 @@ trait Remover
                     $s3Client = $this->createS3Client($config);
                     $bucket = $config['bucket'];
                     $prefix = $diskRoot . $project->ref;
-                    $deletedCount = $this->deleteOneBatchByPrefixS3($s3Client, $bucket, $prefix, $remainingCapacity);
+                    $deletionResult = $this->deleteOneBatchByPrefixS3($s3Client, $bucket, $prefix, $remainingCapacity);
                 } else {
                     // Handle local storage using Laravel Storage facade
-                    $deletedCount = $this->deleteOneBatchByPrefixLocal($driver, $project->ref, $remainingCapacity);
+                    $deletionResult = $this->deleteOneBatchByPrefixLocal($driver, $project->ref, $remainingCapacity);
                 }
 
-                if ($deletedCount['deletedFiles'] > 0) {
-                    $totalDeleted += $deletedCount['deletedFiles'];
+                if ($deletionResult['deletedCount'] > 0) {
+                    $totalDeleted += $deletionResult['deletedCount'];
                     //adjust total bytes (negative delta)
                     ProjectStats::where('project_id', $project->getId())
                         ->first()
-                        ->adjustTotalBytes(-$deletedCount['deletedBytes']);
-                    Log::info("Deleted {{$deletedCount['deletedFiles']}} entries for $project->ref on disk $driver. Total so far: $totalDeleted");
+                        ->updateMediaStorageUsage(
+                            -$deletionResult['deletedBytes']['photo'],
+                            -$deletionResult['deletedFiles']['photo'],
+                            -$deletionResult['deletedBytes']['audio'],
+                            -$deletionResult['deletedFiles']['audio'],
+                            -$deletionResult['deletedBytes']['video'],
+                            -$deletionResult['deletedFiles']['video']
+                        );
+                    Log::info("Deleted {{$deletionResult['deletedCount']}} entries for $project->ref on disk $driver. Total so far: $totalDeleted");
                 }
 
             } catch (Exception $e) {
@@ -221,14 +228,27 @@ trait Remover
 
         if (empty($result['Contents'])) {
             return [
-                'deletedFiles' => 0,
-                'deletedBytes' => 0,
+                'deletedCount' => 0,
+                'deletedFiles' => [
+                    'photo' => 0,
+                    'audio' => 0,
+                    'video' => 0,
+                ],
+                'deletedBytes' => [
+                    'photo' => 0,
+                    'audio' => 0,
+                    'video' => 0,
+                ]
             ];
         }
 
         // Ensure we don't exceed the maxFiles limit, even if S3 returns more
+        // Also preserve the Size information for byte counting
         $objects = array_slice(
-            array_map(fn ($obj) => ['Key' => $obj['Key']], $result['Contents']),
+            array_map(fn ($obj) => [
+                'Key' => $obj['Key'],
+                'Size' => $obj['Size'] ?? 0
+            ], $result['Contents']),
             0,
             $maxFiles
         );
@@ -239,7 +259,7 @@ trait Remover
                 $deleteResult = $s3Client->deleteObjects([
                     'Bucket' => $bucket,
                     'Delete' => [
-                        'Objects' => $objects,
+                        'Objects' => array_map(fn ($obj) => ['Key' => $obj['Key']], $objects),
                         'Quiet' => true,
                     ],
                 ]);
@@ -256,11 +276,31 @@ trait Remover
             Log::error("Errors deleting S3 objects with prefix $prefix:", $deleteResult['Errors']);
         }
 
+        // Calculate deleted bytes by media type
+        $deletedBytes = [
+            'photo' => 0,
+            'audio' => 0,
+            'video' => 0,
+        ];
+        $deletedFiles = [
+            'photo' => 0,
+            'audio' => 0,
+            'video' => 0,
+        ];
+
+        foreach ($objects as $object) {
+            $mediaType = $this->getMediaTypeFromPath($object['Key']);
+            $deletedBytes[$mediaType] += $object['Size'];
+            $deletedFiles[$mediaType]++;
+        }
+
         return [
-            'deletedFiles' => count($objects),
-            'deletedBytes' => array_sum(array_column($objects, 'Size')),
+            'deletedCount' => count($objects),
+            'deletedFiles' => $deletedFiles,
+            'deletedBytes' => $deletedBytes,
         ];
     }
+
 
     /**
      * @throws Exception
@@ -268,14 +308,24 @@ trait Remover
     private function deleteOneBatchByPrefixLocal(string $disk, string $projectRef, int $maxFiles = 1000): array
     {
         $deletedCount = 0;
-        $deletedBytes = 0;
+        $deletedFiles = [
+            'photo' => 0,
+            'audio' => 0,
+            'video' => 0,
+        ];
+        $deletedBytes = [
+            'photo' => 0,
+            'audio' => 0,
+            'video' => 0,
+        ];
 
         $storage = Storage::disk($disk);
 
         if (!$storage->exists($projectRef)) {
             return [
-                'deletedFiles' => 0,
-                'deletedBytes' => 0,
+                'deletedCount' => $deletedCount,
+                'deletedFiles' => $deletedFiles,
+                'deletedBytes' => $deletedBytes,
             ];
         }
 
@@ -305,7 +355,11 @@ trait Remover
 
                     if ($storage->delete($fullRelativePath)) {
                         $deletedCount++;
-                        $deletedBytes += $fileSize;
+
+                        // Determine media type based on path
+                        $mediaType = $this->getMediaTypeFromPath($relativePath);
+                        $deletedBytes[$mediaType] += $fileSize;
+                        $deletedFiles[$mediaType]++;
                     } else {
                         // This would be a real error (permissions, etc.)
                         Log::error("Failed to delete file: $fullRelativePath");
@@ -328,8 +382,32 @@ trait Remover
         }
 
         return [
+            'deletedCount' => $deletedCount,
             'deletedFiles' => $deletedCount,
-            'deletedBytes' => $deletedBytes,
+            'deletedBytes' => $deletedBytes
         ];
+    }
+
+    /**
+     * Determine media type based on file path
+     */
+    private function getMediaTypeFromPath(string $relativePath): string
+    {
+        $normalizedPath = '/' . trim($relativePath, '/') . '/';
+
+        if (str_contains($normalizedPath, '/photo/')) {
+            return 'photo';
+        }
+
+        if (str_contains($normalizedPath, '/audio/')) {
+            return 'audio';
+        }
+
+        if (str_contains($normalizedPath, '/video/')) {
+            return 'video';
+        }
+
+        // Default to photo for unmatched files
+        return 'photo';
     }
 }

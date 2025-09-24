@@ -142,7 +142,12 @@ class DeleteEntryService
         //delete all files for this entry (matching the starting uuid)
         // Use DirectoryIterator to iterate through files one by one
         $drivers = config('epicollect.media.entries_deletable');
-        $totalDeletedBytes = 0;
+        $photoDeletedBytes = 0;
+        $audioDeletedBytes = 0;
+        $videoDeletedBytes = 0;
+        $photoDeletedFiles = 0;
+        $audioDeletedFiles = 0;
+        $videoDeletedFiles = 0;
         foreach ($drivers as $driver) {
             // Get disk, path prefix and all directories for this driver
             $diskRoot = config('filesystems.disks.' . $driver . '.root').'/';
@@ -170,18 +175,37 @@ class DeleteEntryService
                                 Log::error("Failed to delete file: " . $filePath);
                                 return false;
                             }
-                            $totalDeletedBytes += $fileSize;
+                            //track bytes deleted
+                            match ($driver) {
+                                'photo' => $photoDeletedBytes += $fileSize,
+                                'audio' => $audioDeletedBytes += $fileSize,
+                                'video' => $videoDeletedBytes += $fileSize
+                            };
+                            //track files deleted
+                            match ($driver) {
+                                'photo' => $photoDeletedFiles++,
+                                'audio' => $audioDeletedFiles++,
+                                'video' => $videoDeletedFiles++
+                            };
                         }
                     }
                 }
             }
         }
 
+        $totalDeletedBytes = $photoDeletedBytes + $audioDeletedBytes + $videoDeletedBytes;
         if ($totalDeletedBytes > 0) {
             //adjust total bytes (negative delta)
             ProjectStats::where('project_id', $project->getId())
                 ->first()
-                ->adjustTotalBytes(-$totalDeletedBytes);
+                ->updateMediaStorageUsage(
+                    -$photoDeletedBytes,
+                    -$photoDeletedFiles,
+                    -$audioDeletedBytes,
+                    -$audioDeletedFiles,
+                    -$videoDeletedBytes,
+                    -$videoDeletedFiles,
+                );
         }
 
         return true;
@@ -190,7 +214,12 @@ class DeleteEntryService
     private function deleteMediaFilesS3(ProjectDTO $project, array $uuids): bool
     {
         $disks = config('epicollect.media.entries_deletable');
-        $totalDeletedBytes = 0;
+        $photoDeletedBytes = 0;
+        $audioDeletedBytes = 0;
+        $videoDeletedBytes = 0;
+        $photoDeletedFiles = 0;
+        $audioDeletedFiles = 0;
+        $videoDeletedFiles = 0;
         foreach ($disks as $disk) {
 
             $diskPath = Storage::disk($disk);
@@ -218,7 +247,16 @@ class DeleteEntryService
                     // Get total bytes before deletion
                     foreach ($filesToDelete as $file) {
                         $size = $diskPath->size($file);
-                        $totalDeletedBytes += $size;
+                        match ($disk) {
+                            'photo' => $photoDeletedBytes += $size,
+                            'audio' => $audioDeletedBytes += $size,
+                            'video' => $videoDeletedBytes += $size
+                        };
+                        match ($disk) {
+                            'photo' => $photoDeletedFiles++,
+                            'audio' => $audioDeletedFiles++,
+                            'video' => $videoDeletedFiles++
+                        };
                     }
                     $diskPath->delete($filesToDelete);
                 }
@@ -228,11 +266,19 @@ class DeleteEntryService
             }
         }
 
+        $totalDeletedBytes = $photoDeletedBytes + $audioDeletedBytes + $videoDeletedBytes;
         if ($totalDeletedBytes > 0) {
             //adjust total bytes (negative delta)
             ProjectStats::where('project_id', $project->getId())
                 ->first()
-                ->adjustTotalBytes(-$totalDeletedBytes);
+                ->updateMediaStorageUsage(
+                    -$photoDeletedBytes,
+                    -$photoDeletedFiles,
+                    -$audioDeletedBytes,
+                    -$audioDeletedFiles,
+                    -$videoDeletedBytes,
+                    -$videoDeletedFiles,
+                );
         }
 
         return true;

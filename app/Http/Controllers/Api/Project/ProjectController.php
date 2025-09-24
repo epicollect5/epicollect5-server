@@ -197,7 +197,10 @@ class ProjectController
     {
         $mediaCounterService = new MediaCounterService();
 
-        $counters = $mediaCounterService->countersMedia($this->requestedProject()->ref);
+        $counters = $mediaCounterService->computeMediaMetrics(
+            $this->requestedProject()->getId(),
+            $this->requestedProject()->ref
+        );
 
         //adjust total bytes in project stats, in case it was not updated correctly
         ProjectStats::where('project_id', $this->requestedProject()->getId())
