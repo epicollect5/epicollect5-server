@@ -209,7 +209,7 @@ class DeleteController extends Controller
         if ($lock->get()) {
             try {
                 // Attempt to remove a chunk of media files
-                $deleted = $this->removeMediaChunk($this->requestedProject());
+                $deleted = $this->removeMediaChunk($this->requestedProject()->ref, $this->requestedProject()->getId());
                 // Success!
                 return Response::apiResponse([
                     'code' =>  'ec5_407',

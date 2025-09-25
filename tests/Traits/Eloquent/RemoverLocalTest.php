@@ -3,7 +3,8 @@
 namespace Tests\Traits\Eloquent;
 
 use ec5\Http\Controllers\Api\Entries\DeleteController;
-use ec5\Libraries\Utilities\Generators;
+use ec5\Models\Project\Project;
+use ec5\Models\Project\ProjectStats;
 use Exception;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Ramsey\Uuid\Uuid;
@@ -37,7 +38,16 @@ class RemoverLocalTest extends TestCase
     public function test_remove_media_chunk_deletes_files_from_local_storage()
     {
         Storage::fake('photo');
-        $projectRef = Generators::projectRef();
+        $project = factory(Project::class)->create();
+        factory(ProjectStats::class)->create([
+            'project_id' => $project->id,
+            'total_entries' => 0,
+            'total_files' => 0,
+            'total_bytes' => 0,
+            'form_counts' => json_encode([]),
+            'branch_counts' => json_encode([])
+        ]);
+
         $uuid = Uuid::uuid4()->toString();
 
         // Arrange: create a test projectRef with some files
@@ -45,7 +55,7 @@ class RemoverLocalTest extends TestCase
         $files = [];
         for ($i = 0; $i < $numOfFiles; $i++) {
             sleep(1);
-            $files[] = $projectRef.'/'.$uuid.'_'.time().'.jpg';
+            $files[] = $project->ref.'/'.$uuid.'_'.time().'.jpg';
             Storage::disk('photo')->put($files[$i], 'content' . $i);
         }
 
@@ -58,15 +68,15 @@ class RemoverLocalTest extends TestCase
 
         // Act
         $controller = app(DeleteController::class);
-        $deletedCount = $controller->removeMediaChunk($projectRef);
+        $deletedCount = $controller->removeMediaChunk($project->ref, $project->id);
 
         // Assert: files were deleted
         $this->assertEquals($numOfFiles, $deletedCount);
-        $this->assertCount(0, Storage::disk('photo')->files($projectRef));
-        $this->assertCount(0, Storage::disk('photo')->allFiles($projectRef));
-        $this->assertCount(0, Storage::disk('photo')->directories($projectRef));
+        $this->assertCount(0, Storage::disk('photo')->files($project->ref));
+        $this->assertCount(0, Storage::disk('photo')->allFiles($project->ref));
+        $this->assertCount(0, Storage::disk('photo')->directories($project->ref));
         // The directory should also be removed
-        $this->assertFalse(Storage::disk('photo')->exists($projectRef));
+        $this->assertFalse(Storage::disk('photo')->exists($project->ref));
     }
 
     /**
@@ -74,23 +84,31 @@ class RemoverLocalTest extends TestCase
      */
     public function test_remove_media_chunk_deletes_from_all_local_disks()
     {
-        $projectRef = Generators::projectRef();
+        $project = factory(Project::class)->create();
+        factory(ProjectStats::class)->create([
+            'project_id' => $project->id,
+            'total_entries' => 0,
+            'total_files' => 0,
+            'total_bytes' => 0,
+            'form_counts' => json_encode([]),
+            'branch_counts' => json_encode([])
+        ]);
         $uuid = Uuid::uuid4()->toString();
 
         // Fake each disk to point to a temporary directory
         foreach (config('epicollect.media.entries_deletable') as $disk) {
             Storage::fake($disk); // This creates a tmp path and overrides disk config
-            Storage::disk($disk)->put("$projectRef/$uuid.test", 'some content');
+            Storage::disk($disk)->put("$project->ref/$uuid.test", 'some content');
         }
 
         $controller = app(DeleteController::class);
-        $deletedCount = $controller->removeMediaChunk($projectRef);
+        $deletedCount = $controller->removeMediaChunk($project->ref, $project->id);
 
         // We deleted 3 files total (1 per disk - 'photo', 'audio', 'video')
         $this->assertEquals(3, $deletedCount);
 
         foreach (config('epicollect.media.entries_deletable') as $disk) {
-            $this->assertFalse(Storage::disk($disk)->exists("$projectRef/$uuid.test"));
+            $this->assertFalse(Storage::disk($disk)->exists("$project->ref/$uuid.test"));
         }
     }
 
@@ -99,7 +117,15 @@ class RemoverLocalTest extends TestCase
      */
     public function test_remove_media_chunk_deletes_max_1000_local_files_single_folder()
     {
-        $projectRef = Generators::projectRef();
+        $project = factory(Project::class)->create();
+        factory(ProjectStats::class)->create([
+            'project_id' => $project->id,
+            'total_entries' => 0,
+            'total_files' => 0,
+            'total_bytes' => 0,
+            'form_counts' => json_encode([]),
+            'branch_counts' => json_encode([])
+        ]);
         $uuid = Uuid::uuid4()->toString();
         $maxFiles   = config('epicollect.setup.bulk_deletion.chunk_size_media');
 
@@ -109,7 +135,7 @@ class RemoverLocalTest extends TestCase
 
         // Create 1500 files under this projectRef
         for ($i = 1; $i <= 1500; $i++) {
-            Storage::disk($diskName)->put("$projectRef/$uuid.$i.jpg", 'dummy content');
+            Storage::disk($diskName)->put("$project->ref/$uuid.$i.jpg", 'dummy content');
         }
 
         // Ensure config points to only this disk
@@ -117,13 +143,13 @@ class RemoverLocalTest extends TestCase
 
         // Run
         $controller = app(DeleteController::class);
-        $deletedCount = $controller->removeMediaChunk($projectRef);
+        $deletedCount = $controller->removeMediaChunk($project->ref, $project->id);
 
         // ✅ Assert only maxFiles deleted
         $this->assertEquals($maxFiles, $deletedCount, 'Should only delete up to max files per call');
 
         // ✅ Assert there are still files left after first chunk
-        $remainingFiles = Storage::disk($diskName)->allFiles($projectRef);
+        $remainingFiles = Storage::disk($diskName)->allFiles($project->ref);
         $this->assertCount(1500 - $maxFiles, $remainingFiles, 'Should leave remaining files for next call');
     }
 
@@ -132,7 +158,15 @@ class RemoverLocalTest extends TestCase
      */
     public function test_remove_media_chunk_deletes_max_1000_across_all_deletable_folders()
     {
-        $projectRef = Generators::projectRef();
+        $project = factory(Project::class)->create();
+        factory(ProjectStats::class)->create([
+            'project_id' => $project->id,
+            'total_entries' => 0,
+            'total_files' => 0,
+            'total_bytes' => 0,
+            'form_counts' => json_encode([]),
+            'branch_counts' => json_encode([])
+        ]);
         $uuid = Uuid::uuid4()->toString();
         $maxFiles = config('epicollect.setup.bulk_deletion.chunk_size_media');
         $deletableDisks = config('epicollect.media.entries_deletable');
@@ -147,7 +181,7 @@ class RemoverLocalTest extends TestCase
         $filesPerDisk = (int) ceil(($maxFiles * 1.6) / count($deletableDisks));
         foreach ($deletableDisks as $diskName) {
             for ($i = 1; $i <= $filesPerDisk; $i++) {
-                Storage::disk($diskName)->put("$projectRef/$uuid.$i.dat", 'dummy content');
+                Storage::disk($diskName)->put("$project->ref/$uuid.$i.dat", 'dummy content');
             }
         }
 
@@ -156,7 +190,7 @@ class RemoverLocalTest extends TestCase
 
         // Run deletion
         $controller = app(DeleteController::class);
-        $deletedCount = $controller->removeMediaChunk($projectRef);
+        $deletedCount = $controller->removeMediaChunk($project->ref, $project->id);
 
         // ✅ Assert only maxFiles deleted across all disks
         $this->assertEquals(
@@ -168,7 +202,7 @@ class RemoverLocalTest extends TestCase
         // ✅ Count remaining files across all disks
         $totalRemaining = 0;
         foreach ($deletableDisks as $diskName) {
-            $totalRemaining += count(Storage::disk($diskName)->allFiles($projectRef));
+            $totalRemaining += count(Storage::disk($diskName)->allFiles($project->ref));
         }
 
         $this->assertGreaterThan(

@@ -8,6 +8,7 @@ class ProjectStatsDTO
     public string $structure_last_updated;
     // Own public properties, reflecting those in 'project_stats' db table
     public int $total_entries = 0;
+    public int $total_files = 0;
     public int $total_bytes = 0;
     public array|string $form_counts = [];
     public array|string $branch_counts = [];
@@ -20,6 +21,7 @@ class ProjectStatsDTO
     public function init($params): void
     {
         $this->total_entries = $params['total_entries'] ?? 0;
+        $this->total_files = $params['total_files'] ?? 0;
         $this->total_bytes = $params['total_bytes'] ?? 0;
         $this->form_counts = $params['form_counts'] ?? [];
         $this->branch_counts = $params['branch_counts'] ?? [];
@@ -33,6 +35,7 @@ class ProjectStatsDTO
     {
         return [
             'total_entries' => $this->total_entries,
+            'total_files' => $this->total_files,
             'total_bytes' => $this->total_bytes,
             'form_counts' => $this->form_counts,
             'branch_counts' => $this->branch_counts,
@@ -46,6 +49,7 @@ class ProjectStatsDTO
     {
         return [
             'total_entries' => $this->total_entries,
+            'total_files' => $this->total_files,
             'total_bytes' => $this->total_bytes,
             'form_counts' => is_array($this->form_counts) ? json_encode($this->form_counts) : $this->form_counts,
             'branch_counts' => is_array($this->branch_counts) ? json_encode($this->branch_counts) : $this->branch_counts,

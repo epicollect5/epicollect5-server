@@ -171,7 +171,8 @@ class PhotoSaverService
                 try {
                     $fileSaved = Storage::disk($disk)->put(
                         $projectRef . '/' . $fileName,
-                        $imageContent
+                        $imageContent,
+                        ['visibility' => 'public', 'directory_visibility' => 'public']
                     );
                     if ($fileSaved) {
                         break; // Success, exit retry loop
@@ -183,19 +184,21 @@ class PhotoSaverService
                     sleep($retryDelay * pow(2, $retry)); // Exponential backoff
                 }
             }
-
-            $photoBytes = strlen($imageContent); // size in bytes
-            //adjust total bytes
-            ProjectStats::where('project_id', $projectId)
-                ->first()
-                ->incrementMediaStorageUsage(
-                    $photoBytes,
-                    1,
-                    0,
-                    0,
-                    0,
-                    0
-                );
+            //track bytes only if file was saved
+            if ($fileSaved) {
+                $photoBytes = strlen($imageContent); // size in bytes
+                //adjust total bytes
+                ProjectStats::where('project_id', $projectId)
+                    ->first()
+                    ->incrementMediaStorageUsage(
+                        $photoBytes,
+                        1,
+                        0,
+                        0,
+                        0,
+                        0
+                    );
+            }
 
             return (bool) $fileSaved;
         } catch (Throwable $e) {

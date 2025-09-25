@@ -2,7 +2,8 @@
 
 namespace Tests\Services\Media;
 
-use ec5\Libraries\Utilities\Generators;
+use ec5\Models\Project\Project;
+use ec5\Models\Project\ProjectStats;
 use ec5\Services\Media\PhotoSaverService;
 use Exception;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -27,26 +28,26 @@ class PhotoSaverServiceS3Test extends TestCase
         $this->overrideStorageDriver('s3');
     }
 
-    /**
-     * @throws Exception
-     */
     public function test_service_handles_s3_429_too_many_requests_error()
     {
-        $projectRef = Generators::projectRef();
+        $project = factory(Project::class)->create();
+        factory(ProjectStats::class)->create([
+            'project_id' => $project->id,
+            'total_entries' => 0,
+            'total_files' => 0,
+            'total_bytes' => 0,
+            'form_counts' => json_encode([]),
+            'branch_counts' => json_encode([])
+        ]);
         $fileName = Uuid::uuid4()->toString(). '_' . time() . '.jpg';
         $disk = 'photo';
 
         // Create a fake uploaded file
         $uploadedFile = File::fake()->image($fileName, 1024, 768);
 
-        // Mock Storage facade - need to mock the actual disk calls
-        Storage::shouldReceive('disk')
-            ->with($disk)
-            ->times(4) // Called 4 times (1 initial + 3 retries)
-            ->andReturnSelf();
-
-        Storage::shouldReceive('put')
-            ->with($projectRef . '/' . $fileName, Mockery::any())
+        // Alternative approach - mock Storage directly with the full method chain
+        Storage::shouldReceive('disk->put')
+            ->with($project->ref . '/' . $fileName, Mockery::any(), Mockery::any())
             ->times(4) // Expect 4 calls (1 initial + 3 retries)
             ->andThrow(new S3Exception(
                 'Too Many Requests',
@@ -55,7 +56,7 @@ class PhotoSaverServiceS3Test extends TestCase
             ));
 
         // Assert service returns false when S3 errors occur
-        $result = PhotoSaverService::saveImage($projectRef, $uploadedFile, $fileName, $disk);
+        $result = PhotoSaverService::saveImage($project->ref, $project->id, $uploadedFile, $fileName, $disk);
         $this->assertFalse($result);
     }
 
@@ -64,21 +65,24 @@ class PhotoSaverServiceS3Test extends TestCase
      */
     public function test_service_handles_s3_503_service_unavailable_error()
     {
-        $projectRef = Generators::projectRef();
+        $project = factory(Project::class)->create();
+        factory(ProjectStats::class)->create([
+            'project_id' => $project->id,
+            'total_entries' => 0,
+            'total_files' => 0,
+            'total_bytes' => 0,
+            'form_counts' => json_encode([]),
+            'branch_counts' => json_encode([])
+        ]);
         $fileName = Uuid::uuid4()->toString(). '_' . time() . '.jpg';
         $disk = 'photo';
 
         // Create a fake uploaded file
         $uploadedFile = File::fake()->image($fileName, 1024, 768);
 
-        // Mock Storage facade - need to mock the actual disk calls
-        Storage::shouldReceive('disk')
-            ->with($disk)
-            ->times(4) // Called 4 times (1 initial + 3 retries)
-            ->andReturnSelf();
-
-        Storage::shouldReceive('put')
-            ->with($projectRef . '/' . $fileName, Mockery::any())
+        Storage::shouldReceive('disk->put')
+            //imp: match the  number of args expected, passing any() for the 3rd arg
+            ->with($project->ref . '/' . $fileName, Mockery::any(), Mockery::any())
             ->times(4) // Expect 4 calls (1 initial + 3 retries)
             ->andThrow(new S3Exception(
                 'Service Unavailable',
@@ -86,7 +90,7 @@ class PhotoSaverServiceS3Test extends TestCase
                 ['response' => new Response(503)]
             ));
 
-        $result = PhotoSaverService::saveImage($projectRef, $uploadedFile, $fileName, $disk);
+        $result = PhotoSaverService::saveImage($project->ref, $project->id, $uploadedFile, $fileName, $disk);
         $this->assertFalse($result);
     }
 
@@ -95,7 +99,15 @@ class PhotoSaverServiceS3Test extends TestCase
      */
     public function test_service_successfully_saves_image_to_s3()
     {
-        $projectRef = Generators::projectRef();
+        $project = factory(Project::class)->create();
+        factory(ProjectStats::class)->create([
+            'project_id' => $project->id,
+            'total_entries' => 0,
+            'total_files' => 0,
+            'total_bytes' => 0,
+            'form_counts' => json_encode([]),
+            'branch_counts' => json_encode([])
+        ]);
         $fileName = Uuid::uuid4()->toString(). '_' . time() . '.jpg';
         $disk = 'photo';
 
@@ -109,12 +121,12 @@ class PhotoSaverServiceS3Test extends TestCase
             ->andReturnSelf();
 
         Storage::shouldReceive('put')
-            ->with($projectRef . '/' . $fileName, Mockery::any())
+            ->with($project->ref . '/' . $fileName, Mockery::any(), Mockery::any())
             ->once()
             ->andReturn(true);
 
         // Assert service returns true on successful save
-        $result = PhotoSaverService::saveImage($projectRef, $uploadedFile, $fileName, $disk);
+        $result = PhotoSaverService::saveImage($project->ref, $project->id, $uploadedFile, $fileName, $disk);
         $this->assertTrue($result);
     }
 
@@ -123,7 +135,15 @@ class PhotoSaverServiceS3Test extends TestCase
      */
     public function test_service_handles_s3_403_forbidden_error_without_retry()
     {
-        $projectRef = 'test-project-ref';
+        $project = factory(Project::class)->create();
+        factory(ProjectStats::class)->create([
+            'project_id' => $project->id,
+            'total_entries' => 0,
+            'total_files' => 0,
+            'total_bytes' => 0,
+            'form_counts' => json_encode([]),
+            'branch_counts' => json_encode([])
+        ]);
         $fileName = 'test-photo.jpg';
         $disk = 'photo';
 
@@ -137,7 +157,7 @@ class PhotoSaverServiceS3Test extends TestCase
             ->andReturnSelf();
 
         Storage::shouldReceive('put')
-            ->with($projectRef . '/' . $fileName, Mockery::any())
+            ->with($project->ref . '/' . $fileName, Mockery::any(), Mockery::any())
             ->once() // Expect only 1 call (no retries for 403)
             ->andThrow(new S3Exception(
                 'Forbidden',
@@ -146,7 +166,7 @@ class PhotoSaverServiceS3Test extends TestCase
             ));
 
         // Assert service returns false when non-retryable S3 error occurs
-        $result = PhotoSaverService::saveImage($projectRef, $uploadedFile, $fileName, $disk);
+        $result = PhotoSaverService::saveImage($project->ref, $project->id, $uploadedFile, $fileName, $disk);
         $this->assertFalse($result);
     }
 
@@ -155,7 +175,15 @@ class PhotoSaverServiceS3Test extends TestCase
      */
     public function test_service_handles_s3_put_returns_false()
     {
-        $projectRef = 'test-project-ref';
+        $project = factory(Project::class)->create();
+        factory(ProjectStats::class)->create([
+            'project_id' => $project->id,
+            'total_entries' => 0,
+            'total_files' => 0,
+            'total_bytes' => 0,
+            'form_counts' => json_encode([]),
+            'branch_counts' => json_encode([])
+        ]);
         $fileName = 'test-photo.jpg';
         $disk = 'photo';
 
@@ -169,12 +197,12 @@ class PhotoSaverServiceS3Test extends TestCase
             ->andReturnSelf();
 
         Storage::shouldReceive('put')
-            ->with($projectRef . '/' . $fileName, Mockery::any())
+            ->with($project->ref . '/' . $fileName, Mockery::any(), Mockery::any())
             ->times(4) // Expect 4 calls (1 initial + 3 retries)
             ->andReturn(false);
 
         // Assert service returns false when put() fails
-        $result = PhotoSaverService::saveImage($projectRef, $uploadedFile, $fileName, $disk);
+        $result = PhotoSaverService::saveImage($project->ref, $project->id, $uploadedFile, $fileName, $disk);
         $this->assertFalse($result);
     }
 }

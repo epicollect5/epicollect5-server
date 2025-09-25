@@ -4,7 +4,6 @@ namespace ec5\Traits\Eloquent;
 
 use Aws\S3\Exception\S3Exception;
 use Aws\S3\S3Client;
-use ec5\DTO\ProjectDTO;
 use ec5\Libraries\Utilities\Common;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
@@ -141,7 +140,7 @@ trait Remover
     /**
      * @throws Exception
      */
-    public function removeMediaChunk(ProjectDTO $project): int
+    public function removeMediaChunk(string $projectRef, int $projectId): int
     {
         $drivers = config('epicollect.media.entries_deletable');
         $totalDeleted = 0;
@@ -166,17 +165,17 @@ trait Remover
                     $diskRoot = config('filesystems.disks.' . $driver . '.root').'/';
                     $s3Client = $this->createS3Client($config);
                     $bucket = $config['bucket'];
-                    $prefix = $diskRoot . $project->ref;
+                    $prefix = $diskRoot . $projectRef;
                     $deletionResult = $this->deleteOneBatchByPrefixS3($s3Client, $bucket, $prefix, $remainingCapacity);
                 } else {
                     // Handle local storage using Laravel Storage facade
-                    $deletionResult = $this->deleteOneBatchByPrefixLocal($driver, $project->ref, $remainingCapacity);
+                    $deletionResult = $this->deleteOneBatchByPrefixLocal($driver, $projectRef, $remainingCapacity);
                 }
 
                 if ($deletionResult['deletedCount'] > 0) {
                     $totalDeleted += $deletionResult['deletedCount'];
                     //adjust total bytes (negative delta)
-                    ProjectStats::where('project_id', $project->getId())
+                    ProjectStats::where('project_id', $projectId)
                         ->first()
                         ->decrementMediaStorageUsage(
                             $deletionResult['deletedBytes']['photo'],
@@ -186,17 +185,17 @@ trait Remover
                             $deletionResult['deletedBytes']['video'],
                             $deletionResult['deletedFiles']['video']
                         );
-                    Log::info("Deleted {{$deletionResult['deletedCount']}} entries for $project->ref on disk $driver. Total so far: $totalDeleted");
+                    Log::info("Deleted {{$deletionResult['deletedCount']}} entries for $projectRef on disk $driver. Total so far: $totalDeleted");
                 }
 
             } catch (Exception $e) {
-                Log::error("Failed batch delete for $project->ref on disk $driver: " . $e->getMessage());
+                Log::error("Failed batch delete for $projectRef on disk $driver: " . $e->getMessage());
                 throw $e;
             }
         }
 
         if ($totalDeleted > 0) {
-            Log::info("Total deleted $totalDeleted entries for $project->ref across all drivers.");
+            Log::info("Total deleted $totalDeleted entries for $projectRef across all drivers.");
         }
 
         return $totalDeleted;

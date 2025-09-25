@@ -37,6 +37,7 @@ use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use Tests\TestCase;
+use ec5\Services\Media\FileMoverService;
 
 class RuleUploadTest extends TestCase
 {
@@ -108,7 +109,8 @@ class RuleUploadTest extends TestCase
             new RulePhotoWeb(),
             new RuleVideo(),
             new RuleAudio(),
-            $ruleAnswers
+            $ruleAnswers,
+            new FileMoverService()
         );
 
         $this->ruleUpload = new RuleUpload(

@@ -38,6 +38,7 @@ class RemoverS3Test extends TestCase
     public function test_controller_handles_s3_429_deleteObjects_too_many_requests_error()
     {
         $projectRef = Generators::projectRef();
+        $projectId = 99999;
         $uuid = Uuid::uuid4()->toString();
 
         // Mock S3Client
@@ -68,7 +69,7 @@ class RemoverS3Test extends TestCase
 
         // Assert exception and check status code/message
         try {
-            $controller->removeMediaChunk($projectRef);
+            $controller->removeMediaChunk($projectRef, $projectId);
             $this->fail('Expected S3Exception was not thrown');
         } catch (S3Exception $e) {
             $this->assertEquals(429, $e->getStatusCode());
@@ -82,6 +83,7 @@ class RemoverS3Test extends TestCase
     public function test_controller_handles_s3_429_listObjectsV2_too_many_requests_error()
     {
         $projectRef = Generators::projectRef();
+        $projectId = 99999;
 
         // Mock S3Client
         $mockS3Client = Mockery::mock(S3Client::class);
@@ -102,7 +104,7 @@ class RemoverS3Test extends TestCase
 
         // Assert exception and check status code/message
         try {
-            $controller->removeMediaChunk($projectRef);
+            $controller->removeMediaChunk($projectRef, $projectId);
             $this->fail('Expected S3Exception was not thrown');
         } catch (S3Exception $e) {
             $this->assertEquals(429, $e->getStatusCode());
@@ -116,6 +118,7 @@ class RemoverS3Test extends TestCase
     public function test_controller_handles_s3_503_deleteObjects_service_unavailable_error()
     {
         $projectRef = Generators::projectRef();
+        $projectId = 99999;
         $uuid = Uuid::uuid4()->toString();
 
         // Mock S3Client at the container level
@@ -145,7 +148,7 @@ class RemoverS3Test extends TestCase
 
         // Alternative approach if you need to check status code
         try {
-            $controller->removeMediaChunk($projectRef);
+            $controller->removeMediaChunk($projectRef, $projectId);
             $this->fail('Expected S3Exception was not thrown');
         } catch (S3Exception $e) {
             $this->assertEquals(503, $e->getStatusCode());
@@ -159,6 +162,7 @@ class RemoverS3Test extends TestCase
     public function test_controller_handles_s3_503_listObjectsV2_service_unavailable_error()
     {
         $projectRef = Generators::projectRef();
+        $projectId = 99999;
 
         // Mock S3Client
         $mockS3Client = Mockery::mock(S3Client::class);
@@ -176,7 +180,7 @@ class RemoverS3Test extends TestCase
         $controller1->shouldReceive('createS3Client')->andReturn($mockS3Client);
 
         try {
-            $controller1->removeMediaChunk($projectRef);
+            $controller1->removeMediaChunk($projectRef, $projectId);
             $this->fail('Expected S3Exception was not thrown');
         } catch (S3Exception $e) {
             $this->assertEquals(503, $e->getStatusCode());
