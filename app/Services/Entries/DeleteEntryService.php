@@ -198,13 +198,13 @@ class DeleteEntryService
             //adjust total bytes (negative delta)
             ProjectStats::where('project_id', $project->getId())
                 ->first()
-                ->updateMediaStorageUsage(
-                    -$photoDeletedBytes,
-                    -$photoDeletedFiles,
-                    -$audioDeletedBytes,
-                    -$audioDeletedFiles,
-                    -$videoDeletedBytes,
-                    -$videoDeletedFiles,
+                ->decrementMediaStorageUsage(
+                    $photoDeletedBytes,
+                    $photoDeletedFiles,
+                    $audioDeletedBytes,
+                    $audioDeletedFiles,
+                    $videoDeletedBytes,
+                    $videoDeletedFiles,
                 );
         }
 
@@ -271,13 +271,13 @@ class DeleteEntryService
             //adjust total bytes (negative delta)
             ProjectStats::where('project_id', $project->getId())
                 ->first()
-                ->updateMediaStorageUsage(
-                    -$photoDeletedBytes,
-                    -$photoDeletedFiles,
-                    -$audioDeletedBytes,
-                    -$audioDeletedFiles,
-                    -$videoDeletedBytes,
-                    -$videoDeletedFiles,
+                ->decrementMediaStorageUsage(
+                    $photoDeletedBytes,
+                    $photoDeletedFiles,
+                    $audioDeletedBytes,
+                    $audioDeletedFiles,
+                    $videoDeletedBytes,
+                    $videoDeletedFiles,
                 );
         }
 

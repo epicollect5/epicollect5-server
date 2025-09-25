@@ -178,13 +178,13 @@ trait Remover
                     //adjust total bytes (negative delta)
                     ProjectStats::where('project_id', $project->getId())
                         ->first()
-                        ->updateMediaStorageUsage(
-                            -$deletionResult['deletedBytes']['photo'],
-                            -$deletionResult['deletedFiles']['photo'],
-                            -$deletionResult['deletedBytes']['audio'],
-                            -$deletionResult['deletedFiles']['audio'],
-                            -$deletionResult['deletedBytes']['video'],
-                            -$deletionResult['deletedFiles']['video']
+                        ->decrementMediaStorageUsage(
+                            $deletionResult['deletedBytes']['photo'],
+                            $deletionResult['deletedFiles']['photo'],
+                            $deletionResult['deletedBytes']['audio'],
+                            $deletionResult['deletedFiles']['audio'],
+                            $deletionResult['deletedBytes']['video'],
+                            $deletionResult['deletedFiles']['video']
                         );
                     Log::info("Deleted {{$deletionResult['deletedCount']}} entries for $project->ref on disk $driver. Total so far: $totalDeleted");
                 }
@@ -358,6 +358,7 @@ trait Remover
 
                         // Determine media type based on path
                         $mediaType = $this->getMediaTypeFromPath($relativePath);
+                        Log::info('$mediaType, $disk', ['mediaType' => $mediaType, 'disk' => $disk]);
                         $deletedBytes[$mediaType] += $fileSize;
                         $deletedFiles[$mediaType]++;
                     } else {
@@ -383,7 +384,7 @@ trait Remover
 
         return [
             'deletedCount' => $deletedCount,
-            'deletedFiles' => $deletedCount,
+            'deletedFiles' => $deletedFiles,
             'deletedBytes' => $deletedBytes
         ];
     }

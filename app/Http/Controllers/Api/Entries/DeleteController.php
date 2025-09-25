@@ -218,6 +218,7 @@ class DeleteController extends Controller
                 ]);
             } catch (Throwable $e) {
                 Log::error('Error deleting media', ['exception' => $e->getMessage()]);
+                Log::error('Error deleting media', ['trace' => $e->getTraceAsString()]);
                 return Response::apiErrorCode(400, ['errors' => ['ec5_104']]);
             } finally {
                 // Release the lock

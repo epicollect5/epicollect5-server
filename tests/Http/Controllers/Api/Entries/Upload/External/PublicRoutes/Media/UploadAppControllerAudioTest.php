@@ -19,7 +19,9 @@ use Exception;
 use Faker\Factory as Faker;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Storage;
+use Random\RandomException;
 use Tests\TestCase;
+use Throwable;
 
 /* We cannot do multiple post requests in the same test method,
    as the app boots only once, and we are going to have side effects
@@ -32,8 +34,11 @@ class UploadAppControllerAudioTest extends TestCase
     use DatabaseTransactions;
     use Assertions;
 
-    private $endpoint = 'api/upload/';
+    private string $endpoint = 'api/upload/';
 
+    /**
+     * @throws RandomException
+     */
     public function setUp(): void
     {
         parent::setUp();
@@ -172,7 +177,7 @@ class UploadAppControllerAudioTest extends TestCase
 
             Storage::disk('audio')->deleteDirectory($this->project->ref);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -280,7 +285,7 @@ class UploadAppControllerAudioTest extends TestCase
 
             //deleted the file
             Storage::disk('audio')->deleteDirectory($this->project->ref);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -356,7 +361,7 @@ class UploadAppControllerAudioTest extends TestCase
             Storage::disk('audio')->deleteDirectory($this->project->ref);
 
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -431,11 +436,14 @@ class UploadAppControllerAudioTest extends TestCase
             Storage::disk('audio')->deleteDirectory($this->project->ref);
 
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_it_should_upload_a_branch_audio_android()
     {
         //get branch inputs
@@ -560,11 +568,14 @@ class UploadAppControllerAudioTest extends TestCase
 
             Storage::disk('audio')->deleteDirectory($this->project->ref);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_it_should_ignore_missing_branch_entry_android()
     {
         //get branch inputs
@@ -689,7 +700,7 @@ class UploadAppControllerAudioTest extends TestCase
             $audios = Storage::disk('audio')->files($this->project->ref);
             $this->assertCount(0, $audios);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -763,7 +774,7 @@ class UploadAppControllerAudioTest extends TestCase
             $audios = Storage::disk('audio')->files($this->project->ref);
             $this->assertCount(0, $audios);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -851,7 +862,7 @@ class UploadAppControllerAudioTest extends TestCase
             //assert file is not saved
             $audios = Storage::disk('audio')->files($this->project->ref);
             $this->assertCount(0, $audios);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

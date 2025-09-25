@@ -25,7 +25,7 @@ return new class () extends Migration {
             }
 
             $table->unsignedBigInteger('total_bytes')->default(0)->after('total_entries');
-            $table->unsignedBigInteger('total_files')->default(0)->after('total_bytes');
+            $table->unsignedBigInteger('total_files')->default(0)->after('total_entries');
             $table->unsignedBigInteger('photo_files')->default(0)->after('total_bytes');
             $table->unsignedBigInteger('photo_bytes')->default(0)->after('photo_files');
             $table->unsignedBigInteger('audio_files')->default(0)->after('photo_bytes');

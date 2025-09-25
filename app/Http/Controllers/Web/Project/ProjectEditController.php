@@ -177,6 +177,7 @@ class ProjectEditController
         $disk = Common::resolveDisk($format);
         return PhotoSaverService::saveImage(
             $this->requestedProject()->ref,
+            $this->requestedProject()->getId(),
             request()->file('logo_url'),
             'logo.jpg',
             $disk,

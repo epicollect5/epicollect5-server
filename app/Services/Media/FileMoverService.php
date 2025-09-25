@@ -61,7 +61,8 @@ class FileMoverService
 
                 // === Save original image ===
                 $photoSaved = PhotoSaverService::saveImage(
-                    $project,
+                    $project->ref,
+                    $project->getId(),
                     $isS3 ? $file['path'] : $file,
                     $fileName,
                     'photo',
@@ -76,7 +77,8 @@ class FileMoverService
             default:
                 // === Save non-photo files ===
                 $fileSaved = AudioVideoSaverService::saveFile(
-                    $project,
+                    $project->ref,
+                    $project->getId(),
                     $file,
                     $fileName,
                     $fileType,// -> audio,video

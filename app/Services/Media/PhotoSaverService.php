@@ -3,7 +3,6 @@
 namespace ec5\Services\Media;
 
 use Aws\S3\Exception\S3Exception;
-use ec5\DTO\ProjectDTO;
 use ec5\Libraries\Utilities\Common;
 use ec5\Models\Project\ProjectStats;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -24,7 +23,8 @@ class PhotoSaverService
      *
      * Determines the default storage driver from configuration and delegates the image saving process to the appropriate method. Returns false if the storage driver is unsupported.
      *
-     * @param ProjectDTO $project
+     * @param string $projectRef
+     * @param int $projectId
      * @param mixed $image Uploaded file instance or file path to the image.
      * @param string $fileName Name to assign to the saved image file.
      * @param string $disk Storage disk to use for saving the image.
@@ -32,14 +32,14 @@ class PhotoSaverService
      * @param int $quality JPEG encoding quality (default 50).
      * @return bool True on success, false on failure or if the storage driver is unsupported.
      */
-    public static function saveImage(ProjectDTO $project, mixed $image, string $fileName, string $disk, array $dimensions = [], int $quality = 50): bool
+    public static function saveImage(string $projectRef, int $projectId, mixed $image, string $fileName, string $disk, array $dimensions = [], int $quality = 50): bool
     {
         $storageDriver = config('filesystems.default');
         if ($storageDriver === 's3') {
-            return self::saveImageS3($project, $image, $fileName, $disk, $dimensions, $quality);
+            return self::saveImageS3($projectRef, $projectId, $image, $fileName, $disk, $dimensions, $quality);
         }
         if ($storageDriver === 'local') {
-            return self::saveImageLocal($project, $image, $fileName, $disk, $dimensions, $quality);
+            return self::saveImageLocal($projectRef, $projectId, $image, $fileName, $disk, $dimensions, $quality);
         }
 
         Log::error('Storage driver not supported', ['driver' => $storageDriver]);
@@ -52,7 +52,8 @@ class PhotoSaverService
      *
      * Accepts either an uploaded file or a file path as input. The processed image is stored on the specified disk with public visibility.
      *
-     * @param ProjectDTO $project
+     * @param string $projectRef
+     * @param int $projectId
      * @param mixed $image Uploaded file object or file path to the image.
      * @param string $fileName Name for the saved image file.
      * @param string $disk Storage disk name where the image will be saved.
@@ -60,7 +61,7 @@ class PhotoSaverService
      * @param int $quality JPEG encoding quality (1-100).
      * @return bool True on success, false if saving fails.
      */
-    public static function saveImageLocal(ProjectDTO $project, mixed $image, string $fileName, string $disk, array $dimensions = [], int $quality = 50): bool
+    public static function saveImageLocal(string $projectRef, int $projectId, mixed $image, string $fileName, string $disk, array $dimensions = [], int $quality = 50): bool
     {
         try {
             // Get the image path (handles both uploaded files and direct paths)
@@ -70,14 +71,14 @@ class PhotoSaverService
             $encodedImage = self::processImage($imagePath, $dimensions, $quality);
 
             // Ensure directory exists with correct permissions ()
-            if (!Storage::disk($disk)->exists($project->ref)) {
-                Storage::disk($disk)->makeDirectory($project->ref);
+            if (!Storage::disk($disk)->exists($projectRef)) {
+                Storage::disk($disk)->makeDirectory($projectRef);
 
                 // For local driver, fix permissions for entire chain
                 $diskRoot = config('filesystems.disks.' . $disk . '.root').'/';
 
                 // Build full folder path to newly created directory
-                $newDirFullPath = $diskRoot . $project->ref;
+                $newDirFullPath = $diskRoot . $projectRef;
 
                 // Fix folder chain permissions up to app/ to fix laravel 700 issue since 9+
                 Common::setPermissionsRecursiveUp($newDirFullPath);
@@ -85,7 +86,7 @@ class PhotoSaverService
 
             // Store the image into the storage location with the specified driver
             Storage::disk($disk)->put(
-                $project->ref . '/' . $fileName,
+                $projectRef . '/' . $fileName,
                 $encodedImage,
                 [
                     'visibility' => 'public',
@@ -95,9 +96,9 @@ class PhotoSaverService
 
             $photoBytes = strlen($encodedImage); // size in bytes
             //adjust total bytes
-            ProjectStats::where('project_id', $project->getId())
+            ProjectStats::where('project_id', $projectId)
                 ->first()
-                ->updateMediaStorageUsage(
+                ->incrementMediaStorageUsage(
                     $photoBytes,
                     1,
                     0,
@@ -118,7 +119,8 @@ class PhotoSaverService
      *
      * Accepts either an uploaded file or a string path referencing an S3 object. The image is processed (optionally resized and cropped, then encoded as JPEG with the specified quality) and uploaded to the specified S3 disk under the given project reference and file name.
      *
-     * @param ProjectDTO $project
+     * @param string $projectRef
+     * @param int $projectId
      * @param mixed $image Uploaded file or S3 object path to be processed and saved.
      * @param string $fileName Name for the saved image file.
      * @param string $disk S3 disk name where the image will be saved.
@@ -127,7 +129,8 @@ class PhotoSaverService
      * @return bool True on success, false if saving fails.
      */
     public static function saveImageS3(
-        ProjectDTO $project,
+        string $projectRef,
+        int $projectId,
         mixed $image,
         string $fileName,
         string $disk,
@@ -167,7 +170,7 @@ class PhotoSaverService
             for ($retry = 0; $retry <= $maxRetries; $retry++) {
                 try {
                     $fileSaved = Storage::disk($disk)->put(
-                        $project->ref . '/' . $fileName,
+                        $projectRef . '/' . $fileName,
                         $imageContent
                     );
                     if ($fileSaved) {
@@ -183,9 +186,9 @@ class PhotoSaverService
 
             $photoBytes = strlen($imageContent); // size in bytes
             //adjust total bytes
-            ProjectStats::where('project_id', $project->getId())
+            ProjectStats::where('project_id', $projectId)
                 ->first()
-                ->updateMediaStorageUsage(
+                ->incrementMediaStorageUsage(
                     $photoBytes,
                     1,
                     0,
