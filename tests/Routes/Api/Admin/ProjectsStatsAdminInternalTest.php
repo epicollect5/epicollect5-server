@@ -6,7 +6,7 @@ use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\WithoutMiddleware;
 use Tests\TestCase;
 
-class ProjectsStatsTest extends TestCase
+class ProjectsStatsAdminInternalTest extends TestCase
 {
     use WithoutMiddleware;
     use DatabaseTransactions;

@@ -2,7 +2,6 @@
 
 namespace ec5\Models\Project;
 
-use Carbon\CarbonInterface;
 use DB;
 use ec5\Traits\Models\SerializeDates;
 use Illuminate\Database\Eloquent\Model;
@@ -301,28 +300,5 @@ class ProjectStats extends Model
 
         // Always return true: these are just rough quota counters.
         return true;
-    }
-
-    public function getMediaStorageUsage(): array
-    {
-        $humanReadableDate = Carbon::parse($this->total_bytes_updated_at)->diffForHumans([
-            'parts' => 1,   // show only 1 unit (2 min ago)
-            'short' => true, // optional: "2m ago"
-            'options' => CarbonInterface::JUST_NOW // automatically handle 0 seconds
-        ]);
-        $totalFiles = $this->photo_files + $this->audio_files + $this->video_files;
-
-        return [
-            'photo_bytes' => $this->photo_bytes,
-            'photo_files' => $this->photo_files,
-            'audio_bytes' => $this->audio_bytes,
-            'audio_files' => $this->audio_files,
-            'video_bytes' => $this->video_bytes,
-            'video_files' => $this->video_files,
-            'total_bytes' => $this->total_bytes,
-            'total_files' => $totalFiles,
-            'total_bytes_updated_at' => $this->total_bytes_updated_at,
-            'total_bytes_updated_at_human_readable' => $humanReadableDate
-        ];
     }
 }

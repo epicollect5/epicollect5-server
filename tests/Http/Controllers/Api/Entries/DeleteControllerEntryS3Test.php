@@ -172,14 +172,45 @@ class DeleteControllerEntryS3Test extends TestCase
 
         //add a fake file per each entry (per each media type)
         //photo
-        Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+        Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', str_repeat('A', 1234));
         //audio
-        Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
+        Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', str_repeat('A', 1234));
         //video
-        Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
+        Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', str_repeat('A', 1234));
 
-        $projectStats = new ProjectStats();
+        $projectStats = ProjectStats::where('project_id', $this->project->id)->firstOrFail();
+
         $projectStats->updateEntryCounters($this->project->id);
+
+        // collect stats
+        $photoFiles = Storage::disk('photo')->files($this->project->ref);
+        $audioFiles = Storage::disk('audio')->files($this->project->ref);
+        $videoFiles = Storage::disk('video')->files($this->project->ref);
+
+        $photoBytes = collect($photoFiles)->map(fn ($f) => Storage::disk('photo')->size($f))->sum();
+        $audioBytes = collect($audioFiles)->map(fn ($f) => Storage::disk('audio')->size($f))->sum();
+        $videoBytes = collect($videoFiles)->map(fn ($f) => Storage::disk('video')->size($f))->sum();
+
+        //update media storage stats
+        $projectStats->incrementMediaStorageUsage(
+            $photoBytes,
+            sizeof($photoFiles),
+            $audioBytes,
+            sizeof($audioFiles),
+            $videoBytes,
+            sizeof($videoFiles)
+        );
+
+        $updatedProjectStats = ProjectStats::where('project_id', $this->project->id)->first();
+        $totalBytes = $photoBytes + $audioBytes + $videoBytes;
+        $this->assertEquals($totalBytes, $updatedProjectStats->total_bytes);
+        $this->assertEquals(3, $updatedProjectStats->total_files);
+        $this->assertEquals($photoBytes, $updatedProjectStats->photo_bytes);
+        $this->assertEquals(count($photoFiles), $updatedProjectStats->photo_files);
+        $this->assertEquals($audioBytes, $updatedProjectStats->audio_bytes);
+        $this->assertEquals(count($audioFiles), $updatedProjectStats->audio_files);
+        $this->assertEquals($videoBytes, $updatedProjectStats->video_bytes);
+        $this->assertEquals(count($videoFiles), $updatedProjectStats->video_files);
 
         $payload = $this->createPayload(
             $this->user->id,
@@ -194,6 +225,7 @@ class DeleteControllerEntryS3Test extends TestCase
             ProjectStats::where('project_id', $this->project->id)
                 ->value('total_entries')
         );
+
 
         //hit the delete endpoint
         $response = [];
@@ -226,6 +258,8 @@ class DeleteControllerEntryS3Test extends TestCase
 
             $videos = Storage::disk('video')->files($this->project->ref);
             $this->assertCount(0, $videos);
+
+
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
@@ -314,12 +348,11 @@ class DeleteControllerEntryS3Test extends TestCase
 
         //add a fake file per each entry (per each media type)
         //photo
-        Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+        Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', str_repeat('A', 1234));
         //audio
-        Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
+        Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', str_repeat('A', 1234));
         //video
-        Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
-
+        Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', str_repeat('A', 1234));
 
         $childFormRef = $this->projectDefinition['data']['project']['forms'][1]['ref'];
         $childEntry = factory(Entry::class)->create(
@@ -336,11 +369,45 @@ class DeleteControllerEntryS3Test extends TestCase
 
         //add a fake file per each entry (per each media type)
         //photo
-        Storage::disk('photo')->put($this->project->ref . '/' . $childEntry->uuid . '_' . time() . '.jpg', '');
+        Storage::disk('photo')->put($this->project->ref . '/' . $childEntry->uuid . '_' . time() . '.jpg', str_repeat('A', 1234));
         //audio
-        Storage::disk('audio')->put($this->project->ref . '/' . $childEntry->uuid . '_' . time() . '.mp4', '');
+        Storage::disk('audio')->put($this->project->ref . '/' . $childEntry->uuid . '_' . time() . '.mp4', str_repeat('A', 1234));
         //video
-        Storage::disk('video')->put($this->project->ref . '/' . $childEntry->uuid . '_' . time() . '.mp4', '');
+        Storage::disk('video')->put($this->project->ref . '/' . $childEntry->uuid . '_' . time() . '.mp4', str_repeat('A', 1234));
+
+        $projectStats = ProjectStats::where('project_id', $this->project->id)->firstOrFail();
+        $projectStats->updateEntryCounters($this->project->id);
+
+        // collect stats
+        $photoFiles = Storage::disk('photo')->files($this->project->ref);
+        $audioFiles = Storage::disk('audio')->files($this->project->ref);
+        $videoFiles = Storage::disk('video')->files($this->project->ref);
+
+        $photoBytes = collect($photoFiles)->map(fn ($f) => Storage::disk('photo')->size($f))->sum();
+        $audioBytes = collect($audioFiles)->map(fn ($f) => Storage::disk('audio')->size($f))->sum();
+        $videoBytes = collect($videoFiles)->map(fn ($f) => Storage::disk('video')->size($f))->sum();
+
+        //update media storage stats
+        $projectStats->incrementMediaStorageUsage(
+            $photoBytes,
+            sizeof($photoFiles),
+            $audioBytes,
+            sizeof($audioFiles),
+            $videoBytes,
+            sizeof($videoFiles)
+        );
+
+        $updatedProjectStats = ProjectStats::where('project_id', $this->project->id)->first();
+        $totalBytes = $photoBytes + $audioBytes + $videoBytes;
+        $totalFiles = sizeof($photoFiles) + sizeOf($videoFiles) + sizeof($audioFiles);
+        $this->assertEquals($totalBytes, $updatedProjectStats->total_bytes);
+        $this->assertEquals($totalFiles, $updatedProjectStats->total_files);
+        $this->assertEquals($photoBytes, $updatedProjectStats->photo_bytes);
+        $this->assertEquals(count($photoFiles), $updatedProjectStats->photo_files);
+        $this->assertEquals($audioBytes, $updatedProjectStats->audio_bytes);
+        $this->assertEquals(count($audioFiles), $updatedProjectStats->audio_files);
+        $this->assertEquals($videoBytes, $updatedProjectStats->video_bytes);
+        $this->assertEquals(count($videoFiles), $updatedProjectStats->video_files);
 
 
         //update $entry with child count
@@ -417,6 +484,18 @@ class DeleteControllerEntryS3Test extends TestCase
             Storage::disk('photo')->deleteDirectory($this->project->ref);
             Storage::disk('audio')->deleteDirectory($this->project->ref);
             Storage::disk('video')->deleteDirectory($this->project->ref);
+
+            //assert media storage stats are updated
+            $updatedProjectStats = ProjectStats::where('project_id', $this->project->id)->first();
+            $this->assertEquals(3 * 1234, (int) $updatedProjectStats->total_bytes);
+            $this->assertEquals(3, (int) $updatedProjectStats->total_files);
+            $this->assertEquals(1, (int) $updatedProjectStats->total_entries);
+            $this->assertEquals(1234, (int) $updatedProjectStats->photo_bytes);
+            $this->assertEquals(1, (int) $updatedProjectStats->photo_files);
+            $this->assertEquals(1234, (int) $updatedProjectStats->audio_bytes);
+            $this->assertEquals(1, (int) $updatedProjectStats->audio_files);
+            $this->assertEquals(1234, (int) $updatedProjectStats->video_bytes);
+            $this->assertEquals(1, (int) $updatedProjectStats->video_files);
 
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
@@ -582,22 +661,22 @@ class DeleteControllerEntryS3Test extends TestCase
 
         //add a fake file per each entry (per each media type)
         //photo
-        Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+        Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', str_repeat('A', 1024));
         //audio
-        Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
+        Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', str_repeat('A', 2048));
         //video
-        Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
+        Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', str_repeat('A', 4096));
 
         //add a few media files to test they will not bwe deleted
         $numOfFilesNotToBeDelete = rand(3, 10);
         for ($j = 0; $j < $numOfFilesNotToBeDelete; $j++) {
             $uuid = Uuid::uuid4()->toString();
             //photo
-            Storage::disk('photo')->put($this->project->ref . '/' . $uuid . '_' . time() . '.jpg', '');
+            Storage::disk('photo')->put($this->project->ref . '/' . $uuid . '_' . time() . '.jpg', str_repeat('A', 1024));
             //audio
-            Storage::disk('audio')->put($this->project->ref . '/' . $uuid . '_' . time() . '.mp4', '');
+            Storage::disk('audio')->put($this->project->ref . '/' . $uuid . '_' . time() . '.mp4', str_repeat('A', 2048));
             //video
-            Storage::disk('video')->put($this->project->ref . '/' . $uuid . '_' . time() . '.mp4', '');
+            Storage::disk('video')->put($this->project->ref . '/' . $uuid . '_' . time() . '.mp4', str_repeat('A', 4096));
         }
 
 
@@ -628,11 +707,11 @@ class DeleteControllerEntryS3Test extends TestCase
 
             //add a fake file per each entry (per each media type)
             //photo
-            Storage::disk('photo')->put($this->project->ref . '/' . $branchEntry->uuid . '_' . time() . '.jpg', '');
+            Storage::disk('photo')->put($this->project->ref . '/' . $branchEntry->uuid . '_' . time() . '.jpg', str_repeat('A', 1234));
             //audio
-            Storage::disk('audio')->put($this->project->ref . '/' . $branchEntry->uuid . '_' . time() . '.mp4', '');
+            Storage::disk('audio')->put($this->project->ref . '/' . $branchEntry->uuid . '_' . time() . '.mp4', str_repeat('A', 2048));
             //video
-            Storage::disk('video')->put($this->project->ref . '/' . $branchEntry->uuid . '_' . time() . '.mp4', '');
+            Storage::disk('video')->put($this->project->ref . '/' . $branchEntry->uuid . '_' . time() . '.mp4', str_repeat('A', 4096));
         }
 
         $branchCounts = [
@@ -643,6 +722,41 @@ class DeleteControllerEntryS3Test extends TestCase
 
         $this->assertCount(1, Entry::where('project_id', $this->project->id)->get());
         $this->assertCount($numOfBranchEntries, BranchEntry::where('project_id', $this->project->id)->get());
+
+
+        $projectStats = ProjectStats::where('project_id', $this->project->id)->firstOrFail();
+
+        // collect stats
+        $photoFiles = Storage::disk('photo')->files($this->project->ref);
+        $audioFiles = Storage::disk('audio')->files($this->project->ref);
+        $videoFiles = Storage::disk('video')->files($this->project->ref);
+
+        $photoBytes = collect($photoFiles)->map(fn ($f) => Storage::disk('photo')->size($f))->sum();
+        $audioBytes = collect($audioFiles)->map(fn ($f) => Storage::disk('audio')->size($f))->sum();
+        $videoBytes = collect($videoFiles)->map(fn ($f) => Storage::disk('video')->size($f))->sum();
+
+        //update media storage stats
+        $projectStats->incrementMediaStorageUsage(
+            $photoBytes,
+            sizeof($photoFiles),
+            $audioBytes,
+            sizeof($audioFiles),
+            $videoBytes,
+            sizeof($videoFiles)
+        );
+
+        //assert project stats are correct after adding media files
+        $updatedProjectStats = ProjectStats::where('project_id', $this->project->id)->first();
+        $totalBytes = $photoBytes + $audioBytes + $videoBytes;
+        $totalFiles = sizeof($photoFiles) + sizeof($audioFiles) + sizeof($videoFiles);
+        $this->assertEquals($totalBytes, $updatedProjectStats->total_bytes);
+        $this->assertEquals($totalFiles, $updatedProjectStats->total_files);
+        $this->assertEquals($photoBytes, $updatedProjectStats->photo_bytes);
+        $this->assertEquals(sizeof($photoFiles), $updatedProjectStats->photo_files);
+        $this->assertEquals($audioBytes, $updatedProjectStats->audio_bytes);
+        $this->assertEquals(sizeof($audioFiles), $updatedProjectStats->audio_files);
+        $this->assertEquals($videoBytes, $updatedProjectStats->video_bytes);
+        $this->assertEquals(sizeof($videoFiles), $updatedProjectStats->video_files);
 
 
         //build delete payload
@@ -683,10 +797,34 @@ class DeleteControllerEntryS3Test extends TestCase
             $videos = Storage::disk('video')->files($this->project->ref);
             $this->assertCount($numOfFilesNotToBeDelete, $videos);
 
+            // recompute expected remaining sizes and files from S3
+            $photoBytesRemaining = collect($photos)->map(fn ($f) => Storage::disk('photo')->size($f))->sum();
+            $audioBytesRemaining = collect($audios)->map(fn ($f) => Storage::disk('audio')->size($f))->sum();
+            $videoBytesRemaining = collect($videos)->map(fn ($f) => Storage::disk('video')->size($f))->sum();
+
+            $totalBytesRemaining = $photoBytesRemaining + $audioBytesRemaining + $videoBytesRemaining;
+            $totalFilesRemaining = count($photos) + count($audios) + count($videos);
+
+            //Assert ProjectStats matches remaining media
+            $stats = ProjectStats::where('project_id', $this->project->id)->first();
+            $this->assertEquals($photoBytesRemaining, (int) $stats->photo_bytes);
+            $this->assertEquals(count($photos), (int) $stats->photo_files);
+
+            $this->assertEquals($audioBytesRemaining, (int) $stats->audio_bytes);
+            $this->assertEquals(count($audios), (int) $stats->audio_files);
+
+            $this->assertEquals($videoBytesRemaining, (int) $stats->video_bytes);
+            $this->assertEquals(count($videos), (int) $stats->video_files);
+
+            $this->assertEquals($totalBytesRemaining, (int) $stats->total_bytes);
+            $this->assertEquals($totalFilesRemaining, (int) $stats->total_files);
+
             //delete fake files
             Storage::disk('photo')->deleteDirectory($this->project->ref);
             Storage::disk('audio')->deleteDirectory($this->project->ref);
             Storage::disk('video')->deleteDirectory($this->project->ref);
+
+
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
@@ -707,11 +845,14 @@ class DeleteControllerEntryS3Test extends TestCase
 
         //add a fake file per each entry (per each media type)
         //photo
-        Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+        Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', str_repeat('A', 1024));
         //audio
-        Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
+        Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', str_repeat('A', 2048));
         //video
-        Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
+        Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', str_repeat('A', 4096));
+
+        $projectStats = ProjectStats::where('project_id', $this->project->id)->firstOrFail();
+        $projectStats->updateEntryCounters($this->project->id);
 
         //add branch refs
         $branchRefs = [];
@@ -740,19 +881,54 @@ class DeleteControllerEntryS3Test extends TestCase
                 ]
             );
             //photo
-            Storage::disk('photo')->put($this->project->ref . '/' . $branchUuid . '_' . time() . '.jpg', '');
+            Storage::disk('photo')->put($this->project->ref . '/' . $branchUuid . '_' . time() . '.jpg', str_repeat('A', 1024));
             //audio
-            Storage::disk('audio')->put($this->project->ref . '/' . $branchUuid . '_' . time() . '.mp4', '');
+            Storage::disk('audio')->put($this->project->ref . '/' . $branchUuid . '_' . time() . '.mp4', str_repeat('A', 1024));
             //video
-            Storage::disk('video')->put($this->project->ref . '/' . $branchUuid . '_' . time() . '.mp4', '');
+            Storage::disk('video')->put($this->project->ref . '/' . $branchUuid . '_' . time() . '.mp4', str_repeat('A', 1024));
 
             $branchCounts[$branchRef] = 1;
         }
         $entry->branch_counts = json_encode($branchCounts);
         $entry->save();
-
         $this->assertCount(1, Entry::where('project_id', $this->project->id)->get());
         $this->assertCount(sizeof($branchEntries), BranchEntry::where('project_id', $this->project->id)->get());
+
+
+        $projectStats = ProjectStats::where('project_id', $this->project->id)->firstOrFail();
+
+        // collect stats
+        $photoFiles = Storage::disk('photo')->files($this->project->ref);
+        $audioFiles = Storage::disk('audio')->files($this->project->ref);
+        $videoFiles = Storage::disk('video')->files($this->project->ref);
+
+        $photoBytes = collect($photoFiles)->map(fn ($f) => Storage::disk('photo')->size($f))->sum();
+        $audioBytes = collect($audioFiles)->map(fn ($f) => Storage::disk('audio')->size($f))->sum();
+        $videoBytes = collect($videoFiles)->map(fn ($f) => Storage::disk('video')->size($f))->sum();
+
+        //update media storage stats
+        $projectStats->incrementMediaStorageUsage(
+            $photoBytes,
+            sizeof($photoFiles),
+            $audioBytes,
+            sizeof($audioFiles),
+            $videoBytes,
+            sizeof($videoFiles)
+        );
+
+        //assert project stats are correct after adding media files
+        $updatedProjectStats = ProjectStats::where('project_id', $this->project->id)->first();
+        $totalBytes = $photoBytes + $audioBytes + $videoBytes;
+        $totalFiles = sizeof($photoFiles) + sizeof($audioFiles) + sizeof($videoFiles);
+        $this->assertEquals($totalBytes, $updatedProjectStats->total_bytes);
+        $this->assertEquals($totalFiles, $updatedProjectStats->total_files);
+        $this->assertEquals($photoBytes, $updatedProjectStats->photo_bytes);
+        $this->assertEquals(sizeof($photoFiles), $updatedProjectStats->photo_files);
+        $this->assertEquals($audioBytes, $updatedProjectStats->audio_bytes);
+        $this->assertEquals(sizeof($audioFiles), $updatedProjectStats->audio_files);
+        $this->assertEquals($videoBytes, $updatedProjectStats->video_bytes);
+        $this->assertEquals(sizeof($videoFiles), $updatedProjectStats->video_files);
+
 
         //build delete payload
         $payload = $this->createPayload(
@@ -792,14 +968,37 @@ class DeleteControllerEntryS3Test extends TestCase
             $this->assertEquals($branchCounts, json_decode($branchCountsResult, true));
 
             //test only the branch entry files of one branch were deleted, parent entry files untouched, other branches untouched
-            $photos = Storage::disk('photo')->files($this->project->ref);
-            $this->assertCount(1 + (sizeof($branchEntries) - 1), $photos);
+            $photosRemaining = Storage::disk('photo')->files($this->project->ref);
+            $this->assertCount(1 + (sizeof($branchEntries) - 1), $photosRemaining);
 
-            $audios = Storage::disk('audio')->files($this->project->ref);
-            $this->assertCount(1 + (sizeof($branchEntries) - 1), $audios);
+            $audiosRemaining = Storage::disk('audio')->files($this->project->ref);
+            $this->assertCount(1 + (sizeof($branchEntries) - 1), $audiosRemaining);
 
-            $videos = Storage::disk('video')->files($this->project->ref);
-            $this->assertCount(1 + (sizeof($branchEntries) - 1), $videos);
+            $videosRemaining = Storage::disk('video')->files($this->project->ref);
+            $this->assertCount(1 + (sizeof($branchEntries) - 1), $videosRemaining);
+
+
+            // recompute expected remaining sizes and files from S3
+            $photoBytesRemaining = collect($photosRemaining)->map(fn ($f) => Storage::disk('photo')->size($f))->sum();
+            $audioBytesRemaining = collect($audiosRemaining)->map(fn ($f) => Storage::disk('audio')->size($f))->sum();
+            $videoBytesRemaining = collect($videosRemaining)->map(fn ($f) => Storage::disk('video')->size($f))->sum();
+
+            $totalBytesRemaining = $photoBytesRemaining + $audioBytesRemaining + $videoBytesRemaining;
+            $totalFilesRemaining = count($photosRemaining) + count($audiosRemaining) + count($videosRemaining);
+
+            //Assert ProjectStats matches remaining media
+            $stats = ProjectStats::where('project_id', $this->project->id)->first();
+            $this->assertEquals($photoBytesRemaining, (int) $stats->photo_bytes);
+            $this->assertEquals(count($photosRemaining), (int) $stats->photo_files);
+
+            $this->assertEquals($audioBytesRemaining, (int) $stats->audio_bytes);
+            $this->assertEquals(count($audiosRemaining), (int) $stats->audio_files);
+
+            $this->assertEquals($videoBytesRemaining, (int) $stats->video_bytes);
+            $this->assertEquals(count($videosRemaining), (int) $stats->video_files);
+
+            $this->assertEquals($totalBytesRemaining, (int) $stats->total_bytes);
+            $this->assertEquals($totalFilesRemaining, (int) $stats->total_files);
 
             //delete fake files
             Storage::disk('photo')->deleteDirectory($this->project->ref);
@@ -928,6 +1127,17 @@ class DeleteControllerEntryS3Test extends TestCase
             Storage::disk('photo')->deleteDirectory($this->project->ref);
             Storage::disk('audio')->deleteDirectory($this->project->ref);
             Storage::disk('video')->deleteDirectory($this->project->ref);
+
+            //assert project stats are updated after deleting entry and branch entries
+            $updatedProjectStats = ProjectStats::where('project_id', $this->project->id)->first();
+            $this->assertEquals(0, $updatedProjectStats->total_bytes);
+            $this->assertEquals(0, $updatedProjectStats->total_files);
+            $this->assertEquals(0, $updatedProjectStats->photo_bytes);
+            $this->assertEquals(0, $updatedProjectStats->photo_files);
+            $this->assertEquals(0, $updatedProjectStats->audio_bytes);
+            $this->assertEquals(0, $updatedProjectStats->audio_files);
+            $this->assertEquals(0, $updatedProjectStats->video_bytes);
+            $this->assertEquals(0, $updatedProjectStats->video_files);
 
         } catch (Throwable $e) {
             $this->logTestError($e, $response);

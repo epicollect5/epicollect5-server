@@ -6,9 +6,8 @@ use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\WithoutMiddleware;
 use Tests\TestCase;
 
-class EntriesStatsTest extends TestCase
+class EntriesStatsAdminInternalTest extends TestCase
 {
-
     use WithoutMiddleware;
     use DatabaseTransactions;
 
@@ -19,16 +18,10 @@ class EntriesStatsTest extends TestCase
      */
     public function testEntriesStatsApiResponse()
     {
-
-
         $apiContentTypeHeaderKey = config('epicollect.setup.api.responseContentTypeHeaderKey');
         $apiContentTypeHeaderValue = config('epicollect.setup.api.responseContentTypeHeaderValue');
 
         $response = $this->json('GET', '/api/internal/admin/entries-stats');
-
-        //dd($response); // add this temporarily
-
-
         $response->assertStatus(200)
             ->assertHeader($apiContentTypeHeaderKey, $apiContentTypeHeaderValue)
             ->assertJsonStructure([

@@ -2,22 +2,24 @@
 
 namespace ec5\Http\Controllers\Web\Project;
 
-use ec5\Models\Project\ProjectStats;
+use ec5\Services\Media\MediaCounterService;
 use ec5\Traits\Requests\RequestAttributes;
 
 class ProjectStorageController
 {
     use RequestAttributes;
 
-    public function show()
+    public function show(MediaCounterService $mediaCounterService)
     {
         if (!$this->requestedProjectRole()->getUser()->isSuperAdmin()) {
             return view('errors.gen_error')->withErrors(['errors' => ['ec5_91']]);
         }
 
-        $mediaUsage = ProjectStats::where('project_id', $this->requestedProject()->getId())
-            ->first()
-            ->getMediaStorageUsage();
+        $mediaUsage = $mediaCounterService->getMediaStorageUsageFromDB(
+            $this->requestedProject()->getId(),
+            $this->requestedProject()->ref
+        );
+
 
         return view('project.project_details', [
             'includeTemplate' => 'storage',

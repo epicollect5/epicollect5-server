@@ -11,6 +11,7 @@ class SystemProjectStorageCommand extends Command
 {
     protected $signature = 'system:project-storage {--project-ref= : Process only a specific project by ref}';
     protected $description = 'Compute total_bytes for all projects or a specific project';
+    protected MediaCounterService $mediaCounterService;
 
     public function handle(): int
     {
@@ -21,17 +22,17 @@ class SystemProjectStorageCommand extends Command
             return 1;
         }
 
-        $mediaCounterService = new MediaCounterService();
+        $this->mediaCounterService = new MediaCounterService();
         $projectRef = $this->option('project-ref');
 
         if ($projectRef) {
-            return $this->processSingleProject($mediaCounterService, $projectRef);
+            return $this->processSingleProject($projectRef);
         }
 
-        return $this->processAllProjects($mediaCounterService);
+        return $this->processAllProjects();
     }
 
-    private function processSingleProject($mediaCounterService, $projectRef): int
+    private function processSingleProject($projectRef): int
     {
         $this->info("Processing project: $projectRef");
 
@@ -46,13 +47,13 @@ class SystemProjectStorageCommand extends Command
             return 1;
         }
 
-        $mediaStats = $mediaCounterService->countersMedia($project->project_id, $project->project_ref);
+        $mediaStats = $this->mediaCounterService->computeMediaMetrics($project->project_id, $project->project_ref);
         $this->updateMediaStorageStats($mediaStats, $project);
 
         return 0;
     }
 
-    private function processAllProjects($mediaCounterService): int
+    private function processAllProjects(): int
     {
         $totalProjects = DB::table('project_stats')->count();
 
@@ -63,11 +64,10 @@ class SystemProjectStorageCommand extends Command
             ->join('projects', 'projects.id', '=', 'project_stats.project_id')
             ->select('projects.id as project_id', 'project_stats.id as stats_id', 'projects.ref as project_ref')
             ->orderBy('project_stats.id')
-            ->chunk(50, function ($rows) use ($mediaCounterService, $bar) {
+            ->chunk(50, function ($rows) use ($bar) {
                 foreach ($rows as $row) {
-                    $mediaStats = $mediaCounterService->countersMedia($row->project_id, $row->project_ref);
+                    $mediaStats = $this->mediaCounterService->computeMediaMetrics($row->project_id, $row->project_ref);
                     $this->updateMediaStorageStats($mediaStats, $row);
-
                     $bar->advance();
                 }
             });
@@ -81,11 +81,15 @@ class SystemProjectStorageCommand extends Command
     private function updateMediaStorageStats($mediaStats, mixed $row): void
     {
         $totalBytes = $mediaStats['sizes']['total_bytes'];
+        $totalFiles = $mediaStats['counters']['photo'];
+        $totalFiles += $mediaStats['counters']['audio'];
+        $totalFiles += $mediaStats['counters']['video'];
 
         DB::table('project_stats')
             ->where('id', $row->stats_id)
             ->update([
                 'total_bytes' => $totalBytes,
+                'total_files' => $totalFiles,
                 'photo_bytes' => $mediaStats['sizes']['photo_bytes'],
                 'audio_bytes' => $mediaStats['sizes']['audio_bytes'],
                 'video_bytes' => $mediaStats['sizes']['video_bytes'],

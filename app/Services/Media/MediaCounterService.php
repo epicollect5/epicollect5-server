@@ -5,7 +5,6 @@ namespace ec5\Services\Media;
 use Aws\S3\S3Client;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
-use ec5\DTO\ProjectDTO;
 use ec5\Models\Project\ProjectStats;
 use FilesystemIterator;
 use Illuminate\Support\Facades\Storage;
@@ -131,6 +130,7 @@ class MediaCounterService
     {
         $config = config("filesystems.disks.$driver");
 
+
         $s3Client = new S3Client([
             'version' => 'latest',
             'region' => $config['region'],
@@ -159,22 +159,30 @@ class MediaCounterService
             $result = $s3Client->listObjectsV2($params);
 
             if (!empty($result['Contents'])) {
+
                 foreach ($result['Contents'] as $object) {
                     $size = $object['Size'];
                     $key = $object['Key'];
+                    // Skip folder objects (they end with '/' and typically have 0 size)
+                    if (str_ends_with($key, '/') || $size === 0) {
+                        continue;
+                    }
 
                     $this->totalCount++;
                     $this->totalSize += $size;
 
-                    if (str_contains($key, '/photo/')) {
-                        $this->photoCount++;
-                        $this->photoSize += $size;
-                    } elseif (str_contains($key, '/audio/')) {
-                        $this->audioCount++;
-                        $this->audioSize += $size;
-                    } elseif (str_contains($key, '/video/')) {
-                        $this->videoCount++;
-                        $this->videoSize += $size;
+                    switch ($driver) {
+                        case 'photo': // adjust to your actual driver name
+                            $this->photoCount++;
+                            $this->photoSize += $size;
+                            break;
+                        case 'audio':  // adjust to your actual driver name
+                            $this->audioCount++;
+                            $this->audioSize += $size;
+                            break;
+                        case 'video':
+                            $this->videoCount++;
+                            $this->videoSize += $size;
                     }
                 }
             }
@@ -185,9 +193,9 @@ class MediaCounterService
         } while ($continuationToken);
     }
 
-    public function countMediaDB(ProjectDTO $project): array
+    public function getMediaStorageUsageFromDB(int $projectId, string $projectRef): array
     {
-        $projectStats = ProjectStats::where('project_id', $project->getId())
+        $projectStats = ProjectStats::where('project_id', $projectId)
             ->first();
 
         $humanReadableDate = Carbon::now()->diffForHumans([
@@ -198,7 +206,7 @@ class MediaCounterService
 
         return [
             'type' => 'counters-project-media',
-            'id' => $project->ref,
+            'id' => $projectRef,
             'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
             'updated_at_human_readable' => $humanReadableDate,
             'counters' => [

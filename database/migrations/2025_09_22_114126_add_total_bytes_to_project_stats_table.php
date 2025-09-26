@@ -15,10 +15,7 @@ return new class () extends Migration {
             Schema::drop('storage_stats');
         }
 
-
-
         Schema::table('project_stats', function (Blueprint $table) {
-
             // Drop `total_users` if it exists
             if (Schema::hasColumn('project_stats', 'total_users')) {
                 $table->dropColumn('total_users');
