@@ -3,7 +3,7 @@
         <span>Quota</span>
         <div class="pull-right">
             <span class="bytes-updated-at">
-                Updated <span>{{$mediaUsage['total_bytes_updated_at_human_readable']}}</span>
+                Updated <span>{{$mediaUsage['updated_at_human_readable']}}</span>
             </span>
             <button class="btn btn-action btn-sm btn-refresh-media-overview">
                 <span class="material-symbols-outlined">
@@ -64,8 +64,8 @@
                             <span class="color-indicator color-photo"></span>
                             Photo
                         </td>
-                        <td class="count-photo" data-photo-files="{{$mediaUsage['photo_files']}}">0</td>
-                        <td class="size-photo" data-photo-bytes="{{$mediaUsage['photo_bytes']}}">0 B</td>
+                        <td class="count-photo" data-photo-files="{{$mediaUsage['counters']['photo']}}">0</td>
+                        <td class="size-photo" data-photo-bytes="{{$mediaUsage['sizes']['photo_bytes']}}">0 B</td>
                         <td class="ratio-photo">0</td>
                     </tr>
                     <tr>
@@ -73,8 +73,8 @@
                             <span class="color-indicator color-audio"></span>
                             Audio
                         </td>
-                        <td class="count-audio" data-audio-files="{{$mediaUsage['audio_files']}}">0</td>
-                        <td class="size-audio" data-audio-bytes="{{$mediaUsage['audio_bytes']}}">0 B</td>
+                        <td class="count-audio" data-audio-files="{{$mediaUsage['counters']['audio']}}">0</td>
+                        <td class="size-audio" data-audio-bytes="{{$mediaUsage['sizes']['audio_bytes']}}">0 B</td>
                         <td class="ratio-audio">0</td>
                     </tr>
                     <tr>
@@ -82,14 +82,14 @@
                             <span class="color-indicator color-video"></span>
                             Video
                         </td>
-                        <td class="count-video" data-video-files="{{$mediaUsage['video_files']}}">0</td>
-                        <td class="size-video" data-video-bytes="{{$mediaUsage['video_bytes']}}">0 B</td>
+                        <td class="count-video" data-video-files="{{$mediaUsage['counters']['video']}}">0</td>
+                        <td class="size-video" data-video-bytes="{{$mediaUsage['sizes']['video_bytes']}}">0 B</td>
                         <td class="ratio-video">0</td>
                     </tr>
                     <tr>
                         <td><strong>Total</strong></td>
-                        <td class="count-total" data-total-files="{{$mediaUsage['total_files']}}">0</td>
-                        <td class="size-total" data-total-bytes="{{$mediaUsage['total_bytes']}}">0 B</td>
+                        <td class="count-total" data-total-files="{{$mediaUsage['counters']['total']}}">0</td>
+                        <td class="size-total" data-total-bytes="{{$mediaUsage['sizes']['total_bytes']}}">0 B</td>
                         <td class="ratio-total">0%</td>
                     </tr>
                     </tbody>

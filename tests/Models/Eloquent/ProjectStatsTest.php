@@ -14,7 +14,7 @@ class ProjectStatsTest extends TestCase
 
     protected Project $project;
     protected ProjectStats $projectStats;
-    protected string $now;
+    protected Carbon $now;
 
     public function setUp(): void
     {

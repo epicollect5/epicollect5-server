@@ -198,7 +198,8 @@ class MediaCounterService
         $projectStats = ProjectStats::where('project_id', $projectId)
             ->first();
 
-        $humanReadableDate = Carbon::now()->diffForHumans([
+        $total_bytes_updated_at = $projectStats->total_bytes_updated_at;
+        $humanReadableDate = Carbon::parse($total_bytes_updated_at)->diffForHumans([
             'parts' => 1,   // show only 1 unit (2 min ago)
             'short' => true, // optional: "2m ago"
             'options' => CarbonInterface::JUST_NOW // automatically handle 0 seconds
@@ -207,7 +208,7 @@ class MediaCounterService
         return [
             'type' => 'counters-project-media',
             'id' => $projectRef,
-            'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
+            'updated_at' => $total_bytes_updated_at,
             'updated_at_human_readable' => $humanReadableDate,
             'counters' => [
                 'total' => $projectStats->total_files,

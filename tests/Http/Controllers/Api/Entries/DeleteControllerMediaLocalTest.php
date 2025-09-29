@@ -178,11 +178,11 @@ class DeleteControllerMediaLocalTest extends TestCase
             );
             //add a fake file per each entry (per each media type)
             //photo
-            Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+            Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', str_repeat('A', 1024));
             //audio
-            Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
+            Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', str_repeat('A', 2048));
             //video
-            Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
+            Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', str_repeat('A', 4096));
         }
 
         $this->assertCount($numOfEntries, Entry::where('project_id', $this->project->id)->get());
@@ -216,6 +216,14 @@ class DeleteControllerMediaLocalTest extends TestCase
 
             $videos = Storage::disk('video')->files($this->project->ref);
             $this->assertCount(0, $videos);
+
+            //assert bytes used in project stats is 0
+            $projectStats = ProjectStats::where('project_id', $this->project->id)->first();
+            $this->assertNotNull($projectStats);
+            $this->assertEquals(0, $projectStats->photo_bytes);
+            $this->assertEquals(0, $projectStats->audio_bytes);
+            $this->assertEquals(0, $projectStats->video_bytes);
+            $this->assertEquals(0, $projectStats->total_bytes);
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
@@ -244,15 +252,15 @@ class DeleteControllerMediaLocalTest extends TestCase
                 switch ($mediaType) {
                     case 0:
                         //photo
-                        Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+                        Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', str_repeat('A', 1024));
                         break;
                     case 1:
                         //audio
-                        Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
+                        Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', str_repeat('A', 2048));
                         break;
                     case 2:
                         //video
-                        Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
+                        Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', str_repeat('A', 4096));
                         break;
                 }
             }
