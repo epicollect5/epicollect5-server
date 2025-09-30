@@ -536,6 +536,7 @@ class DeleteControllerEntryS3Test extends TestCase
         $uuids[] = $entry->uuid;
 
         $parentEntry = $entry; // Initial parent entry
+        //add child entries ($i starts from 1 as 0 is the parent entry)
         for ($i = 1; $i < config('epicollect.limits.formsMaxCount'); $i++) {
             $childFormRef = $forms[$i]['ref'];
             $childEntry = factory(Entry::class)->create([
@@ -588,7 +589,7 @@ class DeleteControllerEntryS3Test extends TestCase
         $updatedProjectStats = ProjectStats::where('project_id', $this->project->id)->first();
         $totalBytes = $photoBytes + $audioBytes + $videoBytes;
         $this->assertEquals($totalBytes, $updatedProjectStats->total_bytes);
-        $this->assertEquals(3, $updatedProjectStats->total_files);
+        $this->assertEquals(3 * config('epicollect.limits.formsMaxCount'), $updatedProjectStats->total_files);
         $this->assertEquals($photoBytes, $updatedProjectStats->photo_bytes);
         $this->assertEquals(count($photoFiles), $updatedProjectStats->photo_files);
         $this->assertEquals($audioBytes, $updatedProjectStats->audio_bytes);

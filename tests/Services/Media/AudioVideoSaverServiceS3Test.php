@@ -3,10 +3,11 @@
 namespace Tests\Services\Media;
 
 use ec5\Libraries\Utilities\Generators;
+use ec5\Models\Project\Project;
+use ec5\Models\Project\ProjectStats;
 use ec5\Services\Media\AudioVideoSaverService;
 use Exception;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Mockery;
 use Ramsey\Uuid\Uuid;
 use Tests\TestCase;
 use Storage;
@@ -108,8 +109,11 @@ class AudioVideoSaverServiceS3Test extends TestCase
      */
     public function test_service_successfully_saves_file_to_s3()
     {
-        $projectRef = Generators::projectRef();
-        $projectId = 99999;
+        $project = factory(Project::class)->create();
+        factory(ProjectStats::class)->create([
+            'project_id' => $project->id,
+        ]);
+
         $fileName = Uuid::uuid4()->toString(). '_' . time() . '.mp4';
         $disk = 'audio';
         $file = ['path' => 'temp/'.$fileName];
@@ -142,36 +146,16 @@ class AudioVideoSaverServiceS3Test extends TestCase
             ->once()
             ->andReturn(true);
 
-        // Mock ProjectStats model
-        $mockStats = Mockery::mock('alias:ec5\Models\Project\ProjectStats');
-
-        // Mock the instance returned by first()
-        $mockStatsInstance = Mockery::mock();
-        $mockStatsInstance->shouldReceive('incrementMediaStorageUsage')
-            ->once()
-            ->with(
-                0,              // photoBytes
-                0,              // photoFiles
-                $fileBytes,     // audioBytes
-                1,              // audioFiles
-                0,              // videoBytes
-                0               // videoFiles
-            )
-            ->andReturnTrue(); // or whatever you want
-
-        // Mock the static where() call to return a builder-like object
-        $mockStats->shouldReceive('where')
-            ->once()
-            ->with('project_id', $projectId)
-            ->andReturnSelf();
-
-        $mockStats->shouldReceive('first')
-            ->once()
-            ->andReturn($mockStatsInstance);
-
         // Assert service returns true on successful save
-        $result = AudioVideoSaverService::saveFile($projectRef, $projectId, $file, $fileName, $disk, true);
+        $result = AudioVideoSaverService::saveFile($project->ref, $project->id, $file, $fileName, $disk, true);
         $this->assertTrue($result);
+
+        // Assert project stats updated correctly
+        $projectStats = ProjectStats::where('project_id', $project->id)->first();
+        $this->assertEquals($fileBytes, $projectStats->audio_bytes);
+        $this->assertEquals(1, $projectStats->audio_files);
+        $this->assertEquals($fileBytes, $projectStats->total_bytes);
+        $this->assertEquals(1, $projectStats->total_files);
     }
 
     /**
