@@ -83,21 +83,34 @@ class AudioVideoSaverService
                 }
                 fclose($stream);
             } else {
+                // Open the uploaded file as a read-only binary stream
+                // We use a stream instead of reading the whole file into memory because
+                // audio and video files can be very large. Streaming allows Laravel
+                // to copy the file in chunks, avoiding high memory usage.
                 $stream = fopen($file->getRealPath(), 'rb');
 
+                // Ensure the target project directory exists
                 if (!Storage::disk($disk)->exists($projectRef)) {
                     Storage::disk($disk)->makeDirectory($projectRef);
 
-                    $diskRoot = config('filesystems.disks.' . $disk . '.root').'/';
+                    $diskRoot = config('filesystems.disks.' . $disk . '.root') . '/';
 
                     $newDirFullPath = $diskRoot . $projectRef;
+
+                    // Recursively set folder permissions up to the disk root
+                    // (skipped in testing to avoid errors)
                     Common::setPermissionsRecursiveUp($newDirFullPath);
                 }
 
+                // Store the file on the specified disk using the stream
+                // This is efficient for large files (audio/video) because it
+                // avoids loading the entire file into PHP memory at once
                 $fileSaved = Storage::disk($disk)->put($targetPath, $stream, [
                     'visibility' => 'public',
                     'directory_visibility' => 'public'
                 ]);
+
+                // Close the stream to free resources
                 fclose($stream);
             }
 

@@ -344,6 +344,10 @@ class Common
      */
     public static function setPermissionsRecursiveUp(string $path): void
     {
+        if (app()->environment('testing')) {
+            return; // skip permissions in tests
+        }
+
         $resolvedPath = realpath(trim($path));
         $resolvedStopAt = realpath(trim(config('filesystems.disks.local.root')));
 

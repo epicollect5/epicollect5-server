@@ -104,15 +104,27 @@ class PhotoSaverServiceS3Test extends TestCase
             'project_id' => $project->id,
             'total_entries' => 0,
             'total_files' => 0,
+            'photo_files' => 0,
+            'photo_bytes' => 0,
+            'audio_files' => 0,
+            'audio_bytes' => 0,
+            'video_files' => 0,
+            'video_bytes' => 0,
             'total_bytes' => 0,
             'form_counts' => json_encode([]),
             'branch_counts' => json_encode([])
         ]);
         $fileName = Uuid::uuid4()->toString(). '_' . time() . '.jpg';
         $disk = 'photo';
+        $fileSize = 1024 * 768 * 3; // Approx size for a 1024x768 image
 
         // Create a fake uploaded file
-        $uploadedFile = File::fake()->image($fileName, 1024, 768);
+        $uploadedFile = File::fake()
+            ->image($fileName, 1024, 768)
+            ->size($fileSize / 1024); // size() expects KB
+
+        $encodedImage = PhotoSaverService::processImage($uploadedFile->getPathname(), [1024, 768], 70);
+        $compressedSize = strlen($encodedImage);
 
         // Mock Storage facade for successful save
         Storage::shouldReceive('disk')
@@ -128,6 +140,15 @@ class PhotoSaverServiceS3Test extends TestCase
         // Assert service returns true on successful save
         $result = PhotoSaverService::saveImage($project->ref, $project->id, $uploadedFile, $fileName, $disk);
         $this->assertTrue($result);
+
+        //assert the file size is correctly recorded in project stats
+        $this->assertDatabaseHas('project_stats', [
+            'project_id' => $project->id,
+            'photo_bytes' => $compressedSize,
+            'photo_files' => 1,
+            'total_bytes' => $compressedSize,
+            'total_files' => 1
+        ]);
     }
 
     /**

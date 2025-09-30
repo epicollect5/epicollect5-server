@@ -216,7 +216,7 @@ class PhotoSaverService
      * @param int $quality JPEG encoding quality (1-100).
      * @return string JPEG-encoded image data.
      */
-    private static function processImage(string $imagePath, array $dimensions = [], int $quality = 50): string
+    public static function processImage(string $imagePath, array $dimensions = [], int $quality = 50): string
     {
         // Read the image from the given path
         $img = Image::read($imagePath);
