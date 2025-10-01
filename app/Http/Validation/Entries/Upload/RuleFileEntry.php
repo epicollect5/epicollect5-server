@@ -10,7 +10,6 @@ use ec5\Http\Validation\Entries\Upload\FileRules\RulePhotoWeb;
 use ec5\Http\Validation\Entries\Upload\FileRules\RuleVideo;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
-use ec5\Services\Media\FileMoverService;
 use Throwable;
 
 class RuleFileEntry extends EntryValidationBase
@@ -30,21 +29,18 @@ class RuleFileEntry extends EntryValidationBase
     protected RulePhotoWeb $rulePhotoWeb;
     protected RuleVideo $ruleVideo;
     protected RuleAudio $ruleAudio;
-    protected FileMoverService $fileMoverService;
 
     public function __construct(
         RulePhotoApp $rulePhotoApp,
         RulePhotoWeb $rulePhotoWeb,
         RuleVideo    $ruleVideo,
         RuleAudio    $ruleAudio,
-        RuleAnswers  $ruleAnswers,
-        FileMoverService $fileMoverService
+        RuleAnswers  $ruleAnswers
     ) {
         $this->rulePhotoApp = $rulePhotoApp;
         $this->rulePhotoWeb = $rulePhotoWeb;
         $this->ruleVideo = $ruleVideo;
         $this->ruleAudio = $ruleAudio;
-        $this->fileMoverService = $fileMoverService;
 
         // Call to parent constructor, default to $entrySearchRepository
         parent::__construct($ruleAnswers);
@@ -77,6 +73,8 @@ class RuleFileEntry extends EntryValidationBase
 
             //the error is $this->errors[$inputRef] = ['ec5_84'];
             unset($this->errors[$inputRef]);
+            //flag this file as orphan
+            $entryStructure->flagFileAsOrphan();
             return;
         }
 
@@ -90,15 +88,11 @@ class RuleFileEntry extends EntryValidationBase
             // Get uuid and entry
             $entryUuid = $entryStructure->getEntryUuid();
 
+            //flag this file as orphan
+            $entryStructure->flagFileAsOrphan();
+
             //the error is $this->errors[$entryUuid] = ['ec5_46'];
             unset($this->errors[$entryUuid]);
-            return;
-        }
-
-        if (!$this->fileMoverService->moveFile($project, $entryStructure)) {
-            // Get input_ref and entry
-            $fileEntry = $entryStructure->getEntry();
-            $this->errors[ $fileEntry['input_ref']] = ['ec5_83'];
         }
     }
 

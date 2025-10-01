@@ -8,8 +8,8 @@ use ec5\DTO\EntryStructureDTO;
 use ec5\Http\Validation\Entries\Upload\RuleFileEntry;
 use ec5\Http\Validation\Entries\Upload\RuleUpload;
 use ec5\Services\Entries\EntriesUploadService;
-use ec5\Services\Media\FileMoverService;
 use ec5\Traits\Requests\RequestAttributes;
+use ec5\Services\Media\FileMoverService;
 
 abstract class UploadControllerBase
 {
@@ -21,7 +21,6 @@ abstract class UploadControllerBase
     protected array $errors = [];
     protected RuleUpload $ruleUpload;
     protected string $storageDriver;
-    protected FileMoverService $fileMoverService;
 
     /**
      * Initializes the base upload controller with entry structure, file entry rules, and upload rules.
@@ -35,17 +34,16 @@ abstract class UploadControllerBase
     public function __construct(
         EntryStructureDTO $entryStructure,
         RuleFileEntry     $ruleFileEntry,
-        RuleUpload        $ruleUpload,
-        FileMoverService  $fileMoverService
+        RuleUpload        $ruleUpload
     ) {
         $this->ruleFileEntry = $ruleFileEntry;
         $this->entryStructure = $entryStructure;
         $this->ruleUpload = $ruleUpload;
         $this->entriesUploadService = new EntriesUploadService(
             $this->entryStructure,
-            $this->ruleUpload
+            $this->ruleUpload,
+            new FileMoverService()
         );
-        $this->fileMoverService = $fileMoverService;
         $this->storageDriver = config('filesystems.default');
     }
 }

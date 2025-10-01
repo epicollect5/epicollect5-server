@@ -24,6 +24,7 @@ class EntryStructureDTO
     protected array $possibleAnswers = [];
     protected Entry|BranchEntry|null $existingEntry = null;
     protected UploadedFile|array|null $file = null;
+    private bool $isOrphanFile = false;
 
     /**
      * Initializes the entry structure with data from the provided payload and context.
@@ -50,6 +51,7 @@ class EntryStructureDTO
         // If there is a file in the request, load into the entry structure
         if (request()->hasFile('name')) {
             $this->setFile(request()->file('name'));
+            $this->isOrphanFile = false;
         }
     }
 
@@ -430,6 +432,16 @@ class EntryStructureDTO
     public function setFile(UploadedFile|array $file): void
     {
         $this->file = $file;
+    }
+
+    public function isOrphanFile(): bool
+    {
+        return $this->isOrphanFile;
+    }
+
+    public function flagFileAsOrphan(): void
+    {
+        $this->isOrphanFile = true;
     }
 
     /**

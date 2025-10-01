@@ -9,6 +9,7 @@ use ec5\Models\Counters\EntryCounter;
 use ec5\Traits\Requests\RequestAttributes;
 use Log;
 use Throwable;
+use ec5\Services\Media\FileMoverService;
 
 class EntriesUploadService
 {
@@ -18,11 +19,13 @@ class EntriesUploadService
     public EntryStructureDTO $entryStructure;
     public bool $isBulkUpload = false;
     private RuleUpload $ruleUpload;
+    private FileMoverService $fileMoverService;
 
-    public function __construct(EntryStructureDTO $entryStructure, RuleUpload $ruleUpload)
+    public function __construct(EntryStructureDTO $entryStructure, RuleUpload $ruleUpload, FileMoverService $fileMoverService)
     {
         $this->entryStructure = $entryStructure;
         $this->ruleUpload = $ruleUpload;
+        $this->fileMoverService = $fileMoverService;
     }
 
     /**
@@ -92,8 +95,8 @@ class EntriesUploadService
             return false;
         }
 
-        /* INSERT ENTRY */
-        // If we have answers to insert from our upload
+        /* INSERT ENTRY (DATA, we have one entry for each upload) */
+        // If we have answers to insert in the payload, this is a DATA upload (entry or branch entry)
         if ($this->entryStructure->hasAnswers()) {
             $createEntryService = new CreateEntryService();
             // If we received no errors, continue to insert answers and entry
@@ -111,6 +114,26 @@ class EntriesUploadService
                 return false;
             }
         }
+
+        /* MOVE FILE (only for file uploads, uploads have one file at a time) */
+        // If we have a file to move from temp uploads to project folder
+        if ($this->entryStructure->getEntryType() === config('epicollect.strings.entry_types.file_entry')) {
+            if ($this->entryStructure->isOrphanFile()) {
+                /**
+                 * Orphan file, do not move it, ignore and just return true
+                 * @see RuleFileEntry::additionalChecks()
+                 */
+                return true;
+            }
+            // Move the file to the project folder
+            if (!$this->fileMoverService->moveFile($this->requestedProject(), $this->entryStructure)) {
+                // Get input_ref and entry
+                $fileEntry = $this->entryStructure->getEntry();
+                $this->errors[ $fileEntry['input_ref']] = ['ec5_83'];
+                return false;
+            }
+        }
+
         return true;
     }
 
