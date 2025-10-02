@@ -198,7 +198,7 @@ class UploadWebControllerPhotoLocalTest extends TestCase
         }
     }
 
-    public function test_it_should_upload_a_top_hierarchy_entry_with_multiple_files_jpg()
+    public function test_it_should_upload_a_top_hierarchy_entry_with_multiple_files()
     {
         $response = [];
         $photoInputRef = null;

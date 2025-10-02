@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Http\Controllers\Api\Entries;
+namespace Tests\Http\Controllers\Api\Entries\Download;
 
 use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Libraries\Utilities\Common;

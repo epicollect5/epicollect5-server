@@ -35,6 +35,12 @@ class UploadAppControllerPhotoLocalTest extends TestCase
     use DatabaseTransactions;
     use Assertions;
 
+    private EntryGenerator $entryGenerator;
+    private User $user;
+    private string $role;
+    private Project $project;
+    private array $projectDefinition;
+    private array $projectExtra;
     private string $endpoint = 'api/upload/';
 
     /**

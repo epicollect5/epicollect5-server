@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Http\Controllers\Api\Entries\Upload\Internal;
+namespace Tests\Http\Controllers\Api\Entries\Upload\Internal\Upload;
 
 use ec5\Libraries\Generators\EntryGenerator;
 use ec5\Libraries\Generators\ProjectDefinitionGenerator;
@@ -121,6 +121,7 @@ class UploadWebControllerSequenceTest extends TestCase
             ]);
             $this->logTestError($exception, $response);
         }
+        return [];
     }
 
     #[Depends('test_should_create_fake_project')]
@@ -170,6 +171,7 @@ class UploadWebControllerSequenceTest extends TestCase
             //dd($e->getMessage(), $response, json_encode($entry), json_encode($projectDefinition));
             $this->logTestError($e, $response);
         }
+        return [];
     }
 
     #[Depends('test_it_should_upload_a_top_hierarchy_entry')] public function test_it_should_upload_a_child_entry_level_1($params)
@@ -225,6 +227,7 @@ class UploadWebControllerSequenceTest extends TestCase
             ]);
             $this->logTestError($e, $response);
         }
+        return [];
     }
 
     #[Depends('test_it_should_upload_a_child_entry_level_1')] public function test_it_should_upload_a_child_entry_level_2($params)
@@ -288,6 +291,7 @@ class UploadWebControllerSequenceTest extends TestCase
             $this->logTestError($e, $response);
             //dd($e->getMessage(), $response, json_encode($entry), json_encode($projectDefinition));
         }
+        return [];
     }
 
     #[Depends('test_it_should_upload_a_child_entry_level_2')] public function test_it_should_upload_a_child_entry_level_3($params)
@@ -355,6 +359,7 @@ class UploadWebControllerSequenceTest extends TestCase
             ]);
             $this->logTestError($e, $response);
         }
+        return [];
     }
 
     #[Depends('test_it_should_upload_a_child_entry_level_3')] public function test_it_should_upload_a_child_entry_level_4($params)
@@ -426,6 +431,7 @@ class UploadWebControllerSequenceTest extends TestCase
             ]);
             $this->logTestError($e, $response);
         }
+        return [];
     }
 
     #[Depends('test_it_should_upload_a_child_entry_level_4')] public function test_it_should_upload_branch_entry_0($params)
@@ -523,6 +529,7 @@ class UploadWebControllerSequenceTest extends TestCase
             ]);
             $this->logTestError($e, $response);
         }
+        return [];
     }
 
     #[Depends('test_it_should_upload_branch_entry_0')] public function test_it_should_upload_branch_entry_1($params)
@@ -616,6 +623,7 @@ class UploadWebControllerSequenceTest extends TestCase
             ]);
             $this->logTestError($e, $response);
         }
+        return [];
     }
 
     #[Depends('test_it_should_upload_branch_entry_1')] public function test_it_should_upload_branch_entry_2($params)
@@ -709,6 +717,7 @@ class UploadWebControllerSequenceTest extends TestCase
             ]);
             $this->logTestError($e, $response);
         }
+        return [];
     }
 
     #[Depends('test_it_should_upload_branch_entry_2')] public function test_it_should_upload_branch_entry_3($params)
@@ -801,6 +810,7 @@ class UploadWebControllerSequenceTest extends TestCase
             ]);
             $this->logTestError($e, $response);
         }
+        return [];
     }
 
     #[Depends('test_it_should_upload_branch_entry_3')] public function test_it_should_upload_branch_entry_4($params)

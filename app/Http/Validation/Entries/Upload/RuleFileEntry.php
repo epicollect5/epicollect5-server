@@ -66,7 +66,7 @@ class RuleFileEntry extends EntryValidationBase
          * therefore, let's go on with the upload but ignore the file and clear the error
          *
          */
-        if (!$this->fileInputExists($project, $entryStructure)) {
+        if (!$this->doesFileQuestionExist($project, $entryStructure)) {
             // Get input_ref and entry
             $fileEntry = $entryStructure->getEntry();
             $inputRef = $fileEntry['input_ref'];
@@ -186,13 +186,13 @@ class RuleFileEntry extends EntryValidationBase
     }
 
     /**
-     * Checks if the input reference for a file exists in the project's metadata.
+     * Checks if the question (input_ref) for a file exists in the project's definition.
      *
      * Returns false and sets an error if the input reference is missing or invalid.
      *
      * @return bool True if the input reference exists; false otherwise.
      */
-    public function fileInputExists(ProjectDTO $project, EntryStructureDTO $entryStructure): bool
+    public function doesFileQuestionExist(ProjectDTO $project, EntryStructureDTO $entryStructure): bool
     {
         $projectExtra = $project->getProjectExtra();
         // Get the entry data

@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Http\Controllers\Api\Entries\Upload\Internal;
+namespace Tests\Http\Controllers\Api\Entries\Upload\Internal\Upload;
 
 use ec5\Libraries\Generators\EntryGenerator;
 use ec5\Libraries\Generators\ProjectDefinitionGenerator;

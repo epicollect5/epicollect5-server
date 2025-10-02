@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Http\Controllers\Api\Entries;
+namespace Tests\Http\Controllers\Api\Entries\Delete;
 
 use Cache;
 use ec5\Libraries\Generators\EntryGenerator;

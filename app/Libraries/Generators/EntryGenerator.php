@@ -303,7 +303,7 @@ class EntryGenerator
     public function createFilePayload($formRef, $entryUuid, $filename, $type, $inputRef, $platform = 'Android', $dotExt = '.jpg', $deviceId = ''): array
     {
         $projectSlug = array_get($this->projectDefinition, 'data.project.slug');
-
+        $videoExt  = '.mp4';
         if ($platform === 'Android') {
             $audioExt = '.mp4';
         } else {
@@ -326,7 +326,7 @@ class EntryGenerator
                 break;
             case config('epicollect.strings.inputs_type.video'):
                 //get test video file
-                $sampleVideoFilePath = base_path('tests/Files/video' . $audioExt);
+                $sampleVideoFilePath = base_path('tests/Files/video' . $videoExt);
                 //build fake uploaded file
                 $file = new UploadedFile(
                     $sampleVideoFilePath,  // Path to the temporary file
@@ -752,6 +752,9 @@ class EntryGenerator
                 $groupInputs = $input['group'];
                 foreach ($groupInputs as $groupInput) {
                     $answers[$groupInput['ref']] = $this->createAnswer($groupInput, $uuid);
+                    if (!empty($groupInput['is_title'])) {
+                        $titles[] = $answers[$groupInput['ref']]['answer'];
+                    }
                 }
             }
 

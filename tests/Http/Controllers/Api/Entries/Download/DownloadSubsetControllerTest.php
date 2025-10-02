@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Http\Controllers\Api\Entries;
+namespace Tests\Http\Controllers\Api\Entries\Download;
 
 use Carbon\Carbon;
 use ec5\Libraries\Generators\ProjectDefinitionGenerator;

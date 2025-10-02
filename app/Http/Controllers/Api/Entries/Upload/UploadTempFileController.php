@@ -3,8 +3,10 @@
 namespace ec5\Http\Controllers\Api\Entries\Upload;
 
 use ec5\Http\Validation\Entries\Upload\RuleFileEntry;
+use Log;
 use Response;
 use Storage;
+use Throwable;
 
 class UploadTempFileController extends UploadControllerBase
 {
@@ -23,20 +25,25 @@ class UploadTempFileController extends UploadControllerBase
         }
         /* BUILD ENTRY STRUCTURE */
         $this->entryStructure->init(
-            request()->get('data'),
+            request()->input('data'),
             $this->requestedProject()->getId(),
             $this->requestedUser(),
             $this->requestedProjectRole()
         );
 
-        $file = request()->file('file');
+        try {
+            $file = request()->file('file');
+        } catch (Throwable $e) {
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
+            return Response::apiErrorCode(400, ['temp-file-upload' => ['ec5_116']]);
+        }
         if (!$file) {
             return Response::apiErrorCode(400, ['temp-file-upload' => ['ec5_116']]);
         }
         $this->entryStructure->setFile($file);
 
         /* VALIDATE */
-        if (!$ruleFileEntry->fileInputExists($this->requestedProject(), $this->entryStructure)) {
+        if (!$ruleFileEntry->doesFileQuestionExist($this->requestedProject(), $this->entryStructure)) {
             return Response::apiErrorCode(400, $ruleFileEntry->errors());
         }
         // Validate web media file
@@ -52,7 +59,7 @@ class UploadTempFileController extends UploadControllerBase
         $inputRef = $fileEntry['input_ref'];
         // Store the file into storage location, using the driver based on the file type
         $fileSaved = Storage::disk('temp')->put(
-            $fileType . '/' . $projectRef . '/' . $fileName,
+            $fileType . '/' . $projectRef . '/' . $fileName, // <-- renaming the file
             file_get_contents($file->getRealPath()),
             [
                 'visibility' => 'public',

@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Http\Controllers\Api\Entries;
+namespace Tests\Http\Controllers\Api\Entries\Download;
 
 use Auth;
 use Carbon\Carbon;
