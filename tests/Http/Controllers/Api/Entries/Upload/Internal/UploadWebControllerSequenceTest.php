@@ -123,7 +123,8 @@ class UploadWebControllerSequenceTest extends TestCase
         }
     }
 
-    #[Depends('test_should_create_fake_project')] public function test_it_should_upload_a_top_hierarchy_entry($params)
+    #[Depends('test_should_create_fake_project')]
+    public function test_it_should_upload_a_top_hierarchy_entry($params)
     {
         $response = [];
         try {

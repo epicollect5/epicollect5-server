@@ -29,7 +29,7 @@ use Throwable;
    therefore, we use concatenation of @depends
  */
 
-class UploadAppControllerAudioTest extends TestCase
+class UploadAppControllerAudioS3Test extends TestCase
 {
     use DatabaseTransactions;
     use Assertions;
@@ -42,9 +42,10 @@ class UploadAppControllerAudioTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
+        //set storage (and all disks) to S3
+        $this->overrideStorageDriver('s3');
         $this->faker = Faker::create();
 
-        parent::setUp();
         //remove leftovers
         User::where(
             'email',
@@ -94,8 +95,7 @@ class UploadAppControllerAudioTest extends TestCase
         );
         factory(ProjectStats::class)->create(
             [
-                'project_id' => $project->id,
-                'total_entries' => 0
+                'project_id' => $project->id
             ]
         );
 
@@ -106,7 +106,6 @@ class UploadAppControllerAudioTest extends TestCase
         $this->projectDefinition = $projectDefinition;
         $this->projectExtra = $projectExtra;
         $this->deviceId = Common::generateRandomHex();
-
     }
 
     public function test_it_should_upload_a_top_hierarchy_audio_android()
@@ -153,6 +152,9 @@ class UploadAppControllerAudioTest extends TestCase
                 'audio',
                 $inputRef
             );
+            // Get the temporary file path from the UploadedFile
+            $tempFilePath = $payload['name']->getRealPath();
+            $expectedBytes = filesize($tempFilePath);
 
             //multipart upload from app with json encoded string and file (Cordova FileTransfer)
             $response[] = $this->post(
@@ -174,6 +176,15 @@ class UploadAppControllerAudioTest extends TestCase
             //assert file is uploaded
             $audios = Storage::disk('audio')->files($this->project->ref);
             $this->assertCount(1, $audios);
+
+            //asset storage stats are updated
+            $projectStats = ProjectStats::where('project_id', $this->project->id)->first();
+            $this->assertEquals($expectedBytes, $projectStats->total_bytes);
+            $this->assertEquals($expectedBytes, $projectStats->audio_bytes);
+            $this->assertEquals(1, $projectStats->total_files);
+            $this->assertEquals(0, $projectStats->photo_files);
+            $this->assertEquals(1, $projectStats->audio_files);
+            $this->assertEquals(0, $projectStats->video_files);
 
             Storage::disk('audio')->deleteDirectory($this->project->ref);
 
@@ -224,7 +235,7 @@ class UploadAppControllerAudioTest extends TestCase
 
             $childEntryPayloads = [];
             for ($i = 0; $i < 1; $i++) {
-                $childEntryPayloads[$i] = $this->entryGenerator->createChildEntryPayload($childFormRef, $childFormRef, $parentEntryUuid);
+                $childEntryPayloads[$i] = $this->entryGenerator->createChildEntryPayload($childFormRef, $parentFormRef, $parentEntryUuid);
                 $entryRowBundle = $this->entryGenerator->createChildEntryRow(
                     $this->user,
                     $this->project,
@@ -269,6 +280,10 @@ class UploadAppControllerAudioTest extends TestCase
                 ['Content-Type' => 'multipart/form-data']
             );
 
+            // Get the temporary file path from the UploadedFile
+            $tempFilePath = $payload['name']->getRealPath();
+            $expectedBytes = filesize($tempFilePath);
+
             $response[0]->assertStatus(200)
                 ->assertExactJson(
                     [
@@ -282,6 +297,17 @@ class UploadAppControllerAudioTest extends TestCase
             //assert file is uploaded
             $audios = Storage::disk('audio')->files($this->project->ref);
             $this->assertCount(1, $audios);
+
+            //asset storage stats are updated
+            $projectStats = ProjectStats::where('project_id', $this->project->id)->first();
+            $this->assertEquals($expectedBytes, $projectStats->total_bytes);
+            $this->assertEquals($expectedBytes, $projectStats->audio_bytes);
+            $this->assertEquals(0, $projectStats->photo_bytes);
+            $this->assertEquals(0, $projectStats->video_bytes);
+            $this->assertEquals(1, $projectStats->total_files);
+            $this->assertEquals(0, $projectStats->photo_files);
+            $this->assertEquals(1, $projectStats->audio_files);
+            $this->assertEquals(0, $projectStats->video_files);
 
             //deleted the file
             Storage::disk('audio')->deleteDirectory($this->project->ref);
@@ -343,6 +369,10 @@ class UploadAppControllerAudioTest extends TestCase
                 ['Content-Type' => 'multipart/form-data']
             );
 
+            // Get the temporary file path from the UploadedFile
+            $tempFilePath = $payload['name']->getRealPath();
+            $expectedBytes = filesize($tempFilePath);
+
             $response[0]->assertStatus(200)
                 ->assertExactJson(
                     [
@@ -357,10 +387,18 @@ class UploadAppControllerAudioTest extends TestCase
             $audios = Storage::disk('audio')->files($this->project->ref);
             $this->assertCount(1, $audios);
 
+            //asset storage stats are updated
+            $projectStats = ProjectStats::where('project_id', $this->project->id)->first();
+            $this->assertEquals($expectedBytes, $projectStats->total_bytes);
+            $this->assertEquals($expectedBytes, $projectStats->audio_bytes);
+            $this->assertEquals(0, $projectStats->photo_bytes);
+            $this->assertEquals(0, $projectStats->video_bytes);
+            $this->assertEquals(1, $projectStats->total_files);
+            $this->assertEquals(0, $projectStats->photo_files);
+            $this->assertEquals(1, $projectStats->audio_files);
+            $this->assertEquals(0, $projectStats->video_files);
 
             Storage::disk('audio')->deleteDirectory($this->project->ref);
-
-
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
@@ -432,6 +470,17 @@ class UploadAppControllerAudioTest extends TestCase
                         ]
                     ]
                 );
+
+            //assert file is not uploaded
+            $audios = Storage::disk('audio')->files($this->project->ref);
+            $this->assertCount(0, $audios);
+            //assert storage stats are not updated
+            $projectStats = ProjectStats::where('project_id', $this->project->id)->first();
+            $this->assertEquals(0, $projectStats->total_bytes);
+            $this->assertEquals(0, $projectStats->audio_bytes);
+            $this->assertEquals(0, $projectStats->photo_bytes);
+            $this->assertEquals(0, $projectStats->video_bytes);
+            $this->assertEquals(0, $projectStats->total_files);
 
             Storage::disk('audio')->deleteDirectory($this->project->ref);
 
@@ -551,6 +600,10 @@ class UploadAppControllerAudioTest extends TestCase
                 ['Content-Type' => 'multipart/form-data']
             );
 
+            // Get the temporary file path from the UploadedFile
+            $tempFilePath = $payload['name']->getRealPath();
+            $expectedBytes = filesize($tempFilePath);
+
             $response[0]->assertStatus(200)
                 ->assertExactJson(
                     [
@@ -565,6 +618,16 @@ class UploadAppControllerAudioTest extends TestCase
             $audios = Storage::disk('audio')->files($this->project->ref);
             $this->assertCount(1, $audios);
 
+            //asset storage stats are updated
+            $projectStats = ProjectStats::where('project_id', $this->project->id)->first();
+            $this->assertEquals($expectedBytes, $projectStats->total_bytes);
+            $this->assertEquals($expectedBytes, $projectStats->audio_bytes);
+            $this->assertEquals(0, $projectStats->photo_bytes);
+            $this->assertEquals(0, $projectStats->video_bytes);
+            $this->assertEquals(1, $projectStats->total_files);
+            $this->assertEquals(0, $projectStats->photo_files);
+            $this->assertEquals(1, $projectStats->audio_files);
+            $this->assertEquals(0, $projectStats->video_files);
 
             Storage::disk('audio')->deleteDirectory($this->project->ref);
 
@@ -700,6 +763,14 @@ class UploadAppControllerAudioTest extends TestCase
             $audios = Storage::disk('audio')->files($this->project->ref);
             $this->assertCount(0, $audios);
 
+            //assert storage stats are not updated
+            $projectStats = ProjectStats::where('project_id', $this->project->id)->first();
+            $this->assertEquals(0, $projectStats->total_bytes);
+            $this->assertEquals(0, $projectStats->audio_bytes);
+            $this->assertEquals(0, $projectStats->photo_bytes);
+            $this->assertEquals(0, $projectStats->video_bytes);
+            $this->assertEquals(0, $projectStats->total_files);
+
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
@@ -773,6 +844,14 @@ class UploadAppControllerAudioTest extends TestCase
             //assert file is not saved
             $audios = Storage::disk('audio')->files($this->project->ref);
             $this->assertCount(0, $audios);
+
+            //assert storage stats are not updated
+            $projectStats = ProjectStats::where('project_id', $this->project->id)->first();
+            $this->assertEquals(0, $projectStats->total_bytes);
+            $this->assertEquals(0, $projectStats->audio_bytes);
+            $this->assertEquals(0, $projectStats->photo_bytes);
+            $this->assertEquals(0, $projectStats->video_bytes);
+            $this->assertEquals(0, $projectStats->total_files);
 
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
@@ -862,9 +941,16 @@ class UploadAppControllerAudioTest extends TestCase
             //assert file is not saved
             $audios = Storage::disk('audio')->files($this->project->ref);
             $this->assertCount(0, $audios);
+
+            //assert storage stats are not updated
+            $projectStats = ProjectStats::where('project_id', $this->project->id)->first();
+            $this->assertEquals(0, $projectStats->total_bytes);
+            $this->assertEquals(0, $projectStats->audio_bytes);
+            $this->assertEquals(0, $projectStats->photo_bytes);
+            $this->assertEquals(0, $projectStats->video_bytes);
+            $this->assertEquals(0, $projectStats->total_files);
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
-
 }

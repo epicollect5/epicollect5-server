@@ -357,6 +357,14 @@ $factory->define(ProjectStats::class, function () {
     return [
         'project_id' => null,
         'total_entries' => 0,
+        'total_files' => 0,
+        'total_bytes' => 0,
+        'photo_bytes' => 0,
+        'photo_files' => 0,
+        'audio_bytes' => 0,
+        'audio_files' => 0,
+        'video_files' => 0,
+        'video_bytes' => 0,
         'form_counts' => json_encode([]),
         'branch_counts' => json_encode([])
     ];

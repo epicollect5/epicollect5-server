@@ -21,6 +21,7 @@ abstract class UploadControllerBase
     protected array $errors = [];
     protected RuleUpload $ruleUpload;
     protected string $storageDriver;
+    protected FileMoverService $fileMoverService;
 
     /**
      * Initializes the base upload controller with entry structure, file entry rules, and upload rules.
@@ -34,15 +35,17 @@ abstract class UploadControllerBase
     public function __construct(
         EntryStructureDTO $entryStructure,
         RuleFileEntry     $ruleFileEntry,
-        RuleUpload        $ruleUpload
+        RuleUpload        $ruleUpload,
+        FileMoverService  $fileMoverService
     ) {
         $this->ruleFileEntry = $ruleFileEntry;
         $this->entryStructure = $entryStructure;
         $this->ruleUpload = $ruleUpload;
+        $this->fileMoverService = $fileMoverService;
         $this->entriesUploadService = new EntriesUploadService(
             $this->entryStructure,
             $this->ruleUpload,
-            new FileMoverService()
+            $this->fileMoverService
         );
         $this->storageDriver = config('filesystems.default');
     }

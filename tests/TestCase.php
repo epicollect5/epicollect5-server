@@ -294,8 +294,6 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
         if ($diskOverride === 'local') {
             config([
                 'filesystems.default' => $diskOverride,
-                'filesystems.disks.temp.driver' => $diskOverride,
-                'filesystems.disks.temp.root' => storage_path('app/temp'),
                 'filesystems.disks.photo.driver' => $diskOverride,
                 'filesystems.disks.photo.root' => storage_path('app/entries/photo/entry_original'),
                 'filesystems.disks.project.driver' => $diskOverride,
@@ -308,8 +306,6 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
         } elseif ($diskOverride === 's3') {
             config([
                 'filesystems.default' => $diskOverride,
-                'filesystems.disks.temp.driver' => $diskOverride,
-                'filesystems.disks.temp.root' => 'app/temp',
                 'filesystems.disks.photo.driver' => $diskOverride,
                 'filesystems.disks.photo.root' => 'app/entries/photo',
                 'filesystems.disks.project.driver' => $diskOverride,

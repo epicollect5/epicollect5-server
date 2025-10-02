@@ -4,7 +4,6 @@ namespace ec5\Http\Controllers\Api\Entries\Upload;
 
 use App;
 use ec5\Services\Entries\EntriesUploadService;
-use ec5\Services\Media\FileMoverService;
 use Illuminate\Http\JsonResponse;
 use Response;
 use Throwable;
@@ -53,7 +52,7 @@ class UploadAppController extends UploadControllerBase
     /**
      * @throws Throwable
      */
-    public function import(FileMoverService $fileMoverService)
+    public function import()
     {
         $publicAccess = config('epicollect.strings.project_access.public');
 
@@ -67,7 +66,7 @@ class UploadAppController extends UploadControllerBase
         $entriesUploadService = new EntriesUploadService(
             $this->entryStructure,
             $this->ruleUpload,
-            $fileMoverService
+            $this->fileMoverService
         );
         if (!$entriesUploadService->upload()) {
             return Response::apiErrorCode(400, $entriesUploadService->errors);

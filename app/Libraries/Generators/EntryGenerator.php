@@ -29,8 +29,6 @@ class EntryGenerator
     public const array SYMBOLS = ['!', '@', '€', '£', '#', '$', '%', '^', '&', '*', '"', '{', ',', '.', '?', '|', '<', '>', '~', '`'];
     public const array LOCALES = ['it_IT', 'en_US', 'de_DE', 'es_ES', 'en_GB', 'fr_FR'];
     public const array PLATFORMS = ['Android', 'iOS'];
-
-
     private Generator $faker;
     private string $randomLocale;
     private array $projectDefinition;
@@ -266,26 +264,7 @@ class EntryGenerator
             }
         }
 
-        $inputs = $currentForm['inputs'];
-        $answers = [];
-        foreach ($inputs as $input) {
-
-            $answers[$input['ref']] = $this->createAnswer($input, $uuid);
-            if ($input['type'] === config('epicollect.strings.inputs_type.group')) {
-                //add answers for group inputs
-                $groupInputs = $input['group'];
-                foreach ($groupInputs as $groupInput) {
-                    $answers[$groupInput['ref']] = $this->createAnswer($groupInput, $uuid);
-                }
-            }
-
-            if ($input['is_title']) {
-                $titles[] = $answers[$input['ref']]['answer'];
-            }
-        }
-
-        $title = implode(' ', $titles);
-        $title = $title === '' ? $uuid : $title;
+        list($answers, $title) = $this->generateAnswersAndTitle($currentForm['inputs'], $uuid, $titles);
 
 
         return [
@@ -335,24 +314,31 @@ class EntryGenerator
         switch ($type) {
             case config('epicollect.strings.inputs_type.audio'):
                 //get test audio file
-                $sampleAudioFilePath = base_path('tests/Files/audio' . $audioExt);
+                $sampleVideoFilePath = base_path('tests/Files/audio' . $audioExt);
                 //build fake uploaded file
                 $file = new UploadedFile(
-                    $sampleAudioFilePath,  // Path to the temporary file
+                    $sampleVideoFilePath,  // Path to the temporary file
                     $filename,   // File name
                     config('epicollect.media.content_type.audio'),   // MIME type
                     null,
                     true
                 );
                 break;
-            case config('epicollect.strings.inputs_type.photo'):
-                $file = UploadedFile::fake()->image('photo' . $dotExt, 1024, 768)->size(500);
-                break;
             case config('epicollect.strings.inputs_type.video'):
-                $file = UploadedFile::fake()->create('video.mp4', 500);
+                //get test video file
+                $sampleVideoFilePath = base_path('tests/Files/video' . $audioExt);
+                //build fake uploaded file
+                $file = new UploadedFile(
+                    $sampleVideoFilePath,  // Path to the temporary file
+                    $filename,   // File name
+                    config('epicollect.media.content_type.video'),   // MIME type
+                    null,
+                    true
+                );
                 break;
+            case config('epicollect.strings.inputs_type.photo'):
             default:
-                $file = UploadedFile::fake()->create('video' . $dotExt, 500);
+                $file = UploadedFile::fake()->image('photo' . $dotExt, 1024, 768)->size(500);
                 break;
         }
 
@@ -392,87 +378,10 @@ class EntryGenerator
      */
     public function createParentEntryRow($user, $project, $role, $projectDefinition, $entryPayload): array
     {
-        $entryStructure = new EntryStructureDTO();
-        $requestedProject = new ProjectDTO(
-            new ProjectDefinitionDTO(),
-            new ProjectExtraDTO(),
-            new ProjectMappingDTO(),
-            new ProjectStatsDTO(),
-            new ProjectMappingService()
-        );
-        $requestedProjectRole = new ProjectRoleDTO();
-        $requestedProject->initAllDTOs(Project::findBySlug($project->slug));
-        $requestedProjectRole->setRole($user, $project->id, $role);
-
-        /* 4 - BUILD ENTRY STRUCTURE */
-        $entryStructure->init(
-            $entryPayload['data'],
-            $project->id,
-            $user,
-            $requestedProjectRole
-        );
+        list($entryStructure, $requestedProject) = $this->initDTOs($project, $user, $role, $entryPayload['data']);
         //for each location question, add geoJson to entryStructure
         $inputs = array_get($projectDefinition, 'data.project.forms.0.inputs');
-        $skippedInputsRefs = [];
-        $this->multipleChoiceInputRefs = [];
-        foreach ($inputs as $input) {
-            //add the valid answers to entryStructure (we assume they are valid)
-            //imp: skip group and readme
-            $inputsWithoutAnswer = array_keys(config('epicollect.strings.inputs_without_answers'));
-            if (!in_array($input['type'], $inputsWithoutAnswer)) {
-                $answer = $entryPayload['data']['entry']['answers'][$input['ref']];
-                $entryStructure->addAnswerToEntry($input, $answer);
-
-                //need to add the possible answer, so they later added to the geojson object
-                $this->addPossibleAnswers($entryStructure, $input, $answer);
-
-                //if location, add the geojson
-                $this->addGeoJsonIfNeeded($entryStructure, $input, $answer);
-
-            }
-            //if group, add answers for all the group inputs but skip the group owner
-            if ($input['type'] === config('epicollect.strings.inputs_type.group')) {
-                $skippedInputsRefs[] = $input['ref'];
-                //skip readme only (we cannot have nested groups)
-                $groupInputs = $input['group'];
-                foreach ($groupInputs as $groupInput) {
-                    if ($groupInput['type'] === config('epicollect.strings.inputs_type.readme')) {
-                        $skippedInputsRefs[] = $groupInput['ref'];
-                    } else {
-                        $answer = $entryPayload['data']['entry']['answers'][$groupInput['ref']];
-                        //add the valid answers to entryStructure (we assume they are valid)
-                        $entryStructure->addAnswerToEntry($groupInput, $answer);
-                        //need to add the possible answer, so they later added to the geojson object
-                        $this->addPossibleAnswers($entryStructure, $groupInput, $answer);
-                        //if location, add the geojson
-                        $this->addGeoJsonIfNeeded($entryStructure, $groupInput, $answer);
-                        if ($groupInput['type'] === config('epicollect.strings.inputs_type.location')) {
-                            $entryStructure->addGeoJsonObject($groupInput, $answer['answer']);
-                            $entryStructure->addPossibleAnswersToGeoJson();
-                        }
-                    }
-                }
-            }
-
-            if ($input['type'] === config('epicollect.strings.inputs_type.readme')) {
-                $skippedInputsRefs[] = $input['ref'];
-            }
-        }
-
-        $createEntryService = new CreateEntryService();
-        // If we received no errors, continue to insert answers and entry
-        $createEntryService->create(
-            $requestedProject,
-            $entryStructure
-        );
-
-        return [
-            'projectDefinition' => $projectDefinition,
-            'project' => $project,
-            'entryStructure' => $entryStructure,
-            'skippedInputRefs' => $skippedInputsRefs,
-            'multipleChoiceInputRefs' => $this->multipleChoiceInputRefs
-        ];
+        return $this->buildStructures($inputs, $entryPayload['data']['entry']['answers'], $entryStructure, $requestedProject, $projectDefinition, $project);
     }
 
     /**
@@ -480,91 +389,21 @@ class EntryGenerator
      */
     public function createChildEntryRow($user, $project, $role, $projectDefinition, $childEntryPayload): array
     {
-        $entryStructure = new EntryStructureDTO();
-        $requestedProject = new ProjectDTO(
-            new ProjectDefinitionDTO(),
-            new ProjectExtraDTO(),
-            new ProjectMappingDTO(),
-            new ProjectStatsDTO(),
-            new ProjectMappingService()
-        );
-        $requestedProjectRole = new ProjectRoleDTO();
-        $requestedProject->initAllDTOs(Project::findBySlug($project->slug));
-        $requestedProjectRole->setRole($user, $project->id, $role);
-
-        /* 4 - BUILD ENTRY STRUCTURE */
-        $entryStructure->init(
-            $childEntryPayload['data'],
-            $project->id,
-            $user,
-            $requestedProjectRole
-        );
+        list($entryStructure, $requestedProject) = $this->initDTOs($project, $user, $role, $childEntryPayload['data']);
 
         //get child form inputs
         $childFormRef = $childEntryPayload['data']['attributes']['form']['ref'];
 
         //for each location question, add geoJson to entryStructure
         $inputs = $requestedProject->getProjectDefinition()->getInputsByFormRef($childFormRef);
-        $skippedInputsRefs = [];
-        $this->multipleChoiceInputRefs = [];
-        foreach ($inputs as $input) {
-            //add the valid answers to entryStructure (we assume they are valid)
-            //imp: skip group and readme
-            $inputsWithoutAnswer = array_keys(config('epicollect.strings.inputs_without_answers'));
-            if (!in_array($input['type'], $inputsWithoutAnswer)) {
-                $answer = $childEntryPayload['data']['entry']['answers'][$input['ref']];
-                $entryStructure->addAnswerToEntry($input, $answer);
-
-                //need to add the possible answer, so they later added to the geojson object
-                $this->addPossibleAnswers($entryStructure, $input, $answer);
-
-                //if location, add the geojson
-                $this->addGeoJsonIfNeeded($entryStructure, $input, $answer);
-
-            }
-            //if group, add answers for all the group inputs but skip the group owner
-            if ($input['type'] === config('epicollect.strings.inputs_type.group')) {
-                $skippedInputsRefs[] = $input['ref'];
-                //skip readme only (we cannot have nested groups)
-                $groupInputs = $input['group'];
-                foreach ($groupInputs as $groupInput) {
-                    if ($groupInput['type'] === config('epicollect.strings.inputs_type.readme')) {
-                        $skippedInputsRefs[] = $groupInput['ref'];
-                    } else {
-                        $answer = $childEntryPayload['data']['entry']['answers'][$groupInput['ref']];
-                        //add the valid answers to entryStructure (we assume they are valid)
-                        $entryStructure->addAnswerToEntry($groupInput, $answer);
-                        //need to add the possible answer, so they later added to the geojson object
-                        $this->addPossibleAnswers($entryStructure, $groupInput, $answer);
-                        //if location, add the geojson
-                        $this->addGeoJsonIfNeeded($entryStructure, $groupInput, $answer);
-                        if ($groupInput['type'] === config('epicollect.strings.inputs_type.location')) {
-                            $entryStructure->addGeoJsonObject($groupInput, $answer['answer']);
-                            $entryStructure->addPossibleAnswersToGeoJson();
-                        }
-                    }
-                }
-            }
-
-            if ($input['type'] === config('epicollect.strings.inputs_type.readme')) {
-                $skippedInputsRefs[] = $input['ref'];
-            }
-        }
-
-        $createEntryService = new CreateEntryService();
-        // If we received no errors, continue to insert answers and entry
-        $createEntryService->create(
+        return $this->buildStructures(
+            $inputs,
+            $childEntryPayload['data']['entry']['answers'],
+            $entryStructure,
             $requestedProject,
-            $entryStructure
+            $projectDefinition,
+            $project
         );
-
-        return [
-            'projectDefinition' => $projectDefinition,
-            'project' => $project,
-            'entryStructure' => $entryStructure,
-            'skippedInputRefs' => $skippedInputsRefs,
-            'multipleChoiceInputRefs' => $this->multipleChoiceInputRefs
-        ];
     }
 
     public function createChildEntryPayload($childFormRef, $parentFormRef, $parentEntryUuid, $deviceId = ''): array
@@ -591,26 +430,7 @@ class EntryGenerator
         }
 
 
-        $inputs = $currentForm['inputs'];
-        $answers = [];
-        foreach ($inputs as $input) {
-
-            $answers[$input['ref']] = $this->createAnswer($input, $uuid);
-            if ($input['type'] === config('epicollect.strings.inputs_type.group')) {
-                //add answers for group inputs
-                $groupInputs = $input['group'];
-                foreach ($groupInputs as $groupInput) {
-                    $answers[$groupInput['ref']] = $this->createAnswer($groupInput, $uuid);
-                }
-            }
-
-            if ($input['is_title']) {
-                $titles[] = $answers[$input['ref']]['answer'];
-            }
-        }
-
-        $title = implode(' ', $titles);
-        $title = $title === '' ? $uuid : $title;
+        list($answers, $title) = $this->generateAnswersAndTitle($currentForm['inputs'], $uuid, $titles);
 
         return [
             'data' => [
@@ -650,25 +470,7 @@ class EntryGenerator
         $projectSlug = array_get($this->projectDefinition, 'data.project.slug');
         $uuid = Uuid::uuid4()->toString();
         $titles = [];
-        $answers = [];
-        foreach ($branchInputs as $input) {
-
-            $answers[$input['ref']] = $this->createAnswer($input, $uuid);
-            if ($input['type'] === config('epicollect.strings.inputs_type.group')) {
-                //add answers for group inputs
-                $groupInputs = $input['group'];
-                foreach ($groupInputs as $groupInput) {
-                    $answers[$groupInput['ref']] = $this->createAnswer($groupInput, $uuid);
-                }
-            }
-
-            if ($input['is_title']) {
-                $titles[] = $answers[$input['ref']]['answer'];
-            }
-        }
-
-        $title = implode(' ', $titles);
-        $title = $title === '' ? $uuid : $title;
+        list($answers, $title) = $this->generateBranchAnswersAndTitle($branchInputs, $uuid, $titles);
 
         return [
             'data' => [
@@ -709,25 +511,7 @@ class EntryGenerator
     public function createBranchEntryRow($user, $project, $role, $projectDefinition, $branchEntryPayload): array
     {
         $ownerInputRef = $branchEntryPayload['data']['relationships']['branch']['data']['owner_input_ref'];
-        $entryStructure = new EntryStructureDTO();
-        $requestedProject = new ProjectDTO(
-            new ProjectDefinitionDTO(),
-            new ProjectExtraDTO(),
-            new ProjectMappingDTO(),
-            new ProjectStatsDTO(),
-            new ProjectMappingService()
-        );
-        $requestedProjectRole = new ProjectRoleDTO();
-        $requestedProject->initAllDTOs(Project::findBySlug($project->slug));
-        $requestedProjectRole->setRole($user, $project->id, $role);
-
-        /* 4 - BUILD ENTRY STRUCTURE */
-        $entryStructure->init(
-            $branchEntryPayload['data'],
-            $project->id,
-            $user,
-            $requestedProjectRole
-        );
+        list($entryStructure, $requestedProject) = $this->initDTOs($project, $user, $role, $branchEntryPayload['data']);
 
         //get branch inputs
         $formRef = $branchEntryPayload['data']['attributes']['form']['ref'];
@@ -857,5 +641,127 @@ class EntryGenerator
             $entryStructure->addGeoJsonObject($input, $answer['answer']);
             $entryStructure->addPossibleAnswersToGeoJson();
         }
+    }
+
+    private function generateAnswersAndTitle($inputs1, string $uuid, array $titles): array
+    {
+        $inputs = $inputs1;
+        list($answers, $title) = $this->generateBranchAnswersAndTitle($inputs, $uuid, $titles);
+        return array($answers, $title);
+    }
+
+    private function initDTOs($project, $user, $role, $data): array
+    {
+        $entryStructure = new EntryStructureDTO();
+        $requestedProject = new ProjectDTO(
+            new ProjectDefinitionDTO(),
+            new ProjectExtraDTO(),
+            new ProjectMappingDTO(),
+            new ProjectStatsDTO(),
+            new ProjectMappingService()
+        );
+        $requestedProjectRole = new ProjectRoleDTO();
+        $requestedProject->initAllDTOs(Project::findBySlug($project->slug));
+        $requestedProjectRole->setRole($user, $project->id, $role);
+
+        /* 4 - BUILD ENTRY STRUCTURE */
+        $entryStructure->init(
+            $data,
+            $project->id,
+            $user,
+            $requestedProjectRole
+        );
+        return array($entryStructure, $requestedProject);
+    }
+
+    /**
+     * @throws Throwable
+     */
+    private function buildStructures(mixed $inputs, $answers, mixed $entryStructure, mixed $requestedProject, $projectDefinition, $project): array
+    {
+        $skippedInputsRefs = [];
+        $this->multipleChoiceInputRefs = [];
+        foreach ($inputs as $input) {
+            //add the valid answers to entryStructure (we assume they are valid)
+            //imp: skip group and readme
+            $inputsWithoutAnswer = array_keys(config('epicollect.strings.inputs_without_answers'));
+            if (!in_array($input['type'], $inputsWithoutAnswer)) {
+                $answer = $answers[$input['ref']];
+                $entryStructure->addAnswerToEntry($input, $answer);
+
+                //need to add the possible answer, so they later added to the geojson object
+                $this->addPossibleAnswers($entryStructure, $input, $answer);
+
+                //if location, add the geojson
+                $this->addGeoJsonIfNeeded($entryStructure, $input, $answer);
+
+            }
+            //if group, add answers for all the group inputs but skip the group owner
+            if ($input['type'] === config('epicollect.strings.inputs_type.group')) {
+                $skippedInputsRefs[] = $input['ref'];
+                //skip readme only (we cannot have nested groups)
+                $groupInputs = $input['group'];
+                foreach ($groupInputs as $groupInput) {
+                    if ($groupInput['type'] === config('epicollect.strings.inputs_type.readme')) {
+                        $skippedInputsRefs[] = $groupInput['ref'];
+                    } else {
+                        $answer = $answers[$groupInput['ref']];
+                        //add the valid answers to entryStructure (we assume they are valid)
+                        $entryStructure->addAnswerToEntry($groupInput, $answer);
+                        //need to add the possible answer, so they later added to the geojson object
+                        $this->addPossibleAnswers($entryStructure, $groupInput, $answer);
+                        //if location, add the geojson
+                        $this->addGeoJsonIfNeeded($entryStructure, $groupInput, $answer);
+                        if ($groupInput['type'] === config('epicollect.strings.inputs_type.location')) {
+                            $entryStructure->addGeoJsonObject($groupInput, $answer['answer']);
+                            $entryStructure->addPossibleAnswersToGeoJson();
+                        }
+                    }
+                }
+            }
+
+            if ($input['type'] === config('epicollect.strings.inputs_type.readme')) {
+                $skippedInputsRefs[] = $input['ref'];
+            }
+        }
+
+        $createEntryService = new CreateEntryService();
+        // If we received no errors, continue to insert answers and entry
+        $createEntryService->create(
+            $requestedProject,
+            $entryStructure
+        );
+
+        return [
+            'projectDefinition' => $projectDefinition,
+            'project' => $project,
+            'entryStructure' => $entryStructure,
+            'skippedInputRefs' => $skippedInputsRefs,
+            'multipleChoiceInputRefs' => $this->multipleChoiceInputRefs
+        ];
+    }
+
+    private function generateBranchAnswersAndTitle($branchInputs, string $uuid, array $titles): array
+    {
+        $answers = [];
+        foreach ($branchInputs as $input) {
+
+            $answers[$input['ref']] = $this->createAnswer($input, $uuid);
+            if ($input['type'] === config('epicollect.strings.inputs_type.group')) {
+                //add answers for group inputs
+                $groupInputs = $input['group'];
+                foreach ($groupInputs as $groupInput) {
+                    $answers[$groupInput['ref']] = $this->createAnswer($groupInput, $uuid);
+                }
+            }
+
+            if ($input['is_title']) {
+                $titles[] = $answers[$input['ref']]['answer'];
+            }
+        }
+
+        $title = implode(' ', $titles);
+        $title = $title === '' ? $uuid : $title;
+        return array($answers, $title);
     }
 }

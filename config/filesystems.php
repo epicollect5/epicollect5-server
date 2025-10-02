@@ -62,15 +62,14 @@ return [
         ],
 
         //temp files are always stored locally
-        'temp' => array_merge([
+        'temp' => [
             'driver' => 'local',
             'root' => storage_path('app/temp'),
             'throw' => true,
             'visibility' => 'public',
             'directory_visibility' => 'public',
 
-        ], $doSpaces),
-
+        ],
 
         'local' => [
             'driver' => config('epicollect.setup.system.storage_driver'),
