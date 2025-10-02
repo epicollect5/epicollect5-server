@@ -198,7 +198,7 @@ class UploadWebControllerAudioLocalTest extends TestCase
             //delete temp folder
             Storage::disk('temp')->deleteDirectory('audio/'.$this->project->ref);
             //delete the file
-            Storage::disk('temp')->deleteDirectory('audio/'.$this->project->ref);
+            Storage::disk('audio')->deleteDirectory($this->project->ref);
 
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
