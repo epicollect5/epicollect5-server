@@ -200,6 +200,8 @@ class UploadWebControllerAudioLocalTest extends TestCase
 
             //delete temp folder
             Storage::disk('temp')->deleteDirectory('audio/'.$this->project->ref);
+            //delete the file
+            Storage::disk('temp')->deleteDirectory('audio/'.$this->project->ref);
 
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
@@ -324,7 +326,12 @@ class UploadWebControllerAudioLocalTest extends TestCase
 
             //delete temp folder
             Storage::disk('temp')->deleteDirectory('photo/'.$this->project->ref);
-
+            Storage::disk('temp')->deleteDirectory('audio/'.$this->project->ref);
+            Storage::disk('temp')->deleteDirectory('video/'.$this->project->ref);
+            //delete the file
+            Storage::disk('photo')->deleteDirectory($this->project->ref);
+            Storage::disk('audio')->deleteDirectory($this->project->ref);
+            Storage::disk('video')->deleteDirectory($this->project->ref);
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
@@ -444,9 +451,10 @@ class UploadWebControllerAudioLocalTest extends TestCase
             $this->assertEquals(0, $projectStats->video_files);
             $this->assertEquals(0, $projectStats->video_bytes);
 
-            //deleted the file
+            //deleted temp folder
             Storage::disk('temp')->deleteDirectory('audio/'.$this->project->ref);
-
+            //delete the file
+            Storage::disk('audio')->deleteDirectory($this->project->ref);
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
@@ -581,6 +589,7 @@ class UploadWebControllerAudioLocalTest extends TestCase
             $this->assertEquals(0, $projectStats->video_bytes);
 
             Storage::disk('temp')->deleteDirectory('audio/'.$this->project->ref);
+            Storage::disk('audio')->deleteDirectory($this->project->ref);
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }

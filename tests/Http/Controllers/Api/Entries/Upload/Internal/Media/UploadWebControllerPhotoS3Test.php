@@ -23,7 +23,6 @@ use Illuminate\Http\File;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Drivers\Imagick\Encoders\JpegEncoder;
 use Intervention\Image\ImageManager;
-use Log;
 use Random\RandomException;
 use Tests\TestCase;
 use Throwable;
@@ -164,7 +163,6 @@ class UploadWebControllerPhotoS3Test extends TestCase
             $data = $image->encode(new JpegEncoder(quality: 70));
             // save to temp disk
             $path = '/photo/'. $this->project->ref . '/' . $filename;
-            Log::error(get_class(Storage::disk('temp')->getDriver()));
 
             Storage::disk('temp')->put($path, (string) $data);
 
@@ -204,6 +202,8 @@ class UploadWebControllerPhotoS3Test extends TestCase
 
             //delete temp folder
             Storage::disk('temp')->deleteDirectory('photo/'.$this->project->ref);
+            //delete the file
+            Storage::disk('photo')->deleteDirectory($this->project->ref);
 
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
@@ -328,6 +328,12 @@ class UploadWebControllerPhotoS3Test extends TestCase
 
             //delete temp folder
             Storage::disk('temp')->deleteDirectory('photo/'.$this->project->ref);
+            Storage::disk('temp')->deleteDirectory('audio/'.$this->project->ref);
+            Storage::disk('temp')->deleteDirectory('video/'.$this->project->ref);
+            //delete the file
+            Storage::disk('photo')->deleteDirectory($this->project->ref);
+            Storage::disk('audio')->deleteDirectory($this->project->ref);
+            Storage::disk('video')->deleteDirectory($this->project->ref);
 
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
@@ -449,6 +455,7 @@ class UploadWebControllerPhotoS3Test extends TestCase
 
             //deleted the file
             Storage::disk('temp')->deleteDirectory('photo/'.$this->project->ref);
+            Storage::disk('photo')->deleteDirectory($this->project->ref);
 
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
@@ -658,6 +665,7 @@ class UploadWebControllerPhotoS3Test extends TestCase
             $this->assertEquals(0, $projectStats->video_files);
 
             Storage::disk('temp')->deleteDirectory('photo/'.$this->project->ref);
+            Storage::disk('photo')->deleteDirectory($this->project->ref);
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }

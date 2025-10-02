@@ -200,7 +200,8 @@ class UploadWebControllerVideoLocalTest extends TestCase
 
             //delete temp folder
             Storage::disk('temp')->deleteDirectory('video/'.$this->project->ref);
-
+            //deleted the file
+            Storage::disk('video')->deleteDirectory($this->project->ref);
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
@@ -324,7 +325,12 @@ class UploadWebControllerVideoLocalTest extends TestCase
 
             //delete temp folder
             Storage::disk('temp')->deleteDirectory('photo/'.$this->project->ref);
-
+            Storage::disk('temp')->deleteDirectory('audio/'.$this->project->ref);
+            Storage::disk('temp')->deleteDirectory('video/'.$this->project->ref);
+            //deleted the file
+            Storage::disk('photo')->deleteDirectory($this->project->ref);
+            Storage::disk('audio')->deleteDirectory($this->project->ref);
+            Storage::disk('video')->deleteDirectory($this->project->ref);
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
@@ -446,6 +452,7 @@ class UploadWebControllerVideoLocalTest extends TestCase
 
             //deleted the file
             Storage::disk('temp')->deleteDirectory('video/'.$this->project->ref);
+            Storage::disk('video')->deleteDirectory($this->project->ref);
 
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
@@ -581,6 +588,7 @@ class UploadWebControllerVideoLocalTest extends TestCase
             $this->assertEquals(0, $projectStats->audio_bytes);
 
             Storage::disk('temp')->deleteDirectory('video/'.$this->project->ref);
+            Storage::disk('video')->deleteDirectory($this->project->ref);
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }

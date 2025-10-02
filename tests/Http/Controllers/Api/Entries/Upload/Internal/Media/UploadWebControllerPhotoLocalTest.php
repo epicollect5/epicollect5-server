@@ -200,6 +200,8 @@ class UploadWebControllerPhotoLocalTest extends TestCase
 
             //delete temp folder
             Storage::disk('temp')->deleteDirectory('photo/'.$this->project->ref);
+            //delete the file
+            Storage::disk('photo')->deleteDirectory($this->project->ref);
 
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
@@ -324,7 +326,12 @@ class UploadWebControllerPhotoLocalTest extends TestCase
 
             //delete temp folder
             Storage::disk('temp')->deleteDirectory('photo/'.$this->project->ref);
-
+            Storage::disk('temp')->deleteDirectory('audio/'.$this->project->ref);
+            Storage::disk('temp')->deleteDirectory('video/'.$this->project->ref);
+            //delete the file
+            Storage::disk('photo')->deleteDirectory($this->project->ref);
+            Storage::disk('audio')->deleteDirectory($this->project->ref);
+            Storage::disk('video')->deleteDirectory($this->project->ref);
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
@@ -443,8 +450,10 @@ class UploadWebControllerPhotoLocalTest extends TestCase
             $this->assertEquals(0, $projectStats->audio_files);
             $this->assertEquals(0, $projectStats->video_files);
 
-            //deleted the file
+            //deleted the temp folder
             Storage::disk('temp')->deleteDirectory('photo/'.$this->project->ref);
+            //delete the file
+            Storage::disk('photo')->deleteDirectory($this->project->ref);
 
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
@@ -653,7 +662,10 @@ class UploadWebControllerPhotoLocalTest extends TestCase
             $this->assertEquals(0, $projectStats->audio_files);
             $this->assertEquals(0, $projectStats->video_files);
 
+            //delete temp folder
             Storage::disk('temp')->deleteDirectory('photo/'.$this->project->ref);
+            //delete the file
+            Storage::disk('photo')->deleteDirectory($this->project->ref);
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
