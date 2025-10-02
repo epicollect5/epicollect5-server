@@ -7,9 +7,7 @@ use ec5\Http\Validation\ValidationBase;
 class RulePhotoWeb extends ValidationBase
 {
     protected array $rules = [
-        'file' => 'required|mimes:jpeg,jpg,png|max:10000|dimensions:max_width=4096,max_height=4096',
-       // 'width' => 'required|numeric|max:4096',
-       // 'height' => 'required|numeric|max:4096'
+        'file' => 'required|mimes:jpeg,jpg,png|max:10000|dimensions:max_width=4096,max_height=4096'
     ];
 
     protected array $messages = [

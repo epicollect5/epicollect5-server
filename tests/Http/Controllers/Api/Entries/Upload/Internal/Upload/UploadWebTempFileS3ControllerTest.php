@@ -25,7 +25,7 @@ use Throwable;
    therefore, we use concatenation of @depends
  */
 
-class UploadWebTempFileLocalControllerTest extends TestCase
+class UploadWebTempFileS3ControllerTest extends TestCase
 {
     use DatabaseTransactions;
     use Assertions;
@@ -42,8 +42,8 @@ class UploadWebTempFileLocalControllerTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
-        //set storage (and all disks) to local
-        $this->overrideStorageDriver('local');
+        //set storage (and all disks) to S3
+        $this->overrideStorageDriver('s3');
         $this->faker = Faker::create();
 
         $user = factory(User::class)->create();

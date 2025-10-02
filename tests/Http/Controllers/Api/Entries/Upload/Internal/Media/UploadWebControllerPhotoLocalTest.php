@@ -39,6 +39,14 @@ class UploadWebControllerPhotoLocalTest extends TestCase
     use Assertions;
 
     private string $endpoint = 'api/internal/web-upload/';
+    private \Faker\Generator $faker;
+    private User $user;
+    private string $role;
+    private Project $project;
+    private array $projectDefinition;
+    private array $projectExtra;
+    private string $deviceId;
+    private EntryGenerator $entryGenerator;
 
     /**
      * @throws RandomException
