@@ -63,10 +63,7 @@ class UploadWebControllerAudioLocalTest extends TestCase
             'email',
             'like',
             '%example.net%'
-        )
-            ->delete();
-
-        $this->faker = Faker::create();
+        )->delete();
 
         //create fake user for testing
         $user = factory(User::class)->create();
