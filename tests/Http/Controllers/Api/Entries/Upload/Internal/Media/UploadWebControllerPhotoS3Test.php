@@ -18,6 +18,7 @@ use ec5\Services\Project\ProjectExtraService;
 use ec5\Traits\Assertions;
 use Exception;
 use Faker\Factory as Faker;
+use Faker\Generator;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\File;
 use Illuminate\Support\Facades\Storage;
@@ -39,7 +40,7 @@ class UploadWebControllerPhotoS3Test extends TestCase
     use Assertions;
 
     private string $endpoint = 'api/internal/web-upload/';
-    private \Faker\Generator $faker;
+    private Generator $faker;
     private User $user;
     private string $role;
     private Project $project;

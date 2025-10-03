@@ -17,17 +17,18 @@ use Faker\Factory as Faker;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Ramsey\Uuid\Uuid;
 use Tests\TestCase;
+use Throwable;
 
 class UploadAppControllerLimitsTest extends TestCase
 {
     use DatabaseTransactions;
 
-    private $user;
-    private $project;
-    private $projectDefinition;
-    private $entryGenerator;
-    private $parentUuids;
-    private $branchesCounter;
+    private User $user;
+    private Project $project;
+    private array $projectDefinition;
+    private EntryGenerator $entryGenerator;
+    private array $parentUuids;
+    private int $branchesCounter;
 
     private string $endpoint = 'api/upload/';
 
@@ -39,7 +40,7 @@ class UploadAppControllerLimitsTest extends TestCase
         $name = config('testing.WEB_UPLOAD_CONTROLLER_PROJECT.name');
         $slug = config('testing.WEB_UPLOAD_CONTROLLER_PROJECT.slug');
         $email = config('testing.UNIT_TEST_RANDOM_EMAIL');
-
+        $response = [];
         try {
             //delete any leftovers
             User::where('email', $email)->delete();
@@ -107,7 +108,7 @@ class UploadAppControllerLimitsTest extends TestCase
             $base64EncodedData = base64_encode($gzippedData);
 
             //see https://github.com/laravel/framework/issues/46455
-            $response = $this->actingAs($user)
+            $response[0] = $this->actingAs($user)
                 ->call(
                     'POST',
                     'api/internal/formbuilder/' . $project->slug,
@@ -118,8 +119,8 @@ class UploadAppControllerLimitsTest extends TestCase
                     $base64EncodedData
                 );
 
-            $response->assertStatus(200);
-            $this->assertSame(json_decode($response->getContent(), true), $projectDefinition);
+            $response[0]->assertStatus(200);
+            $this->assertSame(json_decode($response[0]->getContent(), true), $projectDefinition);
             //assert there are no entries or branch entries
             $this->assertCount(0, Entry::where('project_id', $project->id)->get());
             $this->assertCount(0, BranchEntry::where('project_id', $project->id)->get());
@@ -141,7 +142,7 @@ class UploadAppControllerLimitsTest extends TestCase
                 foreach ($inputs as $input) {
                     if ($input['type'] === config('epicollect.strings.branch')) {
                         $this->branchesCounter++;
-                        $branchEntry = factory(BranchEntry::class)->create(
+                        factory(BranchEntry::class)->create(
                             [
                                 'project_id' => $project->id,
                                 'user_id' => $user->id,
@@ -165,8 +166,6 @@ class UploadAppControllerLimitsTest extends TestCase
             $this->entryGenerator = $entryGenerator;
             $this->parentUuids = $parentUuids;
             $this->deviceId = Common::generateRandomHex();
-
-
         } catch (Exception $exception) {
             $this->logTestError($exception, $response);
         }
@@ -195,7 +194,7 @@ class UploadAppControllerLimitsTest extends TestCase
                         ]
                     ]
                 );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -223,7 +222,7 @@ class UploadAppControllerLimitsTest extends TestCase
                         ]
                     ]
                 );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -251,7 +250,7 @@ class UploadAppControllerLimitsTest extends TestCase
                         ]
                     ]
                 );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -279,7 +278,7 @@ class UploadAppControllerLimitsTest extends TestCase
                         ]
                     ]
                 );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -307,7 +306,7 @@ class UploadAppControllerLimitsTest extends TestCase
                         ]
                     ]
                 );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -349,7 +348,7 @@ class UploadAppControllerLimitsTest extends TestCase
                     ]
                 );
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -391,7 +390,7 @@ class UploadAppControllerLimitsTest extends TestCase
                     ]
                 );
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -433,7 +432,7 @@ class UploadAppControllerLimitsTest extends TestCase
                     ]
                 );
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -475,7 +474,7 @@ class UploadAppControllerLimitsTest extends TestCase
                     ]
                 );
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -517,7 +516,7 @@ class UploadAppControllerLimitsTest extends TestCase
                     ]
                 );
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

@@ -44,8 +44,8 @@ class UploadWebControllerSequenceTest extends TestCase
         if ($leftOverProject || $leftoverUser) {
             $this->clearDatabase(['user' => $leftoverUser, 'project' => $leftOverProject]);
         }
-        //create a project with custom project definition
-        //create fake user for testing
+
+        $response = [];
         try {
             $user = factory(User::class)->create(['email' => $email]);
             $projectDefinition = ProjectDefinitionGenerator::createProject(5);
@@ -91,7 +91,7 @@ class UploadWebControllerSequenceTest extends TestCase
             $base64EncodedData = base64_encode($gzippedData);
 
             //see https://github.com/laravel/framework/issues/46455
-            $response = $this->actingAs($user)
+            $response[0] = $this->actingAs($user)
                 ->call(
                     'POST',
                     'api/internal/formbuilder/' . $project->slug,
@@ -102,8 +102,8 @@ class UploadWebControllerSequenceTest extends TestCase
                     $base64EncodedData
                 );
 
-            $response->assertStatus(200);
-            $this->assertSame(json_decode($response->getContent(), true), $projectDefinition);
+            $response[0]->assertStatus(200);
+            $this->assertSame(json_decode($response[0]->getContent(), true), $projectDefinition);
             //assert there are no entries or branch entries
             $this->assertCount(0, Entry::where('project_id', $project->id)->get());
             $this->assertCount(0, BranchEntry::where('project_id', $project->id)->get());
