@@ -1,5 +1,14 @@
 ## Release Notes
 
+# 12.4.0
+
+- Project storage overview: total files/bytes, per-type breakdown (photo/audio/video)
+- Console command to recalculate project storage on demand.
+- Admin projects table shows formatted storage and loads faster
+- Uploads and deletions now update project storage counters immediately.
+- Project details page shows refreshed quota/media counters with refresh button.
+- Extensive new and updated media upload/delete tests covering local and S3 paths.
+
 # 12.3.8
 
 - Fixed a bug where storage total was wrong in the admin projects panel
