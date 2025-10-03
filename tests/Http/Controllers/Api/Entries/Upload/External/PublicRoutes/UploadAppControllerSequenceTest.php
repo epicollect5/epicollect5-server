@@ -438,13 +438,13 @@ class UploadAppControllerSequenceTest extends TestCase
             $project = $params['project'];
             $entryGenerator = $params['entryGenerator'];
             //now generate a child form entry (level 1)
-            $parenEntryUuid = $childEntry3['data']['id'];
+            $parentEntryUuid = $childEntry3['data']['id'];
             $parentFormRef = array_get($projectDefinition, 'data.project.forms.3.ref');
             $childFormRef = array_get($projectDefinition, 'data.project.forms.4.ref');
             $childEntry4 = $entryGenerator->createChildEntryPayload(
                 $childFormRef,
                 $parentFormRef,
-                $parenEntryUuid
+                $parentEntryUuid
             );
 
             //post the child entry
