@@ -65,7 +65,7 @@
                                             data-toggle="dropdown"
                                             aria-haspopup="true"
                                             aria-expanded="false"
-                                            data-selected-value="any"
+                                            data-selected-value="entries"
                                     >
                                         <span class="dropdown-text">Entries</span>
                                         <span class="caret"></span>

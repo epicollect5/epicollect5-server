@@ -131,7 +131,7 @@ $(document).ready(function () {
 
     });
 
-    //filter based on access value
+    //Sort based on order by value
     orderByDropdownMenu.on('click', 'li', function () {
 
         var selected = $(this).data('filter-value');
@@ -142,7 +142,7 @@ $(document).ready(function () {
         console.log(params);
         _filterProjects(0);
     });
-    
+
 
     //filter based on visibility value
     visibilityDropdownMenu.on('click', 'li', function () {
