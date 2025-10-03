@@ -179,8 +179,14 @@ class Project extends Model
 
     public function admin($params = []): Paginator|array
     {
-
         $perPage  = config('epicollect.limits.admin_projects_per_page');
+
+        // Determine order by column
+        $orderBy = match ($params['order_by'] ?? null) {
+            'storage' => 'total_bytes',
+            default   => 'total_entries',
+        };
+
         return $this
             ->join($this->projectStatsTable, $this->getTable() . '.id', '=', $this->projectStatsTable . '.project_id')
             ->leftJoin('users', $this->getTable() . '.created_by', '=', 'users.id')  // Join users table
@@ -200,7 +206,7 @@ class Project extends Model
                 }
             })
             ->where($this->getTable() . '.status', '<>', 'archived')
-            ->orderBy($this->projectStatsTable . '.total_entries', 'desc')  // Ensure sorting works
+            ->orderBy($this->projectStatsTable . '.'.$orderBy, 'desc')  // Ensure sorting works
             ->select(
                 $this->getTable() . '.*',
                 'users.name as user_name',

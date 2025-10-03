@@ -76,7 +76,8 @@ $(document).ready(function () {
         page: 1,
         name: '',
         access: '',
-        visibility: ''
+        visibility: '',
+        order_by: 'entries'
     };
 
     var searchBar = $('.page-admin .projects-list__filter-controls .projects-list__project-search');
@@ -85,6 +86,8 @@ $(document).ready(function () {
     var accessDropdownMenu = filterControls.find('.filter-controls__access .dropdown-menu');
     var visibilityDropdownToggle = filterControls.find('.filter-controls__visibility .dropdown-toggle');
     var visibilityDropdownMenu = filterControls.find('.filter-controls__visibility .dropdown-menu');
+    var orderByDropdownToggle = filterControls.find('.filter-controls__order_by .dropdown-toggle');
+    var orderByDropdownMenu = filterControls.find('.filter-controls__order_by .dropdown-menu');
     var projectsList = $(' .page-admin .projects-list');
     var loader = $('.page-admin .projects-loader');
 
@@ -127,6 +130,19 @@ $(document).ready(function () {
         _filterProjects(0);
 
     });
+
+    //filter based on access value
+    orderByDropdownMenu.on('click', 'li', function () {
+
+        var selected = $(this).data('filter-value');
+        params.order_by = selected;
+        orderByDropdownToggle.data('selected-value', selected);
+        orderByDropdownToggle.parent().find('.dropdown-text').text(capitalize(selected));
+
+        console.log(params);
+        _filterProjects(0);
+    });
+    
 
     //filter based on visibility value
     visibilityDropdownMenu.on('click', 'li', function () {
