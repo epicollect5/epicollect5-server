@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 12.4.1
+
+- Added a “Sort By” control to the admin Projects list with Entries and Storage options.
+
 # 12.4.0
 
 - Project storage overview: total files/bytes, per-type breakdown (photo/audio/video)
