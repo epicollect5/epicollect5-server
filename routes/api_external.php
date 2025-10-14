@@ -39,7 +39,7 @@ Route::group(['middleware' => ['throttle:600,1']], function () {
     /* LEGACY END POINTS */
     Route::get('api/json/login', 'Api\Auth\AuthController@getLogin');
     //  Route::post('api/json/login/ldap', 'Api\Auth\AuthController@postLdapLogin');
-    Route::post('api/json/handle/google', 'Api\Auth\AuthController@authGoogleUser');
+    Route::post('api/json/handle/google', 'Api\Auth\GoogleController@authGoogleUser');
     /* LEGACY END POINTS */
 
 

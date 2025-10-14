@@ -53,8 +53,8 @@
                     <thead>
                     <tr>
                         <th>Type</th>
-                        <th>Count</th>
-                        <th>Size</th>
+                        <th>Total Files</th>
+                        <th>Total Size</th>
                         <th>Ratio</th>
                     </tr>
                     </thead>

@@ -30,7 +30,8 @@ class UploadAppController extends UploadControllerBase
         if (!$this->entriesUploadService->upload()) {
             return Response::apiErrorCode(400, $this->entriesUploadService->errors);
         }
-        time_nanosleep(0, 500000000);
+        //let the server breathe a bit
+        sleep(config('epicollect.setup.api_sleep_time.entries'));
         /* PASSED */
         // Send http status code 200, ok!
         return Response::apiSuccessCode('ec5_237');
