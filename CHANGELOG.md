@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 12.4.2
+
+- Fixed permissions of file uploads to S3, making S3 endpoints private by default.
+
 # 12.4.1
 
 - Added a “Sort By” control to the admin Projects list with Entries and Storage options.
