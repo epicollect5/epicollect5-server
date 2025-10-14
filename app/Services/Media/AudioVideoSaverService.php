@@ -66,10 +66,7 @@ class AudioVideoSaverService
                             }
                         }
 
-                        $fileSaved = Storage::disk($disk)->put($targetPath, $stream, [
-                            'visibility' => 'public',
-                            'directory_visibility' => 'public'
-                        ]);
+                        $fileSaved = Storage::disk($disk)->put($targetPath, $stream);
                         if ($fileSaved) {
                             break; // Success, exit retry loop
                         }
@@ -105,10 +102,7 @@ class AudioVideoSaverService
                 // Store the file on the specified disk using the stream
                 // This is efficient for large files (audio/video) because it
                 // avoids loading the entire file into PHP memory at once
-                $fileSaved = Storage::disk($disk)->put($targetPath, $stream, [
-                    'visibility' => 'public',
-                    'directory_visibility' => 'public'
-                ]);
+                $fileSaved = Storage::disk($disk)->put($targetPath, $stream);
 
                 // Close the stream to free resources
                 fclose($stream);

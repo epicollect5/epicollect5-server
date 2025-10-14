@@ -171,8 +171,7 @@ class PhotoSaverService
                 try {
                     $fileSaved = Storage::disk($disk)->put(
                         $projectRef . '/' . $fileName,
-                        $imageContent,
-                        ['visibility' => 'public', 'directory_visibility' => 'public']
+                        $imageContent
                     );
                     if ($fileSaved) {
                         break; // Success, exit retry loop
