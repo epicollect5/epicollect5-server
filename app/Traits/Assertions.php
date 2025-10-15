@@ -6,6 +6,7 @@ use ec5\Libraries\Utilities\DateFormatConverter;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use Hash;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Assert;
 
@@ -986,5 +987,18 @@ trait Assertions
         return array($entries, $fixedEntryKeys);
     }
 
+    public function assertTheFileEndpointIsPrivate(mixed $filename, string $disk): void
+    {
+        // Assert the file endpoint on S3 is private
+        $visibility = Storage::disk($disk)->getVisibility($this->project->ref . '/' . $filename);
+        $this->assertEquals('private', $visibility);
+
+        // Try to access the file via direct URL (should fail)
+        $url = Storage::disk($disk)->url($this->project->ref . '/' . $filename);
+        $response = Http::get($url);
+
+        // Should return 403 Forbidden or 404 for private files
+        $this->assertContains($response->status(), [403, 404]);
+    }
 
 }

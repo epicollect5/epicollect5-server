@@ -321,16 +321,7 @@ class UploadAppControllerAudioS3Test extends TestCase
             $this->assertEquals(1, $projectStats->audio_files);
             $this->assertEquals(0, $projectStats->video_files);
 
-            // Assert the file is private
-            $visibility = Storage::disk('audio')->getVisibility($this->project->ref . '/' . $filename);
-            $this->assertEquals('private', $visibility);
-
-            // Try to access the file via direct URL (should fail)
-            $url = Storage::disk('audio')->url($this->project->ref . '/' . $filename);
-            $response = Http::get($url);
-
-            // Should return 403 Forbidden or 404 for private files
-            $this->assertContains($response->status(), [403, 404]);
+            $this->assertTheFileEndpointIsPrivate($filename, 'audio');
 
             //deleted the file
             Storage::disk('audio')->deleteDirectory($this->project->ref);
@@ -421,16 +412,7 @@ class UploadAppControllerAudioS3Test extends TestCase
             $this->assertEquals(1, $projectStats->audio_files);
             $this->assertEquals(0, $projectStats->video_files);
 
-            // Assert the file is private
-            $visibility = Storage::disk('audio')->getVisibility($this->project->ref . '/' . $filename);
-            $this->assertEquals('private', $visibility);
-
-            // Try to access the file via direct URL (should fail)
-            $url = Storage::disk('audio')->url($this->project->ref . '/' . $filename);
-            $response = Http::get($url);
-
-            // Should return 403 Forbidden or 404 for private files
-            $this->assertContains($response->status(), [403, 404]);
+            $this->assertTheFileEndpointIsPrivate($filename, 'audio');
 
             Storage::disk('audio')->deleteDirectory($this->project->ref);
         } catch (Throwable $e) {
@@ -663,16 +645,7 @@ class UploadAppControllerAudioS3Test extends TestCase
             $this->assertEquals(1, $projectStats->audio_files);
             $this->assertEquals(0, $projectStats->video_files);
 
-            // Assert the file is private
-            $visibility = Storage::disk('audio')->getVisibility($this->project->ref . '/' . $filename);
-            $this->assertEquals('private', $visibility);
-
-            // Try to access the file via direct URL (should fail)
-            $url = Storage::disk('audio')->url($this->project->ref . '/' . $filename);
-            $response = Http::get($url);
-
-            // Should return 403 Forbidden or 404 for private files
-            $this->assertContains($response->status(), [403, 404]);
+            $this->assertTheFileEndpointIsPrivate($filename, 'audio');
 
             Storage::disk('audio')->deleteDirectory($this->project->ref);
 

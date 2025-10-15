@@ -19,7 +19,6 @@ use ec5\Traits\Assertions;
 use Exception;
 use Faker\Factory as Faker;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Random\RandomException;
 use Tests\TestCase;
@@ -195,16 +194,7 @@ class UploadAppControllerPhotoS3Test extends TestCase
             $this->assertEquals(0, $projectStats->audio_files);
             $this->assertEquals(0, $projectStats->video_files);
 
-            // Assert the file is private
-            $visibility = Storage::disk('photo')->getVisibility($this->project->ref . '/' . $filename);
-            $this->assertEquals('private', $visibility);
-
-            // Try to access the file via direct URL (should fail)
-            $url = Storage::disk('photo')->url($this->project->ref . '/' . $filename);
-            $response = Http::get($url);
-
-            // Should return 403 Forbidden or 404 for private files
-            $this->assertContains($response->status(), [403, 404]);
+            $this->assertTheFileEndpointIsPrivate($filename, 'photo');
 
             Storage::disk('photo')->deleteDirectory($this->project->ref);
 
@@ -329,16 +319,8 @@ class UploadAppControllerPhotoS3Test extends TestCase
             $this->assertEquals(0, $projectStats->audio_files);
             $this->assertEquals(0, $projectStats->video_files);
 
-            // Assert the file is private
-            $visibility = Storage::disk('photo')->getVisibility($this->project->ref . '/' . $filename);
-            $this->assertEquals('private', $visibility);
-
-            // Try to access the file via direct URL (should fail)
-            $url = Storage::disk('photo')->url($this->project->ref . '/' . $filename);
-            $response = Http::get($url);
-
-            // Should return 403 Forbidden or 404 for private files
-            $this->assertContains($response->status(), [403, 404]);
+            // Assert the file endpoint on S3 is private
+            $this->assertTheFileEndpointIsPrivate($filename, 'photo');
 
             //deleted the file
             Storage::disk('photo')->deleteDirectory($this->project->ref);
@@ -431,16 +413,8 @@ class UploadAppControllerPhotoS3Test extends TestCase
             $this->assertEquals(0, $projectStats->audio_files);
             $this->assertEquals(0, $projectStats->video_files);
 
-            // Assert the file is private
-            $visibility = Storage::disk('photo')->getVisibility($this->project->ref . '/' . $filename);
-            $this->assertEquals('private', $visibility);
-
-            // Try to access the file via direct URL (should fail)
-            $url = Storage::disk('photo')->url($this->project->ref . '/' . $filename);
-            $response = Http::get($url);
-
-            // Should return 403 Forbidden or 404 for private files
-            $this->assertContains($response->status(), [403, 404]);
+            // Assert the file endpoint on S3 is private
+            $this->assertTheFileEndpointIsPrivate($filename, 'photo');
 
             Storage::disk('photo')->deleteDirectory($this->project->ref);
 
@@ -532,16 +506,8 @@ class UploadAppControllerPhotoS3Test extends TestCase
             $this->assertEquals(0, $projectStats->audio_files);
             $this->assertEquals(0, $projectStats->video_files);
 
-            // Assert the file is private
-            $visibility = Storage::disk('photo')->getVisibility($this->project->ref . '/' . $filename);
-            $this->assertEquals('private', $visibility);
-
-            // Try to access the file via direct URL (should fail)
-            $url = Storage::disk('photo')->url($this->project->ref . '/' . $filename);
-            $response = Http::get($url);
-
-            // Should return 403 Forbidden or 404 for private files
-            $this->assertContains($response->status(), [403, 404]);
+            // Assert the file endpoint on S3 is private
+            $this->assertTheFileEndpointIsPrivate($filename, 'photo');
 
             Storage::disk('photo')->deleteDirectory($this->project->ref);
 
@@ -763,16 +729,8 @@ class UploadAppControllerPhotoS3Test extends TestCase
             $this->assertEquals(0, $projectStats->audio_files);
             $this->assertEquals(0, $projectStats->video_files);
 
-            // Assert the file is private
-            $visibility = Storage::disk('photo')->getVisibility($this->project->ref . '/' . $filename);
-            $this->assertEquals('private', $visibility);
-
-            // Try to access the file via direct URL (should fail)
-            $url = Storage::disk('photo')->url($this->project->ref . '/' . $filename);
-            $response = Http::get($url);
-
-            // Should return 403 Forbidden or 404 for private files
-            $this->assertContains($response->status(), [403, 404]);
+            // Assert the file endpoint on S3 is private
+            $this->assertTheFileEndpointIsPrivate($filename, 'photo');
 
             Storage::disk('photo')->deleteDirectory($this->project->ref);
         } catch (Throwable $e) {
