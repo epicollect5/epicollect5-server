@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 12.4.3
+
+- Tests added/updated to verify uploaded media endpoints are private.
+
 # 12.4.2
 
 - Fixed permissions of file uploads to S3, making S3 endpoints private by default.
