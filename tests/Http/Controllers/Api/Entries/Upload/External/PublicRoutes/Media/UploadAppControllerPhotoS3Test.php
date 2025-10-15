@@ -19,6 +19,7 @@ use ec5\Traits\Assertions;
 use Exception;
 use Faker\Factory as Faker;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Random\RandomException;
 use Tests\TestCase;
@@ -193,6 +194,17 @@ class UploadAppControllerPhotoS3Test extends TestCase
             $this->assertEquals($expectedBytes, $projectStats->photo_bytes);
             $this->assertEquals(0, $projectStats->audio_files);
             $this->assertEquals(0, $projectStats->video_files);
+
+            // Assert the file is private
+            $visibility = Storage::disk('photo')->getVisibility($this->project->ref . '/' . $filename);
+            $this->assertEquals('private', $visibility);
+
+            // Try to access the file via direct URL (should fail)
+            $url = Storage::disk('photo')->url($this->project->ref . '/' . $filename);
+            $response = Http::get($url);
+
+            // Should return 403 Forbidden or 404 for private files
+            $this->assertContains($response->status(), [403, 404]);
 
             Storage::disk('photo')->deleteDirectory($this->project->ref);
 

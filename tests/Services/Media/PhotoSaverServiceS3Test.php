@@ -47,7 +47,7 @@ class PhotoSaverServiceS3Test extends TestCase
 
         // Alternative approach - mock Storage directly with the full method chain
         Storage::shouldReceive('disk->put')
-            ->with($project->ref . '/' . $fileName, Mockery::any(), Mockery::any())
+            ->with($project->ref . '/' . $fileName, Mockery::any())
             ->times(4) // Expect 4 calls (1 initial + 3 retries)
             ->andThrow(new S3Exception(
                 'Too Many Requests',
@@ -82,7 +82,7 @@ class PhotoSaverServiceS3Test extends TestCase
 
         Storage::shouldReceive('disk->put')
             //imp: match the  number of args expected, passing any() for the 3rd arg
-            ->with($project->ref . '/' . $fileName, Mockery::any(), Mockery::any())
+            ->with($project->ref . '/' . $fileName, Mockery::any())
             ->times(4) // Expect 4 calls (1 initial + 3 retries)
             ->andThrow(new S3Exception(
                 'Service Unavailable',
@@ -133,7 +133,7 @@ class PhotoSaverServiceS3Test extends TestCase
             ->andReturnSelf();
 
         Storage::shouldReceive('put')
-            ->with($project->ref . '/' . $fileName, Mockery::any(), Mockery::any())
+            ->with($project->ref . '/' . $fileName, Mockery::any())
             ->once()
             ->andReturn(true);
 
@@ -178,7 +178,7 @@ class PhotoSaverServiceS3Test extends TestCase
             ->andReturnSelf();
 
         Storage::shouldReceive('put')
-            ->with($project->ref . '/' . $fileName, Mockery::any(), Mockery::any())
+            ->with($project->ref . '/' . $fileName, Mockery::any())
             ->once() // Expect only 1 call (no retries for 403)
             ->andThrow(new S3Exception(
                 'Forbidden',
@@ -218,7 +218,7 @@ class PhotoSaverServiceS3Test extends TestCase
             ->andReturnSelf();
 
         Storage::shouldReceive('put')
-            ->with($project->ref . '/' . $fileName, Mockery::any(), Mockery::any())
+            ->with($project->ref . '/' . $fileName, Mockery::any())
             ->times(4) // Expect 4 calls (1 initial + 3 retries)
             ->andReturn(false);
 

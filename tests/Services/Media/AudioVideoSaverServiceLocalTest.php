@@ -61,7 +61,7 @@ class AudioVideoSaverServiceLocalTest extends TestCase
         $targetPath = $project->ref . '/' . $fileName;
         Storage::shouldReceive('put')
            ->once()
-           ->withArgs(function ($path, $stream, $options) use ($targetPath) {
+           ->withArgs(function ($path, $stream) use ($targetPath) {
                // Assert the path is exactly what we expect
                if ($path !== $targetPath) {
                    return false;
@@ -73,8 +73,7 @@ class AudioVideoSaverServiceLocalTest extends TestCase
                }
 
                // Assert options
-               return $options['visibility'] === 'public'
-                   && $options['directory_visibility'] === 'public';
+               return true;
            })
            ->andReturn(true);
 
