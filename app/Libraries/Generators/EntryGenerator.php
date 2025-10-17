@@ -264,7 +264,7 @@ class EntryGenerator
             }
         }
 
-        list($answers, $title) = $this->generateAnswersAndTitle($currentForm['inputs'], $uuid, $titles);
+        list($answers, $title) = $this->generateEntryAnswersAndTitle($currentForm['inputs'], $uuid, $titles);
 
 
         return [
@@ -430,7 +430,8 @@ class EntryGenerator
         }
 
 
-        list($answers, $title) = $this->generateAnswersAndTitle($currentForm['inputs'], $uuid, $titles);
+        list($answers, $title) = $this->generateEntryAnswersAndTitle($currentForm['inputs'], $uuid, $titles);
+
 
         return [
             'data' => [
@@ -641,13 +642,6 @@ class EntryGenerator
             $entryStructure->addGeoJsonObject($input, $answer['answer']);
             $entryStructure->addPossibleAnswersToGeoJson();
         }
-    }
-
-    private function generateAnswersAndTitle($inputs1, string $uuid, array $titles): array
-    {
-        $inputs = $inputs1;
-        list($answers, $title) = $this->generateEntryAnswersAndTitle($inputs, $uuid, $titles);
-        return array($answers, $title);
     }
 
     private function initDTOs($project, $user, $role, $data): array
