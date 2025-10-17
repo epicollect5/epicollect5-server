@@ -174,24 +174,40 @@ class ProjectStats extends Model
         int $videoFiles
     ): bool {
         try {
-            // Update individual media types (both bytes and file counts, clamped to 0)
+            // Single atomic update to prevent race conditions between updating individual counters and totals
             DB::table($this->table)
                 ->where('id', $this->id)
                 ->update([
-                    'photo_bytes' => DB::raw('GREATEST(photo_bytes + ' . $photoBytes . ', 0)'),
-                    'photo_files' => DB::raw('GREATEST(photo_files + ' . $photoFiles . ', 0)'),
-                    'audio_bytes' => DB::raw('GREATEST(audio_bytes + ' . $audioBytes . ', 0)'),
-                    'audio_files' => DB::raw('GREATEST(audio_files + ' . $audioFiles . ', 0)'),
-                    'video_bytes' => DB::raw('GREATEST(video_bytes + ' . $videoBytes . ', 0)'),
-                    'video_files' => DB::raw('GREATEST(video_files + ' . $videoFiles . ', 0)'),
-                ]);
+                    // Update photo counters
+                    // CAST to SIGNED allows negative intermediate results when decrementing
+                    // GREATEST(..., 0) clamps the final value to prevent going below zero
+                    'photo_bytes' => DB::raw('GREATEST(CAST(photo_bytes AS SIGNED) + ' . $photoBytes . ', 0)'),
+                    'photo_files' => DB::raw('GREATEST(CAST(photo_files AS SIGNED) + ' . $photoFiles . ', 0)'),
 
-            // Recompute totals as sum of all media types
-            DB::table($this->table)
-                ->where('id', $this->id)
-                ->update([
-                    'total_bytes' => DB::raw('photo_bytes + audio_bytes + video_bytes'),
-                    'total_files' => DB::raw('photo_files + audio_files + video_files'),
+                    // Update audio counters
+                    'audio_bytes' => DB::raw('GREATEST(CAST(audio_bytes AS SIGNED) + ' . $audioBytes . ', 0)'),
+                    'audio_files' => DB::raw('GREATEST(CAST(audio_files AS SIGNED) + ' . $audioFiles . ', 0)'),
+
+                    // Update video counters
+                    'video_bytes' => DB::raw('GREATEST(CAST(video_bytes AS SIGNED) + ' . $videoBytes . ', 0)'),
+                    'video_files' => DB::raw('GREATEST(CAST(video_files AS SIGNED) + ' . $videoFiles . ', 0)'),
+
+                    // Recompute total_bytes as sum of all media types
+                    // Each component is computed with the same CAST + GREATEST logic to ensure consistency
+                    'total_bytes' => DB::raw('
+                    GREATEST(CAST(photo_bytes AS SIGNED) + ' . $photoBytes . ', 0) +
+                    GREATEST(CAST(audio_bytes AS SIGNED) + ' . $audioBytes . ', 0) +
+                    GREATEST(CAST(video_bytes AS SIGNED) + ' . $videoBytes . ', 0)
+                '),
+
+                    // Recompute total_files as sum of all file counts
+                    'total_files' => DB::raw('
+                    GREATEST(CAST(photo_files AS SIGNED) + ' . $photoFiles . ', 0) +
+                    GREATEST(CAST(audio_files AS SIGNED) + ' . $audioFiles . ', 0) +
+                    GREATEST(CAST(video_files AS SIGNED) + ' . $videoFiles . ', 0)
+                '),
+
+                    // Track when totals were last updated
                     'total_bytes_updated_at' => now(),
                 ]);
 
@@ -201,7 +217,7 @@ class ProjectStats extends Model
             );
         }
 
-        // Always return true: these are just rough quota counters.
+        // Always return true: these are rough quota counters, failures are logged but not propagated
         return true;
     }
 

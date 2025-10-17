@@ -470,7 +470,7 @@ class EntryGenerator
         $projectSlug = array_get($this->projectDefinition, 'data.project.slug');
         $uuid = Uuid::uuid4()->toString();
         $titles = [];
-        list($answers, $title) = $this->generateBranchAnswersAndTitle($branchInputs, $uuid, $titles);
+        list($answers, $title) = $this->generateEntryAnswersAndTitle($branchInputs, $uuid, $titles);
 
         return [
             'data' => [
@@ -646,7 +646,7 @@ class EntryGenerator
     private function generateAnswersAndTitle($inputs1, string $uuid, array $titles): array
     {
         $inputs = $inputs1;
-        list($answers, $title) = $this->generateBranchAnswersAndTitle($inputs, $uuid, $titles);
+        list($answers, $title) = $this->generateEntryAnswersAndTitle($inputs, $uuid, $titles);
         return array($answers, $title);
     }
 
@@ -741,10 +741,10 @@ class EntryGenerator
         ];
     }
 
-    private function generateBranchAnswersAndTitle($branchInputs, string $uuid, array $titles): array
+    private function generateEntryAnswersAndTitle($nputs, string $uuid, array $titles): array
     {
         $answers = [];
-        foreach ($branchInputs as $input) {
+        foreach ($nputs as $input) {
 
             $answers[$input['ref']] = $this->createAnswer($input, $uuid);
             if ($input['type'] === config('epicollect.strings.inputs_type.group')) {
@@ -753,18 +753,31 @@ class EntryGenerator
                 foreach ($groupInputs as $groupInput) {
                     $answers[$groupInput['ref']] = $this->createAnswer($groupInput, $uuid);
                     if (!empty($groupInput['is_title'])) {
-                        $titles[] = $answers[$groupInput['ref']]['answer'];
+                        $titles[] = $this->getAnswerForTitle($answers[$groupInput['ref']]['answer']);
                     }
                 }
             }
 
             if ($input['is_title']) {
-                $titles[] = $answers[$input['ref']]['answer'];
+                $titles[] = $this->getAnswerForTitle($answers[$input['ref']]['answer']);
             }
         }
 
         $title = implode(' ', $titles);
         $title = $title === '' ? $uuid : $title;
         return array($answers, $title);
+    }
+
+    //Get answer as a string for title generation ( can be array for multiple choice)
+    private function getAnswerForTitle($answer): string
+    {
+        if (is_array($answer)) {
+            // Filter out empty values and join with comma-space
+            return implode(', ', array_filter($answer, function ($value) {
+                return $value !== null && $value !== '';
+            }));
+        }
+
+        return (string) $answer;
     }
 }

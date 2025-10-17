@@ -142,7 +142,7 @@ trait Remover
      */
     public function removeMediaChunk(string $projectRef, int $projectId): int
     {
-        $drivers = config('epicollect.media.entries_deletable');
+        $diskNames = config('epicollect.media.entries_deletable');
         $totalDeleted = 0;
         $maxFiles = config('epicollect.setup.bulk_deletion.chunk_size_media');
 
@@ -151,25 +151,25 @@ trait Remover
             $maxFiles = 1000;
         }
 
-        foreach ($drivers as $driver) {
+        foreach ($diskNames as $diskName) {
             if ($totalDeleted >= $maxFiles) {
                 break; // We've hit our batch limit
             }
 
             try {
-                $config = config("filesystems.disks.$driver");
+                $config = config("filesystems.disks.$diskName");
                 $remainingCapacity = $maxFiles - $totalDeleted;
 
                 // Check if this is S3 or local storage
                 if ($config['driver'] === 's3') {
-                    $diskRoot = config('filesystems.disks.' . $driver . '.root').'/';
+                    $diskRoot = config('filesystems.disks.' . $diskName . '.root').'/';
                     $s3Client = $this->createS3Client($config);
                     $bucket = $config['bucket'];
                     $prefix = $diskRoot . $projectRef;
                     $deletionResult = $this->deleteOneBatchByPrefixS3($s3Client, $bucket, $prefix, $remainingCapacity);
                 } else {
                     // Handle local storage using Laravel Storage facade
-                    $deletionResult = $this->deleteOneBatchByPrefixLocal($driver, $projectRef, $remainingCapacity);
+                    $deletionResult = $this->deleteOneBatchByPrefixLocal($diskName, $projectRef, $remainingCapacity);
                 }
 
                 if ($deletionResult['deletedCount'] > 0) {
@@ -185,11 +185,11 @@ trait Remover
                             $deletionResult['deletedBytes']['video'],
                             $deletionResult['deletedFiles']['video']
                         );
-                    Log::info("Deleted {{$deletionResult['deletedCount']}} entries for $projectRef on disk $driver. Total so far: $totalDeleted");
+                    Log::info("Deleted {{$deletionResult['deletedCount']}} entries for $projectRef on disk $diskName. Total so far: $totalDeleted");
                 }
 
             } catch (Exception $e) {
-                Log::error("Failed batch delete for $projectRef on disk $driver: " . $e->getMessage());
+                Log::error("Failed batch delete for $projectRef on disk $diskName: " . $e->getMessage());
                 throw $e;
             }
         }
