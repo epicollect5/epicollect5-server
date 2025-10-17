@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 12.4.4
+
+- Fixed entries deletion bug due to a numeric underflow issue in MySQL database.
+
 # 12.4.3
 
 - Tests added/updated to verify uploaded media endpoints are private.
