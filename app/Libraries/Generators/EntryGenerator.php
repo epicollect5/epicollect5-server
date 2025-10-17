@@ -741,10 +741,10 @@ class EntryGenerator
         ];
     }
 
-    private function generateEntryAnswersAndTitle($nputs, string $uuid, array $titles): array
+    private function generateEntryAnswersAndTitle($inputs, string $uuid, array $titles): array
     {
         $answers = [];
-        foreach ($nputs as $input) {
+        foreach ($inputs as $input) {
 
             $answers[$input['ref']] = $this->createAnswer($input, $uuid);
             if ($input['type'] === config('epicollect.strings.inputs_type.group')) {
