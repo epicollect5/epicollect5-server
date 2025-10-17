@@ -746,7 +746,7 @@ class EntryGenerator
                 $groupInputs = $input['group'];
                 foreach ($groupInputs as $groupInput) {
                     $answers[$groupInput['ref']] = $this->createAnswer($groupInput, $uuid);
-                    if (!empty($groupInput['is_title'])) {
+                    if ($groupInput['is_title']) {
                         $titles[] = $this->getAnswerForTitle($answers[$groupInput['ref']]['answer']);
                     }
                 }
