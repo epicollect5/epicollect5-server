@@ -3,6 +3,7 @@
 namespace Tests\Http\Controllers\Api\Entries\Delete;
 
 use Cache;
+use Carbon\Carbon;
 use ec5\Libraries\Generators\EntryGenerator;
 use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Models\Entries\BranchEntry;
@@ -23,12 +24,14 @@ class DeleteControllerMediaS3Test extends TestCase
     use DatabaseTransactions;
 
     private string $endpoint = 'api/internal/deletion/media/';
+    private Carbon $baseTimestamp;
 
     public function setUp(): void
     {
         parent::setUp();
 
         $this->clearDatabase([]);
+        $this->baseTimestamp = now(); // Get a Carbon instance
 
         $user = factory(User::class)->create();
         $projectDefinition = ProjectDefinitionGenerator::createProject(5);
@@ -176,12 +179,13 @@ class DeleteControllerMediaS3Test extends TestCase
                 ]
             );
             //add a fake file per each entry (per each media type)
+            $timestamp = $this->baseTimestamp->copy()->addSeconds($i)->timestamp;
             //photo
-            Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+            Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . $timestamp . '.jpg', '');
             //audio
-            Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
+            Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . $timestamp . '.mp4', '');
             //video
-            Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
+            Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '_' . $timestamp . '.mp4', '');
         }
 
         $this->assertCount($numOfEntries, Entry::where('project_id', $this->project->id)->get());
@@ -242,22 +246,23 @@ class DeleteControllerMediaS3Test extends TestCase
 
             //add files distributed across all 3 media types up to chunk size + 100
             if ($i < $chunkSize + 100) {
+                $timestamp = $this->baseTimestamp->copy()->addSeconds($i)->timestamp;
                 $mediaType = $i % 3; // Rotate between 0, 1, 2
 
                 switch ($mediaType) {
                     case 0:
                         //photo
-                        Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+                        Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . $timestamp . '.jpg', '');
                         $photosCount++;
                         break;
                     case 1:
                         //audio
-                        Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
+                        Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . $timestamp . '.mp4', '');
                         $audiosCount++;
                         break;
                     case 2:
                         //video
-                        Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
+                        Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '_' . $timestamp . '.mp4', '');
                         $videosCount++;
                         break;
                 }
@@ -357,12 +362,14 @@ class DeleteControllerMediaS3Test extends TestCase
 
             //add 1100 files for testing
             if ($i < ($chunkSize + 100)) {
+                // Simulate files created 1 second apart
+                $timestamp = $this->baseTimestamp->copy()->addSeconds($i)->timestamp;
                 //photo
-                Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+                Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . $timestamp . '.jpg', '');
                 //audio
-                Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
+                Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . $timestamp. '.mp4', '');
                 //video
-                Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
+                Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '_' . $timestamp . '.mp4', '');
 
             }
         }
@@ -426,12 +433,13 @@ class DeleteControllerMediaS3Test extends TestCase
 
             //add ~1000 files in total for testing (no need to add 20.000, chunk size is 1000)
             if ($i < (350)) {
+                $timestamp = $this->baseTimestamp->copy()->addSeconds($i)->timestamp;
                 //photo
-                Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+                Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . $timestamp . '.jpg', '');
                 //audio
-                Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
+                Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . $timestamp . '.mp4', '');
                 //video
-                Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
+                Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '_' . $timestamp . '.mp4', '');
 
             }
         }
@@ -496,8 +504,9 @@ class DeleteControllerMediaS3Test extends TestCase
 
             //add 1100 files for testing (no need to add 20.000, chunk size is 1000)
             if ($i < ($chunkSize + 100)) {
+                $timestamp = $this->baseTimestamp->copy()->addSeconds($i)->timestamp;
                 //audio
-                Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
+                Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . $timestamp . '.mp4', '');
                 $numOfAudios++;
             }
         }
@@ -557,8 +566,9 @@ class DeleteControllerMediaS3Test extends TestCase
 
             //add 1100 files for testing (no need to add 20.000, chunk size is 1000)
             if ($i < ($chunkSize + 100)) {
+                $timestamp = $this->baseTimestamp->copy()->addSeconds($i)->timestamp;
                 //video
-                Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
+                Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '_' . $timestamp . '.mp4', '');
 
                 $mediaUuids[] = $entry->uuid;
             }
@@ -617,12 +627,13 @@ class DeleteControllerMediaS3Test extends TestCase
 
             //add 10 files for testing (no need to add 20.000)
             if ($i < 10) {
+                $timestamp = $this->baseTimestamp->copy()->addSeconds($i)->timestamp;
                 //photo
-                Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.jpg', '');
+                Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . $timestamp . '.jpg', '');
                 //audio
-                Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
+                Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . $timestamp . '.mp4', '');
                 //video
-                Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '_' . time() . '.mp4', '');
+                Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '_' . $timestamp . '.mp4', '');
 
                 $mediaUuids[] = $entry->uuid;
             }

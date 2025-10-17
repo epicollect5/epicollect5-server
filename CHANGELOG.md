@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 12.4.5
+
+- Fixed a regression bug causing media metrics not to update correctly on media deletion.
+
 # 12.4.4
 
 - Fixed entries deletion bug due to a numeric underflow issue in MySQL database.
