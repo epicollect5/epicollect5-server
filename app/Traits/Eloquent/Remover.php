@@ -244,13 +244,9 @@ trait Remover
 
         // Ensure we don't exceed the maxFiles limit, even if S3 returns more
         // Also preserve the Size information for byte counting
-        $objects = array_slice(
-            array_map(fn ($obj) => [
-                'Key' => $obj['Key'],
-                'Size' => $obj['Size'] ?? 0
-            ], $result['Contents']),
-            0,
-            $maxFiles
+        $objects = $this->sanitiseS3Objects(
+            $result['Contents'], // Raw S3 objects returned from listObjects/listObjectsV2
+            $maxFiles            // Maximum files we want to process
         );
 
         $deleteResult = null;
@@ -280,16 +276,20 @@ trait Remover
         $deletedBytes = [
             'photo' => 0,
             'audio' => 0,
-            'video' => 0,
+            'video' => 0
         ];
         $deletedFiles = [
             'photo' => 0,
             'audio' => 0,
-            'video' => 0,
+            'video' => 0
         ];
 
         foreach ($objects as $object) {
             $mediaType = $this->getMediaTypeFromPath($object['Key']);
+            if ($mediaType === '') {
+                Log::warning("Unknown media type for file: {$object['Key']}");
+                continue;
+            }
             $deletedBytes[$mediaType] += $object['Size'];
             $deletedFiles[$mediaType]++;
         }
@@ -358,6 +358,10 @@ trait Remover
 
                         // Determine media type based on path
                         $mediaType = $this->getMediaTypeFromPath($relativePath);
+                        if ($mediaType === '') {
+                            Log::warning("Unknown media type for file: $fullRelativePath");
+                            continue;
+                        }
                         Log::info('$mediaType, $disk', ['mediaType' => $mediaType, 'disk' => $disk]);
                         $deletedBytes[$mediaType] += $fileSize;
                         $deletedFiles[$mediaType]++;
@@ -408,7 +412,48 @@ trait Remover
             return 'video';
         }
 
-        // Default to photo for unmatched files
-        return 'photo';
+        // Default to empty for unmatched files
+        return '';
+    }
+
+    /**
+     * Filters S3 objects to remove folders and zero-size files,
+     * and limits the result to a maximum number of files.
+     *
+     * We do this because:
+     * - S3 “folders” are actually zero-size objects ending with '/'.
+     * - We don’t want to process empty files for storage counting or display.
+     * - Limiting to $maxFiles avoids unnecessary processing if S3 returns too many objects.
+     *
+     * @param array $contents Array of S3 objects from listObjects or listObjectsV2
+     * @param int $maxFiles Maximum number of files to return
+     * @return array Filtered list of S3 objects with 'Key' and 'Size'
+     */
+    private function sanitiseS3Objects(array $contents, int $maxFiles): array
+    {
+        $objects = [];
+
+        foreach ($contents as $obj) {
+            $key = $obj['Key'];
+            $size = $obj['Size'] ?? 0;
+
+            // Skip folder objects (end with '/') and zero-size objects
+            if (str_ends_with($key, '/') || $size === 0) {
+                continue;
+            }
+
+            // Keep only the key and size for further processing
+            $objects[] = [
+                'Key' => $key,
+                'Size' => $size,
+            ];
+
+            // Stop early if we reach the maximum number of files
+            if (count($objects) >= $maxFiles) {
+                break;
+            }
+        }
+
+        return $objects;
     }
 }
