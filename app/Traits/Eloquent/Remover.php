@@ -172,6 +172,7 @@ trait Remover
                     $deletionResult = $this->deleteOneBatchByPrefixLocal($diskName, $projectRef, $remainingCapacity);
                 }
 
+                // Update total deleted count
                 if ($deletionResult['deletedCount'] > 0) {
                     $totalDeleted += $deletionResult['deletedCount'];
                     //adjust total bytes (negative delta)

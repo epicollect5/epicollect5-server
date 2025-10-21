@@ -146,14 +146,14 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
 
                     var deleted = response.data.deleted;
+                    // Update running total
                     if (deleted > 0) {
-                        remainingMedia = totalMedia - deleted;
                         deletedMedia += deleted;
-                    } else {
-                        if (totalMedia === deletedMedia) {
-                            remainingMedia = 0;
-                        }
                     }
+                    // ALWAYS calculate remaining from the running total
+                    remainingMedia = totalMedia - deletedMedia;
+
+                    // Update the progress bar
                     updateProgressBarMedia(deletedMedia, remainingMedia, totalMedia);
 
                     if (remainingMedia === 0) {

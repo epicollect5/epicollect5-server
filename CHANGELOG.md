@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 12.4.6
+
+- Potential fix for endless loop when deleting entries
+
 # 12.4.5
 
 - Fixed a regression bug causing media metrics not to update correctly on media deletion.
