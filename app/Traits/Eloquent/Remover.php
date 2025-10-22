@@ -284,18 +284,20 @@ trait Remover
             'video' => 0
         ];
 
+        $deletedCount = 0;
         foreach ($objects as $object) {
             $mediaType = $this->getMediaTypeFromPath($object['Key']);
             if ($mediaType === '') {
                 Log::warning("Unknown media type for file: {$object['Key']}");
                 continue;
             }
+            $deletedCount++;
             $deletedBytes[$mediaType] += $object['Size'];
             $deletedFiles[$mediaType]++;
         }
 
         return [
-            'deletedCount' => count($objects),
+            'deletedCount' => $deletedCount,
             'deletedFiles' => $deletedFiles,
             'deletedBytes' => $deletedBytes,
         ];
@@ -355,16 +357,8 @@ trait Remover
 
                     if ($storage->delete($fullRelativePath)) {
                         $deletedCount++;
-
-                        // Determine media type based on path
-                        $mediaType = $this->getMediaTypeFromPath($relativePath);
-                        if ($mediaType === '') {
-                            Log::warning("Unknown media type for file: $fullRelativePath");
-                            continue;
-                        }
-                        Log::info('$mediaType, $disk', ['mediaType' => $mediaType, 'disk' => $disk]);
-                        $deletedBytes[$mediaType] += $fileSize;
-                        $deletedFiles[$mediaType]++;
+                        $deletedBytes[$disk] += $fileSize;
+                        $deletedFiles[$disk]++;
                     } else {
                         // This would be a real error (permissions, etc.)
                         Log::error("Failed to delete file: $fullRelativePath");
@@ -396,9 +390,9 @@ trait Remover
     /**
      * Determine media type based on file path
      */
-    private function getMediaTypeFromPath(string $relativePath): string
+    private function getMediaTypeFromPath(string $path): string
     {
-        $normalizedPath = '/' . trim($relativePath, '/') . '/';
+        $normalizedPath = '/' . trim($path, '/') . '/';
 
         if (str_contains($normalizedPath, '/photo/')) {
             return 'photo';
