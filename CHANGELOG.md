@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 12.4.8
+
+- Added storage bucket validation on boot to prevent incorrect production-bucket usage.
+
 # 12.4.7
 
 - Another potential fix for endless loop when deleting entries
