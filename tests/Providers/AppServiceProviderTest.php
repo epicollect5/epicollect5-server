@@ -104,4 +104,39 @@ class AppServiceProviderTest extends TestCase
 
         $this->assertTrue(true);
     }
+    /**
+     * @throws Throwable
+     */
+    public function test_production_bucket_with_spoofed_domain_suffix_throws()
+    {
+        $host = 'five.epicollect.net.attacker.com';
+        $bucket = $this->getProductionBucket();
+
+        $this->expectException(HttpException::class);
+        $this->bootProvider($host, $bucket);
+    }
+
+    /**
+     * @throws Throwable
+     */
+    public function test_production_bucket_with_spoofed_domain_prefix_throws()
+    {
+        $host = 'malicious-five.epicollect.net';
+        $bucket = $this->getProductionBucket();
+
+        $this->expectException(HttpException::class);
+        $this->bootProvider($host, $bucket);
+    }
+
+    /**
+     * @throws Throwable
+     */
+    public function test_production_bucket_on_subdomain_behavior()
+    {
+        $host = 'api.five.epicollect.net';
+        $bucket = $this->getProductionBucket();
+
+        $this->expectException(HttpException::class);
+        $this->bootProvider($host, $bucket);
+    }
 }

@@ -35,7 +35,7 @@ class AppServiceProvider extends ServiceProvider
 
         // If not in production domain but using production bucket, throw error
         if (config('epicollect.setup.system.storage_driver') === 's3') {
-            if (!str_contains($host, 'five.epicollect.net') && $bucket === self::EPICOLLECT_MEDIA_BUCKET_PRODUCTION) {
+            if ($host !== 'five.epicollect.net' && $bucket === self::EPICOLLECT_MEDIA_BUCKET_PRODUCTION) {
                 Log::error(__METHOD__ . ' failed.', ['exception' => 'Forbidden: Production media bucket is not allowed in this environment.']);
                 throw new HttpException(500);
             }
