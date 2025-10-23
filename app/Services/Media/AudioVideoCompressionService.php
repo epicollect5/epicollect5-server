@@ -31,6 +31,13 @@ class AudioVideoCompressionService
         $maxRetries = 3;
         $delay = 1; // seconds
 
+        //skip .wav files (do not compress them) due to legacy implementation.
+        //on iOS we can only record .wav files using Cordova
+        //iOS user base is non existent anyway
+        if (str_ends_with($path, '.wav')) {
+            return true;
+        }
+
         for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
             Log::info("Compression attempt $attempt/$maxRetries", [
                 'disk' => $disk,
@@ -69,6 +76,7 @@ class AudioVideoCompressionService
      */
     private function tryCompress(string $disk, string $path, string $type): bool
     {
+        //keep original extension (mp4 or wav for ios audio files)
         $compressedPath = preg_replace('/(\.\w+)$/', '_compressed$1', $path);
         $success = false;
 
@@ -86,14 +94,13 @@ class AudioVideoCompressionService
                     ->inFormat($format)
                     ->save($compressedPath);
             } elseif ($type === 'audio') {
-                // Create an AAC format with desired bitrate
-                $format = (new Aac())->setAudioKiloBitrate(128);
+                // Don't use Aac() format - it requires libfdk_aac
+                // Instead, export without format and add codec params directly
                 FFMpeg::fromDisk($disk)
                     ->open($path)
-                    ->addFilter('-vn') // remove any video streams if present
+                    ->addFilter(['-vn', '-c:a', 'aac', '-b:a', '128k', '-ar', '44100'])
                     ->export()
                     ->toDisk($disk)
-                    ->inFormat($format)
                     ->save($compressedPath);
             } else {
                 throw new InvalidArgumentException("Unsupported media type: $type");
