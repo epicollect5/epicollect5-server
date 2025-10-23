@@ -156,7 +156,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     // Update the progress bar
                     updateProgressBarMedia(deletedMedia, remainingMedia, totalMedia);
 
-                    if (remainingMedia === 0) {
+                    //Also handle any bug that can cause the total to be less than 0
+                    if (remainingMedia <= 0) {
                         //all media deleted, start deleting entries
                         _deleteEntriesRecursively(endpointEntries, payload, projectSlug);
                     } else {
