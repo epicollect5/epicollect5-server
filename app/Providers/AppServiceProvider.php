@@ -12,6 +12,8 @@ use Throwable;
 
 class AppServiceProvider extends ServiceProvider
 {
+    private const string EPICOLLECT_MEDIA_BUCKET_PRODUCTION = 'epicollect5-media-bucket-production';
+
     /**
      * Bootstraps core application services and enforces environment-specific configuration.
      *
@@ -29,13 +31,14 @@ class AppServiceProvider extends ServiceProvider
 
         // Check if we are in production and using production bucket
         $host = request()->getHost() ?? ''; // Real-time HTTP host
-        $bucket = config('filesystems.disks.project.bucket');
-        $productionBucket = 'epicollect5-production-media-space';
+        $bucket = config('filesystems.disks.s3.bucket');
 
         // If not in production domain but using production bucket, throw error
-        if (!str_contains($host, 'five.epicollect.net') && $bucket === $productionBucket) {
-            Log::error(__METHOD__ . ' failed.', ['exception' => 'Forbidden: Production media bucket is not allowed in this environment.']);
-            throw new HttpException(500);
+        if (config('epicollect.setup.system.storage_driver') === 's3') {
+            if (!str_contains($host, 'five.epicollect.net') && $bucket === self::EPICOLLECT_MEDIA_BUCKET_PRODUCTION) {
+                Log::error(__METHOD__ . ' failed.', ['exception' => 'Forbidden: Production media bucket is not allowed in this environment.']);
+                throw new HttpException(500);
+            }
         }
 
         Paginator::useBootstrapThree();
