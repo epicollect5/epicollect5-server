@@ -312,6 +312,12 @@ class UploadWebControllerVideoLocalTest extends TestCase
             $photos = Storage::disk('photo')->files($this->project->ref);
             $this->assertCount(1, $photos);
 
+            //get compressed files size for audio and video
+            $audios = Storage::disk('audio')->files($this->project->ref);
+            $videos = Storage::disk('video')->files($this->project->ref);
+            $audioFileSize = Storage::disk('audio')->size($audios[0]);
+            $videoFileSize = Storage::disk('video')->size($videos[0]);
+
             //assert storage stats are updated
             $totalBytes = $expectedBytes + $audioFileSize + $videoFileSize;
             $projectStats = ProjectStats::where('project_id', $this->project->id)->first();

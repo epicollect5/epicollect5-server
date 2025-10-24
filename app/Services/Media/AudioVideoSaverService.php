@@ -120,7 +120,8 @@ class AudioVideoSaverService
                     }
                 }
 
-                $fileBytes = $isS3 ? Storage::disk('s3')->size($file['path']) : $file->getSize();
+                // Get actual file size after potential compression
+                $fileBytes = Storage::disk($disk)->size($targetPath);
                 match($disk) {
                     'photo' => $photoBytes = $fileBytes,
                     'audio' => $audioBytes = $fileBytes,

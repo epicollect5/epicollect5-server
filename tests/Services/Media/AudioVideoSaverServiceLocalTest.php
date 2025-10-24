@@ -4,10 +4,13 @@ namespace Tests\Services\Media;
 
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectStats;
+use ec5\Services\Media\AudioVideoCompressionService;
 use ec5\Services\Media\AudioVideoSaverService;
 use Exception;
+use FFMpeg;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\UploadedFile;
+use Mockery;
 use Ramsey\Uuid\Uuid;
 use Tests\TestCase;
 use Storage;
@@ -41,6 +44,29 @@ class AudioVideoSaverServiceLocalTest extends TestCase
         // Create a fake audio mp4 file
         $file = UploadedFile::fake()
             ->create($fileName, $fileSizeKB, 'audio/mp4'); // size in KB
+
+        // --- Mock FFMpeg chain (prevent real compression) ---
+        FFMpeg::shouldReceive('fromDisk')
+            ->andReturnSelf();
+        FFMpeg::shouldReceive('open')
+            ->andReturnSelf();
+        FFMpeg::shouldReceive('addFilter')
+            ->andReturnSelf();
+        FFMpeg::shouldReceive('export')
+            ->andReturnSelf();
+        FFMpeg::shouldReceive('toDisk')
+            ->andReturnSelf();
+        FFMpeg::shouldReceive('inFormat')
+            ->andReturnSelf();
+        FFMpeg::shouldReceive('save')
+            ->andReturn(true);
+
+        // --- Mock compression service (simulate success) ---
+        $mockCompression = Mockery::mock(AudioVideoCompressionService::class);
+        $mockCompression->shouldReceive('compress')
+            ->once()
+            ->andReturn(true);
+        $this->app->instance(AudioVideoCompressionService::class, $mockCompression);
 
         // Mock Storage facade for successful save
         Storage::shouldReceive('disk')
@@ -76,6 +102,10 @@ class AudioVideoSaverServiceLocalTest extends TestCase
                return true;
            })
            ->andReturn(true);
+
+        Storage::shouldReceive('size')
+            ->with($targetPath)
+            ->andReturn($fileBytes);
 
         // Assert service returns true on successful save
         $result = AudioVideoSaverService::saveFile(

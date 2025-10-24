@@ -312,17 +312,27 @@ class UploadWebControllerVideoS3Test extends TestCase
             $photos = Storage::disk('photo')->files($this->project->ref);
             $this->assertCount(1, $photos);
 
+            $audios = Storage::disk('audio')->files($this->project->ref);
+            $this->assertCount(1, $audios);
+
+            $videos = Storage::disk('video')->files($this->project->ref);
+            $this->assertCount(1, $videos);
+
+            $audioBytes = Storage::disk('audio')->size($audios[0]);
+            $videoBytes = Storage::disk('video')->size($videos[0]);
+
+
             //assert storage stats are updated
-            $totalBytes = $expectedBytes + $audioFileSize + $videoFileSize;
+            $totalBytes = $expectedBytes + $audioBytes + $videoBytes;
             $projectStats = ProjectStats::where('project_id', $this->project->id)->first();
             $this->assertEquals(3, $projectStats->total_files);
             $this->assertEquals(1, $projectStats->photo_files);
             $this->assertEquals($totalBytes, $projectStats->total_bytes);
             $this->assertEquals($expectedBytes, $projectStats->photo_bytes);
             $this->assertEquals(1, $projectStats->audio_files);
-            $this->assertEquals($audioFileSize, $projectStats->audio_bytes);
+            $this->assertEquals($audioBytes, $projectStats->audio_bytes);
             $this->assertEquals(1, $projectStats->video_files);
-            $this->assertEquals($videoFileSize, $projectStats->video_bytes);
+            $this->assertEquals($videoBytes, $projectStats->video_bytes);
 
             //delete temp folder
             Storage::disk('temp')->deleteDirectory('photo/'.$this->project->ref);

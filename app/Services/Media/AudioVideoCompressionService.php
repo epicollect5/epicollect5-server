@@ -3,7 +3,6 @@
 namespace ec5\Services\Media;
 
 use FFMpeg;
-use FFMpeg\Format\Audio\Aac;
 use FFMpeg\Format\Video\X264;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -115,7 +114,7 @@ class AudioVideoCompressionService
                 $diskInstance = Storage::disk($disk);
                 $originalSize = $diskInstance->size($path);
                 $compressedSize = $diskInstance->size($compressedPath);
-                $compressionRate = ($originalSize - $compressedSize) / $originalSize * 100;
+                $compressionRate = $originalSize > 0 ? ($originalSize - $compressedSize) / $originalSize * 100 : 0;
 
                 Log::info('Media compressed successfully', [
                     'path' => $path,
@@ -126,9 +125,13 @@ class AudioVideoCompressionService
                 ]);
 
                 // Replace original
-                Storage::disk($disk)->delete($path);
-                Storage::disk($disk)->move($compressedPath, $path);
-                $success = true;
+                if (Storage::disk($disk)->move($compressedPath, $path)) {
+                    $success = true;
+                } else {
+                    // Cleanup failed move
+                    Log::error('Failed to move compressed file', ['path' => $path]);
+                    Storage::disk($disk)->delete($compressedPath);
+                }
             } else {
                 // Cleanup failed compression
                 Storage::disk($disk)->delete($compressedPath);
