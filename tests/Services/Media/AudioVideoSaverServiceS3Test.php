@@ -8,7 +8,6 @@ use ec5\Models\Project\ProjectStats;
 use ec5\Services\Media\AudioVideoCompressionService;
 use ec5\Services\Media\AudioVideoSaverService;
 use Exception;
-use FFMpeg;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Mockery;
 use Ramsey\Uuid\Uuid;
@@ -120,26 +119,12 @@ class AudioVideoSaverServiceS3Test extends TestCase
         $filePath = 'temp/' . $fileName;
         $fileBytes = 21;
 
-        // --- Mock FFMpeg chain (prevent real compression) ---
-        FFMpeg::shouldReceive('fromDisk')
-            ->andReturnSelf();
-        FFMpeg::shouldReceive('open')
-            ->andReturnSelf();
-        FFMpeg::shouldReceive('addFilter')
-            ->andReturnSelf();
-        FFMpeg::shouldReceive('export')
-            ->andReturnSelf();
-        FFMpeg::shouldReceive('toDisk')
-            ->andReturnSelf();
-        FFMpeg::shouldReceive('inFormat')
-            ->andReturnSelf();
-        FFMpeg::shouldReceive('save')
-            ->andReturn(true);
-
         // --- Mock compression service (simulate success) ---
         $mockCompression = Mockery::mock(AudioVideoCompressionService::class);
+        // No FFMpeg chain needed as compression is mocked
         $mockCompression->shouldReceive('compress')
             ->once()
+            ->with($disk, $project->ref . '/' . $fileName, $disk)
             ->andReturn(true);
         $this->app->instance(AudioVideoCompressionService::class, $mockCompression);
 

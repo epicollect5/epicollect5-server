@@ -364,7 +364,7 @@ class UploadAppControllerAudioS3Test extends TestCase
             $filename = $entryPayloads[0]['data']['entry']['answers'][$inputRef]['answer'];
             $entryUuid = $entryPayloads[0]['data']['entry']['entry_uuid'];
 
-            //iOS audio files are always wav so replace original extension (m4a)
+            //iOS audio files are always wav so replace original extension (mp4)
             $filename = str_replace('.mp4', '.wav', $filename);
             $entryPayloads[0]['data']['entry']['answers'][$inputRef]['answer'] = $filename;
 
