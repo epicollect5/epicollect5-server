@@ -20,6 +20,7 @@ class ToProjectMobileLogoS3Macro extends ServiceProvider
     public function boot(): void
     {
         Response::macro('toProjectMobileLogoS3', function ($projectRef, $filename) {
+            $photoRendererService = app('ec5\Services\Media\PhotoRendererService');
             $disk = Storage::disk('project');
             $photoPlaceholderFilename = config('epicollect.media.generic_placeholder.filename');
             [$w, $h] = config('epicollect.media.project_mobile_logo');
@@ -29,26 +30,20 @@ class ToProjectMobileLogoS3Macro extends ServiceProvider
                     // Get original image path from S3
                     $path = $projectRef . '/' . $filename;
 
-                    if (!$disk->exists($path)) {
-                        throw new FileNotFoundException("Project mobile logo file not found on S3: $path");
+                    $resolvedPath = $photoRendererService->resolvePhotoPath($disk, $path);
+
+                    if (!$resolvedPath) {
+                        throw new FileNotFoundException("File not found on S3: $path");
                     }
 
-                    // Read image from S3 and create project mobile logo
-                    $stream = null;
-                    try {
-                        $stream = $disk->readStream($path);
-                        $image = Image::read($stream);
-                    } finally {
-                        if (is_resource($stream)) {
-                            fclose($stream);
-                        }
-                    }
+                    $imageContent = $photoRendererService->getAsJpeg($disk, $resolvedPath);
 
-                    $thumbnail = $image->cover(
-                        $w,
-                        $h
+                    $thumbnailData = $photoRendererService->createThumbnail(
+                        $imageContent,
+                        config('epicollect.media.project_mobile_logo')[0],
+                        config('epicollect.media.project_mobile_logo')[1],
+                        config('epicollect.media.quality.jpg')
                     );
-                    $thumbnailData = $thumbnail->toJpeg(70);
 
                     return response($thumbnailData, 200, [
                         'Content-Type' => config('epicollect.media.content_type.photo')
@@ -70,7 +65,7 @@ class ToProjectMobileLogoS3Macro extends ServiceProvider
                 $w,
                 $h
             );
-            $thumbnailData = $thumbnail->toJpeg(70);
+            $thumbnailData = $thumbnail->toJpeg(config('epicollect.media.quality.jpg'));
 
             return response($thumbnailData, 200, [
                 'Content-Type' => config('epicollect.media.content_type.photo')

@@ -4,7 +4,6 @@ namespace ec5\Services\Media;
 
 use ec5\DTO\ProjectDTO;
 use ec5\Libraries\Utilities\Common;
-use File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Storage;
@@ -12,6 +11,12 @@ use Throwable;
 
 class MediaService
 {
+    private PhotoRendererService $photoRendererService;
+
+    public function __construct(PhotoRendererService $photoRendererService)
+    {
+        $this->photoRendererService = $photoRendererService;
+    }
     /**
      * Serve media based on driver (local or s3)
      */
@@ -62,7 +67,7 @@ class MediaService
     public function serveLocalFile(string $type, string $format, string $projectRef, ?string $name)
     {
         if (!$name) {
-            return $this->placeholderOrFallback($type);
+            return $this->photoRendererService->placeholderOrFallback($type);
         }
 
         // Resolve the disk and check existence via Storage
@@ -70,11 +75,13 @@ class MediaService
         $disk       = Storage::disk($diskName);
         $pathInDisk = $projectRef . '/' . $name;
 
-        if (!$disk->exists($pathInDisk)) {
-            return $this->placeholderOrFallback($type, $name);
+        $resolvedPath = $this->photoRendererService->resolvePhotoPath($disk, $pathInDisk);
+
+        if (!$resolvedPath) {
+            return $this->photoRendererService->placeholderOrFallback($type, $name);
         }
 
-        $realFilepath = $disk->path($pathInDisk);
+        $realFilepath = $disk->path($resolvedPath);
 
         return $this->buildResponse($type, $realFilepath);
     }
@@ -116,14 +123,15 @@ class MediaService
     private function serveS3File(string $type, string $format, string $projectRef, ?string $name)
     {
         if (!$name) {
-            return $this->placeholderOrFallback($type);
+            return $this->photoRendererService->placeholderOrFallback($type);
         }
 
         $path = $projectRef . '/' . $name;
         $disk = Storage::disk(Common::resolveDisk($format));
+        $resolvedPath = $this->photoRendererService->resolvePhotoPath($disk, $path);
 
-        if (!$disk->exists($path)) {
-            return $this->placeholderOrFallback($type, $name);
+        if (!$resolvedPath) {
+            return $this->photoRendererService->placeholderOrFallback($type, $name);
         }
 
         switch ($format) {
@@ -136,13 +144,17 @@ class MediaService
             default:
                 // photo/avatar full response
                 sleep(config('epicollect.setup.api_sleep_time.media'));
-                $stream = $disk->readStream($path);
-                $imageContent = stream_get_contents($stream);
-                fclose($stream);
 
-                return response($imageContent, 200, [
-                    'Content-Type' => $this->resolveContentType($type),
-                ]);
+                // Convert to JPEG if needed
+                $imageContent = $this->photoRendererService->getAsJpeg(
+                    $disk,
+                    $resolvedPath,
+                    config('epicollect.media.quality.jpg', 90)
+                );
+
+                return response($imageContent, 200, array_merge(
+                    ['Content-Type' => $this->resolveContentType($type)]
+                ));
         }
     }
 
@@ -178,31 +190,4 @@ class MediaService
         };
     }
 
-    private function placeholderOrFallback(string $type, ?string $name = null)
-    {
-        $genericPlaceholderFilename   = config('epicollect.media.generic_placeholder.filename');
-        $photoNotSyncedFilename     = config('epicollect.media.photo_not_synced_placeholder.filename');
-        $projectAvatarFilename      = config('epicollect.media.project_avatar.filename');
-        $contentType                = $this->resolveContentType($type);
-
-        if ($type === config('epicollect.strings.inputs_type.photo')) {
-            // If no name provided → always return the generic placeholder
-            if (is_null($name)) {
-                $file = Storage::disk('public')->get($genericPlaceholderFilename);
-            } else {
-                // If it's NOT the project avatar, return "not synced" placeholder
-                if ($name !== $projectAvatarFilename) {
-                    $file = Storage::disk('public')->get($photoNotSyncedFilename);
-                } else {
-                    // Special case: project avatar → normal placeholder
-                    $file = Storage::disk('public')->get($genericPlaceholderFilename);
-                }
-            }
-
-            return Response::make($file, 200, ['Content-Type' => $contentType]);
-        }
-
-        // Non-photo formats (audio/video) just return API 404
-        return Response::apiErrorCode(404, ['media-service' => ['ec5_69']]);
-    }
 }

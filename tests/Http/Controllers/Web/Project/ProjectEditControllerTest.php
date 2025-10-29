@@ -421,7 +421,7 @@ class ProjectEditControllerTest extends TestCase
         $response[0]->assertSessionHas('message', 'ec5_123');
 
         // Assert that the image was stored in the correct directories
-        Storage::disk('project')->assertExists($this->project->ref . '/logo.jpg');
+        Storage::disk('project')->assertExists($this->project->ref . '/'.config('epicollect.media.project_avatar.filename'));
 
         //assert small desc and description were updated
         $projectAfterUpdate = Project::find($this->project->id);

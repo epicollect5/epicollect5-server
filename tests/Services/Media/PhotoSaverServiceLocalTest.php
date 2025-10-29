@@ -45,12 +45,17 @@ class PhotoSaverServiceLocalTest extends TestCase
             'form_counts' => json_encode([]),
             'branch_counts' => json_encode([])
         ]);
-        $fileName = Uuid::uuid4()->toString(). '_' . time() . '.mp4';
+        $fileName = Uuid::uuid4()->toString(). '_' . time() . '.jpg';
         $disk = 'photo';
         $fileSize = 1024 * 768 * 3; // Approx size for a 1024x768 image
+        $webpFileName = pathinfo($fileName, PATHINFO_FILENAME) . '.webp';
         // // Create a fake uploaded file
         $uploadedFile = File::fake() ->image($fileName, 1024, 768) ->size($fileSize / 1024); // size() expects KB
-        $encodedImage = PhotoSaverService::processImage($uploadedFile->getPathname(), [1024, 768], 70);
+        $encodedImage = PhotoSaverService::processImage(
+            $uploadedFile->getPathname(),
+            [1024, 768],
+            config('epicollect.media.quality.webp')
+        );
         $compressedSize = strlen($encodedImage);
 
         // Mock Storage facade for successful save
@@ -70,7 +75,7 @@ class PhotoSaverServiceLocalTest extends TestCase
             ->andReturn(true);
 
         Storage::shouldReceive('put')
-            ->with($project->ref . '/' . $fileName, Mockery::any(), Mockery::any())
+            ->with($project->ref . '/' . $webpFileName, Mockery::any(), Mockery::any())
             ->once()
             ->andReturn(true);
 

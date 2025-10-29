@@ -11,7 +11,8 @@ return [
     'project_thumb' => [512, 512],
     'project_mobile_logo' => [128, 128],
     'project_avatar' => [
-        'filename' => 'logo.jpg',
+        'filename' => 'logo.webp',
+        'legacy_filename' => 'logo.jpg',
         'disk' => 'project',
         'width' => [
             'thumb' => 512,
@@ -75,5 +76,9 @@ return [
         'project_mobile_logo' => 'project',
         'audio' => 'audio',
         'video' => 'video'
+    ],
+    'quality' => [
+        'webp' => (int) env('PHOTO_QUALITY_WEBP', 80),
+        'jpg' => (int) env('PHOTO_QUALITY_JPG', 70)
     ]
 ];

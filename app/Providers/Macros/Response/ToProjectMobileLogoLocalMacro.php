@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\ServiceProvider;
 use Intervention\Image\Laravel\Facades\Image;
 use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
-use File;
 use Throwable;
 
 class ToProjectMobileLogoLocalMacro extends ServiceProvider
@@ -21,6 +20,7 @@ class ToProjectMobileLogoLocalMacro extends ServiceProvider
     public function boot(): void
     {
         Response::macro('toProjectMobileLogoLocal', function ($projectRef, $filename) {
+            $photoRendererService = app('ec5\Services\Media\PhotoRendererService');
             $photoPlaceholderFilename = config('epicollect.media.generic_placeholder.filename');
 
             if (!empty($filename)) {
@@ -29,22 +29,27 @@ class ToProjectMobileLogoLocalMacro extends ServiceProvider
                     $storagePathPrefix = config("filesystems.disks.project.root").'/';
                     $originalFilepath = $storagePathPrefix . $projectRef . '/' . $filename;
 
-                    // Check if original file exists
-                    if (!File::exists($originalFilepath)) {
-                        throw new FileNotFoundException("Original file does not exist at path: " . $originalFilepath);
+                    $resolvedPath = $photoRendererService->resolvePhotoPath(Storage::disk('project'), $projectRef . '/' . $filename);
+
+                    if (!$resolvedPath) {
+                        throw new FileNotFoundException("File not found on S3: $originalFilepath");
                     }
 
-                    // Create mobile logo from original
-                    $image = Image::read($originalFilepath);
-                    $thumbnail = $image->cover(
-                        config('epicollect.media.project_mobile_logo')[0],
-                        config('epicollect.media.project_mobile_logo')[1]
-                    );
-                    $thumbnailData = $thumbnail->toJpeg(70);
+                    $imageContent = $photoRendererService->getAsJpeg(Storage::disk('project'), $resolvedPath);
 
-                    return response($thumbnailData, 200, [
-                        'Content-Type' => config('epicollect.media.content_type.photo')
-                    ]);
+                    // Create 100x100 thumbnail from original
+                    $thumbnailData = $photoRendererService->createThumbnail(
+                        $imageContent,
+                        config('epicollect.media.project_mobile_logo')[0],
+                        config('epicollect.media.project_mobile_logo')[1],
+                        config('epicollect.media.quality.jpg')
+                    );
+
+                    return response(
+                        $thumbnailData,
+                        200,
+                        ['Content-Type' => config('epicollect.media.content_type.photo')]
+                    );
 
                 } catch (FileNotFoundException $e) {
                     Log::error('Cannot find project mobile logo', ['exception' => $e]);
@@ -61,7 +66,7 @@ class ToProjectMobileLogoLocalMacro extends ServiceProvider
                 config('epicollect.media.project_mobile_logo')[0],
                 config('epicollect.media.project_mobile_logo')[1]
             );
-            $resizedData = $resizedPlaceholder->toJpeg(70);
+            $resizedData = $resizedPlaceholder->toJpeg(config('epicollect.media.quality.jpg'));
 
             return response($resizedData, 200, [
                 'Content-Type' => config('epicollect.media.content_type.photo')
