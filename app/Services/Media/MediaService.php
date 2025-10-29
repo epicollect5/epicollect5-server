@@ -11,12 +11,6 @@ use Throwable;
 
 class MediaService
 {
-    private PhotoRendererService $photoRendererService;
-
-    public function __construct(PhotoRendererService $photoRendererService)
-    {
-        $this->photoRendererService = $photoRendererService;
-    }
     /**
      * Serve media based on driver (local or s3)
      */
@@ -66,41 +60,26 @@ class MediaService
      */
     public function serveLocalFile(string $type, string $format, string $projectRef, ?string $name)
     {
-        if (!$name) {
-            return $this->photoRendererService->placeholderOrFallback($type);
-        }
+        $diskName = Common::resolveDisk($format);
 
-        // Resolve the disk and check existence via Storage
-        $diskName   = Common::resolveDisk($format);
-        $disk       = Storage::disk($diskName);
-        $pathInDisk = $projectRef . '/' . $name;
+        return match ($format) {
+            config('epicollect.strings.media_formats.entry_original') =>
+            Response::toEntryOriginalLocal($projectRef, $name, $type),
 
-        $resolvedPath = $this->photoRendererService->resolvePhotoPath($disk, $pathInDisk);
+            config('epicollect.strings.media_formats.project_thumb') =>
+            Response::toProjectThumbLocal($projectRef, $name),
 
-        if (!$resolvedPath) {
-            return $this->photoRendererService->placeholderOrFallback($type, $name);
-        }
-
-        // Photos: always render as JPEG (handles WebP source)
-        if ($type === config('epicollect.strings.inputs_type.photo')) {
-            sleep(config('epicollect.setup.api_sleep_time.media'));
-            $imageContent = $this->photoRendererService->getAsJpeg(
-                $disk,
-                $resolvedPath,
-                config('epicollect.media.quality.jpg')
-            );
-            return response($imageContent, 200, ['Content-Type' => $this->resolveContentType($type)]);
-        }
-
-        // Non-photo: stream local file
-        $realFilepath = $disk->path($resolvedPath);
-        return Response::toMediaStreamLocal(request(), $realFilepath, $type);
+            config('epicollect.strings.inputs_type.audio'),
+            config('epicollect.strings.inputs_type.video') =>
+            Response::toMediaStreamLocal(
+                request(),
+                Storage::disk($diskName)->path($projectRef . '/' . $name),
+                $type
+            ),
+        };
     }
 
 
-    /**
-     * Serve S3 media
-     */
     private function serveS3(array $params, object $project)
     {
         $format = $params['format'];
@@ -109,79 +88,44 @@ class MediaService
 
         try {
             return match ($format) {
-                // real files
-                'entry_original', 'audio', 'video', 'project_thumb'
-                => $this->serveS3File($type, $format, $project->ref, $name),
+                // audio
+                config('epicollect.strings.inputs_type.audio') =>
+                Response::toMediaStreamS3(
+                    request(),
+                    config("filesystems.disks.audio.root") . '/' . $project->ref . '/' . $name,
+                    $type
+                ),
 
-                // generated
-                'entry_thumb'
-                => Response::toEntryThumbS3($project->ref, $name),
+                // video
+                config('epicollect.strings.inputs_type.video') =>
+                Response::toMediaStreamS3(
+                    request(),
+                    config("filesystems.disks.video.root") . '/' . $project->ref . '/' . $name,
+                    $type
+                ),
 
-                'project_mobile_logo'
-                => Response::toProjectMobileLogoS3($project->ref, $name),
+                // original photo
+                config('epicollect.strings.media_formats.entry_original') =>
+                Response::toEntryOriginalS3($project->ref, $name),
 
-                default => Response::apiErrorCode(400, ['media-service' => ['ec5_103']]),
+                // generated thumbnails
+                config('epicollect.strings.media_formats.entry_thumb') =>
+                Response::toEntryThumbS3($project->ref, $name),
+
+                //project avatar
+                config('epicollect.strings.media_formats.project_thumb') =>
+                Response::toProjectThumbS3($project->ref, $name),
+
+                //project avatar for mobile app
+                config('epicollect.strings.media_formats.project_mobile_logo') =>
+                Response::toProjectMobileLogoS3($project->ref, $name),
+
+                // unknown formats
+                default => Response::apiErrorCode(400, ['media-service' => ['ec5_103']])
             };
         } catch (Throwable $e) {
             Log::error('Cannot serve S3 media', ['exception' => $e]);
             return Response::apiErrorCode(400, ['media-service' => ['ec5_103']]);
         }
     }
-
-    /**
-     * Serve a S3 real file
-     */
-    private function serveS3File(string $type, string $format, string $projectRef, ?string $name)
-    {
-        if (!$name) {
-            return $this->photoRendererService->placeholderOrFallback($type);
-        }
-
-        $path = $projectRef . '/' . $name;
-        $disk = Storage::disk(Common::resolveDisk($format));
-        $resolvedPath = $this->photoRendererService->resolvePhotoPath($disk, $path);
-
-        if (!$resolvedPath) {
-            return $this->photoRendererService->placeholderOrFallback($type, $name);
-        }
-
-        switch ($format) {
-            case config('epicollect.strings.inputs_type.audio'):
-                $diskRoot = config("filesystems.disks.audio.root").'/';
-                return Response::toMediaStreamS3(request(), $diskRoot.$path, $type);
-            case config('epicollect.strings.inputs_type.video'):
-                $diskRoot = config("filesystems.disks.video.root").'/';
-                return Response::toMediaStreamS3(request(), $diskRoot.$path, $type);
-            default:
-                // photo/avatar full response
-                sleep(config('epicollect.setup.api_sleep_time.media'));
-
-                // Convert to JPEG if needed
-                $imageContent = $this->photoRendererService->getAsJpeg(
-                    $disk,
-                    $resolvedPath,
-                    config('epicollect.media.quality.jpg', 90)
-                );
-
-                return response($imageContent, 200, array_merge(
-                    ['Content-Type' => $this->resolveContentType($type)]
-                ));
-        }
-    }
-
-    /**
-     * Resolve content type from type
-     */
-    private function resolveContentType(string $type): string
-    {
-        return match ($type) {
-            config('epicollect.strings.inputs_type.audio')
-            => config('epicollect.media.content_type.audio'),
-            config('epicollect.strings.inputs_type.video')
-            => config('epicollect.media.content_type.video'),
-            default
-            => config('epicollect.media.content_type.photo'),
-        };
-    }
-
 }

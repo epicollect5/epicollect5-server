@@ -94,7 +94,7 @@ class PhotoRendererService
 
         return (string) $thumbnailData;
     }
-    public function placeholderOrFallback(string $type, ?string $name = null): Response
+    public function placeholderOrFallback(?string $name = null): mixed
     {
         $genericPlaceholderFilename   = config('epicollect.media.generic_placeholder.filename');
         $photoNotSyncedFilename     = config('epicollect.media.photo_not_synced_placeholder.filename');
@@ -102,22 +102,19 @@ class PhotoRendererService
         $legacyProjectAvatarFilename      = config('epicollect.media.project_avatar.legacy_filename');
         $contentType                = config('epicollect.media.content_type.photo');
 
-        if ($type === config('epicollect.strings.inputs_type.photo')) {
-            // If no name provided → always return the generic placeholder
-            if (is_null($name)) {
-                $file = Storage::disk('public')->get($genericPlaceholderFilename);
+        // If no name provided → always return the generic placeholder
+        if (is_null($name)) {
+            $file = Storage::disk('public')->get($genericPlaceholderFilename);
+        } else {
+            // If it's NOT the project avatar, return "not synced" placeholder
+            if ($name !== $projectAvatarFilename && $name !== $legacyProjectAvatarFilename) {
+                $file = Storage::disk('public')->get($photoNotSyncedFilename);
             } else {
-                // If it's NOT the project avatar, return "not synced" placeholder
-                if ($name !== $projectAvatarFilename && $name !== $legacyProjectAvatarFilename) {
-                    $file = Storage::disk('public')->get($photoNotSyncedFilename);
-                } else {
-                    // Special case: project avatar → normal placeholder
-                    $file = Storage::disk('public')->get($genericPlaceholderFilename);
-                }
+                // Special case: project avatar → normal placeholder
+                $file = Storage::disk('public')->get($genericPlaceholderFilename);
             }
-
-            return Response::make($file, 200, ['Content-Type' => $contentType]);
         }
-        return Response::apiErrorCode(404, ['media-service' => ['ec5_69']]);
+
+        return Response::make($file, 200, ['Content-Type' => $contentType]);
     }
 }

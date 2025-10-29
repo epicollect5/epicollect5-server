@@ -22,9 +22,7 @@ class MediaServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->mediaService = new MediaService(
-            app('ec5\Services\Media\PhotoRendererService')
-        );
+        $this->mediaService = new MediaService();
 
         $this->project = new ProjectDTO(
             new ProjectDefinitionDTO(),

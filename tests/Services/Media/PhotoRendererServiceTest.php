@@ -217,7 +217,6 @@ class PhotoRendererServiceTest extends TestCase
     public function test_it_returns_generic_placeholder_when_no_name_provided()
     {
         $response = $this->service->placeholderOrFallback(
-            config('epicollect.strings.inputs_type.photo'),
             null
         );
 
@@ -235,7 +234,6 @@ class PhotoRendererServiceTest extends TestCase
         $photoName = 'some-photo-' . Str::random(8) . '.jpg';
 
         $response = $this->service->placeholderOrFallback(
-            config('epicollect.strings.inputs_type.photo'),
             $photoName
         );
 
@@ -249,7 +247,6 @@ class PhotoRendererServiceTest extends TestCase
         $avatarFilename = config('epicollect.media.project_avatar.filename');
 
         $response = $this->service->placeholderOrFallback(
-            config('epicollect.strings.inputs_type.photo'),
             $avatarFilename
         );
 
@@ -262,7 +259,6 @@ class PhotoRendererServiceTest extends TestCase
         $legacyAvatarFilename = config('epicollect.media.project_avatar.legacy_filename');
 
         $response = $this->service->placeholderOrFallback(
-            config('epicollect.strings.inputs_type.photo'),
             $legacyAvatarFilename
         );
 
@@ -270,12 +266,6 @@ class PhotoRendererServiceTest extends TestCase
         $this->assertEquals(200, $response->status());
     }
 
-    public function test_it_returns_404_error_for_non_photo_types()
-    {
-        $response = $this->service->placeholderOrFallback('audio', 'some-file.mp3');
-
-        $this->assertEquals(404, $response->status());
-    }
 
     public function test_it_handles_nested_directory_paths_correctly()
     {
