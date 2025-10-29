@@ -50,11 +50,17 @@ class ToEntryThumbS3Macro extends ServiceProvider
 
                 } catch (FileNotFoundException) {
                     // Return appropriate placeholder
-                    if ($filename !== config('epicollect.media.project_avatar.filename')) {
-                        $file = Storage::disk('public')->get($photoNotSyncedFilename);
-                    } else {
-                        $file = Storage::disk('public')->get($photoPlaceholderFilename);
-                    }
+                    $isAvatar = in_array(
+                        $filename,
+                        [
+                                    config('epicollect.media.project_avatar.filename'),
+                                    config('epicollect.media.project_avatar.legacy_filename')
+                                ],
+                        true
+                    );
+                    $file = Storage::disk('public')->get(
+                        $isAvatar ? $photoPlaceholderFilename : $photoNotSyncedFilename
+                    );
                     $response = Response::make($file);
                     $response->header('Content-Type', config('epicollect.media.content_type.photo'));
                     return $response;

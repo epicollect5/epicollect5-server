@@ -81,9 +81,20 @@ class MediaService
             return $this->photoRendererService->placeholderOrFallback($type, $name);
         }
 
-        $realFilepath = $disk->path($resolvedPath);
+        // Photos: always render as JPEG (handles WebP source)
+        if ($type === config('epicollect.strings.inputs_type.photo')) {
+            sleep(config('epicollect.setup.api_sleep_time.media'));
+            $imageContent = $this->photoRendererService->getAsJpeg(
+                $disk,
+                $resolvedPath,
+                config('epicollect.media.quality.jpg')
+            );
+            return response($imageContent, 200, ['Content-Type' => $this->resolveContentType($type)]);
+        }
 
-        return $this->buildResponse($type, $realFilepath);
+        // Non-photo: stream local file
+        $realFilepath = $disk->path($resolvedPath);
+        return Response::toMediaStreamLocal(request(), $realFilepath, $type);
     }
 
 
@@ -156,23 +167,6 @@ class MediaService
                     ['Content-Type' => $this->resolveContentType($type)]
                 ));
         }
-    }
-
-    /**
-     * Build response for local file
-     */
-    private function buildResponse(string $type, string $realFilepath)
-    {
-        $contentType = $this->resolveContentType($type);
-
-        if ($type !== config('epicollect.strings.inputs_type.photo')) {
-            return Response::toMediaStreamLocal(request(), $realFilepath, $type);
-        }
-
-        sleep(config('epicollect.setup.api_sleep_time.media'));
-        return Response::make(file_get_contents($realFilepath), 200, [
-            'Content-Type' => $contentType
-        ]);
     }
 
     /**

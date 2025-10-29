@@ -58,6 +58,27 @@ class PhotoRendererServiceTest extends TestCase
         $this->assertTrue($disk->exists($path));
     }
 
+    public function test_it_resolves_jpeg_path_when_jpeg_does_not_exist_but_webp_does()
+    {
+        $disk = Storage::disk('photo');
+        $jpegPath = $this->testProjectRef . '/' . $this->testFilename . '.jpg';
+        $webpPath = $this->testProjectRef . '/' . $this->testFilename . '.webp';
+
+        // Create only WebP file
+        $fakeImage = UploadedFile::fake()->image('test.jpg', 1000, 1000);
+
+        // Convert to WebP and store
+        $img = Image::read($fakeImage->getRealPath());
+        $webpContent = $img->toWebp(config('epicollect.media.quality.webp'));
+        $disk->put($webpPath, (string) $webpContent);
+
+        $result = $this->service->resolvePhotoPath($disk, $jpegPath);
+
+        $this->assertEquals($webpPath, $result);
+        $this->assertFalse($disk->exists($jpegPath));
+        $this->assertTrue($disk->exists($webpPath));
+    }
+
     public function test_it_resolves_webp_path_when_jpeg_does_not_exist_but_webp_does()
     {
         $disk = Storage::disk('photo');
@@ -65,14 +86,14 @@ class PhotoRendererServiceTest extends TestCase
         $webpPath = $this->testProjectRef . '/' . $this->testFilename . '.webp';
 
         // Create only WebP file
-        $fakeImage = UploadedFile::fake()->image('test.jpg', 100, 100);
+        $fakeImage = UploadedFile::fake()->image('test.jpg', 1000, 1000);
 
         // Convert to WebP and store
         $img = Image::read($fakeImage->getRealPath());
-        $webpContent = $img->toWebp(80);
+        $webpContent = $img->toWebp(config('epicollect.media.quality.webp'));
         $disk->put($webpPath, (string) $webpContent);
 
-        $result = $this->service->resolvePhotoPath($disk, $jpegPath);
+        $result = $this->service->resolvePhotoPath($disk, $webpPath);
 
         $this->assertEquals($webpPath, $result);
         $this->assertFalse($disk->exists($jpegPath));

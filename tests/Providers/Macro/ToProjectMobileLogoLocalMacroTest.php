@@ -51,7 +51,7 @@ class ToProjectMobileLogoLocalMacroTest extends TestCase
             ->andReturn($fakeDisk);
 
 
-        $response = Response::toProjectMobileLogoS3($projectRef, $filename);
+        $response = Response::toProjectMobileLogoLocal($projectRef, $filename);
 
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals('image/jpeg', $response->headers->get('Content-Type'));
@@ -95,7 +95,7 @@ class ToProjectMobileLogoLocalMacroTest extends TestCase
             ->andReturn($fakeDisk);
 
 
-        $response = Response::toProjectMobileLogoS3($projectRef, $filename);
+        $response = Response::toProjectMobileLogoLocal($projectRef, $filename);
 
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals('image/jpeg', $response->headers->get('Content-Type'));

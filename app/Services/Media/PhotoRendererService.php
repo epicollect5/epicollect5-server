@@ -94,7 +94,7 @@ class PhotoRendererService
 
         return (string) $thumbnailData;
     }
-    public function placeholderOrFallback(string $type, ?string $name = null)
+    public function placeholderOrFallback(string $type, ?string $name = null): Response
     {
         $genericPlaceholderFilename   = config('epicollect.media.generic_placeholder.filename');
         $photoNotSyncedFilename     = config('epicollect.media.photo_not_synced_placeholder.filename');

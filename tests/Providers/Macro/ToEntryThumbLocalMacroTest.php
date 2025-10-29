@@ -52,7 +52,10 @@ class ToEntryThumbLocalMacroTest extends TestCase
         $this->assertInstanceOf(HttpResponse::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals($thumbnailBytes, $response->getContent());
-        $this->assertEquals('image/jpeg', $response->headers->get('Content-Type'));
+        $this->assertEquals(
+            config('epicollect.media.content_type.photo'),
+            $response->headers->get('Content-Type')
+        );
     }
 
     public function test_returns_placeholder_when_file_not_found()
@@ -92,7 +95,7 @@ class ToEntryThumbLocalMacroTest extends TestCase
         $this->assertInstanceOf(HttpResponse::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals($placeholderBytes, $response->getContent());
-        $this->assertEquals('image/jpeg', $response->headers->get('Content-Type'));
+        $this->assertEquals(config('epicollect.media.content_type.photo'), $response->headers->get('Content-Type'));
     }
 
     public function test_returns_generic_placeholder_when_filename_empty_or_avatar()
@@ -119,11 +122,11 @@ class ToEntryThumbLocalMacroTest extends TestCase
 
         // Assert
         $this->assertEquals(200, $responseEmpty->getStatusCode());
-        $this->assertEquals('image/jpeg', $responseEmpty->headers->get('Content-Type'));
+        $this->assertEquals(config('epicollect.media.content_type.photo'), $responseEmpty->headers->get('Content-Type'));
         $this->assertSame($fileContent, $responseEmpty->getContent());
 
         $this->assertEquals(200, $responseAvatar->getStatusCode());
-        $this->assertEquals('image/jpeg', $responseAvatar->headers->get('Content-Type'));
+        $this->assertEquals(config('epicollect.media.content_type.photo'), $responseAvatar->headers->get('Content-Type'));
         $this->assertSame($fileContent, $responseAvatar->getContent());
     }
 }
