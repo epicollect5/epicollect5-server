@@ -5,6 +5,8 @@ namespace ec5\Providers\Macros\Response;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\ServiceProvider;
+use Log;
+use Throwable;
 
 class ToEntryOriginalS3Macro extends ServiceProvider
 {
@@ -21,23 +23,28 @@ class ToEntryOriginalS3Macro extends ServiceProvider
                 return $photoRendererService->placeholderOrFallback(null);
             }
 
-            $path = $projectRef . '/' . $filename;
+            try {
+                $path = $projectRef . '/' . $filename;
 
-            $resolvedPath = $photoRendererService->resolvePhotoPath($disk, $path);
-            if (!$resolvedPath) {
-                return $photoRendererService->placeholderOrFallback($filename);
+                $resolvedPath = $photoRendererService->resolvePhotoPath($disk, $path);
+                if (!$resolvedPath) {
+                    return $photoRendererService->placeholderOrFallback($filename);
+                }
+
+                $imageContent = $photoRendererService->getAsJpeg(
+                    $disk,
+                    $resolvedPath,
+                    config('epicollect.media.quality.jpg')
+                );
+
+                sleep(config('epicollect.setup.api_sleep_time.media'));
+                return response($imageContent, 200, [
+                    'Content-Type' => config('epicollect.media.content_type.photo')
+                ]);
+            } catch (Throwable $e) {
+                Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
+                return $photoRendererService->placeholderOrFallback(null);
             }
-
-            $imageContent = $photoRendererService->getAsJpeg(
-                $disk,
-                $resolvedPath,
-                config('epicollect.media.quality.jpg')
-            );
-
-            sleep(config('epicollect.setup.api_sleep_time.media'));
-            return response($imageContent, 200, [
-                'Content-Type' => config('epicollect.media.content_type.photo')
-            ]);
         });
     }
 }

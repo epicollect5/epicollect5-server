@@ -8,19 +8,20 @@ use Illuminate\Http\Response;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Intervention\Image\Encoders\WebpEncoder;
 use Intervention\Image\Laravel\Facades\Image;
 use Tests\TestCase;
 
 class PhotoRendererServiceTest extends TestCase
 {
-    protected PhotoRendererService $service;
+    protected PhotoRendererService $photoRendererService;
     protected string $testProjectRef;
     protected string $testFilename;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new PhotoRendererService();
+        $this->photoRendererService = app(PhotoRendererService::class);
         $this->testProjectRef = Generators::projectRef();
         //file name without extension
         $this->testFilename = Str::uuid() . '_' . time();
@@ -52,7 +53,7 @@ class PhotoRendererServiceTest extends TestCase
         $fakeImage = UploadedFile::fake()->image('test.jpg', 100, 100);
         $disk->put($path, $fakeImage->getContent());
 
-        $result = $this->service->resolvePhotoPath($disk, $path);
+        $result = $this->photoRendererService->resolvePhotoPath($disk, $path);
 
         $this->assertEquals($path, $result);
         $this->assertTrue($disk->exists($path));
@@ -72,7 +73,7 @@ class PhotoRendererServiceTest extends TestCase
         $webpContent = $img->toWebp(config('epicollect.media.quality.webp'));
         $disk->put($webpPath, (string) $webpContent);
 
-        $result = $this->service->resolvePhotoPath($disk, $jpegPath);
+        $result = $this->photoRendererService->resolvePhotoPath($disk, $jpegPath);
 
         $this->assertEquals($webpPath, $result);
         $this->assertFalse($disk->exists($jpegPath));
@@ -93,7 +94,7 @@ class PhotoRendererServiceTest extends TestCase
         $webpContent = $img->toWebp(config('epicollect.media.quality.webp'));
         $disk->put($webpPath, (string) $webpContent);
 
-        $result = $this->service->resolvePhotoPath($disk, $webpPath);
+        $result = $this->photoRendererService->resolvePhotoPath($disk, $webpPath);
 
         $this->assertEquals($webpPath, $result);
         $this->assertFalse($disk->exists($jpegPath));
@@ -105,7 +106,7 @@ class PhotoRendererServiceTest extends TestCase
         $disk = Storage::disk('photo');
         $path = $this->testProjectRef . '/' . $this->testFilename . '.jpg';
 
-        $result = $this->service->resolvePhotoPath($disk, $path);
+        $result = $this->photoRendererService->resolvePhotoPath($disk, $path);
 
         $this->assertNull($result);
     }
@@ -119,7 +120,7 @@ class PhotoRendererServiceTest extends TestCase
         $fakeImage = UploadedFile::fake()->image('avatar.jpg', 100, 100);
         $disk->put($path, $fakeImage->getContent());
 
-        $result = $this->service->resolvePhotoPath($disk, $path);
+        $result = $this->photoRendererService->resolvePhotoPath($disk, $path);
 
         $this->assertEquals($path, $result);
         $this->assertTrue($disk->exists($path));
@@ -135,7 +136,7 @@ class PhotoRendererServiceTest extends TestCase
         $originalContent = $fakeImage->getContent();
         $disk->put($path, $originalContent);
 
-        $result = $this->service->getAsJpeg($disk, $path, 90);
+        $result = $this->photoRendererService->getAsJpeg($disk, $path, 90);
 
         $this->assertNotEmpty($result);
         // Content should be JPEG binary data
@@ -153,7 +154,7 @@ class PhotoRendererServiceTest extends TestCase
         $webpContent = $img->toWebp(80);
         $disk->put($webpPath, (string) $webpContent);
 
-        $result = $this->service->getAsJpeg($disk, $webpPath, 90);
+        $result = $this->photoRendererService->getAsJpeg($disk, $webpPath, 90);
 
         $this->assertNotEmpty($result);
         // Result should be JPEG binary data
@@ -177,10 +178,10 @@ class PhotoRendererServiceTest extends TestCase
         $disk->put($webpPath, (string) $webpContent);
 
         // Convert with high quality
-        $highQualityResult = $this->service->getAsJpeg($disk, $webpPath, 95);
+        $highQualityResult = $this->photoRendererService->getAsJpeg($disk, $webpPath, 95);
 
         // Convert with low quality
-        $lowQualityResult = $this->service->getAsJpeg($disk, $webpPath, 50);
+        $lowQualityResult = $this->photoRendererService->getAsJpeg($disk, $webpPath, 50);
 
         // High quality should produce larger file
         $this->assertGreaterThan(strlen($lowQualityResult), strlen($highQualityResult));
@@ -201,7 +202,7 @@ class PhotoRendererServiceTest extends TestCase
         // Create thumbnail
         $width = 100;
         $height = 100;
-        $thumbnailData = $this->service->createThumbnail($imageContent, $width, $height, 70);
+        $thumbnailData = $this->photoRendererService->createThumbnail($imageContent, $width, $height, 70);
 
         $this->assertNotEmpty($thumbnailData);
 
@@ -216,7 +217,7 @@ class PhotoRendererServiceTest extends TestCase
 
     public function test_it_returns_generic_placeholder_when_no_name_provided()
     {
-        $response = $this->service->placeholderOrFallback(
+        $response = $this->photoRendererService->placeholderOrFallback(
             null
         );
 
@@ -233,7 +234,7 @@ class PhotoRendererServiceTest extends TestCase
     {
         $photoName = 'some-photo-' . Str::random(8) . '.jpg';
 
-        $response = $this->service->placeholderOrFallback(
+        $response = $this->photoRendererService->placeholderOrFallback(
             $photoName
         );
 
@@ -246,7 +247,7 @@ class PhotoRendererServiceTest extends TestCase
     {
         $avatarFilename = config('epicollect.media.project_avatar.filename');
 
-        $response = $this->service->placeholderOrFallback(
+        $response = $this->photoRendererService->placeholderOrFallback(
             $avatarFilename
         );
 
@@ -258,7 +259,7 @@ class PhotoRendererServiceTest extends TestCase
     {
         $legacyAvatarFilename = config('epicollect.media.project_avatar.legacy_filename');
 
-        $response = $this->service->placeholderOrFallback(
+        $response = $this->photoRendererService->placeholderOrFallback(
             $legacyAvatarFilename
         );
 
@@ -279,7 +280,7 @@ class PhotoRendererServiceTest extends TestCase
         $webpContent = $img->toWebp(80);
         $disk->put($webpPath, (string) $webpContent);
 
-        $result = $this->service->resolvePhotoPath($disk, $nestedPath);
+        $result = $this->photoRendererService->resolvePhotoPath($disk, $nestedPath);
 
         $this->assertEquals($webpPath, $result);
         $this->assertTrue($disk->exists($webpPath));
@@ -294,7 +295,7 @@ class PhotoRendererServiceTest extends TestCase
         $fakeImage = UploadedFile::fake()->image('test.jpg', 100, 100);
         $disk->put($path, $fakeImage->getContent());
 
-        $result = $this->service->getAsJpeg($disk, $path, 90);
+        $result = $this->photoRendererService->getAsJpeg($disk, $path, 90);
 
         $this->assertNotEmpty($result);
         $this->assertStringStartsWith("\xFF\xD8\xFF", $result);
@@ -303,24 +304,68 @@ class PhotoRendererServiceTest extends TestCase
     public function test_it_preserves_exif_metadata_during_webp_to_jpeg_conversion()
     {
         $disk = Storage::disk('photo');
+        $jpegPath = $this->testProjectRef . '/' . $this->testFilename . '.jpg';
         $webpPath = $this->testProjectRef . '/' . $this->testFilename . '.webp';
 
-        // Create an image with EXIF data
-        $fakeImage = UploadedFile::fake()->image('test.jpg', 300, 300);
+        // Use a real image with EXIF (shipped with many test bundles)
+        // Or provide a fixture manually in tests/Fixtures/exif-sample.jpg
+        $fixturePath = base_path('tests/Files/photo-with-exif.jpeg');
+        if (!file_exists($fixturePath)) {
+            $this->markTestSkipped('Missing EXIF fixture image');
+        }
 
-        // Add EXIF data and convert to WebP
-        $img = Image::read($fakeImage->getRealPath());
-        $webpContent = $img->toWebp(80);
+        // Copy to disk
+        $disk->put($jpegPath, file_get_contents($fixturePath));
+
+        // Read and check EXIF from the original
+        $img = Image::read($disk->get($jpegPath));
+        $originalExif = $img->exif()->toArray();
+
+        if (empty($originalExif)) {
+            $this->markTestSkipped('Fixture image has no EXIF data.');
+        }
+
+        // Convert to WebP (keeping EXIF)
+        $webpEncoder = new WebpEncoder(quality: config('epicollect.media.quality.webp'), strip: false);
+        $webpContent = $img->encode($webpEncoder);
         $disk->put($webpPath, (string) $webpContent);
 
-        // Convert to JPEG (should preserve EXIF with strip: false)
-        $jpegContent = $this->service->getAsJpeg($disk, $webpPath, 90);
+        // Convert WebP back to JPEG using your service
+        $jpegContent = $this->photoRendererService->getAsJpeg($disk, $webpPath, config('epicollect.media.quality.jpg'));
 
         $this->assertNotEmpty($jpegContent);
+        $this->assertStringStartsWith("\xFF\xD8\xFF", $jpegContent, 'Result should be valid JPEG');
 
-        // Verify it's valid JPEG
+        // Verify EXIF after conversion
         $resultImg = Image::read($jpegContent);
-        $this->assertNotNull($resultImg);
+        $resultExif = $resultImg->exif()->toArray();
+
+        // Assert EXIF presence
+        $this->assertNotEmpty($resultExif, 'Final JPEG should still have EXIF data');
+
+        // Compare a few key fields
+        foreach (['Make', 'Model', 'Software'] as $key) {
+            if (isset($originalExif[$key])) {
+                $this->assertArrayHasKey($key, $resultExif, "$key field should be preserved");
+                $this->assertEquals($originalExif[$key], $resultExif[$key], "$key value should match");
+            }
+        }
+        //Compare GPS data (including nested keys)
+        if (isset($originalExif['GPS']) && is_array($originalExif['GPS'])) {
+            $this->assertArrayHasKey('GPS', $resultExif, 'Final EXIF should contain GPS section');
+            $resultGps = $resultExif['GPS'] ?? [];
+
+            foreach ($originalExif['GPS'] as $gpsKey => $gpsValue) {
+                $this->assertArrayHasKey($gpsKey, $resultGps, "GPS field '$gpsKey' should be preserved");
+                $this->assertEquals(
+                    $gpsValue,
+                    $resultGps[$gpsKey],
+                    "GPS field '$gpsKey' value should match after conversion"
+                );
+            }
+        } else {
+            $this->markTestSkipped('Fixture has no nested GPS EXIF data to verify.');
+        }
     }
 
     public function test_it_works_with_both_photo_and_project_disks()
@@ -331,7 +376,7 @@ class PhotoRendererServiceTest extends TestCase
         $fakePhoto = UploadedFile::fake()->image('photo.jpg', 100, 100);
         $photoDisk->put($photoPath, $fakePhoto->getContent());
 
-        $photoResult = $this->service->resolvePhotoPath($photoDisk, $photoPath);
+        $photoResult = $this->photoRendererService->resolvePhotoPath($photoDisk, $photoPath);
         $this->assertEquals($photoPath, $photoResult);
 
         // Test with project disk
@@ -340,7 +385,7 @@ class PhotoRendererServiceTest extends TestCase
         $fakeAvatar = UploadedFile::fake()->image('avatar.jpg', 100, 100);
         $projectDisk->put($projectPath, $fakeAvatar->getContent());
 
-        $projectResult = $this->service->resolvePhotoPath($projectDisk, $projectPath);
+        $projectResult = $this->photoRendererService->resolvePhotoPath($projectDisk, $projectPath);
         $this->assertEquals($projectPath, $projectResult);
     }
 
@@ -361,7 +406,7 @@ class PhotoRendererServiceTest extends TestCase
             $webpContent = $img->toWebp(80);
             $disk->put($webpPath, (string) $webpContent);
 
-            $jpegContent = $this->service->getAsJpeg($disk, $webpPath, 90);
+            $jpegContent = $this->photoRendererService->getAsJpeg($disk, $webpPath, 90);
 
             $this->assertNotEmpty($jpegContent);
             $this->assertStringStartsWith("\xFF\xD8\xFF", $jpegContent);
