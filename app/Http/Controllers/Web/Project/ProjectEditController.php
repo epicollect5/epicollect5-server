@@ -22,6 +22,7 @@ use Psr\Container\NotFoundExceptionInterface;
 use Redirect;
 use Request;
 use Response;
+use Storage;
 use Throwable;
 
 class ProjectEditController
@@ -175,13 +176,22 @@ class ProjectEditController
     {
         $dimensions = Common::resolveDimensions($format);
         $disk = Common::resolveDisk($format);
+
+        //if a legacy logo exists (it was jpg), delete it
+        $legacyFilename = config('epicollect.media.project_avatar.legacy_filename');
+        if (Storage::disk($disk)->exists($this->requestedProject()->ref . '/' . $legacyFilename)) {
+            Storage::disk($disk)->delete($this->requestedProject()->ref . '/' . $legacyFilename);
+        }
+
+        //save the new logo as webp
         return PhotoSaverService::saveImage(
             $this->requestedProject()->ref,
             $this->requestedProject()->getId(),
             request()->file('logo_url'),
-            'logo.jpg',
+            config('epicollect.media.project_avatar.filename'),
             $disk,
-            $dimensions
+            $dimensions,
+            config('epicollect.media.quality.webp')
         );
     }
 

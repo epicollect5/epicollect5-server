@@ -10,7 +10,7 @@ use Intervention\Image\Laravel\Facades\Image;
 use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
 use Throwable;
 
-class ToProjectMobileLogoLocalMacro extends ServiceProvider
+class ToProjectThumbLocalMacro extends ServiceProvider
 {
     /**
      * Registers the 'ToProjectMobileLogoLocal' macro
@@ -19,7 +19,7 @@ class ToProjectMobileLogoLocalMacro extends ServiceProvider
      */
     public function boot(): void
     {
-        Response::macro('toProjectMobileLogoLocal', function ($projectRef, $filename) {
+        Response::macro('toProjectThumbLocal', function ($projectRef, $filename) {
             $photoRendererService = app('ec5\Services\Media\PhotoRendererService');
             $photoPlaceholderFilename = config('epicollect.media.generic_placeholder.filename');
 
@@ -40,8 +40,8 @@ class ToProjectMobileLogoLocalMacro extends ServiceProvider
                     // Create 100x100 thumbnail from original
                     $thumbnailData = $photoRendererService->createThumbnail(
                         $imageContent,
-                        config('epicollect.media.project_mobile_logo')[0],
-                        config('epicollect.media.project_mobile_logo')[1],
+                        config('epicollect.media.project_thumb')[0],
+                        config('epicollect.media.project_thumb')[1],
                         config('epicollect.media.quality.jpg')
                     );
 
@@ -63,8 +63,8 @@ class ToProjectMobileLogoLocalMacro extends ServiceProvider
             $file = Storage::disk('public')->get($photoPlaceholderFilename);
             $image = Image::read($file);
             $resizedPlaceholder = $image->cover(
-                config('epicollect.media.project_mobile_logo')[0],
-                config('epicollect.media.project_mobile_logo')[1]
+                config('epicollect.media.project_thumb')[0],
+                config('epicollect.media.project_thumb')[1]
             );
             $resizedData = $resizedPlaceholder->toJpeg(config('epicollect.media.quality.jpg'));
 

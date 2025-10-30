@@ -160,7 +160,7 @@ class UploadAppControllerPhotoS3Test extends TestCase
 
             // Process the image the same way your upload handler does
             // Adjust dimensions and quality to match your actual upload processing
-            $processedImage = PhotoSaverService::processImage($tempFilePath, [1024, 768], 70);
+            $processedImage = PhotoSaverService::processImage($tempFilePath, [1024, 768], config('epicollect.media.quality.webp'));
             $expectedBytes = strlen($processedImage);
 
 
@@ -194,7 +194,9 @@ class UploadAppControllerPhotoS3Test extends TestCase
             $this->assertEquals(0, $projectStats->audio_files);
             $this->assertEquals(0, $projectStats->video_files);
 
-            $this->assertTheFileEndpointIsPrivate($filename, 'photo');
+            $ext = config('epicollect.strings.media_file_extension.webp');
+            $webpFilename = pathinfo($filename, PATHINFO_FILENAME) . '.' . $ext;
+            $this->assertTheFileEndpointIsPrivate($webpFilename, 'photo');
 
             Storage::disk('photo')->deleteDirectory($this->project->ref);
 
@@ -293,7 +295,7 @@ class UploadAppControllerPhotoS3Test extends TestCase
             // Get the temporary file path from the UploadedFile
             $tempFilePath = $payload['name']->getRealPath();
             // Process the image the same way PhotoSaverService handler does
-            $processedImage = PhotoSaverService::processImage($tempFilePath, [1024, 768], 70);
+            $processedImage = PhotoSaverService::processImage($tempFilePath, [1024, 768], config('epicollect.media.quality.webp'));
             $expectedBytes = strlen($processedImage);
 
             $response[0]->assertStatus(200)
@@ -320,7 +322,9 @@ class UploadAppControllerPhotoS3Test extends TestCase
             $this->assertEquals(0, $projectStats->video_files);
 
             // Assert the file endpoint on S3 is private
-            $this->assertTheFileEndpointIsPrivate($filename, 'photo');
+            $ext = config('epicollect.strings.media_file_extension.webp');
+            $webpFilename = pathinfo($filename, PATHINFO_FILENAME) . '.' . $ext;
+            $this->assertTheFileEndpointIsPrivate($webpFilename, 'photo');
 
             //deleted the file
             Storage::disk('photo')->deleteDirectory($this->project->ref);
@@ -387,7 +391,7 @@ class UploadAppControllerPhotoS3Test extends TestCase
             // Get the temporary file path from the UploadedFile
             $tempFilePath = $payload['name']->getRealPath();
             // Process the image the same way PhotoSaverService handler does
-            $processedImage = PhotoSaverService::processImage($tempFilePath, [1024, 768], 70);
+            $processedImage = PhotoSaverService::processImage($tempFilePath, [1024, 768], config('epicollect.media.quality.webp'));
             $expectedBytes = strlen($processedImage);
 
             $response[0]->assertStatus(200)
@@ -414,7 +418,9 @@ class UploadAppControllerPhotoS3Test extends TestCase
             $this->assertEquals(0, $projectStats->video_files);
 
             // Assert the file endpoint on S3 is private
-            $this->assertTheFileEndpointIsPrivate($filename, 'photo');
+            $ext = config('epicollect.strings.media_file_extension.webp');
+            $webpFilename = pathinfo($filename, PATHINFO_FILENAME) . '.' . $ext;
+            $this->assertTheFileEndpointIsPrivate($webpFilename, 'photo');
 
             Storage::disk('photo')->deleteDirectory($this->project->ref);
 
@@ -480,7 +486,7 @@ class UploadAppControllerPhotoS3Test extends TestCase
             // Get the temporary file path from the UploadedFile
             $tempFilePath = $payload['name']->getRealPath();
             // Process the image the same way PhotoSaverService handler does
-            $processedImage = PhotoSaverService::processImage($tempFilePath, [1024, 768], 70);
+            $processedImage = PhotoSaverService::processImage($tempFilePath, [1024, 768], config('epicollect.media.quality.webp'));
             $expectedBytes = strlen($processedImage);
 
             $response[0]->assertStatus(200)
@@ -507,7 +513,9 @@ class UploadAppControllerPhotoS3Test extends TestCase
             $this->assertEquals(0, $projectStats->video_files);
 
             // Assert the file endpoint on S3 is private
-            $this->assertTheFileEndpointIsPrivate($filename, 'photo');
+            $ext = config('epicollect.strings.media_file_extension.webp');
+            $webpFilename = pathinfo($filename, PATHINFO_FILENAME) . '.' . $ext;
+            $this->assertTheFileEndpointIsPrivate($webpFilename, 'photo');
 
             Storage::disk('photo')->deleteDirectory($this->project->ref);
 
@@ -703,7 +711,7 @@ class UploadAppControllerPhotoS3Test extends TestCase
             // Get the temporary file path from the UploadedFile
             $tempFilePath = $payload['name']->getRealPath();
             // Process the image the same way PhotoSaverService handler does
-            $processedImage = PhotoSaverService::processImage($tempFilePath, [1024, 768], 70);
+            $processedImage = PhotoSaverService::processImage($tempFilePath, [1024, 768], config('epicollect.media.quality.webp'));
             $expectedBytes = strlen($processedImage);
 
             $response[0]->assertStatus(200)
@@ -730,7 +738,9 @@ class UploadAppControllerPhotoS3Test extends TestCase
             $this->assertEquals(0, $projectStats->video_files);
 
             // Assert the file endpoint on S3 is private
-            $this->assertTheFileEndpointIsPrivate($filename, 'photo');
+            $ext = config('epicollect.strings.media_file_extension.webp');
+            $webpFilename = pathinfo($filename, PATHINFO_FILENAME) . '.' . $ext;
+            $this->assertTheFileEndpointIsPrivate($webpFilename, 'photo');
 
             Storage::disk('photo')->deleteDirectory($this->project->ref);
         } catch (Throwable $e) {

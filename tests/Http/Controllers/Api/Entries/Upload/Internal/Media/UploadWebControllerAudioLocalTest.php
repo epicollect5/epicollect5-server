@@ -252,14 +252,14 @@ class UploadWebControllerAudioLocalTest extends TestCase
             $manager = ImageManager::imagick();
             // create a red 1024x768 canvas
             $image = $manager->create(1024, 768)->fill('#ff0000');
-            // encode as jpeg with quality 70
-            $data = $image->encode(new JpegEncoder(quality: 70));
+            // encode as jpeg
+            $data = $image->encode(new JpegEncoder(quality: config('epicollect.media.quality.jpg')));
             // save to temp disk
             $photoPath = '/photo/'. $this->project->ref . '/' . $filename;
             Storage::disk('temp')->put($photoPath, (string) $data);
             // process the image the same way PhotoSaverService handler does
             $realPath = Storage::disk('temp')->path($photoPath);
-            $processedImage = PhotoSaverService::processImage($realPath, [1024, 768], 70);
+            $processedImage = PhotoSaverService::processImage($realPath, [1024, 768], config('epicollect.media.quality.webp'));
             $expectedBytes = strlen($processedImage);
 
             //Get an audio file and save it to temp disk

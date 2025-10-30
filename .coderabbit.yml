@@ -1,8 +1,12 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
 # CodeRabbit configuration file
 # https://docs.coderabbit.ai/guides/review-guide
 
 language: en-US
+chat:
+  art: false
 reviews:
+  poem: false
   # Optional: Configure other review settings
   auto_review:
     enabled: true

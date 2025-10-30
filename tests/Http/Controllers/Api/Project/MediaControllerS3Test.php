@@ -377,7 +377,7 @@ class MediaControllerS3Test extends TestCase
         $response->assertHeader('Content-Type', config('epicollect.media.content_type.photo'));
     }
 
-    #[DataProvider('multipleRunProvider')] public function test_project_placeholder_is_returned()
+    #[DataProvider('multipleRunProvider')] public function test_project_placeholder_is_returned_thumb_size()
     {
         //Request logo without actually adding one
         $response = $this->get('api/internal/media/' . $this->project->slug . '?type=photo&name=logo.jpg&format=project_thumb')

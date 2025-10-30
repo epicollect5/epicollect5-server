@@ -11,7 +11,8 @@ return [
     'project_thumb' => [512, 512],
     'project_mobile_logo' => [128, 128],
     'project_avatar' => [
-        'filename' => 'logo.jpg',
+        'filename' => 'logo.webp',
+        'legacy_filename' => 'logo.jpg',
         'disk' => 'project',
         'width' => [
             'thumb' => 512,
@@ -52,10 +53,10 @@ return [
         'video'
     ],
     'generic_placeholder' => [
-        'filename' => 'ec5-placeholder-256x256.jpg',
-        'width' => 256,
-        'height' => 256,
-        'size_in_bytes' => 3735
+        'filename' => 'ec5-placeholder-512x512.jpg',
+        'width' => 512,
+        'height' => 512,
+        'size_in_bytes' => 8596
     ],
     'photo_not_synced_placeholder' => [
         'filename' => 'ec5-photo-unsynced-placeholder-512x512.jpg',
@@ -75,5 +76,9 @@ return [
         'project_mobile_logo' => 'project',
         'audio' => 'audio',
         'video' => 'video'
+    ],
+    'quality' => [
+        'webp' => (int) env('PHOTO_QUALITY_WEBP', 80),
+        'jpg' => (int) env('PHOTO_QUALITY_JPG', 70)
     ]
 ];
