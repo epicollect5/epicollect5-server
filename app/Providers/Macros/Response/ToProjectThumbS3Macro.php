@@ -6,7 +6,6 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\ServiceProvider;
-use Intervention\Image\Laravel\Facades\Image;
 use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
 use Throwable;
 
@@ -19,11 +18,10 @@ class ToProjectThumbS3Macro extends ServiceProvider
      */
     public function boot(): void
     {
-        Response::macro('ToProjectThumbS3', function ($projectRef, $filename) {
+        Response::macro('toProjectThumbS3', function ($projectRef, $filename) {
             $photoRendererService = app('ec5\Services\Media\PhotoRendererService');
             $disk = Storage::disk('project');
             $photoPlaceholderFilename = config('epicollect.media.generic_placeholder.filename');
-            [$w, $h] = config('epicollect.media.project_thumb');
 
             if (!empty($filename)) {
                 try {
@@ -59,15 +57,7 @@ class ToProjectThumbS3Macro extends ServiceProvider
 
             // Default placeholder
             $file = Storage::disk('public')->get($photoPlaceholderFilename);
-            // Read bytes and create project mobile logo
-            $image = Image::read($file);
-            $thumbnail = $image->cover(
-                $w,
-                $h
-            );
-            $thumbnailData = $thumbnail->toJpeg(config('epicollect.media.quality.jpg'));
-
-            return response($thumbnailData, 200, [
+            return response($file, 200, [
                 'Content-Type' => config('epicollect.media.content_type.photo')
             ]);
         });

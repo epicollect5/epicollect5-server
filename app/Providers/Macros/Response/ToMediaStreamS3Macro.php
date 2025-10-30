@@ -42,7 +42,7 @@ class ToMediaStreamS3Macro extends ServiceProvider
                     ]);
                 } catch (Throwable $e) {
                     Log::error('Cannot get S3 file head', ['exception' => $e->getMessage()]);
-                    $error['api-media-controller'] = ['ec5_103'];
+                    $error['media-service'] = ['ec5_69'];
                     return Response::apiErrorCode(404, $error);
                 }
 
@@ -85,7 +85,7 @@ class ToMediaStreamS3Macro extends ServiceProvider
                 return $response;
             } catch (Throwable $e) {
                 Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
-                $error['api-media-controller'] = ['ec5_103'];
+                $error['media-service'] = ['ec5_69'];
                 return Response::apiErrorCode(404, $error);
             }
         });

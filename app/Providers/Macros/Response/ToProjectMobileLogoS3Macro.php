@@ -57,7 +57,7 @@ class ToProjectMobileLogoS3Macro extends ServiceProvider
                 }
             }
 
-            // Default placeholder
+            // Default placeholder to mobile logo dimensions
             $file = Storage::disk('public')->get($photoPlaceholderFilename);
             // Read bytes and create project mobile logo
             $image = Image::read($file);

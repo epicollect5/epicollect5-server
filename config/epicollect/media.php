@@ -53,10 +53,10 @@ return [
         'video'
     ],
     'generic_placeholder' => [
-        'filename' => 'ec5-placeholder-256x256.jpg',
-        'width' => 256,
-        'height' => 256,
-        'size_in_bytes' => 3735
+        'filename' => 'ec5-placeholder-512x512.jpg',
+        'width' => 512,
+        'height' => 512,
+        'size_in_bytes' => 8596
     ],
     'photo_not_synced_placeholder' => [
         'filename' => 'ec5-photo-unsynced-placeholder-512x512.jpg',
