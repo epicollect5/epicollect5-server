@@ -12,8 +12,8 @@ use Throwable;
 class ToProjectThumbS3Macro extends ServiceProvider
 {
     /**
-     * Registers the 'ToProjectMobileLogoS3' macro
-     * to generate project mobile logos
+     * Registers the 'toProjectThumbS3' macro
+     * to generate project thumb logos
      * from S3 storage at runtime.
      */
     public function boot(): void
@@ -48,10 +48,10 @@ class ToProjectThumbS3Macro extends ServiceProvider
                     ]);
 
                 } catch (FileNotFoundException $e) {
-                    Log::error('Cannot find S3 project mobile logo', ['exception' => $e]);
+                    Log::error('Cannot find S3 project thumb', ['exception' => $e]);
 
                 } catch (Throwable $e) {
-                    Log::error('Cannot generate S3 project mobile logo', ['exception' => $e]);
+                    Log::error('Cannot generate S3 project thumb', ['exception' => $e]);
                 }
             }
 
