@@ -9,6 +9,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Schema;
+use Throwable;
 
 /**
  * Command to benchmark JSON storage and performance across multiple MySQL/MariaDB
@@ -108,114 +109,122 @@ class BenchmarkJsonCompression extends Command
 
         // Disable FK checks
         DB::statement('SET foreign_key_checks = 0');
+        try {
 
-        // Metrics storage
-        $metrics = [];
+            // Metrics storage
+            $metrics = [];
 
-        // Benchmark each table
-        foreach ($tables as $table => $blockSize) {
-            $this->info("▶ Testing table: $table");
-            DB::statement("TRUNCATE TABLE $table");
+            // Benchmark each table
+            foreach ($tables as $table => $blockSize) {
+                $this->info("▶ Testing table: $table");
+                DB::statement("TRUNCATE TABLE $table");
 
-            $initialMemory = memory_get_usage(true);
-            $peakMemory = $initialMemory;
+                $initialMemory = memory_get_usage(true);
+                $peakMemory = $initialMemory;
 
-            $this->info("   Inserting $rows rows in batches of $batch...");
-            $this->info("   Initial memory: " . Common::formatBytes($initialMemory));
+                $this->info("   Inserting $rows rows in batches of $batch...");
+                $this->info("   Initial memory: " . Common::formatBytes($initialMemory));
 
-            $pdo = DB::connection()->getPdo();
-            $startInsert = microtime(true);
-            $inserted = 0;
+                $pdo = DB::connection()->getPdo();
+                $startInsert = microtime(true);
+                $inserted = 0;
 
-            $placeholders = implode(',', array_fill(0, $batch, '(?, ?, ?)'));
-            $insertSql = "INSERT INTO `$table` (entry_id, entry_data, geo_json_data) VALUES $placeholders";
+                $placeholders = implode(',', array_fill(0, $batch, '(?, ?, ?)'));
+                $insertSql = "INSERT INTO `$table` (entry_id, entry_data, geo_json_data) VALUES $placeholders";
 
-            $transactionSize = max(5000, $batch * 2);
-            $pdo->beginTransaction();
+                $transactionSize = max(5000, $batch * 2);
+                $pdo->beginTransaction();
 
-            while ($inserted < $rows) {
-                $chunkSize = min($batch, $rows - $inserted);
-                $params = [];
+                while ($inserted < $rows) {
+                    $chunkSize = min($batch, $rows - $inserted);
+                    $params = [];
 
-                for ($i = 0; $i < $chunkSize; $i++) {
-                    $id = $inserted + $i + 1;
-                    $params[] = $id;
-                    $params[] = $this->generateEntryData();
-                    $params[] = $this->generateEntryGeoJson();
+                    for ($i = 0; $i < $chunkSize; $i++) {
+                        $id = $inserted + $i + 1;
+                        $params[] = $id;
+                        $params[] = $this->generateEntryData();
+                        $params[] = $this->generateEntryGeoJson();
+                    }
+
+                    if ($chunkSize === $batch) {
+                        $stmt = $pdo->prepare($insertSql);
+                    } else {
+                        $partialPlaceholders = implode(',', array_fill(0, $chunkSize, '(?, ?, ?)'));
+                        $stmt = $pdo->prepare("INSERT INTO `$table` (entry_id, entry_data, geo_json_data) VALUES $partialPlaceholders");
+                    }
+
+                    $stmt->execute($params);
+                    $stmt = null;
+
+                    $inserted += $chunkSize;
+
+                    if ($inserted % $transactionSize === 0) {
+                        $pdo->commit();
+                        $pdo->beginTransaction();
+                    }
+
+                    $currentMemory = memory_get_usage(true);
+                    $peakMemory = max($peakMemory, $currentMemory);
+
+                    unset($params);
+                    gc_collect_cycles();
+
+                    if ($inserted % (10 * $batch) === 0) {
+                        $elapsed = round(microtime(true) - $startInsert, 1);
+                        $memoryAfterGC = memory_get_usage(true);
+                        $memoryUsed = $memoryAfterGC - $initialMemory;
+
+                        $this->info(sprintf(
+                            "   ... inserted %s rows (%ss) | Mem: %s (peak: %s)",
+                            number_format($inserted),
+                            $elapsed,
+                            Common::formatBytes($memoryUsed),
+                            Common::formatBytes($peakMemory - $initialMemory)
+                        ));
+                    }
                 }
 
-                if ($chunkSize === $batch) {
-                    $stmt = $pdo->prepare($insertSql);
-                } else {
-                    $partialPlaceholders = implode(',', array_fill(0, $chunkSize, '(?, ?, ?)'));
-                    $stmt = $pdo->prepare("INSERT INTO `$table` (entry_id, entry_data, geo_json_data) VALUES $partialPlaceholders");
+                $pdo->commit();
+                $insertTime = round(microtime(true) - $startInsert, 2);
+
+                $finalMemory = memory_get_usage(true);
+                $totalPeakMemory = memory_get_peak_usage(true);
+
+                $this->info("   ✅ Insert completed in {$insertTime}s");
+                $this->info("   💾 Final memory: " . Common::formatBytes($finalMemory - $initialMemory));
+                $this->info("   📊 Peak memory: " . Common::formatBytes($totalPeakMemory));
+
+                // Measure read performance
+                $this->info("   Measuring 100 random reads...");
+                $startRead = microtime(true);
+                for ($k = 0; $k < 100; $k++) {
+                    $id = rand(1, $rows);
+                    DB::table($table)->where('entry_id', $id)->first();
                 }
+                $readTime = round(microtime(true) - $startRead, 3);
+                $this->info("   ✅ 100 random reads in {$readTime}s");
 
-                $stmt->execute($params);
-                $stmt = null;
+                // Table size
+                DB::statement("ANALYZE TABLE `$table`");
+                $status = DB::selectOne("SHOW TABLE STATUS LIKE '$table'");
+                $sizeMb = round(($status->Data_length + $status->Index_length) / 1024 / 1024, 2);
+                $this->info("   📦 Table size: $sizeMb MB");
+                $this->line(str_repeat('-', 50));
 
-                $inserted += $chunkSize;
-
-                if ($inserted % $transactionSize === 0) {
-                    $pdo->commit();
-                    $pdo->beginTransaction();
-                }
-
-                $currentMemory = memory_get_usage(true);
-                $peakMemory = max($peakMemory, $currentMemory);
-
-                unset($params);
-                gc_collect_cycles();
-
-                if ($inserted % (10 * $batch) === 0) {
-                    $elapsed = round(microtime(true) - $startInsert, 1);
-                    $memoryAfterGC = memory_get_usage(true);
-                    $memoryUsed = $memoryAfterGC - $initialMemory;
-
-                    $this->info(sprintf(
-                        "   ... inserted %s rows (%ss) | Mem: %s (peak: %s)",
-                        number_format($inserted),
-                        $elapsed,
-                        Common::formatBytes($memoryUsed),
-                        Common::formatBytes($peakMemory - $initialMemory)
-                    ));
-                }
+                // Store metrics
+                $metrics[$table] = [
+                    'size' => $sizeMb,
+                    'insert_time' => $insertTime,
+                    'read_time' => $readTime,
+                ];
             }
-
-            $pdo->commit();
-            $insertTime = round(microtime(true) - $startInsert, 2);
-
-            $finalMemory = memory_get_usage(true);
-            $totalPeakMemory = memory_get_peak_usage(true);
-
-            $this->info("   ✅ Insert completed in {$insertTime}s");
-            $this->info("   💾 Final memory: " . Common::formatBytes($finalMemory - $initialMemory));
-            $this->info("   📊 Peak memory: " . Common::formatBytes($totalPeakMemory));
-
-            // Measure read performance
-            $this->info("   Measuring 100 random reads...");
-            $startRead = microtime(true);
-            for ($k = 0; $k < 100; $k++) {
-                $id = rand(1, $rows);
-                DB::table($table)->where('entry_id', $id)->first();
-            }
-            $readTime = round(microtime(true) - $startRead, 3);
-            $this->info("   ✅ 100 random reads in {$readTime}s");
-
-            // Table size
-            DB::statement("ANALYZE TABLE `$table`");
-            $status = DB::selectOne("SHOW TABLE STATUS LIKE '$table'");
-            $sizeMb = round(($status->Data_length + $status->Index_length) / 1024 / 1024, 2);
-            $this->info("   📦 Table size: $sizeMb MB");
-            $this->line(str_repeat('-', 50));
-
-            // Store metrics
-            $metrics[$table] = [
-                'size' => $sizeMb,
-                'insert_time' => $insertTime,
-                'read_time' => $readTime,
-            ];
+        } catch (Throwable $e) {
+            $this->error("Error: " . $e->getMessage());
+        } finally {
+            // Re-enable FK checks
+            DB::statement('SET foreign_key_checks = 1');
         }
+
 
         // Re-enable FK checks
         DB::statement('SET foreign_key_checks = 1');
@@ -229,9 +238,12 @@ class BenchmarkJsonCompression extends Command
                     continue;
                 }
 
-                $sizePct = round(($baseline['size'] - $m['size']) / $baseline['size'] * 100, 2);
-                $insertPct = round(($m['insert_time'] - $baseline['insert_time']) / $baseline['insert_time'] * 100, 2);
-                $readPct = round(($m['read_time'] - $baseline['read_time']) / $baseline['read_time'] * 100, 2);
+                // Calculate percentage difference
+                $percent = fn ($a, $b) => $b ? round(($a - $b) / $b * 100, 2) : 0;
+                // Get metrics avoiding divide by zero errors
+                $sizePct   = $percent($baseline['size'] ?? 0, $m['size']);
+                $insertPct = $percent($m['insert_time'] ?? 0, $baseline['insert_time']);
+                $readPct   = $percent($m['read_time'] ?? 0, $baseline['read_time']);
 
                 $this->info(sprintf(
                     "Table %s: size ↓ %s%%, insert Δ %s%%, read Δ %s%%",
