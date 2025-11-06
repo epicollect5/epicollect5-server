@@ -646,10 +646,10 @@ trait Assertions
 
         if ($entryType === config('epicollect.strings.entry_types.entry')) {
             $this->assertCount(1, Entry::where('uuid', $entryPayload['data']['id'])->get());
-            $entryStored = Entry::where('uuid', $entryPayload['data']['id'])->first();
+            $entryStored = Entry::with('json')->where('uuid', $entryPayload['data']['id'])->first();
         } else {
             $this->assertCount(1, BranchEntry::where('uuid', $entryPayload['data']['id'])->get());
-            $entryStored = BranchEntry::where('uuid', $entryPayload['data']['id'])->first();
+            $entryStored = BranchEntry::with('json')->where('uuid', $entryPayload['data']['id'])->first();
         }
 
 

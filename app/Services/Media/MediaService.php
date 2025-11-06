@@ -4,7 +4,6 @@ namespace ec5\Services\Media;
 
 use ec5\DTO\ProjectDTO;
 use ec5\Libraries\Utilities\Common;
-use File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Storage;

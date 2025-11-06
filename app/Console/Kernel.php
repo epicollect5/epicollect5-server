@@ -2,6 +2,7 @@
 
 namespace ec5\Console;
 
+use ec5\Console\Commands\BenchmarkJsonCompression;
 use ec5\Console\Commands\SystemCheckStorageCommand;
 use ec5\Console\Commands\RemoveUnverifiedUsersCommand;
 use ec5\Console\Commands\SeedEntriesCommand;
@@ -28,7 +29,8 @@ class Kernel extends ConsoleKernel
         SystemProjectStorageCommand::class,
         SeedEntriesCommand::class,
         SeedMediaCommand::class,
-        SeedSuperadminCommand::class
+        SeedSuperadminCommand::class,
+        BenchmarkJsonCompression::class
     ];
 
     /**

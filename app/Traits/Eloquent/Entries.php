@@ -51,23 +51,23 @@ trait Entries
          */
 
         $index = 'idx_'.$this->table.'_project_form_ref_id';
-        return DB::table($this->table)
-            ->select('id', 'geo_json_data')
-            ->from(DB::raw("`$this->table` USE INDEX ($index)"))
-            ->where('project_id', $projectId)
-            ->where('form_ref', $params['form_ref'])
-            ->whereNotNull('geo_json_data')
+        // Derive the JSON table dynamically
+        $jsonTable = $this->table . '_json';
+        return DB::query()
+            ->fromRaw("`$this->table` AS e USE INDEX ($index)")
+            ->leftJoin($jsonTable . ' as ej', 'e.id', '=', 'ej.entry_id')
+            ->select([
+                'e.id',
+                DB::raw('COALESCE(e.geo_json_data, ej.geo_json_data) as geo_json_data')
+            ])
+            ->where('e.project_id', $projectId)
+            ->where('e.form_ref', $params['form_ref'])
+            ->whereNotNull(DB::raw('COALESCE(e.geo_json_data, ej.geo_json_data)'))
             ->where(function ($query) use ($params) {
-                /**
-                 * filter by user (imp: applied to COLLECTOR ROLE ONLY)
-                 *
-                 * @see EntriesViewService::getSanitizedQueryParams
-                 */
                 if (!empty($params['user_id'])) {
-                    $query->where('user_id', '=', $params['user_id']);
+                    $query->where('e.user_id', '=', $params['user_id']);
                 }
             });
-
     }
 
     public function getNewestOldestCreatedAt(int $projectId, string $formRef): array
@@ -167,7 +167,7 @@ trait Entries
 
     public function storeEntry(EntryStructureDTO $entryStructure, array $entry): int
     {
-        // Set the entry params to be added
+        // Set standard entry params
         $entry['uuid'] = $entryStructure->getEntryUuid();
         $entry['form_ref'] = $entryStructure->getFormRef();
         $entry['created_at'] = $entryStructure->getEntryCreatedAt();
@@ -176,13 +176,33 @@ trait Entries
         $entry['platform'] = $entryStructure->getPlatform();
         $entry['user_id'] = $entryStructure->getUserId();
 
-        //Save entry to database
+        // Extract JSON data
+        $entryData = $entry['entry_data'] ?? null;
+        $geoJsonData = $entry['geo_json_data'] ?? null;
+
+        // Set JSON columns to null in main entries or branch_entries table
+        $entry['entry_data'] = null;
+        $entry['geo_json_data'] = null;
+
         try {
             $table = config('epicollect.tables.entries');
+            $tableJson = config('epicollect.tables.entries_json');
             if ($entryStructure->isBranch()) {
                 $table = config('epicollect.tables.branch_entries');
+                $tableJson = config('epicollect.tables.branch_entries_json');
             }
-            return DB::table($table)->insertGetId($entry);
+
+            // Insert into main table
+            $entryId = DB::table($table)->insertGetId($entry);
+
+            // Insert JSON into dedicated json table
+            DB::table($tableJson)->insert([
+                'entry_id' => $entryId,
+                'entry_data' => $entryData,
+                'geo_json_data' => $geoJsonData,
+            ]);
+            return $entryId;
+
         } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             return 0;
