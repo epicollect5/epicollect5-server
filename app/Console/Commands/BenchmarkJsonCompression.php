@@ -238,12 +238,13 @@ class BenchmarkJsonCompression extends Command
                     continue;
                 }
 
-                // Calculate percentage difference
-                $percent = fn ($a, $b) => $b ? round(($a - $b) / $b * 100, 2) : 0;
-                // Get metrics avoiding divide by zero errors
-                $sizePct   = $percent($baseline['size'] ?? 0, $m['size']);
-                $insertPct = $percent($m['insert_time'] ?? 0, $baseline['insert_time']);
-                $readPct   = $percent($m['read_time'] ?? 0, $baseline['read_time']);
+                // Calculate percentage difference relative to baseline
+                $percent = fn ($baseline, $current) =>
+                $baseline ? round(($baseline - $current) / $baseline * 100, 2) : 0;
+
+                $sizePct   = $percent($baseline['size'] ?? 0, $m['size'] ?? 0);
+                $insertPct = $percent($baseline['insert_time'] ?? 0, $m['insert_time'] ?? 0);
+                $readPct   = $percent($baseline['read_time'] ?? 0, $m['read_time'] ?? 0);
 
                 $this->info(sprintf(
                     "Table %s: size ↓ %s%%, insert Δ %s%%, read Δ %s%%",
