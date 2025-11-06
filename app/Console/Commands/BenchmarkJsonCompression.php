@@ -68,7 +68,10 @@ class BenchmarkJsonCompression extends Command
                 $tableBlueprint->integer('entry_id')->primary();
                 $tableBlueprint->json('entry_data')->nullable();
                 $tableBlueprint->json('geo_json_data')->nullable();
-                $tableBlueprint->foreign('entry_id')->references('id')->on('entries')->onDelete('cascade');
+                $tableBlueprint->foreign('entry_id')
+                    ->references('id')
+                    ->on(config('epicollect.tables.entries'))
+                    ->onDelete('cascade');
             });
 
             if ($blockSize) {
