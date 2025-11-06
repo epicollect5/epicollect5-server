@@ -192,17 +192,20 @@ trait Entries
                 $tableJson = config('epicollect.tables.branch_entries_json');
             }
 
-            // Insert into main table
-            $entryId = DB::table($table)->insertGetId($entry);
+            // Insert entry and JSON data in a transaction
+            return DB::transaction(function () use ($table, $tableJson, $entry, $entryData, $geoJsonData) {
+                // Insert into main table
+                $entryId = DB::table($table)->insertGetId($entry);
 
-            // Insert JSON into dedicated json table
-            DB::table($tableJson)->insert([
-                'entry_id' => $entryId,
-                'entry_data' => $entryData,
-                'geo_json_data' => $geoJsonData,
-            ]);
-            return $entryId;
+                // Insert JSON into dedicated json table
+                DB::table($tableJson)->insert([
+                    'entry_id' => $entryId,
+                    'entry_data' => $entryData,
+                    'geo_json_data' => $geoJsonData,
+                ]);
 
+                return $entryId;
+            });
         } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             return 0;

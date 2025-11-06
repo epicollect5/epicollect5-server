@@ -118,9 +118,10 @@ class Entry extends Model
         // Remove entry_data and geo_json_data from $columns completely
         // We do this for the COALESCE to work properly
         $columns = array_diff($columns, ['entry_data', 'geo_json_data']);
+        $tableJson = config('epicollect.tables.entries_json');
 
         $q = DB::table($this->table . ' as e')
-            ->leftJoin('entries_json as ej', 'e.id', '=', 'ej.entry_id')
+            ->leftJoin($tableJson.' as ej', 'e.id', '=', 'ej.entry_id')
             ->select(array_merge(
                 $columns,
                 [
@@ -156,9 +157,10 @@ class Entry extends Model
         // Remove entry_data and geo_json_data from $columns completely
         // We do this for the COALESCE to work properly
         $columns = array_diff($columns, ['entry_data', 'geo_json_data']);
+        $tableJson = config('epicollect.tables.entries_json');
 
         $q = DB::table($this->table . ' as e')
-            ->leftJoin('entries_json as ej', 'e.id', '=', 'ej.entry_id')
+            ->leftJoin($tableJson.' as ej', 'e.id', '=', 'ej.entry_id')
             ->select(array_merge(
                 $columns,
                 [
@@ -227,9 +229,10 @@ class Entry extends Model
         // Remove entry_data and geo_json_data from $columns completely
         // We do this for the COALESCE to work properly
         $columns = array_diff($columns, ['entry_data', 'geo_json_data']);
+        $tableJson = config('epicollect.tables.entries_json');
 
         $q = DB::table(config('epicollect.tables.entries').' as e')
-            ->leftJoin('entries_json as ej', 'e.id', '=', 'ej.entry_id')
+            ->leftJoin($tableJson.' as ej', 'e.id', '=', 'ej.entry_id')
             ->select(array_merge(
                 $columns,
                 [
@@ -269,10 +272,11 @@ class Entry extends Model
         // Remove entry_data and geo_json_data from $columns completely
         // We do this for the COALESCE to work properly
         $columns = array_diff($columns, ['entry_data', 'geo_json_data']);
+        $tableJson = config('epicollect.tables.entries_json');
 
         // Use raw SQL to apply FORCE INDEX
         $q = DB::table(DB::raw(config('epicollect.tables.entries') . ' as e FORCE INDEX (idx_entries_project_form_ref_id)'))
-            ->leftJoin('entries_json as ej', 'e.id', '=', 'ej.entry_id')
+            ->leftJoin($tableJson.' as ej', 'e.id', '=', 'ej.entry_id')
             ->select(array_merge(
                 $columns,
                 [

@@ -2,6 +2,7 @@
 
 namespace ec5\Console\Commands;
 
+use ec5\Libraries\Utilities\Common;
 use Faker\Factory;
 use Illuminate\Console\Command;
 use Illuminate\Database\Schema\Blueprint;
@@ -117,7 +118,7 @@ class BenchmarkJsonCompression extends Command
             $peakMemory = $initialMemory;
 
             $this->info("   Inserting $rows rows in batches of $batch...");
-            $this->info("   Initial memory: " . $this->formatBytes($initialMemory));
+            $this->info("   Initial memory: " . Common::formatBytes($initialMemory));
 
             $pdo = DB::connection()->getPdo();
             $startInsert = microtime(true);
@@ -172,8 +173,8 @@ class BenchmarkJsonCompression extends Command
                         "   ... inserted %s rows (%ss) | Mem: %s (peak: %s)",
                         number_format($inserted),
                         $elapsed,
-                        $this->formatBytes($memoryUsed),
-                        $this->formatBytes($peakMemory - $initialMemory)
+                        Common::formatBytes($memoryUsed),
+                        Common::formatBytes($peakMemory - $initialMemory)
                     ));
                 }
             }
@@ -185,8 +186,8 @@ class BenchmarkJsonCompression extends Command
             $totalPeakMemory = memory_get_peak_usage(true);
 
             $this->info("   ✅ Insert completed in {$insertTime}s");
-            $this->info("   💾 Final memory: " . $this->formatBytes($finalMemory - $initialMemory));
-            $this->info("   📊 Peak memory: " . $this->formatBytes($totalPeakMemory));
+            $this->info("   💾 Final memory: " . Common::formatBytes($finalMemory - $initialMemory));
+            $this->info("   📊 Peak memory: " . Common::formatBytes($totalPeakMemory));
 
             // Measure read performance
             $this->info("   Measuring 100 random reads...");
@@ -245,20 +246,6 @@ class BenchmarkJsonCompression extends Command
         foreach ($tables as $table => $blockSize) {
             Schema::dropIfExists($table);
         }
-    }
-
-    /**
-     * Format bytes into human-readable format
-     */
-    private function formatBytes(int $bytes): string
-    {
-        $units = ['B', 'KB', 'MB', 'GB'];
-        $bytes = max($bytes, 0);
-        $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
-        $pow = min($pow, count($units) - 1);
-        $bytes /= pow(1024, $pow);
-
-        return round($bytes, 2) . ' ' . $units[$pow];
     }
 
     /**

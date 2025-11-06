@@ -70,19 +70,19 @@ class EntriesUniquenessService
                 $formats = config('epicollect.strings.datetime_format');
 
                 // if format is 'HH:mm',
-                if ($datetimeFormat === $formats[$datetimeFormat]) {
+                if ($datetimeFormat === $formats['HH:mm']) {
                     $timePart = substr($timePart, 0, 7);
                     // time part is now like "T14:48:"
                 }
 
                 // if format is 'hh:mm',
-                if ($datetimeFormat === $formats[$datetimeFormat]) {
+                if ($datetimeFormat === $formats['hh:mm']) {
                     $timePart = substr($timePart, 0, 7);
                     // time part is now like "T14:48:"
                 }
 
                 // if format is 'mm:ss',
-                if ($datetimeFormat === $formats[$datetimeFormat]) {
+                if ($datetimeFormat === $formats['mm:ss']) {
                     $timePart = substr($timePart, 3, 7);
                     // time part is like ":48:00."
                 }
@@ -102,13 +102,13 @@ class EntriesUniquenessService
                 $formats = config('epicollect.strings.datetime_format');
 
                 // if the format is 'MM/YYYY',
-                if ($datetimeFormat === $formats[$datetimeFormat]) {
+                if ($datetimeFormat === $formats['MM/YYYY']) {
                     $datePart = substr($datePart, 0, 8);
                     // datePart is now 2011-10-
                 }
 
                 // if format is 'dd/MM',
-                if ($datetimeFormat === $formats[$datetimeFormat]) {
+                if ($datetimeFormat === $formats['dd/MM']) {
                     $datePart = substr($datePart, 4, 10);
                     // datePart is now -10-05T
                 }
