@@ -200,6 +200,7 @@ trait Entries
                 // Insert JSON into dedicated json table
                 DB::table($tableJson)->insert([
                     'entry_id' => $entryId,
+                    'project_id' => $entry['project_id'],
                     'entry_data' => $entryData,
                     'geo_json_data' => $geoJsonData,
                 ]);

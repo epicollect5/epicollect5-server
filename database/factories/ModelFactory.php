@@ -99,7 +99,7 @@ $factory->define(Project::class, function (Faker\Generator $faker) {
         'access' => config('epicollect.strings.project_access.private'),
         'visibility' => config('epicollect.strings.project_visibility.hidden'),
         'category' => config('epicollect.strings.project_categories.general'),
-        'created_by' => User::where('email', config('epicollect.setup.super_admin_user.email'))->first()['id'],
+        'created_by' => 1,
         'status' => config('epicollect.strings.project_status.active'),
         'app_link_visibility' => config('epicollect.strings.project_visibility.hidden'),
     ];
