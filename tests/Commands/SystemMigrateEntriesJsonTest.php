@@ -87,7 +87,9 @@ class SystemMigrateEntriesJsonTest extends TestCase
 
         $dstHash = md5(
             json_encode(json_decode($dst->entry_data, true)) .
-            json_encode(json_decode($dst->geo_json_data, true))
+                        ($dst->geo_json_data !== null
+                           ? json_encode(json_decode($dst->geo_json_data, true))
+                                : 'null')
         );
         $this->assertEquals($srcHash, $dstHash);
     }

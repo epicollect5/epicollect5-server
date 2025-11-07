@@ -225,10 +225,6 @@ class BenchmarkJsonCompression extends Command
             DB::statement('SET foreign_key_checks = 1');
         }
 
-
-        // Re-enable FK checks
-        DB::statement('SET foreign_key_checks = 1');
-
         // Print summary vs uncompressed
         $baseline = $metrics['entries_json0'] ?? null;
         if ($baseline) {
