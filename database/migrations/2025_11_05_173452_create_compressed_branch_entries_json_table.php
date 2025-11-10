@@ -11,13 +11,14 @@ return new class () extends Migration {
     public function up(): void
     {
         $tableName = config('epicollect.tables.branch_entries_json');
+        $branchEntriesTable = config('epicollect.tables.branch_entries');
         // Create the table with Schema Builder
-        Schema::create($tableName, function (Blueprint $table) {
+        Schema::create($tableName, function (Blueprint $table) use ($branchEntriesTable) {
             $table->integer('entry_id')->primary();
             $table->integer('project_id')->nullable(false);
             $table->json('entry_data')->nullable(false);
             $table->json('geo_json_data')->nullable();
-            $table->foreign('entry_id')->references('id')->on('branch_entries')->onDelete('cascade');
+            $table->foreign('entry_id')->references('id')->on($branchEntriesTable)->onDelete('cascade');
         });
 
         // Alter table to set compression and key block size

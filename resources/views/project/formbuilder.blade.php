@@ -66,7 +66,7 @@
 <div class="container-fluid page-formbuilder hidden">
     <div class="row">
         <section class="inputs-tools col-sm-3 col-md-2">
-            <!--Iputs tools will show here (draggable)-->
+            <!--Inputs tools will show here (draggable)-->
         </section>
 
         <section class="main col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 ">
@@ -112,7 +112,7 @@
                      id="{form-ref}-tabpanel">
 
                     <div id="form-ref-inputs-collection" class="inputs-collection col-md-6">
-                        <!-- Inputs collection (sortable) container will load here dinamically-->
+                        <!-- Inputs collection (sortable) container will load here dynamically-->
                     </div>
 
                     <!-- Input Properties panel-->
