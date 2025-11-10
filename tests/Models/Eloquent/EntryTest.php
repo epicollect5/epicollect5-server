@@ -5,14 +5,17 @@ namespace Tests\Models\Eloquent;
 use Carbon\Carbon;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Models\Entries\Entry;
+use ec5\Models\Entries\EntryJson;
 use ec5\Models\Project\Project;
 use ec5\Models\User\User;
+use ec5\Traits\Assertions;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class EntryTest extends TestCase
 {
     use DatabaseTransactions;
+    use Assertions;
 
     protected User $user;
     protected Project $project;
@@ -73,16 +76,145 @@ class EntryTest extends TestCase
 
     }
 
+    public function test_should_get_legacy_json_single_entry_by_uuid()
+    {
+        $entry = factory(Entry::class)->create([
+            'project_id' => $this->project->id,
+            'user_id' => $this->user->id,
+            'form_ref' => $this->formRef,
+            'entry_data' => json_encode(['foo' => 'bar']),
+            'geo_json_data' => json_encode(['lat' => 1]),
+            'title' => 'Ciao'
+        ]);
+        $entryFromDB = $this->entryModel->getEntry($this->project->id, [
+            'uuid' => $entry->uuid,
+            'form_ref' => $this->formRef
+        ])->first();
+        $this->assertEquals($entry->uuid, $entryFromDB->uuid);
+        $this->assertJsonEquals($entry->entry_data, $entryFromDB->entry_data);
+        $this->assertJsonEquals($entry->geo_json_data, $entryFromDB->geo_json_data);
+    }
+
+    public function test_should_get_new_json_single_entry_by_uuid()
+    {
+        $entry = factory(Entry::class)->create([
+            'project_id' => $this->project->id,
+            'user_id' => $this->user->id,
+            'form_ref' => $this->formRef,
+            'entry_data' => null,
+            'geo_json_data' => null,
+            'title' => 'Ciao'
+        ]);
+
+        factory(EntryJson::class)->create([
+            'entry_id' => $entry->id,
+            'project_id' => $this->project->id,
+            'entry_data' => json_encode(['foo' => 'bar']),
+            'geo_json_data' => json_encode(['lat' => 1])
+        ]);
+
+        $entryFromDB = $this->entryModel->getEntry($this->project->id, [
+            'uuid' => $entry->uuid,
+            'form_ref' => $this->formRef
+        ])->first();
+        $this->assertEquals($entry->uuid, $entryFromDB->uuid);
+        $this->assertJsonEquals($entry->entry_data, $entryFromDB->entry_data);
+        $this->assertJsonEquals($entry->geo_json_data, $entryFromDB->geo_json_data);
+    }
+
+    public function test_should_get_child_entries_for_parent_having_json_in_same_table()
+    {
+        $parentEntry = factory(Entry::class)->create([
+            'project_id' => $this->project->id,
+            'user_id' => $this->user->id,
+            'form_ref' => $this->formRef,
+            'entry_data' => json_encode(['foo' => 'bar']),
+            'geo_json_data' => json_encode(['lat' => 1]),
+            'title' => 'Ciao'
+        ]);
+
+        $childFormRef = Generators::formRef($this->project->ref);
+        $childEntry = factory(Entry::class)->create([
+            'project_id' => $this->project->id,
+            'user_id' => $this->user->id,
+            'form_ref' => $childFormRef,
+            'parent_form_ref' => $this->formRef,
+            'parent_uuid' => $parentEntry->uuid,
+            'entry_data' => json_encode(['bin' => 'bon']),
+            'geo_json_data' => json_encode(['lat' => 8]),
+            'title' => 'Born Yesterday'
+        ]);
+
+        $childEntries = $this->entryModel->getChildEntriesForParent($this->project->id, [
+            'parent_uuid' => $parentEntry->uuid,
+            'form_ref' => $childFormRef,
+            'parent_form_ref' => $this->formRef
+        ]);
+        $this->assertEquals(1, $childEntries->count());
+        $this->assertEquals($childEntry->uuid, $childEntries->first()->uuid);
+        $this->assertJsonEquals($childEntry->entry_data, $childEntries->first()->entry_data);
+        $this->assertJsonEquals($childEntry->geo_json_data, $childEntries->first()->geo_json_data);
+    }
+
+    public function test_should_get_child_entries_for_parent_having_json_in_separate_table()
+    {
+        $parentEntry = factory(Entry::class)->create([
+            'project_id' => $this->project->id,
+            'user_id' => $this->user->id,
+            'form_ref' => $this->formRef,
+            'entry_data' => json_encode(['foo' => 'bar']),
+            'geo_json_data' => json_encode(['lat' => 1]),
+            'title' => 'Ciao'
+        ]);
+
+        $childFormRef = Generators::formRef($this->project->ref);
+        $childEntry = factory(Entry::class)->create([
+            'project_id' => $this->project->id,
+            'user_id' => $this->user->id,
+            'form_ref' => $childFormRef,
+            'parent_form_ref' => $this->formRef,
+            'parent_uuid' => $parentEntry->uuid,
+            'entry_data' => null,
+            'geo_json_data' => null,
+            'title' => 'Born Yesterday'
+        ]);
+        factory(EntryJson::class)->create([
+            'entry_id' => $childEntry->id,
+            'project_id' => $this->project->id,
+            'entry_data' => json_encode(['bin' => 'bon']),
+            'geo_json_data' => json_encode(['lat' => 8])
+        ]);
+
+        $childEntries = $this->entryModel->getChildEntriesForParent($this->project->id, [
+            'parent_uuid' => $parentEntry->uuid,
+            'form_ref' => $childFormRef,
+            'parent_form_ref' => $this->formRef
+        ]);
+        $this->assertEquals(1, $childEntries->count());
+        $this->assertEquals($childEntry->uuid, $childEntries->first()->uuid);
+        $this->assertJsonEquals($childEntry->entry_data, $childEntries->first()->entry_data);
+        $this->assertJsonEquals($childEntry->geo_json_data, $childEntries->first()->geo_json_data);
+    }
+
     public function test_should_get_entries_by_form()
     {
         //create fake entries
         $numOfEntries = rand(1, 5);
 
         for ($i = 0; $i < $numOfEntries; $i++) {
-            factory(Entry::class)->create([
+            $entry = factory(Entry::class)->create([
                 'project_id' => $this->project->id,
                 'user_id' => $this->user->id,
-                'form_ref' => $this->formRef
+                'form_ref' => $this->formRef,
+                'entry_data' => null,
+                'geo_json_data' => null
+            ]);
+            //add json data
+            factory(EntryJson::class)->create([
+                'entry_id' => $entry->id,
+                'project_id' => $this->project->id,
+                'entry_data' => json_encode(['foo' => 'bar']),
+                'geo_json_data' => json_encode(['lat' => 1])
             ]);
         }
 
@@ -93,6 +225,78 @@ class EntryTest extends TestCase
             ],
             []
         )->count());
+
+        //assert json data is returned
+        $entries = $this->entryModel->getEntriesByForm(
+            $this->project->id,
+            [
+                'form_ref' => $this->formRef
+            ],
+            []
+        )->get();
+        foreach ($entries as $entry) {
+            $this->assertNotNull($entry->entry_data);
+            $this->assertNotNull($entry->geo_json_data);
+            $this->assertJsonEquals($entry->entry_data, json_encode(['foo' => 'bar']));
+            $this->assertJsonEquals($entry->geo_json_data, json_encode(['lat' => 1]));
+        }
+    }
+
+    public function test_should_get_entries_by_form_with_legacy_json()
+    {
+        //create fake entries
+        $numOfEntries = rand(1, 5);
+
+        for ($i = 0; $i < $numOfEntries; $i++) {
+            //create entry with json data only for even entries
+            if ($i % 2 === 0) {
+                $entry = factory(Entry::class)->create([
+                    'project_id' => $this->project->id,
+                    'user_id' => $this->user->id,
+                    'form_ref' => $this->formRef,
+                    'entry_data' => null,
+                    'geo_json_data' => null
+                ]);
+                factory(EntryJson::class)->create([
+                    'entry_id' => $entry->id,
+                    'project_id' => $this->project->id,
+                    'entry_data' => json_encode(['foo' => 'bar']),
+                    'geo_json_data' => json_encode(['lat' => 1])
+                ]);
+            } else {
+                //odd entries are legacy entries with json data in the same table
+                factory(Entry::class)->create([
+                    'project_id' => $this->project->id,
+                    'user_id' => $this->user->id,
+                    'form_ref' => $this->formRef,
+                    'entry_data' => json_encode(['foo' => 'bar']),
+                    'geo_json_data' => json_encode(['lat' => 1])
+                ]);
+            }
+        }
+
+        $this->assertEquals($numOfEntries, $this->entryModel->getEntriesByForm(
+            $this->project->id,
+            [
+                'form_ref' => $this->formRef
+            ],
+            []
+        )->count());
+
+        //assert json data is returned
+        $entries = $this->entryModel->getEntriesByForm(
+            $this->project->id,
+            [
+                'form_ref' => $this->formRef
+            ],
+            []
+        )->get();
+        foreach ($entries as $entry) {
+            $this->assertNotNull($entry->entry_data);
+            $this->assertNotNull($entry->geo_json_data);
+            $this->assertJsonEquals($entry->entry_data, json_encode(['foo' => 'bar']));
+            $this->assertJsonEquals($entry->geo_json_data, json_encode(['lat' => 1]));
+        }
     }
 
     public function test_should_get_entries_by_form_and_title()
@@ -101,11 +305,19 @@ class EntryTest extends TestCase
         $numOfEntries = rand(1, 5);
 
         for ($i = 0; $i < $numOfEntries; $i++) {
-            factory(Entry::class)->create([
+            $entry = factory(Entry::class)->create([
                 'project_id' => $this->project->id,
                 'user_id' => $this->user->id,
                 'form_ref' => $this->formRef,
-                'title' => 'Ciao - ' . $i
+                'title' => 'Ciao - ' . $i,
+                'entry_data' => null,
+                'geo_json_data' => null
+            ]);
+            factory(EntryJson::class)->create([
+                'entry_id' => $entry->id,
+                'project_id' => $this->project->id,
+                'entry_data' => json_encode(['foo' => 'bar']),
+                'geo_json_data' => json_encode(['lat' => 1])
             ]);
         }
 
@@ -135,6 +347,22 @@ class EntryTest extends TestCase
             ],
             []
         )->count());
+
+        //assert json data is returned
+        $entries = $this->entryModel->getEntriesByForm(
+            $this->project->id,
+            [
+                'form_ref' => $this->formRef,
+                'title' => 'Ciao'
+            ],
+            []
+        )->get();
+        foreach ($entries as $entry) {
+            $this->assertNotNull($entry->entry_data);
+            $this->assertNotNull($entry->geo_json_data);
+            $this->assertJsonEquals($entry->entry_data, json_encode(['foo' => 'bar']));
+            $this->assertJsonEquals($entry->geo_json_data, json_encode(['lat' => 1]));
+        }
     }
 
     public function test_should_get_entries_by_user()
@@ -146,11 +374,19 @@ class EntryTest extends TestCase
         $collector = factory(User::class)->create();
 
         for ($i = 0; $i < $numOfEntries; $i++) {
-            factory(Entry::class)->create([
+            $entry = factory(Entry::class)->create([
                 'project_id' => $this->project->id,
                 'user_id' => $collector->id,
                 'form_ref' => $this->formRef,
                 'title' => 'Ciao - ' . $i,
+                'entry_data' => null,
+                'geo_json_data' => null
+            ]);
+            factory(EntryJson::class)->create([
+                'entry_id' => $entry->id,
+                'project_id' => $this->project->id,
+                'entry_data' => json_encode(['foo' => 'bar']),
+                'geo_json_data' => json_encode(['lat' => 1])
             ]);
         }
 
@@ -180,6 +416,22 @@ class EntryTest extends TestCase
             ],
             []
         )->count());
+
+        //assert json data is returned
+        $entries = $this->entryModel->getEntriesByForm(
+            $this->project->id,
+            [
+                'form_ref' => $this->formRef,
+                'user_id' => $collector->id
+            ],
+            []
+        )->get();
+        foreach ($entries as $entry) {
+            $this->assertNotNull($entry->entry_data);
+            $this->assertNotNull($entry->geo_json_data);
+            $this->assertJsonEquals($entry->entry_data, json_encode(['foo' => 'bar']));
+            $this->assertJsonEquals($entry->geo_json_data, json_encode(['lat' => 1]));
+        }
     }
 
     public function test_should_filter_entries_by_created_at()
@@ -481,21 +733,34 @@ class EntryTest extends TestCase
 
     public function test_should_get_year_entries_for_archive()
     {
-        //create fake entries from last year
+        //create fake entries from last year (legacy json in same table)
         for ($i = 0; $i < 5; $i++) {
             factory(Entry::class)->create([
                 'project_id' => $this->project->id,
                 'form_ref' => $this->formRef,
+                'user_id' => $this->user->id,
+                'entry_data' => json_encode(['foo' => 'bar']),
+                'geo_json_data' => json_encode(['lat' => 1]),
                 'created_at' => now()->subYear()
             ]);
         }
 
-        //create fake entries for this year
+        //create fake entries for this year (json in separate table)
         for ($i = 0; $i < 5; $i++) {
-            factory(Entry::class)->create([
+            $entry = factory(Entry::class)->create([
+                 'project_id' => $this->project->id,
+                 'form_ref' => $this->formRef,
+                 'user_id' => $this->user->id,
+                 'entry_data' => null,
+                 'geo_json_data' => null,
+                 'created_at' => now()->startOfYear()
+             ]);
+
+            factory(EntryJson::class)->create([
+                'entry_id' => $entry->id,
                 'project_id' => $this->project->id,
-                'form_ref' => $this->formRef,
-                'created_at' => now()->startOfYear()
+                'entry_data' => json_encode(['foo' => 'bar']),
+                'geo_json_data' => json_encode(['lat' => 1])
             ]);
         }
 
@@ -506,7 +771,27 @@ class EntryTest extends TestCase
             'filter_to' => now()->endOfYear(),
         ])->get();
 
+        //assert only entries for this year are returned
         $this->assertEquals(5, $entries->count());
+        foreach ($entries as $entry) {
+            $this->assertNotNull($entry->entry_data);
+            $this->assertNotNull($entry->geo_json_data);
+            $this->assertJsonEquals($entry->entry_data, json_encode(['foo' => 'bar']));
+            $this->assertJsonEquals($entry->geo_json_data, json_encode(['lat' => 1]));
+        }
+
+        //get all entries without filters (to check is coalesce is working)
+        $entries = $this->entryModel->getEntriesByFormForArchive($this->project->id, [
+            'form_ref' => $this->formRef,
+        ])->get();
+
+        $this->assertEquals(10, $entries->count());
+        foreach ($entries as $entry) {
+            $this->assertNotNull($entry->entry_data);
+            $this->assertNotNull($entry->geo_json_data);
+            $this->assertJsonEquals($entry->entry_data, json_encode(['foo' => 'bar']));
+            $this->assertJsonEquals($entry->geo_json_data, json_encode(['lat' => 1]));
+        }
     }
 
     public function test_collector_should_download_archive_with_only_own_entries()
@@ -521,12 +806,32 @@ class EntryTest extends TestCase
         $collectorB = factory(User::class)->create();
 
         for ($i = 0; $i < $numOfEntries; $i++) {
-            factory(Entry::class)->create([
-                'project_id' => $this->project->id,
-                'user_id' => $collectorA->id,
-                'form_ref' => $this->formRef,
-                'title' => 'Ciao - ' . $i,
-            ]);
+            //add a mix of new and legacy entries (json in same table)
+            if ($i % 2 === 0) {
+                $entry = factory(Entry::class)->create([
+                    'project_id' => $this->project->id,
+                    'user_id' => $collectorA->id,
+                    'form_ref' => $this->formRef,
+                    'title' => 'Ciao - ' . $i,
+                    'entry_data' => null,
+                    'geo_json_data' => null
+                ]);
+                factory(EntryJson::class)->create([
+                    'entry_id' => $entry->id,
+                    'project_id' => $this->project->id,
+                    'entry_data' => json_encode(['foo' => 'bar']),
+                    'geo_json_data' => json_encode(['lat' => 1])
+                ]);
+            } else {
+                factory(Entry::class)->create([
+                    'project_id' => $this->project->id,
+                    'user_id' => $collectorA->id,
+                    'form_ref' => $this->formRef,
+                    'title' => 'Ciao - ' . $i,
+                    'entry_data' => json_encode(['foo' => 'bar']),
+                    'geo_json_data' => json_encode(['lat' => 1])
+                ]);
+            }
         }
 
         $this->assertEquals(0, $this->entryModel->getEntriesByFormForArchive(
@@ -565,5 +870,21 @@ class EntryTest extends TestCase
             ],
             []
         )->count());
+
+        //assert json data is returned
+        $entries = $this->entryModel->getEntriesByFormForArchive(
+            $this->project->id,
+            [
+                'form_ref' => $this->formRef,
+                'user_id' => $collectorA->id
+            ],
+            []
+        )->get();
+        foreach ($entries as $entry) {
+            $this->assertNotNull($entry->entry_data);
+            $this->assertNotNull($entry->geo_json_data);
+            $this->assertJsonEquals($entry->entry_data, json_encode(['foo' => 'bar']));
+            $this->assertJsonEquals($entry->geo_json_data, json_encode(['lat' => 1]));
+        }
     }
 }

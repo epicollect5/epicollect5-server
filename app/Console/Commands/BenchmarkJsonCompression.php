@@ -38,7 +38,7 @@ class BenchmarkJsonCompression extends Command
         {--rows=10000000 : Number of rows to insert for each table}
         {--batch=10000 : Insert batch size}';
 
-    protected $description = 'Benchmark storage and performance of entries_json4 vs entries_json2 (memory-safe, FK checks disabled)';
+    protected $description = 'Benchmark storage and performance of json compression (memory-safe, FK checks disabled)';
 
     private array $fakers = [];
     private array $textCache = [];

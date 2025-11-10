@@ -12,6 +12,14 @@ use PHPUnit\Framework\Assert;
 
 trait Assertions
 {
+    public function assertJsonEquals($expected, $actual): void
+    {
+        $this->assertEquals(
+            json_decode($expected, associative: true),
+            json_decode($actual, associative: true)
+        );
+    }
+
     protected function assertJsonResponseHasKeys($jsonResponse, array $expectedKeys): void
     {
         foreach ($expectedKeys as $key) {

@@ -15,7 +15,9 @@ use Carbon\Carbon;
 use ec5\DTO\ProjectDTO;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Models\Entries\BranchEntry;
+use ec5\Models\Entries\BranchEntryJson;
 use ec5\Models\Entries\Entry;
+use ec5\Models\Entries\EntryJson;
 use ec5\Models\OAuth\OAuthAccessToken;
 use ec5\Models\OAuth\OAuthClientProject;
 use ec5\Models\Project\Project;
@@ -333,6 +335,24 @@ $factory->define(Entry::class, function (Faker\Generator $faker) {
         'branch_counts' => json_encode([]),
         'created_at' => Carbon::now()->toDateTimeString(),
         'uploaded_at' => Carbon::now()->addHours(2)->toDateTimeString()
+    ];
+});
+
+$factory->define(EntryJson::class, function (Faker\Generator $faker) {
+    return [
+        'entry_id' => 0,
+        'project_id' => 0,
+        'entry_data' => json_encode([]),
+        'geo_json_data' => json_encode([]),
+    ];
+});
+
+$factory->define(BranchEntryJson::class, function (Faker\Generator $faker) {
+    return [
+        'entry_id' => 0,
+        'project_id' => 0,
+        'entry_data' => json_encode([]),
+        'geo_json_data' => json_encode([]),
     ];
 });
 
