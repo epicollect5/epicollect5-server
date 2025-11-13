@@ -170,7 +170,7 @@ class Handler extends ExceptionHandler
                 Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             }
 
-            return $this->middlewareErrorResponse($request, 'too many requests', 'ec5_255', 429);
+            return $this->middlewareErrorResponse($request, 'rate-limiter', 'ec5_255', 429);
         }
 
         return parent::render($request, $e);
