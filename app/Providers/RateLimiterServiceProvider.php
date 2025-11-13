@@ -52,6 +52,13 @@ class RateLimiterServiceProvider extends ServiceProvider
         RateLimiter::for('bulk-upload', function (Request $request) use ($limit) {
 
             if (App::environment('production')) {
+                if (!$request->user()) {
+                    //safety net just in case the user is not found, limit by IP only
+                    return [
+                        Limit::perMinute(2 * $limit)->by($request->ip())
+                    ];
+                }
+                //If the user is found, limit by user and IP
                 return [
                     //Limit per user (if authenticated, in development we might not have it)
                     Limit::perMinute($limit)->by($request->user()->id),
