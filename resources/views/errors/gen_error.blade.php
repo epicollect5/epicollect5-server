@@ -21,8 +21,6 @@
     </nav>
 
     <div class='container-fluid page-error'>
-        <h1 class="page-title">{{trans('site.error_occured')}}</h1>
-
         @if (count($errors->getMessages()) > 0)
             <div class="alert alert-danger">
                 @foreach($errors->getMessages() as $key => $error)

@@ -107,7 +107,6 @@ Route::group(['middleware' => ['throttle:600,1']], function () {
     // Use ?exact=true query string for exact match
     Route::get('api/projects/{name?}', 'Api\Project\ProjectController@search');
 
-
     // Project version
     Route::get('api/project-version/{project_slug}', 'Api\Project\ProjectController@version');
 
