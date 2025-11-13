@@ -111,9 +111,6 @@ class Handler extends ExceptionHandler
 
         // Handle not found exceptions
         if ($e instanceof NotFoundHttpException) {
-
-
-            //in development, return a 422 error for debugging
             return $this->middlewareErrorResponse($request, 'page not found exception', 'ec5_219', 422);
         }
 
