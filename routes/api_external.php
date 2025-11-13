@@ -55,7 +55,7 @@ Route::group(['middleware' => ['throttle:600,1']], function () {
         // Entry uploads
         Route::post('api/upload/{project_slug}', 'Api\Entries\Upload\UploadAppController@postUpload');
 
-        //route for debugging, works only on localhost
+        //route for debugging, only available in non-production environments
         Route::group(['middleware' => ['throttle:bulk-upload']], function () {
             Route::post('api/bulk-upload/{project_slug}', 'Api\Entries\Upload\UploadAppController@postUploadBulk');
         });
