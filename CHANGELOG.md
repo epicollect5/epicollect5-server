@@ -4,7 +4,7 @@
 
 - Removed multiple artificial response delays — faster uploads, media serving, exports, and token issuance.
 - Added bulk-upload rate limiting (per-user and per-IP) and applied throttling to bulk-upload endpoints.
-- Dataviewer 0.0.2
+- Dataviewer 0.1.2
 
 # 12.4.8
 
