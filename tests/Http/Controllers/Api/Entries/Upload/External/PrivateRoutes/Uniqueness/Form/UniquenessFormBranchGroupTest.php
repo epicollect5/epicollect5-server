@@ -19,6 +19,7 @@ use ec5\Traits\Assertions;
 use Faker\Factory as Faker;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
+use Throwable;
 
 class UniquenessFormBranchGroupTest extends TestCase
 {
@@ -2475,7 +2476,7 @@ class UniquenessFormBranchGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

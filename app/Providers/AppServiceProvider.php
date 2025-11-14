@@ -3,6 +3,7 @@
 namespace ec5\Providers;
 
 use Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Blade;
@@ -24,6 +25,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+
+        //Detect N+1 queries in non-production environments
+        if (!app()->isProduction()) {
+            Model::preventLazyLoading();
+        }
+
         //skip ide helper in production
         if ($this->app->isLocal()) {
             $this->app->register(IdeHelperServiceProvider::class);

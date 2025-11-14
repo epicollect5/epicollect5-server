@@ -5,15 +5,18 @@ namespace Tests\Models\Eloquent;
 use Carbon\Carbon;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Models\Entries\BranchEntry;
+use ec5\Models\Entries\BranchEntryJson;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
 use ec5\Models\User\User;
+use ec5\Traits\Assertions;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class BranchEntryTest extends TestCase
 {
     use DatabaseTransactions;
+    use Assertions;
 
     protected User $user;
     protected Project $project;
@@ -95,7 +98,7 @@ class BranchEntryTest extends TestCase
 
     }
 
-    public function test_should_get_branch_entries_by_form_and_branch_input_ref()
+    public function test_should_get_branch_entries_by_form_and_branch_input_ref_json_in_same_table()
     {
         //create fake branch entries
         $numOfEntries = rand(1, 5);
@@ -108,6 +111,8 @@ class BranchEntryTest extends TestCase
                 'owner_input_ref' => $this->branchInputRef,
                 'owner_entry_id' => $this->entry->id,
                 'owner_uuid' => $this->entry->uuid,
+                'entry_data' => json_encode(['foo' => 'bar']),
+                'geo_json_data' => json_encode(['lat' => 1])
             ]);
         }
 
@@ -119,9 +124,73 @@ class BranchEntryTest extends TestCase
             ],
             []
         )->count());
+
+        $entries = $this->branchEntryModel->getBranchEntriesByBranchRef(
+            $this->project->id,
+            [
+                'form_ref' => $this->formRef,
+                'branch_ref' => $this->branchInputRef
+            ],
+            []
+        )->get();
+        foreach ($entries as $entry) {
+            $this->assertNotNull($entry->entry_data);
+            $this->assertNotNull($entry->geo_json_data);
+            $this->assertJsonEquals($entry->entry_data, json_encode(['foo' => 'bar']));
+            $this->assertJsonEquals($entry->geo_json_data, json_encode(['lat' => 1]));
+        }
     }
 
-    public function test_should_get_branch_entries_by_form_and_title()
+    public function test_should_get_branch_entries_by_form_and_branch_input_ref_json_in_separate_table()
+    {
+        //create fake branch entries
+        $numOfEntries = rand(1, 5);
+
+        for ($i = 0; $i < $numOfEntries; $i++) {
+            $branchEntry = factory(BranchEntry::class)->create([
+                'project_id' => $this->project->id,
+                'user_id' => $this->user->id,
+                'form_ref' => $this->formRef,
+                'owner_input_ref' => $this->branchInputRef,
+                'owner_entry_id' => $this->entry->id,
+                'owner_uuid' => $this->entry->uuid,
+                'entry_data' => null,
+                'geo_json_data' => null
+            ]);
+            factory(BranchEntryJson::class)->create([
+                'entry_id' => $branchEntry->id,
+                'project_id' => $this->project->id,
+                'entry_data' => json_encode(['foo' => 'bar']),
+                'geo_json_data' => json_encode(['lat' => 1])
+            ]);
+        }
+
+        $this->assertEquals($numOfEntries, $this->branchEntryModel->getBranchEntriesByBranchRef(
+            $this->project->id,
+            [
+                'form_ref' => $this->formRef,
+                'branch_ref' => $this->branchInputRef
+            ],
+            []
+        )->count());
+
+        $entries = $this->branchEntryModel->getBranchEntriesByBranchRef(
+            $this->project->id,
+            [
+                'form_ref' => $this->formRef,
+                'branch_ref' => $this->branchInputRef
+            ],
+            []
+        )->get();
+        foreach ($entries as $entry) {
+            $this->assertNotNull($entry->entry_data);
+            $this->assertNotNull($entry->geo_json_data);
+            $this->assertJsonEquals($entry->entry_data, json_encode(['foo' => 'bar']));
+            $this->assertJsonEquals($entry->geo_json_data, json_encode(['lat' => 1]));
+        }
+    }
+
+    public function test_should_get_branch_entries_by_form_and_title_json_in_same_table()
     {
         //create fake entries
         $numOfEntries = rand(1, 5);
@@ -134,7 +203,9 @@ class BranchEntryTest extends TestCase
                 'owner_input_ref' => $this->branchInputRef,
                 'owner_entry_id' => $this->entry->id,
                 'owner_uuid' => $this->entry->uuid,
-                'title' => 'Ciao - ' . $i
+                'title' => 'Ciao - ' . $i,
+                'entry_data' => json_encode(['foo' => 'bar']),
+                'geo_json_data' => json_encode(['lat' => 1])
             ]);
         }
 
@@ -167,6 +238,94 @@ class BranchEntryTest extends TestCase
             ],
             []
         )->count());
+
+        $entries = $this->branchEntryModel->getBranchEntriesByBranchRef(
+            $this->project->id,
+            [
+                'form_ref' => $this->formRef,
+                'branch_ref' => $this->branchInputRef,
+                'title' => 'Ciao'
+            ],
+            []
+        )->get();
+        foreach ($entries as $entry) {
+            $this->assertNotNull($entry->entry_data);
+            $this->assertNotNull($entry->geo_json_data);
+            $this->assertJsonEquals($entry->entry_data, json_encode(['foo' => 'bar']));
+            $this->assertJsonEquals($entry->geo_json_data, json_encode(['lat' => 1]));
+        }
+    }
+
+    public function test_should_get_branch_entries_by_form_and_title_json_in_separate_table()
+    {
+        //create fake entries
+        $numOfEntries = rand(1, 5);
+
+        for ($i = 0; $i < $numOfEntries; $i++) {
+            $branchEntry = factory(BranchEntry::class)->create([
+                'project_id' => $this->project->id,
+                'user_id' => $this->user->id,
+                'form_ref' => $this->formRef,
+                'owner_input_ref' => $this->branchInputRef,
+                'owner_entry_id' => $this->entry->id,
+                'owner_uuid' => $this->entry->uuid,
+                'title' => 'Ciao - ' . $i,
+                'entry_data' => null,
+                'geo_json_data' => null
+            ]);
+            factory(BranchEntryJson::class)->create([
+                'entry_id' => $branchEntry->id,
+                'project_id' => $this->project->id,
+                'entry_data' => json_encode(['foo' => 'bar']),
+                'geo_json_data' => json_encode(['lat' => 1])
+            ]);
+        }
+
+        $this->assertEquals(1, $this->branchEntryModel->getBranchEntriesByBranchRef(
+            $this->project->id,
+            [
+                'form_ref' => $this->formRef,
+                'branch_ref' => $this->branchInputRef,
+                'title' => 'Ciao - 0'
+            ],
+            []
+        )->count());
+
+        $this->assertEquals($numOfEntries, $this->branchEntryModel->getBranchEntriesByBranchRef(
+            $this->project->id,
+            [
+                'form_ref' => $this->formRef,
+                'branch_ref' => $this->branchInputRef,
+                'title' => 'Ciao'
+            ],
+            []
+        )->count());
+
+        $this->assertEquals(0, $this->branchEntryModel->getBranchEntriesByBranchRef(
+            $this->project->id,
+            [
+                'form_ref' => $this->formRef,
+                'branch_ref' => $this->branchInputRef,
+                'title' => 'Nothing'
+            ],
+            []
+        )->count());
+
+        $entries = $this->branchEntryModel->getBranchEntriesByBranchRef(
+            $this->project->id,
+            [
+                'form_ref' => $this->formRef,
+                'branch_ref' => $this->branchInputRef,
+                'title' => 'Ciao'
+            ],
+            []
+        )->get();
+        foreach ($entries as $entry) {
+            $this->assertNotNull($entry->entry_data);
+            $this->assertNotNull($entry->geo_json_data);
+            $this->assertJsonEquals($entry->entry_data, json_encode(['foo' => 'bar']));
+            $this->assertJsonEquals($entry->geo_json_data, json_encode(['lat' => 1]));
+        }
     }
 
     public function test_should_get_branch_entries_by_user()
@@ -443,7 +602,7 @@ class BranchEntryTest extends TestCase
         }
     }
 
-    public function test_should_get_today_entries_for_archive()
+    public function test_should_get_today_entries_for_archive_json_in_same_table()
     {
         //create fake entries from last week
         for ($i = 0; $i < 5; $i++) {
@@ -452,6 +611,8 @@ class BranchEntryTest extends TestCase
                 'form_ref' => $this->formRef,
                 'owner_entry_id' => $this->entry->id,
                 'owner_input_ref' => $this->branchInputRef,
+                'entry_data' => json_encode(['foo' => 'bar']),
+                'geo_json_data' => json_encode(['lat' => 1]),
                 'created_at' => now()->subWeek()
             ]);
         }
@@ -463,6 +624,8 @@ class BranchEntryTest extends TestCase
                 'form_ref' => $this->formRef,
                 'owner_entry_id' => $this->entry->id,
                 'owner_input_ref' => $this->branchInputRef,
+                'entry_data' => json_encode(['foo' => 'bar']),
+                'geo_json_data' => json_encode(['lat' => 1]),
                 'created_at' => now()
             ]);
         }
@@ -476,7 +639,73 @@ class BranchEntryTest extends TestCase
         ])->get();
 
         $this->assertEquals(1, $entries->count());
+
+        foreach ($entries as $entry) {
+            $this->assertNotNull($entry->entry_data);
+            $this->assertNotNull($entry->geo_json_data);
+            $this->assertJsonEquals($entry->entry_data, json_encode(['foo' => 'bar']));
+            $this->assertJsonEquals($entry->geo_json_data, json_encode(['lat' => 1]));
+        }
     }
+
+    public function test_should_get_today_entries_for_archive_json_in_separate_table()
+    {
+        //create fake entries from last week
+        for ($i = 0; $i < 5; $i++) {
+            $branchEntry = factory(BranchEntry::class)->create([
+                'project_id' => $this->project->id,
+                'form_ref' => $this->formRef,
+                'owner_entry_id' => $this->entry->id,
+                'owner_input_ref' => $this->branchInputRef,
+                'entry_data' => null,
+                'geo_json_data' => null,
+                'created_at' => now()->subWeek()
+            ]);
+            factory(BranchEntryJson::class)->create([
+                'entry_id' => $branchEntry->id,
+                'project_id' => $this->project->id,
+                'entry_data' => json_encode(['foo' => 'bar']),
+                'geo_json_data' => json_encode(['lat' => 1])
+            ]);
+        }
+
+        //create fake entry for today
+        for ($i = 0; $i < 1; $i++) {
+            $branchEntry = factory(BranchEntry::class)->create([
+                'project_id' => $this->project->id,
+                'form_ref' => $this->formRef,
+                'owner_entry_id' => $this->entry->id,
+                'owner_input_ref' => $this->branchInputRef,
+                'entry_data' => null,
+                'geo_json_data' => null,
+                'created_at' => now()
+            ]);
+            factory(BranchEntryJson::class)->create([
+                'entry_id' => $branchEntry->id,
+                'project_id' => $this->project->id,
+                'entry_data' => json_encode(['foo' => 'bar']),
+                'geo_json_data' => json_encode(['lat' => 1])
+            ]);
+        }
+
+        $entries = $this->branchEntryModel->getBranchEntriesByBranchRefForArchive($this->project->id, [
+            'form_ref' => $this->formRef,
+            'branch_ref' => $this->branchInputRef,
+            'filter_by' => 'created_at',
+            'filter_from' => now()->startOfDay(),
+            'filter_to' => now()->endOfDay(),
+        ])->get();
+
+        $this->assertEquals(1, $entries->count());
+
+        foreach ($entries as $entry) {
+            $this->assertNotNull($entry->entry_data);
+            $this->assertNotNull($entry->geo_json_data);
+            $this->assertJsonEquals($entry->entry_data, json_encode(['foo' => 'bar']));
+            $this->assertJsonEquals($entry->geo_json_data, json_encode(['lat' => 1]));
+        }
+    }
+
 
     public function test_should_get_week_entries_for_archive()
     {
@@ -648,5 +877,4 @@ class BranchEntryTest extends TestCase
             []
         )->count());
     }
-
 }
