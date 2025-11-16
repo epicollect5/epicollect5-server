@@ -186,14 +186,17 @@ class UploadWebControllerAudioLocalTest extends TestCase
             $photos = Storage::disk('audio')->files($this->project->ref);
             $this->assertCount(1, $photos);
 
+            //get compressed audio file size
+            $actualBytes = Storage::disk('audio')->size($photos[0]);
+
             //assert storage stats are updated
             $projectStats = ProjectStats::where('project_id', $this->project->id)->first();
             $this->assertEquals(1, $projectStats->total_files);
             $this->assertEquals(0, $projectStats->photo_files);
-            $this->assertEquals($audioFileSize, $projectStats->total_bytes);
+            $this->assertEquals($actualBytes, $projectStats->total_bytes);
             $this->assertEquals(0, $projectStats->photo_bytes);
             $this->assertEquals(1, $projectStats->audio_files);
-            $this->assertEquals($audioFileSize, $projectStats->audio_bytes);
+            $this->assertEquals($actualBytes, $projectStats->audio_bytes);
             $this->assertEquals(0, $projectStats->video_files);
 
             //delete temp folder
@@ -309,6 +312,12 @@ class UploadWebControllerAudioLocalTest extends TestCase
             //assert file is uploaded
             $photos = Storage::disk('photo')->files($this->project->ref);
             $this->assertCount(1, $photos);
+
+            //get compressed audio and video file size
+            $audios = Storage::disk('audio')->files($this->project->ref);
+            $audioFileSize = Storage::disk('audio')->size($audios[0]);
+            $videos = Storage::disk('video')->files($this->project->ref);
+            $videoFileSize = Storage::disk('video')->size($videos[0]);
 
             //assert storage stats are updated
             $totalBytes = $expectedBytes + $audioFileSize + $videoFileSize;
@@ -438,14 +447,18 @@ class UploadWebControllerAudioLocalTest extends TestCase
             $audios = Storage::disk('audio')->files($this->project->ref);
             $this->assertCount(1, $audios);
 
+            //check compression was successful
+            $actualBytes = Storage::disk('audio')->size($audios[0]);
+            $this->assertLessThanOrEqual($audioFileSize, $actualBytes);
+
             //assert storage stats are updated
             $projectStats = ProjectStats::where('project_id', $this->project->id)->first();
             $this->assertEquals(1, $projectStats->total_files);
             $this->assertEquals(0, $projectStats->photo_files);
-            $this->assertEquals($audioFileSize, $projectStats->total_bytes);
+            $this->assertEquals($actualBytes, $projectStats->total_bytes);
             $this->assertEquals(0, $projectStats->photo_bytes);
             $this->assertEquals(1, $projectStats->audio_files);
-            $this->assertEquals($audioFileSize, $projectStats->audio_bytes);
+            $this->assertEquals($actualBytes, $projectStats->audio_bytes);
             $this->assertEquals(0, $projectStats->video_files);
             $this->assertEquals(0, $projectStats->video_bytes);
 
@@ -575,15 +588,19 @@ class UploadWebControllerAudioLocalTest extends TestCase
             $audios = Storage::disk('audio')->files($this->project->ref);
             $this->assertCount(1, $audios);
 
+            $actualBytes = Storage::disk('audio')->size($audios[0]);
+            //check compression was successful
+            $this->assertLessThanOrEqual($audioFileSize, $actualBytes);
+
             //assert storage stats are updated
             $projectStats = ProjectStats::where('project_id', $this->project->id)->first();
             $this->assertEquals(1, $projectStats->total_files);
             $this->assertEquals(0, $projectStats->photo_files);
-            $this->assertEquals($audioFileSize, $projectStats->total_bytes);
+            $this->assertEquals($actualBytes, $projectStats->total_bytes);
             $this->assertEquals(0, $projectStats->photo_bytes);
             $this->assertEquals(1, $projectStats->audio_files);
             $this->assertEquals(0, $projectStats->video_files);
-            $this->assertEquals($audioFileSize, $projectStats->audio_bytes);
+            $this->assertEquals($actualBytes, $projectStats->audio_bytes);
             $this->assertEquals(0, $projectStats->video_bytes);
 
             Storage::disk('temp')->deleteDirectory('audio/'.$this->project->ref);

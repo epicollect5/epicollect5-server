@@ -5,9 +5,11 @@ namespace Tests\Services\Media;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectStats;
+use ec5\Services\Media\AudioVideoCompressionService;
 use ec5\Services\Media\AudioVideoSaverService;
 use Exception;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Mockery;
 use Ramsey\Uuid\Uuid;
 use Tests\TestCase;
 use Storage;
@@ -104,59 +106,77 @@ class AudioVideoSaverServiceS3Test extends TestCase
         $this->assertFalse($result);
     }
 
-    /**
-     * @throws Exception
-     */
-    public function test_service_successfully_saves_file_to_s3()
+    public function test_service_successfully_compresses_and_saves_file_to_s3()
     {
+        // Create project & stats
         $project = factory(Project::class)->create();
         factory(ProjectStats::class)->create([
             'project_id' => $project->id,
         ]);
 
-        $fileName = Uuid::uuid4()->toString(). '_' . time() . '.mp4';
+        $fileName = Uuid::uuid4()->toString() . '_' . time() . '.mp4';
         $disk = 'audio';
-        $file = ['path' => 'temp/'.$fileName];
+        $filePath = 'temp/' . $fileName;
         $fileBytes = 21;
 
-        // Mock S3 read stream with fixture data
+        // --- Mock compression service (simulate success) ---
+        $mockCompression = Mockery::mock(AudioVideoCompressionService::class);
+        // No FFMpeg chain needed as compression is mocked
+        $mockCompression->shouldReceive('compress')
+            ->once()
+            ->with($disk, $project->ref . '/' . $fileName, $disk)
+            ->andReturn(true);
+        $this->app->instance(AudioVideoCompressionService::class, $mockCompression);
+
+        // --- Mock all Storage interactions ---
         Storage::shouldReceive('disk')
-            ->with('s3')
-            ->twice()
             ->andReturnSelf();
 
-        $stream = fopen('php://temp', 'r+');
-        fwrite($stream, 'fake audio content for success test');
-        rewind($stream);
-        Storage::shouldReceive('readStream')
-            ->once() // Explicit expectation: stream should be read only once
-            ->andReturn($stream);
-
-        Storage::shouldReceive('size')
-            ->once()
-            ->with($file['path'])
-            ->andReturn($fileBytes); // match the size of your fake content
-
-        // Mock target disk for successful save
-        Storage::shouldReceive('disk')
-            ->with($disk)
-            ->once()
-            ->andReturnSelf();
-        Storage::shouldReceive('put')
-            ->once()
+        Storage::shouldReceive('exists')
             ->andReturn(true);
 
-        // Assert service returns true on successful save
-        $result = AudioVideoSaverService::saveFile($project->ref, $project->id, $file, $fileName, $disk, true);
+        Storage::shouldReceive('size')
+            ->andReturn($fileBytes);
+
+        Storage::shouldReceive('move')
+            ->andReturn(true);
+
+        Storage::shouldReceive('delete')
+            ->andReturn(true);
+
+        Storage::shouldReceive('put')
+            ->andReturn(true);
+
+        // Create fake stream for S3 read
+        $stream = fopen('php://temp', 'r+');
+        fwrite($stream, 'fake audio content');
+        rewind($stream);
+
+        Storage::shouldReceive('readStream')
+            ->andReturn($stream);
+
+        // --- Execute service ---
+        $result = AudioVideoSaverService::saveFile(
+            $project->ref,
+            $project->id,
+            ['path' => $filePath],
+            $fileName,
+            $disk,
+            true // fromS3
+        );
+
+        // --- Assertions ---
         $this->assertTrue($result);
 
-        // Assert project stats updated correctly
         $projectStats = ProjectStats::where('project_id', $project->id)->first();
+
         $this->assertEquals($fileBytes, $projectStats->audio_bytes);
         $this->assertEquals(1, $projectStats->audio_files);
         $this->assertEquals($fileBytes, $projectStats->total_bytes);
         $this->assertEquals(1, $projectStats->total_files);
     }
+
+
 
     /**
      * @throws Exception
