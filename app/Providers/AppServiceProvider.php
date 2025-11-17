@@ -25,7 +25,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         //skip ide helper in production
-        if ($this->app->isLocal()) {
+        if ($this->app->environment('development')) {
             $this->app->register(IdeHelperServiceProvider::class);
         }
 

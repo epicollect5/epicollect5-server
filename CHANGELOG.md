@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 12.4.10
+
+- Minor fix for ide helper loading only in development environments
+
 # 12.4.9
 
 - Removed multiple artificial response delays — faster uploads, media serving, exports, and token issuance.
