@@ -1,5 +1,10 @@
 ## Release Notes
 
+# 12.4.12
+
+- Added laravel cache garbage collector package
+- Garbage collector will run daily at 03:00 UTC
+
 # 12.4.11
 
 - Fixed wrong date in project details page

@@ -43,19 +43,19 @@ class Kernel extends ConsoleKernel
             //grab system stats for the current day
             $schedule->command('system:stats')
                 ->dailyAt('01:00')
-                ->timezone('Europe/London')
+                ->timezone('UTC')
                 ->withoutOverlapping();
 
             //check storage available
             $schedule->command('system:check-storage')
                 ->dailyAt('07:00')
-                ->timezone('Europe/London')
+                ->timezone('UTC')
                 ->withoutOverlapping();
 
             //clear laravel expired cache files
             $schedule->command('cache:gc')
                 ->dailyAt('03:00')
-                ->timezone('Europe/London')
+                ->timezone('UTC')
                 ->withoutOverlapping();
         } else {
             //run commands every hour locally (for debugging)
