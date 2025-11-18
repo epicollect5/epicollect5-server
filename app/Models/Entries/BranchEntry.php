@@ -6,6 +6,7 @@ use DB;
 use ec5\Traits\Eloquent\Entries;
 use ec5\Traits\Models\SerializeDates;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Query\Builder;
 
 /**
@@ -48,6 +49,52 @@ class BranchEntry extends Model
     ];
 
     /**
+     * Get the branch entry's json data from branch_entries_json table
+     */
+    public function json(): HasOne
+    {
+        return $this->hasOne(BranchEntryJson::class, 'entry_id');
+    }
+
+    /**
+     * Transparent accessor for entry_data.
+     * Uses entries_json if inline data is null.
+     * ⚠️ For performance, always eager-load 'json' in bulk queries.
+     */
+    public function getEntryDataAttribute($value)
+    {
+        if (!is_null($value)) {
+            return $value;
+        }
+
+        if ($this->relationLoaded('json')) {
+            return $this->json?->entry_data;
+        }
+
+        // Avoid N+1 in loops — use eager loading where possible
+        return $this->json()->value('entry_data');
+    }
+
+    /**
+     * Transparent accessor for geo_json_data.
+     * Falls back to entries_json.geo_json_data if null.
+     * ⚠️ Always eager-load 'json' to avoid N+1 queries in bulk reads.
+     */
+    public function getGeoJsonDataAttribute($value)
+    {
+        if (!is_null($value)) {
+            return $value;
+        }
+
+        if ($this->relationLoaded('json')) {
+            return $this->json?->geo_json_data;
+        }
+
+        // Lazy-load as a last resort (1 query)
+        return $this->json()->value('geo_json_data');
+    }
+
+    /**
      * @param $projectId
      * @param $options
      * @param array $columns
@@ -55,19 +102,31 @@ class BranchEntry extends Model
      */
     public function getEntry($projectId, $options, array $columns = array('*')): Builder
     {
-        $q = DB::table($this->table)->select($columns)
-            ->where('project_id', '=', $projectId)
-            ->where('form_ref', '=', $options['form_ref'])
-            ->where('uuid', '=', $options['uuid'])
+        // Remove entry_data and geo_json_data from $columns completely
+        // We do this for the COALESCE to work properly
+        $columns = array_diff($columns, ['entry_data', 'geo_json_data']);
+
+        $q = DB::table($this->table . ' as be')
+            ->leftJoin('branch_entries_json as bej', 'be.id', '=', 'bej.entry_id')
+            ->select(array_merge(
+                $columns,
+                [
+                    DB::raw('COALESCE(be.entry_data, bej.entry_data) as entry_data'),
+                    DB::raw('COALESCE(be.geo_json_data, bej.geo_json_data) as geo_json_data')
+                ]
+            ))
+            ->where('be.project_id', '=', $projectId)
+            ->where('be.form_ref', '=', $options['form_ref'])
+            ->where('be.uuid', '=', $options['uuid'])
             ->where(function ($query) use ($options) {
                 // If we have a user ID
                 if (!empty($options['user_id'])) {
-                    $query->where('user_id', '=', $options['user_id']);
+                    $query->where('be.user_id', '=', $options['user_id']);
                 }
             })->where(function ($query) use ($options) {
                 // If we have an owner uuid
                 if (!empty($options['owner_entry_uuid'])) {
-                    $query->where('owner_uuid', '=', $options['owner_entry_uuid']);
+                    $query->where('be.owner_uuid', '=', $options['owner_entry_uuid']);
                 }
             });
 
@@ -93,17 +152,28 @@ class BranchEntry extends Model
      */
     public function getBranchEntriesByBranchRef(int $projectId, array $params, $columns = array('*')): Builder
     {
-        $q = DB::table(config('epicollect.tables.branch_entries'))
-            ->where('project_id', '=', $projectId)
-            ->where('form_ref', '=', $params['form_ref'])
-            ->where('owner_input_ref', '=', $params['branch_ref'])
+        // Remove entry_data and geo_json_data from $columns completely
+        // We do this for the COALESCE to work properly
+        $columns = array_diff($columns, ['entry_data', 'geo_json_data']);
+
+        $q = DB::table(config('epicollect.tables.branch_entries') . ' as be')
+            ->leftJoin('branch_entries_json as bej', 'be.id', '=', 'bej.entry_id')
+            ->select(array_merge(
+                $columns,
+                [
+                    DB::raw('COALESCE(be.entry_data, bej.entry_data) as entry_data'),
+                    DB::raw('COALESCE(be.geo_json_data, bej.geo_json_data) as geo_json_data')
+                ]
+            ))
+            ->where('be.project_id', '=', $projectId)
+            ->where('be.form_ref', '=', $params['form_ref'])
+            ->where('be.owner_input_ref', '=', $params['branch_ref'])
             ->where(function ($query) use ($params) {
                 // If we have a user ID
                 if (!empty($params['user_id'])) {
-                    $query->where('user_id', '=', $params['user_id']);
+                    $query->where('be.user_id', '=', $params['user_id']);
                 }
-            })
-            ->select($columns);
+            });
 
         return $this->sortAndFilterEntries($q, $params);
     }
@@ -124,19 +194,31 @@ class BranchEntry extends Model
         if (!in_array('id', $columns)) {
             $columns[] = 'id';
         }
+
+        // Remove entry_data and geo_json_data from $columns completely
+        // We do this for the COALESCE to work properly
+        $columns = array_diff($columns, ['entry_data', 'geo_json_data']);
+
         // Optimized version without user_id filtering and sorting for better performance during bulk exports
         //Use raw SQL to apply FORCE INDEX
-        $q = DB::table(DB::raw(config('epicollect.tables.branch_entries') . ' FORCE INDEX (idx_branch_entries_project_form_ref_id)'))
-            ->where('project_id', '=', $projectId)
-            ->where('form_ref', '=', $params['form_ref'])
-            ->where('owner_input_ref', '=', $params['branch_ref'])
+        $q = DB::table(DB::raw(config('epicollect.tables.branch_entries') . ' as be FORCE INDEX (idx_branch_entries_project_form_ref_id)'))
+            ->leftJoin('branch_entries_json as bej', 'be.id', '=', 'bej.entry_id')
+            ->select(array_merge(
+                $columns,
+                [
+                    DB::raw('COALESCE(be.entry_data, bej.entry_data) as entry_data'),
+                    DB::raw('COALESCE(be.geo_json_data, bej.geo_json_data) as geo_json_data')
+                ]
+            ))
+            ->where('be.project_id', '=', $projectId)
+            ->where('be.form_ref', '=', $params['form_ref'])
+            ->where('be.owner_input_ref', '=', $params['branch_ref'])
             ->where(function ($query) use ($params) {
                 // If we have a user ID
                 if (!empty($params['user_id'])) {
-                    $query->where('user_id', '=', $params['user_id']);
+                    $query->where('be.user_id', '=', $params['user_id']);
                 }
-            })
-            ->select($columns);
+            });
 
         //filtering needed for different timeframe downloads (today,month, year...)
         return $this->filteringForArchive($q, $params);
@@ -178,18 +260,29 @@ class BranchEntry extends Model
      */
     public function getBranchEntriesForBranchRefAndOwner($projectId, $options, array $columns = array('*')): Builder
     {
-        $q = DB::table($this->table)
-            ->where('project_id', '=', $projectId)
-            ->where('form_ref', '=', $options['form_ref'])
-            ->where('owner_uuid', '=', $options['branch_owner_uuid'])
-            ->where('owner_input_ref', '=', $options['branch_ref'])
+        // Remove entry_data and geo_json_data from $columns completely
+        // We do this for the COALESCE to work properly
+        $columns = array_diff($columns, ['entry_data', 'geo_json_data']);
+
+        $q = DB::table($this->table . ' as be')
+            ->leftJoin('branch_entries_json as bej', 'be.id', '=', 'bej.entry_id')
+            ->select(array_merge(
+                $columns,
+                [
+                    DB::raw('COALESCE(be.entry_data, bej.entry_data) as entry_data'),
+                    DB::raw('COALESCE(be.geo_json_data, bej.geo_json_data) as geo_json_data')
+                ]
+            ))
+            ->where('be.project_id', '=', $projectId)
+            ->where('be.form_ref', '=', $options['form_ref'])
+            ->where('be.owner_uuid', '=', $options['branch_owner_uuid'])
+            ->where('be.owner_input_ref', '=', $options['branch_ref'])
             ->where(function ($query) use ($options) {
                 // If we have a user ID
                 if (!empty($options['user_id'])) {
-                    $query->where('user_id', '=', $options['user_id']);
+                    $query->where('be.user_id', '=', $options['user_id']);
                 }
-            })
-            ->select($columns);
+            });
 
         return $this->sortAndFilterEntries($q, $options);
     }
