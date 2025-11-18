@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 12.4.11
+
+- Fixed wrong date in project details page
+
 # 12.4.10
 
 - Minor fix for ide helper loading only in development environments
