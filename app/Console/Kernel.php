@@ -13,6 +13,7 @@ use ec5\Console\Commands\SystemStatsCommand;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use Illuminate\Support\Facades\App;
+use jdavidbakr\LaravelCacheGarbageCollector\LaravelCacheGarbageCollector;
 
 class Kernel extends ConsoleKernel
 {
@@ -28,7 +29,9 @@ class Kernel extends ConsoleKernel
         SystemProjectStorageCommand::class,
         SeedEntriesCommand::class,
         SeedMediaCommand::class,
-        SeedSuperadminCommand::class
+        SeedSuperadminCommand::class,
+        LaravelCacheGarbageCollector::class
+
     ];
 
     /**
@@ -46,6 +49,12 @@ class Kernel extends ConsoleKernel
             //check storage available
             $schedule->command('system:check-storage')
                 ->dailyAt('07:00')
+                ->timezone('Europe/London')
+                ->withoutOverlapping();
+
+            //clear laravel expired cache files
+            $schedule->command('cache:gc')
+                ->dailyAt('03:00')
                 ->timezone('Europe/London')
                 ->withoutOverlapping();
         } else {
