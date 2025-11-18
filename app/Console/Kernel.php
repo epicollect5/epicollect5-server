@@ -31,7 +31,6 @@ class Kernel extends ConsoleKernel
         SeedMediaCommand::class,
         SeedSuperadminCommand::class,
         LaravelCacheGarbageCollector::class
-
     ];
 
     /**
@@ -52,9 +51,9 @@ class Kernel extends ConsoleKernel
                 ->timezone('UTC')
                 ->withoutOverlapping();
 
-            //clear laravel expired cache files
+            //clear laravel expired cache files on Sunday at 04:00 UTC
             $schedule->command('cache:gc')
-                ->dailyAt('03:00')
+                ->weeklyOn(0, '04:00')
                 ->timezone('UTC')
                 ->withoutOverlapping();
         } else {

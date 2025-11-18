@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 12.4.13
+
+- Set garbage collector to run weekly on Sunday at 04:00 UTC
+
 # 12.4.12
 
 - Added laravel cache garbage collector package
