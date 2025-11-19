@@ -1,5 +1,10 @@
 ## Release Notes
 
+# 12.4.14
+
+- Fixed missing $errors array initialization
+- Removed unused endpoints
+
 # 12.4.13
 
 - Set garbage collector to run weekly on Sunday at 04:00 UTC
