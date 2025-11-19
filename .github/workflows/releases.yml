@@ -46,7 +46,8 @@ jobs:
           } >> "$GITHUB_OUTPUT"
       
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2.4.2
         with:
           body_path: RELEASE_NOTES.md
           draft: false
