@@ -114,7 +114,7 @@ $(document).ready(function () {
         params.access = (access === 'any') ? '' : access;
         params.visibility = (visibility === 'any') ? '' : visibility;
 
-        _filterProjects(500);
+        _filterProjects(500, false);
     });
 
     //filter based on access value
@@ -127,9 +127,7 @@ $(document).ready(function () {
         accessDropdownToggle.data('selected-value', selected);
         accessDropdownToggle.parent().find('.dropdown-text').text(capitalize(selected));
 
-        console.log(params);
-
-        _filterProjects(0);
+        _filterProjects(0, false);
 
     });
 
@@ -137,7 +135,13 @@ $(document).ready(function () {
     orderByDropdownMenu.on('click', 'li', function () {
 
         var selected = $(this).data('filter-value');
-        var isArchived = $(this).data('archived');
+        var isArchived = false;
+
+        if ($('.page-admin .nav-tabs li.active a').text().trim() === 'Projects Archived') {
+            // The active tab is "Projects Archived"
+            isArchived = true;
+        }
+
         params.order_by = selected;
         orderByDropdownToggle.data('selected-value', selected);
         orderByDropdownToggle.parent().find('.dropdown-text').text(capitalize(selected));
@@ -156,7 +160,7 @@ $(document).ready(function () {
         visibilityDropdownToggle.data('selected-value', selected);
         visibilityDropdownToggle.parent().find('.dropdown-text').text(capitalize(selected));
 
-        _filterProjects(0);
+        _filterProjects(0, false);
 
     });
 
@@ -166,7 +170,12 @@ $(document).ready(function () {
 
     function onPaginationClick(e) {
         e.preventDefault();
+        var isArchived = false;
 
+        if ($('.page-admin .nav-tabs li.active a').text().trim() === 'Projects Archived') {
+            // The active tab is "Projects Archived"
+            isArchived = true;
+        }
         var visibility = visibilityDropdownToggle.data('selected-value');
         var access = accessDropdownToggle.data('selected-value');
 
@@ -175,7 +184,7 @@ $(document).ready(function () {
         params.access = access === 'any' ? '' : access;
         params.visibility = visibility === 'any' ? '' : visibility;
 
-        _filterProjects(0);
+        _filterProjects(0, isArchived);
     }
 
     //perform project filtering
@@ -184,8 +193,11 @@ $(document).ready(function () {
         loader.removeClass('hidden');
         projectsList.find('.projects__table__wrapper').empty();
 
+        // Only update archived status when the caller explicitly passes it.
         if (isArchived) {
             params.status = 'archived';
+        } else {
+            delete params.status;
         }
 
         throttle(function () {

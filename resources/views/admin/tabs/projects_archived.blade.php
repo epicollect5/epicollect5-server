@@ -21,9 +21,9 @@
                                         <span class="caret"></span>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu__archived pull-right">
-                                        <li data-filter-value="entries" data-archived="true"><a href="#">Entries</a>
+                                        <li data-filter-value="entries"><a href="#">Entries</a>
                                         </li>
-                                        <li data-filter-value="storage" data-archived="true"><a href="#">Storage</a>
+                                        <li data-filter-value="storage"><a href="#">Storage</a>
                                         </li>
                                     </ul>
                                 </div>
