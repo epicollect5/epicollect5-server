@@ -24,7 +24,6 @@ class Kernel extends ConsoleKernel
         SystemStatsCommand::class,
         RemoveUnverifiedUsersCommand::class,
         SystemCheckStorageCommand::class,
-        SystemCheckStorageCommand::class,
         SystemClearOpcache::class,
         SystemProjectStorageCommand::class,
         SeedEntriesCommand::class,

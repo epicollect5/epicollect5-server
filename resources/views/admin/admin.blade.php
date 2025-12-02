@@ -36,6 +36,10 @@
                     </a>
                 </li>
             @endif
+            <li role="presentation" @if($action == 'projects-archived') class="active" @endif>
+                <a href="{{ url('admin/projects-archived') }}">{{trans('site.projects_archived')}}
+                </a>
+            </li>
         </ul>
 
         {{-- Tab panes --}}
@@ -47,6 +51,10 @@
             @elseif ($action == 'projects')
                 <div class="tab-pane active projects" id="projects">
                     @include('admin.tabs.projects')
+                </div>
+            @elseif ($action == 'projects-archived')
+                <div class="tab-pane active projects" id="projects-archived">
+                    @include('admin.tabs.projects_archived')
                 </div>
             @elseif ($action == 'stats')
                 <div class="tab-pane active stats" id="stats">

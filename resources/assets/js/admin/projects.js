@@ -35,12 +35,13 @@ window.EC5.admin.projects = window.EC5.admin.projects || {};
     module.getProjects = function (params) {
 
         var deferred = new $.Deferred();
-
-        console.log(params);
-
+        var url = params.url;
+        if (params.status === 'archived') {
+            url += '-archived';
+        }
         // Make ajax request to load projects
         $.ajax({
-            url: params.url,
+            url: url,
             type: 'GET',
             dataType: 'json',
             data: params
@@ -88,6 +89,7 @@ $(document).ready(function () {
     var visibilityDropdownMenu = filterControls.find('.filter-controls__visibility .dropdown-menu');
     var orderByDropdownToggle = filterControls.find('.filter-controls__order_by .dropdown-toggle');
     var orderByDropdownMenu = filterControls.find('.filter-controls__order_by .dropdown-menu');
+
     var projectsList = $(' .page-admin .projects-list');
     var loader = $('.page-admin .projects-loader');
 
@@ -135,12 +137,12 @@ $(document).ready(function () {
     orderByDropdownMenu.on('click', 'li', function () {
 
         var selected = $(this).data('filter-value');
+        var isArchived = $(this).data('archived');
         params.order_by = selected;
         orderByDropdownToggle.data('selected-value', selected);
         orderByDropdownToggle.parent().find('.dropdown-text').text(capitalize(selected));
-
         console.log(params);
-        _filterProjects(0);
+        _filterProjects(0, isArchived);
     });
 
 
@@ -177,10 +179,14 @@ $(document).ready(function () {
     }
 
     //perform project filtering
-    function _filterProjects(delay) {
+    function _filterProjects(delay, isArchived) {
 
         loader.removeClass('hidden');
         projectsList.find('.projects__table__wrapper').empty();
+
+        if (isArchived) {
+            params.status = 'archived';
+        }
 
         throttle(function () {
             window.EC5.admin.projects.getProjects(params).then(function (response) {

@@ -177,9 +177,10 @@ class Project extends Model
         return (string)$updatedAt;
     }
 
-    public function admin($params = []): Paginator|array
+    public function admin(array $params = [], bool $archived = false): Paginator|array
     {
         $perPage  = config('epicollect.limits.admin_projects_per_page');
+        $operator = $archived ? '=' : '<>';
 
         // Determine order by column
         $orderBy = match ($params['order_by'] ?? null) {
@@ -205,7 +206,7 @@ class Project extends Model
                     $query->where($this->getTable() . '.visibility', '=', $params['visibility']);
                 }
             })
-            ->where($this->getTable() . '.status', '<>', 'archived')
+            ->where($this->getTable() . '.status', $operator, 'archived')
             ->orderBy($this->projectStatsTable . '.'.$orderBy, 'desc')  // Ensure sorting works
             ->select(
                 $this->getTable() . '.*',
@@ -217,6 +218,10 @@ class Project extends Model
             ->simplePaginate($perPage);
     }
 
+    public function adminArchived(array $params = []): Paginator|array
+    {
+        return $this->admin($params, true);
+    }
 
     /**
      * @throws Throwable
