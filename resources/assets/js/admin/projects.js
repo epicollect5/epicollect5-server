@@ -135,12 +135,8 @@ $(document).ready(function () {
     orderByDropdownMenu.on('click', 'li', function () {
 
         var selected = $(this).data('filter-value');
-        var isArchived = false;
 
-        if ($('.page-admin .nav-tabs li.active a').text().trim() === 'Projects Archived') {
-            // The active tab is "Projects Archived"
-            isArchived = true;
-        }
+        var isArchived = $('.page-admin .nav-tabs li.active').data('archived') === true;
 
         params.order_by = selected;
         orderByDropdownToggle.data('selected-value', selected);
@@ -169,12 +165,7 @@ $(document).ready(function () {
 
     function onPaginationClick(e) {
         e.preventDefault();
-        var isArchived = false;
-
-        if ($('.page-admin .nav-tabs li.active a').text().trim() === 'Projects Archived') {
-            // The active tab is "Projects Archived"
-            isArchived = true;
-        }
+        var isArchived = $('.page-admin .nav-tabs li.active').data('archived') === true;
         var visibility = visibilityDropdownToggle.data('selected-value');
         var access = accessDropdownToggle.data('selected-value');
 

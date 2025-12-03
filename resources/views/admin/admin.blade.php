@@ -36,7 +36,7 @@
                     </a>
                 </li>
             @endif
-            <li role="presentation" @if($action == 'projects-archived') class="active" @endif>
+            <li role="presentation" @if($action == 'projects-archived') class="active" @endif data-archived="true">
                 <a href="{{ url('admin/projects-archived') }}">{{trans('site.projects_archived')}}
                 </a>
             </li>
