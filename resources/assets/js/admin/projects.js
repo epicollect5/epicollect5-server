@@ -145,7 +145,6 @@ $(document).ready(function () {
         params.order_by = selected;
         orderByDropdownToggle.data('selected-value', selected);
         orderByDropdownToggle.parent().find('.dropdown-text').text(capitalize(selected));
-        console.log(params);
         _filterProjects(0, isArchived);
     });
 
