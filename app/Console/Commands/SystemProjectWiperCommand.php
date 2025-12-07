@@ -7,6 +7,7 @@ use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
 use ec5\Traits\Project\ProjectWiper;
 use Illuminate\Console\Command;
+use Log;
 use Storage;
 use Throwable;
 
@@ -22,7 +23,15 @@ class SystemProjectWiperCommand extends Command
 
     public function handle(): int
     {
-        $projectId = (int) $this->option('project-id');
+        $projectIdRaw = $this->option('project-id');
+        $projectId = (int) $projectIdRaw;
+
+        // Explicit check for a missing ID
+        if (!$projectIdRaw || $projectId === 0) {
+            $this->error("The --project-id option is required and must be a valid ID.");
+            return self::FAILURE;
+        }
+
         $dryRun = $this->option('dry-run');
         $project = Project::where('id', $projectId)
             ->first();
@@ -81,6 +90,7 @@ class SystemProjectWiperCommand extends Command
         try {
             $this->eraseProject($projectId, $project->slug, $progress);
         } catch (Throwable $e) {
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             $this->error("Error erasing project: " . $e->getMessage());
             return self::FAILURE;
         }
