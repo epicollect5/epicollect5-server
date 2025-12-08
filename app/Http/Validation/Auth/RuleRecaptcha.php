@@ -6,7 +6,7 @@ use ec5\Http\Validation\ValidationBase;
 
 class RuleRecaptcha extends ValidationBase
 {
-    protected $rules = [
+    protected array $rules = [
         'success' => 'boolean',
         'challenge_ts' => 'present',
         'hostname' => 'present',
@@ -19,7 +19,7 @@ class RuleRecaptcha extends ValidationBase
         $this->messages['*.*'] = 'ec5_380';
     }
 
-    public function additionalChecks($inputs)
+    public function additionalChecks($inputs): void
     {
         if ($inputs['success'] !== true) {
             $this->addAdditionalError('captcha', 'ec5_380');

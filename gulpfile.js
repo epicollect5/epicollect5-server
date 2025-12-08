@@ -1,6 +1,6 @@
 'use strict';
 var gulp = require('gulp');
-const sass = require('gulp-sass')(require('sass'));
+var sass = require('gulp-sass')(require('sass'));
 var phpunit = require('gulp-phpunit');
 var concatCss = require('gulp-concat-css');
 var concat = require('gulp-concat');
@@ -28,7 +28,7 @@ gulp.task('watch-js', function () {
 gulp.task('sass', async function compileSass() {
     gulp.src('./resources/assets/sass/site.scss')
         .pipe(sass().on('error', sass.logError))
-        .pipe(cleanCSS({ processImport: false }))
+        .pipe(cleanCSS({processImport: false}))
         .pipe(gulp.dest('./public/css/'));
 });
 

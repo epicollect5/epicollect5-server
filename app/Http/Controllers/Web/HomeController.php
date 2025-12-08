@@ -3,28 +3,25 @@
 namespace ec5\Http\Controllers\Web;
 
 use ec5\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-
-use ec5\Repositories\QueryBuilder\Project\SearchRepository as Projects;
-use ec5\Models\Eloquent\SystemStats;
 use ec5\Libraries\Utilities\Common;
-use Exception;
+use ec5\Models\Project\Project;
+use ec5\Models\System\SystemStats;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\View\View;
+use Log;
+use Throwable;
 
 class HomeController extends Controller
 {
-    /**
-     * @var
-     */
-    private $projects;
-    private $dailySystemStats;
+    private Project $projectModel;
+    private SystemStats $dailySystemStats;
 
     /**
      * ProjectsController constructor.
-     * @param Projects $projects
      */
-    public function __construct(Projects $projects, SystemStats $systemStats)
+    public function __construct(Project $projectModel, SystemStats $systemStats)
     {
-        $this->projects = $projects;
+        $this->projectModel = $projectModel;
         $this->dailySystemStats = $systemStats;
         $this->dailySystemStats->initDailyStats();
     }
@@ -32,33 +29,26 @@ class HomeController extends Controller
     /**
      * Show home page (available to all users)
      *
-     * @param Request $request
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @return Factory|View
      */
-    public function index(Request $request)
+    public function index()
     {
-
-        $columns = [
-            'projects.name',
-            'projects.slug',
-            'projects.logo_url',
-            'projects.access',
-            'projects.small_description',
-        ];
-
         try {
-
             //get all featured projects (ordered by updated timestamp)
-            $allFeaturedProjects = $this->projects->featuredProjects($columns);
+            $allFeaturedProjects = $this->projectModel->featured();
 
-            //first row with 3 projects, as we have the community column
-            $projectsFirstRow = $allFeaturedProjects->splice(0, 3);
-
-            //second row with 4 projects
+            //legacy: show community column only if the total of featured projects is 7
+            if ($allFeaturedProjects->count() > 7) {
+                //since release 11.0.0 we only show projects if 8 featured projects, hiding the community column
+                $projectsFirstRow = $allFeaturedProjects->splice(0, 4);
+            } else {
+                //first row with 3 projects, as we have the community column
+                $projectsFirstRow = $allFeaturedProjects->splice(0, 3);
+            }
+            //second row always with 4 projects
             $projectsSecondRow = $allFeaturedProjects->splice(0, 4);
-        } catch (Exception $e) {
-            \Log::error('Failed to get featured projects, maybe brand new instance?');
-            $allFeaturedProjects = [];
+        } catch (Throwable $e) {
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             $projectsFirstRow = [];
             $projectsSecondRow = [];
         }
@@ -66,23 +56,19 @@ class HomeController extends Controller
         try {
             //get total of users
             $users = Common::roundNumber($this->dailySystemStats->getUserStats()->total, 0);
-
             //get sum of all projects
             $projectStats = $this->dailySystemStats->getProjectStats()->total;
             $publicProjects = $projectStats->public->hidden + $projectStats->public->listed;
             $privateProjects = $projectStats->private->hidden + $projectStats->private->listed;
             $totalProjects = Common::roundNumber($publicProjects + $privateProjects, 0);
-
             //get sum of all entries
             $entriesStats = $this->dailySystemStats->getEntriesStats()->total;
             $branchEntriesStats = $this->dailySystemStats->getBranchEntriesStats()->total;
             $totalEntries = $entriesStats->public + $entriesStats->private;
             $totalBranchEntries = $branchEntriesStats->public + $branchEntriesStats->private;
-            $totalAllEntries = Common::roundNumber($totalEntries +  $totalBranchEntries, 0);
-        } catch (Exception $e) {
-            \Log::error('Failed to get system stats, maybe brand new instance?', [
-                'exception' => $e->getMessage()
-            ]);
+            $totalAllEntries = Common::roundNumber($totalEntries + $totalBranchEntries, 0);
+        } catch (Throwable $e) {
+            Log::error('Failed to get system stats, maybe brand new instance?', ['exception' => $e->getMessage()]);
             $users = 0;
             $totalProjects = 0;
             $totalAllEntries = 0;
@@ -93,9 +79,9 @@ class HomeController extends Controller
             [
                 'projectsFirstRow' => $projectsFirstRow,
                 'projectsSecondRow' => $projectsSecondRow,
-                'users' =>  $users,
-                'projects' =>  $totalProjects,
-                'entries' =>   $totalAllEntries
+                'users' => $users,
+                'projects' => $totalProjects,
+                'entries' => $totalAllEntries
             ]
         );
     }

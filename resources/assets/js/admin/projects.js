@@ -21,7 +21,7 @@ window.EC5.admin.projects = window.EC5.admin.projects || {};
             url: window.EC5.SITE_URL + '/admin/update-user-project-role',
             type: 'POST',
             dataType: 'json',
-            data: { role: role, project_id: projectId }
+            data: {role: role, project_id: projectId}
         }).done(function (data) {
             window.EC5.toast.showSuccess(data.data.title);
         }).fail(window.EC5.showError);
@@ -76,7 +76,8 @@ $(document).ready(function () {
         page: 1,
         name: '',
         access: '',
-        visibility: ''
+        visibility: '',
+        order_by: 'entries'
     };
 
     var searchBar = $('.page-admin .projects-list__filter-controls .projects-list__project-search');
@@ -85,6 +86,8 @@ $(document).ready(function () {
     var accessDropdownMenu = filterControls.find('.filter-controls__access .dropdown-menu');
     var visibilityDropdownToggle = filterControls.find('.filter-controls__visibility .dropdown-toggle');
     var visibilityDropdownMenu = filterControls.find('.filter-controls__visibility .dropdown-menu');
+    var orderByDropdownToggle = filterControls.find('.filter-controls__order_by .dropdown-toggle');
+    var orderByDropdownMenu = filterControls.find('.filter-controls__order_by .dropdown-menu');
     var projectsList = $(' .page-admin .projects-list');
     var loader = $('.page-admin .projects-loader');
 
@@ -128,6 +131,19 @@ $(document).ready(function () {
 
     });
 
+    //Sort based on order by value
+    orderByDropdownMenu.on('click', 'li', function () {
+
+        var selected = $(this).data('filter-value');
+        params.order_by = selected;
+        orderByDropdownToggle.data('selected-value', selected);
+        orderByDropdownToggle.parent().find('.dropdown-text').text(capitalize(selected));
+
+        console.log(params);
+        _filterProjects(0);
+    });
+
+
     //filter based on visibility value
     visibilityDropdownMenu.on('click', 'li', function () {
 
@@ -145,6 +161,7 @@ $(document).ready(function () {
     //intercept click on pagination links to send ajax request
     //important: re-bind event as empty() removes it!!!!
     $('.pagination').on('click', 'a', onPaginationClick);
+
     function onPaginationClick(e) {
         e.preventDefault();
 
@@ -154,7 +171,7 @@ $(document).ready(function () {
         params.page = $(e.target).attr('href').split('page=')[1];
         params.name = searchBar.val().trim();
         params.access = access === 'any' ? '' : access;
-        params.visibility = visibility === 'any' ?  '' : visibility;
+        params.visibility = visibility === 'any' ? '' : visibility;
 
         _filterProjects(0);
     }
@@ -170,7 +187,6 @@ $(document).ready(function () {
                 //hide loader and show projects
                 loader.addClass('hidden');
                 projectsList.hide().append(response).fadeIn(500);
-
                 //important: re-bind event as empty() removes it!!!!
                 $('.pagination').on('click', 'a', onPaginationClick);
             }, function (error) {

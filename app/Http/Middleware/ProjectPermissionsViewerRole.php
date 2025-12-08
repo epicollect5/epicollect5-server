@@ -2,11 +2,11 @@
 
 namespace ec5\Http\Middleware;
 
-use Config;
+use Illuminate\Http\Request;
+use Closure;
 
-class ProjectPermissionsViewerRole extends ProjectPermissionsBase
+class ProjectPermissionsViewerRole extends RequestAttributesMiddleware
 {
-
     /*
      |--------------------------------------------------------------------------
      | ProjectPermissionsViewerRole Middleware
@@ -18,13 +18,24 @@ class ProjectPermissionsViewerRole extends ProjectPermissionsBase
      */
 
     /**
+     *
+     * imp: doing this to avoid duplicated parsing of multipart request
+     * @see RequestAttributesMiddleware::getParsedJsonInMultipart();
+     */
+    public function handle(Request $request, Closure $next)
+    {
+        // Return the original request unchanged
+        return $next($request);
+    }
+
+    /**
      * Check the given user/role has permission to access
      *
      * @return bool
      */
-    public function hasPermission()
+    public function hasPermission(): bool
     {
-        $viewerRole = Config::get('ec5Strings.project_roles.viewer');
+        $viewerRole = config('epicollect.strings.project_roles.viewer');
 
         // Only need to check for a user/role if the project is private
         if ($this->requestedProject->isPrivate()) {

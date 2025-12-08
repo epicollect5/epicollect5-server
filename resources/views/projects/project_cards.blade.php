@@ -2,11 +2,11 @@
     @foreach ($projects as $project)
         <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3 item">
             <div class="panel panel-default">
-                <div class="panel-body">
+                <div class="panel-body animated fadeIn">
                     {{--grid view--}}
                     <div class="grid-view">
                         <div class="flexbox col-direction project-summary">
-                            <div class="thumbnail">
+                            <div class="thumbnail animated fadeIn">
                                 <img class="projects-list__project-logo img-responsive img-circle" width="128"
                                      height="128"
                                      alt="{{$project->name}}"
@@ -15,7 +15,11 @@
                                 {{ url('/images/ec5-placeholder-256x256.jpg') }}
                                 @endif">
                             </div>
-                            <span class="project-name">@if ($project->status == 'trashed') {{ $project->name }} @else <a href="{{ url('project') . '/' . $project->slug }}">{{ $project->name }}</a> @endif</span>
+                            <span class="project-name">@if ($project->status == 'trashed')
+                                    {{ $project->name }}
+                                @else
+                                    <a href="{{ url('project') . '/' . $project->slug }}">{{ $project->name }}</a>
+                                @endif</span>
                             {{--truncate small desc for layout, see if it break and lower from 100 to until it is fixed --}}
                             <div class="project-small-description">{{ $project->small_description }}</div>
                             <div class="text-center">
@@ -75,11 +79,38 @@
                             </div>
                         </div>
                         <div class="clearfix"></div>
-                        <div class="text-right">
-                            <a class="btn btn-action btn-sm @if ($project->role === 'collector' || $project->role === 'viewer'|| $project->role === 'curator') disabled @endif"
-                               href="{{ url('myprojects') . '/' . $project->slug }}">{{ trans('site.details') }}</a>
-                            <a class="btn btn-action btn-sm @if ($project->status == 'trashed') disabled @endif"
-                               href="{{ url('project') . '/' . $project->slug }}">{{ trans('site.view') }}</a>
+
+                        <div class="btn-group btn-group-justified margin-top-md" role="group">
+                            <a
+                                    class="btn btn-action btn-sm"
+
+                                    @if ($project->role === 'creator') disabled
+                                    @else
+                                        href="{{ url('myprojects') . '/' . $project->slug.'/leave' }}"
+                                    @endif
+
+                            >
+                                {{ trans('site.leave') }}
+                            </a>
+                            <a
+                                    class="btn btn-action btn-sm"
+                                    @if ($project->role === 'collector' || $project->role === 'viewer'|| $project->role === 'curator') disabled
+                                    @else
+                                        href="{{ url('myprojects') . '/' . $project->slug }}"
+                                    @endif
+
+                            >
+                                {{ trans('site.details') }}
+                            </a>
+                            <a
+                                    class="btn btn-action btn-sm"
+                                    @if ($project->status == 'trashed') disabled
+                                    @else
+                                        href="{{ url('project') . '/' . $project->slug }}"
+                                    @endif
+                            >
+                                {{ trans('site.view') }}
+                            </a>
                         </div>
                     </div>
 
@@ -88,19 +119,23 @@
                         <div class="row">
                             <div class="col-xs-7 col-sm-4 col-md-4">
                                 <div class="list-view__project-details">
-                                <div class="thumbnail">
-                                    <img class="projects-list__project-logo img-responsive img-circle" width="128"
-                                         height="128"
-                                         alt="{{$project->name}}"
-                                         src="@if (!empty($project->logo_url)){{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb') }}
+                                    <div class="thumbnail animated fadeIn">
+                                        <img class="projects-list__project-logo img-responsive img-circle" width="128"
+                                             height="128"
+                                             alt="{{$project->name}}"
+                                             src="@if (!empty($project->logo_url)){{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb') }}
                                     @else
                                     {{ url('/images/ec5-placeholder-256x256.jpg') }}
                                     @endif">
-                                </div>
-                                <span class="project-name">@if ($project->status == 'trashed') {{ $project->name }} @else <a href="{{ url('project') . '/' . $project->slug }}">{{ $project->name }}</a> @endif</span>
-                                <div>
-                                    <span class="project-small-description">{{ $project->small_description }}</span>
-                                </div>
+                                    </div>
+                                    <span class="project-name">@if ($project->status == 'trashed')
+                                            {{ $project->name }}
+                                        @else
+                                            <a href="{{ url('project') . '/' . $project->slug }}">{{ $project->name }}</a>
+                                        @endif</span>
+                                    <div>
+                                        <span class="project-small-description">{{ $project->small_description }}</span>
+                                    </div>
                                 </div>
                             </div>
                             <div class="hidden-xs col-sm-2 col-md-2">
@@ -121,7 +156,7 @@
                                     {{$project->access}}
                                 </div>
                             </div>
-                            <div class="hidden-xs col-xs-2 col-sm-2 col-md-2" >
+                            <div class="hidden-xs col-xs-2 col-sm-2 col-md-2">
                                 <div class="text-center list-view__role">
                                     <small>Role:</small>
                                     <strong> {{ mb_strtoupper($project->role) }}</strong>
@@ -129,7 +164,22 @@
                             </div>
                             <div class="col-xs-5 col-sm-2 col-md-2">
                                 <div class="text-center">
-                                    <a class="btn btn-action @if ($project->role === 'collector' || $project->role === 'viewer' || $project->role === 'curator' ) disabled @endif" href="{{ url('myprojects') . '/' . $project->slug }}">
+
+                                    <a
+                                            class="btn btn-action"
+
+                                            @if ($project->role === 'creator') disabled
+                                            @else
+                                                href="{{ url('myprojects') . '/' . $project->slug.'/leave' }}"
+                                            @endif
+
+                                    >
+                                        <i class="fa fa-sign-out" aria-hidden="true"></i>
+                                    </a>
+
+
+                                    <a class="btn btn-action @if ($project->role === 'collector' || $project->role === 'viewer' || $project->role === 'curator' ) disabled @endif"
+                                       href="{{ url('myprojects') . '/' . $project->slug }}">
 
                                         <i class="fa fa-cog" aria-hidden="true"></i>
                                     </a>
@@ -150,11 +200,11 @@
     @endforeach
 
     @if (count($projects) == 0)
-        <p class="well text-center">{{ trans('site.no_projects_found') }}</p>
+        <p class="well text-center animated fadeIn">{{ trans('site.no_projects_found') }}</p>
     @endif
 
 </div>
 <div class="text-right">
-{{--render the pagination links--}}
-{{ $projects->render() }}
+    {{--render the pagination links--}}
+    {{ $projects->render() }}
 </div>

@@ -2,37 +2,29 @@
 
 namespace ec5\Http\Controllers\Web\Admin\Tools;
 
-use ec5\Traits\Eloquent\ProjectsStats;
-use ec5\Libraries\Utilities\GpointConverter;
-use Config;
-use ec5\Models\Eloquent\Project;
-use ec5\Models\Projects\Project as LegacyProject;
-use Storage;
-use ec5\Models\Images\CreateProjectLogoAvatar;
-use ec5\Http\Controllers\ProjectControllerBase;
-use Illuminate\Http\Request;
-use ec5\Repositories\QueryBuilder\Project\UpdateRepository as UpdateRep;
-use Illuminate\Support\Facades\Mail;
 use Auth;
 use Carbon\Carbon;
+use ec5\DTO\ProjectDTO;
 use ec5\Libraries\Utilities\Generators;
+use ec5\Libraries\Utilities\GPointConverter;
 use ec5\Mail\DebugEmailSending;
+use ec5\Models\Project\Project;
+use ec5\Services\Project\ProjectAvatarService;
+use ec5\Traits\Eloquent\System\ProjectsStats;
+use Illuminate\Support\Facades\Mail;
+use Random\RandomException;
+use Storage;
+use Throwable;
 
-use Exception;
-
-class PHPToolsController extends ProjectControllerBase
+class PHPToolsController
 {
     use ProjectsStats;
 
-    protected $project;
-    protected $updateRep;
+    protected ProjectDTO $project;
 
-    public function __construct(Request $request, LegacyProject $project, UpdateRep $updateRep)
+    public function __construct(ProjectDTO $project)
     {
-        parent::__construct($request);
-
         $this->project = $project;
-        $this->updateRep = $updateRep;
     }
 
     //bust opcache on command
@@ -42,11 +34,6 @@ class PHPToolsController extends ProjectControllerBase
             return 'Opcache cleared';
         }
         return 'Could not clear Opcache';
-    }
-
-    public function showPHPInfo()
-    {
-        phpInfo();
     }
 
     public function showProjectsStats()
@@ -61,7 +48,7 @@ class PHPToolsController extends ProjectControllerBase
 
     public function textLLtoUTM()
     {
-        $converter = new GpointConverter();
+        $converter = new GPointConverter();
         $converter->setLongLat(-0.019106, 51.583362);
         $converter->convertLLtoTM(null);
         $converter->printUTM();
@@ -70,11 +57,9 @@ class PHPToolsController extends ProjectControllerBase
 
     }
 
-    public function avatarPalette()
-    {
-        return view('admin.avatar_palette', ['colors' => Config::get('laravolt.avatar.backgrounds')]);
-    }
-
+    /**
+     * @throws Throwable
+     */
     public function createProjectAvatar($ref = 'b8a4ac0a586b46dd8ad41ecf9eff39a7')
     {
         //get project name
@@ -82,7 +67,7 @@ class PHPToolsController extends ProjectControllerBase
         $id = Project::where('ref', $ref)->pluck('id')->first();
 
         //check there is not a logo already
-        $files = Storage::disk('project_thumb')->allFiles($ref);
+        $files = Storage::disk('project')->allFiles($ref);
 
         if (sizeof($files) === 0) {
 
@@ -90,7 +75,7 @@ class PHPToolsController extends ProjectControllerBase
             $this->project->setId($id);
 
             //generate project logo avatar(s)
-            $avatarCreator = new CreateProjectLogoAvatar();
+            $avatarCreator = new ProjectAvatarService();
             $wasCreated = $avatarCreator->generate($ref, $name);
 
             // dd($wasCreated, $ref, $name);
@@ -110,26 +95,43 @@ class PHPToolsController extends ProjectControllerBase
         return 'Project "' . $name . '" already has a logo';
     }
 
-    private function doUpdate($input)
+    /**
+     * @throws Throwable
+     */
+    private function doUpdate($params)
     {
         // Update the Definition and Extra data
-        $this->project->updateProjectDetails($input);
+        $this->project->updateProjectDetails($params);
 
         // Update in the database
-        return $this->updateRep->updateProject($this->project, $input, false);
+        return Project::updateAllTables($this->project, $params, false);
     }
 
-    public function sendEmail()
+    public function sendSuperAdminEmail()
     {
         //send test email to verify it is all working
         try {
-            Mail::to(env('SUPER_ADMIN_EMAIL'))->send(new DebugEmailSending());
+            Mail::to(config('epicollect.setup.super_admin_user.email'))->send(new DebugEmailSending());
             return 'Mail sent.';
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             return 'Failed -> ' . $e->getMessage();
         }
     }
 
+    public function sendSystemEmail()
+    {
+        //send test email to verify it is all working
+        try {
+            Mail::to(config('epicollect.setup.system.email'))->send(new DebugEmailSending());
+            return 'Mail sent.';
+        } catch (Throwable $e) {
+            return 'Failed -> ' . $e->getMessage();
+        }
+    }
+
+    /**
+     * @throws RandomException
+     */
     public function previewEmail()
     {
         $userName = Auth::user()->name;
@@ -138,7 +140,7 @@ class PHPToolsController extends ProjectControllerBase
         $url = route('login-reset', $token);
 
         $expireAt = Carbon::now()
-            ->subSeconds(env('JWT_FORGOT_EXPIRE', 3600))
+            ->subSeconds(config('auth.jwt-forgot.expire'))
             ->diffForHumans(Carbon::now(), true);
 
         //        return view('emails.user_registration', [
@@ -155,14 +157,15 @@ class PHPToolsController extends ProjectControllerBase
         ]);
     }
 
-    public function hash()
+    #[NoReturn] public function hash()
     {
         dd(bcrypt('my-password', ['rounds' => 12]));
-        dd('test', bcrypt('test', ['rounds' => 12]), bcrypt('test', ['rounds' => 12]), bcrypt('test', ['rounds' => 12]));
+        // dd('test', bcrypt('test', ['rounds' => 12]), bcrypt('test', ['rounds' => 12]), bcrypt('test', ['rounds' => 12]));
     }
 
     public function codes($howMany = 1)
     {
+        $codes = [];
         for ($i = 0; $i < $howMany; $i++) {
             $codes[] = Generators::randomNumber(6, 1);
         }

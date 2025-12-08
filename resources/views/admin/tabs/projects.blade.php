@@ -4,101 +4,20 @@
         <div class="panel panel-default">
             <div class="panel-heading">
                 <div class="row projects-list__filter-controls">
-                    <div class="col-xs-6">
+                    <div class="col-xs-4">
                         <input type="text"
                                name="search"
                                class="form-control projects-list__project-search"
                                placeholder="{{trans('site.search_for_project')}}">
                     </div>
 
-                    <div class="col-xs-6">
+                    <div class="col-xs-8">
                         <div class="projects-list__filter-controls_dropdowns pull-right">
-                            {{--<div class="filter-controls__visibility pull-left">--}}
-                            {{--<label class="filter-dropdown-label pull-left">Visibility:</label>--}}
-
-                            {{--<div class="input-group-btn filter">--}}
-                            {{--<button type="button"--}}
-                            {{--class="btn btn-action btn-sm dropdown-toggle"--}}
-                            {{--data-toggle="dropdown"--}}
-                            {{--aria-haspopup="true"--}}
-                            {{--aria-expanded="false"--}}
-                            {{--data-js="filter-dropdown"--}}
-                            {{--data-visibility-selected-value="any"--}}
-                            {{-->--}}
-                            {{--<span class="dropdown-text">Any</span>--}}
-                            {{--<span class="caret"></span>--}}
-                            {{--</button>--}}
-
-                            {{--<ul class="dropdown-menu pull-right">--}}
-                            {{--<li data-filter-value="any">--}}
-                            {{--<a class="option" href="#">--}}
-                            {{--Any--}}
-                            {{--</a>--}}
-                            {{--</li>--}}
-
-                            {{--<li role="separator" class="divider"></li>--}}
-
-                            {{--<li data-filter-value="listed">--}}
-                            {{--<a class="option" href="#">--}}
-                            {{--Listed--}}
-                            {{--</a>--}}
-                            {{--</li>--}}
-
-                            {{--<li data-filter-value="hidden">--}}
-                            {{--<a class="option" href="#">--}}
-                            {{--Hidden--}}
-                            {{--</a>--}}
-                            {{--</li>--}}
-                            {{--</ul>--}}
-                            {{--</div>--}}
-                            {{--</div>--}}
-
-                            {{--<div class="filter-controls__access pull-left">--}}
-                            {{--<label class="filter-dropdown-label pull-left">Access:</label>--}}
-
-                            {{--<div class="input-group-btn filter">--}}
-                            {{--<button type="button"--}}
-                            {{--class="btn btn-action btn-sm dropdown-toggle"--}}
-                            {{--data-toggle="dropdown"--}}
-                            {{--aria-haspopup="true"--}}
-                            {{--aria-expanded="false"--}}
-                            {{--data-js="filter-dropdown"--}}
-                            {{--data-access-selected-value="any"--}}
-                            {{-->--}}
-                            {{--<span class="dropdown-text">Any</span>--}}
-                            {{--<span class="caret"></span>--}}
-                            {{--</button>--}}
-
-                            {{--<ul class="dropdown-menu pull-right">--}}
-                            {{--<li data-filter-value="any">--}}
-                            {{--<a class="option" href="#">--}}
-                            {{--Any--}}
-                            {{--</a>--}}
-                            {{--</li>--}}
-
-                            {{--<li role="separator" class="divider"></li>--}}
-
-                            {{--<li data-filter-value="private">--}}
-                            {{--<a class="option" href="#">--}}
-                            {{--Private--}}
-                            {{--</a>--}}
-                            {{--</li>--}}
-
-                            {{--<li data-filter-value="public">--}}
-                            {{--<a class="option" href="#">--}}
-                            {{--Public--}}
-                            {{--</a>--}}
-                            {{--</li>--}}
-                            {{--</ul>--}}
-                            {{--</div>--}}
-                            {{--</div>--}}
-
-
                             <div class="btn-group filter-controls__access" role="group">
-                                <button type="button" class="btn btn-static">Access:</button>
+                                <button type="button" class="btn btn-static btn-sm">Access:</button>
                                 <div class="btn-group" role="group">
                                     <button type="button"
-                                            class="btn btn-action dropdown-toggle"
+                                            class="btn btn-sm btn-action dropdown-toggle"
                                             data-toggle="dropdown"
                                             aria-haspopup="true"
                                             aria-expanded="false"
@@ -117,10 +36,10 @@
                             </div>
 
                             <div class="btn-group filter-controls__visibility" role="group">
-                                <button type="button" class="btn btn-static">Visibility:</button>
+                                <button type="button" class="btn btn-sm btn-static">Visibility:</button>
                                 <div class="btn-group" role="group">
                                     <button type="button"
-                                            class="btn btn-action dropdown-toggle"
+                                            class="btn btn-sm btn-action dropdown-toggle"
                                             data-toggle="dropdown"
                                             aria-haspopup="true"
                                             aria-expanded="false"
@@ -137,6 +56,27 @@
                                     </ul>
                                 </div>
                             </div>
+
+                            <div class="btn-group filter-controls__order_by" role="group">
+                                <button type="button" class="btn btn-sm btn-static">Sort By:</button>
+                                <div class="btn-group" role="group">
+                                    <button type="button"
+                                            class="btn btn-sm btn-action dropdown-toggle"
+                                            data-toggle="dropdown"
+                                            aria-haspopup="true"
+                                            aria-expanded="false"
+                                            data-selected-value="entries"
+                                    >
+                                        <span class="dropdown-text">Entries</span>
+                                        <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu pull-right">
+                                        <li data-filter-value="entries"><a href="#">Entries</a></li>
+                                        <li data-filter-value="storage"><a href="#">Storage</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                 </div>

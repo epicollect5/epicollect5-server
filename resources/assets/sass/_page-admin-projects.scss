@@ -1,28 +1,53 @@
+@import "theme";
+@import "mixins";
+
 .projects__table .project-name {
   @include card-project-name();
   display: block; //hack
   text-align: left;
 }
 
-.page-admin{
+.projects__table {
+  tbody > tr:hover {
+    background-color: $light-green;
+  }
+  td {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+}
 
-  .panel-heading.navbar-default {
-    padding:0;
+.page-admin {
+  .user-administration__table {
+    table-layout: fixed;
+    th, td {
+      width: 30%; /* Adjust this value based on the number of columns */
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+    tbody > tr:hover {
+      background-color: $light-green;
+    }
   }
 
-  .projects-list__total, .user-list__total{
+  .panel-heading.navbar-default {
+    padding: 0;
+  }
+
+  .projects-list__total, .user-list__total {
     color: $deep-purple;
     font-weight: 700;
   }
   .filter-controls__visibility, .filter-controls__access {
     .filter-dropdown-label {
-      margin-top:6px;
+      margin-top: 6px;
       margin-right: 5px;
     }
   }
   .projects-list__filter-controls_dropdowns {
     .btn-action.dropdown-toggle {
-      width:120px;
+      width: 120px;
     }
   }
 
@@ -32,11 +57,14 @@
   }
 
   .projects-list {
-    position:relative;
-    //320 is roughly footer height + navabr height +  page title etc... kinda working
+    position: relative;
+    //320 is roughly footer height + navbar height +  page title etc... kinda working
     min-height: calc(100vh - 320px);
     .projects-loader {
       position: absolute;
+    }
+    .spinner {
+      @include cell-spinner();
     }
   }
 

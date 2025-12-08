@@ -1,3 +1,17 @@
+@php
+    /**
+     * @var $projectDefinition \ec5\DTO\ProjectDefinitionDTO
+     */
+    $projectDefinition = $requestAttributes->requestedProject->getProjectDefinition();
+    /**
+     * @var $projectDefinition \ec5\DTO\ProjectExtraDTO
+     */
+    $projectExtra = $requestAttributes->requestedProject->getProjectExtra();
+    /**
+    * @var $projectStats \ec5\DTO\ProjectStatsDTO
+    */
+    $projectStats = $requestAttributes->requestedProject->getProjectStats();
+@endphp
 <div role="tabpanel" class="tab-pane fade in active" id="limits">
     <div class="panel panel-default">
         <div class="panel-body">
@@ -30,10 +44,11 @@
                         @foreach($projectExtra->getForms() as $formRef => $form)
                             @include('project.manage_entries.limits_row',
                                     [
+                                        'projectDefinition' => $projectDefinition,
                                     'projectExtra' => $projectExtra,
                                     'ref' => $formRef,
                                     'name' => $form['details']['name'],
-                                    'currentlyCollected' => $projectStats->getFormCounts()[$formRef]['count'] ?? 0,
+                                    'currentlyCollected' => $projectStats->form_counts[$formRef]['count'] ?? 0,
                                     'isBranch' => false,
                                     'formRef' => $formRef,
                                     'branchRef' => ''
@@ -43,10 +58,11 @@
                                 @foreach($form['branch'] as $branchRef => $branchInputs)
                                     @include('project.manage_entries.limits_row',
                                     [
+                                        'projectDefinition' => $projectDefinition,
                                     'projectExtra' => $projectExtra,
                                     'ref' => $branchRef,
                                     'name' => $projectExtra->getInputData($branchRef)['question'],
-                                    'currentlyCollected' => $projectStats->getBranchCounts()[$branchRef]['count'] ?? 0,
+                                    'currentlyCollected' => $projectStats->branch_counts[$branchRef]['count'] ?? 0,
                                     'isBranch' => true,
                                     'formRef' => $formRef,
                                     'branchRef' => $branchRef

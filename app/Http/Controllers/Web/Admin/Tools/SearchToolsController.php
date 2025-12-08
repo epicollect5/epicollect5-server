@@ -2,35 +2,22 @@
 
 namespace ec5\Http\Controllers\Web\Admin\Tools;
 
-use Carbon\CarbonInterval;
-use ec5\Http\Controllers\Controller;
-use ec5\Models\Eloquent\StorageStats;
-use ec5\Models\Eloquent\ProjectStructure;
-use ec5\Models\Eloquent\Project;
-use ec5\Models\Eloquent\Entry;
-use Symfony\Component\HttpFoundation\Request;
-use DB;
-use Storage;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Config;
+use Carbon\CarbonInterval;
+use DB;
+use ec5\Http\Controllers\Controller;
 use ec5\Libraries\DirectoryGenerator\DirectoryGenerator;
 use ec5\Libraries\Utilities\Common;
-use Exception;
-use ZipArchive;
-use Cookie;
-use Illuminate\Support\Str;
+use ec5\Models\System\StorageStats;
+use Illuminate\Support\Facades\File;
 use League\Csv\Writer;
-use SplTempFileObject;
-use Auth;
-use Ramsey\Uuid\Uuid;
-use Log;
-use RecursiveIteratorIterator;
 use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use Storage;
+use ZipArchive;
 
 class SearchToolsController extends Controller
 {
-
     use DirectoryGenerator;
 
     public function findQuestionsWithTooManyJumps()
@@ -55,10 +42,10 @@ class SearchToolsController extends Controller
 
                     if ($input['type'] === 'dropdown' || $input['type'] === 'radio' || $input['type'] === 'checkbox') {
 
-                        array_push($wrongProjects, [
+                        $wrongProjects[] = [
                             'project' => $projectName,
                             'question' => $input['question']
-                        ]);
+                        ];
                     }
                 }
 
@@ -70,10 +57,10 @@ class SearchToolsController extends Controller
                         if (count($jumps) > count($possibleAnswers)) {
                             if ($input['type'] === 'dropdown' || $input['type'] === 'radio' || $input['type'] === 'checkbox') {
 
-                                array_push($wrongProjects, [
+                                $wrongProjects[] = [
                                     'project' => $projectName,
                                     'question' => $input['question']
-                                ]);
+                                ];
                             }
                         }
 
@@ -84,10 +71,10 @@ class SearchToolsController extends Controller
                                 $jumps = $groupInput['jumps'];
                                 if (count($jumps) > count($possibleAnswers)) {
                                     if ($input['type'] === 'dropdown' || $input['type'] === 'radio' || $input['type'] === 'checkbox') {
-                                        array_push($wrongProjects, [
+                                        $wrongProjects[] = [
                                             'project' => $projectName,
                                             'question' => $input['question']
-                                        ]);
+                                        ];
                                     }
                                 }
                             }
@@ -103,10 +90,10 @@ class SearchToolsController extends Controller
                         if (count($jumps) > count($possibleAnswers)) {
                             if ($input['type'] === 'dropdown' || $input['type'] === 'radio' || $input['type'] === 'checkbox') {
 
-                                array_push($wrongProjects, [
+                                $wrongProjects[] = [
                                     'project' => $projectName,
                                     'question' => $input['question']
-                                ]);
+                                ];
                             }
                         }
                     }
@@ -117,6 +104,7 @@ class SearchToolsController extends Controller
 
         return $wrongProjects;
     }
+
     public function countMedia($days = 1)
     {
         $projectsWithMedia = [];
@@ -152,10 +140,10 @@ class SearchToolsController extends Controller
                         $videos = count(Storage::disk('video')
                             ->allFiles($projectDefinition->project->ref));
 
-                        $photos = count(Storage::disk('entry_original')
+                        $photos = count(Storage::disk('photo')
                             ->allFiles($projectDefinition->project->ref));
 
-                        array_push($projectsWithMedia, [
+                        $projectsWithMedia[] = [
                             'files_total' => $audios + $photos + $videos,
                             'name' => $projectDefinition->project->name,
                             'id' => $project->id,
@@ -165,7 +153,7 @@ class SearchToolsController extends Controller
                                 'photo' => $photos,
                                 'video' => $videos
                             ]
-                        ]);
+                        ];
                         break 2;
                     }
                 }
@@ -179,6 +167,7 @@ class SearchToolsController extends Controller
 
         return $projectsWithMedia;
     }
+
     //find project with jumps (only first form is checked)
     public function findProjectsWithJumps()
     {
@@ -199,10 +188,10 @@ class SearchToolsController extends Controller
 
                 if (count($jumps) > 0) {
 
-                    array_push($projectsWithJumps, [
+                    $projectsWithJumps[] = [
                         'project' => $projectName,
                         'jumps_found' => count($jumps)
-                    ]);
+                    ];
                 }
 
                 //                if ($input['type'] === 'branch') {
@@ -293,11 +282,11 @@ class SearchToolsController extends Controller
             }
 
             if ($inputsTotal > 100) {
-                array_push($projectsWithALotOfInputs, [
+                $projectsWithALotOfInputs[] = [
                     'project' => $projectName,
                     'inputs' => $inputsTotal,
                     'possible_answers' => $possibleAnswersTotal
-                ]);
+                ];
             }
         }
 
@@ -335,8 +324,8 @@ class SearchToolsController extends Controller
                 foreach ($inputs as $inputKey => $input) {
 
                     if ($input['type'] === 'time' && $input['uniqueness'] !== 'none') {
-                        array_push($projectsWithTimeUniqueness, $projectName);
-                        array_push($projectIds, $projectId);
+                        $projectsWithTimeUniqueness[] = $projectName;
+                        $projectIds[] = $projectId;
                         break 2;
                     }
 
@@ -345,8 +334,8 @@ class SearchToolsController extends Controller
                         foreach ($input['branch'] as $branchInput) {
 
                             if ($branchInput['type'] === 'time' && $branchInput['uniqueness'] !== 'none') {
-                                array_push($projectsWithTimeUniqueness, $projectName);
-                                array_push($projectIds, $projectId);
+                                $projectsWithTimeUniqueness[] = $projectName;
+                                $projectIds[] = $projectId;
                                 break 3;
                             }
 
@@ -355,8 +344,8 @@ class SearchToolsController extends Controller
                                 foreach ($input['group'] as $key => $groupInput) {
 
                                     if ($groupInput['type'] === 'time' && $groupInput['uniqueness'] !== 'none') {
-                                        array_push($projectsWithTimeUniqueness, $projectName);
-                                        array_push($projectIds, $projectId);
+                                        $projectsWithTimeUniqueness[] = $projectName;
+                                        $projectIds[] = $projectId;
                                         break 4;
                                     }
                                 }
@@ -367,8 +356,8 @@ class SearchToolsController extends Controller
                     if ($input['type'] === 'group') {
                         foreach ($input['group'] as $groupInput) {
                             if ($groupInput['type'] === 'time' && $groupInput['uniqueness'] !== 'none') {
-                                array_push($projectsWithTimeUniqueness, $projectName);
-                                array_push($projectIds, $projectId);
+                                $projectsWithTimeUniqueness[] = $projectName;
+                                $projectIds[] = $projectId;
                                 break 3;
                             }
                         }
@@ -383,7 +372,7 @@ class SearchToolsController extends Controller
 
     public function findProjectsStorageUsedDefault()
     {
-        return  $this->findProjectsStorageUsed(10);
+        return $this->findProjectsStorageUsed(10);
     }
 
     public function findProjectsStorageUsed($threshold)
@@ -391,7 +380,7 @@ class SearchToolsController extends Controller
         $start = Carbon::now()->getTimestamp();
         $table = 'storage_stats_remote';
         $thresholdInt = (int)$threshold;
-        $costXGB = floatval(env('COST_X_GB', 0.10));
+        $costXGB = floatval(config('epicollect.setup.cost_x_gb'));
 
         $projectsOver = DB::table($table)
             ->where('entries', '>', $thresholdInt)
@@ -424,19 +413,13 @@ class SearchToolsController extends Controller
         );
 
         //get handle of empty file just created
-        $CSVfilepathOver = Storage::disk('debug')
-            ->getAdapter()
-            ->getPathPrefix()
+        $CSVfilepathOver = config('filesystems.disks.debug.root') . '/'
             . $csvFilenameOver;
 
-        $CSVfilepathUnder = Storage::disk('debug')
-            ->getAdapter()
-            ->getPathPrefix()
+        $CSVfilepathUnder = config('filesystems.disks.debug.root') . '/'
             . $csvFilenameUnder;
 
-        $CSVfilepathOverall = Storage::disk('debug')
-            ->getAdapter()
-            ->getPathPrefix()
+        $CSVfilepathOverall = config('filesystems.disks.debug.root') . '/'
             . $csvFilenameOverall;
 
         //write to file one row at a time to keep memory usage low
@@ -538,11 +521,11 @@ class SearchToolsController extends Controller
             ->where('entries', '<=', $thresholdInt)
             ->sum('overall_bytes');
 
-        $bytesOver = (int)  $bytesOver;
-        $bytesUnder = (int)  $bytesUnder;
+        $bytesOver = (int)$bytesOver;
+        $bytesUnder = (int)$bytesUnder;
 
-        $costUnder =  '$' . round(((($bytesUnder) / 1000000000)) * $costXGB, 3);
-        $costOver =  '$' . round(((($bytesOver) / 1000000000)) * $costXGB, 3);
+        $costUnder = '$' . round(((($bytesUnder) / 1000000000)) * $costXGB, 3);
+        $costOver = '$' . round(((($bytesOver) / 1000000000)) * $costXGB, 3);
         $csvOverall->insertOne([
             Common::formatBytes($bytesOver + $bytesUnder),
             Common::formatBytes($bytesUnder),
@@ -551,7 +534,6 @@ class SearchToolsController extends Controller
             $costOver,
             $threshold
         ]);
-
 
 
         $duration = Carbon::now()->getTimestamp() - $start;
@@ -567,7 +549,7 @@ class SearchToolsController extends Controller
         return response()->download($filepath)->deleteFileAfterSend(true);
     }
 
-    public function  findProjectsStorageUsedTableDefault()
+    public function findProjectsStorageUsedTableDefault()
     {
         return $this->findProjectsStorageUsedTable(null);
     }
@@ -625,11 +607,8 @@ class SearchToolsController extends Controller
                 $projectRef = array_keys($project)[0];
                 $projectName = $project[$projectRef];
                 $drivers = [
-                    'entry_original',
-                    'entry_sidebar',
-                    'entry_thumb',
-                    'project_thumb',
-                    'project_mobile_logo',
+                    'photo',
+                    'project',
                     'video',
                     'audio'
                 ];
@@ -694,7 +673,7 @@ class SearchToolsController extends Controller
                         }
                         try {
                             $data = array_add($data, $projectRef, $size);
-                        } catch (Exception $e) {
+                        } catch (\Throwable $e) {
                             $data = array_add($data, $projectRef, $size);
                         }
 
@@ -704,24 +683,15 @@ class SearchToolsController extends Controller
                                     $project['storage'] = 0;
                                 }
                                 $project['storage'] += $size;
-                            } catch (Exception $e) {
+                            } catch (\Throwable $e) {
                                 // Log::info('No media files for ' . $projectName,  ['error' => $e->getMessage()]);
                             }
 
                             switch ($driver) {
-                                case 'entry_original':
+                                case 'photo':
                                     $project['photo'] = $data[$ref];
                                     break;
-                                case 'entry_sidebar':
-                                    $project['photo'] += $data[$ref];
-                                    break;
-                                case 'entry_thumb':
-                                    $project['photo'] += $data[$ref];
-                                    break;
-                                case 'project_thumb':
-                                    $project['photo'] += $data[$ref];
-                                    break;
-                                case 'project_mobile_logo':
+                                case 'project':
                                     $project['photo'] += $data[$ref];
                                     break;
                                 case 'audio':
@@ -737,7 +707,7 @@ class SearchToolsController extends Controller
                     $projectStorage = StorageStats::updateOrCreate(
                         [
                             'project_id' => $chunkedEntry->project_id,
-                            'project_ref' =>  $projectRef
+                            'project_ref' => $projectRef
                         ],
                         [
                             'project_name' => $projectName,
@@ -745,7 +715,7 @@ class SearchToolsController extends Controller
                             'entries' => $chunkedEntry->total_entries,
                             'branches' => is_array($branchCounts) ? array_sum($branchCounts) : 0,
                             'last_entry_uploaded' => $chunkedEntry->latest_entry ?? null,
-                            'last_branch_uploaded' =>  $branchLatest ?? null,
+                            'last_branch_uploaded' => $branchLatest ?? null,
                             'audio_bytes' => $project['audio'] ?? 0,
                             'photo_bytes' => $project['photo'] ?? 0,
                             'video_bytes' => $project['video'] ?? 0,
@@ -781,7 +751,7 @@ class SearchToolsController extends Controller
         return [
             'executed in' => CarbonInterval::seconds($duration)->cascade()->forHumans(),
             'year' => $year ?? 'lifetime',
-            'mined' =>  $projectsMined,
+            'mined' => $projectsMined,
             'updated' => $projectsUpdated,
             'skipped' => $projectsSkipped
         ];
@@ -789,12 +759,10 @@ class SearchToolsController extends Controller
 
     private function createZipArchive()
     {
-        $zipFilename =  'storage-info.zip';
+        $zipFilename = 'storage-info.zip';
         $zip = new ZipArchive();
-        $pathDebugDir = Storage::disk('debug')
-            ->getAdapter()
-            ->getPathPrefix();
-        $zipFilepath =  $pathDebugDir . $zipFilename;
+        $pathDebugDir = config('filesystems.disks.debug.root') . '/';
+        $zipFilepath = $pathDebugDir . $zipFilename;
 
         //create empty zip file
         $zip->open($zipFilepath, \ZipArchive::CREATE);
@@ -818,7 +786,8 @@ class SearchToolsController extends Controller
 
         return $zipFilepath;
     }
-    function dirSize($directory)
+
+    public function dirSize($directory)
     {
         $size = 0;
         foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory)) as $file) {

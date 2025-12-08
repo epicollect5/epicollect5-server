@@ -2,20 +2,19 @@
 
 namespace ec5\Http\Validation\Entries\Upload\InputRules;
 
-use ec5\Models\Entries\EntryStructure;
-use ec5\Models\Projects\Project;
+use ec5\DTO\EntryStructureDTO;
+use ec5\DTO\ProjectDTO;
 use ec5\Libraries\Utilities\Common;
 use Illuminate\Support\Str;
 
 class RuleSearchMultipleInput extends RuleInputBase
 {
-
     /**
      * @param $inputDetails
      * @param string|array $answer
-     * @param Project $project
+     * @param ProjectDTO $project
      */
-    public function setRules($inputDetails, $answer, Project $project)
+    public function setRules($inputDetails, $answer, ProjectDTO $project): void
     {
         // Set rules based on the input details
         // Source will be the input ref
@@ -23,22 +22,21 @@ class RuleSearchMultipleInput extends RuleInputBase
 
     }
 
-    /**
-     * @param $inputDetails
-     * @param $answer
-     * @param Project $project
-     * @param EntryStructure $entryStructure
-     * @return mixed
-     */
-    public function additionalChecks($inputDetails, $answer, Project $project, EntryStructure $entryStructure)
+    public function additionalChecks($inputDetails, $answer, ProjectDTO $project, EntryStructureDTO $entryStructure): array|string|null
     {
-        if (!empty($answer) && count($answer) > 0) {
 
-            if(!is_array($answer))
-            {
-                $this->errors[$inputDetails['ref']] = ['ec5_25'];
-                return $answer;
-            }
+        if (empty($answer)) {
+            // Always default empty checkbox answer to []
+            $answer = [];
+        }
+
+        if (!is_array($answer)) {
+            $this->errors[$inputDetails['ref']] = ['ec5_25'];
+            return false;
+        }
+
+
+        if (count($answer) > 0) {
 
             $possibles = Common::getPossibleAnswers($inputDetails);
 
@@ -51,20 +49,20 @@ class RuleSearchMultipleInput extends RuleInputBase
              */
 
             // If the answer contains anything not in the structure possible answers, error
-//            if (count(array_diff($answer, $possibles)) > 0) {
-//                $this->errors[$inputDetails['ref']] = ['ec5_25'];
-//            }
+            //            if (count(array_diff($answer, $possibles)) > 0) {
+            //                $this->errors[$inputDetails['ref']] = ['ec5_25'];
+            //            }
 
 
             //uploading duplicate refs? (bul upload)
             $hasDuplicates = count($answer) > count(array_unique($answer));
-            if($hasDuplicates) {
+            if ($hasDuplicates) {
                 $this->errors[$inputDetails['ref']] = ['ec5_25'];
             }
 
             //uploading invalid values? (bulk upload, the apps do not allow them)
             //For bulk uploads, wrong values are wrapped with '-' to trigger an error
-            foreach ($answer as $key => $value) {
+            foreach ($answer as $value) {
                 if (Str::contains($value, '-')) {
                     $this->errors[$inputDetails['ref']] = ['ec5_29'];
                 }
@@ -74,8 +72,8 @@ class RuleSearchMultipleInput extends RuleInputBase
                 // Loop each given answer
                 foreach ($answer as $answerRef) {
 
-                    //any null anwer refs? Coming from bulk upload
-                    if($answerRef === null) {
+                    //any null answer refs? Coming from bulk upload
+                    if ($answerRef === null) {
                         $this->errors[$inputDetails['ref']] = ['ec5_25'];
                         break;
                     }
@@ -87,9 +85,6 @@ class RuleSearchMultipleInput extends RuleInputBase
                     }
                 }
             }
-        } else {
-            // Always default empty checkbox answer to []
-            $answer = [];
         }
 
         return $answer;

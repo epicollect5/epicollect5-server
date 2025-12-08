@@ -4,27 +4,26 @@ namespace ec5\Http\Middleware;
 
 use Illuminate\Support\Facades\Auth;
 use Closure;
-use Config;
+use ec5\Traits\Middleware\MiddlewareTools;
+use Response;
 
-class Unverified extends MiddlewareBase
+
+class Unverified
 {
+    use MiddlewareTools;
+
     /*
     |--------------------------------------------------------------------------
     | Unverified
     |--------------------------------------------------------------------------
     |
     | This middleware checks the user is logged in before being allowed to proceed
-    | the user can proceed only if with unverifed state
+    | the user can proceed only if with unverified state
     |
     */
 
     /**
      * Handle an incoming request.
-     *
-     * @param  \Illuminate\Http\Request $request
-     * @param  \Closure $next
-     * @param  string|null $guard
-     * @return mixed
      */
     public function handle($request, Closure $next, $guard = null)
     {
@@ -32,7 +31,7 @@ class Unverified extends MiddlewareBase
         if (Auth::guard($guard)->guest()) {
             if ($this->isJsonRequest($request)) {
                 $errors = ['auth' => ['ec5_219']];
-                return $this->apiResponse->errorResponse(404, $errors);
+                return Response::apiErrorCode(404, $errors);
             } else {
                 return redirect()->guest('login');
             }

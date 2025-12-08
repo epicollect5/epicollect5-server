@@ -2,101 +2,66 @@
 
 namespace ec5\Http\Controllers\Api\Entries;
 
-use ec5\Http\Controllers\Api\ApiRequest;
-use ec5\Http\Controllers\Api\ApiResponse;
-
-use ec5\Http\Controllers\Api\Entries\View\EntrySearchControllerBase;
-use ec5\Http\Validation\Entries\Upload\RuleAnswers;
-use ec5\Http\Validation\Entries\Search\RuleQueryString;
-use ec5\Http\Validation\Entries\Download\RuleDownloadSubset as DownloadSubsetValidator;
-use Illuminate\Support\Collection;
-
-
+use Cookie;
+use ec5\Http\Validation\Entries\Download\RuleDownloadSubset;
 use ec5\Libraries\Utilities\Common;
-use ec5\Repositories\QueryBuilder\Entry\Search\BranchEntryRepository;
-use ec5\Repositories\QueryBuilder\Entry\Search\EntryRepository;
-use ec5\Repositories\QueryBuilder\Entry\ToFile\CreateRepository as FileCreateRepository;
-use ec5\Models\ProjectData\DataMappingHelper;
-
+use ec5\Models\Entries\BranchEntry;
+use ec5\Models\Entries\Entry;
+use ec5\Services\Entries\EntriesViewService;
+use ec5\Services\Mapping\DataMappingService;
+use ec5\Traits\Requests\RequestAttributes;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
-
-use ec5\Models\Eloquent\ProjectStructure;
+use League\Csv\Writer;
+use Log;
+use Ramsey\Uuid\Uuid;
+use Response;
+use Storage;
+use Throwable;
 use ZipArchive;
 
-use Config;
-use Storage;
-use Cookie;
-use Illuminate\Support\Str;
-use League\Csv\Writer;
-use SplTempFileObject;
-use Auth;
-use Ramsey\Uuid\Uuid;
-
-
-class DownloadSubsetController extends EntrySearchControllerBase
+class DownloadSubsetController
 {
+    use RequestAttributes;
 
-    protected $fileCreateRepository;
-    protected $allowedSearchKeys;
-    protected $dataMappingHelper;
+    protected DataMappingService $dataMappingService;
+    protected array $errors = [];
 
-    /**
-     * DownloadController constructor.
-     * @param Request $request
-     * @param ApiRequest $apiRequest
-     * @param ApiResponse $apiResponse
-     * @param EntryRepository $entryRepository
-     * @param BranchEntryRepository $branchEntryRepository
-     * @param RuleQueryString $ruleQueryString
-     * @param RuleAnswers $ruleAnswers
-     * @param FileCreateRepository $fileCreateRepository
-     */
-    public function __construct(
-        Request $request,
-        ApiRequest $apiRequest,
-        ApiResponse $apiResponse,
-        EntryRepository $entryRepository,
-        BranchEntryRepository $branchEntryRepository,
-        RuleQueryString $ruleQueryString,
-        RuleAnswers $ruleAnswers,
-        FileCreateRepository $fileCreateRepository,
-        DataMappingHelper $dataMappingHelper
-
-    ) {
-        parent::__construct(
-            $request,
-            $apiRequest,
-            $apiResponse,
-            $entryRepository,
-            $branchEntryRepository,
-            $ruleQueryString,
-            $ruleAnswers
-        );
-
-        $this->allowedSearchKeys = Config::get('ec5Enums.download_subset_entries');
-        $this->fileCreateRepository = $fileCreateRepository;
-        $this->dataMappingHelper = $dataMappingHelper;
+    public function __construct(DataMappingService $dataMappingService)
+    {
+        $this->dataMappingService = $dataMappingService;
     }
 
-    public function subset(Request $request, DownloadSubsetValidator $validator)
+    /**
+     * Processes a request to download a subset of entries.
+     *
+     * This method validates and sanitizes the incoming query parameters and download rules, including verifying a timestamp
+     * from the download entries cookie. It checks the project mapping and map index, initializes the data mapping service, and
+     * retrieves the appropriate set of entries (either branch entries or form entries) based on provided parameters. It then
+     * generates a ZIP archive containing the subset of entries, queues a download tracking cookie, and returns a response to
+     * stream the ZIP file. In cases of validation or processing errors, an appropriate error response is returned.
+     */
+    public function subset(Request $request, RuleDownloadSubset $ruleDownloadSubset, EntriesViewService $entriesViewService)
     {
         // Check the mapping is valid
-        $projectMapping = $this->requestedProject->getProjectMapping();
-        $params = $this->getRequestOptions($request, Config::get('ec5Limits.entries_table.per_page'));
+        $projectMapping = $this->requestedProject()->getProjectMapping();
 
-        //Get raw query params,  $this->getRequestOptions is doing some filtering
+        $allowedKeys = array_keys(config('epicollect.strings.download_subset_entries'));
+        $perPage = config('epicollect.limits.entries_table.per_page');
+        $params = $entriesViewService->getSanitizedQueryParams($allowedKeys, $perPage);
+
+        //Get raw query params, $this->getRequestParams is doing some filtering
         $rawParams = $request->all();
-
-        $cookieName = Config::get('ec5Strings.cookies.download-entries');
+        $cookieName = config('epicollect.setup.cookies.download_entries');
 
         // Validate the options and query string
-        if (!$this->validateOptions($params)) {
-            return $this->apiResponse->errorResponse(400, $this->validateErrors);
+        if (!$entriesViewService->areValidQueryParams($params)) {
+            return Response::apiErrorCode(400, $entriesViewService->validationErrors);
         }
 
-        $validator->validate($rawParams);
-        if ($validator->hasErrors()) {
-            return $this->apiResponse->errorResponse(400, $validator->errors());
+        $ruleDownloadSubset->validate($rawParams);
+        if ($ruleDownloadSubset->hasErrors()) {
+            return Response::apiErrorCode(400, $ruleDownloadSubset->errors());
         }
 
         $timestamp = $request->query($cookieName);
@@ -110,15 +75,13 @@ class DownloadSubsetController extends EntrySearchControllerBase
             //error no timestamp was passed
             abort(404); //s it goes to an error page
         }
-
         // If the map_index value passed does not exist, error out
         if (!in_array($params['map_index'], $projectMapping->getMapIndexes())) {
-            return $this->apiResponse->errorResponse(400, ['map_index: ' . $params['map_index'] => ['ec5_322']]);
+            return Response::apiErrorCode(400, ['map_index: ' . $params['map_index'] => ['ec5_322']]);
         }
 
-        // Set the mapping
-        $this->dataMappingHelper->initialiseMapping(
-            $this->requestedProject,
+        $this->dataMappingService->init(
+            $this->requestedProject(),
             $params['format'],
             $params['branch_ref'] !== '' ? 'branch' : 'form',
             $params['form_ref'],
@@ -127,53 +90,51 @@ class DownloadSubsetController extends EntrySearchControllerBase
         );
 
         if ($params['branch_ref'] !== '') {
-            //branch
-            $query = $this->getBranchEntriesQuery($params);
+            $columns = ['uuid', 'title', 'entry_data', 'user_id', 'uploaded_at'];
+            // Get the query for these branch entries
+            $query = (new BranchEntry())->getBranchEntriesByBranchRef(
+                $this->requestedProject()->getId(),
+                $params,
+                $columns
+            );
         } else {
             //hierarchy
-            $query = $this->getEntriesQuery($params);
+            $columns = ['title', 'entry_data', 'branch_counts', 'child_counts', 'user_id', 'uploaded_at'];
+            // Get the query for these entries
+            $query = (new Entry())->getEntriesByForm($this->requestedProject()->getId(), $params, $columns);
         }
 
-        $filepath = $this->writeFileCsvZipped($query, $filename);
+        $filepath = $this->createSubsetArchive($query, $filename);
 
         if (count($this->errors) > 0) {
-            return $this->apiResponse->errorResponse(400, $this->errors);
+            return Response::apiErrorCode(400, $this->errors);
             //todo should I delete any leftovers here?
         }
-
-        //"If set to 0, or omitted, the cookie will expire at the end of the session (when the browser closes)."
-        $mediaCookie = Cookie::make($cookieName, $timestamp, 0, null, null, false, false);
-        Cookie::queue($mediaCookie);
-
+        $downloadEntriesCookie = Common::getDownloadEntriesCookie($timestamp);
+        Cookie::queue($downloadEntriesCookie);
 
         return response()->download($filepath, $filename)->deleteFileAfterSend(true);
-        //        return response((string)$file, 200, [
-        //            'Content-Type' => 'text/csv',
-        //            'Content-Transfer-Encoding' => 'binary',
-        //            'Content-Disposition' => 'attachment'
-        //        ]);
     }
 
-    private function getEntriesQuery(array $params)
+    /**
+     * Creates a ZIP archive containing a CSV export of entries.
+     *
+     * This method generates unique temporary CSV and ZIP filenames, writes the CSV file with
+     * header and mapped entry rows (processed in chunks from the provided query) to a temporary
+     * location, compresses the CSV into a ZIP archive, and deletes the temporary CSV file. If
+     * an error occurs during the CSV writing process, the error is logged and an error code is
+     * recorded.
+     *
+     * @param Builder $query Query object used to retrieve entries in chunks.
+     * @param string $filename Reference filename used to derive the CSV file name within the archive.
+     *
+     * @return string Full path to the generated ZIP archive.
+     */
+    private function createSubsetArchive(Builder $query, string $filename): string
     {
-        $columns = ['title', 'entry_data', 'branch_counts', 'child_counts', 'user_id', 'uploaded_at'];
-        $query = $this->runQuery($params, $columns);
-
-        return $query;
-    }
-
-    private function getBranchEntriesQuery(array $params)
-    {
-        $columns = ['title', 'entry_data', 'user_id', 'uploaded_at'];
-        $query = $this->runQueryBranch($params, $columns);
-
-        return $query;
-    }
-
-    private function writeFileCsvZipped($query, $filename)
-    {
-        $exportChunk = Config::get('ec5Limits.entries_export_chunk');
-        $projectRef = $this->requestedProject->ref;
+        $exportChunk = config('epicollect.limits.entries_export_chunk');
+        $projectRef = $this->requestedProject()->ref;
+        $access = $this->requestedProject()->access;
         //generate unique temp file name to cover concurrent users per project
         $csvFilename = Uuid::uuid4()->toString() . '.csv';
         $zipFilename = Uuid::uuid4()->toString() . '.zip';
@@ -186,59 +147,51 @@ class DownloadSubsetController extends EntrySearchControllerBase
         //create an empty csv file in the temp/subset/{$project_ref} folder
         Storage::disk('temp')->put(
             'subset/' . $projectRef . '/' . $csvFilename,
-            ''
+            '',
+            [
+            'visibility' => 'public',
+                    'directory_visibility' => 'public'
+                ]
         );
 
-        //get handle of empty file just created
-        $CSVfilepath = Storage::disk('temp')
-            ->getAdapter()
-            ->getPathPrefix()
-            . 'subset/' . $projectRef . '/' . $csvFilename;
-
-        $zipFilepath = Storage::disk('temp')
-            ->getAdapter()
-            ->getPathPrefix()
-            . 'subset/' . $projectRef . '/' . $zipFilename;
-
-
-        //create empty zip file
-        $zip->open($zipFilepath, \ZipArchive::CREATE);
-
-
-        //write to file one row at a time to keep memory usage low
-        $csv = Writer::createFromPath($CSVfilepath, 'w+');
+        //get handle of empty files just created
+        $diskRoot = config('filesystems.disks.temp.root').'/';
+        $CSVfilepath = $diskRoot . 'subset/' . $projectRef . '/' . $csvFilename;
+        $zipFilepath = $diskRoot . 'subset/' . $projectRef . '/' . $zipFilename;
 
         try {
-            //write headers
-            $csv->insertOne($this->dataMappingHelper->headerRowCsv());
+            //create empty zip file
+            $zip->open($zipFilepath, ZipArchive::CREATE);
+            //write to file one row at a time to keep memory usage low
+            $csv = Writer::createFromPath($CSVfilepath, 'w+');
 
-            //chuck feature keeps memory usage low
-            $query->chunk($exportChunk, function ($entries) use ($csv) {
+            //write headers
+            $csv->insertOne($this->dataMappingService->getHeaderRowCSV());
+            //chunk feature keeps memory usage low
+            $query->chunk($exportChunk, function ($entries) use ($csv, $access) {
                 foreach ($entries as $entry) {
-                    $csv->insertOne($this->dataMappingHelper->swapOutEntryCsv(
+                    $csv->insertOne($this->dataMappingService->getMappedEntryCSV(
                         $entry->entry_data,
-                        $entry->branch_counts ?? null,
                         $entry->user_id,
                         $entry->title,
-                        $entry->uploaded_at
+                        $entry->uploaded_at,
+                        $access,
+                        $entry->branch_counts ?? null
                     ));
                 }
-                //   \LOG::error('Usage: ' . Common::formatBytes(memory_get_usage()));
-                //     \LOG::error('Peak Usage: ' . Common::formatBytes(memory_get_peak_usage()));
             });
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
             // Error writing to file
+            Log::error('createSubsetArchive failure', [
+                'exception' => $e->getMessage()
+            ]);
             $this->errors['entries-subset-csv'] = ['ec5_83'];
         }
 
         $zip->addFile($CSVfilepath, basename(str_replace('.zip', '.csv', $filename)));
         $zip->close();
-
         //delete temp csv file
         Storage::disk('temp')->delete('subset/' . $projectRef . '/' . $csvFilename);
-
-        //        \LOG::error('Usage: ' . Common::formatBytes(memory_get_usage()));
-        //        \LOG::error('Peak Usage: ' . Common::formatBytes(memory_get_peak_usage()));
         return $zipFilepath;
     }
 }

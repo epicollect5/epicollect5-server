@@ -1,3 +1,5 @@
+@import "mixins";
+
 .page-project-details {
   min-height: 620px;
   .page-title {
@@ -24,10 +26,20 @@
     }
   }
 
-  .details-view__logo-wrapper {
-    img {
-      min-height: 130px;
+  .project-logo-wrapper {
+    @include project-logo-wrapper(128px, 128px);
+  }
+
+
+  .table-project-settings, .table-app-link-settings {
+    th {
+      width: 100px;
     }
+  }
+  .details-view__project-details__small-description,
+  .details-view__project-details__description {
+    word-break: break-all;
+    overflow-wrap: break-word;
   }
 
   .project-description {
@@ -52,11 +64,9 @@
 
   i.material-icons {
     vertical-align: middle;
-    //margin-top: -4px;
-    //margin-right: 4px;
   }
   .table-responsive .btn {
-    min-width: 70px;
+    min-width: 80px;
     margin-bottom: 5px;
   }
 
@@ -120,7 +130,7 @@
     margin-top: 0;
   }
 
-  .details-view__wrapper {
+  .details-view__wrapper, .app-link-view__wrapper {
     padding-right: 0;
   }
 
@@ -131,17 +141,12 @@
       border-radius: 50% !important;
       margin-top: -14px;
     }
-    img {
-      margin: 20px 20px 30px 20px;
-    }
     .project-long-description {
       border: 1px solid $light-grey;
       box-shadow: none;
     }
   }
-  .details-view__project-details {
-    margin-top: 40px;
-  }
+
   .form-group.file-upload-input {
     input[type="text"] {
       &:hover {
@@ -228,5 +233,28 @@
     hr {
       margin: 10px;
     }
+  }
+
+  .deeplink-btn-panel {
+    .deeplink-copy-btn, span {
+      cursor: pointer;
+      color: $deep-purple;
+    }
+  }
+
+  .well-deeplink {
+    padding-left: 0;
+  }
+
+  #qrcode {
+    img {
+      width: 200px;
+    }
+  }
+  #qrcode-download {
+    width: 200px;
+  }
+  .spinner {
+    @include cell-spinner();
   }
 }

@@ -9,12 +9,11 @@
 namespace ec5\Exceptions;
 
 use Exception;
-use Config;
 
 class UserNotVerifiedException extends Exception
 {
     public function __construct()
     {
-        parent::__construct(Config::get('status_codes.ec5_374'));
+        parent::__construct(config('epicollect.codes.ec5_374'));
     }
 }

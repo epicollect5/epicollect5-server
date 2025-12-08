@@ -2,257 +2,201 @@
 
 namespace ec5\Http\Controllers\Web\Project;
 
-use ec5\Http\Controllers\ProjectControllerBase;
-use Illuminate\Http\Request;
-
-use ec5\Http\Controllers\Api\ApiResponse;
-
+use DB;
 use ec5\Http\Validation\Project\RuleProjectDefinitionDetails;
 use ec5\Http\Validation\Project\RuleSettings;
-
-use ec5\Repositories\QueryBuilder\Project\UpdateRepository as UpdateRep;
-use ec5\Repositories\QueryBuilder\Project\SearchRepository as Search;
-use ec5\Models\Images\UploadImage;
-
-use Config;
-use Uuid;
+use ec5\Libraries\Utilities\Common;
+use ec5\Models\Project\Project;
+use ec5\Models\Project\ProjectStructure;
+use ec5\Services\Media\PhotoSaverService;
+use ec5\Traits\Requests\RequestAttributes;
+use Exception;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Foundation\Application;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
+use Log;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Redirect;
+use Request;
+use Response;
+use Throwable;
 
-class ProjectEditController extends ProjectControllerBase
+class ProjectEditController
 {
+    use RequestAttributes;
 
-    protected $action = '';
-    protected $allowedSettingActions = [];
-    protected $request;
-    protected $apiResponse;
-    protected $search;
-    protected $ruleProjectDefinitionDetails;
-    protected $ruleSettings;
-    protected $updateRep;
+    protected string $action = '';
+    protected string|null $slug;
+    protected array $allowedSettingActions = [];
+    protected Request $request;
+    protected RuleProjectDefinitionDetails $ruleProjectDefinitionDetails;
+    protected RuleSettings $ruleSettings;
 
-    /**
-     * ProjectEditController constructor.
-     *
-     * @param Request $request
-     * @param ApiResponse $apiResponse
-     * @param RuleSettings $ruleSettings
-     * @param RuleProjectDefinitionDetails $ruleProjectDefinitionDetails
-     * @param UpdateRep $updateRep
-     * @param Search $search
-     */
-    public function __construct(Request $request,
-                                ApiResponse $apiResponse,
-                                RuleSettings $ruleSettings,
-        RuleProjectDefinitionDetails $ruleProjectDefinitionDetails,
-                                UpdateRep $updateRep,
-                                Search $search)
-    {
-
-        parent::__construct($request);
-
-        $this->apiResponse = $apiResponse;
+    public function __construct(
+        RuleSettings                 $ruleSettings,
+        RuleProjectDefinitionDetails $ruleProjectDefinitionDetails
+    ) {
         $this->ruleProjectDefinitionDetails = $ruleProjectDefinitionDetails;
         $this->ruleSettings = $ruleSettings;
-        $this->updateRep = $updateRep;
-        $this->search = $search;
-        $this->allowedSettingActions = Config::get('ec5Enums.edit_settings');
-
+        $this->allowedSettingActions = array_keys(config('epicollect.strings.edit_settings'));
     }
 
     /**
      * Handle all Settings Edit requests
      *
-     * @param $slug
+     * @param $slug //imp: used for routing segment, DO NOT remove
      * @param $action
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     * @throws Throwable
      */
     public function settings($slug, $action)
     {
-        $this->action = $action;
+        $this->slug = $slug; //only used for routing imp: do not remove
 
-        if (!$this->request->has($this->action) || !in_array($this->action, $this->allowedSettingActions)) {
-            return $this->apiResponse->errorResponse(400, ['errors' => ['ec5_91']]);
+        if (!request()->route('action') || !in_array($action, $this->allowedSettingActions)) {
+            return Response::apiErrorCode(400, ['errors' => ['ec5_29']]);
         }
 
-        if (!$this->requestedProjectRole->canEditProject()) {
-            return $this->apiResponse->errorResponse(404, ['errors' => ['ec5_91']]);
+        if (!$this->requestedProjectRole()->canEditProject()) {
+            return Response::apiErrorCode(404, ['errors' => ['ec5_91']]);
         }
 
-        $input[$this->action] = $this->request->get($this->action);
-
-        $this->ruleSettings->validate($input, $check_keys = false);
-
-        // If fails return
+        $params[$action] = request()->get($action);
+        $this->ruleSettings->validate($params);
         if ($this->ruleSettings->hasErrors()) {
-
-            return $this->apiResponse->errorResponse(400, ['errors' => $this->ruleSettings->errors()]);
+            return Response::apiErrorCode(400, $this->ruleSettings->errors());
         }
 
-        if ($this->action == 'status') {
-            $input = $this->statusInput($input);
+        if ($action === config('epicollect.strings.edit_settings.status')) {
+            $params = $this->whichStatus($params);
         }
 
-        $done = $this->doUpdate($input);
+        try {
+            DB::beginTransaction();
 
-        if ($done) {
-            $out = [];
-            foreach ($this->allowedSettingActions as $key => $value) {
-                $out[$value] = $this->requestedProject->$value;
+            //update the project structure objects in memory first
+            $this->requestedProject()->updateProjectDetails($params);
+
+            $wasProjectUpdated = Project::where('id', $this->requestedProject()->getId())
+                ->update($params);
+            $wasProjectStructureUpdated = ProjectStructure::updateStructures($this->requestedProject());
+
+            if ($wasProjectUpdated && $wasProjectStructureUpdated) {
+                DB::commit();
+                //todo: the following code, no one has any clue about
+                $data = [];
+                foreach ($this->allowedSettingActions as $value) {
+                    $data[$value] = $this->requestedProject()->$value;
+                }
+
+                return Response::apiData($data);
+            } else {
+                throw new Exception('Cannot update project settings');
             }
-            $this->apiResponse->body = $out;
-            return $this->apiResponse->toJsonResponse(200);
-        } else {
-            return $this->apiResponse->errorResponse(400, []);
+
+        } catch (Throwable $e) {
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
+            DB::rollBack();
+            return Response::apiErrorCode(400, ['errors' => ['ec5_45']]);
         }
     }
 
     /**
-     * Handle all details Edit requests
-     *
-     * @param  string $slug project -> slug
-     * @return \Illuminate\Http\Response
+     * @param $slug //imp: used for routing segment, DO NOT remove
+     * @return Factory|Application|RedirectResponse|View
+     * @throws Throwable
      */
-    /**
-     * @param $slug
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View|ProjectEditController|\Illuminate\Http\RedirectResponse
-     */
-    public function details($slug)
+    public function updateDetails($slug)
     {
+        $this->slug = $slug; //only used for routing imp:do not remove
+        $updateStructures = false;
+        $this->action = last(request()->segments());
 
-        $updateProjectStructuresTable = false;
-
-        $errors = ['message' => 'ec5_45'];
-
-        $this->action = last($this->request->segments());
-
-        if (!$this->requestedProjectRole->canEditProject()) {
+        if (!$this->requestedProjectRole()->canEditProject()) {
             return view('errors.gen_error')->withErrors(['errors' => 'ec5_91']);
         }
 
-        $input = $this->request->all();
-        unset($input['_token']);
+        $payload = request()->all();
+
+        unset($payload['_token']);
 
         // If we have an image, validate the dimensions
-        if ($this->request->file('logo_url')) {
+        if (request()->file('logo_url')) {
             // Get the image width/height
-            list($width, $height) = getimagesize($this->request->file('logo_url')->getRealPath());
-            // Add to input array to be validated
-            $input['logo_width'] = $width;
-            $input['logo_height'] = $height;
+            list($width, $height) = getimagesize(request()->file('logo_url')->getPathname());
+            // Add to be validated
+            $payload['logo_width'] = $width;
+            $payload['logo_height'] = $height;
         }
 
-        $this->ruleProjectDefinitionDetails->validate($input, $check_keys = false);
+        $this->ruleProjectDefinitionDetails->validate($payload);
         if ($this->ruleProjectDefinitionDetails->hasErrors()) {
-            return $this->helperView($this->ruleProjectDefinitionDetails->errors());
+            return Redirect::back()->withErrors(
+                $this->ruleProjectDefinitionDetails->errors()
+            );
         }
 
-        $tempInput['small_description'] = $input['small_description'];
-        $tempInput['description'] = $input['description'];
+        $params = [
+            'small_description' => $payload['small_description'],
+            'description' => $payload['description']
+        ];
 
-        if ($this->request->file('logo_url')) {
-
-            // NOTE: store larger thumb first, then smaller mobile logo
-            // As request file gets overwritten with each resize and it's better to shrink than to enlarge
-            if (!$this->saveLogos('project_thumb')) {
-                return $this->helperView(['message' => 'ec5_83']);
+        //save project logo if needed
+        if (request()->file('logo_url')) {
+            if (!$this->saveLogo('project_thumb')) {
+                return Redirect::back()->withErrors(['message' => 'ec5_83']);
             }
 
-            if (!$this->saveLogos('project_mobile_logo')) {
-                return $this->helperView(['message' => 'ec5_83']);
-            }
-
-            $tempInput['logo_url'] = $this->requestedProject->ref;
-
+            $params['logo_url'] = $this->requestedProject()->ref;
             // We want to trigger an update on the project_structures table,
-            // to signal to the app that this project has been updated
-            $updateProjectStructuresTable = true;
-
-        }
-        $input = $tempInput;
-
-        $updated = $this->doUpdate($input, $updateProjectStructuresTable);
-
-        if ($updated) {
-            return $this->helperView([], ['message' => 'ec5_123']);
+            // to signal to the app that this project has been updated with a new logo
+            $updateStructures = true;
         }
 
-        if ($this->updateRep->hasErrors()) {
-            $errors = $this->updateRep->errors();
-        }
-
-        return $this->helperView($errors);
-
-    }
-
-    /**
-     * Try and store project logos
-     *
-     * @param
-     * @return boolean
-     */
-    private function saveLogos($driver)
-    {
-        return UploadImage::saveImage($this->requestedProject->ref, $this->request->file('logo_url'), 'logo.jpg', $driver, Config::get('ec5Media.' . $driver));
-
-    }
-
-    /**
-     * Which status depending  on input
-     *
-     * @param $input
-     * @return array
-     */
-    private function statusInput($input) : array
-    {
-
-        switch ($input['status']) {
-            case Config::get('ec5Strings.project_status.trashed'):
-                $input['status'] = Config::get('ec5Strings.project_status.trashed');
-                break;
-            case Config::get('ec5Strings.project_status.locked'):
-                $input['status'] = Config::get('ec5Strings.project_status.locked');
-                break;
-            default:
-                $input['status'] = Config::get('ec5Strings.project_status.active');
-                break;
-        }
-        return $input;
-    }
-
-    /**
-     * Update the project in db
-     *
-     * @param $input
-     * @param bool $updateProjectStructuresTable
-     * @return bool
-     */
-    private function doUpdate($input, $updateProjectStructuresTable = false)
-    {
         // Update the Definition and Extra data
-        $this->requestedProject->updateProjectDetails($input);
-
+        $this->requestedProject()->updateProjectDetails($params);
         // Update in the database
-        return $this->updateRep->updateProject($this->requestedProject, $input, $updateProjectStructuresTable);
-    }
-
-    /**
-     * Helper output view
-     *
-     * @param array $withErrors
-     * @param array $withMessage
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\RedirectResponse
-     */
-    private function helperView($withErrors = [], $withMessage = [])
-    {
-
-        $params = $this->defaultProjectDetailsParams('view', 'details-view');
-        $params['action'] = $this->action;
-
-        if (count($withErrors) > 0) {
-            return Redirect::back()->withErrors($withErrors);
+        if (Project::updateAllTables($this->requestedProject(), $params, $updateStructures)) {
+            return Redirect::back()->with(['message' => 'ec5_123']);
         } else {
-            return Redirect::back()->with($withMessage);
+            return Redirect::back()->withErrors(['errors' => ['ec5_104']]);
         }
     }
 
+    /**
+     * Try and store project logo
+     */
+    private function saveLogo($format): bool
+    {
+        $dimensions = Common::resolveDimensions($format);
+        $disk = Common::resolveDisk($format);
+        return PhotoSaverService::saveImage(
+            $this->requestedProject()->ref,
+            $this->requestedProject()->getId(),
+            request()->file('logo_url'),
+            'logo.jpg',
+            $disk,
+            $dimensions
+        );
+    }
+
+    /**
+     * Which status depending on params
+     */
+    private function whichStatus($params): array
+    {
+        $statuses = [
+            config('epicollect.strings.project_status.trashed'),
+            config('epicollect.strings.project_status.locked'),
+        ];
+
+        $params['status'] = in_array($params['status'], $statuses) ? $params['status'] : config('epicollect.strings.project_status.active');
+
+        return $params;
+    }
 }

@@ -2,145 +2,124 @@
 
 namespace ec5\Http\Controllers\Web\Project;
 
-use ec5\Http\Controllers\ProjectControllerBase;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use ec5\Models\Project\Project;
+use ec5\Models\Project\ProjectStats;
+use ec5\Traits\Eloquent\StatsRefresher;
+use ec5\Traits\Requests\RequestAttributes;
+use Response;
+use Throwable;
 
-use Config;
-use Uuid;
-
-class ProjectController extends ProjectControllerBase
+class ProjectController
 {
-    /**
-     * @var array
-     */
-    protected $errors = [];
+    use StatsRefresher;
+    use RequestAttributes;
 
     /**
-     * ProjectController constructor.
-     * @param Request $request
-     */
-    public function __construct(Request $request)
-    {
-        parent::__construct($request);
-    }
-
-    /**
-     * Show Project home page
-     *
-     * @return $this|\Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @throws Throwable
      */
     public function show()
     {
-        $vars = $this->defaultProjectDetailsParams('', '',  true);
-        $canShowSocialMediaShareBtns = false;
-        $PUBLIC = Config::get('ec5Strings.project_access.public');
-        $LISTED = Config::get('ec5Strings.project_visibility.listed');
-
-        if ($vars['project']->access === $PUBLIC && $vars['project']->visibility === $LISTED) {
-            $canShowSocialMediaShareBtns = true;
-        }
-        $vars['canShowSocialMediaShareBtns'] = $canShowSocialMediaShareBtns;
+        $this->refreshProjectStats($this->requestedProject());
+        $vars = [];
 
         // If the project is trashed, redirect to error page
-        if ($this->requestedProject->status == Config::get('ec5Strings.project_status.trashed')) {
-            return view('errors.gen_error')->withErrors(['view' => 'ec5_202']);
+        if ($this->requestedProject()->status == config('epicollect.strings.project_status.trashed')) {
+            return view('errors.gen_error')->withErrors(['view' => 'ec5_11']);
         }
 
-        //HACK FOR COG-UK: stop users not logged in
-        if ($this->requestedProject->ref === '293a6f6a46ea438d8940e102acb008e4') {
-            if (!$this->requestedProjectRole->canEditData()) {
-                return view('errors.gen_error')->withErrors(['errors' => ['ec5_91']]);
-            }
-        }
-        //END HACK
-
+        /**
+         * @var $projectStats ProjectStats
+         */
+        //get latest entry timestamp
+        $projectStats = ProjectStats::where('project_id', $this->requestedProject()->getId())->first();
+        $vars['mostRecentEntryTimestamp'] = $projectStats->getMostRecentEntryTimestamp();
 
         return view('project.project_home', $vars);
     }
 
     /**
      * Show a Project details
-     *
-     * @return $this|\Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
     public function details()
     {
-        if (!$this->requestedProjectRole->canEditProject()) {
+        if (!$this->requestedProjectRole()->canEditProject()) {
             return view('errors.gen_error')->withErrors(['errors' => ['ec5_91']]);
         }
 
-        // IncludeTemplate, showPanel
-        $vars = $this->defaultProjectDetailsParams('view', 'details-view');
+        $creatorEmail = '';
+        if (auth()->user()->server_role == config('epicollect.strings.server_roles.superadmin')) {
+            $creatorEmail = Project::creatorEmail($this->requestedProject()->getId());
+        }
 
-        return view('project.project_details', $vars);
+        return view('project.project_details', [
+            'includeTemplate' => 'view',
+            'showPanel' => 'details-view',
+            'creatorEmail' => $creatorEmail
+        ]);
     }
 
     /**
-     * Download the project structure JSON
+     * Download the project definition as JSON
      */
-    public function downloadStructure()
+    public function downloadProjectDefinition()
     {
-        return new JsonResponse(
-            ['data' => $this->requestedProject->getProjectDefinition()->getData()],
-            200,
-            [
-                'Content-disposition' => 'attachment; filename=' . $this->requestedProject->slug . '.json',
-                'Content-type' => 'text/plain'
-            ]
+        return Response::toJSONFile(
+            ['data' => $this->requestedProject()->getProjectDefinition()->getData()],
+            $this->requestedProject()->slug . '.json'
         );
     }
 
     /**
-     * Show the form for editing the specified resource.
-     * NO POSTS ALLOWED should only be get to show data
-     *
-     * @param  \Illuminate\Http\Request $request
-     * @param  slug
-     * @return \Illuminate\Http\Response
+     * Show formbuilder page
+     * @throws Throwable
      */
-    public function edit(Request $request, $slug)
+    public function formbuilder()
     {
-        $action = last($request->segments());
-
-        if (!$this->requestedProjectRole->canEditProject()) {
-            $errors = ['ec5_91'];
-            return view('errors.gen_error')->withErrors(['errors' => $errors]);
+        if (!$this->requestedProjectRole()->canEditProject()) {
+            return view('errors.gen_error')->withErrors(['errors' => ['ec5_91']]);
         }
 
-        if ($action == 'formbuilder') {
-            return view(
-                'project.formbuilder',
-                ['projectName' => $this->requestedProject->name]
-            );
-        }
+        //Refresh stats
+        $this->refreshProjectStats($this->requestedProject());
+        // Get total entries
+        $totalEntries = ProjectStats::where(
+            'project_id',
+            $this->requestedProject()->getId()
+        )->value('total_entries') ?? 0;
 
-        $vars = $this->defaultProjectDetailsParams('edit', 'details-edit');
-        $vars['action'] = $action;
 
-        return view('project.project_details', $vars);
+        return view('project.formbuilder', ['totalEntries' => $totalEntries]);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \Illuminate\Http\Request $request
-     * @param  string $slug project -> slug
-     * @return \Illuminate\Http\Response
+    /*
+     * Show dataviewer page
      */
-    public function data(Request $request, $slug)
+    /**
+     * @throws Throwable
+     */
+    public function dataviewer()
     {
-        //get project name
-        //HACK FOR COG-UK: stop users not logged in
-        if ($this->requestedProject->ref === '293a6f6a46ea438d8940e102acb008e4') {
-            if (!$this->requestedProjectRole->canEditData()) {
-                return view('errors.gen_error')->withErrors(['errors' => ['ec5_91']]);
-            }
+        // If the project is trashed, redirect to error page
+        if ($this->requestedProject()->status === config('epicollect.strings.project_status.trashed')) {
+            return view('errors.gen_error')->withErrors(['view' => 'ec5_11']);
         }
-        //END HACK
 
+        $this->refreshProjectStats($this->requestedProject());
         return view('project.dataviewer', [
-            'project' => $this->requestedProject
+            'project' => $this->requestedProject()
         ]);
+    }
+
+    //open the project in app page
+    public function open()
+    {
+        //show the project open page with the open-in-app banner
+        $params = [];
+        // If the project is trashed, redirect to error page
+        if ($this->requestedProject()->status === config('epicollect.strings.project_status.trashed')) {
+            return view('errors.gen_error')->withErrors(['view' => 'ec5_11']);
+        }
+
+        return view('project.project_open', $params);
     }
 }

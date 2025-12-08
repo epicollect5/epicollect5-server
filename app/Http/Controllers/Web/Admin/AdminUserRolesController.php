@@ -2,92 +2,67 @@
 
 namespace ec5\Http\Controllers\Web\Admin;
 
-use ec5\Http\Controllers\Api\ApiResponse;
 use ec5\Http\Controllers\Controller;
-
 use ec5\Http\Validation\Admin\RuleProjectRole as ProjectRoleValidator;
-
-use ec5\Repositories\QueryBuilder\ProjectRole\CreateRepository as ProjectRoleCreate;
-use ec5\Repositories\QueryBuilder\ProjectRole\DeleteRepository as ProjectRoleDelete;
-
-use Illuminate\Http\Request;
+use ec5\Models\Project\ProjectRole;
+use Log;
+use Response;
+use Throwable;
 
 class AdminUserRolesController extends Controller
 {
     /*
     |--------------------------------------------------------------------------
-    | Manage Project Users Controller
+    | Manage Admin Users
     |--------------------------------------------------------------------------
     |
     | This controller handles the management of project users from a server administrator.
     |
     */
 
-    /**
-     * @var ProjectRoleCreate object
-     */
-    protected $projectRoleCreate;
-
-    /**
-     * @var ProjectRoleDelete object
-     */
-    protected $projectRoleDelete;
-
-    /**
-     * Create a new manager project users controller instance.
-     *
-     * @param ProjectRoleCreate $projectRoleCreate
-     * @param ProjectRoleDelete $projectRoleDelete
-     */
-    public function __construct(ProjectRoleCreate $projectRoleCreate, ProjectRoleDelete $projectRoleDelete)
+    public function update(ProjectRoleValidator $projectRoleValidator)
     {
-        $this->projectRoleCreate = $projectRoleCreate;
-        $this->projectRoleDelete = $projectRoleDelete;
-    }
-
-    public function update(Request $request, ApiResponse $apiResponse, ProjectRoleValidator $projectRoleValidator)
-    {
-
         // Get request data
-        $input = $request->all();
-
+        $input = request()->all();
         // Validate the data
         $projectRoleValidator->validate($input);
         if ($projectRoleValidator->hasErrors()) {
-            if ($request->ajax()) {
-                return $apiResponse->errorResponse(400, $projectRoleValidator->errors());
+            if (request()->ajax()) {
+                return Response::apiErrorCode(400, $projectRoleValidator->errors());
             }
             return redirect()->back()->withErrors($projectRoleValidator->errors());
         }
 
         $role = $input['role'];
         $projectId = $input['project_id'];
-        $adminUser = $request->user();
+        $adminUser = request()->user();
 
-        // Remove current role for the admin user
-        $this->projectRoleDelete->delete($adminUser->id, $projectId);
-
-        // Add new role
-        if (!empty($role)) {
-            // Attempt to update the user's role
-            if (!$this->projectRoleCreate->create($adminUser->id, $projectId, $role)) {
-
-                $errors = $this->projectRoleCreate->errors();
-
-                if ($request->ajax()) {
-                    return $apiResponse->errorResponse(400, ['update-admin-project-role' => $errors, 'adminUser' => $adminUser]);
-                }
-
-                // Redirect back to admin page
-                return redirect()->back()->withErrors($errors);
-
+        try {
+            // Remove the current role for the admin user
+            ProjectRole::where('user_id', $adminUser->id)
+                ->where('project_id', $projectId)
+                ->delete();
+        } catch (Throwable $e) {
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
+            if (request()->ajax()) {
+                return Response::apiErrorCode(400, ['update-admin-project-role' => ['ec5_104']]);
             }
+            // Redirect back to admin page
+            return redirect()->back()->withErrors(['update-admin-project-role' => ['ec5_104']]);
+        }
 
+        // Add the new role
+        if (!empty($role)) {
+            //Update the user's role
+            $projectRole = ProjectRole::where('user_id', $adminUser->id)
+                ->where('project_id', $projectId)->first();
+            $projectRole->role = $role;
+            $projectRole->save();
         }
 
         // If ajax, return success response
-        if ($request->ajax()) {
-            return $apiResponse->successResponse('ec5_241');
+        if (request()->ajax()) {
+            return Response::apiSuccessCode('ec5_241');
         }
         // Redirect back to admin page
         return redirect()->back();

@@ -28,7 +28,6 @@ $(document).ready(function () {
      * @returns {string}
      */
     var getXsrfToken = function () {
-
         var cookies = document.cookie.split(';');
         var token = '';
 
@@ -50,22 +49,31 @@ $(document).ready(function () {
 
     //fade in project logo thumbnails all over the site (not my projects and project search, as it has got another way to render, from server generated markup)
     if ($('.page-my-projects').length === 0 && $('.page-search-projects').length === 0 && $('.page-formbuilder').length === 0) {
-        $('.thumbnail, .intro-thumbnail, .project-home__logo-wrapper').imagesLoaded().progress(function (instance, image) {
+        $('.thumbnail, .intro-thumbnail, .project-logo-wrapper').imagesLoaded().progress(function (instance, image) {
             if (image.isLoaded) {
                 //fade in image and remove loader when it is done
-               $(image.img).fadeTo(250, 1, function () {
-                   //remove image loader
-                   $(this).next('.loader').remove();
+                $(image.img).fadeTo(250, 1, function () {
+                    //remove image loader
+                    $(this).next('.loader').remove();
                 });
             }
         });
     }
-    //extend string function for truncating
+    // Extend string function for truncating
     String.prototype.trunc = function (n) {
-        return this.substr(0, n - 1) + (this.length >= n ? '...' : '');
+        return this.length > n
+            ? this.slice(0, n - 1) + '...'
+            : this;
     };
 
-    //debounce helper
-
+    window.EC5.common = {
+        formatBytes: function (bytes, precision) {
+            if (bytes === 0) return '0 B';
+            var k = 1024;
+            var sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+            var i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(precision)) + ' ' + sizes[i];
+        }
+    };
 });
 

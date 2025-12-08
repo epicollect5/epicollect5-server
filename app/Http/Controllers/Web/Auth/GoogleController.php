@@ -2,18 +2,18 @@
 
 namespace ec5\Http\Controllers\Web\Auth;
 
-use ec5\Models\Users\User;
-use Illuminate\Http\Request;
-use ec5\Models\Eloquent\UserProvider;
-use Laravel\Socialite\Two\InvalidStateException;
-use Exception;
-use Laravel\Socialite\Facades\Socialite;
-use Config;
 use Auth;
-use Log;
 use ec5\Http\Validation\Auth\RulePasswordlessApiLogin;
-use ec5\Models\Eloquent\UserPasswordlessApi;
+use ec5\Models\User\User;
+use ec5\Models\User\UserProvider;
+use ec5\Services\User\UserService;
 use ec5\Traits\Auth\GoogleUserUpdater;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\Two\InvalidStateException;
+use Log;
+use Throwable;
 
 class GoogleController extends AuthController
 {
@@ -42,7 +42,7 @@ class GoogleController extends AuthController
         // Check this auth method is allowed
         if (in_array($provider, $this->authMethods)) {
             // Retrieve provider config details
-            $providerKey = \Config::get('services.' . $provider);
+            $providerKey = config('services.' . $provider);
 
             if (empty($providerKey)) {
                 return view('auth.login')->withErrors(['ec5_38']);
@@ -55,12 +55,7 @@ class GoogleController extends AuthController
             ->withErrors(['ec5_55']);
     }
 
-    /**
-     * Function for handling the Google specific auth callback
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\Response
-     */
+    //Function for handling the Google specific auth callback
     public function handleCallback(Request $request)
     {
         //check if local logins are enabled
@@ -69,10 +64,16 @@ class GoogleController extends AuthController
         $isLocalAuthEnabled = in_array($this->localProviderLabel, $this->authMethods, true);
 
         try {
-            // Find the google user
+            // Find the Google user
             $googleUser = Socialite::with($provider)->user();
 
-            // If we found a google user
+            //check if email is whitelisted
+            if (!UserService::isAuthenticationDomainAllowed($googleUser->email)) {
+                Log::error('Email not whitelisted', ['email' => $googleUser->email]);
+                return redirect()->route('login')->withErrors(['ec5_266']);
+            }
+
+            // If we found a Google user
             if ($googleUser) {
                 // Check user exists in Epicollect5 system and is active
                 $userModel = new User();
@@ -84,11 +85,14 @@ class GoogleController extends AuthController
                  * and return it
                  */
                 if (!$user) {
-                    $user = $userModel->createGoogleUser($googleUser);
+                    $user = UserService::createGoogleUser($googleUser);
+                    if (!$user) {
+                        return redirect()->route('login')->withErrors(['ec5_376']);
+                    }
                 }
 
                 //if the user is disabled, kick him out
-                if ($user->state === Config::get('ec5Strings.user_state.disabled')) {
+                if ($user->state === config('epicollect.strings.user_state.disabled')) {
                     return redirect()->route('login')->withErrors(['ec5_212']);
                 }
 
@@ -102,32 +106,32 @@ class GoogleController extends AuthController
                  *
                  * the user gets verified via Google
                  */
-                if ($user->state === Config::get('ec5Strings.user_state.unverified')) {
-                    if (!$userModel->updateGoogleUser($googleUser)) {
+                if ($user->state === config('epicollect.strings.user_state.unverified')) {
+                    if (!UserService::updateGoogleUser($googleUser)) {
                         return redirect()->route('login')->withErrors(['ec5_45']);
                     }
                     //set user as active since it was verified correctly
-                    $user->state = Config::get('ec5Strings.user_state.active');
+                    $user->state = config('epicollect.strings.user_state.active');
                 }
 
                 /**
                  * User was found and active, does this user have a Google provider?
                  */
-                if ($user->state === Config::get('ec5Strings.user_state.active')) {
+                if ($user->state === config('epicollect.strings.user_state.active')) {
 
                     $userProviders = UserProvider::where('email', $googleUser->email)
                         ->pluck('provider')->toArray();
 
                     //if the user has a local provider, redirect to admin or staff login
                     //based on user server role
+                    //imp: local provider means they have a password
                     if (in_array($providerLocal, $userProviders)) {
 
                         switch ($user->server_role) {
 
-                            case Config::get('ec5Strings.server_roles.superadmin'):
-                            case Config::get('ec5Strings.server_roles.admin'):
+                            case config('epicollect.strings.server_roles.superadmin'):
+                            case config('epicollect.strings.server_roles.admin'):
                                 return redirect()->route('login-admin')->withErrors(['ec5_390']);
-                                break;
                             default:
                                 if ($isLocalAuthEnabled) {
                                     //staff login page
@@ -145,7 +149,7 @@ class GoogleController extends AuthController
                          * if the user is active but the Google provider is not found,
                          * this user created an account with another provider (apple or passwordless)
                          *
-                         * Ask the user to verify the Google account 
+                         * Ask the user to verify the Google account
                          * by sending a one off 6 digits code for verification
                          *
                          */
@@ -160,8 +164,8 @@ class GoogleController extends AuthController
                             ]);
                     }
 
-                    //we always update user details just in case the google account was updated 
-                    if (!$userModel->updateGoogleUserDetails($googleUser)) {
+                    //we always update user details just in case the Google account was updated
+                    if (!UserService::updateGoogleUserDetails($googleUser)) {
                         //well, details not updated is not a show stopping error, just log it
                         Log::error('Could not update Google User details');
                     }
@@ -174,7 +178,7 @@ class GoogleController extends AuthController
         } catch (InvalidStateException $e) {
             Log::error('Google Login Web Exception: ', ['exception' => [$e]]);
             return redirect()->route('login')->withErrors(['ec5_213']);
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             Log::error('Google Login Web Exception: ', ['exception' => $e->getMessage()]);
             return redirect()->route('login')->withErrors(['ec5_31']);
         }
@@ -185,7 +189,7 @@ class GoogleController extends AuthController
      * This verifies a Google User who already has an account with another provider (Apple)
      * If the code is valid, the Google provider is added and the user is authenticated
      * This is performed only the first time the user logs in with a new provider
-     * 
+     *
      * IMP:Local users are asked to enter the password when they login using a different provider
      * IMP:they are not verified here, local auth has its own verification controller
      */
@@ -203,57 +207,16 @@ class GoogleController extends AuthController
         $email = $params['email'];
         $provider = $this->googleProviderLabel;
 
-        //get token from db for comparison
-        $userPasswordless = UserPasswordlessApi::where('email', $email)->first();
-
-        //Does the email exists?
-        if ($userPasswordless === null) {
-            Log::error('Error validating passworless code', ['error' => 'Email does not exist']);
-            return redirect()->route('verification-code')
-                ->with([
-                    'email' => $email,
-                    'provider' => $provider
-                ])
-                ->withErrors(['ec5_378']);
+        $result = $this->validateAppleOrGoogleUserWeb($email, $code, $provider);
+        if ($result instanceof RedirectResponse) {
+            return $result;
         }
 
-        //check if the code is valid
-        if (!$userPasswordless->isValidCode($code)) {
-            Log::error('Error validating passworless code', ['error' => 'Code not valid']);
-            return redirect()->route('verification-code')
-                ->with([
-                    'email' => $email,
-                    'provider' => $provider
-                ])
-                ->withErrors(['ec5_378']);
-        }
-
-        //code is valid, remove it
-        $userPasswordless->delete();
-
-        //find the existing user
-        $user = User::where('email', $email)->first();
-        if ($user === null) {
-            //this should never happen, but no harm in checking
-            return redirect()->route('verification-code')
-                ->with([
-                    'email' => $email,
-                    'provider' => $provider
-                ])
-                ->withErrors(['ec5_34']);
-        }
-
-        //add the google provider so next time no verification is needed
-        $userProvider =  new UserProvider();
-        $userProvider->email = $user->email;
-        $userProvider->user_id = $user->id;
-        $userProvider->provider = $this->googleProviderLabel;
-        $userProvider->save();
-
-        //try to update user details 
+        $user = $result;
+        //try to update user details
         try {
-            $this->updateUserDetails($params, $user);
-        } catch (Exception $e) {
+            $this->updateGoogleUserDetails($params, $user);
+        } catch (Throwable $e) {
             //imp:log in user even if details not updated
             Log::error('Google user object exception', ['exception' => $e->getMessage()]);
         }

@@ -6,9 +6,9 @@ use ec5\Http\Validation\ValidationBase;
 
 class RuleProjectExtraDetails extends ValidationBase
 {
-    protected $rules = [
+    protected array $rules = [
         'name' => 'required|alpha_num_under_spaces|min:3|max:100',
-        'slug' => 'not_in:create',//'unique:projects,slug',
+        'slug' => 'not_in:create',
         'ref' => 'required',
         'small_description' => 'required|min:3|max:100',
         'access' => 'required|in:public,private',
@@ -30,7 +30,7 @@ class RuleProjectExtraDetails extends ValidationBase
      *
      * @param $projectRef
      */
-    public function additionalChecks($projectRef)
+    public function additionalChecks($projectRef): void
     {
         if ($this->data['ref'] != $projectRef) {
             $this->addAdditionalError($projectRef, 'ec5_321');

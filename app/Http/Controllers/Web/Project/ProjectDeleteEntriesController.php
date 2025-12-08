@@ -2,101 +2,49 @@
 
 namespace ec5\Http\Controllers\Web\Project;
 
-use ec5\Http\Controllers\ProjectControllerBase;
-use Illuminate\Http\Request;
-use ec5\Repositories\QueryBuilder\Project\DeleteRepository;
-use ec5\Repositories\QueryBuilder\Stats\Entry\StatsRepository;
+use Cache;
+use ec5\Models\Project\ProjectStats;
+use ec5\Traits\Eloquent\Archiver;
+use ec5\Traits\Eloquent\StatsRefresher;
+use ec5\Traits\Requests\RequestAttributes;
+use Throwable;
 
-class ProjectDeleteEntriesController extends ProjectControllerBase
+class ProjectDeleteEntriesController
 {
+    use RequestAttributes;
+    use Archiver;
+    use StatsRefresher;
+
+    protected array $errors = [];
 
     /**
-     * @var array
-     */
-    protected $errors = [];
-
-    /**
-     * ProjectController constructor.
-     * @param Request $request
-     */
-    public function __construct(Request $request)
-    {
-        parent::__construct($request);
-    }
-
-    /**
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View|\Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @throws Throwable
      */
     public function show()
     {
-
-        if (!$this->requestedProjectRole->canDeleteEntries()) {
+        ///check permissions
+        if (!$this->requestedProjectRole()->canDeleteEntries()) {
             $errors = ['ec5_91'];
             return view('errors.gen_error')->withErrors(['errors' => $errors]);
         }
 
-        $vars = $this->defaultProjectDetailsParams('', '', true);
-
-        return view('project.project_delete_entries', $vars);
-    }
-
-    /**
-     * @param Request $request
-     * @param DeleteRepository $deleteRepository
-     * @param StatsRepository $statsRepository
-     * @return $this|\Illuminate\Http\RedirectResponse
-     */
-    public function delete(
-        Request $request,
-        DeleteRepository $deleteRepository,
-        StatsRepository $statsRepository
-    ) {
-
-        $projectName = $request->input('project-name');
-
-        //no project name passed?
-        if (!isset($projectName)) {
+        //is the project locked? Otherwise, bail out
+        if ($this->requestedProject()->status !== config('epicollect.strings.project_status.locked')) {
             return view('errors.gen_error')->withErrors(['errors' => ['ec5_91']]);
         }
+        //check lock for this user (only 1 deletion process per user)
+        $userId = $this->requestedUser()->id;
+        $userCacheKey = 'bulk_entries_deletion_user_' . $userId;
+        // Remove the user-level cache lock if it exists (optional, only if you want to reset the lock here)
+        Cache::lock($userCacheKey)->release();
 
-        //if we are sending the wrong project name bail out
-        if (trim($this->requestedProject->name) !== $projectName) {
-            return redirect('myprojects/' . $this->requestedProject->slug . '/manage-entries')
-                ->withErrors(['errors' => ['ec5_91']]);
-        }
+        //refresh stats to get the latest entries and branch entries counts
+        $this->refreshProjectStats($this->requestedProject());
 
-        //do we have the right permissions?
-        if (!$this->requestedProjectRole->canDeleteEntries()) {
-            return redirect('myprojects/' . $this->requestedProject->slug . '/manage-entries')
-                ->withErrors(['errors' => ['ec5_91']]);
-        }
-
-        /* DELETING */
-
-        // Attempt to delete the data
-        $deleteRepository->deleteEntries($this->requestedProject->getId());
-
-        // If the delete fails, error out
-        if ($deleteRepository->hasErrors()) {
-            return redirect('myprojects/' . $this->requestedProject->slug . '/manage-entries')->withErrors($deleteRepository->errors());
-        }
-
-        // Attempt to delete all project media
-        $deleteRepository->deleteEntriesMedia($this->requestedProject->ref);
-
-        // If the delete media fails, inform user
-        //Project has already been deleted by this point
-        if ($deleteRepository->hasErrors()) {
-            return redirect('myprojects/' . $this->requestedProject->slug . '/manage-entries')->withErrors($deleteRepository->errors());
-        }
-
-        // Update the entry stats
-        if (!$statsRepository->updateProjectEntryStats($this->requestedProject)) {
-            $this->errors['entries_deletion'] = ['ec5_94'];
-            return redirect('myprojects/' . $this->requestedProject->slug . '/manage-entries')->withErrors($this->errors);
-        }
-
-        // Succeeded
-        return redirect('myprojects/' . $this->requestedProject->slug . '/manage-entries')->with('message', 'ec5_122');
+        $projectStats = ProjectStats::where('project_id', $this->requestedProject()->getId())->first();
+        return view('project.project_delete_entries', [
+            'project' => $this->requestedProject(),
+            'totalEntries' => $projectStats->total_entries
+        ]);
     }
 }

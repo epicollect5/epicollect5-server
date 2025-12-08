@@ -3,7 +3,8 @@
       enctype="multipart/form-data" class="form-horizontal">
     {{ csrf_field() }}
 
-    <div id="project-name-form-group-create" class="form-group has-feedback @if ($errors->has('name') && $tab === 'create') has-error @endif">
+    <div id="project-name-form-group-create"
+         class="form-group has-feedback @if ($errors->has('name') && $tab === 'create') has-error @endif">
         <label class="control-label">{{trans('site.project_name')}}</label>
         <input required id="project-name-create"
                type="text"
@@ -11,9 +12,9 @@
                class="form-control"
                placeholder="{{trans('site.project_placeholder')}}"
                @if ($tab === 'create')
-               value="{{ old('name') }}"
+                   value="{{ old('name') }}"
                @else
-               value=""
+                   value=""
                @endif
                maxlength="50">
 
@@ -26,7 +27,7 @@
             @if (strpos($errors->first('name'), 'ec5_') === false)
                 <small class="text-danger">{{ $errors->first('name') }}</small>
             @else
-                <small class="text-danger">{{ trans('status_codes.' . $errors->first('name'))  }}</small>
+                <small class="text-danger">{{ config('epicollect.codes.' . $errors->first('name'))  }}</small>
             @endif
             <small class="text-hint hidden">{{trans('site.max_50_chars')}}</small>
         @else
@@ -37,14 +38,15 @@
                 </small>
             @else
                 <small class="text-danger hidden">
-                    {{ trans('status_codes.' . $errors->first('name'))}}
+                    {{ config('epicollect.codes.' . $errors->first('name'))}}
                 </small>
             @endif
             <small class="text-hint">{{trans('site.max_50_chars')}}</small>
         @endif
     </div>
 
-    <div id="small-description-form-group" class="form-group has-feedback @if ($errors->has('small_description')) has-error @endif">
+    <div id="small-description-form-group"
+         class="form-group has-feedback @if ($errors->has('small_description')) has-error @endif">
         <label class="control-label">{{trans('site.small_desc')}}</label>
         <small class="no-wrap"><em>(A long description can be added later)</em></small>
         <input required type="text" class="form-control" name="small_description"
@@ -59,7 +61,7 @@
                 </small>
             @else
                 <small class="text-danger">
-                    {{ trans('status_codes.' . $errors->first('small_description')) }}
+                    {{ config('epicollect.codes.' . $errors->first('small_description')) }}
                 </small>
             @endif
             <small class="text-hint hidden">{{trans('site.max_100_chars')}}</small>
@@ -71,7 +73,7 @@
                 </small>
             @else
                 <small class="text-danger hidden">
-                    {{ trans('status_codes.' . $errors->first('small_description')) }}
+                    {{ config('epicollect.codes.' . $errors->first('small_description')) }}
                 </small>
             @endif
             <small class="text-hint">{{trans('site.max_100_chars')}}</small>
@@ -92,7 +94,7 @@
                 </small>
             @else
                 <small class="text-danger">
-                    {{ trans('status_codes.' . $errors->first('form_name') ?? 'ec5_205')}}
+                    {{ config('epicollect.codes.' . $errors->first('form_name') ?? 'ec5_205')}}
                 </small>
             @endif
             <small class="text-hint hidden">{{trans('site.max_50_chars')}}</small>
@@ -103,7 +105,7 @@
                     {{ $errors->first('form_name') ?? 'ec5_205'}}
                 </small>
             @else
-                <small class="text-danger hidden">{{ trans('status_codes.' . $errors->first('form_name'))}}</small>
+                <small class="text-danger hidden">{{ config('epicollect.codes.' . $errors->first('form_name'))}}</small>
             @endif
             <small class="text-hint">{{trans('site.max_50_chars')}}</small>
         @endif
@@ -111,7 +113,7 @@
 
     <div class="form-group @if ($errors->has('access')) has-error @endif">
         <p class="no-margin access-title">{{trans('site.access')}}</p>
-        @foreach (Config::get('ec5Enums.projects_access') as $p)
+        @foreach (array_keys(config('epicollect.strings.projects_access')) as $p)
             <label class="radio-inline">
                 <input type="radio" data-required="" name="access" value="{{ $p }}"
                        @if(old('access') && old('access') == $p) checked="checked"
@@ -119,7 +121,8 @@
             </label>
         @endforeach
         @if ($errors->has('access'))
-            <small class="text-danger"> {{ $errors->first('access') }}</small> @endif
+            <small class="text-danger"> {{ $errors->first('access') }}</small>
+        @endif
     </div>
     <div class="form-group text-center">
         <button class="btn btn-default btn-action pull-right"

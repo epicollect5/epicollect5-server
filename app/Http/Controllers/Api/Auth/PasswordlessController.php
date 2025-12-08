@@ -1,49 +1,60 @@
 <?php
 
+/** @noinspection DuplicatedCode */
+
 namespace ec5\Http\Controllers\Api\Auth;
 
-use ec5\Http\Validation\Auth\RulePasswordlessApiCode;
-use ec5\Http\Validation\Auth\RulePasswordlessApiLogin;
-use ec5\Mail\UserPasswordlessApiMail;
-use ec5\Models\Users\User;
-use Illuminate\Http\Request;
-use Config;
-use Exception;
-use Mail;
-use ec5\Models\Eloquent\UserPasswordlessApi;
+use Auth;
 use Carbon\Carbon;
 use DB;
-use Log;
-use PDOException;
-use Auth;
+use ec5\Http\Validation\Auth\RulePasswordlessApiCode;
+use ec5\Http\Validation\Auth\RulePasswordlessApiLogin;
+use ec5\Libraries\Auth\Jwt\JwtUserProvider;
 use ec5\Libraries\Utilities\Generators;
-use ec5\Http\Controllers\Api\ApiResponse;
-use ec5\Models\Eloquent\UserProvider;
-use ec5\Libraries\Jwt\JwtUserProvider;
+use ec5\Mail\UserPasswordlessApiMail;
+use ec5\Models\User\User;
+use ec5\Models\User\UserPasswordlessApi;
+use ec5\Models\User\UserProvider;
+use ec5\Services\User\UserService;
+use ec5\Traits\Auth\PasswordlessProviderHandler;
+use Log;
+use Mail;
+use PDOException;
+use Response;
+use Throwable;
 
 class PasswordlessController extends AuthController
 {
+    use PasswordlessProviderHandler;
+
     public function __construct(JwtUserProvider $provider)
     {
         parent::__construct($provider);
     }
 
-    public function sendCode(Request $request, RulePasswordlessApiCode $validator, ApiResponse $apiResponse)
+    /**
+     * @throws Throwable
+     */
+    public function sendCode(RulePasswordlessApiCode $validator)
     {
-        $tokenExpiresAt = env('PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
-
-        $inputs = $request->all();
+        $tokenExpiresAt = config('auth.passwordless_token_expire', 300);
+        $inputs = request()->all();
 
         //validate request
         $validator->validate($inputs);
         if ($validator->hasErrors()) {
             // Redirect back if errors
-            return $apiResponse->errorResponse(400, $validator->errors());
+            return Response::apiErrorCode(400, $validator->errors());
         }
 
         $email = $inputs['email'];
-        $code = Generators::randomNumber(6, 1);
+        //check if email is whitelisted
+        if (!UserService::isAuthenticationDomainAllowed($email)) {
+            Log::error('Email not whitelisted', ['email' => $email]);
+            return Response::apiErrorCode(400, ['passwordless-request-code' => ['ec5_266']]);
+        }
 
+        $code = Generators::randomNumber(6, 1);
         try {
             DB::beginTransaction();
             //remove any code for this user (if found)
@@ -55,23 +66,21 @@ class PasswordlessController extends AuthController
             //add token to db
             $userPasswordless = new UserPasswordlessApi();
             $userPasswordless->email = $email;
-            $userPasswordless->code = bcrypt($code, ['rounds' => env('BCRYPT_ROUNDS')]);
+            $userPasswordless->code = bcrypt($code, ['rounds' => config('auth.bcrypt_rounds')]);
             $userPasswordless->expires_at = Carbon::now()->addSeconds($tokenExpiresAt)->toDateTimeString();
             $userPasswordless->save();
 
             DB::commit();
         } catch (PDOException $e) {
-            Log::error('Error generating passwordless access code via appi');
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             DB::rollBack();
-
-            return $apiResponse->errorResponse(400, [
+            return Response::apiErrorCode(400, [
                 'passwordless-request-code' => ['ec5_104']
             ]);
-        } catch (Exception $e) {
-            Log::error('Error generating password access code via api');
+        } catch (Throwable $e) {
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             DB::rollBack();
-
-            return $apiResponse->errorResponse(400, [
+            return Response::apiErrorCode(400, [
                 'passwordless-request-code' => ['ec5_104']
             ]);
         }
@@ -79,45 +88,53 @@ class PasswordlessController extends AuthController
         //send email with verification token
         try {
             Mail::to($email)->send(new UserPasswordlessApiMail($code));
-        } catch (Exception $e) {
-            return $apiResponse->errorResponse(400, [
+        } catch (Throwable $e) {
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
+            return Response::apiErrorCode(400, [
                 'passwordless-request-code' => ['ec5_116']
             ]);
         }
 
         //send success response (email sent)
-        return $apiResponse->successResponse('ec5_372');
+        return Response::apiSuccessCode('ec5_372');
     }
-
-    //try to authenticate user
-    public function login(Request $request, ApiResponse $apiResponse,  RulePasswordlessApiLogin $validator)
+    /**
+     * @throws Throwable
+     */
+    public function login(RulePasswordlessApiLogin $validator)
     {
         //validate request
-        $inputs = $request->all();
+        $inputs = request()->all();
         $validator->validate($inputs);
         if ($validator->hasErrors()) {
-            return $apiResponse->errorResponse(400, $validator->errors());
+            return Response::apiErrorCode(400, $validator->errors());
         }
 
         // Check this auth method is allowed
-        if (in_array('passwordless', Config::get('auth.auth_methods'))) {
+        if (in_array('passwordless', config('auth.auth_methods'))) {
 
             $code = $inputs['code'];
             $email = $inputs['email'];
+
+            //check if email is whitelisted
+            if (!UserService::isAuthenticationDomainAllowed($email)) {
+                Log::error('Email not whitelisted', ['email' => $email]);
+                return Response::apiErrorCode(400, ['passwordless-api' => ['ec5_266']]);
+            }
 
             //get token from db for comparison
             $userPasswordless = UserPasswordlessApi::where('email', $email)->first();
 
             //Does the email exists?
             if ($userPasswordless === null) {
-                Log::error('Error validating passworless code', ['error' => 'Email does not exist']);
-                return $apiResponse->errorResponse(400, ['passwordless-api' => ['ec5_378']]);
+                Log::error('Error validating passwordless code', ['error' => 'Email does not exist']);
+                return Response::apiErrorCode(400, ['passwordless-api' => ['ec5_378']]);
             }
 
             //check if the code is valid
             if (!$userPasswordless->isValidCode($code)) {
-                Log::error('Error validating passworless code', ['error' => 'Code not valid']);
-                return $apiResponse->errorResponse(400, ['passwordless-api' => ['ec5_378']]);
+                Log::error('Error validating passwordless code', ['error' => 'Code not valid']);
+                return Response::apiErrorCode(400, ['passwordless-api' => ['ec5_378']]);
             }
 
             //code is valid, remove it
@@ -126,32 +143,23 @@ class PasswordlessController extends AuthController
             //look for existing user
             $user = User::where('email', $email)->first();
             if ($user === null) {
-                //create user
-                $user = new User();
-                $user->name = config('ec5Strings.user_placeholder.passwordless_first_name');
-                $user->email = $email;
-                $user->server_role = Config::get('ec5Strings.server_roles.basic');
-                $user->state = Config::get('ec5Strings.user_state.active');
-                $user->save();
-
-                //add passwordless provider
-                $userProvider = new UserProvider();
-                $userProvider->email = $user->email;
-                $userProvider->user_id = $user->id;
-                $userProvider->provider = Config::get('ec5Strings.providers.passwordless');
-                $userProvider->save();
+                //create the new user as passwordless
+                $user = UserService::createPasswordlessUser($email);
+                if (!$user) {
+                    return Response::apiErrorCode(400, ['passwordless-api' => ['ec5_376']]);
+                }
             }
 
             /**
              * If the user is unverified, set is as verified and add the passwordless provider
              *
              */
-            if ($user->state === Config::get('ec5Strings.user_state.unverified')) {
-                $user->state = Config::get('ec5Strings.user_state.active');
+            if ($user->state === config('epicollect.strings.user_state.unverified')) {
+                $user->state = config('epicollect.strings.user_state.active');
                 //update name if empty
                 //happens when users are added to a project before they create an ec5 account
                 if ($user->name === '') {
-                    $user->name = config('ec5Strings.user_placeholder.passwordless_first_name');
+                    $user->name = config('epicollect.mappings.user_placeholder.passwordless_first_name');
                 }
                 $user->save();
 
@@ -159,12 +167,12 @@ class PasswordlessController extends AuthController
                 $userProvider = new UserProvider();
                 $userProvider->email = $user->email;
                 $userProvider->user_id = $user->id;
-                $userProvider->provider = Config::get('ec5Strings.providers.passwordless');
+                $userProvider->provider = config('epicollect.strings.providers.passwordless');
                 $userProvider->save();
             }
 
             /**
-             * if user exists and it is active, just log the user in.
+             * if user exists, and it is active, just log the user in.
              * This means the user owns the email used, if the user owns a Google and Apple account
              * matching the email, that will give the user access to those projects.
              * Apple and Google verify the email on their side so we are safe
@@ -172,46 +180,26 @@ class PasswordlessController extends AuthController
              * Same goes for local users
              */
 
-            /**
-             * User was found and active, does this user have a passwordless provider?
-             */
-            if ($user->state === Config::get('ec5Strings.user_state.active')) {
-
-                $userProvider = UserProvider::where('email', $email)->where('provider', $this->passwordlessProviderLabel)->first();
-
-                if (!$userProvider) {
-                    /**
-                     * if the user is active but the passwordless provider is not found,
-                     * this user created an account with another provider (Apple or Google or Local)
-                     */
-
-                    //todo: do nothing aside from adding the passwordless provider?
-                    //add passwordless provider
-                    $userProvider = new UserProvider();
-                    $userProvider->email = $email;
-                    $userProvider->user_id = $user->id;
-                    $userProvider->provider = Config::get('ec5Strings.providers.passwordless');
-                    $userProvider->save();
-                }
-            }
+            //User was found, does this user need a passwordless provider?
+            $this->addPasswordlessProviderIfMissing($user, $email);
 
             //Login user as passwordless
             Auth::guard()->login($user, false);
             // JWT
-            $apiResponse->setData(Auth::guard()->authorizationResponse());
+            $data = Auth::guard()->authorizationResponse();
             // User name in meta
-            $apiResponse->setMeta([
+            $meta = [
                 'user' => [
                     'name' => Auth::guard()->user()->name,
                     'email' => Auth::guard()->user()->email
                 ]
-            ]);
+            ];
             // Return JWT response
-            return $apiResponse->toJsonResponse(200, 0);
+            return Response::apiData($data, $meta);
         }
 
         // Auth method not allowed
-        return $apiResponse->errorResponse(400, [
+        return Response::apiErrorCode(400, [
             'passwordless-api' => ['ec5_55']
         ]);
     }

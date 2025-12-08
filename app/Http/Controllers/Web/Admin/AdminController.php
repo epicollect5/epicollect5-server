@@ -2,13 +2,15 @@
 
 namespace ec5\Http\Controllers\Web\Admin;
 
-use ec5\Repositories\Eloquent\User\UserRepository;
-use ec5\Repositories\QueryBuilder\Project\SearchRepository as ProjectSearch;
-use ec5\Repositories\QueryBuilder\ProjectRole\SearchRepository as ProjectRoleSearch;
+use Auth;
 use ec5\Http\Controllers\Controller;
+use ec5\Libraries\Utilities\Common;
+use ec5\Models\Project\Project;
+use ec5\Services\User\UserService;
+use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Http\Request;
-use ec5\Models\Users\User;
-use Config;
+use Log;
+use Throwable;
 
 class AdminController extends Controller
 {
@@ -16,179 +18,130 @@ class AdminController extends Controller
     |--------------------------------------------------------------------------
     | Admin Controller
     |--------------------------------------------------------------------------
-    |
-    | This controller handles the server administration tasks.
-    |
     */
-
-    /**
-     * @var UserRepository
-     */
-    protected $userRepository;
-
-    /**
-     * @var ProjectSearch
-     */
-    protected $projectSearch;
-
-    /**
-     * @var ProjectRoleSearch
-     */
-    protected $projectRoleSearch;
+    protected Project $projectModel;
 
     /**
      * Create a new admin controller instance.
      * Restricted to admin and superadmin users
-     *
-     * @param UserRepository $userRepository
-     * @param ProjectSearch $projectSearch
      */
     public function __construct(
-        UserRepository $userRepository,
-        ProjectSearch $projectSearch,
-        ProjectRoleSearch $projectRoleSearch
+        Project $projectModel
     ) {
-        $this->userRepository = $userRepository;
-        $this->projectSearch = $projectSearch;
-        $this->projectRoleSearch = $projectRoleSearch;
-    }
-
-    /**
-     * @param Request $request
-     * @param null $action
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Http\JsonResponse|\Illuminate\View\View
-     * @throws \Throwable
-     */
-    public function index(Request $request, $action = null)
-    {
-        // The view that will be returned if an ajax call is made, ie pagination of users, projects etc
-        $ajaxView = '';
-
-        switch ($action) {
-            case 'projects':
-                $params = $this->projects($request);
-                $action = 'projects';
-                $ajaxView = 'admin.tables.projects';
-                break;
-            case 'import-project':
-                // No further action needed
-                break;
-            case 'stats':
-                $action = 'stats';
-                break;
-            default:
-                $params = $this->users($request);
-                $action = 'user-administration';
-                $ajaxView = 'admin.tables.users';
-        }
-
-        $params['action'] = $action;
-
-        // If ajax, return rendered html from $ajaxView
-        if ($request->ajax()) {
-            return response()->json(view($ajaxView, $params)->render());
-        }
-
-        // Return view with relevant params
-        return view('admin.admin', $params);
+        $this->projectModel = $projectModel;
     }
 
     /**
      * Display a list of users, paginated, against an optional search/filter query
-     *
-     * @param Request $request
-     * @return array
+     * @throws Throwable
      */
-    private function users(Request $request)
+    public function showUsers(Request $request)
     {
         // Get request data
-        $data = $request->all();
-        $perPage = Config::get('ec5Limits.users_per_page');
-
-        $adminUser = $request->user();
-
+        $params = $request->all();
+        $ajaxView = 'admin.tables.users';
         // Set search/filter/filter option defaults
-        $search = !empty($data['search']) ? $data['search'] : '';
-        $options['filter'] = !empty($data['filter']) ? $data['filter'] : '';
-        $options['filter_option'] = !empty($data['filterOption']) ? $data['filterOption'] : '';
-        $currentPage = !empty($data['page']) ? $data['page'] : 1;
+        $search = !empty($params['search']) ? $params['search'] : '';
 
-        $users = $this->userRepository->paginate($perPage, $currentPage, $search, $options);
-        $users->appends($options);
+        $filters['server_role'] = !empty($params['server_role']) ? $params['server_role'] : '';
+        $filters['state'] = !empty($params['state']) ? $params['state'] : '';
+
+        $users = UserService::getAllUsers($search, $filters);
+        $users->appends($filters);
         $users->appends(['search' => $search]);
 
-        return ['users' => $users, 'adminUser' => $adminUser];
+        $payload = [
+            'action' => 'users',
+            'users' => $users
+        ];
+
+        // If ajax, return rendered html from $ajaxView
+        if ($request->ajax()) {
+            return response()->json(view($ajaxView, $payload)->render());
+        }
+        // Return view with relevant params
+        return view('admin.admin', $payload);
     }
 
-    /**
-     * Display a list of projects, paginated, against an optional search/filter query
-     *
-     * @param Request $request
-     * @return array
-     */
-    private function projects(Request $request)
+    public function showSettings()
     {
-        $adminUser = $request->user();
-
         // Get request data
-        $options = $request->all();
-        $perPage = Config::get('ec5Limits.admin_projects_per_page');
+        try {
+            $CGPSVersion = Common::getCGPSEpicollectVersion();
+        } catch (GuzzleException $e) {
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
+            $CGPSVersion = 'n/a';
+        }
+        $currentVersion = config('epicollect.setup.system.version');
 
-        //get projects paginated
-        $projects = $this->projectSearch->adminProjects($perPage, $options);
+        $payload = [
+            'action' => 'settings',
+            'CGPSVersion' => $CGPSVersion,
+            'currentVersion' => $currentVersion,
+            'update' => version_compare($currentVersion, $CGPSVersion, '<'),
+            'systemEmail' => config('epicollect.setup.system.email'),
+            'authAllowedDomains' => join(', ', config('auth.auth_allowed_domains'))
+        ];
 
-        // Append the creator user's User object and current user's ProjectRole object
-        foreach ($projects as $project) {
-            $project->user = User::where('id', '=', $project->created_by)->first();
-            $project->my_role = $this->projectRoleSearch->getRole($adminUser, $project->project_id)->getRole();
+        // Return view with relevant params
+        return view('admin.admin', $payload);
+    }
+
+    public function showPHPInfo()
+    {
+        if (!Auth::user()->isSuperAdmin()) {
+            redirect()->back();
+        }
+        // Check if phpinfo is enabled
+        if (!config('epicollect.setup.phpinfo.enabled')) {
+            return response('Phpinfo output must be enabled.', 403);
         }
 
-        $projects->appends($options);
-
-        return ['projects' => $projects];
+        return phpinfo();
     }
 
+    public function updateSettings(Request $request)
+    {
+
+        //todo: validate with rule admin settings
+
+        //todo:update settings
+    }
+
+
+    /**
+     * @throws Throwable
+     */
     public function showProjects(Request $request)
     {
-        $adminUser = $request->user();
         $view = 'admin.tables.projects';
         $action = 'projects';
 
-        // Get request data
-        $options = $request->all();
-        $perPage = Config::get('ec5Limits.admin_projects_per_page');
+        $params = $request->all();
 
         //get projects paginated
-        $projects = $this->projectSearch->adminProjects($perPage, $options);
-
-        // Append the creator user's User object and current user's ProjectRole object
-        foreach ($projects as $project) {
-            $project->user = User::where('id', '=', $project->created_by)->first();
-            $project->my_role = $this->projectRoleSearch->getRole($adminUser, $project->project_id)->getRole();
-        }
-
-        $projects->appends($options);
-
-        $params = [
+        $projects = $this->projectModel->admin($params);
+        $projects->appends($params);
+        $payload = [
             'projects' => $projects,
             'action' => $action
         ];
 
         // If ajax, return rendered html from $ajaxView
         if ($request->ajax()) {
-            return response()->json(view($view, $params)->render());
+            return response()->json(view($view, $payload)->render());
         }
 
+
+
         // Return view with relevant params
-        return view('admin.admin', $params);
+        return view('admin.admin', $payload);
     }
 
-    //return stats view
-    public function showStats(Request $request)
+    public function showStats()
     {
         $action = 'stats';
-
-        // Return view with relevant params
+        // Return stats view with relevant params
         return view('admin.admin', ['action' => $action]);
     }
 }

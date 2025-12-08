@@ -6,8 +6,8 @@
 
     <div class='container-fluid page-home'>
 
-        @include('toast-success')
-        @include('toast-error')
+        @include('toasts/success')
+        @include('toasts/error')
 
         <div class="row">
             <h1 class="page-title">{{ trans('site.home_title') }}
@@ -21,16 +21,10 @@
             </h1>
         </div>
 
-        <div class="row" style="text-align: center;">
-            <p style="background-color:#ffe0b2;padding:5px 0;border-radius:6px">Try the new beta for
-                <strong><a href="https://testflight.apple.com/join/6gW71eIy" target="_blank">iOS</a></strong>
-            </p>
-        </div>
-
         <div class="row page-home-intro">
             <div class="col-xs-12 col-sm-12 col-md-4 col-lg-4 col-sm-12 text-center intro-thumbnail">
                 <img src="{{ asset('/images/ec5-intro-create-project.jpg') }}" class="img-responsive"
-                    alt="Create your project and forms on the website">
+                     alt="Create your project and forms on the website">
 
                 <div class="loader"></div>
                 <h4>Create your project and forms</h4>
@@ -38,7 +32,7 @@
             </div>
             <div class="col-xs-12 col-sm-12 col-md-4 col-lg-4 col-sm-12 text-center intro-thumbnail">
                 <img src="{{ asset('/images/ec5-intro-collect-data.jpg') }}" class="img-responsive"
-                    alt="Download project on device and collect data online or offline">
+                     alt="Download project on device and collect data online or offline">
 
                 <div class="loader"></div>
                 <h4>Collect data online or offline</h4>
@@ -46,7 +40,7 @@
             </div>
             <div class="col-xs-12 col-sm-12 col-md-4 col-lg-4 col-sm-12 text-center intro-thumbnail">
                 <img src="{{ asset('/images/ec5-intro-view-data.jpg') }}" class="img-responsive"
-                    alt="View, analyse and export your data (json, csv)">
+                     alt="View, analyse and export your data (json, csv)">
 
                 <div class="loader"></div>
                 <h4>View, analyse and export your data</h4>
@@ -55,118 +49,10 @@
         </div>
 
         <hr>
-        <div class="page-home__find-project">
-            <h2 class="text-center">Have a look at our featured projects below or
-                <a href="{{ url('/projects/') }}" class="btn btn-default btn-action-inverse btn-lg">find a project</a>
-            </h2>
-        </div>
-        <hr>
-
-        <div class="row page-home-featured-projects">
-
-            @foreach ($projectsFirstRow as $project)
-                <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
-                    <div class="panel panel-default">
-                        {{-- <div class="panel-heading"> --}}
-                        {{-- </div> --}}
-                        <div class="panel-body">
-                            <a href="{{ url('project/' . $project->slug) }}" class="thumbnail">
-                                <img class="img-responsive img-circle" width="256" height="256"
-                                    src="
-                                                {{-- If a private project, show lock --}}
-                                                     @if ($project->access == Config::get('ec5Strings.project_access.private')) {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
-                            @elseif($project->logo_url == '')
-                                {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
-                            @else
-                                {{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb') }} @endif"
-                                    alt="{{ $project->name }}">
-                                <div class="loader"></div>
-                            </a>
-
-                            <span class="project-name">{{ $project->name }}</span>
-
-                            <div class="project-small-description text-center">
-                                {{ $project->small_description }}
-                            </div>
-                            <div class="clearfix"></div>
-                            <div class="page-home-view-btn">
-                                <a class="btn btn-action pull-right"
-                                    href="{{ url('project/' . $project->slug) }}">{{ trans('site.view') }}</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            @endforeach
-
-            <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
-                <div class="panel panel-default panel-community">
-                    <div class="panel-body">
-                        <a href="https://community.epicollect.net" class="thumbnail">
-                            <img class="" width=" 256" src="{{ asset('/images/ec5-community.jpg') }}">
-                            <div class="loader"></div>
-                        </a>
-                        <div class="project-small-description text-center">
-                            Do you have any questions?
-                        </div>
-                        <div class="clearfix"></div>
-                        <div class="page-home-join-btn">
-                            <a class="btn btn-action" href="https://community.epicollect.net">
-                                {{ trans('site.join_community') }}
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {{-- Display second project row only if we have 4 projects featured --}}
-        @if (count($projectsSecondRow) === 4)
-            <div class="row page-home-featured-projects-small">
-                @foreach ($projectsSecondRow as $project)
-                    <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
-                        <div class="panel panel-default">
-                            {{-- <div class="panel-heading"> --}}
-                            {{-- </div> --}}
-                            <div class="panel-body">
-                                <a href="{{ url('project/' . $project->slug) }}" class="thumbnail">
-                                    <img class="img-responsive img-circle" width="128" height="128"
-                                        src="
-                                                {{-- If a private project, show lock --}}
-                                                       @if ($project->access == Config::get('ec5Strings.project_access.private')) {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
-                                @elseif($project->logo_url == '')
-                                    {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
-                                @else
-                                    {{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb') }} @endif"
-                                        alt="{{ $project->name }}">
-
-                                    <div class="loader"></div>
-                                </a>
-
-                                <span class="project-name">{{ $project->name }}</span>
-
-                                <div class="project-small-description text-center">
-                                    {{ $project->small_description }}
-                                </div>
-                                <div class="clearfix"></div>
-                                <div class="page-home-view-btn">
-                                    <a class="btn btn-action pull-right"
-                                        href="{{ url('project/' . $project->slug) }}">{{ trans('site.view') }}</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-        @endif
-
-        <hr>
 
         <div class="page-home__server-stats row">
-            <h3 class="text-center server-stats__stats-teaser">Thousand of people use <strong
-                    style="color:#673c90">Epicollect5</strong> every day
-                to collect data
-                all over the
-                world.</h3>
+            <h3 class="text-center server-stats__stats-teaser">Thousands of people use Epicollect5 to collect data for
+                thousands of projects every day.</h3>
             <div class="col-xs-12 col-sm-4 col-md-4 col-lg-4 text-center server-stats__stats-wrapper">
                 <div class="circle stats-users">
                     <div class="circle-content">
@@ -198,7 +84,123 @@
 
         <hr>
 
-    </div>
+        <div class="page-home__find-project">
+            <h2 class="text-center">Have a look at our featured projects below or
+                <a href="{{ url('/projects/') }}" class="btn btn-default btn-action-inverse btn-lg">find a project</a>
+            </h2>
+        </div>
+        <hr>
 
+        <div class="row page-home-featured-projects-small">
+
+            @foreach ($projectsFirstRow as $project)
+                <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
+                    <div class="panel panel-default">
+                        {{-- <div class="panel-heading"> --}}
+                        {{-- </div> --}}
+                        <div class="panel-body">
+                            <a href="{{ url('project/' . $project->slug) }}" class="thumbnail">
+                                <img class="img-responsive img-circle" width="128" height="128"
+                                     src="
+                                                {{-- If a private project, show lock --}}
+                                                     @if ($project->access == config('epicollect.strings.project_access.private')) {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
+                            @elseif($project->logo_url == '')
+                                {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
+                            @else
+                                {{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb') }} @endif"
+                                     alt="{{ $project->name }}">
+                                <div class="loader"></div>
+                            </a>
+
+                            <span class="project-name">{{ $project->name }}</span>
+
+                            <div class="project-small-description text-center">
+                                {{ $project->small_description }}
+                            </div>
+                            <div class="clearfix"></div>
+                            <div class="page-home-view-btn">
+                                <a class="btn btn-action pull-right"
+                                   href="{{ url('project/' . $project->slug) }}">{{ trans('site.view') }}</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+
+            {{-- Only show Community column is featured project total is 7 (first row is 3) --}}
+            @if($projectsFirstRow->count() === 3)
+                <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+                            <a href="https://community.epicollect.net" class="thumbnail" target="_blank">
+                                <img class="img-responsive img-circle" width="128" height="128"
+                                     src="{{ asset('/images/epicollect5-rounded-no-borders.jpg')  }}"
+                                     alt="Community Logo">
+                                <div class="loader"></div>
+                            </a>
+
+                            <span class="project-name">Do You Have Any Questions?</span>
+
+                            <div class="project-small-description text-center">
+                                Ask Our Community
+                            </div>
+                            <div class="clearfix"></div>
+                            <div class="page-home-view-btn">
+                                <a class="btn btn-action"
+                                   href="https://community.epicollect.net"
+                                   target="_blank"
+                                >
+                                    {{ trans('site.join_community') }}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
+        </div>
+
+        {{-- Display second project row only if we have 4 projects featured --}}
+        @if (count($projectsSecondRow) === 4)
+            <div class="row page-home-featured-projects-small">
+                @foreach ($projectsSecondRow as $project)
+                    <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
+                        <div class="panel panel-default">
+                            {{-- <div class="panel-heading"> --}}
+                            {{-- </div> --}}
+                            <div class="panel-body">
+                                <a href="{{ url('project/' . $project->slug) }}" class="thumbnail">
+                                    <img class="img-responsive img-circle" width="128" height="128"
+                                         src="
+                                                {{-- If a private project, show lock --}}
+                                                       @if ($project->access == config('epicollect.strings.project_access.private')) {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
+                                @elseif($project->logo_url == '')
+                                    {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
+                                @else
+                                    {{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb') }} @endif"
+                                         alt="{{ $project->name }}">
+
+                                    <div class="loader"></div>
+                                </a>
+
+                                <span class="project-name">{{ $project->name }}</span>
+
+                                <div class="project-small-description text-center">
+                                    {{ $project->small_description }}
+                                </div>
+                                <div class="clearfix"></div>
+                                <div class="page-home-view-btn">
+                                    <a class="btn btn-action pull-right"
+                                       href="{{ url('project/' . $project->slug) }}">{{ trans('site.view') }}</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        @endif
+
+        <hr>
+
+    </div>
 
 @stop

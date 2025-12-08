@@ -2,20 +2,20 @@
 
 namespace ec5\Http\Validation\Entries\Upload\InputRules;
 
-use ec5\Models\Entries\EntryStructure;
-use ec5\Models\Projects\Project;
-use Log;
 use DateTime;
+use ec5\DTO\EntryStructureDTO;
+use ec5\DTO\ProjectDTO;
+use Log;
+use Throwable;
 
 class RuleDateInput extends RuleInputBase
 {
-
     /**
      * @param $inputDetails
      * @param string|array $answer
-     * @param Project $project
+     * @param ProjectDTO $project
      */
-    public function setRules($inputDetails, $answer, Project $project)
+    public function setRules($inputDetails, $answer, ProjectDTO $project): void
     {
         // Set rules based on the input details
         // Source will be the input ref
@@ -28,11 +28,11 @@ class RuleDateInput extends RuleInputBase
 
     }
 
-    public function additionalChecks($inputDetails, $answer, Project $project, EntryStructure $entryStructure)
+    public function additionalChecks($inputDetails, $answer, ProjectDTO $project, EntryStructureDTO $entryStructure): array|string|null
     {
 
         //if this question is not required, skip extra checks
-        if($inputDetails['is_required'] === false && $answer === '') {
+        if ($inputDetails['is_required'] === false && $answer === '') {
             return $answer;
         }
 
@@ -58,17 +58,17 @@ class RuleDateInput extends RuleInputBase
         //Let's check if Y-m-d is actually a valid date in the history of time
         $datePart = '';
         try {
-            $datePart = explode('T', $answer)[0];
-        }
-        catch (\Exception $e) {
+            $datePart = explode('T', $answer ?? '')[0];
+        } catch (Throwable $e) {
             Log::error('Date wrong format uploaded - validateDate failed', [
                 'project slug' => $project->slug,
-                'date' => $answer
+                'date' => $answer,
+                'exception' => $e->getMessage()
             ]);
             $this->errors[$inputDetails['ref']] = ['ec5_79'];
         }
 
-        if(!$this->validateDate($datePart)) {
+        if (!$this->validateDate($datePart)) {
             Log::error('Date wrong format uploaded - validateDate failed', [
                 'project slug' => $project->slug,
                 'date' => $answer
@@ -80,7 +80,7 @@ class RuleDateInput extends RuleInputBase
     }
 
     //see t.ly/YEox
-    private function validateDate($date, $format = 'Y-m-d')
+    private function validateDate($date, $format = 'Y-m-d'): bool
     {
         $d = DateTime::createFromFormat($format, $date);
         return $d && $d->format($format) == $date;

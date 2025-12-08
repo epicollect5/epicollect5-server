@@ -1,32 +1,35 @@
+@import "theme";
+@import "mixins";
+
 .page-entries-deletion {
-  .h1, .h2, .h3, h1, h2, h3 {
+  .h1,
+  .h2,
+  .h3,
+  h1,
+  h2,
+  h3 {
     margin: 0;
   }
-
+  .modal {
+    .modal-dialog {
+      .modal-body {
+        margin-bottom: 0;
+      }
+    }
+    .modal-footer {
+      margin-top: 0;
+    }
+    .table {
+      margin-bottom: 0;
+    }
+  }
   .project-name {
-    color:$deep-purple!important;
+    color: $deep-purple !important;
     margin-bottom: 15px;
   }
 
-  .project-home__logo {
-    margin: 0 auto;
-    border: 2px solid $deep-purple;
-  }
-  .project-home__logo-wrapper {
-    border: none;
-    position: relative;
-    display: block;
-    .loader {
-      position: absolute;
-      z-index: 21;
-    }
-    img {
-      opacity: 0;
-      z-index: 22;
-      position: relative;
-      min-height: 256px;
-      margin: 0 auto;
-    }
+  .project-logo-wrapper {
+    @include project-logo-wrapper(256px, 256px);
   }
 
   .project-home__project-view-btn {
@@ -60,13 +63,75 @@
     }
   }
   .project-home__action-btns {
-    margin-top:15px;
+    margin-top: 15px;
     .btn {
-      width:150px;
+      width: 150px;
     }
   }
+
+
+  .project-home__share-btns {
+    margin-top: -30px;
+    text-align: center;
+  }
+
+  .table td {
+    height: 25px; /* match your .progress-media and .progress-entries row height */
+    vertical-align: middle;
+  }
+
+
+  .progress {
+    height: 16px;
+    background-color: #f0f0f0;
+    .progress-bar__modal-deletion__entries {
+      background-color: $hot-pink;
+      height: 16px;
+    }
+    .progress-bar__modal-deletion__media {
+      background-color: $deep-purple;
+      height: 16px;
+    }
+  }
+
+  .color-indicator {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    margin-right: 4px;
+    vertical-align: middle;
+
+    &.color-media {
+      background-color: $deep-purple;
+    }
+
+    &.color-entries {
+      background-color: $hot-pink;
+    }
+  }
+  .counter-percentage {
+    display: inline-block;
+    width: 4ch;
+    font-family: 'Roboto', sans-serif;
+    font-variant-numeric: tabular-nums; /* makes digits same width */
+    text-align: right;
+    height: 20px;
+  }
+
+  .spinner {
+    @include cell-spinner();
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
 }
-.project-home__share-btns {
-  margin-top: -30px;
-  text-align: center;
-}
+
+

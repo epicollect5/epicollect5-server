@@ -15,7 +15,35 @@
   }
   .create-project-form {
     .fa-times {
-      margin-top:-5px;
+      margin-top: -5px;
+    }
+  }
+
+  #project-name-form-group-import {
+    code {
+      color: #333;
+    }
+    .project-json-file-picker {
+      margin-top: 15px;
+      .file-input-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        opacity: 0;
+        z-index: -1;
+      }
+
+      span.material-symbols-outlined {
+        vertical-align: middle;
+      }
+
+      .file-input-wrapper {
+        margin-top: 10px; /* Adds spacing between label and input/button */
+      }
+
+      #file-name {
+        margin-left: 10px; /* Space between button and file name */
+      }
     }
   }
 }

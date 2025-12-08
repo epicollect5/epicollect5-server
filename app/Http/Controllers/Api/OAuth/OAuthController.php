@@ -2,102 +2,66 @@
 
 namespace ec5\Http\Controllers\Api\OAuth;
 
-use ec5\Http\Controllers\Api\ApiResponse;
-use ec5\Http\Controllers\ProjectControllerBase;
+use ec5\Models\OAuth\OAuthAccessToken;
+use Illuminate\Http\JsonResponse;
 use Laravel\Passport\Http\Controllers\HandlesOAuthErrors;
 use Laravel\Passport\TokenRepository;
 use Lcobucci\JWT\Parser as JwtParser;
-use Zend\Diactoros\Response as Psr7Response;
-use Psr\Http\Message\ServerRequestInterface;
 use League\OAuth2\Server\AuthorizationServer;
-use Throwable;
-use Exception;
-use Illuminate\Http\Response;
 use League\OAuth2\Server\Exception\OAuthServerException;
+use Log;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Response;
+//use Zend\Diactoros\Response as Psr7Response;
+use Nyholm\Psr7\Response as Psr7Response;
+use Throwable;
 
-use Illuminate\Http\Request;
-use ec5\Repositories\QueryBuilder\OAuth\DeleteRepository as OAuthProjectClientDelete;
-
-class OAuthController extends ProjectControllerBase
+class OAuthController
 {
     use HandlesOAuthErrors;
 
-    /**
-     * The authorization server.
-     *
-     * @var AuthorizationServer
-     */
-    protected $server;
-
-    /**
-     * The token repository instance.
-     *
-     * @var TokenRepository
-     */
-    protected $tokens;
-
-    /**
-     * The JWT parser instance.
-     *
-     * @var JwtParser
-     */
-    protected $jwt;
-
-    /**
-     * @var OAuthProjectClientDelete
-     */
-    protected $oAuthProjectClientDelete;
+    protected AuthorizationServer $server;
+    protected TokenRepository $tokens;
+    protected JwtParser $jwt;
 
     /**
      * OAuthController constructor
      *
-     * @param Request $request
      * @param AuthorizationServer $server
      * @param TokenRepository $tokens
      * @param JwtParser $jwt
-     * @param OAuthProjectClientDelete $oauthProjectClientDelete
      */
     public function __construct(
-        Request $request,
         AuthorizationServer $server,
-        TokenRepository $tokens,
-        JwtParser $jwt,
-        OAuthProjectClientDelete $oauthProjectClientDelete
+        TokenRepository     $tokens,
+        JwtParser           $jwt
     ) {
         $this->jwt = $jwt;
         $this->server = $server;
         $this->tokens = $tokens;
-
-        $this->oAuthProjectClientDelete = $oauthProjectClientDelete;
-
-        parent::__construct($request);
     }
 
     /**
      * Authorize a client to access by issuing an access_token
      *
      * @param ServerRequestInterface $request
-     * @param ApiResponse $apiResponse
-     * @return Response
+     * @return JsonResponse|ResponseInterface
      */
-    public function issueToken(ServerRequestInterface $request, ApiResponse $apiResponse)
+    public function issueToken(ServerRequestInterface $request)
     {
-
         // Default error code
         $errors['token issue'] = ['ec5_254'];
 
         try {
-
-            $input = $request->getParsedBody();
-
+            $payload = $request->getParsedBody();
             // Revoke all current access tokens for this client
-            if(isset($input['client_id']) && !empty($input['client_id'])) {
-                $this->oAuthProjectClientDelete->revokeTokens($input['client_id']);
+            if (!empty($payload['client_id'])) {
+                OAuthAccessToken::where('client_id', $payload['client_id'])->delete();
             }
 
-            // Create a new access token
-            $token = $this->server->respondToAccessTokenRequest($request, new Psr7Response);
-            return $token;
+            // return a new access token
+            return $this->server->respondToAccessTokenRequest($request, new Psr7Response());
         } catch (OAuthServerException $e) {
 
             // Switch on OAuthServerException error type
@@ -112,13 +76,11 @@ class OAuthController extends ProjectControllerBase
                     // Use default error code
             }
 
-        } catch (Exception $e) {
-            // Use default error code
         } catch (Throwable $e) {
             // Use default error code
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
         }
 
-        return $apiResponse->errorResponse(400, $errors);
-
+        return Response::apiErrorCode(400, $errors);
     }
 }

@@ -7,10 +7,6 @@ window.EC5.users = window.EC5.users || {};
  */
 (function users(module) {
 
-    /**
-     *
-     * @param error
-     */
     module.showError = function (error) {
 
         if (error.responseJSON.errors) {
@@ -28,31 +24,40 @@ window.EC5.users = window.EC5.users || {};
      * Function for asynchronously retrieving the
      * list of users, based on any search/filter
      * criteria, with pagination
-     *
-     * @param page
-     * @param search
-     * @param filter
-     * @param filterOption
      */
-    module.getUsers = function (page, search, filter, filterOption) {
+    module.getUsers = function (page, search, server_role, state) {
+
+        window.setTimeout(function () {
+            window.EC5.overlay.fadeIn();
+        }, 500);
+
+        $('.user-administration__users')
+            .find('.user-administration__table')
+            .animate({opacity: 0}, 500);
 
         // Set defaults
         page = typeof page !== 'undefined' ? page : 1;
         search = typeof search !== 'undefined' ? search : '';
-        filter = typeof filter !== 'undefined' ? filter : '';
-        filterOption = typeof filterOption !== 'undefined' ? filterOption : '';
+        server_role = typeof server_role !== 'undefined' ? server_role : '';
+        state = typeof state !== 'undefined' ? state : '';
 
         // Make ajax request to load users
         $.ajax({
-            url: window.EC5.SITE_URL + '/admin',
+            url: window.EC5.SITE_URL + '/admin/users',
             type: 'GET',
             dataType: 'json',
-            data: { page: page, search: search, filter: filter, filterOption: filterOption }
+            data: {
+                page: page,
+                search: search,
+                server_role: server_role,
+                state: state
+            }
         }).done(function (data) {
-
-            $('.user-administration__users').html(data);
-
-        }).fail(module.showError);
+            $('.user-administration__users').html(data) // Update the content
+                .animate({opacity: 1}, 500); // Animate opacity to 1 over 500 milliseconds
+        }).fail(module.showError).always(function () {
+            window.EC5.overlay.fadeOut();
+        });
     };
 
     /**
@@ -77,12 +82,13 @@ window.EC5.users = window.EC5.users || {};
             // Retrieve search and filter/filter option values from page elements
             // so pagination works within the current results set
             var search = container.find('.user-administration__user-search').val();
-            var filter = container.find('.user-administration__user-filter').val();
-            var filterOption = container.find('.user-administration__user-filter-option').val();
+            var server_role = container.find('.user-administration__user-filter__server-role').val();
+            var state = container.find('.user-administration__user-filter__state').val();
             var page = container.find('.pagination .active span').html();
 
+
             // get users based on page and any existing search or filter and filter option
-            module.getUsers(page, search, filter, filterOption);
+            module.getUsers(page, search, server_role, state);
 
         }).fail(module.showError);
 
@@ -136,11 +142,10 @@ $(document).ready(function () {
         // Retrieve search and filter/filter option values from page elements
         // so pagination works within the current results set
         var search = container.find('.user-administration__user-search').val();
-        var filter = container.find('.user-administration__user-filter').val();
         var filterOption = container.find('.user-administration__user-filter-option').val();
 
         // Get users based on page and any existing search or filter and filter option
-        window.EC5.users.getUsers($(this).attr('href').split('page=')[1], search, filter, filterOption);
+        window.EC5.users.getUsers($(this).attr('href').split('page=')[1], search, 'server_role', filterOption);
 
         window.scrollTo(0, 0);
 
@@ -151,20 +156,19 @@ $(document).ready(function () {
 
     // Bind keyup event to search input
     userAdministration.on('keyup', '.user-administration__user-search', function (e) {
-
         // Get value of input
-        var value = this.value;
+        var needle = this.value;
 
         // If the length is 3 or more characters, or the user pressed ENTER, search
-        if (this.value.length >= 0 || e.keyCode === 13) {
+        if (needle.length >= 3 || e.keyCode === 13) {
 
             // Get user-administration container
             var container = $(this).closest('.user-administration');
 
             // Retrieve filter/filter option values from page elements
             // so pagination works within the current results set
-            var filter = container.find('.user-administration__user-filter').val();
-            var filterOption = container.find('.user-administration__user-filter-option').val();
+            var server_role = container.find('.user-administration__user-filter__server_role').val();
+            var state = container.find('.user-administration__user-filter__state').val();
 
             // Set delay amount
             // for user to stop typing
@@ -178,108 +182,48 @@ $(document).ready(function () {
             // Clear the previous timeout request
             clearTimeout(requestTimeout);
 
+
             // Set new timeout request
             requestTimeout = setTimeout(function () {
                 // Get users based on this search (with filter values, if applicable)
-                window.EC5.users.getUsers(1, value, filter, filterOption);
-
+                window.EC5.users.getUsers(1, needle, server_role, state);
             }, requestDelay);
-
         }
-
     });
 
-    // Default state and access array values
-    var stateValues = { active: 'Active', disabled: 'Disabled' };
-    var accessValues = { basic: 'Basic', admin: 'Admin', superadmin: 'Superadmin' };
-
-    // Bind on change event for filter drop down to populate filter options
-    userAdministration.on('change', '.user-administration__user-filter', function (e) {
-
-        // Get user-administration container
-        var container = $(this).closest('.user-administration');
-        var userFilterOption = $('.user-administration__user-filter-option');
-
-        // Remove previous options, leaving initial option
-        userFilterOption.children('option:not(:first)').remove();
-
-        // Set actions for each case
-        switch (this.value) {
-
-            case 'state':
-                // Set options for active/disabled (state) filter
-                $.each(stateValues, function (key, value) {
-                    container.find('.user-administration__user-filter-option').append($('<option/>', {
-                        value: key,
-                        text: value
-                    }));
-                });
-                userFilterOption.prop('disabled', false);
-                break;
-
-            case 'server_role':
-                // Set options for access (server_role) filter
-                $.each(accessValues, function (key, value) {
-                    $('.user-administration__user-filter-option').append($('<option/>', {
-                        value: key,
-                        text: value
-                    }));
-                });
-
-                userFilterOption.prop('disabled', false);
-                break;
-
-            default:
-                // By default, disable filter options
-                userFilterOption.prop('disabled', true);
-
-                // Check for search value
-                var search = $('.user-administration__user-search').val();
-                // Reset table (with search value, if applicable)
-                window.EC5.users.getUsers(1, search);
-        }
-
-
-    });
-
-
-    // Bind on change event for filters to user properties
-    userAdministration.on('change', '.user-administration__user-filter-option', function (e) {
-
-        // Get user-administration container
-        var container = $(this).closest('.user-administration');
-
+    // Bind on change event to filter users by server role
+    userAdministration.on('change', '.user-administration__user-filter__state', function (e) {
         // Retrieve search and filter/filter option values from page elements
         // so pagination works within the current results set
-        var search = container.find('.user-administration__user-search').val();
-        var filter = container.find('.user-administration__user-filter').val();
-
+        var search = $('.user-administration__user-search').val();
+        var server_role = $('.user-administration__user-filter__server-role').val();
         // Get users based on filter and filter option (with search value, if applicable)
-        window.EC5.users.getUsers(1, search, filter, this.value);
 
+        window.EC5.users.getUsers(1, search, server_role, this.value);
+    });
+
+    userAdministration.on('change', '.user-administration__user-filter__server-role', function (e) {
+        // Retrieve search and filter/filter option values from page elements
+        // so pagination works within the current results set
+        var search = $('.user-administration__user-search').val();
+        var state = $('.user-administration__user-filter__state').val();
+        // Get users based on filter and filter option (with search value, if applicable)
+        window.EC5.users.getUsers(1, search, this.value, state);
     });
 
 
     // Bind on click to reset table
-    userAdministration.on('click', '.user-administration__user-reset', function (e) {
+    userAdministration.on('click', '.user-administration__user-clear', function (e) {
 
         e.preventDefault();
-
-        // Get user-administration container
-        var container = $(this).closest('.user-administration');
-
         // Remove search text
-        container.find('.user-administration__user-search').val('');
-        // Set first filter option as selected
-        container.find('.user-administration__user-filter').val(container.find('.user-administration__user-filter option:first').val());
-        // Remove previous filter options and disable
-        container.find('.user-administration__user-filter-option').children('option:not(:first)').remove();
-
-        container.find('.user-administration__user-filter-option').prop('disabled', true);
+        $('.user-administration__user-search').val('');
+        ///remove server role selection
+        $('.user-administration__user-filter__server-role').val('');
+        $('.user-administration__user-filter__state').val('');
 
         // Get users
         window.EC5.users.getUsers();
-
     });
 
 
@@ -287,15 +231,12 @@ $(document).ready(function () {
     userAdministration.on('submit', '.user-administration__table__state-form', function (e) {
 
         e.preventDefault();
-
         // Retrieve form data
         var formData = $(this).serialize();
-
         // Get action url
         var url = $(this).attr('action');
 
         window.EC5.users.updateUser(url, formData);
-
     });
 
 
@@ -303,15 +244,12 @@ $(document).ready(function () {
     userAdministration.on('submit', '.user-administration__table__server-role-form', function (e) {
 
         e.preventDefault();
-
         // Retrieve form data
         var formData = $(this).serialize();
-
         // Get action url
         var url = $(this).attr('action');
 
         window.EC5.users.updateUser(url, formData);
-
     });
 
     // Bind on click to add new user (via modal)
@@ -338,7 +276,7 @@ $(document).ready(function () {
                 $(this).attr('type', 'text');
             });
         } else {
-            modalAddUser.find('input.password-input').each(function (iput) {
+            modalAddUser.find('input.password-input').each(function () {
                 $(this).attr('type', 'password');
             });
         }

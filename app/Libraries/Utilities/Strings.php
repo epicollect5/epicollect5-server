@@ -2,6 +2,8 @@
 
 namespace ec5\Libraries\Utilities;
 
+use Faker\Factory as Faker;
+
 class Strings
 {
 
@@ -13,7 +15,7 @@ class Strings
      * @param string $string
      * @return bool
      */
-    public static function containsEmoji(string $string) : bool
+    public static function containsEmoji(string $string): bool
     {
         // Match Emoticons
         $regexEmoticons = '/[\x{1F600}-\x{1F64F}]/u';
@@ -81,7 +83,7 @@ class Strings
      * @param string $string
      * @return bool
      */
-    public static function containsHtml(string $string) : bool
+    public static function containsHtml(string $string): bool
     {
         return preg_match('/<|>/', $string) !== 0;
     }
@@ -89,20 +91,33 @@ class Strings
     /**
      * Check if a given string is a valid UUID (not version 4, we have old uuids to let through)
      *
-     * @param   string  $uuid   The string to check
+     * @param string $uuid The string to check
      * @return  boolean
      */
-    public static function isValidUuid( $uuid ) {
+    public static function isValidUuid($uuid)
+    {
         if (!is_string($uuid) || (preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/', $uuid) !== 1)) {
             return false;
         }
         return true;
     }
 
-    public static function isValidProjectRef( $projectRef ) {
+    public static function isValidProjectRef($projectRef)
+    {
         if (!is_string($projectRef) || (preg_match('/^[0-9a-f]{8}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{12}$/', $projectRef) !== 1)) {
             return false;
         }
         return true;
+    }
+
+    public static function generateRandomAlphanumericString($length): string
+    {
+        $faker = Faker::create();
+        // Generate a random alphanumeric string
+        $randomString = $faker->sentence($length, true);
+        // Remove any non-alphanumeric characters
+        $randomString = preg_replace('/[^A-Za-z0-9]/', '', $randomString);
+        // Ensure the string is exactly the specified length
+        return str_pad($randomString, $length, '0', STR_PAD_RIGHT);
     }
 }

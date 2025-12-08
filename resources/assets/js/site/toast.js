@@ -13,7 +13,8 @@ window.EC5.toast = window.EC5.toast || {};
         hideDuration: 500,
         extendedTimeOut: 0,
         showMethod: 'fadeIn',
-        hideMethod: 'fadeOut'
+        hideMethod: 'fadeOut',
+        escapeHtml: true
     };
 
     module.showSuccess = function (message) {

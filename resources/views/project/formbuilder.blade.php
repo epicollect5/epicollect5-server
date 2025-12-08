@@ -7,44 +7,61 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link href='https://fonts.googleapis.com/css?family=Arimo' rel='stylesheet' type='text/css'>
-    <script defer data-domain="five.epicollect.net" src="https://analytics.cgps.dev/js/plausible.js"></script>
+    @if(config('app.env') == 'production')
+        <script defer data-domain="five.epicollect.net" src="https://analytics.cgps.dev/js/plausible.js"></script>
+    @endif
 
-    <title>Epicollect5 - {{ $projectName }} - Formbuilder</title>
+    <title>Epicollect5 - {{ $requestAttributes->requestedProject->name }} - Formbuilder</title>
 
-    <meta id="formbuilder-version" data-version="{{ ENV('RELEASE') }}">
+    <meta id="formbuilder-version" data-version="{{ config('app.release') }}">
 
     @include('favicon')
 
     <link rel="stylesheet" type="text/css"
-        href="{{ asset('formbuilder/css/vendor-formbuilder.css') . '?v=' . ENV('RELEASE') }}">
+          href="{{ asset('formbuilder/css/vendor-formbuilder.css') . '?v=' . config('app.release') }}">
     <link rel="stylesheet" type="text/css"
-        href="{{ asset('formbuilder/css/formbuilder.css') . '?v=' . ENV('RELEASE') }}">
+          href="{{ asset('formbuilder/css/formbuilder.css') . '?v=' . config('app.release') }}">
 
-    <script src="{{ asset('/js/vendor-site.js') . '?v=' . ENV('RELEASE') }}"></script>
-    <script src="{{ asset('/js/site.js') . '?v=' . ENV('RELEASE') }}"></script>
+    <script src="{{ asset('/js/vendor-site.js') . '?v=' . config('app.release') }}"></script>
+    <script src="{{ asset('/js/site.js') . '?v=' . config('app.release') }}"></script>
     <script>
         window.EC5 = window.EC5 || {};
         window.EC5.SITE_URL = '{{ url('') }}';
     </script>
 </head>
 <!--[if IE 9]>
-    <body class="loader-background ie9"> <![endif]-->
+<body class="loader-background ie9"> <![endif]-->
 <!--[if gt IE 9]>
-    <body class="loader-background"><![endif]-->
+<body class="loader-background"><![endif]-->
 <div class="loader">Loading...</div>
 <div class="wait-overlay"></div>
 
 <!--[if lt IE 9]>
-    <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a
-            href="http://browsehappy.com/">upgrade
+<p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a
+        href="https://browsehappy.com/">upgrade
     your browser</a> to use this app.</p>
-    <![endif]-->
+<![endif]-->
 
 <nav class="navbar navbar-inverse navbar-fixed-top hidden formbuilder-navbar" role="navigation">
     <!--navbar content goes here-->
 </nav>
 
-<div class="warning-well screen-resolution">The formbuilder does not support the current screen resolution</div>
+<div class="warning-well screen-resolution">
+    <p>The formbuilder does not support the current screen resolution</p>
+    <hr>
+    <p>A minimum screen width of <strong>1024px</strong> is required</p>
+    <hr>
+    <p><strong>
+            <a href="https://docs.epicollect.net/formbuilder/build-your-questionnaire"
+               target="_blank"
+            >
+                Learn More
+            </a>
+        </strong>
+    </p>
+</div>
+
+<div class="total-entries hidden" data-total-entries="{{ $totalEntries }}"></div>
 
 <div class="container-fluid page-formbuilder hidden">
     <div class="row">
@@ -64,7 +81,7 @@
                 <li role="presentation">
                     <!-- trigger add form modal-->
                     <a class="main__tabs_add-form" href="#" aria-controls="profile" role="tab"
-                        data-toggle="modal" data-target=".main__modal--edit-form-name">Add child form
+                       data-toggle="modal" data-target=".main__modal--edit-form-name">Add child form
                         <i class="fa fa-plus"></i>
                     </a>
                 </li>
@@ -84,7 +101,7 @@
 
             <!-- Modal -->
             <div class="main__modal--edit-form-name modal fade" tabindex="-1" role="dialog"
-                aria-labelledby="Edit form name">
+                 aria-labelledby="Edit form name">
                 <!-- load modal dynamically-->
             </div>
 
@@ -92,7 +109,7 @@
             <div class="main__tabs-content tab-content">
 
                 <div role="tabpanel" class="main__tabs-content-tabpanel tab-pane fade in active"
-                    id="{form-ref}-tabpanel">
+                     id="{form-ref}-tabpanel">
 
                     <div id="form-ref-inputs-collection" class="inputs-collection col-md-6">
                         <!-- Inputs collection (sortable) container will load here dinamically-->
@@ -120,11 +137,11 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-                            aria-hidden="true">&times;</span></button>
+                                aria-hidden="true">&times;</span></button>
                     <h4 class="modal-title" id="myModalLabel">What do you mean by <strong>title</strong>?</h4>
                 </div>
                 <div class="modal-body">
-                    <p>Each entry you will add on your device will appear on a list.<br />
+                    <p>Each entry you will add on your device will appear on a list.<br/>
                         To identify each entry, you can set some of your question answers to be part of the entry title
                         (up to a maximum of 3 for either a form or a branch)</p>
                     <p>For example, let's say you have 3 questions like:</p>
@@ -140,8 +157,8 @@
                         <li class="list-group-item">...</li>
                     </ul>
                     <p>Remember, if you do not set any title at all, the entry unique identifier generated by the system
-                        will be shown instead: <br />
-                        <code>149da8d4-2807-11e6-b67b-9e71128cae77</code> <br />
+                        will be shown instead: <br/>
+                        <code>149da8d4-2807-11e6-b67b-9e71128cae77</code> <br/>
                         Since it is not really readable, we highly recommend you select some questions as
                         <strong>title</strong>!
                     </p>
@@ -158,7 +175,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-                            aria-hidden="true">&times;</span></button>
+                                aria-hidden="true">&times;</span></button>
                     <h4 class="modal-title">What is a <strong>regex</strong>?</h4>
                 </div>
                 <div class="modal-body">
@@ -176,7 +193,8 @@
                             </th>
                             <td>
                                 <button class="btn btn-default btn-action-inverse pull-right"
-                                    data-apply-regex="only_letters">Apply this</button>
+                                        data-apply-regex="only_letters">Apply this
+                                </button>
                             </td>
                         </tr>
                         <tr>
@@ -185,17 +203,19 @@
                             </th>
                             <td>
                                 <button class="btn btn-default btn-action-inverse pull-right"
-                                    data-apply-regex="only_digits">Apply this</button>
+                                        data-apply-regex="only_digits">Apply this
+                                </button>
                             </td>
                         </tr>
                         <tr>
                             <th>
-                                Limit the answer length to 20 chars <br />(or any length you like, just replace 20 with
+                                Limit the answer length to 20 chars <br/>(or any length you like, just replace 20 with
                                 the length you want)
                             </th>
                             <td>
                                 <button class="btn btn-default btn-action-inverse pull-right"
-                                    data-apply-regex="limit_length_20">Apply this</button>
+                                        data-apply-regex="limit_length_20">Apply this
+                                </button>
                             </td>
                         </tr>
                     </table>
@@ -215,7 +235,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-                            aria-hidden="true">&times;</span></button>
+                                aria-hidden="true">&times;</span></button>
                     <h4 class="modal-title">What are Epicollect5 forms?</h4>
                 </div>
                 <div class="modal-body">
@@ -242,7 +262,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-                            aria-hidden="true">&times;</span></button>
+                                aria-hidden="true">&times;</span></button>
                     <h4 class="modal-title">Possible answers csv import options</h4>
                 </div>
                 <div class="modal-body">
@@ -252,7 +272,7 @@
                             <label>Select which dataset to import</label>
                             <div class="possible-answers-column-picker btn-group pull-right">
                                 <button type="button" class="btn btn-default btn-sm dropdown-toggle"
-                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Pick column <span class="caret"></span>
                                 </button>
                                 <ul class="dropdown-menu">
@@ -260,7 +280,7 @@
                             </div>
                         </div>
 
-                        <hr />
+                        <hr/>
 
                         <div class="form-group possible_answers__first-row-headers">
                             <div class="checkbox">
@@ -270,32 +290,67 @@
                             </div>
                         </div>
 
-                        <hr />
+                        <hr/>
 
                         <div class="form-group possible_answers__append-or-replace">
                             <div class="radio">
                                 <label>
                                     <input type="radio" name="possibleAnswersImportOptions" id="replace"
-                                        value="option2" checked>
+                                           value="option2" checked>
                                     Replace all existing possible answers
                                 </label>
                             </div>
                             <div class="radio">
                                 <label>
                                     <input type="radio" name="possibleAnswersImportOptions" id="append"
-                                        value="option1">
+                                           value="option1">
                                     Append to existing possible answers
                                 </label>
                             </div>
                         </div>
-                        <hr />
+                        <hr/>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default btn-default pull-left"
-                        data-dismiss="modal">Dismiss</button>
+                            data-dismiss="modal">Dismiss
+                    </button>
                     <button type="button" class="btn btn-default btn-action possible_answers-perform-import"
-                        disabled>Import</button>
+                            disabled>Import
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="warning-delete-question"
+         class="modal fade"
+         tabindex="-1"
+         role="dialog">
+        <div class="modal-dialog"
+             role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button"
+                            class="close"
+                            data-dismiss="modal"
+                            aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title text-center">Warning</h4>
+                </div>
+                <div class="modal-body text-center">
+                    <p>Are you sure you want to delete this question?</p>
+                    <p class="warning-well">This action cannot be undone!</p>
+                    <p class="text-danger"><strong>All data associated with this question will also be permanently
+                            deleted.</strong></p>
+                    <a href="https://docs.epicollect.net/formbuilder/edit-inputs#delete-questions"
+                       target="_blank"
+                    >
+                        <strong>Learn More</strong></a>
+                </div>
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-default btn-danger btn-confirm-delete-question">Confirm
+                    </button>
                 </div>
             </div>
         </div>
@@ -303,10 +358,8 @@
 
 
 </footer>
-<script src="{{ asset('formbuilder/js/vendor-formbuilder.js') . '?v=' . ENV('RELEASE') }}"></script>
-<script src="{{ asset('formbuilder/js/formbuilder.js') . '?v=' . ENV('RELEASE') }}"></script>
-@if (env('APP_ENV') == 'production')
-@endif
+<script src="{{ asset('formbuilder/js/vendor-formbuilder.js') . '?v=' . config('app.release') }}"></script>
+<script src="{{ asset('formbuilder/js/formbuilder.js') . '?v=' . config('app.release') }}"></script>
 
 
 </body>

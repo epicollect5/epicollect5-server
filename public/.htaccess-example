@@ -1,55 +1,56 @@
 <IfModule mod_rewrite.c>
 
-    #Disable directory listing and redirect to site home
     Options -Indexes
-    ErrorDocument 403 http://localhost/path/to/app/
+    # Redirect to homepage, uncomment in production with real domain
+    # ErrorDocument 403 https://your.domain.com
 
     <IfModule mod_negotiation.c>
         Options -MultiViews
     </IfModule>
 
-    <IfModule mod_deflate.c>
-      AddOutputFilterByType DEFLATE text/html
-      AddOutputFilterByType DEFLATE application/vnd.api+json
-      AddOutputFilterByType DEFLATE text/css
-      AddOutputFilterByType DEFLATE text/javascript
-      AddOutputFilterByType DEFLATE text/xml
-      AddOutputFilterByType DEFLATE text/plain
-      AddOutputFilterByType DEFLATE image/x-icon
-      AddOutputFilterByType DEFLATE image/svg+xml
-      AddOutputFilterByType DEFLATE application/rss+xml
-      AddOutputFilterByType DEFLATE application/javascript
-      AddOutputFilterByType DEFLATE application/x-javascript
-      AddOutputFilterByType DEFLATE application/xml
-      AddOutputFilterByType DEFLATE application/xhtml+xml
-      AddOutputFilterByType DEFLATE application/x-font
-      AddOutputFilterByType DEFLATE application/x-font-truetype
-      AddOutputFilterByType DEFLATE application/x-font-ttf
-      AddOutputFilterByType DEFLATE application/x-font-otf
-      AddOutputFilterByType DEFLATE application/x-font-opentype
-      AddOutputFilterByType DEFLATE application/vnd.ms-fontobject
-      AddOutputFilterByType DEFLATE font/ttf
-      AddOutputFilterByType DEFLATE font/otf
-      AddOutputFilterByType DEFLATE font/opentype
+    <IfModule mod_brotli.c>
+            # Compress the same MIME types as in your Deflate config
+            AddOutputFilterByType BROTLI_COMPRESS text/html
+            AddOutputFilterByType BROTLI_COMPRESS application/vnd.api+json
+            AddOutputFilterByType BROTLI_COMPRESS text/css
+            AddOutputFilterByType BROTLI_COMPRESS text/javascript
+            AddOutputFilterByType BROTLI_COMPRESS text/xml
+            AddOutputFilterByType BROTLI_COMPRESS text/plain
+            AddOutputFilterByType BROTLI_COMPRESS image/x-icon
+            AddOutputFilterByType BROTLI_COMPRESS image/svg+xml
+            AddOutputFilterByType BROTLI_COMPRESS application/rss+xml
+            AddOutputFilterByType BROTLI_COMPRESS application/javascript
+            AddOutputFilterByType BROTLI_COMPRESS application/x-javascript
+            AddOutputFilterByType BROTLI_COMPRESS application/xml
+            AddOutputFilterByType BROTLI_COMPRESS application/xhtml+xml
+            AddOutputFilterByType BROTLI_COMPRESS application/x-font
+            AddOutputFilterByType BROTLI_COMPRESS application/x-font-truetype
+            AddOutputFilterByType BROTLI_COMPRESS application/x-font-ttf
+            AddOutputFilterByType BROTLI_COMPRESS application/x-font-otf
+            AddOutputFilterByType BROTLI_COMPRESS application/x-font-opentype
+            AddOutputFilterByType BROTLI_COMPRESS application/vnd.ms-fontobject
+            AddOutputFilterByType BROTLI_COMPRESS font/ttf
+            AddOutputFilterByType BROTLI_COMPRESS font/otf
+            AddOutputFilterByType BROTLI_COMPRESS font/opentype
 
-      # For Olders Browsers Which Can't Handle Compression
-      BrowserMatch ^Mozilla/4 gzip-only-text/html
-      BrowserMatch ^Mozilla/4\.0[678] no-gzip
-      BrowserMatch \bMSIE !no-gzip !gzip-only-text/html
-    </IfModule>
+            # For older browsers that do not support Brotli
+            BrowserMatch ^Mozilla/4 gzip-only-text/html
+            BrowserMatch ^Mozilla/4\.0[678] no-gzip
+            BrowserMatch \bMSIE !no-gzip !gzip-only-text/html
+        </IfModule>
 
-     RewriteEngine On
+    RewriteEngine On
 
-     Header add Access-Control-Allow-Origin "*"
-     Header add Access-Control-Allow-Methods: "GET,POST,OPTIONS"
-     Header add Access-Control-Allow-Headers: "Content-Type, content-type, Authorization, authorization, X-XSRF-TOKEN"
-     Header add Access-Control-Expose-Headers: "Authorization, authorization"
+    Header add Access-Control-Allow-Origin "*"
+    Header add Access-Control-Allow-Methods: "GET,POST,OPTIONS"
+    Header add Access-Control-Allow-Headers: "Content-Type, Authorization, X-XSRF-TOKEN"
+    Header add Access-Control-Expose-Headers: "Authorization"
 
     # All requests to https (optional, comment/uncomment the below statements if no SSL is installed)
-    #RewriteCond %{HTTPS} !=on
+    # RewriteCond %{HTTPS} !=on
     # This checks to make sure the connection is not already HTTPS
 
-    #RewriteRule ^/?(.*) https://%{SERVER_NAME}/$1 [R,L]
+    # RewriteRule ^/?(.*) https://%{SERVER_NAME}/$1 [R,L]
     # This rule will redirect users from their original location, to the same location but using HTTPS.
     # i.e.  http://www.example.com/foo/ to https://www.example.com/foo/
     # The leading slash is made optional so that this will work either in httpd.conf
@@ -57,8 +58,6 @@
 
     # IMPORTANT: for Google Login to work, set the redirect URI accordingly
 
-    #Uncomment and set the below if the installation is not in the root folder (clear cache)
-    #RewriteBase /path/to/app/
     # Redirect Trailing Slashes If Not A Folder...
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule ^(.*)/$ /$1 [L,R=301]
@@ -72,23 +71,21 @@
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
-    # Add you apache alias and uncomment if the installation is not in the root directory
+    # Add your apache alias and uncomment if the installation is not in the root directory
     # Usually the home page will work, but not the login page.
     # If calling the login page with the index.php in the url works, the rewrite base is the cause
     # RewriteBase /{apache_alias}
 
-    <IfModule mod_php7.c>
+    # For PHP 8+
+    <IfModule mod_php.c>
         # PHP value limits
-        php_value memory_limit 1048M
+        php_value memory_limit 5000M
         php_value max_execution_time 5000
         php_value upload_max_filesize 500M
         php_value post_max_size 600M
     </IfModule>
 
-#    <FilesMatch ".(pl|cgi|spl|scgi|fcgi|json)$">
-#        Header unset Cache-Control
-#    </FilesMatch>
-
-
+    # Uncomment and set the below if the installation is not in the root folder
+    # RewriteBase /folder/
 
 </IfModule>

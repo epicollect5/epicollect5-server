@@ -2,47 +2,34 @@
 
 namespace ec5\Http\Validation\Project;
 
+use ec5\DTO\ProjectDTO;
 use ec5\Http\Validation\ValidationBase;
-use ec5\Models\Projects\Project;
-use ec5\Repositories\QueryBuilder\Stats\Entry\StatsRepository as EntryStatsRepository;
+use ec5\Models\Counters\BranchEntryCounter;
+use ec5\Models\Counters\EntryCounter;
 
 class RuleEntryLimits extends ValidationBase
 {
-    protected $rules = [
-        'limit' => 'required|integer',
-        'limitTo' => 'required|integer|max:50000',
+    protected array $rules = [
+        'setLimit' => 'required|in:true,false',//as it comes as a string in the post request
+        'limitTo' => 'required|integer|min:0|max:50000',
         'formRef' => 'required',
         'branchRef' => 'present'
     ];
 
-    protected $messages = [
+    protected array $messages = [
         'integer' => 'ec5_27',
         'required' => 'ec5_21',
         'max' => 'ec5_335'
     ];
 
-    /**
-     * @var EntryStatsRepository
-     */
-    protected $entryStatsRepository;
 
     /**
-     * RuleEntryLimits constructor.
-     * @param EntryStatsRepository $entryStatsRepository
-     */
-    public function __construct(EntryStatsRepository $entryStatsRepository)
-    {
-        $this->entryStatsRepository = $entryStatsRepository;
-    }
-
-    /**
-     * @param Project $project
+     * @param ProjectDTO $project
      * @param $ref
      * @param $data
      */
-    public function additionalChecks(Project $project, $ref, $data)
+    public function additionalChecks(ProjectDTO $project, $ref, $data): void
     {
-
         $projectExtra = $project->getProjectExtra();
         $isBranch = false;
 
@@ -65,16 +52,16 @@ class RuleEntryLimits extends ValidationBase
 
         // Get the max counts of entries
         if ($isBranch) {
-            $maxCount = $this->entryStatsRepository->getMaxCountBranch($project->getId(), $ref);
+            $entryCounter = new BranchEntryCounter();
+            $maxCount = $entryCounter->getMaxCountBranch($project->getId(), $ref);
         } else {
-            $maxCount = $this->entryStatsRepository->getMaxCountForm($project->getId(), $ref);
+            $entryCounter = new EntryCounter();
+            $maxCount = $entryCounter->getMaxCountForm($project->getId(), $ref);
         }
 
         // Check the entry limit is not < the max count of entries (related to main entry if a branch/child form)
         if ($data['limitTo'] < $maxCount) {
             $this->addAdditionalError($ref, 'ec5_251');
         }
-
     }
-
 }

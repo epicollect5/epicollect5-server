@@ -2,18 +2,19 @@
 
 namespace ec5\Http\Controllers\Api\Auth;
 
-use ec5\Http\Validation\Auth\RulePasswordlessApiLogin;
-use ec5\Models\Eloquent\UserPasswordlessApi;
-use ec5\Http\Controllers\Api\ApiResponse;
-use ec5\Models\Users\User;
-use ec5\Models\Eloquent\UserProvider;
-use ec5\Libraries\Jwt\JwtUserProvider;
-use ec5\Traits\Auth\AppleJWTHandler;
-use Illuminate\Http\Request;
-use Exception;
-use Config;
 use Auth;
+use ec5\Http\Validation\Auth\RulePasswordlessApiLogin;
+use ec5\Libraries\Auth\Jwt\JwtUserProvider;
+use ec5\Models\User\User;
+use ec5\Models\User\UserPasswordlessApi;
+use ec5\Models\User\UserProvider;
+use ec5\Services\User\UserService;
+use ec5\Traits\Auth\AppleJWTHandler;
+use ec5\Traits\Auth\AppleUserUpdater;
+use Illuminate\Http\Request;
 use Log;
+use Response;
+use Throwable;
 
 class AppleController extends AuthController
 {
@@ -28,6 +29,7 @@ class AppleController extends AuthController
     */
 
     use AppleJWTHandler;
+    use AppleUserUpdater;
 
     public function __construct(JwtUserProvider $provider)
     {
@@ -36,13 +38,10 @@ class AppleController extends AuthController
 
     /**
      * Login Apple users
+     * @noinspection PhpPossiblePolymorphicInvocationInspection
      */
-    public function authUser(Request $request, ApiResponse $apiResponse)
+    public function authUser(Request $request)
     {
-        //todo: validate request
-        //check if local logins are enabled
-        $appleUser = null;
-
         try {
             //get Apple jwt
             $params = $request->all();
@@ -51,20 +50,29 @@ class AppleController extends AuthController
 
             //validate Apple jwt
             $parsed_id_token = $this->parseIdentityToken($identityToken);
-            Log::error('Apple parsed id token', ['token' => $parsed_id_token]);
             if (!$parsed_id_token) {
+                Log::error('Apple parsed id token failed');
                 $error['api-login-apple'] = ['ec5_382'];
-                return $apiResponse->errorResponse(400, $error);
+                return Response::apiErrorCode(400, $error);
             }
 
+            //catching error when email is missing from payload
+            //happens for instance when users change their Apple ID email
             if (!isset($parsed_id_token['email'])) {
                 //return api error
-                $error['api-login-apple'] = ['ec5_382'];
-                return $apiResponse->errorResponse(400, $error);
+                $error['api-login-apple'] = ['ec5_386'];
+                return Response::apiErrorCode(400, $error);
             }
 
             //get Apple user email, always sent in the token
             $email = $parsed_id_token['email'];
+            //check if email is whitelisted
+            if (!UserService::isAuthenticationDomainAllowed($email)) {
+                Log::error('Email not whitelisted', ['email' => $email]);
+                return Response::apiErrorCode(400, ['api-login-apple' => ['ec5_266']]);
+            }
+
+
             //look for the user
             $userModel = new User();
             $user = $userModel->where('email', $email)->first();
@@ -75,18 +83,18 @@ class AppleController extends AuthController
                 $appleUser = $params['user']; //decode to array by passing "true"
                 $appleUserFirstName = $appleUser['givenName'];
                 if (empty($appleUserFirstName)) {
-                    $appleUserFirstName = config('ec5Strings.user_placeholder.apple_first_name');
+                    $appleUserFirstName = config('epicollect.mappings.user_placeholder.apple_first_name');
                 }
 
                 $appleUserLastName = $appleUser['familyName'];
                 if (empty($appleUserLastName)) {
-                    $appleUserLastName = config('ec5Strings.user_placeholder.apple_last_name');
+                    $appleUserLastName = config('epicollect.mappings.user_placeholder.apple_last_name');
                 }
-            } catch (Exception $e) {
+            } catch (Throwable $e) {
                 Log::error('Apple user object exception', ['exception' => $e->getMessage()]);
                 //if no user name found, default to Apple User
-                $appleUserFirstName = config('ec5Strings.user_placeholder.apple_first_name');
-                $appleUserLastName = config('ec5Strings.user_placeholder.apple_last_name');
+                $appleUserFirstName = config('epicollect.mappings.user_placeholder.apple_first_name');
+                $appleUserLastName = config('epicollect.mappings.user_placeholder.apple_last_name');
             }
 
             if (!$user) {
@@ -96,13 +104,13 @@ class AppleController extends AuthController
                  * create the user as new with the Apple provider
                  * and return it
                  */
-                $user = $userModel->createAppleUser($appleUserFirstName, $appleUserLastName, $email);
+                $user = UserService::createAppleUser($appleUserFirstName, $appleUserLastName, $email);
             }
 
             //if the user is disabled, kick him out
-            if ($user->state === Config::get('ec5Strings.user_state.disabled')) {
+            if ($user->state === config('epicollect.strings.user_state.disabled')) {
                 $error['api-login-apple'] = ['ec5_212'];
-                return $apiResponse->errorResponse(400, $error);
+                return Response::apiErrorCode(400, $error);
             }
             /**
              * if we have a user with unverified state,
@@ -114,21 +122,21 @@ class AppleController extends AuthController
              *
              * the user gets verified via Apple
              */
-            if ($user->state === Config::get('ec5Strings.user_state.unverified')) {
-                if (!$userModel->updateAppleUser($appleUserFirstName, $appleUserLastName, $email, true)) {
+            if ($user->state === config('epicollect.strings.user_state.unverified')) {
+                if (!UserService::updateAppleUser($appleUserFirstName, $appleUserLastName, $email, true)) {
 
                     $error['api-login-apple'] = ['ec5_45'];
-                    return $apiResponse->errorResponse(400, $error);
+                    return Response::apiErrorCode(400, $error);
                 }
 
                 //refresh current instance of user details since it was verified correctly
-                $user->state = Config::get('ec5Strings.user_state.active');
+                $user->state = config('epicollect.strings.user_state.active');
                 $user->name = $appleUserFirstName;
             }
             /**
              * User was found and active, does this user have an Apple provider?
              */
-            if ($user->state === Config::get('ec5Strings.user_state.active')) {
+            if ($user->state === config('epicollect.strings.user_state.active')) {
 
                 $userProviders = UserProvider::where('email', $email)
                     ->pluck('provider')->toArray();
@@ -142,32 +150,32 @@ class AppleController extends AuthController
                      * for verification
                      */
 
-                    //if the user is local and local auth is enabled, user must povide password
+                    //if the user is local and local auth is enabled, user must provide password
                     if ($this->isAuthApiLocalEnabled) {
                         if (in_array($this->localProviderLabel, $userProviders)) {
                             $error['api-login-apple'] = ['ec5_390'];
-                            return $apiResponse->errorResponse(400, $error);
+                            return Response::apiErrorCode(400, $error);
                         }
                     }
 
                     $error['api-login-apple'] = ['ec5_384'];
-                    return $apiResponse->errorResponse(400, $error);
+                    return Response::apiErrorCode(400, $error);
                 }
 
                 //Update exiting user name and last name when a user object is received
                 if ($appleUser) {
 
                     //update user name and last name only when they are still placeholders
-                    if ($user->name === config('ec5Strings.user_placeholder.apple_first_name')) {
-                        if (!$userModel->updateAppleUser($appleUserFirstName, $appleUserLastName, $email, false)) {
+                    if ($user->name === config('epicollect.mappings.user_placeholder.apple_first_name')) {
+                        if (!UserService::updateAppleUser($appleUserFirstName, $appleUserLastName, $email, false)) {
                             $error['api-login-apple'] = ['ec5_45'];
-                            return $apiResponse->errorResponse(400, $error);
+                            return Response::apiErrorCode(400, $error);
                         }
                     }
-                    if ($user->name === config('ec5Strings.user_placeholder.passwordless_first_name')) {
-                        if (!$userModel->updateAppleUser($appleUserFirstName, $appleUserLastName, $email, false)) {
+                    if ($user->name === config('epicollect.mappings.user_placeholder.passwordless_first_name')) {
+                        if (!UserService::updateAppleUser($appleUserFirstName, $appleUserLastName, $email, false)) {
                             $error['api-login-apple'] = ['ec5_45'];
-                            return $apiResponse->errorResponse(400, $error);
+                            return Response::apiErrorCode(400, $error);
                         }
                     }
                 }
@@ -186,23 +194,23 @@ class AppleController extends AuthController
             // Log user in
             Auth::guard()->login($user);
             // JWT
-            $apiResponse->setData(Auth::guard()->authorizationResponse());
+            $data = Auth::guard()->authorizationResponse();
             // User name, email in meta
-            $apiResponse->setMeta([
+            $meta = [
                 'user' => [
                     'name' => Auth::user()->fresh()->name,
                     'email' => Auth::user()->fresh()->email
                 ]
-            ]);
+            ];
             // Return JWT response
-            return $apiResponse->toJsonResponse(200, 0);
-        } catch (Exception $e) {
+            return Response::apiData($data, $meta);
+        } catch (Throwable $e) {
             // If any exceptions, return error response: could not authenticate
             Log::error('Apple Login JWT Exception: ', [
                 'exception' => $e
             ]);
             $error['api-login-apple'] = ['ec5_266'];
-            return $apiResponse->errorResponse(400, $error);
+            return Response::apiErrorCode(400, $error);
         }
     }
 
@@ -213,32 +221,33 @@ class AppleController extends AuthController
      *
      * IMP:Local users are asked to enter the password when they login using a different provider
      * IMP:they are not verified here, local auth has its own verification controller
+     * @noinspection PhpPossiblePolymorphicInvocationInspection
      */
-    public function verifyUserEmail(Request $request, ApiResponse $apiResponse, RulePasswordlessApiLogin $validator)
+    public function verifyUserEmail(Request $request, RulePasswordlessApiLogin $validator)
     {
         //validate request
-        $inputs = $request->all();
-        $validator->validate($inputs);
+        $payload = $request->all();
+        $validator->validate($payload);
         if ($validator->hasErrors()) {
-            return $apiResponse->errorResponse(400, $validator->errors());
+            return Response::apiErrorCode(400, $validator->errors());
         }
 
-        $code = $inputs['code'];
-        $email = $inputs['email'];
+        $code = $payload['code'];
+        $email = $payload['email'];
 
         //get token from db for comparison
         $userPasswordless = UserPasswordlessApi::where('email', $email)->first();
 
         //Does the email exists?
         if ($userPasswordless === null) {
-            Log::error('Error validating passworless code', ['error' => 'Email does not exist']);
-            return $apiResponse->errorResponse(400, ['api-login-apple' => ['ec5_378']]);
+            Log::error('Error validating passwordless code', ['error' => 'Email does not exist']);
+            return Response::apiErrorCode(400, ['api-login-apple' => ['ec5_378']]);
         }
 
         //check if the code is valid
         if (!$userPasswordless->isValidCode($code)) {
-            Log::error('Error validating passworless code', ['error' => 'Code not valid']);
-            return $apiResponse->errorResponse(400, ['api-login-apple' => ['ec5_378']]);
+            Log::error('Error validating passwordless code', ['error' => 'Code not valid']);
+            return Response::apiErrorCode(400, ['api-login-apple' => ['ec5_378']]);
         }
 
         //code is valid, remove it
@@ -248,48 +257,22 @@ class AppleController extends AuthController
         $user = User::where('email', $email)->first();
         if ($user === null) {
             //this should never happen, but no harm in checking
-            return $apiResponse->errorResponse(400, ['api-login-apple' => ['ec5_34']]);
+            return Response::apiErrorCode(400, ['api-login-apple' => ['ec5_34']]);
         }
 
-        //add the apple provider so next time no verification is needed
-        $userProvider = new UserProvider();
-        $userProvider->email = $user->email;
-        $userProvider->user_id = $user->id;
-        $userProvider->provider = $this->appleProviderLabel;
-        $userProvider->save();
-
-        //update user details (if a user object is available)
-        try {
-            $appleUser = $inputs['user']; //decode to array by passing "true"
-            $appleUserFirstName = $appleUser['givenName'];
-            $appleUserLastName = $appleUser['familyName'];
-
-            //update user name and last name only when they are still placeholders
-            if ($user->name === config('ec5Strings.user_placeholder.apple_first_name')) {
-                $user->name = $appleUserFirstName;
-                $user->last_name = $appleUserLastName;
-                $user->save();
-            }
-            if ($user->name === config('ec5Strings.user_placeholder.passwordless_first_name')) {
-                $user->name = $appleUserFirstName;
-                $user->last_name = $appleUserLastName;
-                $user->save();
-            }
-        } catch (Exception $e) {
-            Log::error('Apple user object exception', ['exception' => $e->getMessage()]);
-        }
+        //try to update the Apple user detail (name, surname)
+        $this->updateAppleUserDetails($user, $payload);
         // Log user in
         Auth::guard()->login($user);
-        // JWT
-        $apiResponse->setData(Auth::guard()->authorizationResponse());
-        // User name, email in meta
-        $apiResponse->setMeta([
-            'user' => [
-                'name' => Auth::user()->fresh()->name,
-                'email' => Auth::user()->fresh()->email
-            ]
-        ]);
         // Return JWT response
-        return $apiResponse->toJsonResponse(200, 0);
+        return Response::apiData(
+            Auth::guard()->authorizationResponse(),
+            [
+                'user' => [
+                    'name' => Auth::user()->fresh()->name,
+                    'email' => Auth::user()->fresh()->email
+                ]
+            ]
+        );
     }
 }

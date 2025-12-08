@@ -2,18 +2,15 @@
 
 namespace ec5\Http\Validation\Entries\Upload\InputRules;
 
-use ec5\Models\Projects\Project;
-use ec5\Models\Entries\EntryStructure;
+use ec5\DTO\EntryStructureDTO;
+use ec5\DTO\ProjectDTO;
 use ec5\Libraries\Utilities\Common;
+use Log;
+use Throwable;
 
 class RuleDropdownInput extends RuleInputBase
 {
-    /**
-     * @param $inputDetails
-     * @param string|array $answer
-     * @param Project $project
-     */
-    public function setRules($inputDetails, $answer, Project $project)
+    public function setRules(array $inputDetails, array|string|null $answer, ProjectDTO $project): void
     {
         // Validate against possible answers
         $possibles = Common::getPossibleAnswers($inputDetails);
@@ -24,22 +21,23 @@ class RuleDropdownInput extends RuleInputBase
         parent::setRules($inputDetails, $answer, $project);
     }
 
-    /**
-     * @param $inputDetails
-     * @param $answer
-     * @param Project $project
-     * @param EntryStructure $entryStructure
-     * @return mixed
-     */
-    public function additionalChecks($inputDetails, $answer, Project $project, EntryStructure $entryStructure)
+    public function additionalChecks(array $inputDetails, string|array|null $answer, ProjectDTO $project, EntryStructureDTO $entryStructure): array|string|null
     {
         if (!empty($answer)) {
+
+            if (!is_string($answer)) {
+                $this->errors[$inputDetails['ref']] = ['ec5_25'];
+                return $answer;
+            }
+
             // Add possible answer to entry structure
             try {
                 $entryStructure->addPossibleAnswer($answer);
-            }
-            catch (\Exception $e) {
-                \Log::error('Dropdown: possible answer value is invalid', ['answer' => $answer]);
+            } catch (Throwable $e) {
+                Log::error('Dropdown: possible answer value is invalid', [
+                    'exception' => $e->getMessage(),
+                    'answer' => $answer
+                ]);
                 $this->errors[$inputDetails['ref']] = ['ec5_25'];
             }
         }

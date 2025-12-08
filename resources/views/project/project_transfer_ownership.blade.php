@@ -7,23 +7,12 @@
 
     <div class='container-fluid page-transfer-ownership'>
 
-        {{--Error handling via toast--}}
-        @if(!$errors->isEmpty())
-            @foreach($errors->all() as $error)
-                <div class="var-holder-error" data-message="{{trans('status_codes.'.$error)}}"></div>
-            @endforeach
-            <script>
-                    var errors = '';
-                    $('.var-holder-error').each(function () {
-                        errors += $(this).attr('data-message') + '</br>';
-                    });
-                    EC5.toast.showError(errors);
-            </script>
-        @endif
+        @include('toasts/success')
+        @include('toasts/error')
 
         <div class="row">
-            <div href="#" class="col-sm-12 col-md-6 col-lg-6 col-md-offset-3 col-lg-offset-3">
-                <div id="" class="panel panel-default ">
+            <div class="col-sm-12 col-md-6 col-lg-6 col-md-offset-3 col-lg-offset-3">
+                <div class="panel panel-default ">
 
                     <div class="panel-heading text-center">
                         Pick the Manager you would like to promote to Creator
@@ -31,7 +20,7 @@
 
                     <div class="panel-body text-center">
 
-                        <form action="{{ url('myprojects') . '/' . $project->slug . '/transfer-ownership' }}"
+                        <form action="{{ url('myprojects') . '/' . $requestAttributes->requestedProject->slug . '/transfer-ownership' }}"
                               class="transfer-ownership"
                               method="POST">
 
@@ -41,30 +30,31 @@
                                 @if(count($projectManagers) > 0)
                                     @foreach($projectManagers as $manager )
                                         <div class="radio">
-                                        <label>
-                                            <input type="radio" name="manager" value="{{$manager->id}}">
-                                            <span class="transfer-ownership__manager-fullname">
+                                            <label>
+                                                <input type="radio" name="manager" value="{{$manager->id}}">
+                                                <span class="transfer-ownership__manager-fullname">
                                                <strong>
-                                                   @if(!empty($manager->name)){{ $manager->name . ' ' . $manager->last_name }}
+                                                   @if(!empty($manager->name))
+                                                       {{ $manager->name . ' ' . $manager->last_name }}
                                                    @else
                                                        <i>(n/a)</i>
                                                    @endif
                                                </strong>
                                             </span>
-                                            -
-                                            <span class="transfer-ownership__manager-email">
+                                                -
+                                                <span class="transfer-ownership__manager-email">
                                                 <i>
                                                     {{ $manager->email }}
                                                 </i>
                                             </span>
 
-                                        </label>
-                                    </div>
-                                        <hr />
+                                            </label>
+                                        </div>
+                                        <hr/>
                                     @endforeach
                                 @else
                                     <p class="well">No Manager(s) found.
-                                        <br />
+                                        <br/>
                                         Please add a Manager to assign this project.
                                     </p>
 
@@ -72,12 +62,11 @@
                             </div>
 
 
-
                             <p>You,
                                 @if(!empty($projectCreator->name))
-                                    {{ $projectCreator->name . ' ' . $projectCreator->last_name }}
+                                    <strong>{{ $projectCreator->name . ' ' . $projectCreator->last_name }}</strong>
                                 @else
-                                    <i>{{$projectCreator->email}}</i>
+                                    <strong><i>{{$projectCreator->email}}</i></strong>
                                 @endif
                                 , will become a Manager of this project.
                             </p>
@@ -87,7 +76,7 @@
                             <p class="warning-well">This action cannot be undone! Please proceed with caution</p>
 
                             <a class="btn btn-sm btn-default pull-left"
-                               href="{{ url('myprojects') . '/' . $project->slug.'/manage-users' }}">{{ trans('site.cancel') }}</a>
+                               href="{{ url('myprojects') . '/' . $requestAttributes->requestedProject->slug.'/manage-users' }}">{{ trans('site.cancel') }}</a>
                             <div class="form-group">
                                 <input required type="submit"
                                        class="btn btn-action btn-sm pull-right submit-transfer-ownership" disabled
@@ -103,7 +92,6 @@
             </div>
         </div><!-- end col -->
     </div><!-- end row -->
-
 
 @stop
 

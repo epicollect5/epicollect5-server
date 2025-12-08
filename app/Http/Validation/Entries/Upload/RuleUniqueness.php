@@ -6,7 +6,7 @@ use ec5\Http\Validation\ValidationBase;
 
 class RuleUniqueness extends ValidationBase
 {
-    protected $rules = [
+    protected array $rules = [
         'type' => 'required|in:entry,branch_entry',
         'id' => 'required|min:36|max:36',
 
@@ -34,7 +34,7 @@ class RuleUniqueness extends ValidationBase
         'relationships.branch.data.owner_entry_uuid' => 'min:36|max:36'
     ];
 
-    protected $messages = [
+    protected array $messages = [
         'in' => 'ec5_29',
         'required' => 'ec5_20',
         'array' => 'ec5_87',

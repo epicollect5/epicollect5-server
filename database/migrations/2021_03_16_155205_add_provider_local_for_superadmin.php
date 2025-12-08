@@ -15,25 +15,25 @@ class AddProviderLocalForSuperadmin extends Migration
     {
         //add superadmins
         $superadmins = DB::table('users')
-            ->where('server_role', Config::get('ec5Strings.server_roles.superadmin'))->get();
+            ->where('server_role', config('epicollect.strings.server_roles.superadmin'))->get();
         foreach ($superadmins as $superadmin) {
             DB::table('users_providers')
                 ->insert([
                     'user_id' => $superadmin->id,
                     'email' => $superadmin->email,
-                    'provider' => Config::get('ec5Strings.providers.local')
+                    'provider' => config('epicollect.strings.providers.local')
                 ]);
         }
 
         //add admins
         $admins = DB::table('users')
-            ->where('server_role', Config::get('ec5Strings.server_roles.admin'))->get();
+            ->where('server_role', config('epicollect.strings.server_roles.admin'))->get();
         foreach ($admins as $admin) {
             DB::table('users_providers')
                 ->insert([
                     'user_id' => $admin->id,
                     'email' => $admin->email,
-                    'provider' => Config::get('ec5Strings.providers.local')
+                    'provider' => config('epicollect.strings.providers.local')
                 ]);
         }
     }
@@ -47,23 +47,23 @@ class AddProviderLocalForSuperadmin extends Migration
     {
         //remove superadmins local provider
         $superadmins = DB::table('users')
-            ->where('server_role', Config::get('ec5Strings.server_roles.superadmin'))->get();
+            ->where('server_role', config('epicollect.strings.server_roles.superadmin'))->get();
 
         foreach ($superadmins as $superadmin) {
             DB::table('users_providers')
                 ->where('email', $superadmin->email)
-                ->where('provider', Config::get('ec5Strings.providers.local'))
+                ->where('provider', config('epicollect.strings.providers.local'))
                 ->delete();
         }
 
         //remove admins local provider
         $admins = DB::table('users')
-            ->where('server_role', Config::get('ec5Strings.server_roles.admin'))->get();
+            ->where('server_role', config('epicollect.strings.server_roles.admin'))->get();
 
         foreach ($admins as $admin) {
             DB::table('users_providers')
                 ->where('email', $admin->email)
-                ->where('provider', Config::get('ec5Strings.providers.local'))
+                ->where('provider', config('epicollect.strings.providers.local'))
                 ->delete();
         }
     }

@@ -16,14 +16,6 @@
                     </div>
                 @endforeach
             </div>
-            </p>
-            <p class="well">
-                <strong>
-                    <a href="https://docs.epicollect.net/web-application/bulk-uploads"
-
-                    >More info on bulk uploads</a>
-                </strong>
-            </p>
         </div>
     </div>
 </div>

@@ -4,13 +4,14 @@
 
 <div class="row">
     @if (count($projects) == 0)
-         <p class="well text-center"> {{ trans('site.no_projects_found') }}
-            <br />
-            <small>Projects set as <strong>private</strong> or <strong>hidden</strong> do not get listed here.
+        <p class="well text-center"> {{ trans('site.no_projects_found') }}
+            <br/>
+            <small>Projects set as <strong>private</strong> or <strong>hidden</strong> or <strong>trashed</strong> do
+                not get listed here.
 
                 <strong>
                     <a href="https://docs.epicollect.net/web-application/set-project-details#project-visibility"
-                        target="_blank">
+                       target="_blank">
                         More info.
                     </a>
                 </strong>
@@ -26,7 +27,7 @@
                         <div class="flexbox col-direction project-summary">
                             <div class="thumbnail">
                                 <img class="projects-list__project-logo img-responsive img-circle" width="128"
-                                    height="128" alt="Project logo" src="@if (!empty($project->logo_url)) {{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb') }}
+                                     height="128" alt="Project logo" src="@if (!empty($project->logo_url)) {{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb') }}
                             @else
                                 {{ url('/images/ec5-placeholder-256x256.jpg') }} @endif">
                             </div>

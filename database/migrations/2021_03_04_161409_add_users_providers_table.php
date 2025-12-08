@@ -9,9 +9,8 @@ class AddUsersProvidersTable extends Migration
     /**
      * Run the migrations.
      *
-     * @return void
      */
-    public function up()
+    public function up(): void
     {
         Schema::create('users_providers', function (Blueprint $table) {
             $table->integer('id', true);
@@ -35,12 +34,13 @@ class AddUsersProvidersTable extends Migration
                 ->insert([
                     'user_id' => $user->id,
                     'email' => $user->email,
-                    'provider' => Config::get('ec5Strings.providers.google'),
+                    'provider' => config('epicollect.strings.providers.google'),
                 ]);
         }
 
-        //reset all passwords in user table
+        //reset all passwords in user table for basic users, keep passwords for other roles
         DB::table('users')
+            ->where('server_role', 'basic')
             ->update([
                 'password' => ''
             ]);
@@ -54,9 +54,8 @@ class AddUsersProvidersTable extends Migration
     /**
      * Reverse the migrations.
      *
-     * @return void
      */
-    public function down()
+    public function down(): void
     {
         //restore provider column
         Schema::table('users', function (Blueprint $table) {

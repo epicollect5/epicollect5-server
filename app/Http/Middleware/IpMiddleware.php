@@ -3,27 +3,26 @@
 namespace ec5\Http\Middleware;
 
 use Closure;
-use Illuminate\Support\Facades\Config;
+use ec5\Traits\Middleware\MiddlewareTools;
+use Response;
 
-class IpMiddleware extends MiddlewareBase
+class IpMiddleware
 {
+    use MiddlewareTools;
+
     /**
      * Handle an incoming request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
-     * @return mixed
      */
     public function handle($request, Closure $next)
     {
-        $ips = Config::get('auth.ip_whitelist');
+        $ips = config('auth.ip_whitelist');
 
         //localhost $request->ip() gives ::1, we filter only in production
         //for localhost testing, disable middleware as needed
-        if (env('IP_FILTERING_ENABLED')) {
+        if (config('epicollect.setup.ip_filtering_enabled')) {
             if (!in_array($request->ip(), $ips)) {
                 $errors = ['auth' => ['ec5_256']];
-                return $this->apiResponse->errorResponse(404, $errors);
+                return Response::apiErrorCode(404, $errors);
             }
         }
 

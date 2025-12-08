@@ -2,29 +2,30 @@
 
 namespace ec5\Http\Controllers\Web\Auth;
 
-use Log;
-use DB;
-use PDOException;
-use Exception;
 use Carbon\Carbon;
-use Mail;
+use DB;
 use ec5\Libraries\Utilities\Generators;
-use ec5\Models\Eloquent\UserPasswordlessApi;
 use ec5\Mail\UserPasswordlessApiMail;
+use ec5\Models\User\UserPasswordlessApi;
+use Log;
+use Mail;
+use PDOException;
+use Throwable;
 
 class VerificationCodeController extends AuthController
 {
-
     public function __construct()
     {
         parent::__construct();
     }
 
+    /**
+     * @throws Throwable
+     */
     public function show()
     {
         //getting here with email in session, send verification code via email
         if (session()->has('email')) {
-
             $email = session('email');
             $provider = session('provider');
             $name = session('name');
@@ -43,7 +44,7 @@ class VerificationCodeController extends AuthController
             }
 
             //send verification code
-            $tokenExpiresAt = env('PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
+            $tokenExpiresAt = config('auth.passwordless_token_expire', 300);
             $code = Generators::randomNumber(6, 1);
 
             try {
@@ -57,17 +58,17 @@ class VerificationCodeController extends AuthController
                 //add token to db
                 $userPasswordless = new UserPasswordlessApi();
                 $userPasswordless->email = $email;
-                $userPasswordless->code = bcrypt($code, ['rounds' => env('BCRYPT_ROUNDS')]);
+                $userPasswordless->code = bcrypt($code, ['rounds' => config('auth.bcrypt_rounds')]);
                 $userPasswordless->expires_at = Carbon::now()->addSeconds($tokenExpiresAt)->toDateTimeString();
                 $userPasswordless->save();
 
                 DB::commit();
             } catch (PDOException $e) {
-                Log::error('Error generating passwordless access code via appi');
+                Log::error('Error generating passwordless access code via api', ['exception' => $e->getMessage()]);
                 DB::rollBack();
                 return redirect()->route('login')->withErrors(['ec5_104']);
-            } catch (Exception $e) {
-                Log::error('Error generating password access code via api');
+            } catch (Throwable $e) {
+                Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
                 DB::rollBack();
                 return redirect()->route('login')->withErrors(['ec5_104']);
             }
@@ -75,7 +76,8 @@ class VerificationCodeController extends AuthController
             //send email with verification token
             try {
                 Mail::to($email)->send(new UserPasswordlessApiMail($code));
-            } catch (Exception $e) {
+            } catch (Throwable $e) {
+                Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
                 return redirect()->route('login')->withErrors(['ec5_116']);
             }
 

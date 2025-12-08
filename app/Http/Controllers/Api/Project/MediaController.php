@@ -2,256 +2,87 @@
 
 namespace ec5\Http\Controllers\Api\Project;
 
-use ec5\Http\Validation\Media\RuleMedia as MediaValidator;
-
-use ec5\Http\Controllers\Api\ApiResponse;
-use ec5\Http\Controllers\ProjectControllerBase;
-use Illuminate\Contracts\Filesystem\FileNotFoundException;
-use Illuminate\Http\Request;
-use Exception;
+use ec5\Http\Validation\Media\RuleMedia;
+use ec5\Services\Media\MediaService;
+use ec5\Services\Media\TempMediaService;
 use Response;
-use Storage;
-use Image;
-use Log;
-use ec5\Libraries\Utilities\MediaStreaming;
+use ec5\Traits\Requests\RequestAttributes;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class MediaController extends ProjectControllerBase
+class MediaController
 {
     /*
     |--------------------------------------------------------------------------
-    | View Entry Controller
+    | Media Controller
     |--------------------------------------------------------------------------
     |
-    | This controller handles the export of entry data from the server
+    | This controller serves media files
     |
     */
+    use RequestAttributes;
 
-    /**
-     * @param Request $request
-     * @param ApiResponse $apiResponse
-     * @param MediaValidator $mediaValidator
-     */
-    public function getMedia(Request $request, ApiResponse $apiResponse, MediaValidator $mediaValidator)
-    {
-        // todo get the uuid if the media is entry media
-        // so collectors can only view their own media
-        // Check permissions
-        $input = $request->all();
+    private RuleMedia $ruleMedia;
+    private MediaService $mediaService;
+    private TempMediaService $tempMediaService;
 
-        // Validate the options
-        $mediaValidator->validate($input);
-        if ($mediaValidator->hasErrors()) {
-            return $apiResponse->errorResponse(400, $mediaValidator->errors());
-        }
-
-        $inputType = $input['type'];
-        $format = $request->query('format');
-        if ($format === 'project_mobile_logo') {
-            //randomly slow down api responses to avoid out of memory errors
-            $delay = mt_rand(250000000, 500000000);
-            time_nanosleep(0, $delay);
-        }
-
-        // Set up type and content type
-        switch ($inputType) {
-            case 'audio':
-                $contentType = 'audio/mp4';
-                $defaultName = 'ec5-placeholder-256x256.jpg';
-                break;
-            case 'video':
-                $contentType = 'video/mp4';
-                $defaultName = 'ec5-placeholder-256x256.jpg';
-                break;
-            default:
-                $contentType = 'image/jpeg';
-                $defaultName = 'ec5-placeholder-256x256.jpg';
-        }
-
-        // If a name was supplied, attempt to find file
-        if (!empty($input['name'])) {
-            // Attempt to retrieve media
-            try {
-                // Use the provided 'format' as the driver
-                $file = Storage::disk($format)->get($this->requestedProject->ref . '/' . $input['name']);
-                //get storage real path
-                $filepath = Storage::disk($format)->getAdapter()->getPathPrefix();
-                //get file real path
-                $filepath = $filepath . $this->requestedProject->ref . '/' . $input['name'];
-                //stream only audio and video
-                if ($inputType !== 'photo') {
-                    //serve as 206  partial response
-                    $stream = new MediaStreaming($filepath, 'audio');
-                    $stream->start();
-                } else {
-                    //photo response is the usual 200
-                    $response = Response::make($file, 200);
-                    $response->header("Content-Type", $contentType);
-                    return $response;
-                }
-            } catch (FileNotFoundException $e) {
-
-                if ($inputType === config('ec5Strings.inputs_type.photo')) {
-                    //Return default placeholder image for photo questions
-                    $file = Storage::disk('public')->get($defaultName);
-                    $response = Response::make($file, 200);
-                    $response->header("Content-Type", $contentType);
-                    return $response;
-                }
-
-                //File not found i.e. not synced yet, send 404 for audio and video
-                $error['api-media-controller'] = ['ec5_69'];
-                return $apiResponse->errorResponse(404, $error);
-            } catch (Exception $e) {
-                Log::error('Cannot get media file', ['exception' => $e]);
-            }
-        }
-
-        //todo: the below could be removed?
-        // Otherwise return default placeholder media
-        $file = Storage::disk('public')->get($defaultName);
-        $response = Response::make($file, 200);
-        $response->header("Content-Type", $contentType);
-
-        return $response;
+    public function __construct(
+        RuleMedia $ruleMedia,
+        MediaService $mediaService,
+        TempMediaService $tempMediaService
+    ) {
+        $this->ruleMedia = $ruleMedia;
+        $this->mediaService = $mediaService;
+        $this->tempMediaService = $tempMediaService;
     }
 
     /**
-     * @param Request $request
-     * @param ApiResponse $apiResponse
-     * @param MediaValidator $mediaValidator
-     * @return \Illuminate\Http\JsonResponse
+     * Validates the current media request parameters.
+     *
+     * @return bool True if the request parameters are valid; false if validation errors are present.
      */
-    //imp: method is not used yet
-    public function getApiMedia(Request $request, ApiResponse $apiResponse, MediaValidator $mediaValidator)
+    private function isMediaRequestValid()
     {
-        // todo get the uuid if the media is entry media
-        // so collectors can only view their own media
-        // Check permissions
-
-        $input = $request->all();
-
-        // Validate the options
-        $mediaValidator->validate($input);
-        if ($mediaValidator->hasErrors()) {
-            return $apiResponse->errorResponse(400, $mediaValidator->errors());
+        $params = request()->all();
+        // Validate request params
+        $this->ruleMedia->validate($params);
+        if ($this->ruleMedia->hasErrors()) {
+            return false;
         }
-
-
-        $format = $request->query('format');
-        if ($format === 'entry_thumb' || $format === 'project_mobile_logo') {
-            //randomly slow down api responses to avoid out of memory errors
-            $delay = mt_rand(250000000, 500000000);
-            time_nanosleep(0, $delay);
-        }
-
-        // Set up type and content type
-        switch ($input['type']) {
-            case 'audio':
-                $contentType = 'audio/mpeg';
-                $defaultName = 'ec5-placeholder-256x256.jpg';
-                break;
-            case 'video':
-                $contentType = 'video/mp4';
-                $defaultName = 'ec5-placeholder-256x256.jpg';
-                break;
-            default:
-                $contentType = 'image/jpeg';
-                $defaultName = 'ec5-placeholder-256x256.jpg';
-        }
-
-        // If a name was supplied, attempt to find file
-        if (!empty($input['name'])) {
-            // Attempt to retrieve media
-            try {
-                // Use the provided 'format' as the driver
-                $file = Storage::disk($format)->get($this->requestedProject->ref . '/' . $input['name']);
-                $response = Response::make($file, 200);
-                $response->header("Content-Type", $contentType);
-
-                //Throttle for 1/4 of a second so the server does not get smashed by media requests
-                time_nanosleep(0, (int)(env('RESPONSE_DELAY_MEDIA_REQUEST', 250000000)));
-
-                return $response;
-            } catch (Exception $e) {
-                //  Log::error('Cannot get media file', ['exception' => $e->getMessage()]);
-                Log::error('Error getting media file', ['exception' => $e->getMessage()]);
-            }
-        }
-
-        // Otherwise return default placeholder media
-        $file = Storage::disk('public')->get($defaultName);
-        $response = Response::make($file, 200);
-        $response->header("Content-Type", $contentType);
-
-        return $response;
+        return true;
     }
 
     /**
-     * @param Request $request
-     * @param ApiResponse $apiResponse
-     * @param MediaValidator $mediaValidator
-     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
+     * Serves a media file (photo, audio, or video) for a project from the configured storage driver.
+     *
+     * Validates the incoming media request and retrieves the requested file from either local storage or Amazon S3, depending on configuration. Returns an error response if validation fails or if the storage driver is unsupported.
+     *
+     * @return \Illuminate\Http\Response|StreamedResponse JSON error response, file response, or streamed media content.
      */
-    public function getTempMedia(Request $request, ApiResponse $apiResponse, MediaValidator $mediaValidator)
+    public function getMedia()
     {
-
-        $input = $request->all();
-
-
-        // Validate the options
-        $mediaValidator->validate($input);
-        if ($mediaValidator->hasErrors()) {
-            return $apiResponse->errorResponse(400, $mediaValidator->errors());
+        if (!$this->isMediaRequestValid()) {
+            return Response::apiErrorCode(400, $this->ruleMedia->errors());
         }
 
-        $inputType = $input['type'];
+        return $this->mediaService->serve(request()->all(), $this->requestedProject());
+    }
 
-        // Set up type and content type
-        switch ($inputType) {
-            case 'audio':
-                $contentType = 'audio/mpeg';
-                $defaultName = 'ec5-placeholder-256x256.jpg';
-                break;
-            case 'video':
-                $contentType = 'video/mp4';
-                $defaultName = 'ec5-placeholder-256x256.jpg';
-                break;
-            default:
-                $contentType = 'image/jpeg';
-                $defaultName = 'ec5-placeholder-256x256.jpg';
+    /**
+     * Retrieves a temporary media file from the configured storage driver.
+     *
+     * Validates the media request and serves the requested temporary media file
+     * from local storage regardless of the application's configuration.
+     * Returns an error response if validation fails or if the storage driver is unsupported.
+     */
+    public function getTempMedia()
+    {
+        if (!$this->isMediaRequestValid()) {
+            return Response::apiErrorCode(400, $this->ruleMedia->errors());
         }
 
-        // If a name was supplied, attempt to find file
-        if (!empty($input['name'])) {
-            // Attempt to retrieve media
-            try {
-                // Use the provided 'format' as the driver
-                $file = Storage::disk('temp')->get($inputType . '/' . $this->requestedProject->ref . '/' . $input['name']);
-                //get storage real path
-                $filepath = Storage::disk('temp')->getAdapter()->getPathPrefix();
-                //get file real path
-                $filepath = $filepath . $inputType . '/' . $this->requestedProject->ref . '/' . $input['name'];
-                //stream only audio and video
-                if ($inputType !== 'photo') {
-                    $stream = new MediaStreaming($filepath, 'audio');
-                    $stream->start();
-                } else {
-                    //photo response is as usual
-                    $response = Response::make($file, 200);
-                    $response->header('Content-Type', $contentType);
-                    return $response;
-                }
-            } catch (Exception $e) {
-                // If the file is not found, see if we have it in the non temp folders
-                return $this->getMedia($request, $apiResponse, $mediaValidator);
-            }
-        }
-
-        // Otherwise return default placeholder media
-        $file = Storage::disk('public')->get($defaultName);
-        $response = Response::make($file, 200);
-        $response->header("Content-Type", $contentType);
-
-        return $response;
+        return $this->tempMediaService->getTempMedia(
+            request()->all(),
+            $this->requestedProject()
+        );
     }
 }

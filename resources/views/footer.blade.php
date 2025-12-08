@@ -2,11 +2,12 @@
     <div class="container-fluid">
 
         <div class="row">
-            <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 footer-links">
+            <div class="col-xs-12 col-sm-12 col-md-4 col-lg-4 footer-links">
                 <ul>
                     <li>
                         <small><a href="https://www.pathogensurveillance.net/">&copy; {{ date('Y') }} Centre for
-                                Genomic Pathogen Surveillance</a>,&nbsp;v{{ env('PRODUCTION_SERVER_VERSION') }}
+                                Genomic Pathogen
+                                Surveillance</a>,&nbsp;v{{ config('app.production_server_version') }}
                         </small>
                     </li>
 
@@ -22,23 +23,17 @@
                     </li>
                 </ul>
             </div>
-            <div class="col-xs-12 col-sm-12 col-md-6 col-lg-2 footer-wellcome-trust">
-                <a href="https://wellcome.ac.uk/">
-                    <img src="{{ asset('images/src_images_footer_wellcome.png') }}" alt="Wellcome Trust" width="75"
-                        height="75">
-                </a>
-            </div>
-            <div class="col-xs-12 col-sm-12 col-md-6 col-lg-3 footer-bdi-logo">
+            <div class="col-xs-12 col-sm-12 col-md-4 col-lg-4 footer-bdi-logo">
                 <a href="http://www.ox.ac.uk">
                     <img src="{{ asset('images/src_images_footer_oxford.png') }}" alt="University of Oxford"
-                        width="75" height="75">
+                         width="75" height="75">
                 </a>
                 <a href="https://www.bdi.ox.ac.uk/">
                     <img src="{{ asset('images/src_images_footer_bdi.png') }}" alt="Big Data Institute" width="75"
-                        height="75">
+                         height="75">
                 </a>
             </div>
-            <div class="col-xs-12 col-sm-12 col-md-6 col-lg-3 footer-links">
+            <div class="col-xs-12 col-sm-12 col-md-4 col-lg-4 footer-links">
                 <ul>
                     <li>
                         <small>

@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 class TimestampsWithMilliseconds extends Migration
@@ -32,7 +30,6 @@ class TimestampsWithMilliseconds extends Migration
         DB::statement('ALTER TABLE `branch_entries_archive` MODIFY `uploaded_at` TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP(3) NOT NULL;');
 
 
-        DB::statement('ALTER TABLE `password_resets` MODIFY `created_at` TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP(3) NOT NULL;');
 
         DB::statement('ALTER TABLE `project_structures` MODIFY `updated_at` TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP(3) NOT NULL;');
 

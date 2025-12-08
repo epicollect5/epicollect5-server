@@ -3,8 +3,8 @@
 
 @section('content')
 
-    @include('toast-success')
-    @include('toast-error')
+    @include('toasts/success')
+    @include('toasts/error')
 
     <div class="container page-verification">
         <div class="row">
@@ -13,7 +13,8 @@
                 <div class="panel panel-default">
                     <div class="panel-body">
 
-                        <p class="well text-center">Hi <strong>{{$name}}</strong>, we sent the activation code at <strong>{{$email}}.</strong><br />
+                        <p class="well text-center">Hi <strong>{{$name}}</strong>, we sent the activation code at
+                            <strong>{{$email}}.</strong><br/>
                             Enter it below to activate your account
                         </p>
 
@@ -50,7 +51,7 @@
                         <hr>
 
                         {{--<p class="warning-well">Check also your spam folder! <br />--}}
-                            {{--If you did not receive it, send it again</p>--}}
+                        {{--If you did not receive it, send it again</p>--}}
                         <form
                                 method="POST"
                                 action="{{ route('resend') }}"

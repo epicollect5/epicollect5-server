@@ -1,0 +1,45 @@
+.page-project-open {
+  .h1, .h2, .h3, h1, h2, h3 {
+    margin: 0;
+  }
+  .project-open__logo {
+    margin: 0 auto;
+    border: 2px solid $deep-purple;
+  }
+  .project-open__project-view-btn {
+    text-align: center;
+  }
+
+  .project-open__project-name h1 {
+    font-size: 36px;
+    @include card-project-name();
+    display: block;
+  }
+  .project-open__project-name {
+    font-size: 24px;
+  }
+  .project-open__small-description {
+    padding-top: 0;
+    h2 {
+      word-break: break-all;
+      overflow-wrap: break-word;
+    }
+  }
+  .project-open__project-description {
+    .well {
+      word-break: break-all;
+      overflow-wrap: break-word;
+    }
+  }
+
+  .project-open__action-btns {
+    margin-top: 15px;
+    .btn {
+      display: block;
+      @include text-overflow;
+    }
+  }
+}
+
+.project-open-navbar {
+}

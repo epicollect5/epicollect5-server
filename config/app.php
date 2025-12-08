@@ -102,6 +102,7 @@ return [
     |
     */
 
+     // default key is just a placeholder, replace with actual key from .env
     'key' => env('APP_KEY'),
 
     'cipher' => 'AES-256-CBC',
@@ -127,9 +128,6 @@ return [
 
     'log_max_files' => env('APP_LOG_MAX_FILES', 365),
 
-    'slack_log_channel' => '#' . env('SLACK_LOG_CHANNEL'),
-    'slack_access_token' => env('SLACK_ACCESS_TOKEN'),
-
     /*
     |--------------------------------------------------------------------------
     | Autoloaded Service Providers
@@ -147,8 +145,6 @@ return [
          * Laravel Framework Service Providers...
          */
         Illuminate\Auth\AuthServiceProvider::class,
-        // Jwt provider
-        ec5\Libraries\Jwt\JwtAuthServiceProvider::class,
         Illuminate\Broadcasting\BroadcastServiceProvider::class,
         Illuminate\Bus\BusServiceProvider::class,
         Illuminate\Cache\CacheServiceProvider::class,
@@ -159,12 +155,7 @@ return [
         Illuminate\Filesystem\FilesystemServiceProvider::class,
         Illuminate\Foundation\Providers\FoundationServiceProvider::class,
         Illuminate\Hashing\HashServiceProvider::class,
-
-        //Override default provider to fix 404 domain not found mailgun
-        // see t.ly/OYMqD
-        //Illuminate\Mail\MailServiceProvider::class,
-        ec5\Mail\Transports\MailServiceProvider::class,
-
+        Illuminate\Mail\MailServiceProvider::class,
         Illuminate\Pagination\PaginationServiceProvider::class,
         Illuminate\Pipeline\PipelineServiceProvider::class,
         Illuminate\Queue\QueueServiceProvider::class,
@@ -182,11 +173,27 @@ return [
          */
         ec5\Providers\AppServiceProvider::class,
         ec5\Providers\AuthServiceProvider::class,
+        // Jwt provider for JWT authentication
+        ec5\Providers\JwtAuthServiceProvider::class,
         ec5\Providers\EventServiceProvider::class,
         ec5\Providers\RouteServiceProvider::class,
-        ec5\Providers\LogServiceProvider::class,
-        ec5\Providers\ResponseApiServiceProvider::class,
+        ec5\Providers\ApiResponseProvider::class,
+        ec5\Providers\Macros\Response\ApiErrorCodeMacro::class,
+        ec5\Providers\Macros\Response\ApiSuccessCodeMacro::class,
+        ec5\Providers\Macros\Response\ApiDataMacro::class,
+        ec5\Providers\Macros\Response\ToCSVStreamMacro::class,
+        ec5\Providers\Macros\Response\ToCSVFileMacro::class,
+        ec5\Providers\Macros\Response\ToTXTFileMacro::class,
+        ec5\Providers\Macros\Response\ToJSONFileMacro::class,
+        ec5\Providers\Macros\Response\ToMediaStreamLocalMacro::class,
+        ec5\Providers\Macros\Response\ToMediaStreamS3Macro::class,
+        ec5\Providers\Macros\Response\ToEntryThumbLocalMacro::class,
+        ec5\Providers\Macros\Response\ToEntryThumbS3Macro::class,
+        ec5\Providers\Macros\Response\ToProjectMobileLogoLocalMacro::class,
+        ec5\Providers\Macros\Response\ToProjectMobileLogoS3Macro::class,
 
+        //Rate Limiter
+        ec5\Providers\RateLimiterServiceProvider::class,
 
         /**
          * Custom Service Providers
@@ -194,15 +201,12 @@ return [
         // Socialite
         Laravel\Socialite\SocialiteServiceProvider::class,
         // Ldap
-        ec5\Libraries\Ldap\LdapServiceProvider::class,
-        // Image Intervention
-        Intervention\Image\ImageServiceProvider::class,
-        // Debugbar
-        Barryvdh\Debugbar\ServiceProvider::class,
+        \ec5\Libraries\Auth\Ldap\LdapServiceProvider::class,
+
         // Laravel Passport
         Laravel\Passport\PassportServiceProvider::class,
         //Avatar
-        Laravolt\Avatar\ServiceProvider::class,
+        Laravolt\Avatar\ServiceProvider::class
     ],
 
     /*
@@ -249,11 +253,10 @@ return [
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
         'Socialite' => Laravel\Socialite\Facades\Socialite::class,
-        'Ldap' => ec5\Libraries\Ldap\Ldap::class,
+        'Ldap' => \ec5\Libraries\Auth\Ldap\Ldap::class,
         'Uuid' => Webpatser\Uuid\Uuid::class,
-        'Image' => Intervention\Image\Facades\Image::class,
-        'Debugbar' => Barryvdh\Debugbar\Facade::class,
-        'Avatar'    => Laravolt\Avatar\Facade::class,
+        'Image' => Intervention\Image\Laravel\Facades\Image::class,
+        'Avatar' => Laravolt\Avatar\Facade::class,
         'Notification' => Illuminate\Support\Facades\Notification::class,
         'Common' => ec5\Libraries\Utilities\Common::class
     ],
@@ -263,11 +266,13 @@ return [
     | Reserved Words
     |--------------------------------------------------------------------------
     |
-    | A list of reserved words users cannot use in their projects (case sensitive)
+    | A list of reserved words users cannot use in their projects (case-sensitive)
     |
     */
     'reserved_words' => [
         'ec5',
         'EC5'
-    ]
+    ],
+    'release' => env('RELEASE'),
+    'production_server_version' => env('PRODUCTION_SERVER_VERSION')
 ];

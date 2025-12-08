@@ -2,13 +2,18 @@
 
 namespace ec5\Http\Controllers\Web\Auth;
 
-
-use ec5\Http\Validation\Auth\RuleLogin as LoginValidator;
-use ec5\Models\Users\User;
-use ec5\Models\Eloquent\UserProvider;
-use Illuminate\Http\Request;
-use Config;
 use Auth;
+use ec5\Http\Validation\Auth\RuleLogin as LoginValidator;
+use ec5\Models\User\User;
+use ec5\Models\User\UserProvider;
+use ec5\Services\User\UserService;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
+use Illuminate\Foundation\Application;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Log;
 
 class LocalController extends AuthController
 {
@@ -34,12 +39,12 @@ class LocalController extends AuthController
     }
 
     /**
-     * Handle a staff login request to the application 
+     * Handle a staff login request to the application
      * only if local lohins are enabled
      *
      * @param Request $request
      * @param LoginValidator $validator
-     * @return $this|\Illuminate\Http\Response
+     * @return Factory|View|Application|JsonResponse|RedirectResponse|\Illuminate\View\View
      */
     public function authenticate(Request $request, LoginValidator $validator)
     {
@@ -64,6 +69,12 @@ class LocalController extends AuthController
                 return redirect()->back()->withErrors(['ec5_37']);
             }
 
+            //check if email is whitelisted
+            if (!UserService::isAuthenticationDomainAllowed($input['email'])) {
+                Log::error('Email not whitelisted', ['email' => $input['email']]);
+                return redirect()->back()->withErrors(['ec5_266']);
+            }
+
             // Check credentials ie email, password
             $credentials = array(
                 'email' => $input['email'],
@@ -79,7 +90,7 @@ class LocalController extends AuthController
 
             if (Auth::attempt($credentials, $remember)) {
                 //check user logged in state
-                if (Auth::user()->state === Config::get('ec5Strings.user_state.unverified')) {
+                if (Auth::user()->state === config('epicollect.strings.user_state.unverified')) {
                     //verify user as credentials are correct
                     if (!$this->verifyLocalUser(Auth::user())) {
                         return redirect()->route('login')->withErrors(['ec5_389']);
@@ -109,10 +120,10 @@ class LocalController extends AuthController
     {
         try {
             $userModel = User::where('email', $user->email)->first();
-            $userModel->state = Config::get('ec5Strings.user_state.active');
+            $userModel->state = config('epicollect.strings.user_state.active');
             return $userModel->save();
         } catch (\Exception $e) {
-            \Log::error('Error verifying local user',  ['exception' => $e->getMessage()]);
+            \Log::error('Error verifying local user', ['exception' => $e->getMessage()]);
             return false;
         }
     }

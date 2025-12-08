@@ -40,15 +40,13 @@ window.EC5.project_users = window.EC5.project_users || {};
         }
 
         $(importedJson.data).each(function (index, item) {
-
             var userEmail = item[headers[selectedHeaderIndex]];
 
             //validate emails addresses front end and reject both empty and invalid
             if (userEmail.trim() !== '') {
                 if (_isValidEmailAddress(userEmail)) {
                     validEmailAddresses.push(userEmail)
-                }
-                else {
+                } else {
                     config.invalidEmailAddresses.push(userEmail);
                 }
             }
@@ -56,7 +54,7 @@ window.EC5.project_users = window.EC5.project_users || {};
 
         var data = {
             role: selectedUserRole,
-             emails: $.unique(validEmailAddresses).slice(0,100)//duplicates get removed
+            emails: $.unique(validEmailAddresses).slice(0, 100)//duplicates get removed
         };
 
         $.ajax({

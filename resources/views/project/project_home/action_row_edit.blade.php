@@ -1,21 +1,24 @@
+@php
+    $projectSlug = $requestAttributes->requestedProject->slug;
+    $projectExtra = $requestAttributes->requestedProject->getProjectExtra();
+    /**
+     * @var $projectStats \ec5\DTO\ProjectStatsDTO
+     */
+    $projectStats = $requestAttributes->requestedProject->getProjectStats();
+@endphp
 <div class="panel-body project-home__project-view-btn">
     <div class="row">
         <div class="col-xs-12 col-sm-12 col-md-6 project-home__stats">
             <i class="fa fa-database fa-2x fa-fw" aria-hidden="true"></i>
-            <br />
-            {{ Common::roundNumber($projectStats->getTotalEntries(), 1) }} Entries
+            <br/>
+            {{ Common::roundNumber($projectStats->total_entries, 1) }}
+            Entries
         </div>
         <div class="col-xs-12 col-sm-12 col-md-6 project-home__stats">
             <i class="fa fa-calendar fa-2x fa-fw"></i>
-            <br />
+            <br/>
             Last on:
-
-            @if (!$lastEntryDate)
-                <span> - </span>
-            @else
-                {{ date('j M y', intval($lastEntryDate)) }}
-            @endif
-
+            {{ $mostRecentEntryTimestamp ? date('j M Y', intval($mostRecentEntryTimestamp)) : '-' }}
         </div>
     </div>
 
@@ -24,13 +27,16 @@
     <div class="row">
 
         <div class="col-xs-12 col-sm-12 col-md-6 project-home__action-btns text-center">
-            <a class="btn btn-action" href="{{ url('/myprojects/' . $project->slug) }}">
+            <a class="btn btn-action" href="{{ url('/myprojects/' . $projectSlug) }}">
+                <span class="material-icons">settings</span>
                 {{ trans('site.details') }}
             </a>
         </div>
 
         <div class="col-xs-12 col-sm-12 col-md-6 project-home__action-btns text-center">
-            <a class="btn btn-action" href="{{ url('project/' . $project->slug . '/data') }}">
+            <a class="btn btn-action"
+               href="{{ url('project/' . $projectSlug . '/data') }}">
+                <span class="material-icons">table_view</span>
                 {{ trans('site.view_data') }}
             </a>
         </div>

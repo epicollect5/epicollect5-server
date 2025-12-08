@@ -1,32 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit backupGlobals="false"
-         backupStaticAttributes="false"
-         bootstrap="bootstrap/autoload.php"
-         colors="true"
-         convertErrorsToExceptions="true"
-         convertNoticesToExceptions="true"
-         convertWarningsToExceptions="true"
-         processIsolation="false"
-         stopOnFailure="false">
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" bootstrap="bootstrap/autoload.php"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd">
     <testsuites>
-        <testsuite name="Application Test Suite">
-            <directory suffix="Test.php">./tests</directory>
+        <!--Running a cleanup first, to remove leftover rows from failures-->
+        <testsuite name="Database Cleanup Before">
+            <file>Tests/CleanUpBefore.php</file>
+        </testsuite>
+        <!--Running all the tests (unit + integrations)-->
+        <testsuite name="Application Tests">
+            <directory>./tests</directory>
             <exclude>./tests/Browser/</exclude>
         </testsuite>
+
+        <!--Running a cleanup after, to remove leftover rows from failures-->
+        <testsuite name="Database Cleanup After">
+            <file>Tests/CleanUpAfter.php</file>
+        </testsuite>
     </testsuites>
-    <filter>
-        <whitelist processUncoveredFilesFromWhitelist="true">
-            <directory suffix=".php">./app</directory>
-            <exclude>
-                <file>./app/Http/routes.php</file>
-            </exclude>
-            <exclude>./tests/Browser/</exclude>
-        </whitelist>
-    </filter>
     <php>
         <env name="APP_ENV" value="testing"/>
         <env name="CACHE_DRIVER" value="array"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="QUEUE_DRIVER" value="sync"/>
+        <ini name="error_reporting" value="E_ALL"/>
+        <ini name="memory_limit" value="16048M"/>
+        <!-- Adjust the memory limit as needed -->
     </php>
+    <source>
+        <include>
+            <directory>./app</directory>
+        </include>
+        <exclude>
+            <file>./app/Http/routes.php</file>
+            <directory>./tests/Browser/</directory>
+        </exclude>
+    </source>
 </phpunit>

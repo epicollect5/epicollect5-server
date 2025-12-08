@@ -2,34 +2,28 @@
 
 namespace ec5\Http\Controllers\Api\Entries;
 
-use ec5\Http\Controllers\Api\ApiRequest;
-use ec5\Http\Controllers\Api\ApiResponse;
-
-use ec5\Http\Controllers\Api\Entries\View\EntrySearchControllerBase;
-use ec5\Http\Validation\Entries\Upload\RuleAnswers;
-use ec5\Http\Validation\Entries\Search\RuleQueryString;
-use ec5\Http\Validation\Entries\Download\RuleDownload as DownloadValidator;
-
-use ec5\Repositories\QueryBuilder\Entry\Search\BranchEntryRepository;
-use ec5\Repositories\QueryBuilder\Entry\Search\EntryRepository;
-use ec5\Repositories\QueryBuilder\Entry\ToFile\CreateRepository as FileCreateRepository;
-use ec5\Http\Validation\Entries\Upload\RuleUploadTemplate;
-use ec5\Http\Validation\Entries\Upload\RuleUploadHeaders;
-
-use Illuminate\Http\Request;
-
-use ec5\Models\Eloquent\ProjectStructure;
-
 use Auth;
-use Config;
-use Storage;
+use Cache;
 use Cookie;
-use Illuminate\Support\Str;
+use ec5\Http\Validation\Entries\Download\RuleDownload;
 use ec5\Libraries\Utilities\Common;
+use ec5\Models\User\User;
+use ec5\Services\Entries\EntriesDownloadService;
+use ec5\Services\Entries\EntriesViewService;
+use ec5\Services\Mapping\DataMappingService;
+use ec5\Traits\Requests\RequestAttributes;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Response;
+use Log;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
+use Storage;
+use Throwable;
 
-
-class DownloadController extends EntrySearchControllerBase
+class DownloadController
 {
+    use RequestAttributes;
+
     /*
     |--------------------------------------------------------------------------
     | Download Controller
@@ -40,419 +34,148 @@ class DownloadController extends EntrySearchControllerBase
     */
 
     /**
-     * @var FileCreateRepository
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
      */
-    protected $fileCreateRepository;
-
-    /**
-     * @var
-     */
-    protected $allowedSearchKeys;
-
-    /**
-     * DownloadController constructor.
-     * @param Request $request
-     * @param ApiRequest $apiRequest
-     * @param ApiResponse $apiResponse
-     * @param EntryRepository $entryRepository
-     * @param BranchEntryRepository $branchEntryRepository
-     * @param RuleQueryString $ruleQueryString
-     * @param RuleAnswers $ruleAnswers
-     * @param FileCreateRepository $fileCreateRepository
-     */
-    public function __construct(
-        Request $request,
-        ApiRequest $apiRequest,
-        ApiResponse $apiResponse,
-        EntryRepository $entryRepository,
-        BranchEntryRepository $branchEntryRepository,
-        RuleQueryString $ruleQueryString,
-        RuleAnswers $ruleAnswers,
-        FileCreateRepository $fileCreateRepository
-
-    ) {
-        parent::__construct(
-            $request,
-            $apiRequest,
-            $apiResponse,
-            $entryRepository,
-            $branchEntryRepository,
-            $ruleQueryString,
-            $ruleAnswers
-        );
-
-        $this->allowedSearchKeys = Config::get('ec5Enums.download_data_entries');
-        $this->fileCreateRepository = $fileCreateRepository;
-    }
-
-    /**
-     * @param Request $request
-     * @param DownloadValidator $downloadValidator
-     * @return \Illuminate\Http\JsonResponse|\Symfony\Component\HttpFoundation\BinaryFileResponse
-     */
-    public function index(Request $request, DownloadValidator $downloadValidator)
+    public function index(Request $request, RuleDownload $ruleDownload, EntriesViewService $viewEntriesService)
     {
         $user = Auth::user();
-        $options = $this->getRequestOptions($request, Config::get('ec5Limits.entries_table.per_page_download'));
-
-        $cookieName = Config::get('ec5Strings.cookies.download-entries');
+        $allowedKeys = array_keys(config('epicollect.strings.download_data_entries'));
+        $perPage = config('epicollect.limits.entries_table.per_page');
+        $params = $viewEntriesService->getSanitizedQueryParams($allowedKeys, $perPage);
+        $cookieName = config('epicollect.setup.cookies.download_entries');
 
         if ($user === null) {
-            return $this->apiResponse->errorResponse(400, ['download-entries' => ['ec5_86']]);
+            return Response::apiErrorCode(400, ['download-entries' => ['ec5_86']]);
         }
-
-        // Validate the options
-        $downloadValidator->validate($options);
-        if ($this->ruleQueryString->hasErrors()) {
-            return $this->apiResponse->errorResponse(400, $this->ruleQueryString->errors());
+        // Validate the request params
+        $ruleDownload->validate($params);
+        if ($ruleDownload->hasErrors()) {
+            return Response::apiErrorCode(400, $ruleDownload->errors());
         }
-
-        //todo do this better and use a form request maybe
-        //we send a "media-request" parameter in the query tring with a timestamp. to generate a cookie with the same timestamp
+        //we send a "media-request" parameter in the query string with a timestamp. to generate a cookie with the same timestamp
         $timestamp = $request->query($cookieName);
         if ($timestamp) {
             //check if the timestamp is valid
             if (!Common::isValidTimestamp($timestamp) && strlen($timestamp) === 13) {
-                abort(404); //so it goes to an error page
+                return Response::apiErrorCode(400, ['download-entries' => ['ec5_29']]);
             }
         } else {
             //error no timestamp was passed
-            abort(404); //s it goes to an error page
+            return Response::apiErrorCode(400, ['download-entries' => ['ec5_29']]);
         }
+        $projectDir = $this->getArchivePath($user);
 
-        // Default format if not supplied
-        if (!isset($options['format']) || empty($options['format'])) {
-            $options['format'] = Config::get('ec5Enums.download_data_entries_format_default');
+        // Fix permissions if path does not exist
+        // Ensure directory exists with correct permissions ()
+        $storage =  Storage::disk('entries_zip');
+        if (!$storage->exists($this->requestedProject()->ref.'/' . $user->id)) {
+            $storage->makeDirectory($this->requestedProject()->ref.'/' . $user->id);
+
+            // For local driver, fix permissions for entire chain
+            $diskRoot = config('filesystems.disks.entries_zip.root').'/';
+
+            // Build full folder path to newly created directory
+            $newDirFullPath = $diskRoot . $this->requestedProject()->ref.'/' . $user->id;
+
+            // Fix folder chain permissions up to app/ to fix laravel 700 issue since 9+
+            try {
+                Common::setPermissionsRecursiveUp($newDirFullPath);
+            } catch (Throwable $e) {
+                Log::error('Failed to set permissions on: ' . $newDirFullPath, ['exception' => $e->getMessage()]);
+                return Response::apiErrorCode(400, ['download-entries' => ['ec5_83']]);
+            }
         }
-
-        // Setup storage
-        $storage = Storage::disk('entries_zip');
-        // Check storage error here
-        if ($storage == null) {
-            $this->errors = ['download' => ['ec5_21']];
-            return $this->apiResponse->errorResponse(400, $this->errors);
-        }
-        $storagePrefix = (empty($storage)) ? '' : $storage->getDriver()->getAdapter()->getPathPrefix();
-
-        //todo check if there is a zip file already, send it
-        //todo it gets destroyed when we post entries returnZip
-
-        $projectDir = $storagePrefix . $this->requestedProject->ref;
-        //append user ID to handle concurrency -> MUST be logged in to download!
-        $projectDir = $projectDir . '/' . $user->id;
 
         // Try and create the files
-        $this->fileCreateRepository->create($this->requestedProject, $projectDir, $options);
-        if ($this->fileCreateRepository->hasErrors()) {
-            return $this->apiResponse->errorResponse(400, $this->fileCreateRepository->errors());
-        }
-
-        $zipName = $this->requestedProject->slug . '-' . $options['format'] . '.zip';
-        return $this->returnZip($projectDir . '/' . $zipName, $zipName, $timestamp);
-    }
-
-    public function uploadTemplate(Request $request, RuleUploadTemplate $validator)
-    {
-        $projectId = $this->requestedProject->getId();
-        $projectSlug = $this->requestedProject->slug;
-        $projectStructure = ProjectStructure::where('project_id', $projectId)->first();
-        $projectMappings = json_decode($projectStructure->project_mapping);
-        $projectDefinition = json_decode($projectStructure->project_definition);
-        $params = $request->all();
-        $readmeType = Config::get('ec5Strings.inputs_type.readme');
-        $locationType = Config::get('ec5Strings.inputs_type.location');
-        $groupType = Config::get('ec5Strings.inputs_type.group');
-        $cookieName = Config::get('ec5Strings.cookies.download-entries');
-
-        //todo validation request
-        $validator->validate($params);
-        if ($validator->hasErrors()) {
-            return $this->apiResponse->errorResponse(400, $validator->errors());
-        }
-
-        //we send a "media-request" parameter in the query tring with a timestamp. to generate a cookie with the same timestamp
-        $timestamp = $request->query($cookieName);
-        if ($timestamp) {
-            //check if the timestamp is valid
-            if (!Common::isValidTimestamp($timestamp) && strlen($timestamp) === 13) {
-                abort(404); //so it goes to an error page
-            }
-        } else {
-            //error no timestamp was passed
-            abort(404); //s it goes to an error page
-        }
-
-        $mapIndex = $params['map_index'];
-        $formIndex = $params['form_index'];
-        $branchRef = $params['branch_ref'];
-        $formRef = $projectDefinition->project->forms[$formIndex]->ref;
-        $formName = $projectDefinition->project->forms[$formIndex]->name;
-
-        $mapTos = [];
-        $mapName = $projectMappings[$mapIndex]->name;
-        $bulkUploadables = Config::get('ec5Enums.bulk_uploadables');
-
-        //are we looking for a branch template?
-        if ($branchRef !== '') {
-            $branchIndex = 0;
-            $inputs = $projectDefinition->project->forms[$formIndex]->inputs;
-
-            //find the branch inputs
-            $branchFound = false;
-            foreach ($inputs as $inputIndex => $input) {
-                if ($input->ref === $branchRef) {
-                    $inputs = $input->branch;
-                    $branchIndex = $inputIndex;
-                    $branchFound = true;
-                    break;
-                }
-            }
-
-            //if the branch id not found return error
-            if (!$branchFound) {
-                return $this->apiResponse->errorResponse(400, ['upload-template' => ['ec5_99']]);
-            }
-
-            $selectedMapping = $projectMappings[$mapIndex]->forms->{$formRef}->{$branchRef}->branch;
-
-            $branchName = $projectDefinition->project->forms[$formIndex]->inputs[$branchIndex]->question;
-            //truncate (and slugify) branch name to avoid super long file names
-            $branchNameTruncated = Str::slug(substr(strtolower($branchName), 0, 100));
-
-            $mapTos[] = 'ec5_branch_uuid';
-            $filename = $projectSlug . '__' . $formName . '__' . $branchNameTruncated . '__' . $mapName . '__upload-template.csv';
-        } else {
-            //hierarchy template
-            $inputs = $projectDefinition->project->forms[$formIndex]->inputs;
-            $selectedMapping = $projectMappings[$mapIndex]->forms->{$formRef};
-            $mapTos[] = 'ec5_uuid';
-            $filename = $projectSlug . '__' . $formName . '__' . $mapName . '__upload-template.csv';
-        }
-
-        //loop inputs in order
-        foreach ($inputs as $input) {
-
-            $inputRef = $input->ref;
-            //only use question types bulk-uploadable
-            if (in_array($input->type, $bulkUploadables)) {
-                //need to split location in its parts (no UTM for now)
-                if ($input->type === $locationType) {
-                    $mapTos[] = 'lat_' . $selectedMapping->{$inputRef}->map_to;
-                    $mapTos[] = 'long_' . $selectedMapping->{$inputRef}->map_to;
-                    $mapTos[] = 'accuracy_' . $selectedMapping->{$inputRef}->map_to;
-                } else {
-                    //if the input is a group, flatten the group inputs
-                    if ($input->type === $groupType) {
-
-                        foreach ($input->group as $groupInput) {
-
-                            $groupInputRef = $groupInput->ref;
-                            if (in_array($groupInput->type, $bulkUploadables)) {
-                                if ($groupInput->type === $locationType) {
-                                    $mapTos[] = 'lat_' . $selectedMapping->{$inputRef}->group->{$groupInputRef}->map_to;
-                                    $mapTos[] = 'long_' . $selectedMapping->{$inputRef}->group->{$groupInputRef}->map_to;
-                                    $mapTos[] = 'accuracy_' . $selectedMapping->{$inputRef}->group->{$groupInputRef}->map_to;
-                                } else {
-                                    $mapTos[] = $selectedMapping->{$inputRef}->group->{$groupInputRef}->map_to;
-                                }
-                            }
-                        }
-                    } else {
-                        $mapTos[] = $selectedMapping->{$inputRef}->map_to;
-                    }
-                }
-            }
-        }
-
-        //"If set to 0, or omitted, the cookie will expire at the end of the session (when the browser closes)."
-        $mediaCookie = Cookie::make($cookieName, $timestamp, 0, null, null, false, false);
-        Cookie::queue($mediaCookie);
-
-        $content = implode(',', $mapTos);
-        //return a csv file with the proper column headers
-        $headers = [
-            'Content-type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-        ];
-        return response()->make($content, 200, $headers);
-    }
-
-    public function uploadHeaders(Request $request, RuleUploadHeaders $validator)
-    {
-        $projectId = $this->requestedProject->getId();
-        $projectStructure = ProjectStructure::where('project_id', $projectId)->first();
-        $projectMappings = json_decode($projectStructure->project_mapping);
-        $projectDefinition = json_decode($projectStructure->project_definition);
-        $params = $request->all();
-        $readmeType = Config::get('ec5Strings.inputs_type.readme');
-        $locationType = Config::get('ec5Strings.inputs_type.location');
-        $groupType = Config::get('ec5Strings.inputs_type.group');
-
-        //todo validation request
-        $validator->validate($params);
-        if ($validator->hasErrors()) {
-            return $this->apiResponse->errorResponse(400, $validator->errors());
-        }
-
-        $mapIndex = $params['map_index'];
-        $formIndex = $params['form_index'];
-        $branchRef = $params['branch_ref'];
-        $formRef = $projectDefinition->project->forms[$formIndex]->ref;
-
-        $mapTos = [];
-        $bulkUploadables = Config::get('ec5Enums.bulk_uploadables');
-
-        //are we looking for a branch template?
-        if ($branchRef !== '') {
-            $branchIndex = 0;
-            $inputs = $projectDefinition->project->forms[$formIndex]->inputs;
-
-            //find the branch inputs
-            $branchFound = false;
-            foreach ($inputs as $inputIndex => $input) {
-                if ($input->ref === $branchRef) {
-                    $inputs = $input->branch;
-                    $branchIndex = $inputIndex;
-                    $branchFound = true;
-                    break;
-                }
-            }
-
-            //if the branch id not found return error
-            if (!$branchFound) {
-                return $this->apiResponse->errorResponse(400, ['upload-template' => ['ec5_99']]);
-            }
-
-            $selectedMapping = $projectMappings[$mapIndex]->forms->{$formRef}->{$branchRef}->branch;
-
-            $mapTos[] = 'ec5_branch_uuid';
-        } else {
-            //hierarchy template
-            $inputs = $projectDefinition->project->forms[$formIndex]->inputs;
-            $selectedMapping = $projectMappings[$mapIndex]->forms->{$formRef};
-            $mapTos[] = 'ec5_uuid';
-        }
-
-        //loop inputs in order
-        foreach ($inputs as $input) {
-
-            $inputRef = $input->ref;
-            //only use question types bulk-uploadable
-            if (in_array($input->type, $bulkUploadables)) {
-                //need to split location in its parts (no UTM for now)
-                if ($input->type === $locationType) {
-                    $mapTos[] = 'lat_' . $selectedMapping->{$inputRef}->map_to;
-                    $mapTos[] = 'long_' . $selectedMapping->{$inputRef}->map_to;
-                    $mapTos[] = 'accuracy_' . $selectedMapping->{$inputRef}->map_to;
-                } else {
-                    //if the input is a group, flatten the group inputs
-                    if ($input->type === $groupType) {
-
-                        foreach ($input->group as $groupInput) {
-
-                            $groupInputRef = $groupInput->ref;
-                            if (in_array($groupInput->type, $bulkUploadables)) {
-                                if ($groupInput->type === $locationType) {
-                                    $mapTos[] = 'lat_' . $selectedMapping->{$inputRef}->group->{$groupInputRef}->map_to;
-                                    $mapTos[] = 'long_' . $selectedMapping->{$inputRef}->group->{$groupInputRef}->map_to;
-                                    $mapTos[] = 'accuracy_' . $selectedMapping->{$inputRef}->group->{$groupInputRef}->map_to;
-                                } else {
-                                    $mapTos[] = $selectedMapping->{$inputRef}->group->{$groupInputRef}->map_to;
-                                }
-                            }
-                        }
-                    } else {
-                        $mapTos[] = $selectedMapping->{$inputRef}->map_to;
-                    }
-                }
-            }
-        }
-
-        $content = ['headers' => $mapTos];
-        //return json with the proper column headers
-
-        return response()->apiResponse($content);
-    }
-
-    public function subset(Request $request, DownloadValidator $downloadValidator)
-    {
-
-        $options = $this->getRequestOptions($request, Config::get('ec5Limits.entries_table.per_page_download'));
-
-        $cookieName = Config::get('ec5Strings.cookies.download-entries');
-
-        // Validate the options
-        $downloadValidator->validate($options);
-        if ($this->ruleQueryString->hasErrors()) {
-            return $this->apiResponse->errorResponse(400, $this->ruleQueryString->errors());
-        }
-
-        //todo do this better and use a form request maybe
-        //we send a "media-request" parameter in the query tring with a timestamp. to generate a cookie with the same timestamp
-        $timestamp = $request->query($cookieName);
-        if ($timestamp) {
-            //check if the timestamp is valid
-            if (!Common::isValidTimestamp($timestamp) && strlen($timestamp) === 13) {
-                abort(404); //so it goes to an error page
-            }
-        } else {
-            //error no timestamp was passed
-            abort(404); //s it goes to an error page
-        }
-
-        // Default format if not supplied
-        if (!isset($options['format']) || empty($options['format'])) {
-            $options['format'] = Config::get('ec5Enums.download_data_entries_format_default');
-        }
-
-        // Setup storage
-        $storage = Storage::disk('entries_zip');
-        // Check storage error here
-        if ($storage == null) {
-            $this->errors = ['download' => ['ec5_21']];
-            return $this->apiResponse->errorResponse(400, $this->errors);
-        }
-        $storagePrefix = (empty($storage)) ? '' : $storage->getDriver()->getAdapter()->getPathPrefix();
-
-        //todo check if there is a zip file already, send it
-        //todo it gets destroyed when we post entries returnZip
-
-        $projectDir = $storagePrefix . $this->requestedProject->ref;
-
-
-        // Try and create the files
-        $this->fileCreateRepository->create($this->requestedProject, $projectDir, $options);
-        if ($this->fileCreateRepository->hasErrors()) {
-            return $this->apiResponse->errorResponse(400, $this->fileCreateRepository->errors());
-        }
-
-        $zipName = $this->requestedProject->slug . '-' . $options['format'] . '.zip';
-
-        return $this->returnZip($projectDir . '/' . $zipName, $zipName, $timestamp);
+        return $this->createArchive($projectDir, $params, $timestamp);
     }
 
     /**
-     * @param $filepath
-     * @param $filename
-     * @param null $timestamp
+     * Sends an archive file as a download and deletes it after sending, or returns an error if the file is missing.
+     *
+     * This method checks if the file exists at the specified path. If it does, it queues a download entries cookie based on
+     * the provided timestamp and returns a download response that deletes the file after sending. If the file cannot be found,
+     * it returns an error response with a designated error code.
+     *
+     * @param string $filepath The path to the archive file.
+     * @param string $filename The name to be used for the downloaded file.
+     * @param ?string $timestamp Optional timestamp used for generating the download entries cookie and error response.
      */
-    private function returnZip($filepath, $filename, $timestamp = null)
+    private function sendArchive(string $filepath, string $filename, ?string $timestamp = null)
     {
-        $cookieName = Config::get('ec5Strings.cookies.download-entries');
-
-        //"If set to 0, or omitted, the cookie will expire at the end of the session (when the browser closes)."
-        $mediaCookie = Cookie::make($cookieName, $timestamp, 0, null, null, false, false);
-        Cookie::queue($mediaCookie);
-
         if (file_exists($filepath)) {
+            $downloadEntriesCookie = Common::getDownloadEntriesCookie($timestamp);
+            Cookie::queue($downloadEntriesCookie);
             return response()->download($filepath, $filename)->deleteFileAfterSend(true);
         } else {
-            //this happens only when users are downloading the file, so send error as file
-            //to keep the user on the dataviewer page.
-            //because on the front end this is requested using window.location
-            $filename = 'epicollect5-error.txt';
-            $content = trans('status_codes.ec5_364');
-            return response()->attachment($content, $filename);
+            return Common::errorResponseAsFile($timestamp, 'ec5_364');
         }
+    }
+
+    /**
+     * Creates a downloadable ZIP archive of project entries.
+     *
+     * Acquires a user-specific cache lock to prevent concurrent archive generation. If the lock
+     * is obtained, the method attempts to create the archive using the EntriesDownloadService with
+     * the designated project directory and parameters. On successful archive creation, it builds the
+     * ZIP filename and sends the file as a download. If archive creation fails, it returns an error
+     * response with code "ec5_83", and if the lock cannot be acquired, it returns an error response with
+     * code "ec5_406".
+     *
+     * @param string $projectDir Directory where the archive is to be stored.
+     * @param array $params Parameters for archive creation (e.g., output format).
+     * @param ?string $timestamp A timestamp used for file naming and error response consistency.
+     * @return mixed The response from sending the archive file or an error response.
+     */
+    private function createArchive(string $projectDir, array $params, ?string $timestamp)
+    {
+        $lockKey = 'download-entries-archive-' . $this->requestedUser()->id;
+
+        // Attempt to acquire the lock
+        $lock = Cache::lock(
+            $lockKey,
+            config('epicollect.setup.locks.duration_archive_download_lock')
+        );
+
+        if ($lock->get()) {
+            try {
+                $entriesDownloadService = new EntriesDownloadService(new DataMappingService());
+                if (!$entriesDownloadService->createArchive($this->requestedProject(), $projectDir, $params)) {
+                    return Common::errorResponseAsFile($timestamp, 'ec5_83');
+                }
+                $zipName = $this->requestedProject()->slug . '-' . $params['format'] . '.zip';
+                return $this->sendArchive($projectDir . '/' . $zipName, $zipName, $timestamp);
+            } catch (Throwable $e) {
+                // Log the actual error for debugging
+                Log::error('Archive creation failed: ' . $e->getMessage());
+                // Return a generic error code to the user
+                return Common::errorResponseAsFile($timestamp, 'ec5_83');
+            } finally {
+                // Release the lock
+                $lock->release();
+            }
+        } else {
+            return Common::errorResponseAsFile($timestamp, 'ec5_406');
+        }
+    }
+
+    /**
+     * Constructs the archive directory path for a given user.
+     *
+     * This method obtains the base storage path for ZIP entries, appends the reference of the
+     * currently requested project, and then adds the user's ID to ensure that archive files are stored
+     * in a unique directory per user. This helps prevent conflicts during concurrent downloads.
+     *
+     * @param User $user The authenticated user object with an accessible 'id' property.
+     * @return string The complete file system path for the user's archive directory.
+     */
+    private function getArchivePath(User $user)
+    {
+        // Setup storage
+        $diskRoot = config('filesystems.disks.entries_zip.root').'/';
+        $projectDir = $diskRoot . $this->requestedProject()->ref;
+        //append user ID to handle concurrency -> MUST be logged in to download!
+        return $projectDir . '/' . $user->id;
     }
 }

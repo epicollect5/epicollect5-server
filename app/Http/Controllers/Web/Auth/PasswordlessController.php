@@ -2,34 +2,23 @@
 
 namespace ec5\Http\Controllers\Web\Auth;
 
-use ec5\Http\Validation\Auth\RuleRecaptcha;
-use ec5\Http\Validation\Auth\RulePasswordlessApiCode;
-use ec5\Mail\UserPasswordlessWebMail;
-use ec5\Mail\UserPasswordlessApiMail;
-use ec5\Http\Validation\Auth\RulePasswordlessWeb;
-use ec5\Http\Validation\Auth\RulePasswordlessApiLogin;
-use ec5\Models\Eloquent\UserProvider;
-use ec5\Models\Users\User;
-use Illuminate\Http\Request;
-use GuzzleHttp\Client;
-use Config;
-use Exception;
-use Firebase\JWT\JWT as FirebaseJwt;
-use Mail;
-use ec5\Models\Eloquent\UserPasswordlessWeb;
-use ec5\Models\Eloquent\UserPasswordlessApi;
-use Carbon\Carbon;
-use DB;
-use Log;
-use PDOException;
-use Webpatser\Uuid\Uuid;
 use Auth;
-use ec5\Libraries\Utilities\Generators;
+use ec5\Http\Validation\Auth\RulePasswordlessApiLogin;
+use ec5\Http\Validation\Auth\RulePasswordlessWeb;
+use ec5\Models\User\User;
+use ec5\Models\User\UserPasswordlessWeb;
+use ec5\Services\User\UserService;
+use ec5\Traits\Auth\PasswordlessProviderHandler;
+use ec5\Traits\Auth\ReCaptchaValidation;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
-
+use Log;
+use Throwable;
 
 class PasswordlessController extends AuthController
 {
+    use ReCaptchaValidation;
+    use PasswordlessProviderHandler;
 
     public function __construct()
     {
@@ -41,360 +30,85 @@ class PasswordlessController extends AuthController
         return view('auth.verification_passwordless');
     }
 
-    public function sendLink(Request $request, RulePasswordlessWeb $validator, RuleRecaptcha $captchaValidator)
+    /**
+     * @throws Throwable
+     */
+    public function sendCode(Request $request, RulePasswordlessWeb $rulePasswordlessWeb)
     {
-        $tokenExpiresAt = env('PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
-        $inputs = $request->all();
-        //validate request
-        $validator->validate($inputs);
-        if ($validator->hasErrors()) {
-            // Redirect back if errors
-            return redirect()->back()->withErrors($validator->errors());
-        }
-
-        //get recaptcha response
-        $client = new Client(); //GuzzleHttp\Client
-        $response = $client->post(env('GOOGLE_RECAPTCHA_API_VERIFY_ENDPOINT'), [
-            'form_params' => [
-                'secret' => env('GOOGLE_RECAPTCHA_SECRET_KEY'),
-                'response' => $inputs['g-recaptcha-response']
-            ]
-        ]);
-
-        /**
-         * Validate the captcha response first
-         */
-        $arrayResponse = json_decode($response->getBody()->getContents(), true);
-
-        $captchaValidator->validate($arrayResponse);
-        if ($captchaValidator->hasErrors()) {
-            // Redirect back if errors
-            return redirect()->back()->withErrors($captchaValidator->errors());
-        }
-
-        $captchaValidator->additionalChecks($arrayResponse);
-        if ($captchaValidator->hasErrors()) {
-            // Redirect back if errors
-            return redirect()->back()->withErrors($captchaValidator->errors());
-        }
-
-        $email = $inputs['email'];
-
-        //generate token jwt
-        $jwtConfig = Config::get('auth.jwt-passwordless');
-        try {
-            // Extract the key, from the config file.
-            $secretKey = $jwtConfig['secret_key'];
-            $expiryTime = time() + env('PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
-
-            $data = array(
-                'iss' => Config::get('app.url'), // issuer
-                'iat' => time(), // issued at time
-                'jti' => (string)Uuid::generate(4), // unique token uuid v4
-                'exp' => $expiryTime, // expiry time
-                'sub' => $email, //  user email
-            );
-
-            /**
-             *
-             *
-             * iss:The issuer of the token
-             * sub: The subject of the token
-             * aud: The audience of the token
-             * exp: Token expiration time defined in Unix time
-             * nbf: “Not before” time that identifies the time before which the token must not be accepted for processing
-             * iat: “Issued at” time, in Unix time, at which the token was issued
-             * jti: JWT ID claim provides a unique identifier for the web token // Encode the array to a JWT string.
-             */
-
-            $token = FirebaseJwt::encode(
-                $data,      // Data to be encoded in the JWT
-                $secretKey, // The signing key
-                'HS256' // The signing algorithm
-            );
-        } catch (Exception $e) {
-            return redirect()->back()->withErrors([
-                'exception' => $e->getMessage(),
-                'passwordless-request-token' => ['ec5_104']
-            ]);
-        }
-
-        try {
-            DB::beginTransaction();
-            //remove any token for this user (if found)
-            $userPasswordless = UserPasswordlessWeb::where('email', $email);
-            if ($userPasswordless !== null) {
-                $userPasswordless->delete();
-            }
-
-            //add token to db
-            $userPasswordless = new UserPasswordlessWeb();
-            $userPasswordless->email = $email;
-            $userPasswordless->token = $token;
-            $userPasswordless->expires_at = Carbon::now()->addSeconds($tokenExpiresAt)->toDateTimeString();
-            $userPasswordless->save();
-
-            DB::commit();
-        } catch (PDOException $e) {
-            Log::error('Error generating passwordless access token');
-            DB::rollBack();
-            return redirect()->back()->withErrors(['passwordless-request' => ['ec5_104']]);
-        } catch (Exception $e) {
-            Log::error('Error generating password access token');
-            DB::rollBack();
-            return redirect()->back()->withErrors(['passwordless-request' => ['ec5_104']]);
-        }
-
-        //send email with verification token
-        try {
-            Mail::to($email)->send(new UserPasswordlessWebMail(
-                $token,
-                $email
-            ));
-        } catch (Exception $e) {
-            Log::error('Error sending email', ['exception' => $e->getMessage()]);
-            return redirect()->back()->withErrors(['passwordless-request' => ['ec5_116']]);
-        }
-
-        return redirect()->route('login')->with('message', 'ec5_372');
-    }
-
-    public function sendCode(Request $request, RulePasswordlessApiCode $validator, RuleRecaptcha $captchaValidator)
-    {
-        $tokenExpiresAt = env('PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
-        $inputs = $request->all();
+        $params = $request->all();
 
         //validate request
-        $validator->validate($inputs);
-        if ($validator->hasErrors()) {
+        $rulePasswordlessWeb->validate($params);
+        if ($rulePasswordlessWeb->hasErrors()) {
             // Redirect back if errors
-            return redirect()->back()->withErrors($validator->errors());
+            return redirect()->back()->withErrors($rulePasswordlessWeb->errors());
         }
 
-        //imp: skip captcha only when testing
-        if (!App::environment('testing')) {
-            //get recaptcha response
-            $client = new Client(); //GuzzleHttp\Client
-            $response = $client->post(env('GOOGLE_RECAPTCHA_API_VERIFY_ENDPOINT'), [
-                'form_params' => [
-                    'secret' => env('GOOGLE_RECAPTCHA_SECRET_KEY'),
-                    'response' => $inputs['g-recaptcha-response']
-                ]
-            ]);
+        //imp: skip captcha validation only when testing OR when disabled in the .env
+        $isGoogleRecaptchaEnabled = config('epicollect.setup.google_recaptcha.use_google_recaptcha');
+        if (!(App::environment() === 'testing')  && $isGoogleRecaptchaEnabled) {
+            //parse recaptcha response for any errors
+            if (isset($params['g-recaptcha-response'])) {
+                $recaptchaResponse = $params['g-recaptcha-response'];
+                try {
+                    $recaptchaErrors = $this->getAnyRecaptchaErrors($recaptchaResponse);
+                    if (!empty($recaptchaErrors)) {
+                        return redirect()->back()->withErrors($recaptchaErrors);
+                    }
+                } catch (Throwable $e) {
+                    Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
+                    return redirect()->back()->withErrors(['recaptcha' => ['ec5_103']]);
 
-            /**
-             * Validate the captcha response first
-             */
-            $arrayResponse = json_decode($response->getBody()->getContents(), true);
-
-            $captchaValidator->validate($arrayResponse);
-            if ($captchaValidator->hasErrors()) {
-                // Redirect back if errors
-                return redirect()->back()->withErrors($captchaValidator->errors());
-            }
-
-            $captchaValidator->additionalChecks($arrayResponse);
-            if ($captchaValidator->hasErrors()) {
-                // Redirect back if errors
-                return redirect()->back()->withErrors($captchaValidator->errors());
+                }
+            } else {
+                return redirect()->back()->withErrors(['recaptcha' => ['ec5_103']]);
             }
         }
 
-        $email = $inputs['email'];
-        $code = Generators::randomNumber(6, 1);
-
-        try {
-            DB::beginTransaction();
-            //remove any code for this user (if found)
-            $userPasswordless = UserPasswordlessWeb::where('email', $email);
-            if ($userPasswordless !== null) {
-                $userPasswordless->delete();
-            }
-
-            //add token to db
-            $userPasswordless = new UserPasswordlessWeb();
-            $userPasswordless->email = $email;
-            $userPasswordless->token = bcrypt($code, ['rounds' => env('BCRYPT_ROUNDS')]);
-            $userPasswordless->expires_at = Carbon::now()->addSeconds($tokenExpiresAt)->toDateTimeString();
-            $userPasswordless->save();
-
-            DB::commit();
-        } catch (PDOException $e) {
-            Log::error('Error generating passwordless access code web');
-            DB::rollBack();
-
-            return redirect()->back()->withErrors([
-                'exception' => $e->getMessage(),
-                'passwordless-request-code' => ['ec5_104']
-            ]);
-        } catch (Exception $e) {
-            Log::error('Error generating passwordless access code web');
-            DB::rollBack();
-
-            return redirect()->back()->withErrors([
-                'exception' => $e->getMessage(),
-                'passwordless-request-code' => ['ec5_104']
-            ]);
+        $email = $params['email'];
+        //check if email is whitelisted
+        if (!UserService::isAuthenticationDomainAllowed($email)) {
+            Log::error('Email not whitelisted', ['email' => $email]);
+            return redirect()->back()->withErrors(['ec5_266']);
         }
 
-        //send email with verification code
-        try {
-            Mail::to($email)->send(new UserPasswordlessApiMail($code));
-        } catch (Exception $e) {
-            return redirect()->back()->withErrors([
-                'exception' => $e->getMessage(),
-                'passwordless-request-code' => ['ec5_116']
-            ]);
-        }
-
-        //send success response (email sent) and show validation screen
-        return view(
-            'auth.verification_passwordless',
-            [
-                'email' => $email
-            ]
-        );
+        return $this->dispatchAuthToken($email);
     }
 
-    //try to authenticate user
-    public function authenticate(Request $request, $token)
-    {
-        $providerPasswordless = config('ec5Strings.providers.passwordless');
-        $isPasswordlessEnabled = in_array($providerPasswordless, $this->authMethods, true);
+    //try to authenticate user by checking provided numeric OTP
 
-        //is passwordless auth enabled?
-        if (!$isPasswordlessEnabled) {
-            // Auth method not allowed
-            return redirect()->route('login')->withErrors(['ec5_55']);
-        }
-
-        // Extract the key, from the config file.
-        $decoded = $this->decodeToken($token);
-
-        if ($decoded === null) {
-            return redirect()->route('home')->withErrors(['jwt-passwordless' => ['ec5_373']]);
-        }
-
-        $email = $decoded['sub'];
-
-        //get token from db for comparison
-        $userPasswordless = UserPasswordlessWeb::where('email', $email)->first();
-
-        //Does the email exists in the token table?
-        if ($userPasswordless === null) {
-            Log::error('Error validating jwt-passwordless token', ['error' => 'Email does not exist']);
-            return redirect()->route('home')->withErrors(['jwt-passwordless' => ['ec5_373']]);
-        }
-
-        //check if the token has not expired
-        if (!$userPasswordless->isValidToken($decoded)) {
-            Log::error('Error validating passwordless token', ['error' => 'Token not valid']);
-            return redirect()->route('home')->withErrors(['jwt-passwordless' => ['ec5_373']]);
-        }
-
-        //token is valid, remove it
-        $userPasswordless->delete();
-
-        //look for the user
-        $user = User::where('email', $email)->first();
-        if (!$user) {
-            //create new user with passwordless provider
-            $user = new User();
-            $user->name = config('ec5Strings.user_placeholder.passwordless_first_name');
-            $user->email = $email;
-            $user->server_role = Config::get('ec5Strings.server_roles.basic');
-            $user->state = Config::get('ec5Strings.user_state.active');
-            $user->save();
-
-            $userProvider = new UserProvider();
-            $userProvider->email = $user->email;
-            $userProvider->user_id = $user->id;
-            $userProvider->provider = Config::get('ec5Strings.providers.passwordless');
-            $userProvider->save();
-        }
-
-        /**
-         * If the user is unverified, set is as verified and add the passwordless provider
-         *
-         */
-        if ($user->state === Config::get('ec5Strings.user_state.unverified')) {
-            $user->state = Config::get('ec5Strings.user_state.active');
-            //update name if empty
-            //happens when users are added to a project before they create an ec5 account
-            if ($user->name === '') {
-                $user->name = 'User';
-            }
-            $user->save();
-
-            //add passwordless provider
-            $userProvider = new UserProvider();
-            $userProvider->email = $user->email;
-            $userProvider->user_id = $user->id;
-            $userProvider->provider = Config::get('ec5Strings.providers.passwordless');
-            $userProvider->save();
-        }
-
-        /**
-         * if user exists and it is active, just log the user in.
-         * This means the user owns the email used, if the user owns a Google and Apple account
-         * matching the email, that will give the user access to those projects.
-         * Apple and Google verify the email on their side so we are safe
-         *
-         * Same goes for local users
-         */
-
-        /**
-         * User was found and active, does this user have a passwordless provider?
-         */
-        if ($user->state === Config::get('ec5Strings.user_state.active')) {
-
-            $userProvider = UserProvider::where('email', $email)->where('provider', $this->passwordlessProviderLabel)->first();
-
-            if (!$userProvider) {
-                /**
-                 * if the user is active but the passwordless provider is not found,
-                 * this user created an account with another provider (Apple or Google or Local)
-                 */
-
-                //todo do nothing aside from adding the passwordless provider?
-                //add passwordless provider
-                $userProvider = new UserProvider();
-                $userProvider->email = $email;
-                $userProvider->user_id = $user->id;
-                $userProvider->provider = Config::get('ec5Strings.providers.passwordless');
-                $userProvider->save();
-            }
-        }
-
-        //Login user
-        Auth::login($user, false);
-        return $this->sendLoginResponse($request);
-    }
-
-    //try to authenticate user
+    /**
+     * @throws Throwable
+     */
     public function authenticateWithCode(Request $request, RulePasswordlessApiLogin $validator)
     {
-        $providerPasswordless = config('ec5Strings.providers.passwordless');
+        $providerPasswordless = config('epicollect.strings.providers.passwordless');
         $isPasswordlessEnabled = in_array($providerPasswordless, $this->authMethods, true);
         //is passwordless auth enabled in production?
-        if (!App::environment('testing')) {
+        if (!(App::environment() === 'testing')) {
             if (!$isPasswordlessEnabled) {
-                // Auth method not allowed
-                \Log::error('Passwordless auth not enabled');
+                // Auth method is not allowed
+                Log::error('Passwordless auth not enabled');
                 return redirect()->route('login')->withErrors($validator->errors());
             }
         }
 
         //validate request
-        $inputs = $request->all();
-        $validator->validate($inputs);
+        $params = $request->all();
+        $validator->validate($params);
         if ($validator->hasErrors()) {
-            \Log::error('Passwordless auth request error', ['errors' => $validator->errors()]);
+            Log::error('Passwordless auth request error', ['errors' => $validator->errors()]);
             return redirect()->route('login')->withErrors($validator->errors());
         }
 
-        $code = $inputs['code'];
-        $email = $inputs['email'];
+        $code = $params['code'];
+        $email = $params['email'];
+
+        //check if email is whitelisted
+        if (!UserService::isAuthenticationDomainAllowed($email)) {
+            Log::error('Email not whitelisted', ['email' => $email]);
+            return redirect()->route('login')->withErrors(['ec5_266']);
+        }
 
         //get token from db for comparison (passwordless web table)
         //imp: we use the web table for legacy reasons and also to avoid
@@ -405,7 +119,7 @@ class PasswordlessController extends AuthController
 
         //Does the email exists?
         if ($userPasswordless === null) {
-            Log::error('Error validating passworless code', [
+            Log::error('Error validating passwordless code', [
                 'error' => 'Email does not exist',
                 'email' => $email
             ]);
@@ -417,7 +131,7 @@ class PasswordlessController extends AuthController
 
         //check if the code is valid
         if (!$userPasswordless->isValidCode($code)) {
-            Log::error('Invalid passworless code', [
+            Log::error('Invalid passwordless code', [
                 'error' => 'Code not valid',
                 'email' => $email,
                 'code' => $code
@@ -439,45 +153,31 @@ class PasswordlessController extends AuthController
         //look for existing user
         $user = User::where('email', $email)->first();
         if ($user === null) {
-            //create user
-            $user = new User();
-            $user->name = config('ec5Strings.user_placeholder.passwordless_first_name');
-            $user->email = $email;
-            $user->server_role = Config::get('ec5Strings.server_roles.basic');
-            $user->state = Config::get('ec5Strings.user_state.active');
-            $user->save();
-
-            //add passwordless provider
-            $userProvider = new UserProvider();
-            $userProvider->email = $user->email;
-            $userProvider->user_id = $user->id;
-            $userProvider->provider = Config::get('ec5Strings.providers.passwordless');
-            $userProvider->save();
+            //create the new user as passwordless
+            $user = UserService::createPasswordlessUser($email);
+            if (!$user) {
+                //database error, user might retry
+                return view('auth.verification_passwordless', [
+                    'email' => $email
+                ])->withErrors(['ec5_104']);
+            }
         }
 
         /**
          * If the user is unverified, set is as verified and add the passwordless provider
          *
          */
-        if ($user->state === Config::get('ec5Strings.user_state.unverified')) {
-            $user->state = Config::get('ec5Strings.user_state.active');
-            //update name if empty
-            //happens when users are added to a project before they create an ec5 account
-            if ($user->name === '') {
-                $user->name = config('ec5Strings.user_placeholder.passwordless_first_name');
+        if ($user->state === config('epicollect.strings.user_state.unverified')) {
+            if (!UserService::updateUnverifiedPasswordlessUser($user)) {
+                //database error, user might retry
+                return view('auth.verification_passwordless', [
+                    'email' => $email
+                ])->withErrors(['ec5_104']);
             }
-            $user->save();
-
-            //add passwordless provider
-            $userProvider = new UserProvider();
-            $userProvider->email = $user->email;
-            $userProvider->user_id = $user->id;
-            $userProvider->provider = Config::get('ec5Strings.providers.passwordless');
-            $userProvider->save();
         }
 
         /**
-         * if user exists and it is active, just log the user in.
+         * if user exists, and it is active, just log the user in.
          * This means the user owns the email used, if the user owns a Google and Apple account
          * matching the email, that will give the user access to those projects.
          * Apple and Google verify the email on their side so we are safe
@@ -485,44 +185,10 @@ class PasswordlessController extends AuthController
          * Same goes for local users
          */
 
-        /**
-         * User was found and active, does this user have a passwordless provider?
-         */
-        if ($user->state === Config::get('ec5Strings.user_state.active')) {
-
-            $userProvider = UserProvider::where('email', $email)->where('provider', $this->passwordlessProviderLabel)->first();
-
-            if (!$userProvider) {
-                /**
-                 * if the user is active but the passwordless provider is not found,
-                 * this user created an account with another provider (Apple or Google or Local)
-                 */
-
-                //todo: do nothing aside from adding the passwordless provider?
-                //add passwordless provider
-                $userProvider = new UserProvider();
-                $userProvider->email = $email;
-                $userProvider->user_id = $user->id;
-                $userProvider->provider = Config::get('ec5Strings.providers.passwordless');
-                $userProvider->save();
-            }
-        }
+        //User is found at this point, does this user need a passwordless provider?
+        $this->addPasswordlessProviderIfMissing($user, $email);
         //Login user as passwordless
         Auth::login($user, false);
         return $this->sendLoginResponse($request);
-    }
-
-    private function decodeToken($token)
-    {
-        $jwtConfig = Config::get('auth.jwt-passwordless');
-        $secretKey = $jwtConfig['secret_key'];
-        $decoded = null;
-
-        try {
-            $decoded = (array)FirebaseJwt::decode($token, $secretKey, array('HS256'));
-        } catch (Exception $e) {
-            Log::error('Error decoding jwt-passwordless token to login', ['exception' => $e->getMessage()]);
-        }
-        return $decoded;
     }
 }

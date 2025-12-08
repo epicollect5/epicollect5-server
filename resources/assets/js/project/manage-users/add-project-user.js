@@ -26,14 +26,14 @@ window.EC5.project_users = window.EC5.project_users || {};
             window.EC5.toast.showSuccess(data.data.message);
 
             // Get project users based on page and any existing search
-            $.when(module.getProjectUsers(pageName, 1)).then(function(response){
+            $.when(module.getProjectUsers(pageName, 1)).then(function (response) {
 
                 var selectedUserRole = pageName.replace('page-', '');
                 // Update the relevant page section
                 $('.manage-project-users__' + pageName).html(response);
 
                 //switch tab
-                $('.page-manage-users .nav-tabs li').find('a.'+ selectedUserRole+ '-tab-btn').trigger('click');
+                $('.page-manage-users .nav-tabs li').find('a.' + selectedUserRole + '-tab-btn').trigger('click');
 
                 // If passed a callback function
                 if (callBack) {

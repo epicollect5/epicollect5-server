@@ -3,13 +3,10 @@
 namespace ec5\Http\Validation\Project;
 
 use ec5\Http\Validation\ValidationBase;
-use Config;
-use Log;
 
 class RuleForm extends ValidationBase
 {
-    protected $rules = [
-
+    protected array $rules = [
         'ref' => 'required',
         'type' => 'required|in:hierarchy',
         'slug' => 'required',
@@ -21,7 +18,7 @@ class RuleForm extends ValidationBase
      */
     public function __construct()
     {
-        $this->rules['name'] = 'required|max:' . Config::get('ec5Limits.form_name_limit');
+        $this->rules['name'] = 'required|max:' . config('epicollect.limits.form_name_maxlength');
     }
 
     /**
@@ -31,12 +28,28 @@ class RuleForm extends ValidationBase
      * @param $projectRef
      * @param $form
      */
-    public function additionalChecks($projectRef, $form)
+    public function additionalChecks($projectRef, $form): void
     {
         $this->isValidRef($projectRef);
 
         if ($this->hasErrors()) {
             return;
+        }
+
+        //form name only allows alphanumeric chars and space, '-', '_'
+        if (!preg_match("/^[a-zA-Z0-9_\- ]+$/", $form['name'])) {
+            $this->errors[$form['ref']] = ['ec5_29'];
+        }
+
+        //form slug only allows alphanumeric chars and '-'
+        if (!preg_match("/^[a-zA-Z0-9\-]+$/", $form['slug'])) {
+            $this->errors[$form['ref']] = ['ec5_29'];
+        }
+
+        if ($form['name']) {
+            if ($this->hasErrors()) {
+                return;
+            }
         }
 
         $inputs = $form['inputs'];
@@ -49,7 +62,7 @@ class RuleForm extends ValidationBase
     /**
      * @param array $inputs
      */
-    public function validateJumps(array $inputs)
+    public function validateJumps(array $inputs): void
     {
 
         $inputRefs = [];
@@ -72,7 +85,7 @@ class RuleForm extends ValidationBase
                 case 'group':
                     $groupInputs = $input['group'];
                     // Group jumps are not allowed
-                    foreach ($groupInputs as $groupPosition => $groupInput) {
+                    foreach ($groupInputs as $groupInput) {
                         if (count($groupInput['jumps']) > 0) {
                             $this->addAdditionalError($groupInput['ref'], 'ec5_320');
                             return;
@@ -85,7 +98,7 @@ class RuleForm extends ValidationBase
             // If this input has jumps
             if (count($input['jumps']) > 0) {
 
-                foreach ($input['jumps'] as $jump => $jumpDetails) {
+                foreach ($input['jumps'] as $jumpDetails) {
 
                     // END of form is ok
                     if ($jumpDetails['to'] == 'END') {

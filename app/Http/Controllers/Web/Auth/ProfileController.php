@@ -2,29 +2,28 @@
 
 namespace ec5\Http\Controllers\Web\Auth;
 
-use ec5\Http\Controllers\Controller;
-use ec5\Models\Users\User;
-use ec5\Models\Eloquent\UserProvider;
-use Illuminate\Http\Request;
-use ec5\Libraries\EC5Logger\EC5Logger;
-use Laravel\Socialite\Two\InvalidStateException;
-use Exception;
-use ec5\Libraries\JwtApple\JWT as JWTApple;
-use ec5\Libraries\JwtApple\JWK as JWKApple;
-
-use Laravel\Socialite\Facades\Socialite;
-use Config;
-use View;
 use Auth;
-use Ldap;
+use ec5\Http\Controllers\Controller;
+use ec5\Libraries\Auth\JwtApple\JWK as JWKApple;
+use ec5\Libraries\Auth\JwtApple\JWT as JWTApple;
+use ec5\Models\User\User;
+use ec5\Models\User\UserProvider;
+use ec5\Traits\Auth\AppleJWTHandler;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\Two\InvalidStateException;
 use Log;
+use Throwable;
 
 class ProfileController extends Controller
 {
-    protected $providers;
-    protected $user;
-    protected $appleProviderLabel;
-    protected $googleProviderLabel;
+    use AppleJWTHandler;
+
+    protected array $providers;
+    protected User $user;
+    protected string $appleProviderLabel;
+    protected string $googleProviderLabel;
 
     public function __construct()
     {
@@ -34,8 +33,8 @@ class ProfileController extends Controller
             $this->providers = UserProvider::where('email', $this->user->email)
                 ->pluck('provider')->toArray();
 
-            $this->appleProviderLabel = Config::get('ec5Strings.providers.apple');
-            $this->googleProviderLabel = Config::get('ec5Strings.providers.google');
+            $this->appleProviderLabel = config('epicollect.strings.providers.apple');
+            $this->googleProviderLabel = config('epicollect.strings.providers.google');
 
             return $next($request);
         });
@@ -44,23 +43,22 @@ class ProfileController extends Controller
     /**
      * Show the application login form.
      *
-     * @return View
      */
     public function show(Request $request)
     {
-        $request->session()->put('nonce', csrf_token());
+        $nonce = csrf_token();
+        session(['nonce' => $nonce]);
 
         return view('auth.profile', [
             'name' => $this->user->name,
             'email' => $this->user->email,
             'providers' => $this->providers,
-            'auth_methods' =>  config('auth.auth_methods')
+            'nonce' => $nonce,
+            'auth_methods' => config('auth.auth_methods')
         ]);
     }
 
     /**
-     * @param Request $request
-     * @return \Illuminate\Http\RedirectResponse
      *
      * Log out users so they can reset their password
      */
@@ -74,9 +72,8 @@ class ProfileController extends Controller
         return redirect()->route('forgot-show');
     }
 
-    public function connectGoogle(Request $request)
+    public function connectGoogle()
     {
-
         //local users cannot connect Google
         if ($this->isLocal($this->user)) {
             return redirect()->back();
@@ -84,7 +81,7 @@ class ProfileController extends Controller
 
         return Socialite::with('google')
             ->with(['prompt' => 'select_account']) //todo not sure we might remove this
-            ->redirectUrl(env('GOOGLE_CONNECT_REDIRECT_URI'))
+            ->redirectUrl(config('auth.google.connect_redirect_uri'))
             ->redirect();
     }
 
@@ -109,38 +106,37 @@ class ProfileController extends Controller
     }
 
     /**
-     * @param Request $request
-     * @return $this|\Illuminate\Http\RedirectResponse
+     * @return RedirectResponse
      */
-    public function handleGoogleConnectCallback(Request $request)
+    public function handleGoogleConnectCallback()
     {
         try {
-            // Find the google user
+            // Find the Google user
             $googleUser = Socialite::with('google')
-                ->redirectUrl(env('GOOGLE_CONNECT_REDIRECT_URI'))
+                ->redirectUrl(config('auth.google.connect_redirect_uri'))
                 ->user();
 
-            // If we found a google user
+            // If we found a Google user
             if ($googleUser) {
-                //check email is the same to the logged in user
+                //check email is the same to the logged-in user
                 if ($googleUser->email === $this->user->email) {
-                    //add google provider, to allow loggin in with both methods
+                    //add google provider, to allow logging in with both methods
                     $googleProvider = new UserProvider();
                     $googleProvider->email = $this->user->email;
                     $googleProvider->user_id = $this->user->id;
-                    $googleProvider->provider = Config::get('ec5Strings.providers.google');
+                    $googleProvider->provider = config('epicollect.strings.providers.google');
 
                     //if name is either Apple User or User, update user
-                    if ($this->user->name === config('ec5Strings.user_placeholder.apple_first_name')) {
+                    if ($this->user->name === config('epicollect.mappings.user_placeholder.apple_first_name')) {
                         $this->updateUserDetailsWithGoogle($googleUser);
                     }
-                    if ($this->user->name === config('ec5Strings.user_placeholder.passwordless_first_name')) {
+                    if ($this->user->name === config('epicollect.mappings.user_placeholder.passwordless_first_name')) {
                         $this->updateUserDetailsWithGoogle($googleUser);
                     }
 
                     $googleProvider->save();
 
-                    //redirect with success message
+                    //redirect with a success message
                     return redirect()->route('profile')
                         ->with([
                             'message' => 'ec5_379',
@@ -154,8 +150,7 @@ class ProfileController extends Controller
         } catch (InvalidStateException $e) {
             Log::error('Google Login Web Exception: ', ['exception' => [$e]]);
             return redirect()->route('profile')->withErrors(['ec5_369']);
-        } catch (Exception $e) {
-            EC5Logger::error('Google Connect Web unsuccessful', null, [$e]);
+        } catch (Throwable $e) {
             Log::error('Google Connect Web Exception: ', [
                 'exception' => $e->getMessage()
             ]);
@@ -163,7 +158,7 @@ class ProfileController extends Controller
         }
     }
 
-    //this is going to be a post
+    //this is going to be a post request as a callback by Apple
     public function handleAppleConnectCallback(Request $request)
     {
         $appleUser = null;
@@ -174,7 +169,7 @@ class ProfileController extends Controller
                 'name' => $this->user->name,
                 'email' => $this->user->email,
                 'providers' => $this->providers,
-                'auth_methods' =>  config('auth.auth_methods')
+                'auth_methods' => config('auth.auth_methods')
             ]);
         }
 
@@ -183,27 +178,15 @@ class ProfileController extends Controller
             $params = $request->all();
             $token = $params['id_token'];
 
-            // Log::error('Apple request', ['$params' => $params]);
-
             //get public keys from Apple endpoint
-            $apple_jwk_keys = json_decode(file_get_contents(env('APPLE_PUBLIC_KEYS_ENDPOINT')), null, 512, JSON_OBJECT_AS_ARRAY);
-            $keys = array();
-            foreach ($apple_jwk_keys->keys as $key) {
-                $keys[] = (array)$key;
-            }
-            $jwks = ['keys' => $keys];
+            list($jwks, $kid) = $this->getPublicKeysFromAppleEndpoint($token);
 
-            //get kid from jwy header
-            $header_base_64 = explode('.', $token)[0];
-            $kid = JWTApple::jsonDecode(JWTApple::urlsafeB64Decode($header_base_64));
-            $kid = $kid->kid;
-
-            //build jwt publick key using keys from Apple endpoint (using JWK)
+            //build jwt public key using keys from Apple endpoint (using JWK)
             try {
                 $public_key = JWKApple::parseKeySet($jwks);
                 $public_key = $public_key[$kid];
                 $parsed_id_token = JWTApple::decode($token, $public_key, ['RS256']);
-            } catch (Exception $e) {
+            } catch (Throwable $e) {
                 Log::error('Apple Sign In JWT Error', ['exception' => $e->getMessage()]);
                 //we get here when there is any validation error
                 return redirect()->route('profile')->withErrors(['ec5_382']);
@@ -211,60 +194,63 @@ class ProfileController extends Controller
 
             $parsed_id_token = (array)$parsed_id_token;
 
-            if ($parsed_id_token['email_verified'] === 'true') {
-                if ($parsed_id_token['nonce'] === $nonce) {
-                    //get Apple user email, always sent in the token
-                    $appleUserEmail = $parsed_id_token['email'];
-
-                    //check email is the same to the logged in user
-                    if ($appleUserEmail === $this->user->email) {
-
-                        //add Apple provider to allow loggin in with this method
-                        $appleProvider = new UserProvider();
-                        $appleProvider->email = $this->user->email;
-                        $appleProvider->user_id = $this->user->id;
-                        $appleProvider->provider = Config::get('ec5Strings.providers.apple');
-                        $appleProvider->save();
-
-                        //let's see if we have a user object
-                        //Apple sends this only on fist authentication attempt
-                        try {
-                            $appleUser = json_decode($params['user'], true); //decode to array by passing "true"
-                            $appleUserFirstName = $appleUser['name']['firstName'];
-                            $appleUserLastName = $appleUser['name']['lastName'];
-                        } catch (Exception $e) {
-                            Log::error('Apple user object exception', ['exception' => $e->getMessage()]);
-                            //if no user name found, default to Apple User
-                            $appleUserFirstName = config('ec5Strings.user_placeholder.apple_first_name');
-                            $appleUserLastName = config('ec5Strings.user_placeholder.apple_last_name');
-                        }
-
-                        //if user object and the current user does not have a name, update
-                        if ($this->user->name === config('ec5Strings.user_placeholder.passwordless_first_name')) {
-                            if ($appleUser) {
-                                $this->updateUserDetailsWithApple($appleUserFirstName, $appleUserLastName);
-                            }
-                        }
-
-                        if ($this->user->name === config('ec5Strings.user_placeholder.apple_first_name')) {
-                            if ($appleUser) {
-                                $this->updateUserDetailsWithApple($appleUserFirstName, $appleUserLastName);
-                            }
-                        }
-
-                        //redirect with success message
-                        session()->forget('nonce');
-                        return redirect()->route('profile')
-                            ->with([
-                                'message' => 'ec5_388',
-                            ]);
-                    }
-                    //users do not match, error
-                    return redirect()->route('profile')->withErrors(['ec5_387']);
-                }
+            //catching error when email is missing from payload
+            if (!isset($parsed_id_token['email'])) {
+                Log::error(__METHOD__ . ' failed.', ['Apple Connect' => 'email missing in payload']);
+                return redirect()->route('profile')->withErrors(['ec5_386']);
             }
-        } catch (Exception $e) {
-            EC5Logger::error('Apple Connect Web unsuccessful', null, [$e]);
+
+            if ($parsed_id_token['nonce'] === $nonce) {
+                //get Apple user email, always sent in the token
+                $appleUserEmail = $parsed_id_token['email'];
+
+                //check email is the same to the logged-in user
+                if ($appleUserEmail === $this->user->email) {
+
+                    //add Apple provider to allow login in with this method
+                    $appleProvider = new UserProvider();
+                    $appleProvider->email = $this->user->email;
+                    $appleProvider->user_id = $this->user->id;
+                    $appleProvider->provider = config('epicollect.strings.providers.apple');
+                    $appleProvider->save();
+
+                    //let's see if we have a user object
+                    //Apple sends this only on fist authentication attempt
+                    try {
+                        $appleUser = json_decode($params['user'], true); //decode to array by passing "true"
+                        $appleUserFirstName = $appleUser['name']['firstName'];
+                        $appleUserLastName = $appleUser['name']['lastName'];
+                    } catch (Throwable $e) {
+                        Log::info('Apple user object exception, existing user, use defaults', ['exception' => $e->getMessage()]);
+                        //if no user name found, default to Apple User
+                        $appleUserFirstName = config('epicollect.mappings.user_placeholder.apple_first_name');
+                        $appleUserLastName = config('epicollect.mappings.user_placeholder.apple_last_name');
+                    }
+
+                    //if user object and the current user does not have a name, update
+                    if ($this->user->name === config('epicollect.mappings.user_placeholder.passwordless_first_name')) {
+                        if ($appleUser) {
+                            $this->updateUserDetailsWithApple($appleUserFirstName, $appleUserLastName);
+                        }
+                    }
+
+                    if ($this->user->name === config('epicollect.mappings.user_placeholder.apple_first_name')) {
+                        if ($appleUser) {
+                            $this->updateUserDetailsWithApple($appleUserFirstName, $appleUserLastName);
+                        }
+                    }
+
+                    //redirect with a success message
+                    session()->forget('nonce');
+                    return redirect()->route('profile')
+                        ->with([
+                            'message' => 'ec5_388',
+                        ]);
+                }
+                //users do not match, error
+                return redirect()->route('profile')->withErrors(['ec5_387']);
+            }
+        } catch (Throwable $e) {
             Log::error('Apple Connect Web Exception: ', [
                 'exception' => $e->getMessage()
             ]);
@@ -272,29 +258,9 @@ class ProfileController extends Controller
         return redirect()->route('profile')->withErrors(['ec5_386']);
     }
 
-    //after 5 failed login attempts, users need to wait 10 minutes
-    protected function hasTooManyLoginAttempts(Request $request)
-    {
-        return $this->limiter()->tooManyAttempts(
-            $this->throttleKey($request),
-            5,
-            10
-        );
-    }
-
-    private function isLocalUnverified($user)
-    {
-        return $user->provider === Config::get('ec5Strings.providers.local') && $user->state === Config::get('ec5Strings.user_state.unverified');
-    }
-
-    private function isLocalActive($user)
-    {
-        return $user->provider === Config::get('ec5Strings.providers.local') && $user->state === Config::get('ec5Strings.user_state.active');
-    }
-
     private function isLocal($user)
     {
-        return $user->provider === Config::get('ec5Strings.providers.local');
+        return $user->provider === config('epicollect.strings.providers.local');
     }
 
     private function updateUserDetailsWithGoogle($googleUser)

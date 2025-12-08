@@ -3,11 +3,10 @@
 namespace ec5\Http\Validation\Project;
 
 use ec5\Http\Validation\ValidationBase;
-use Config;
 
 class RuleInput extends ValidationBase
 {
-    protected $rules = [
+    protected array $rules = [
         'ref' => 'required',
         'question' => 'required', // Question length checked in additionalChecks()
         'is_title' => 'boolean',
@@ -29,16 +28,12 @@ class RuleInput extends ValidationBase
      */
     public function __construct()
     {
-        $this->rules['type'] = 'required|in:' . implode(',', Config::get('ec5Enums.inputs_type'));
-        $this->rules['datetime_format'] = 'nullable|in:' . implode(',', Config::get('ec5Enums.datetime_format'));
+        $this->rules['type'] = 'required|in:' . implode(',', array_keys(config('epicollect.strings.inputs_type')));
+        $this->rules['datetime_format'] = 'nullable|in:' . implode(',', array_keys(config('epicollect.strings.datetime_format')));
     }
 
-    /**
-     * Add any additional rules to validate against
-     *
-     * @param bool $isBranchInput
-     */
-    public function addAdditionalRules($isBranchInput)
+    //Add any additional rules to validate against
+    public function addAdditionalRules(bool $isBranchInput): void
     {
         if ($isBranchInput) {
             $this->rules['uniqueness'] = 'required|in:none,form';
@@ -47,10 +42,7 @@ class RuleInput extends ValidationBase
         }
     }
 
-    /**
-     * @param $parentRef
-     */
-    public function additionalChecks($parentRef)
+    public function additionalChecks(string $parentRef): void
     {
         // Check has parent ref in its ref
         $this->isValidRef($parentRef);
@@ -59,15 +51,15 @@ class RuleInput extends ValidationBase
 
         // Set the question length limit
         switch ($inputType) {
-            case Config::get('ec5Strings.inputs_type.readme'):
-                // If we have a type 'readme', limit is higher
-                $questionLengthLimit = Config::get('ec5Limits.readme_question_limit');
+            case config('epicollect.strings.inputs_type.readme'):
+                // If we have a type 'readme', the limit is higher
+                $questionLengthLimit = config('epicollect.limits.readme_question_limit');
                 // Decode then strip the html tags
                 $question = strip_tags(html_entity_decode($this->data['question']));
                 break;
             default:
                 $question = $this->data['question'];
-                $questionLengthLimit = Config::get('ec5Limits.question_limit');
+                $questionLengthLimit = config('epicollect.limits.question_limit');
         }
 
         // Check the length
@@ -76,9 +68,22 @@ class RuleInput extends ValidationBase
             return;
         }
 
+        //imp: this method call is dynamic
         $methodName = 'additionalRule' . ucfirst($inputType);
         if (method_exists($this, $methodName)) {
-            $this->$methodName();
+            /** @see additionalRulePhoto() */
+            /** @see additionalRuleAudio() */
+            /** @see additionalRuleVideo() */
+            /** @see additionalRuleDate() */
+            /** @see additionalRuleTime() */
+            /** @see additionalRuleRadio() */
+            /** @see additionalRuleDropdown() */
+            /** @see additionalRuleCheckbox() */
+            /** @see additionalRuleSearchsingle() */
+            /** @see additionalRuleSearchMultiple() */
+            /** @see additionalRuleInteger() */
+            /** @see additionalRuleDecimal() */
+            call_user_func([$this, $methodName]);
         }
 
         // Check jumps
@@ -87,311 +92,108 @@ class RuleInput extends ValidationBase
 
     }
 
-    private function nullArrays($input)
+    private function additionalRulePhoto(): void
     {
+        $this->validateMediaType();
+    }
 
+    private function additionalRuleAudio(): void
+    {
+        $this->validateMediaType();
+    }
+
+    private function additionalRuleVideo(): void
+    {
+        $this->validateMediaType();
     }
 
     /**
      */
-    private function additionalRuleDate()
+    private function additionalRuleDate(): void
     {
-        if ($this->data['datetime_format'] == '') {
-            $this->addAdditionalError($this->data['ref'], 'ec5_79');
-            $this->addAdditionalError('question', $this->data['question']);
-        }
+        $this->validateDateTimeFormat();
     }
 
-    /**
-     */
-    private function additionalRuleTime()
+    private function additionalRuleTime(): void
     {
-        if ($this->data['datetime_format'] == '') {
-            $this->addAdditionalError($this->data['ref'], 'ec5_79');
-            $this->addAdditionalError('question', $this->data['question']);
-        }
+        $this->validateDateTimeFormat();
     }
 
-    /**
-     */
-    private function additionalRuleDropdown()
+    private function additionalRuleDropdown(): void
     {
-        // todo check length of possible answer, limit
-        if (count($this->data['possible_answers']) == 0) {
-            $this->addAdditionalError($this->data['ref'], 'ec5_338');
-            $this->addAdditionalError('question', $this->data['question']);
-        }
-
-        if (count($this->data['possible_answers']) > Config::get('ec5Limits.possible_answers_limit')) {
-            $this->addAdditionalError($this->data['ref'], 'ec5_340');
-            $this->addAdditionalError('question', $this->data['question']);
-        }
-
-        $match = false;
-        foreach ($this->data['possible_answers'] as $key => $value) {
-            if ($value['answer_ref'] == $this->data['default']) {
-                $match = true;
-            }
-
-            //validate possible answers 'answer' length
-            if (mb_strlen($value['answer'], 'UTF-8') > Config::get('ec5Limits.possible_answers_length_limit')) {
-                $this->addAdditionalError($this->data['ref'], 'ec5_341');
-                $this->addAdditionalError('question', $this->data['question']);
-            }
-
-            //validate possible answer 'answer_ref' length
-            if (strlen($value['answer_ref']) !== Config::get('ec5Limits.possible_answer_ref_length_limit')) {
-                $this->addAdditionalError($this->data['ref'], 'ec5_355');
-                $this->addAdditionalError('question', $this->data['question']);
-            }
-
-        }
-
-        // Check default answer is valid (empty or one of the possible answers)
-        if ($this->data['default'] !== '' && !$match) {
-            $this->addAdditionalError($this->data['ref'], 'ec5_339');
-            $this->addAdditionalError('question', $this->data['question']);
-        }
+        $this->validatePossibleAnswersCount('ec5_338');
+        $this->validatePossibleAnswers();
     }
 
-    /**
-     */
-    private function additionalRuleRadio()
+    private function additionalRuleRadio(): void
     {
-
-        // todo check length of possible answer, limit
-        if (count($this->data['possible_answers']) == 0) {
-            $this->addAdditionalError($this->data['ref'], 'ec5_337');
-            $this->addAdditionalError('question', $this->data['question']);
-        }
-
-        if (count($this->data['possible_answers']) > Config::get('ec5Limits.possible_answers_limit')) {
-            $this->addAdditionalError($this->data['ref'], 'ec5_340');
-            $this->addAdditionalError('question', $this->data['question']);
-        }
-
-        $match = false;
-        foreach ($this->data['possible_answers'] as $key => $value) {
-            if ($value['answer_ref'] == $this->data['default']) {
-                $match = true;
-            }
-
-            //validate possible answers length
-            if (mb_strlen($value['answer'], 'UTF-8') > Config::get('ec5Limits.possible_answers_length_limit')) {
-                $this->addAdditionalError($this->data['ref'], 'ec5_341');
-                $this->addAdditionalError('question', $this->data['question']);
-            }
-
-            //validate possible answer 'answer_ref' length
-            if (strlen($value['answer_ref']) !== Config::get('ec5Limits.possible_answer_ref_length_limit')) {
-                $this->addAdditionalError($this->data['ref'], 'ec5_355');
-                $this->addAdditionalError('question', $this->data['question']);
-            }
-        }
-
-        // Check default answer is valid (empty or one of the possible answers)
-        if ($this->data['default'] !== '' && !$match) {
-            $this->addAdditionalError($this->data['ref'], 'ec5_339');
-            $this->addAdditionalError('question', $this->data['question']);
-        }
-
+        $this->validatePossibleAnswersCount('ec5_337');
+        $this->validatePossibleAnswers();
     }
 
-    /**
-     */
-    private function additionalRuleCheckbox()
+    private function additionalRuleCheckbox(): void
     {
-        //no possible answers? bail out
-        if (count($this->data['possible_answers']) == 0) {
-            $this->addAdditionalError($this->data['ref'], 'ec5_336');
-            $this->addAdditionalError('question', $this->data['question']);
-            return false;
-        }
-
-        //too many possible answers? Bail out
-        if (count($this->data['possible_answers']) > Config::get('ec5Limits.possible_answers_limit')) {
-            $this->addAdditionalError($this->data['ref'], 'ec5_340');
-            $this->addAdditionalError('question', $this->data['question']);
-            return false;
-        }
-
-        $match = false;
-        foreach ($this->data['possible_answers'] as $key => $value) {
-            if ($value['answer_ref'] == $this->data['default']) {
-                $match = true;
-            }
-
-            //validate possible answers length handling unicodes:
-            // mb_strlen counts chars, ehile strlen counts bytes!
-            //https://goo.gl/HDZdnU
-            if (mb_strlen($value['answer'], 'UTF-8') > Config::get('ec5Limits.possible_answers_length_limit')) {
-                $this->addAdditionalError($this->data['ref'], 'ec5_341');
-                $this->addAdditionalError('question', $this->data['question']);
-            }
-
-            //validate possible answer 'answer_ref' length
-            if (strlen($value['answer_ref']) !== Config::get('ec5Limits.possible_answer_ref_length_limit')) {
-                $this->addAdditionalError($this->data['ref'], 'ec5_355');
-                $this->addAdditionalError('question', $this->data['question']);
-            }
-        }
-
-
-        // Check default answer is valid (empty or one of the possible answers)
-        if ($this->data['default'] !== '' && !$match) {
-            $this->addAdditionalError($this->data['ref'], 'ec5_339');
-            $this->addAdditionalError('question', $this->data['question']);
-        }
+        $this->validatePossibleAnswersCount('ec5_336');
+        $this->validatePossibleAnswers();
     }
 
-    /**
-     */
-    private function additionalRuleSearchsingle()
+    private function additionalRuleSearchsingle(): void
     {
-        // todo check length of possible answer search, limit
-        if (count($this->data['possible_answers']) == 0) {
-            $this->addAdditionalError($this->data['ref'], 'ec5_342');
-            $this->addAdditionalError('question', $this->data['question']);
-        }
-
-        if (count($this->data['possible_answers']) > Config::get('ec5Limits.possible_answers_search_limit')) {
-            $this->addAdditionalError($this->data['ref'], 'ec5_340');
-            $this->addAdditionalError('question', $this->data['question']);
-        }
-
-        $match = false;
-
-        foreach ($this->data['possible_answers'] as $key => $value) {
-            if ($value['answer_ref'] == $this->data['default']) {
-                $match = true;
-            }
-
-            //validate possible answers length
-            if (mb_strlen($value['answer'], 'UTF-8') > Config::get('ec5Limits.possible_answers_length_limit')) {
-                $this->addAdditionalError($this->data['ref'], 'ec5_341');
-                $this->addAdditionalError('question', $this->data['question']);
-            }
-
-            //validate possible answer 'answer_ref' length
-            if (strlen($value['answer_ref']) !== Config::get('ec5Limits.possible_answer_ref_length_limit')) {
-                $this->addAdditionalError($this->data['ref'], 'ec5_355');
-                $this->addAdditionalError('question', $this->data['question']);
-            }
-        }
-
-        // Check default answer is valid (empty or one of the possible answers)
-        if ($this->data['default'] !== '' && !$match) {
-            $this->addAdditionalError($this->data['ref'], 'ec5_339');
-            $this->addAdditionalError('question', $this->data['question']);
-        }
+        $this->validateSearchType();
     }
 
-    /**
-     */
-    private function additionalRuleSearchmultiple()
+    private function additionalRuleSearchmultiple(): void
     {
-        // todo check length of possible answer search, limit
-        if (count($this->data['possible_answers']) == 0) {
-            $this->addAdditionalError($this->data['ref'], 'ec5_342');
-            $this->addAdditionalError('question', $this->data['question']);
-        }
-
-        if (count($this->data['possible_answers']) > Config::get('ec5Limits.possible_answers_search_limit')) {
-            $this->addAdditionalError($this->data['ref'], 'ec5_340');
-            $this->addAdditionalError('question', $this->data['question']);
-        }
-
-        $match = false;
-        foreach ($this->data['possible_answers'] as $key => $value) {
-            if ($value['answer_ref'] == $this->data['default']) {
-                $match = true;
-            }
-
-            //validate possible answers length
-            if (mb_strlen($value['answer'], 'UTF-8') > Config::get('ec5Limits.possible_answers_length_limit')) {
-                $this->addAdditionalError($this->data['ref'], 'ec5_341');
-                $this->addAdditionalError('question', $this->data['question']);
-            }
-
-            //validate possible answer 'answer_ref' length
-            if (strlen($value['answer_ref']) !== Config::get('ec5Limits.possible_answer_ref_length_limit')) {
-                $this->addAdditionalError($this->data['ref'], 'ec5_355');
-                $this->addAdditionalError('question', $this->data['question']);
-            }
-        }
-
-        // Check default answer is valid (empty or one of the possible answers)
-        if ($this->data['default'] !== '' && !$match) {
-            $this->addAdditionalError($this->data['ref'], 'ec5_339');
-            $this->addAdditionalError('question', $this->data['question']);
-        }
+        $this->validateSearchType();
     }
 
-    /**
-     */
-    private function additionalRuleInteger()
+    private function additionalRuleInteger(): void
     {
-
         // Check default answer is valid, ie empty string, string zero or an integer
-        if ($this->data['default'] !== '' && $this->data['default'] !== '0' && filter_var($this->data['default'],
-                FILTER_VALIDATE_INT) === false
+        if ($this->data['default'] !== '' && $this->data['default'] !== '0' && filter_var(
+            $this->data['default'],
+            FILTER_VALIDATE_INT
+        ) === false
         ) {
             $this->addAdditionalError($this->data['ref'], 'ec5_339');
         }
-
         // If not empty default, min and max
-        if ($this->data['default'] !== '' && $this->data['min'] !== '' && $this->data['max'] !== '') {
-            // Check min/max according to default
-            if ($this->data['default'] > $this->data['max'] || $this->data['default'] < $this->data['min']) {
-                $this->addAdditionalError($this->data['ref'], 'ec5_28');
-            }
-        }
+        $this->ifNotEmptyDefaultMinAndMax();
     }
 
-    /**
-     */
-    private function additionalRuleDecimal()
+    private function additionalRuleDecimal(): void
     {
         // Check default answer is valid, ie empty string or a number (int or decimal)
         if ($this->data['default'] !== '' && !is_numeric($this->data['default'])) {
             $this->addAdditionalError($this->data['ref'], 'ec5_339');
         }
-
         // If not empty default, min and max
-        if ($this->data['default'] !== '' && $this->data['min'] !== '' && $this->data['max'] !== '') {
-            // Check min/max according to default
-            if ($this->data['default'] > $this->data['max'] || $this->data['default'] < $this->data['min']) {
-                $this->addAdditionalError($this->data['ref'], 'ec5_28');
-            }
-        }
-
+        $this->ifNotEmptyDefaultMinAndMax();
     }
 
-    /**
-     */
-    private function checkJumps()
+    private function checkJumps(): void
     {
         $jumps = $this->data['jumps'];
-        $jump_keys = Config::get('ec5Strings.jump_keys');
+        $jump_keys = array_keys(config('epicollect.strings.jump_keys'));
 
         // Loop jumps and check no values are empty
         foreach ($jumps as $jump) {
 
             // Check that certain types only have certain values for 'when' etc i.e. text input always has 'ALL'
             switch ($this->data['type']) {
-                case Config::get('ec5Strings.inputs_type.checkbox'):
-                case Config::get('ec5Strings.inputs_type.radio'):
-                case Config::get('ec5Strings.inputs_type.dropdown'):
-                case Config::get('ec5Strings.inputs_type.searchsingle'):
-                case Config::get('ec5Strings.inputs_type.searchmultiple'):
+                case config('epicollect.strings.inputs_type.checkbox'):
+                case config('epicollect.strings.inputs_type.radio'):
+                case config('epicollect.strings.inputs_type.dropdown'):
+                case config('epicollect.strings.inputs_type.searchsingle'):
+                case config('epicollect.strings.inputs_type.searchmultiple'):
                     // checkbox/radio/dropdown allowed all types of jumps
 
                     // If not 'ALL' or 'NO_ANSWER_GIVEN'
-                    if (($jump['when'] !== Config::get('ec5Strings.jumps.ALL') && $jump['when'] !== Config::get('ec5Strings.jumps.NO_ANSWER_GIVEN'))) {
+                    if (($jump['when'] !== config('epicollect.strings.jumps.ALL') && $jump['when'] !== config('epicollect.strings.jumps.NO_ANSWER_GIVEN'))) {
                         // Check answer ref is valid in the jump
                         $match = false;
                         // Search for a match
-                        foreach ($this->data['possible_answers'] as $possibleAnswer => $possibleAnswerDetails) {
+                        foreach ($this->data['possible_answers'] as $possibleAnswerDetails) {
                             if ($jump['answer_ref'] == $possibleAnswerDetails['answer_ref']) {
                                 $match = true;
                             }
@@ -404,7 +206,7 @@ class RuleInput extends ValidationBase
 
                     break;
                 default:
-                    if ($jump['when'] !== Config::get('ec5Strings.jumps.ALL')) {
+                    if ($jump['when'] !== config('epicollect.strings.jumps.ALL')) {
                         $this->addAdditionalError($this->data['ref'], 'ec5_207');
                     }
             }
@@ -415,7 +217,7 @@ class RuleInput extends ValidationBase
             if (empty($jump['to']) ||
                 empty($jump['when']) ||
                 (empty($jump['answer_ref']) &&
-                    ($jump['when'] !== Config::get('ec5Strings.jumps.ALL') && $jump['when'] !== Config::get('ec5Strings.jumps.NO_ANSWER_GIVEN')))
+                    ($jump['when'] !== config('epicollect.strings.jumps.ALL') && $jump['when'] !== config('epicollect.strings.jumps.NO_ANSWER_GIVEN')))
             ) {
                 $this->addAdditionalError($this->data['ref'], 'ec5_207');
             }
@@ -428,6 +230,89 @@ class RuleInput extends ValidationBase
                 }
             }
 
+        }
+    }
+
+    private function ifNotEmptyDefaultMinAndMax(): void
+    {
+        if ($this->data['default'] !== '' && $this->data['min'] !== '' && $this->data['max'] !== '') {
+            // Check min/max according to default
+            if ($this->data['default'] > $this->data['max'] || $this->data['default'] < $this->data['min']) {
+                $this->addAdditionalError($this->data['ref'], 'ec5_28');
+            }
+        }
+    }
+
+    private function validateSearchType(): void
+    {
+        if (count($this->data['possible_answers']) == 0) {
+            $this->addAdditionalError($this->data['ref'], 'ec5_342');
+            $this->addAdditionalError('question', $this->data['question']);
+        }
+
+        if (count($this->data['possible_answers']) > config('epicollect.limits.possible_answers_search_limit')) {
+            $this->addAdditionalError($this->data['ref'], 'ec5_340');
+            $this->addAdditionalError('question', $this->data['question']);
+        }
+
+        $this->validatePossibleAnswers();
+    }
+
+    private function validatePossibleAnswersCount($code): void
+    {
+        if (count($this->data['possible_answers']) == 0) {
+            $this->addAdditionalError($this->data['ref'], $code);
+            $this->addAdditionalError('question', $this->data['question']);
+        }
+
+        if (count($this->data['possible_answers']) > config('epicollect.limits.possible_answers_limit')) {
+            $this->addAdditionalError($this->data['ref'], 'ec5_340');
+            $this->addAdditionalError('question', $this->data['question']);
+        }
+    }
+
+    private function validatePossibleAnswers(): void
+    {
+        $match = false;
+
+        foreach ($this->data['possible_answers'] as $value) {
+            if ($value['answer_ref'] == $this->data['default']) {
+                $match = true;
+            }
+
+            //validate possible answers length
+            if (mb_strlen($value['answer'], 'UTF-8') > config('epicollect.limits.possible_answers_length_limit')) {
+                $this->addAdditionalError($this->data['ref'], 'ec5_341');
+                $this->addAdditionalError('question', $this->data['question']);
+            }
+
+            //validate possible answer 'answer_ref' length
+            if (strlen($value['answer_ref']) !== config('epicollect.limits.possible_answer_ref_length_limit')) {
+                $this->addAdditionalError($this->data['ref'], 'ec5_355');
+                $this->addAdditionalError('question', $this->data['question']);
+            }
+        }
+
+        // Check default answer is valid (empty or one of the possible answers)
+        if ($this->data['default'] !== '' && !$match) {
+            $this->addAdditionalError($this->data['ref'], 'ec5_339');
+            $this->addAdditionalError('question', $this->data['question']);
+        }
+    }
+
+    private function validateMediaType(): void
+    {
+        if (count($this->data['possible_answers']) > 0) {
+            $this->addAdditionalError($this->data['ref'], 'ec5_398');
+            $this->addAdditionalError('question', $this->data['question']);
+        }
+    }
+
+    private function validateDateTimeFormat(): void
+    {
+        if ($this->data['datetime_format'] == '') {
+            $this->addAdditionalError($this->data['ref'], 'ec5_79');
+            $this->addAdditionalError('question', $this->data['question']);
         }
     }
 }

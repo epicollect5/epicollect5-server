@@ -2,19 +2,19 @@
 
 namespace ec5\Http\Controllers\Api\Auth;
 
-use ec5\Http\Controllers\Api\ApiResponse;
-use ec5\Models\Eloquent\UserPasswordlessApi;
-use ec5\Http\Validation\Auth\RulePasswordlessApiLogin;
-use ec5\Models\Users\User;
-use ec5\Libraries\Jwt\JwtUserProvider;
-use ec5\Models\Eloquent\UserProvider;
-use Illuminate\Http\Request;
-use Exception;
-use Laravel\Socialite\Facades\Socialite;
-use Config;
 use Auth;
+use ec5\Http\Validation\Auth\RulePasswordlessApiLogin;
+use ec5\Libraries\Auth\Jwt\JwtUserProvider;
+use ec5\Models\User\User;
+use ec5\Models\User\UserPasswordlessApi;
+use ec5\Models\User\UserProvider;
+use ec5\Services\User\UserService;
 use ec5\Traits\Auth\GoogleUserUpdater;
+use Illuminate\Http\Request;
+use Laravel\Socialite\Facades\Socialite;
 use Log;
+use Response;
+use Throwable;
 
 class GoogleController extends AuthController
 {
@@ -29,28 +29,34 @@ class GoogleController extends AuthController
      * Accepts access code and creates google social user
      * Returning jwt in response header
      */
-    public function authGoogleUser(ApiResponse $apiResponse)
+    public function authGoogleUser()
     {
         // Check this auth method is allowed
         if (in_array('google', $this->authMethods)) {
             $provider = $this->googleProviderLabel;
             $providerLocal = $this->localProviderLabel;
-            // Attempt to find the google user
+            // Attempt to find the Google user
             try {
-                $providerKey = config::get('services.google_api');
+                $providerKey = config('services.google_api');
 
                 // We want stateless here, as using jwt
-                // Build the custom provider driver based on google driver and load the user
+                // Build the custom provider driver based on Google driver and load the user
                 /**
-                 * IMP: the Socialite call needs a code and grant_tyoe from the app request like:
+                 * IMP: the Socialite call needs a code and grant_type from the app request like:
                  *  code: code,
                  *  grant_type: 'authorization_code'
                  *  which is provided by the mobile app post request.
                  *  Without that, it would fail.
-                 *  The $googleUser object is the same we get from the web 
+                 *  The $googleUser object is the same we get from the web
                  *  so we can use the same model methods
                  */
                 $googleUser = Socialite::buildProvider('Laravel\Socialite\Two\GoogleProvider', $providerKey)->stateless()->user();
+
+                //check if email is whitelisted
+                if (!UserService::isAuthenticationDomainAllowed($googleUser->email)) {
+                    Log::error('Email not whitelisted', ['email' => $googleUser->email]);
+                    return Response::apiErrorCode(400, ['api-login-google' => ['ec5_266']]);
+                }
 
                 // Check user exists in Epicollect5 system and is active
                 $userModel = new User();
@@ -62,14 +68,18 @@ class GoogleController extends AuthController
                  * and return it
                  */
                 if (!$user) {
-                    $user = $userModel->createGoogleUser($googleUser);
+                    $user = UserService::createGoogleUser($googleUser);
+                    if (!$user) {
+                        $error['api-login-google'] = ['ec5_376'];
+                        return Response::apiErrorCode(400, $error);
+                    }
                 }
 
                 //if the user is disabled, kick him out
-                if ($user->state === Config::get('ec5Strings.user_state.disabled')) {
+                if ($user->state === config('epicollect.strings.user_state.disabled')) {
                     Log::error('Google Login failed - user not active anymore: ' . $googleUser->email);
                     $error['api-login-google'] = ['ec5_32'];
-                    return $apiResponse->errorResponse(400, $error);
+                    return Response::apiErrorCode(400, $error);
                 }
 
                 /**
@@ -82,19 +92,19 @@ class GoogleController extends AuthController
                  *
                  * the user gets verified via Google
                  */
-                if ($user->state === Config::get('ec5Strings.user_state.unverified')) {
-                    if (!$userModel->updateGoogleUser($googleUser)) {
+                if ($user->state === config('epicollect.strings.user_state.unverified')) {
+                    if (!UserService::updateGoogleUser($googleUser)) {
                         $error['api-login-google'] = ['ec5_45'];
-                        return $apiResponse->errorResponse(400, $error);
+                        return Response::apiErrorCode(400, $error);
                     }
                     //set user as active since it was verified correctly
-                    $user->state = Config::get('ec5Strings.user_state.active');
+                    $user->state = config('epicollect.strings.user_state.active');
                 }
 
                 /**
                  * User was found and active, does this user have a Google provider?
                  */
-                if ($user->state === Config::get('ec5Strings.user_state.active')) {
+                if ($user->state === config('epicollect.strings.user_state.active')) {
 
                     $userProviders = UserProvider::where('email', $googleUser->email)
                         ->pluck('provider')->toArray();
@@ -105,22 +115,20 @@ class GoogleController extends AuthController
 
                         switch ($user->server_role) {
 
-                                //admins must enter password on the mobile app
-                            case Config::get('ec5Strings.server_roles.superadmin'):
-                            case Config::get('ec5Strings.server_roles.admin'):
+                            //admins must enter password on the mobile app
+                            case config('epicollect.strings.server_roles.superadmin'):
+                            case config('epicollect.strings.server_roles.admin'):
                                 $error['api-login-google'] = ['ec5_390'];
-                                return $apiResponse->errorResponse(400, $error);
-                                break;
+                                return Response::apiErrorCode(400, $error);
                             default:
                                 if ($this->isAuthApiLocalEnabled) {
                                     //staff must enter password on the app
                                     $error['api-login-google'] = ['ec5_390'];
-                                    return $apiResponse->errorResponse(400, $error);
                                 } else {
                                     //public login where Local users can only use the email to login
                                     $error['api-login-google'] = ['ec5_383'];
-                                    return $apiResponse->errorResponse(400, $error);
                                 }
+                                return Response::apiErrorCode(400, $error);
                         }
                     }
 
@@ -134,9 +142,9 @@ class GoogleController extends AuthController
                          */
 
                         $error['api-login-google'] = ['ec5_383'];
-                        return $apiResponse->errorResponse(400, $error);
+                        return Response::apiErrorCode(400, $error);
                     }
-                    /** 
+                    /**
                      * external_api routes use the global pattern
                      * https://laravel.com/docs/5.4/routing#parameters-global-constraints
                      * so they all get the jwt guard when calling guard() without parameters.
@@ -146,8 +154,8 @@ class GoogleController extends AuthController
                      * Guards and Providers are defined in config/auth.php
                      */
 
-                    //we always update user details just in case the google account was updated 
-                    if (!$userModel->updateGoogleUserDetails($googleUser)) {
+                    //we always update user details just in case the Google account was updated
+                    if (!UserService::updateGoogleUserDetails($googleUser)) {
                         //well, details not updated is not a show stopping error, just log it
                         Log::error('Could not update Google User details');
                     }
@@ -155,48 +163,49 @@ class GoogleController extends AuthController
                     // Log user in
                     Auth::guard()->login($user);
                     // JWT
-                    $apiResponse->setData(Auth::guard()->authorizationResponse());
+                    $data = Auth::guard()->authorizationResponse();
                     // User name, email in meta
-                    $apiResponse->setMeta([
+                    $meta = [
                         'user' => [
                             'name' => Auth::user()->fresh()->name,
                             'email' => Auth::user()->fresh()->email
                         ]
-                    ]);
+                    ];
+
                     // Return JWT response
-                    return $apiResponse->toJsonResponse(200, 0);
+                    return Response::apiData($data, $meta);
                 }
-            } catch (Exception $e) {
+            } catch (Throwable $e) {
                 // If any exceptions, return error response: could not authenticate
                 Log::error('Google Login JWT Exception: ', [
                     'exception' => $e
                 ]);
                 $error['api-login-google'] = ['ec5_266'];
-                return $apiResponse->errorResponse(400, $error);
+                return Response::apiErrorCode(400, $error);
             }
         }
         // Auth method not allowed
         Log::error('Google Login not allowed');
         $error['api-login-google'] = ['ec5_55'];
-        return $apiResponse->errorResponse(400, $error);
+        return Response::apiErrorCode(400, $error);
     }
 
     /**
      * This verifies a Google User who already has an account (Apple)
      * If the code is valid, the Google provider is added
      * This is performed only the first time the user logs in with a new provider
-     * 
+     *
      * IMP:Local users are asked to enter the password when they login using a different provider
      * IMP:they are not verified here, local auth has its own verification controller
      */
-    public function verifyUserEmail(Request $request, ApiResponse $apiResponse, RulePasswordlessApiLogin $validator)
+    public function verifyUserEmail(Request $request, RulePasswordlessApiLogin $validator)
     {
         //validate request
         $params = $request->all();
         Log::error('Google $params', ['$params' => $params]);
         $validator->validate($params);
         if ($validator->hasErrors()) {
-            return $apiResponse->errorResponse(400, $validator->errors());
+            return Response::apiErrorCode(400, $validator->errors());
         }
 
         $code = $params['code'];
@@ -207,14 +216,14 @@ class GoogleController extends AuthController
 
         //Does the email exists?
         if ($userPasswordless === null) {
-            Log::error('Error validating passworless code', ['error' => 'Email does not exist']);
-            return $apiResponse->errorResponse(400, ['api-login-google' => ['ec5_378']]);
+            Log::error('Error validating passwordless code', ['error' => 'Email does not exist']);
+            return Response::apiErrorCode(400, ['api-login-google' => ['ec5_378']]);
         }
 
         //check if the code is valid
         if (!$userPasswordless->isValidCode($code)) {
-            Log::error('Error validating passworless code', ['error' => 'Code not valid']);
-            return $apiResponse->errorResponse(400, ['api-login-google' => ['ec5_378']]);
+            Log::error('Error validating passwordless code', ['error' => 'Code not valid']);
+            return Response::apiErrorCode(400, ['api-login-google' => ['ec5_378']]);
         }
 
         //code is valid, remove it
@@ -224,34 +233,34 @@ class GoogleController extends AuthController
         $user = User::where('email', $email)->first();
         if ($user === null) {
             //this should never happen, but no harm in checking
-            return $apiResponse->errorResponse(400, ['api-login-google' => ['ec5_34']]);
+            return Response::apiErrorCode(400, ['api-login-google' => ['ec5_34']]);
         }
 
-        //add the google provider so next time no verification is needed
-        $userProvider =  new UserProvider();
+        //add the Google provider so next time no verification is needed
+        $userProvider = new UserProvider();
         $userProvider->email = $user->email;
         $userProvider->user_id = $user->id;
         $userProvider->provider = $this->googleProviderLabel;
         $userProvider->save();
 
-        //try to update user details 
+        //try to update user details
         try {
-            $this->updateUserDetails($params, $user);
-        } catch (Exception $e) {
+            $this->updateGoogleUserDetails($params, $user);
+        } catch (Throwable $e) {
             Log::error('Google user object exception', ['exception' => $e->getMessage()]);
         }
         // Log user in
         Auth::guard()->login($user);
         // JWT
-        $apiResponse->setData(Auth::guard()->authorizationResponse());
+        $data = Auth::guard()->authorizationResponse();
         // User name,email in meta
-        $apiResponse->setMeta([
+        $meta = [
             'user' => [
                 'name' => Auth::user()->fresh()->name,
                 'email' => Auth::user()->fresh()->email
             ]
-        ]);
+        ];
         // Return JWT response
-        return $apiResponse->toJsonResponse(200, 0);
+        return Response::apiData($data, $meta);
     }
 }

@@ -1,4 +1,5 @@
-@if (count($projectUsers) == 0) <p class="well"> {{ trans('site.no_users_found')}}</p>
+@if (count($projectUsers) == 0)
+    <p class="well"> {{ trans('site.no_users_found')}}</p>
 @else
     <table class="table table-bordered manage-project-users__table">
         <tr>
@@ -14,7 +15,11 @@
         </tr>
         @foreach ($projectUsers as $user)
             <tr>
-                <td>@if(!empty($user->name)){{ $user->name . ' ' . $user->last_name }} @else <i>n/a</i> @endif
+                <td>@if(!empty($user->name))
+                        {{ $user->name . ' ' . $user->last_name }}
+                    @else
+                        <i>n/a</i>
+                    @endif
                 </td>
                 <td>{{ $user->email }}</td>
                 <td class="text-center">
@@ -42,25 +47,25 @@
                             @endif
 
 
-                            {{--{{dd(is_array(Config::get('ec5Permissions.projects.roles.' . $requestedProjectRole->getRole())), in_array($key, Config::get('ec5Permissions.projects.roles.' . $requestedProjectRole->getRole())), $key )}}--}}
+                            {{--{{dd(is_array(config('epicollect.permissions.projects.roles.' . $requestedProjectRole->getRole())), in_array($key, config('epicollect.permissions.projects.roles.' . $requestedProjectRole->getRole())), $key )}}--}}
 
-                        @elseif(is_array(Config::get('ec5Permissions.projects.roles.' . $requestedProjectRole->getRole())) &&
-                                in_array($key, Config::get('ec5Permissions.projects.roles.' . $requestedProjectRole->getRole())))
+                        @elseif(is_array(config('epicollect.permissions.projects.roles.' . $requestAttributes->requestedProjectRole->getRole())) &&
+                                in_array($key, config('epicollect.permissions.projects.roles.' . $requestAttributes->requestedProjectRole->getRole())))
                             <div class="form-group">
                                 <input type="submit"
                                        class="btn btn-xs btn-danger manage-project-users__table__remove-form__submit"
                                        value="{{trans('site.remove')}}">
                             </div>
                         @else
-                            <span><i>{{trans('site.cannot_remove_a') . $requestedProjectRole->getRole()}}</i></span>
+                            <span><i>{{trans('site.cannot_remove_a') . $requestAttributes->requestedProjectRole->getRole()}}</i></span>
                         @endif
                     </form>
                 </td>
                 @if ($key !== 'creator')
                     <td class="text-center">
                         {{--Active user cannot remove himself--}}
-                        @if($user->email !== $requestedProjectRole->getUser()->email
-                        && in_array($key, Config::get('ec5Permissions.projects.roles.' . $requestedProjectRole->getRole())))
+                        @if($user->email !== $requestAttributes->requestedProjectRole->getUser()->email
+                        && in_array($key, config('epicollect.permissions.projects.roles.' . $requestAttributes->requestedProjectRole->getRole())))
                             <button class="btn btn-xs btn-action manage-project-users__switch-role"
                                     type="button"
                                     data-project-slug="{{$project->slug}}"

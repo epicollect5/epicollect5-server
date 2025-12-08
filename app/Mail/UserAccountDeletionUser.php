@@ -2,13 +2,9 @@
 
 namespace ec5\Mail;
 
-use ec5\Models\Users\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Carbon\CarbonInterval;
-use Carbon\Carbon;
 
 class UserAccountDeletionUser extends Mailable
 {
@@ -30,7 +26,9 @@ class UserAccountDeletionUser extends Mailable
      */
     public function build()
     {
-        return $this->from(env('MAIL_FROM_ADDRESS'), 'Epicollect5')
+        return $this->from(
+            config('mail.from.address'),
+            config('mail.from.name'))
             ->subject('Account Deletion Request accepted')
             ->view('emails.account_deletion_user');
     }

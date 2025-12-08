@@ -2,19 +2,15 @@
 
 namespace ec5\Http\Controllers\Web\Auth;
 
-use ec5\Http\Controllers\Controller;
-use ec5\Models\Eloquent\UserProvider;
-use ec5\Models\Eloquent\UserResetPassword;
-use ec5\Models\Eloquent\User;
-use ec5\Http\Validation\Auth\RuleReset;
-use Illuminate\Http\Request;
-use Firebase\JWT\JWT as FirebaseJWT;
-use PDOException;
-use Exception;
-use Config;
-use Log;
-use DB;
 use Auth;
+use DB;
+use ec5\Http\Controllers\Controller;
+use ec5\Http\Validation\Auth\RuleReset;
+use ec5\Models\User\UserProvider;
+use Exception;
+use Illuminate\Http\Request;
+use Log;
+use PDOException;
 
 class ResetPasswordController extends Controller
 {
@@ -67,7 +63,7 @@ class ResetPasswordController extends Controller
         $user = Auth::user();
         //reset user password view (only if the user is a local one!)
         $userProvider = UserProvider::where('user_id', $user->id)
-            ->where('provider', config('ec5Strings.providers.local'))->first();
+            ->where('provider', config('epicollect.strings.providers.local'))->first();
 
         if ($userProvider === null) {
             Log::error('Error user not a local one', ['error' => 'Not a local user']);
@@ -100,14 +96,14 @@ class ResetPasswordController extends Controller
 
         //reset user password (only if the user is a local one!)
         $userProvider = UserProvider::where('user_id', $user->id)
-            ->where('provider', config('ec5Strings.providers.local'))->first();
+            ->where('provider', config('epicollect.strings.providers.local'))->first();
 
         if ($userProvider === null) {
             Log::error('Error user not a local one', ['error' => 'Not a local user']);
             return redirect()->route('home')->withErrors(['staff-reset' => ['ec5_366']]);
         }
 
-        $user->password = bcrypt($inputs['password'], ['rounds' => env('BCRYPT_ROUNDS', 12)]);
+        $user->password = bcrypt($inputs['password'], ['rounds' => config('auth.bcrypt_rounds')]);
         try {
             DB::beginTransaction();
             $user->save();
@@ -117,7 +113,7 @@ class ResetPasswordController extends Controller
             Log::error('Error password reset', ['exception' => $e->getMessage()]);
             DB::rollBack();
             return redirect()->back()->withErrors(['ec5_104']);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Error password reset', ['exception' => $e]);
             DB::rollBack();
             return redirect()->back()->withErrors(['ec5_104']);

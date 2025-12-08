@@ -2,21 +2,17 @@
 
 namespace ec5\Http\Validation\Entries\Upload\InputRules;
 
-use ec5\Models\Projects\Project;
-use ec5\Models\Entries\EntryStructure;
-use Config;
-use ec5\Libraries\EC5Logger\EC5Logger;
-use Log;
+use ec5\DTO\EntryStructureDTO;
+use ec5\DTO\ProjectDTO;
 
 class RuleLocationInput extends RuleInputBase
 {
-
     /**
      * @param $inputDetails
      * @param string|array $answer
-     * @param Project $project
+     * @param ProjectDTO $project
      */
-    public function setRules($inputDetails, $answer, Project $project)
+    public function setRules($inputDetails, $answer, ProjectDTO $project): void
     {
         // Set rules based on the input details
         // Source will be the input ref
@@ -29,18 +25,18 @@ class RuleLocationInput extends RuleInputBase
     /**
      * @param $inputDetails
      * @param $answer
-     * @param Project $project
-     * @param EntryStructure $entryStructure
-     * @return mixed
+     * @param ProjectDTO $project
+     * @param EntryStructureDTO $entryStructure
+     * @return array|string|null
      */
-    public function additionalChecks($inputDetails, $answer, Project $project, EntryStructure $entryStructure)
+    public function additionalChecks($inputDetails, $answer, ProjectDTO $project, EntryStructureDTO $entryStructure): array|string|null
     {
         if (count($answer) > 0) {
             // Check we have no extra keys
             if (count(array_merge(
-                    array_diff(array_keys($answer), Config::get('ec5Enums.entry_location_keys')),
-                    array_diff(Config::get('ec5Enums.entry_location_keys'), array_keys($answer))
-                )) > 0
+                array_diff(array_keys($answer), array_keys(config('epicollect.strings.entry_location_keys'))),
+                array_diff(array_keys(config('epicollect.strings.entry_location_keys')), array_keys($answer))
+            )) > 0
             ) {
                 $this->errors[$inputDetails['ref']] = ['ec5_30'];
                 return false;
@@ -75,51 +71,20 @@ class RuleLocationInput extends RuleInputBase
                 return false;
             }
 
-            // Limit lat long to max 6dp
+            // Limit lat long to max 6 decimal places
             $answer['longitude'] = round($answer['longitude'], 6);
             $answer['latitude'] = round($answer['latitude'], 6);
             //Round accuracy to integer
             $answer['accuracy'] = round($answer['accuracy']);
 
-            //add the geojson entry
-            $this->createGeoJson($entryStructure, $inputDetails, $answer);
+            //add the geojson entry to the current entryStructure
+            //imp: it is done here because since have direct access to the current input ref
+            $entryStructure->addGeoJsonObject($inputDetails, $answer);
         }
         return $answer;
     }
 
-    /**
-     * Add the geo json object to the entry structure
-     * @param EntryStructure $entryStructure
-     * @param $inputDetails
-     * @param $entryLocation
-     */
-    private function createGeoJson(EntryStructure $entryStructure, $inputDetails, $entryLocation)
-    {
-
-        $geoJson = [];
-        $geoJson['type'] = 'Feature';
-        $geoJson['id'] = $entryStructure->getEntryUuid();
-        $geoJson['geometry'] = [
-            'type' => 'Point',
-            'coordinates' => [
-                $entryLocation['longitude'],
-                $entryLocation['latitude']
-            ]
-        ];
-        $geoJson['properties'] = [
-            'uuid' => $entryStructure->getEntryUuid(),
-            'title' => $entryStructure->getTitle(),
-            'accuracy' => $entryLocation['accuracy'],
-            'created_at' => date('Y-m-d', strtotime($entryStructure->getDateCreated())),
-
-            // Possible answers will be added at the end
-            'possible_answers' => [],
-        ];
-
-        $entryStructure->addGeoJson($inputDetails['ref'], $geoJson);
-    }
-
-    private function isValidLatitude($latitude)
+    private function isValidLatitude($latitude): bool
     {
         if ($latitude === '') {
             return false;
@@ -134,7 +99,7 @@ class RuleLocationInput extends RuleInputBase
         return true;
     }
 
-    private function isValidLongitude($longitude)
+    private function isValidLongitude($longitude): bool
     {
         if ($longitude === '') {
             return false;
@@ -145,11 +110,10 @@ class RuleLocationInput extends RuleInputBase
         if ($longitude < -180 || $longitude > 180) {
             return false;
         }
-
         return true;
     }
 
-    private function isValidAccuracy($accuracy)
+    private function isValidAccuracy($accuracy): bool
     {
         if ($accuracy === '') {
             return false;
@@ -160,7 +124,6 @@ class RuleLocationInput extends RuleInputBase
         if ($accuracy < 0) {
             return false;
         }
-
         return true;
     }
 }

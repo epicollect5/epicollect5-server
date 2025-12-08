@@ -17,43 +17,28 @@ return [
     'mailgun' => [
         'domain' => env('MAILGUN_DOMAIN'),
         'secret' => env('MAILGUN_SECRET'),
+        'endpoint' => env('MAILGUN_ENDPOINT', 'api.eu.mailgun.net'),
+        'scheme' => 'https',
         'zone' => env('MAILGUN_ZONE'),
     ],
 
-    'ses' => [
-        'key' => env('SES_KEY'),
-        'secret' => env('SES_SECRET'),
-        'region' => 'us-east-1',
-    ],
-
-    'sparkpost' => [
-        'secret' => env('SPARKPOST_SECRET'),
-    ],
-
-    'stripe' => [
-        'model' => ec5\Models\Users\User::class,
-        'key' => env('STRIPE_KEY'),
-        'secret' => env('STRIPE_SECRET'),
-
-    ],
-
-    /*
-    * Google details for logins via the web
-    */
+    //Google credentials for web auth
+    //Google only accepts https in production!
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
-        'redirect' => env('GOOGLE_LOGIN_REDIRECT_URI')
+        'redirect' => env('APP_URL').'/handle/google'
     ],
 
-    /*
-     * Google details for logins via the mobile client
-     */
+    //Google credentials mobile auth
+    //Google only accepts https in production!
     'google_api' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
-        'redirect' => env('GOOGLE_LOGIN_REDIRECT_URI_API'),//todo do we still need this?
+        //This redirect allows the mobile app to be redirected to localhost
+        //without it, Socialite will throw an error
+        'redirect' => 'http://localhost',
+        //todo: not sure we are still using the scope
         'scope' => env('GOOGLE_SCOPE')
     ]
-
 ];

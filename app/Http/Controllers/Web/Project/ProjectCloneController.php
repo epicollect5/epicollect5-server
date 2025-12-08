@@ -2,151 +2,94 @@
 
 namespace ec5\Http\Controllers\Web\Project;
 
-use ec5\Http\Controllers\ProjectControllerBase;
+use ec5\Http\Validation\Project\RuleName;
+use ec5\Models\Project\Project;
+use ec5\Services\Project\ProjectAvatarService;
+use ec5\Services\Project\ProjectService;
+use ec5\Traits\Requests\RequestAttributes;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Foundation\Application;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use ec5\Models\Projects\Project;
-
-use ec5\Http\Validation\Project\RuleName as Validator;
-use ec5\Repositories\QueryBuilder\Project\CreateRepository as CreateProject;
-use ec5\Repositories\QueryBuilder\ProjectRole\CreateRepository as CreateProjectRole;
-use ec5\Repositories\QueryBuilder\Project\UpdateRepository as UpdateRep;
-use ec5\Models\Images\CreateProjectLogoAvatar;
-
-
 use Illuminate\Support\Str;
-use Uuid;
+use Illuminate\View\View;
 use Redirect;
 
-class ProjectCloneController extends ProjectControllerBase
+class ProjectCloneController
 {
-    protected $project;
-    protected $updateRep;
+    use RequestAttributes;
 
-    public function __construct(Request $request, Project $project, UpdateRep $updateRep)
-    {
-        parent::__construct($request);
-
-        $this->project = $project;
-        $this->updateRep = $updateRep;
-    }
-
-    /**
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View|\Illuminate\Contracts\View\Factory|\Illuminate\View\View
-     */
     public function show()
     {
-
-        if (!$this->requestedProjectRole->canEditProject()) {
-            $errors = ['ec5_91'];
-            return view('errors.gen_error')->withErrors(['errors' => $errors]);
+        if (!$this->requestedProjectRole()->canEditProject()) {
+            return view('errors.gen_error')->withErrors(['errors' => ['ec5_91']]);
         }
 
-        $vars = $this->defaultProjectDetailsParams('clone', 'details-edit');
+        $vars['includeTemplate'] = 'clone';
+        $vars['showPanel'] = 'details-edit';
         $vars['action'] = 'clone';
 
         return view('project.project_details', $vars);
-
     }
 
     /**
      * @param Request $request
-     * @param Validator $validator
-     * @param CreateProject $createProject
-     * @param CreateProjectRole $createProjectRole
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View|\Illuminate\Http\RedirectResponse
+     * @param RuleName $ruleName
+     * @param ProjectService $projectService
+     * @return Factory|Application|RedirectResponse|View
      */
-    public function store(Request $request, Validator $validator, CreateProject $createProject, CreateProjectRole $createProjectRole)
+    public function store(Request        $request,
+                          RuleName       $ruleName,
+                          ProjectService $projectService
+    )
     {
-
-        if (!$this->requestedProjectRole->canEditProject()) {
-            $errors = ['ec5_91'];
-            return view('errors.gen_error')->withErrors(['errors' => $errors]);
+        if (!$this->requestedProjectRole()->canEditProject()) {
+            return view('errors.gen_error')->withErrors(['errors' => ['ec5_91']]);
         }
 
-        $oldProjectId = $this->requestedProject->getId();
+        $sourceProjectId = $this->requestedProject()->getId();
+        $params = $request->all();
 
-        // Get input
-        $input = $request->all();
-
-        $cloneUsers = isset($input['clone-users']) && $input['clone-users'] == 'y' ? true : false;
-        $input['slug'] = Str::slug($request->input('name'), '-');
+        $cloneUsers = isset($params['clone-users']) && $params['clone-users'] == 'y';
+        $params['slug'] = Str::slug($request->input('name'), '-');
 
         // Run validation
-        $validator->validate($input, true);
-        if ($validator->hasErrors()) {
+        $ruleName->validate($params, true);
+        if ($ruleName->hasErrors()) {
             $request->flash();
-            return redirect()->back()->withErrors($validator->errors());
+            return redirect()->back()->withErrors($ruleName->errors());
         }
 
         // Clone into $this->requestedProject
-        $clonedProject = clone($this->requestedProject);
-        $clonedProject->cloneProject($input);
-
-        // Try and create, else return DB errors
-        $projectId = $createProject->create($clonedProject);
-
-        if ($projectId === 0) {
-            // Return db create errors
-            return Redirect::back()->withErrors(['db' => $createProject->errors()]);
+        $clonedProject = clone($this->requestedProject());
+        $clonedProject->cloneProject($params);
+        // Try and create
+        $clonedProjectId = $projectService->storeProject($clonedProject);
+        if ($clonedProjectId === 0) {
+            return Redirect::back()->withErrors(['db' => ['ec5_104']]);
         }
 
         // Try and clone users
         if ($cloneUsers) {
-            $tryCloneUsers = $createProjectRole->cloneProjectRoles($oldProjectId, $createProject->getProjectId());
-            if (!$tryCloneUsers) {
+            $areRolesCloned = $projectService->cloneProjectRoles($sourceProjectId, $clonedProjectId);
+            if (!$areRolesCloned) {
                 // Cloning users failed
-                return Redirect::back()->withErrors(['db' => $createProjectRole->errors()]);
+                return Redirect::back()->withErrors(['db' => ['ec5_104']]);
             }
         }
 
-        //create project logo avatar
-        if ($projectId > 0) {
-
-            //set the newly generated project ID in the model in memory
-            $this->project->setId($projectId);
-
-            //generate project logo avatar(s)
-            $avatarCreator = new CreateProjectLogoAvatar();
-            $wasCreated = $avatarCreator->generate($clonedProject->ref, $clonedProject->name);
-
-            if ($wasCreated) {
-
-                unset($input);
-                //update logo_url as we are creating an avatar placeholder
-                $input['logo_url'] = $clonedProject->ref;
-
-                if ($this->doUpdate($input)) {
-                    return Redirect::to('myprojects')->with('message', 'ec5_200');
-                } else {
-                    // Return db update errors
-                    $request->flash();
-                    return Redirect::to('myprojects/clone')->withErrors(['db' => ['ec5_104']]);
-                }
-            } else {
-                //error generating project avatar, handle it!
-                // Return db create errors
-                $request->flash();
-                return Redirect::to('myprojects/clone')->withErrors(['avatar' => ['ec5_348']]);
-            }
+        //create project logo avatar if clone is successful
+        $avatarCreator = new ProjectAvatarService();
+        $wasAvatarCreated = $avatarCreator->generate($clonedProject->ref, $clonedProject->name);
+        if (!$wasAvatarCreated) {
+            $request->flash();
+            return Redirect::to('myprojects/clone')->withErrors(['avatar' => ['ec5_348']]);
         }
-        // Success
+        //update logo_url as we are creating an avatar placeholder
+        Project::where('id', $clonedProjectId)->update([
+            'logo_url' => $clonedProject->ref
+        ]);
+        //success
         return Redirect::to('myprojects')->with('message', 'ec5_200');
     }
-
-    /**
-     * Update the project in db
-     *
-     * @param $input
-     * @param bool $updateProjectStructuresTable
-     * @return bool
-     */
-    private function doUpdate($input)
-    {
-        // Update the Definition and Extra data
-        $this->project->updateProjectDetails($input);
-
-        // Update in the database
-        return $this->updateRep->updateProject($this->project, $input, false);
-    }
-
 }

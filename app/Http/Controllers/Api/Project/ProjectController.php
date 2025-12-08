@@ -2,135 +2,239 @@
 
 namespace ec5\Http\Controllers\Api\Project;
 
-use ec5\Http\Controllers\Api\ApiResponse as ApiResponse;
-use ec5\Http\Controllers\ProjectControllerBase;
-use Illuminate\Http\Request;
-use ec5\Http\Validation\Entries\Upload\RuleCanBulkUpload;
-use ec5\Models\Eloquent\Project;
-use ec5\Repositories\QueryBuilder\Stats\Entry\StatsRepository as EntryStatsRepository;
-use Exception;
 use Auth;
+use ec5\Http\Validation\Entries\Upload\RuleCanBulkUpload;
+use ec5\Http\Validation\Project\RuleName;
+use ec5\Models\Project\Project;
+use ec5\Models\Project\ProjectStats;
+use ec5\Services\Media\MediaCounterService;
+use ec5\Traits\Requests\RequestAttributes;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Str;
+use Response;
+use Throwable;
 
-class ProjectController extends ProjectControllerBase
+class ProjectController
 {
+    use RequestAttributes;
 
     /**
-     * @param ApiResponse $apiResponse
-     * @return \Illuminate\Http\JsonResponse
+     * @param ProjectStats $projectStats
+     * @return JsonResponse
+     * @throws Throwable
      */
-    public function show(ApiResponse $apiResponse, EntryStatsRepository $entryStatsRepository)
+    public function show(ProjectStats $projectStats)
     {
-        $data = $this->requestedProject->getProjectDefinition()->getData();
+        $data = $this->requestedProject()->getProjectDefinition()->getData();
 
-        //HACK:, we needed to expose the creation date of a project at a later stage and this was the laziest way ;)
-        $data['project']['created_at'] = $this->requestedProject->getCreatedAt();
+        //HACK:, we needed to expose the creation date of a project at a later stage, and this was the laziest way ;)
+        $data['project']['created_at'] = $this->requestedProject()->getCreatedAt();
 
-        //HACK:, we needed to expose the can_bulk_upload property of a project at a later stage and this was the laziest way ;)
-        $data['project']['can_bulk_upload'] = $this->requestedProject->getCanBulkUpload();
+        //HACK:, we needed to expose the can_bulk_upload property of a project at a later stage, and this was the laziest way ;)
+        $data['project']['can_bulk_upload'] = $this->requestedProject()->getCanBulkUpload();
 
-        //HACK:, we needed to expose the project homepage property of a project at a later stage and this was the laziest way ;)
-        $homepage = config('app.url') . '/project/' . $this->requestedProject->slug;
+        //HACK:, we needed to expose the project homepage property of a project at a later stage, and this was the laziest way ;)
+        $homepage = config('app.url') . '/project/' . $this->requestedProject()->slug;
         $data['project']['homepage'] = $homepage;
 
-        $apiResponse->setData($data);
 
-        $projectExtra = $this->requestedProject->getProjectExtra()->getData();
+        $projectExtra = $this->requestedProject()->getProjectExtra()->getData();
 
         // Update the project stats counts
-        //todo: (a try catch need in case it does not work?)
-        $entryStatsRepository->updateProjectEntryStats($this->requestedProject);
+        $projectStats->updateProjectStats($this->requestedProject()->getId());
 
-        $userName = '';
-        $userAvatar = '';
         try {
             $userName = Auth::user()->name;
             $userAvatar = Auth::user()->avatar;
             //passwordless and apple auth do not get avatar, set placeholder
             if (empty($userAvatar)) {
-                $userAvatar = env('APP_URL') . '/images/avatar-placeholder.png';
+                $userAvatar = config('app.url') . '/images/avatar-placeholder.png';
             }
-        } catch (Exception $e) {
+        } catch (Throwable) {
             //
             $userName = 'User';
-            $userAvatar = env('APP_URL') . '/images/avatar-placeholder.png';
+            $userAvatar = config('app.url') . '/images/avatar-placeholder.png';
         }
 
-        $apiResponse->setMeta([
+        $meta = [
             'project_extra' => $projectExtra,
             'project_user' => [
                 'name' => $userName,
                 'avatar' => $userAvatar,
-                'role' => $this->requestedProjectRole->getRole(),
-                'id' => $this->requestedProjectRole->getUser()->id ?? null,
+                'role' => $this->requestedProjectRole()->getRole(),
+                'id' => $this->requestedProjectRole()->getUser()->id ?? null,
             ],
-            'project_mapping' => $this->requestedProject->getProjectMapping()->getData(),
-            'project_stats' => array_merge($this->requestedProject->getProjectStats()->getData(), [
-                'structure_last_updated' => $this->requestedProject->getProjectStats()->getProjectStructureLastUpdated()
+            'project_mapping' => $this->requestedProject()->getProjectMapping()->getData(),
+            'project_stats' => array_merge($this->requestedProject()->getProjectStats()->toArray(), [
+                'structure_last_updated' => $this->requestedProject()->getProjectStats()->structure_last_updated
             ])
-        ]);
+        ];
 
-        return $apiResponse->toJsonResponse('200', $options = 0);
+        return Response::apiData($data, $meta);
     }
 
     /**
-     * @param ApiResponse $apiResponse
-     * @return \Illuminate\Http\JsonResponse
+     * @param ProjectStats $projectStats
+     * @return JsonResponse
+     * @throws Throwable
      */
-    public function export(ApiResponse $apiResponse, EntryStatsRepository $entryStatsRepository)
+    public function export(ProjectStats $projectStats)
     {
-        $data = $this->requestedProject->getProjectDefinition()->getData();
+        $data = $this->requestedProject()->getProjectDefinition()->getData();
         //todo HACK!!!, we needed to expose the creation date of a project at a later stage and this was the laziest way ;)
-        $data['project']['created_at'] = $this->requestedProject->getCreatedAt();
+        $data['project']['created_at'] = $this->requestedProject()->getCreatedAt();
 
         //todo HACK!!!, we needed to expose the project homepage property of a project at a later stage and this was the laziest way ;)
-        $homepage = config('app.url') . '/project/' . $this->requestedProject->slug;
+        $homepage = config('app.url') . '/project/' . $this->requestedProject()->slug;
         $data['project']['homepage'] = $homepage;
-
-        $apiResponse->setData($data);
 
         //todo: update project stats (a try catch need in case it does not work?)
         // Update the project stats counts
-        $entryStatsRepository->updateProjectEntryStats($this->requestedProject);
-        \Log::info('ProjectController export() calls updateProjectEntryStats()');
+        $projectStats->updateProjectStats($this->requestedProject()->getId());
 
-        $apiResponse->setMeta([
-            'project_mapping' => $this->requestedProject->getProjectMapping()->getData(),
-            'project_stats' => array_merge($this->requestedProject->getProjectStats()->getData(), [
-                'structure_last_updated' => $this->requestedProject->getProjectStats()->getProjectStructureLastUpdated()
+        $meta = [
+            'project_mapping' => $this->requestedProject()->getProjectMapping()->getData(),
+            'project_stats' => array_merge($this->requestedProject()->getProjectStats()->toArray(), [
+                'structure_last_updated' => $this->requestedProject()->getProjectStats()->structure_last_updated
             ])
-        ]);
+        ];
 
-        return $apiResponse->toJsonResponse('200', $options = 0);
+        return Response::apiData($data, $meta);
     }
 
-    public function updateCanBulkUpload(Request $request, ApiResponse $apiResponse, RuleCanBulkUpload $validator)
+    public function search($name = '')
     {
+        $hits = [];
+        $projects = [];
 
-        if (!$this->requestedProjectRole->canEditProject()) {
+        // Check if the 'exact' query parameter is present and true
+        $exactMatch = request()->query('exact', false);
+
+        if (!empty($name)) {
+            if ($exactMatch) {
+                // Perform exact match search
+                $hits = Project::matches($name, ['name', 'slug', 'access', 'ref']);
+            } else {
+                // Perform starts-with search
+                $hits = Project::startsWith($name, ['name', 'slug', 'access', 'ref']);
+            }
+        }
+
+        // Build the JSON API response
+        foreach ($hits as $hit) {
+            $data['type'] = 'project';
+            $data['id'] = $hit->ref;
+            $data['project'] = $hit;
+            $projects[] = $data;
+        }
+
+        return Response::apiData($projects);
+    }
+
+    public function exists(RuleName $ruleName, $name)
+    {
+        $data['name'] = $name;
+        $data['slug'] = Str::slug($name, '-');
+        // Run validation
+        $ruleName->validate($data);
+
+        $data = [
+            'type' => 'exists',
+            'id' => $data['slug'],
+            'exists' => $ruleName->hasErrors()
+        ];
+
+        return Response::apiData($data);
+    }
+
+    public function version($slug)
+    {
+        // If no project found, bail out
+        $version = Project::version($slug);
+        if (!$version) {
+            $errors = ['version' => ['ec5_11']];
+            return Response::apiErrorCode('500', $errors);
+        }
+
+        //return updated_at as the version
+        $data = [
+            'type' => 'project-version',
+            'id' => $slug,
+            'attributes' => [
+                'structure_last_updated' => $version,//legacy
+                'version' => (string)strtotime($version)
+            ]
+
+        ];
+        return Response::apiData($data);
+    }
+
+    public function countersEntries($slug)
+    {
+        $projectStats = ProjectStats::where('project_id', $this->requestedProject()->getId())
+            ->select('*') // Select all columns
+            ->first();
+        $totalBranches = 0;
+        $branchCounts = json_decode($projectStats->branch_counts, true);
+        foreach ($branchCounts as $branchCount) {
+            $totalBranches += $branchCount['count'];
+        }
+
+        $data = [
+            'type' => 'counters-project-entries',
+            'id' => $slug,
+            'counters' => [
+                'total' => $totalBranches + $projectStats->total_entries,
+                'entries' => $projectStats->total_entries,
+                'branch_entries' => $totalBranches
+            ]
+        ];
+        return Response::apiData($data);
+    }
+
+    public function countersMedia()
+    {
+        $mediaCounterService = new MediaCounterService();
+
+        $counters = $mediaCounterService->computeMediaMetrics(
+            $this->requestedProject()->getId(),
+            $this->requestedProject()->ref
+        );
+
+        //adjust total bytes in project stats, in case it was not updated correctly
+        ProjectStats::where('project_id', $this->requestedProject()->getId())
+            ->update(['total_bytes' => $counters['sizes']['total_bytes']]);
+
+        return Response::apiData($counters);
+    }
+
+    public function updateCanBulkUpload(RuleCanBulkUpload $ruleCanBulkUpload)
+    {
+        if (!$this->requestedProjectRole()->canEditProject()) {
             $errors = ['ec5_91'];
-            return $apiResponse->errorResponse(400, ['errors' => $errors]);
+            return Response::apiErrorCode(400, ['errors' => $errors]);
         }
 
         // Get request params
-        $params = $request->all();
+        $params = request()->all();
 
         //validate params
-        $validator->validate($params);
-        if ($validator->hasErrors()) {
-            return $apiResponse->errorResponse(400, $validator->errors());
+        $ruleCanBulkUpload->validate($params);
+        if ($ruleCanBulkUpload->hasErrors()) {
+            return Response::apiErrorCode(400, $ruleCanBulkUpload->errors());
         }
 
         $canBulkUpload = $params['can_bulk_upload'];
         try {
-            $project = Project::find($this->requestedProject->getId());
+            $project = Project::find($this->requestedProject()->getId());
             $project->can_bulk_upload = $canBulkUpload;
             $project->save();
-        } catch (\Exception $e) {
+        } catch (Throwable) {
             $errors = ['ec5_361'];
-            return $apiResponse->errorResponse(400, ['errors' => $errors]);
+            return Response::apiErrorCode(400, ['errors' => $errors]);
         }
 
-        $apiResponse->setData(['message' => trans('status_codes.ec5_362')]);
-        return $apiResponse->toJsonResponse(200);
+        $data = ['message' => config('epicollect.codes.ec5_362')];
+        return Response::apiData($data);
     }
 }

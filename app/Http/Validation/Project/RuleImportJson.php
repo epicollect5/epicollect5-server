@@ -6,15 +6,15 @@ use ec5\Http\Validation\ValidationBase;
 
 class RuleImportJson extends ValidationBase
 {
-    protected $rules = [
+    protected array $rules = [
         'data' => 'required',
         'data.type' => 'required|in:project',
         'data.project' => 'required|array'
     ];
 
-    function __construct()
+    public function __construct()
     {
-        $projectJsonIdSize = config('ec5Limits.project.id.size');
+        $projectJsonIdSize = config('epicollect.limits.project.id.size');
         $this->rules['data.id'] = 'required|size:' . $projectJsonIdSize;
 
         $this->messages['data.required'] = 'ec5_269';

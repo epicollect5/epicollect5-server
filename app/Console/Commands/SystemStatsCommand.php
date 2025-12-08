@@ -2,49 +2,56 @@
 
 namespace ec5\Console\Commands;
 
+use ec5\Models\System\SystemStats as SystemStatsModel;
+use ec5\Services\System\BranchEntriesTotalsService;
+use ec5\Services\System\EntriesTotalsService;
+use ec5\Services\System\ProjectsTotalsService;
+use ec5\Services\System\UsersTotalsService;
 use Illuminate\Console\Command;
-
-use ec5\Models\Eloquent\User;
-use ec5\Models\Eloquent\Project;
-use ec5\Models\Eloquent\Entry;
-use ec5\Models\Eloquent\BranchEntry;
-use ec5\Models\Eloquent\SystemStats as SystemStatsModel;
+use Log;
+use Throwable;
 
 class SystemStatsCommand extends Command
 {
     /**
      * The name and signature of the console command.
      *
-     * @var string
      */
-    protected $signature = 'system-stats';
+    protected $signature = 'system:stats {--deployer}';
 
     /**
      * The console command description.
      *
-     * @var string
      */
     protected $description = 'Query system stats (users, projects, entries)';
 
     /**
      * Execute the console command.
      *
-     * @return mixed
      */
-    public function handle()
+    public function handle(): void
     {
-        $systemStatsModel = new SystemStatsModel();
-        $user = new User();
-        $project = new Project();
-        $entry = new Entry();
-        $branchEntry = new BranchEntry();
+        // Check if deployer flag is passed
+        if ($this->option('deployer')) {
+            // Check if the system stats table count is 0
+            if (SystemStatsModel::count() > 0) {
+                $this->info('Skipping stats query command as system_stats table is not empty.');
+                return; // Skip stats if table is not empty
+            }
+        }
 
-        //get the daily stats and save to the db
+        $systemStatsModel = new SystemStatsModel();
+        $usersTotals = new UsersTotalsService();
+        $projectsTotals = new ProjectsTotalsService();
+        $entry = new EntriesTotalsService();
+        $branchEntry = new BranchEntriesTotalsService();
+
+        //get the daily stats and save it to the db
         try {
             $entriesStats = $entry->getStats();
             $branchEntriesStats = $branchEntry->getStats();
-            $userStats = $user->getStats();
-            $projectStats = $project->getStats();
+            $userStats = $usersTotals->getStats();
+            $projectStats = $projectsTotals->getStats();
 
             $systemStatsModel->user_stats = json_encode($userStats);
             $systemStatsModel->project_stats = json_encode($projectStats);
@@ -52,8 +59,10 @@ class SystemStatsCommand extends Command
             $systemStatsModel->branch_entries_stats = json_encode($branchEntriesStats);
 
             $systemStatsModel->save();
-        } catch (\Exception $e) {
-            \Log::error('Failed to fetch system stats', ['exception' => $e]);
+
+            $this->info('System stats query successful.');
+        } catch (Throwable $e) {
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
         }
     }
 }

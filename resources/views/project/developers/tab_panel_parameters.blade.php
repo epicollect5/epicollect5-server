@@ -61,7 +61,7 @@
 
         {{--loop inputs in order--}}
         @foreach($projectExtra['forms'][$form['details']['ref']]['inputs'] as $index => $inputRef)
-            @if ($projectExtra['inputs'][$inputRef]['data']['type'] == Config::get('ec5Strings.inputs_type.branch'))
+            @if ($projectExtra['inputs'][$inputRef]['data']['type'] == config('epicollect.strings.inputs_type.branch'))
                 <tr>
                     <th>branch</th>
                     <th>{{$projectExtra['inputs'][$inputRef]['data']['question']}}</th>
@@ -90,7 +90,8 @@
             <th>mapping</th>
             <th>
                 {{ $mapping['name'] }}
-                @if ($mapping['is_default']) <em>(default)</em>
+                @if ($mapping['is_default'])
+                    <em>(default)</em>
                 @endif
             </th>
         </tr>
@@ -111,7 +112,8 @@
 
 
 <p>
-    <a class="btn btn-action btn-sm pull-right" href="{{ url('/myprojects/'.$project->slug.'/download-structure')}}">
+    <a class="btn btn-action btn-sm pull-right"
+       href="{{ url('/myprojects/'.$project->slug.'/download-project-definition')}}">
         <i class="material-icons">archive</i>
         {{trans('site.download_project_definition')}}
     </a>

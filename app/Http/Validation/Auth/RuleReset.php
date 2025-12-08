@@ -8,8 +8,8 @@ use League\Csv\Reader;
 
 class RuleReset extends ValidationBase
 {
-    protected $rules = [
-        'password' =>'required|string|min:10|confirmed|regex:/^[ A-Za-z0-9_@.\/#!?£&+$%^*-]*$/',
+    protected array $rules = [
+        'password' => 'required|string|min:10|confirmed|regex:/^[ A-Za-z0-9_@.\/#!?£&+$%^*-]*$/',
     ];
 
     public function __construct()
@@ -24,12 +24,12 @@ class RuleReset extends ValidationBase
         $password = $inputs['password'];
 
         //password cannot be email
-        if(strtolower($email) === strtolower($password)) {
+        if (strtolower($email) === strtolower($password)) {
             $this->addAdditionalError('password', 'ec5_36');
         }
 
         //cannot have "epicollect"
-        if(Str::contains(strtolower($password), 'epicollect')) {
+        if (Str::contains(strtolower($password), 'epicollect')) {
             $this->addAdditionalError('password', 'ec5_377');
         }
 
@@ -37,7 +37,7 @@ class RuleReset extends ValidationBase
         $reader = Reader::createFromPath(public_path() . '/csv/repetitive-passwords.csv', 'r');
         $records = $reader->getRecords();
         foreach ($records as $offset => $record) {
-            if($record[0] === $password){
+            if ($record[0] === $password) {
                 $this->addAdditionalError('password', 'ec5_377');
                 break;
             }
@@ -47,7 +47,7 @@ class RuleReset extends ValidationBase
         $reader = Reader::createFromPath(public_path() . '/csv/sequential-passwords.csv', 'r');
         $records = $reader->getRecords();
         foreach ($records as $offset => $record) {
-            if($record[0] === $password){
+            if ($record[0] === $password) {
                 $this->addAdditionalError('password', 'ec5_377');
                 break;
             }
@@ -57,7 +57,7 @@ class RuleReset extends ValidationBase
         $reader = Reader::createFromPath(public_path() . '/csv/words-passwords.csv', 'r');
         $records = $reader->getRecords();
         foreach ($records as $offset => $record) {
-            if($record[0] === $password){
+            if ($record[0] === $password) {
                 $this->addAdditionalError('password', 'ec5_377');
                 break;
             }
@@ -68,7 +68,7 @@ class RuleReset extends ValidationBase
         $reader = Reader::createFromPath(public_path() . '/csv/common-passwords.csv', 'r');
         $records = $reader->getRecords();
         foreach ($records as $offset => $record) {
-            if($record[0] === $password){
+            if ($record[0] === $password) {
                 $this->addAdditionalError('password', 'ec5_377');
                 break;
             }

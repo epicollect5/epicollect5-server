@@ -3,12 +3,12 @@
 namespace ec5\Http\Validation\Project;
 
 use ec5\Http\Validation\ValidationBase;
-use Config;
+use ec5\Models\User\User;
 
 class RuleSwitchUserRole extends ValidationBase
 {
-    protected $rules = [
-        'email' => 'required|email'
+    protected array $rules = [
+        'email' => 'required|email:filter'
     ];
 
     /**
@@ -21,23 +21,17 @@ class RuleSwitchUserRole extends ValidationBase
         $this->messages['in'] = 'ec5_98';
 
         // Allowed roles that can be added for a user (note: 'creator' is not a role that can be assigned after project creation)
-        $roles = Config::get('ec5Permissions.projects.roles.creator');
-        $this->rules['currentRole'] = 'required|in:' . implode($roles, ',');
-        $this->rules['newRole'] = 'required|in:' . implode($roles, ',');
+        $roles = config('epicollect.permissions.projects.roles.creator');
+        $this->rules['currentRole'] = 'required|in:' . implode(',', $roles);
+        $this->rules['newRole'] = 'required|in:' . implode(',', $roles);
 
     }
 
     /**
      * Additional validation checks that a user is allowed to change another user's role
      * We compare the new role and the existing role (if there is one), against the admin user's
-     *
-     * @param $adminUser
-     * @param $user
-     * @param $adminUserRole
-     * @param $newUserRole
-     * @param $existingUserRole
      */
-    public function additionalChecks($currentActiveUser, $userToSwitch, $currentActiveUserRole, $userToSwitchNewRole = null, $userToSwitchCurrentRole)
+    public function additionalChecks(User $currentActiveUser, ?User $userToSwitch, ?string $currentActiveUserRole, ?string $userToSwitchNewRole, ?string $userToSwitchCurrentRole): void
     {
         // We must have at least one role supplied
         if (!($userToSwitchNewRole || $userToSwitchCurrentRole)) {
@@ -53,7 +47,7 @@ class RuleSwitchUserRole extends ValidationBase
         }
 
         // $currentActiveUser must have a valid role
-        if (!is_array(Config::get('ec5Permissions.projects.roles.' . $currentActiveUserRole))) {
+        if (!is_array(config('epicollect.permissions.projects.roles.' . $currentActiveUserRole))) {
             $this->errors['user'] = ['ec5_91'];
             return;
         }
@@ -62,7 +56,7 @@ class RuleSwitchUserRole extends ValidationBase
         //CREATOR can switch any role (aside from CREATOR)
         //MANAGER can switch curator and collector users only
         if ($userToSwitch) {
-            if (!in_array($userToSwitchNewRole, Config::get('ec5Permissions.projects.roles.' . $currentActiveUserRole))) {
+            if (!in_array($userToSwitchNewRole, config('epicollect.permissions.projects.roles.' . $currentActiveUserRole))) {
                 $this->errors['user'] = ['ec5_91'];
                 return;
             }
@@ -70,9 +64,8 @@ class RuleSwitchUserRole extends ValidationBase
             /**
              * if current user is a manager, he cannot switch another manager role
              */
-            if (!in_array($userToSwitchCurrentRole, Config::get('ec5Permissions.projects.roles.' . $currentActiveUserRole))) {
+            if (!in_array($userToSwitchCurrentRole, config('epicollect.permissions.projects.roles.' . $currentActiveUserRole))) {
                 $this->errors['user'] = ['ec5_91'];
-                return;
             }
         }
     }

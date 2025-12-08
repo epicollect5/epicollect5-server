@@ -4,9 +4,12 @@ namespace ec5\Http\Middleware;
 
 use Illuminate\Support\Facades\Auth;
 use Closure;
+use ec5\Traits\Middleware\MiddlewareTools;
+use Response;
 
-class AdminAuthenticate extends MiddlewareBase
+class AdminAuthenticate
 {
+    use MiddlewareTools;
 
     /*
     |--------------------------------------------------------------------------
@@ -19,22 +22,16 @@ class AdminAuthenticate extends MiddlewareBase
 
     /**
      * Handle an incoming request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
-     * @param  string|null  $guard
-     * @return mixed
      */
     public function handle($request, Closure $next, $guard = null)
     {
-
         //todo: in development ignore middleware for json requests (system stats dashboard)
         // ...
 
         if (Auth::guard($guard)->guest()) {
             if ($this->isJsonRequest($request)) {
                 $errors = ['auth' => ['ec5_219']];
-                return $this->apiResponse->errorResponse(404, $errors);
+                return Response::apiErrorCode(404, $errors);
             } else {
                 return redirect()->guest('login/admin');
             }

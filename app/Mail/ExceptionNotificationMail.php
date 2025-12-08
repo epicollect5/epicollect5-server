@@ -8,7 +8,8 @@ use Illuminate\Queue\SerializesModels;
 
 class ExceptionNotificationMail extends Mailable
 {
-    use Queueable, SerializesModels;
+    use Queueable;
+    use SerializesModels;
 
     public $exceptionMessage;
 
@@ -26,12 +27,10 @@ class ExceptionNotificationMail extends Mailable
 
     /**
      * Build the message.
-     *
-     * @return $this
      */
-    public function build()
+    public function build(): static
     {
-        return $this->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'))
+        return $this->from(config('mail.from.address'), config('mail.from.name'))
             ->subject('Server Exception')
             ->view('emails.exception_notification');
     }

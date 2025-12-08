@@ -2,28 +2,31 @@
 
 namespace ec5\Exceptions;
 
-use ec5\Traits\Requests\JsonRequest;
+use ec5\Http\Middleware\PreventRequestsDuringMaintenance;
+use ec5\Traits\Middleware\MiddlewareTools;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Http\Exceptions\ThrottleRequestsException;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Exception;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
-use Psr\Log\LoggerInterface;
 use Illuminate\Session\TokenMismatchException;
-use ec5\Exceptions\UserNotVerifiedException;
 use Redirect;
-use App;
-
-use ec5\Http\Controllers\Api\ApiResponse;
+use Throwable;
 
 class Handler extends ExceptionHandler
 {
-    use JsonRequest;
+    use MiddlewareTools;
 
     /**
      * A list of the exception types that should not be reported.
@@ -37,15 +40,18 @@ class Handler extends ExceptionHandler
         ValidationException::class,
     ];
 
-    /**
-     * @var ApiResponse
-     */
-    protected $apiResponse;
 
-    public function __construct(LoggerInterface $log, ApiResponse $apiResponse)
+    public function __construct()
     {
-        $this->apiResponse = $apiResponse;
         parent::__construct(app());
+    }
+
+    /**
+     * Convert a validation exception into a JSON response.
+     */
+    protected function invalidJson($request, ValidationException $exception): JsonResponse
+    {
+        return response()->json($exception->errors(), $exception->status);
     }
 
     /**
@@ -53,10 +59,9 @@ class Handler extends ExceptionHandler
      *
      * This is a great spot to send exceptions to Sentry, Bugsnag, etc.
      *
-     * @param  \Exception $e
-     * @return void
+     * @throws Throwable
      */
-    public function report(Exception $e)
+    public function report(Throwable $e): void
     {
         parent::report($e);
     }
@@ -64,40 +69,101 @@ class Handler extends ExceptionHandler
     /**
      * Render an exception into an HTTP response.
      *
-     * @param \Illuminate\Http\Request $request
-     * @param Exception $e
-     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse|\Illuminate\Http\Response|\Symfony\Component\HttpFoundation\Response
+     * @throws Throwable
      */
-    public function render($request, Exception $e)
+    public function render($request, Throwable $e): \Illuminate\Http\Response|JsonResponse|\Symfony\Component\HttpFoundation\Response|RedirectResponse
     {
+        /**
+         * Handle Maintenance mode  -> HttpException with 503 status code
+         * @see PreventRequestsDuringMaintenance
+         */
+        if ($e instanceof HttpException && $e->getStatusCode() === 503) {
+            if (app()->isDownForMaintenance()) {
+                if ($this->isJsonRequest($request)) {
+                    //let the preflight request go through in maintenance mode (avoid CORS issues)
+                    if ($request->isMethod('OPTIONS')) {
+                        return response()->json([], 200, []);
+                    }
+
+                    //post request from the formbuilder route?
+                    if ($request->isMethod('POST')) {
+                        // Find the matching route
+                        $matchingRoute = Route::getRoutes()->match($request);
+                        // Get the route name
+                        try {
+                            $routeName = $matchingRoute->getName();
+                            if ($routeName === 'formbuilder-store') {
+                                //tell user to export form(s) and retry later
+                                $errors = ['maintenance.mode' => ['ec5_404']];
+                                return Response::apiErrorCode(404, $errors);
+                            }
+                        } catch (Throwable $e) {
+                            //if route is not found, ignore and just log
+                            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
+                        }
+                    }
+                    //any other json request, standard maintenance message
+                    $errors = ['maintenance.mode' => ['ec5_252']];
+                    return Response::apiErrorCode(404, $errors);
+                }
+            }
+        }
 
         // Handle not found exceptions
         if ($e instanceof NotFoundHttpException) {
-
-            //in production, redirect all pages not found to home page
-            if (App::environment() === 'production') {
-                return redirect()->route('home');
-            }
-
-            //in development, return a 422 error for debugging
-            return $this->errorResponse($request, 'page not found exception', 'ec5_219', 422);
+            return $this->middlewareErrorResponse($request, 'page not found exception', 'ec5_219', 422);
         }
 
         // Handle method not allowed exceptions
         if ($e instanceof MethodNotAllowedHttpException) {
-            return $this->errorResponse($request, 'method not allowed exception', 'ec5_219', 422);
+            return $this->middlewareErrorResponse($request, 'method not allowed exception', 'ec5_219', 422);
         }
 
         // Handle token mismatch exceptions
         if ($e instanceof TokenMismatchException) {
-            // todo: redirect to login?
-            return $this->errorResponse($request, 'csrf exception', 'ec5_116', 422);
+            //post request?
+            if ($request->isMethod('POST')) {
+                // Check if the request is coming from the formbuilder store route
+                $routeName = $request->route() ? $request->route()->getName() : null;
+                if ($routeName === 'formbuilder-store') {
+                    // Return a session expired response for the formbuilder store route, better UX
+                    return $this->middlewareErrorResponse($request, 'csrf exception', 'ec5_402', 422);
+                }
+                if ($routeName === 'post-project-settings') {
+                    // Return a session expired response for the project-settings route, better UX
+                    return $this->middlewareErrorResponse($request, 'csrf exception', 'ec5_405', 422);
+                }
+                if ($routeName === 'post-project-details') {
+                    // Return a session expired response for the project-details route, better UX
+                    return $this->middlewareErrorResponse($request, 'csrf exception', 'ec5_405', 422);
+                }
+            }
+            return $this->middlewareErrorResponse($request, 'csrf exception', 'ec5_116', 422);
         }
 
         // Handle user not verified exceptions
         if ($e instanceof UserNotVerifiedException) {
             // todo: redirect to send verification email?
-            return $this->errorResponse($request, 'user not verified exception', 'ec5_374', 422);
+            return $this->middlewareErrorResponse($request, 'user not verified exception', 'ec5_374', 422);
+        }
+
+        if ($e instanceof ThrottleRequestsException && $e->getStatusCode() === 429) {
+            // Find the matching route
+            $matchingRoute = Route::getRoutes()->match($request);
+            // Get the route name
+            try {
+                $routeName = $matchingRoute->getName();
+                //is it a passwordless attempt from the web?
+                if ($routeName === 'passwordless-token-web') {
+                    //redirect users to login page with error notification
+                    return redirect()->route('login')->withErrors(['ec5_255']);
+                }
+            } catch (Throwable $e) {
+                //if route is not found, ignore and just log
+                Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
+            }
+
+            return $this->middlewareErrorResponse($request, 'rate-limiter', 'ec5_255', 429);
         }
 
         return parent::render($request, $e);
@@ -106,13 +172,14 @@ class Handler extends ExceptionHandler
     /**
      * Convert an authentication exception into an unauthenticated response.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Illuminate\Auth\AuthenticationException  $exception
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @param AuthenticationException $exception
+     * @return Response|JsonResponse|RedirectResponse
+     * @throws BindingResolutionException
      */
-    protected function unauthenticated($request, AuthenticationException $exception)
+    protected function unauthenticated($request, AuthenticationException $exception): Response|JsonResponse|RedirectResponse
     {
-        return $this->errorResponse($request, 'unauthenticated', 'ec5_70', 422);
+        return $this->middlewareErrorResponse($request, 'unauthenticated', 'ec5_70', 422);
     }
 
     /**
@@ -120,15 +187,15 @@ class Handler extends ExceptionHandler
      * @param $type
      * @param $errorCode
      * @param $httpStatusCode
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse|\Illuminate\Http\Response
+     * @return Response|JsonResponse|RedirectResponse
+     * @throws BindingResolutionException
      */
-    private function errorResponse(Request $request, $type, $errorCode, $httpStatusCode)
+    private function middlewareErrorResponse(Request $request, $type, $errorCode, $httpStatusCode): \Illuminate\Http\Response|JsonResponse|RedirectResponse
     {
-
         $errors = [$type => [$errorCode]];
 
         if ($this->isJsonRequest($request)) {
-            return $this->apiResponse->errorResponse($httpStatusCode, $errors);
+            return Response::apiErrorCode($httpStatusCode, $errors);
         }
 
         if ($errorCode == 'ec5_77') {
@@ -137,6 +204,4 @@ class Handler extends ExceptionHandler
 
         return response()->make(view('errors.gen_error')->withErrors([$errorCode]), $httpStatusCode);
     }
-
-
 }

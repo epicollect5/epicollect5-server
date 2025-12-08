@@ -30,7 +30,6 @@ window.EC5.project_users = window.EC5.project_users || {};
         $.when(window.EC5.project_users.getTotalsByRole(projectSlug)).then(function (counts) {
             Object.keys(counterHandlers).forEach(function (k) {
                 counterHandlers[k].text(counts[k]);
-                console.log(counts[k]);
                 total += counts[k] || 0;
             });
             counterHandlers.all.text(total);

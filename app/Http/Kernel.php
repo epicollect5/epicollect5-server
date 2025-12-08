@@ -2,20 +2,42 @@
 
 namespace ec5\Http;
 
+use ec5\Http\Middleware\AdminAuthenticate;
+use ec5\Http\Middleware\Authenticate;
+use ec5\Http\Middleware\BasicAuthenticate;
+use ec5\Http\Middleware\EncryptCookies;
 use ec5\Http\Middleware\IpMiddleware;
+use ec5\Http\Middleware\OverrideDiskForTesting;
+use ec5\Http\Middleware\PreventRequestsDuringMaintenance;
+use ec5\Http\Middleware\ProjectPermissions;
+use ec5\Http\Middleware\ProjectPermissionsApi;
+use ec5\Http\Middleware\ProjectPermissionsBulkUpload;
+use ec5\Http\Middleware\ProjectPermissionsOpen;
+use ec5\Http\Middleware\ProjectPermissionsRequiredRole;
+use ec5\Http\Middleware\ProjectPermissionsViewerRole;
+use ec5\Http\Middleware\RedirectIfAuthenticated;
+use ec5\Http\Middleware\SuperAdminAuthenticate;
+use ec5\Http\Middleware\Unverified;
+use ec5\Http\Middleware\UserVerification;
+use ec5\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
+use Illuminate\Routing\Middleware\ThrottleRequests;
+use Illuminate\Session\Middleware\StartSession;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class Kernel extends HttpKernel
 {
     /**
      * The application's global HTTP middleware stack.
      *
-     * These middleware are run during every request to your application.
+     * This middleware is run during every request to your application.
      *
      * @var array
      */
     protected $middleware = [
-        \ec5\Http\Middleware\CheckForMaintenanceMode::class
+        //imp: without the class below, built in maintenance mode will not work
+        PreventRequestsDuringMaintenance::class,
     ];
 
     /**
@@ -25,18 +47,18 @@ class Kernel extends HttpKernel
      */
     protected $middlewareGroups = [
         'web' => [
-            \ec5\Http\Middleware\EncryptCookies::class,
-            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
-            \Illuminate\Session\Middleware\StartSession::class,
-            \Illuminate\View\Middleware\ShareErrorsFromSession::class,
-            \ec5\Http\Middleware\VerifyCsrfToken::class
+            EncryptCookies::class,
+            AddQueuedCookiesToResponse::class,
+            StartSession::class,
+            ShareErrorsFromSession::class,
+            VerifyCsrfToken::class
         ],
         'api_internal' => [
-            \ec5\Http\Middleware\EncryptCookies::class,
-            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
-            \Illuminate\Session\Middleware\StartSession::class,
-            \Illuminate\View\Middleware\ShareErrorsFromSession::class,
-            \ec5\Http\Middleware\VerifyCsrfToken::class
+            EncryptCookies::class,
+            AddQueuedCookiesToResponse::class,
+            StartSession::class,
+            ShareErrorsFromSession::class,
+            VerifyCsrfToken::class
         ],
         'api_external' => []
     ];
@@ -48,20 +70,22 @@ class Kernel extends HttpKernel
      *
      * @var array
      */
-    protected $routeMiddleware = [
-        'auth' => \ec5\Http\Middleware\Authenticate::class,
-        'unverified' => \ec5\Http\Middleware\Unverified::class,
-        'guest' => \ec5\Http\Middleware\RedirectIfAuthenticated::class,
-        'throttle' => \ec5\Http\Middleware\ApiThrottleRequests::class,
-        'auth.verification' => \ec5\Http\Middleware\UserVerification::class,
-        'auth.basic' => \ec5\Http\Middleware\BasicAuthenticate::class,
-        'auth.admin' => \ec5\Http\Middleware\AdminAuthenticate::class,
-        'auth.superadmin' => \ec5\Http\Middleware\SuperAdminAuthenticate::class,
-        'project.permissions' => \ec5\Http\Middleware\ProjectPermissions::class,
-        'project.permissions.required.role' => \ec5\Http\Middleware\ProjectPermissionsRequiredRole::class,
-        'project.permissions.viewer.role' => \ec5\Http\Middleware\ProjectPermissionsViewerRole::class,
-        'project.permissions.api' => \ec5\Http\Middleware\ProjectPermissionsApi::class,
-        'project.permissions.bulk-upload' => \ec5\Http\Middleware\ProjectPermissionsBulkUpload::class,
-        'ip.filtering' => \ec5\Http\Middleware\IpMiddleware::class
+    protected $middlewareAliases = [
+        'auth' => Authenticate::class,
+        'unverified' => Unverified::class,
+        'guest' => RedirectIfAuthenticated::class,
+        'throttle' => ThrottleRequests::class,
+        'auth.verification' => UserVerification::class,
+        'auth.basic' => BasicAuthenticate::class,
+        'auth.admin' => AdminAuthenticate::class,
+        'auth.superadmin' => SuperAdminAuthenticate::class,
+        'project.permissions' => ProjectPermissions::class,
+        'project.permissions.open' => ProjectPermissionsOpen::class,
+        'project.permissions.required.role' => ProjectPermissionsRequiredRole::class,
+        'project.permissions.viewer.role' => ProjectPermissionsViewerRole::class,
+        'project.permissions.api' => ProjectPermissionsApi::class,
+        'project.permissions.bulk-upload' => ProjectPermissionsBulkUpload::class,
+        'ip.filtering' => IpMiddleware::class,
+        'override.disks' => OverrideDiskForTesting::class
     ];
 }

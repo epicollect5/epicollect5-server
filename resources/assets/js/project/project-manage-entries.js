@@ -3,10 +3,9 @@
 $(document).ready(function () {
 
     // Entries Limits
-
     var entriesTable = $('.manage-entries-limits__table');
     var limitsForm = $('.page-manage-entries #limits-form');
-    var limtsFormUpdateBtn = $('.page-manage-entries .limits-form__update-btn');
+    var limitsFormUpdateBtn = $('.page-manage-entries .limits-form__update-btn');
     var bulkUploadBtns = $('.page-manage-entries .bulk-upload-btns');
     var projectSlug = bulkUploadBtns.data('project-slug');
     var canBulkUploadURL = window.EC5.SITE_URL + '/api/internal/can-bulk-upload/' + projectSlug;
@@ -25,11 +24,11 @@ $(document).ready(function () {
         }
     });
 
-    limtsFormUpdateBtn.on('click', function () {
-
+    limitsFormUpdateBtn.on('click', function () {
         //clear any toasts
         window.EC5.toast.clear();
-
+        //show overlay
+        window.EC5.overlay.fadeIn();
         //clear any error
         limitsForm.find('.input__set-limit').each(function () {
             var currentCheckbox = $(this);
@@ -41,7 +40,6 @@ $(document).ready(function () {
             currentInputFormGroup.removeClass('has-error has-feedback');
         });
 
-
         var isFormValid = true;
         //check for checked "Set Limit" checkboxes
         limitsForm.find('.input__set-limit:checked').each(function () {
@@ -50,7 +48,6 @@ $(document).ready(function () {
             var currentInput = currentCheckbox.parents('td').next().find('input.input__limit-to');
             var currentInputFormGroup = currentInput.parent();
             var errorFeedback = currentInputFormGroup.find('.form-control-feedback');
-
 
             if (currentInput.val() === '') {
                 currentInputFormGroup.addClass('has-error has-feedback');
@@ -62,15 +59,14 @@ $(document).ready(function () {
         //if form is valid submit
         if (isFormValid) {
             limitsForm.submit();
-        }
-        else {
+        } else {
+            window.EC5.overlay.fadeOut();
             window.EC5.toast.showError('Required fields missing!');
         }
     });
 
     // Entries limits form submit
     limitsForm.on('submit', function (e) {
-
         e.preventDefault();
 
         // Post data
@@ -91,15 +87,18 @@ $(document).ready(function () {
                     }
                 }
             }
+        }).always(function () {
+            window.EC5.overlay.fadeOut();
         });
     });
 
     //Bulk Upload
     bulkUploadBtns.on('click', '.btn', function (e) {
 
-        var selectedOption =  $(this);
+        var selectedOption = $(this);
         //show overlay
         window.EC5.overlay.fadeIn();
+
 
         //post request to change bulk upload settings
         window.EC5.projectUtils.postRequest(canBulkUploadURL, {
@@ -125,4 +124,8 @@ $(document).ready(function () {
             window.EC5.overlay.fadeOut();
         });
     })
+
+    // bulkDeletionBtn.one('click', function (e) {
+    //     window.EC5.overlay.fadeIn();
+    // });
 });

@@ -1,10 +1,14 @@
 <div class="panel panel-default">
     <div class="panel-heading">
         <span>{{ trans('site.clone_project') }}</span>
+        <a href="https://docs.epicollect.net/web-application/clone-project" target="_blank">
+            <i class="material-symbols-outlined">help</i>
+        </a>
     </div>
     <div class="panel-body">
-        
-        <form id="ec5-form" method="POST" action="{{ url('/myprojects/'.$project->slug . '/clone') }}"
+
+        <form id="ec5-form" method="POST"
+              action="{{ url('/myprojects/'.$requestAttributes->requestedProject->slug . '/clone') }}"
               accept-charset="UTF-8" enctype="multipart/form-data">
             {{ csrf_field() }}
             <div id="project-name-form-group" class="form-group @if ($errors->has('name')) has-error @endif">
@@ -13,7 +17,8 @@
                        placeholder="Awesome Project name" value="{{ old('name') }}">
                 <img id="project-loader-gif" src="{{ asset('/images/ajax-loader.gif') }}" class="hidden"/>
                 @if ($errors->has('name'))
-                    <small>{{ $errors->first('name') }}</small> @endif
+                    <small>{{ $errors->first('name') }}</small>
+                @endif
             </div>
             <div class="checkbox">
                 <label>

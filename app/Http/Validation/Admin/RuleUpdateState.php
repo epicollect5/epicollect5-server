@@ -4,8 +4,8 @@ namespace ec5\Http\Validation\Admin;
 
 class RuleUpdateState extends RulePermissionsBase
 {
-    protected $rules = [
+    protected array $rules = [
         'state' => 'required|in:active,disabled'
     ];
-    
+
 }

@@ -2,15 +2,11 @@
 
 namespace ec5\Http\Controllers\Web\Auth;
 
-use Illuminate\Foundation\Auth\AuthenticatesUsers;
-use ec5\Models\Users\User;
-use ec5\Models\Eloquent\UserProvider;
-use Illuminate\Http\Request;
-use Config;
 use Auth;
+use ec5\Models\User\User;
+use ec5\Services\User\UserService;
+use Illuminate\Http\Request;
 use Ldap;
-use Log;
-
 
 class LdapController extends AuthController
 {
@@ -26,10 +22,8 @@ class LdapController extends AuthController
     }
 
     /**
-     * Handle an ldap login request to the application.
+     * Handle a ldap login request to the application.
      *
-     * @param Request $request
-     * @return \Illuminate\Http\Response
      */
     public function authenticate(Request $request)
     {
@@ -57,7 +51,7 @@ class LdapController extends AuthController
             if ($ldapUser) {
                 // Check user exists and is active
                 $userModel = new User();
-                $user = $userModel->findOrCreateLdapUser($ldapUser);
+                $user = UserService::findOrCreateLdapUser($ldapUser);
                 if ($user) {
                     // Login user
                     Auth::login($user, $remember);

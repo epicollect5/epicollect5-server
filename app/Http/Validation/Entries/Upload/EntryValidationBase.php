@@ -2,65 +2,40 @@
 
 namespace ec5\Http\Validation\Entries\Upload;
 
+use ec5\DTO\EntryStructureDTO;
+use ec5\DTO\ProjectDTO;
 use ec5\Http\Validation\ValidationBase;
-use ec5\Http\Validation\Entries\Upload\RuleAnswers as AnswerValidator;
-
-use ec5\Libraries\EC5Logger\EC5Logger;
-use ec5\Models\Projects\Project;
-use ec5\Repositories\QueryBuilder\Entry\Upload\Search\SearchRepository;
-
-use ec5\Models\Entries\EntryStructure;
-
-use Config;
+use ec5\Models\Entries\BranchEntry;
+use ec5\Models\Entries\Entry;
 
 abstract class EntryValidationBase extends ValidationBase
 {
-
     /*
-    |--------------------------------------------------------------------------
-    | EntryHandler
-    |--------------------------------------------------------------------------
-    |
-    | This class contains common functions for entry/branch_entry uploads
-    |
+     * This class contains common functions for entry/branch_entry uploads
     */
 
-    /**
-     * @var AnswerValidator
-     */
-    protected $answerValidator;
+    protected RuleAnswers $ruleAnswers;
 
-    /**
-     * @var
-     */
-    protected $searchRepository;
-
-    /**
-     * @param SearchRepository $searchRepository
-     * @param AnswerValidator $answerValidator
-     */
-    public function __construct(SearchRepository $searchRepository, AnswerValidator $answerValidator)
+    public function __construct(RuleAnswers $ruleAnswers)
     {
-        $this->searchRepository = $searchRepository;
-        $this->answerValidator = $answerValidator;
+        $this->ruleAnswers = $ruleAnswers;
     }
 
     /**
      * Function for additional checks
      *
-     * @param Project $project
-     * @param EntryStructure $entryStructure
+     * @param ProjectDTO $project
+     * @param EntryStructureDTO $entryStructure
      */
-    public abstract function additionalChecks(Project $project, EntryStructure $entryStructure);
+    abstract public function additionalChecks(ProjectDTO $project, EntryStructureDTO $entryStructure);
 
     /**
-     * @param Project $project
-     * @param EntryStructure $entryStructure
-     * @param $inputs - may be form or branch entry inputs
+     * @param ProjectDTO $project
+     * @param EntryStructureDTO $entryStructure
+     * @param $inputs - maybe form or branch entry inputs
      */
-    protected function validateAnswers(Project $project, EntryStructure $entryStructure, $inputs)
+    protected function validateAnswers(ProjectDTO $project, EntryStructureDTO $entryStructure, $inputs): void
     {
-
         $projectExtra = $project->getProjectExtra();
         $entryAnswers = $entryStructure->getAnswers();
 
@@ -69,8 +44,8 @@ abstract class EntryValidationBase extends ValidationBase
 
             $inputType = $projectExtra->getInputDetail($inputRef, 'type');
 
-            // If the input type requires an answer
-            if (!in_array($inputType, Config::get('ec5Enums.inputs_without_answers'))) {
+            // If the input type requires an answer (all but group and readme)
+            if (!in_array($inputType, array_keys(config('epicollect.strings.inputs_without_answers')))) {
                 // Check the answer data exists for this input
                 if (!isset($entryAnswers[$inputRef])) {
                     // If it doesn't, there we have a missing input answer in the upload
@@ -85,15 +60,15 @@ abstract class EntryValidationBase extends ValidationBase
                 $this->validateAnswer($project, $entryStructure, $answerData, $inputRef);
             }
 
-            // If input type is a group, validate each group answer
-            if ($inputType === Config::get('ec5Strings.inputs_type.group')) {
+            // If the input type is a group, validate each group answer
+            if ($inputType === config('epicollect.strings.inputs_type.group')) {
 
                 $groupInputs = $projectExtra->getGroupInputs($entryStructure->getFormRef(), $inputRef);
                 // Loop each group input from the extra structure and validate each answer
                 foreach ($groupInputs as $groupInputRef) {
 
                     $groupInputType = $projectExtra->getInputDetail($groupInputRef, 'type');
-                    if (!in_array($groupInputType, Config::get('ec5Enums.inputs_without_answers'))) {
+                    if (!in_array($groupInputType, array_keys(config('epicollect.strings.inputs_without_answers')))) {
 
                         // Check the answer data exists for this input
                         if (!isset($entryAnswers[$groupInputRef])) {
@@ -115,54 +90,50 @@ abstract class EntryValidationBase extends ValidationBase
     }
 
     /**
-     * @param Project $project
-     * @param EntryStructure $entryStructure
+     * @param ProjectDTO $project
+     * @param EntryStructureDTO $entryStructure
      * @param $answerData
      * @param $inputRef
      */
-    private function validateAnswer(Project $project, EntryStructure $entryStructure, $answerData, $inputRef)
+    private function validateAnswer(ProjectDTO $project, EntryStructureDTO $entryStructure, $answerData, $inputRef): void
     {
-
         $projectExtra = $project->getProjectExtra();
-        $input = $projectExtra->getInputData($inputRef);
 
         // Check this input exists
-        if (count($input) == 0) {
-            EC5Logger::error('Input doesnt exist ' . $inputRef, $project);
-            // Input doesn't exist
+        if (!$projectExtra->inputExists($inputRef)) {
             $this->errors['upload'] = ['ec5_84'];
-            return;
         }
 
         // Validate the answer
-        $this->answerValidator->validate($answerData);
-        if ($this->answerValidator->hasErrors()) {
-            $this->errors = $this->answerValidator->errors();
+        $this->ruleAnswers->validate($answerData);
+        if ($this->ruleAnswers->hasErrors()) {
+            $this->errors = $this->ruleAnswers->errors();
             return;
         }
         // Do additional checks
-        $this->answerValidator->additionalChecks($project, $entryStructure, $answerData, $inputRef, $this->searchRepository);
-        if ($this->answerValidator->hasErrors()) {
-            $this->errors = $this->answerValidator->errors();
-            return;
+        $this->ruleAnswers->additionalChecks($project, $entryStructure, $answerData, $inputRef);
+        if ($this->ruleAnswers->hasErrors()) {
+            $this->errors = $this->ruleAnswers->errors();
         }
     }
 
     /**
-     * @param EntryStructure $entryStructure
+     * @param EntryStructureDTO $entryStructure
      * @param $requestedProjectId
      * @return bool
      */
-    protected function checkCanEdit(EntryStructure $entryStructure, $requestedProjectId)
+    protected function checkCanEdit(EntryStructureDTO $entryStructure, $requestedProjectId): bool
     {
         $entry = $entryStructure->getEntry();
-
-        // Check if we already have this UUID in the database for this projectt
+        // Check if we already have this UUID in the database for this project
         $uuid = $entry['entry_uuid'];
 
-        //the moron who wrote this never considered we might have more than one parameter to pass, go figure :/
-        $dbEntry = $this->searchRepository->where('uuid', '=', $uuid);
-
+        //get entry or branch entry from the database
+        if ($entryStructure->isBranch()) {
+            $dbEntry = BranchEntry::where('uuid', '=', $uuid)->first();
+        } else {
+            $dbEntry = Entry::where('uuid', '=', $uuid)->first();
+        }
         // EDIT
         if ($dbEntry) {
             //if the project ID does not match (bulk uploads between cloned projects for example, where the source uuid is provided by mistake), bail out
@@ -178,7 +149,6 @@ abstract class EntryValidationBase extends ValidationBase
             // Add existing entry to structure
             $entryStructure->addExistingEntry($dbEntry);
         }
-
         return true;
     }
 }

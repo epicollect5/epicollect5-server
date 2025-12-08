@@ -2,13 +2,12 @@
 
 namespace ec5\Http\Validation\Project\Mapping;
 
+use ec5\DTO\ProjectMappingDTO;
 use ec5\Http\Validation\ValidationBase;
-use ec5\Models\Projects\ProjectMapping;
 
 class RuleMappingDelete extends ValidationBase
 {
-
-    protected $rules = [
+    protected array $rules = [
         'map_index' => 'required|integer|not_in:0',
     ];
 
@@ -25,16 +24,15 @@ class RuleMappingDelete extends ValidationBase
     }
 
     /**
-     * @param ProjectMapping $projectMapping
+     * @param ProjectMappingDTO $projectMapping
      * @param $newMapDetails
      */
-    public function additionalChecks(ProjectMapping $projectMapping, $newMapDetails)
+    public function additionalChecks(ProjectMappingDTO $projectMapping, $newMapDetails): void
     {
         // Check the map_index exists
         if (isset($newMapDetails['map_index'])) {
             if (!in_array($newMapDetails['map_index'], array_keys($projectMapping->getData()))) {
                 $this->addAdditionalError('mapping', 'ec5_230');
-                return;
             }
         }
     }

@@ -2,70 +2,52 @@
 
 namespace ec5\Http\Controllers\Web\Projects;
 
-use Illuminate\Http\Request;
-
-use ec5\Http\Requests;
 use ec5\Http\Controllers\Controller;
-
-use ec5\Repositories\QueryBuilder\Project\SearchRepository as ProjectSearch;
-
-use Config;
+use ec5\Models\Project\Project;
+use Illuminate\Http\Request;
+use Throwable;
 
 class MyProjectsController extends Controller
 {
-    /**
-     * @var
-     */
-    protected $projectSearch;
+    private Project $projectModel;
 
     /**
-     * ProjectsController constructor.
-     * @param ProjectSearch $projectSearch
+     * Initializes the controller with a Project model instance.
+     *
+     * @param Project $projectModel The Project model to be used by the controller.
      */
-    public function __construct(ProjectSearch $projectSearch)
+    public function __construct(Project $projectModel)
     {
-        $this->projectSearch = $projectSearch;
+        $this->projectModel = $projectModel;
     }
 
+    //Display a listing of user projects, any role
+
     /**
-     * Display a listing of my projects.
+     * Displays the authenticated user's projects with optional search and filtering.
      *
-     * @param Request $request
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * Retrieves and paginates the user's projects based on request parameters. Returns either a rendered HTML view or a JSON response with project cards, depending on whether the request is AJAX.
+     *
+     * @throws Throwable
      */
     public function show(Request $request)
     {
-
-
-        // Get request data
         $data = $request->all();
-        $perPage = Config::get('ec5Limits.projects_per_page');
+        $perPage = config('epicollect.limits.projects_per_page');
         // Set search/filter/filter option defaults
-        $options['search'] = !empty($data['search']) ? $data['search'] : '';
-        $options['filter_type'] = !empty($data['filter_type']) ? $data['filter_type'] : '';
-        $options['filter_value'] = !empty($data['filter_value']) ? $data['filter_value'] : '';
-        $options['page'] = !empty($data['page']) ? $data['page'] : 1;
+        $params['search'] = !empty($data['search']) ? $data['search'] : '';
+        $params['filter_type'] = !empty($data['filter_type']) ? $data['filter_type'] : '';
+        $params['filter_value'] = !empty($data['filter_value']) ? $data['filter_value'] : '';
+        $params['page'] = !empty($data['page']) ? $data['page'] : 1;
 
-        $projects = $this->projectSearch->myProjects($perPage, $request->user()->id, $options,
-            [
-                'projects.name',
-                'projects.slug',
-                'projects.logo_url',
-                'projects.created_at',
-                'projects.access',
-                'projects.status',
-                'projects.visibility',
-                'projects.small_description',
-                'projects.logo_url',
-                'project_roles.role'
-            ]
-        );
-        $projects->appends($options);
+        $projects = $this->projectModel->myProjects($perPage, auth()->user()->id, $params);
+        $projects->appends($params);
         // If ajax, return rendered html
         if ($request->ajax()) {
             return response()->json(view('projects.project_cards', ['projects' => $projects])->render());
         }
-        return view('projects.my_projects',
+        return view(
+            'projects.my_projects',
             [
                 'projects' => $projects,
                 //exposing email so users know what email they are logged in with

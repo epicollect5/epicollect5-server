@@ -2,7 +2,7 @@
 
 namespace ec5\Http\Middleware;
 
-class ProjectPermissions extends ProjectPermissionsBase
+class ProjectPermissions extends RequestAttributesMiddleware
 {
 
     /*
@@ -17,10 +17,8 @@ class ProjectPermissions extends ProjectPermissionsBase
 
     /**
      * Check the given user/role has permission to access
-     *
-     * @return bool
      */
-    public function hasPermission()
+    public function hasPermission(): bool
     {
         // Only need to check for a user/role if the project is private
         if ($this->requestedProject->isPrivate()) {

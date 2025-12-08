@@ -2,16 +2,15 @@
 
 namespace ec5\Http\Validation\Media;
 
-use ec5\Models\Projects\Project;
+use ec5\DTO\ProjectDTO;
 use ec5\Http\Validation\ValidationBase;
-use Config;
 
 class RuleMedia extends ValidationBase
 {
     /**
      * @var array
      */
-    protected $rules = [
+    protected array $rules = [
         'type' => 'required|in:photo,audio,video',
         'name' => 'required|string'
     ];
@@ -22,14 +21,14 @@ class RuleMedia extends ValidationBase
     public function __construct()
     {
         // Add the format check to rules, from media config file
-        $this->rules['format'] = 'required|in:' . implode(Config::get('ec5Media.viewable'), ',');
+        $this->rules['format'] = 'required|in:' . implode(',', config('epicollect.media.formats'));
     }
 
     /**
-     * @param Project $project
+     * @param ProjectDTO $project
      * @param $options
      */
-    public function additionalChecks(Project $project, $options)
+    public function additionalChecks(ProjectDTO $project, $options)
     {
         //
     }

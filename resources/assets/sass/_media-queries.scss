@@ -124,6 +124,7 @@
     }
   }
 }
+
 //stats on home page circles ******************************
 @media (max-width: 320px) {
   .circle {
@@ -131,24 +132,28 @@
     padding: 35% 0 !important;
   }
 }
+
 @media all and (min-width: 321px) and (max-width: 479px) {
   .circle {
     width: 60% !important;
     padding: 30% 0 !important;
   }
 }
+
 @media all and (min-width: 481px) and (max-width: 767px) {
   .circle {
     width: 30% !important;
     padding: 15% 0 !important;
   }
 }
+
 @media all and (min-width: 768px) and (max-width: 1199px) {
   .circle {
     width: 70% !important;
     padding: 35% 0 !important;
   }
 }
+
 //**********************************************************
 
 @media all and (min-width: 768px) and (max-width: 991px) {
@@ -288,5 +293,11 @@
         font-size: 1.2em !important;
       }
     }
+  }
+}
+
+@media (max-width: 380px) {
+  .hidden-380 {
+    display: none;
   }
 }

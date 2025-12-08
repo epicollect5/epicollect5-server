@@ -2,45 +2,48 @@
 
 namespace ec5\Http\Controllers\Web\Auth;
 
-use Illuminate\Support\Str;
+use Carbon\Carbon;
+use DB;
 use ec5\Http\Controllers\Controller;
+use ec5\Libraries\Utilities\Generators;
+use ec5\Mail\UserPasswordlessApiMail;
+use ec5\Models\User\User;
+use ec5\Models\User\UserPasswordlessApi;
+use ec5\Models\User\UserPasswordlessWeb;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
-use ec5\Models\Eloquent\UserProvider;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Config;
+use Log;
+use Mail;
+use PDOException;
+use Throwable;
 use View;
-use Auth;
 
 class AuthController extends Controller
 {
-    /*
-    |
-    | This controller is the base for the authentication of users.
-    |
-    */
-
     use AuthenticatesUsers;
-    protected $redirectTo = '/';
-    protected $adminRedirectPath = '/admin';
-    protected $authMethods = [];
-    protected $appleProviderLabel;
-    protected $googleProviderLabel;
-    protected $localProviderLabel;
-    protected $ldapProviderlabel;
-    protected $passwordlessProviderLabel;
-    protected $isAuthWebEnabled;
+
+    protected string $redirectTo = '/';
+    protected mixed $authMethods = [];
+    protected string $appleProviderLabel;
+    protected string $googleProviderLabel;
+    protected string $localProviderLabel;
+    protected string $ldapProviderlabel;
+    protected string $passwordlessProviderLabel;
+    protected bool $isAuthWebEnabled;
+    protected bool $isAuthApiLocalEnabled;
 
     public function __construct()
     {
         // Determine which authentication methods are available
-        $this->authMethods = Config::get('auth.auth_methods');
+        $this->authMethods = config('auth.auth_methods');
 
         //set providers values
-        $this->appleProviderLabel = Config::get('ec5Strings.providers.apple');
-        $this->googleProviderLabel = Config::get('ec5Strings.providers.google');
-        $this->localProviderLabel = Config::get('ec5Strings.providers.local');
-        $this->ldapProviderlabel = Config::get('ec5Strings.providers.ldap');
-        $this->passwordlessProviderLabel = Config::get('ec5Strings.providers.passwordless');
+        $this->appleProviderLabel = config('epicollect.strings.providers.apple');
+        $this->googleProviderLabel = config('epicollect.strings.providers.google');
+        $this->localProviderLabel = config('epicollect.strings.providers.local');
+        $this->ldapProviderlabel = config('epicollect.strings.providers.ldap');
+        $this->passwordlessProviderLabel = config('epicollect.strings.providers.passwordless');
 
         // Always pass the authentication method variables to the login view
         View::composer('auth.login', function ($view) {
@@ -51,76 +54,8 @@ class AuthController extends Controller
             $view->with('colSize', $colSize);
         });
 
-        $this->isAuthApiLocalEnabled = Config::get('auth.auth_api_local_enabled');
-        $this->isAuthWebEnabled = Config::get('auth.auth_web_enabled');
-    }
-
-    /**
-     * Show the application login form.
-     *
-     * @return View
-     */
-    public function show()
-    {
-        if ($this->isAuthWebEnabled) {
-            //get intended url for redirection 
-            //(skip passwordless token/web routes as they are post only)
-            switch (url()->previous()) {
-                case route('passwordless-auth-web'):
-                case route('passwordless-token-web'):
-                    //send user to home page
-                    session()->put('url.intended', route('home'));
-                    break;
-                default:
-                    session()->put('url.intended', url()->previous());
-            }
-
-            session(['nonce' => csrf_token()]);
-            return view('auth.login');
-        }
-        return redirect()->route('home');
-    }
-
-    /**
-     * Log the user out of the application.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
-     */
-    public function logout(Request $request)
-    {
-        $backlink = url()->previous();
-        Auth::logout();
-        $request->session()->flush();
-        $request->session()->regenerate();
-
-        //if we are logging out from the dataviewer, send user back there
-        // 1 - private project -> login + dataviewer
-        // 2 - public project -> dataviewer (without add entry button)
-        $parts = explode('/', $backlink);
-        \Log::info('url parts ->',  ['parts' => $parts]);
-        //check for dataviewer url segments
-        if (end($parts) === 'data' || end($parts) === 'data?restore=1') {
-            array_pop($parts);
-            $projectSlug = end($parts);
-            return redirect()->route('dataviewer', ['project_slug' => $projectSlug]);
-        }
-
-        //handle PWA (add-entry)
-        if (Str::startsWith(end($parts), 'add-entry')) {
-            array_pop($parts);
-            $projectSlug = end($parts);
-            return redirect()->route('data-editor-add', ['project_slug' => $projectSlug]);
-        }
-        //todo: handle PWA (edit-entry)
-        //I guess this is not needed
-        // if (Str::startsWith(end($parts), 'edit-entry')) {
-        //     array_pop($parts);
-        //     $projectSlug = end($parts);
-        //     return redirect()->route('data-editor-edit', ['project_slug' => $projectSlug]);
-        // }
-
-        return redirect()->route('home');
+        $this->isAuthApiLocalEnabled = config('auth.auth_api_local_enabled');
+        $this->isAuthWebEnabled = config('auth.auth_web_enabled');
     }
 
     //after 5 failed login attempts, users need to wait 10 minutes
@@ -128,23 +63,113 @@ class AuthController extends Controller
     {
         return $this->limiter()->tooManyAttempts(
             $this->throttleKey($request),
-            5,
-            10
+            5
         );
     }
 
-    protected function isLocalUnverified($user)
+    protected function validateAppleOrGoogleUserWeb($email, $code, $provider): User|RedirectResponse
     {
-        $providers = UserProvider::where('email', $user->email)->pluck('provider')->toArray();
+        //get token from db for comparison
+        $userPasswordless = UserPasswordlessApi::where('email', $email)->first();
 
-        return in_array(Config::get('ec5Strings.providers.local'), $providers) && $user->state === Config::get('ec5Strings.user_state.unverified');
+        //Does the email exists?
+        if ($userPasswordless === null) {
+            Log::error('Error validating passwordless code', ['error' => 'Email does not exist']);
+            return redirect()->route('verification-code')
+                ->with([
+                    'email' => $email,
+                    'provider' => $provider
+                ])
+                ->withErrors(['ec5_378']);
+        }
+
+        //check if the code is valid
+        if (!$userPasswordless->isValidCode($code)) {
+            Log::error('Error validating passwordless code', ['error' => 'Code not valid']);
+            return redirect()->route('verification-code')
+                ->with([
+                    'email' => $email,
+                    'provider' => $provider
+                ])
+                ->withErrors(['ec5_378']);
+        }
+
+        //code is valid, remove it
+        $userPasswordless->delete();
+
+        //find the existing user
+        $user = User::where('email', $email)->first();
+        if ($user === null) {
+            //this should never happen, but no harm in checking
+            return redirect()->route('verification-code')
+                ->with([
+                    'email' => $email,
+                    'provider' => $provider
+                ])
+                ->withErrors(['ec5_34']);
+        }
+
+        return $user;
     }
 
-    //does the user have a local account and active?
-    protected function isLocalActive($user)
+    /**
+     * @throws Throwable
+     */
+    protected function dispatchAuthToken(string $email)
     {
-        $providers = UserProvider::where('email', $user->email)->pluck('provider')->toArray();
+        $tokenExpiresAt = config('auth.passwordless_token_expire', 300);
+        $code = Generators::randomNumber(6, 1);
+        try {
+            DB::beginTransaction();
+            //remove any code for this user (if found)
+            $userPasswordless = UserPasswordlessWeb::where('email', $email);
+            if ($userPasswordless !== null) {
+                $userPasswordless->delete();
+            }
 
-        return in_array(Config::get('ec5Strings.providers.local'), $providers) && $user->state === Config::get('ec5Strings.user_state.active');
+            //add token to db
+            $userPasswordless = new UserPasswordlessWeb();
+            $userPasswordless->email = $email;
+            $userPasswordless->token = bcrypt($code, ['rounds' => config('auth.bcrypt_rounds')]);
+            $userPasswordless->expires_at = Carbon::now()->addSeconds($tokenExpiresAt)->toDateTimeString();
+            $userPasswordless->save();
+
+            DB::commit();
+        } catch (PDOException $e) {
+            Log::error('Error generating passwordless access code web');
+            DB::rollBack();
+
+            return redirect()->back()->withErrors([
+                'exception' => $e->getMessage(),
+                'passwordless-request-code' => ['ec5_104']
+            ]);
+        } catch (Throwable $e) {
+            Log::error('Error generating passwordless access code web');
+            DB::rollBack();
+
+            return redirect()->back()->withErrors([
+                'exception' => $e->getMessage(),
+                'passwordless-request-code' => ['ec5_104']
+            ]);
+        }
+
+        //send email with verification code
+        try {
+            Mail::to($email)->send(new UserPasswordlessApiMail($code));
+        } catch (Throwable $e) {
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
+            return redirect()->back()->withErrors([
+                'exception' => $e->getMessage(),
+                'passwordless-request-code' => ['ec5_116']
+            ]);
+        }
+
+        //send success response (email sent) and show validation screen
+        return view(
+            'auth.verification_passwordless',
+            [
+                'email' => $email
+            ]
+        );
     }
 }

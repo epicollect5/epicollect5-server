@@ -5,7 +5,6 @@ use Illuminate\Database\Schema\Blueprint;
 
 class CreateProjectStructuresTable extends Migration
 {
-
     /**
      * Run the migrations.
      *
@@ -22,6 +21,7 @@ class CreateProjectStructuresTable extends Migration
             $table->json('json_mapping_custom')->nullable();
             $table->timestamp('updated_at')->useCurrent();
         });
+        DB::statement('ALTER TABLE project_structures ROW_FORMAT=COMPRESSED, KEY_BLOCK_SIZE=4');
     }
 
 

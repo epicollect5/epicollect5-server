@@ -21,13 +21,11 @@
     </nav>
 
     <div class='container-fluid page-error'>
-        <h1 class="page-title">{{trans('site.error_occured')}}</h1>
-
         @if (count($errors->getMessages()) > 0)
             <div class="alert alert-danger">
                 @foreach($errors->getMessages() as $key => $error)
                     @foreach($error as $key2 => $error2)
-                        <p class="text-center">{{ trans('status_codes.' . $error2) }}</p>
+                        <p class="text-center">{{ config('epicollect.codes.' . $error2) }}</p>
                     @endforeach
                 @endforeach
 

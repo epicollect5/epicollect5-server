@@ -2,70 +2,52 @@
 
 namespace ec5\Http\Validation\Entries\Upload;
 
-use ec5\Libraries\EC5Logger\EC5Logger;
-use ec5\Models\Projects\Project;
-use ec5\Repositories\QueryBuilder\Entry\Upload\Search\EntryRepository as EntrySearchRepository;
-
-use ec5\Http\Validation\Entries\Upload\RuleAnswers as AnswerValidator;
-
-use ec5\Models\Entries\EntryStructure;
-use Log;
+use ec5\DTO\EntryStructureDTO;
+use ec5\DTO\ProjectDTO;
 use ec5\Libraries\Utilities\Strings;
+use ec5\Models\Entries\Entry;
+use Log;
 
 class RuleEntry extends EntryValidationBase
 {
-
-    /**
-     * RuleEntry constructor.
-     * @param EntrySearchRepository $entrySearchRepository
-     * @param RuleAnswers $answerValidator
-     */
-    public function __construct(EntrySearchRepository $entrySearchRepository, AnswerValidator $answerValidator)
+    public function __construct(RuleAnswers $ruleAnswers)
     {
-        parent::__construct($entrySearchRepository, $answerValidator);
+        parent::__construct($ruleAnswers);
     }
 
     /**
      * Function for additional checks
      * Checking that any relationships are valid
      *
-     * @param Project $project
-     * @param EntryStructure $entryStructure
+     * @param ProjectDTO $project
+     * @param EntryStructureDTO $entryStructure
      */
-    public function additionalChecks(Project $project, EntryStructure $entryStructure)
+    public function additionalChecks(ProjectDTO $project, EntryStructureDTO $entryStructure): void
     {
-
         $projectExtra = $project->getProjectExtra();
-
+        $projectDefinition = $project->getProjectDefinition();
         $formRef = $entryStructure->getFormRef();
 
         // Check if this entry should have a parent entry uuid
-        $hasParent = $projectExtra->formHasParent($formRef);
+        $parentFormRef = $projectDefinition->getParentFormRef($formRef);
 
         //check entry uuid is in correct format -> todo
         if (!Strings::isValidUuid($entryStructure->getEntryUuid())) {
-            EC5Logger::error('UUID invalid ', $project, ['uuid' => $entryStructure->getEntryUuid()]);
             Log::error('uuid is invalid: ', ['project' => $project, 'uuid' => $entryStructure->getEntryUuid()]);
             $this->errors[$formRef] = ['ec5_334'];
             return;
         }
 
-        if ($hasParent) {
-
-            $parentFormRef = $entryStructure->getParentFormRef();
-
-            // Check parent form is a direct ancestor
-            if ($hasParent != $parentFormRef) {
-                EC5Logger::error('Incorrect parent form supplied: ' . $parentFormRef, $project);
-                $this->errors[$parentFormRef] = ['ec5_18'];
+        if ($parentFormRef !== null) {
+            $entryParentFormRef = $entryStructure->getParentFormRef();
+            // Check the parent form is a direct ancestor
+            if ($parentFormRef !== $entryParentFormRef) {
+                $this->errors[$entryParentFormRef] = ['ec5_18'];
                 return;
             }
 
-            $parentForm = $projectExtra->getFormDetails($parentFormRef);
-
-            // Check parent form exists
-            if (count($parentForm) == 0) {
-                EC5Logger::error('Parent form supplied does not exist: ' . $parentFormRef, $project);
+            // Check the parent form actually exists
+            if (!$projectExtra->formExists($entryParentFormRef)) {
                 $this->errors[$formRef] = ['ec5_15'];
                 return;
             }
@@ -74,16 +56,15 @@ class RuleEntry extends EntryValidationBase
 
             // If we don't have a parent entry
             if (empty($parentEntryUuid)) {
-                EC5Logger::error('No parent uuid supplied for this child form entry', $project);
                 $this->errors[$formRef] = ['ec5_19'];
                 return;
             }
 
             // Check parent entry exists for this parent uuid and parent form ref
-            $parent = $this->searchRepository->getParentEntry($parentEntryUuid, $parentFormRef);
+            $entryModel = new Entry();
+            $parent = $entryModel->getParentEntry($parentEntryUuid, $entryParentFormRef);
 
             if (!$parent) {
-                EC5Logger::error('No parent form entry for this child form entry', $project);
                 $this->errors[$formRef] = ['ec5_19'];
                 return;
             }
@@ -117,7 +98,7 @@ class RuleEntry extends EntryValidationBase
     }
 
     /**
-     * @param EntryStructure $entryStructure
+     * @param EntryStructureDTO $entryStructure
      * @return bool
      *
      * When bulk uploading child entries for editing, check the parent uuid for matches.
@@ -125,14 +106,14 @@ class RuleEntry extends EntryValidationBase
      * upload the full child entries dataset, without this check he would end up
      * editing entries he did not want to.
      */
-    public function checkMatchingParentUuid(EntryStructure $entryStructure)
+    public function checkMatchingParentUuid(EntryStructureDTO $entryStructure): bool
     {
         // Check parent entry uuid
         $parentEntryUuid = $entryStructure->getParentUuid();//this one if from the request
         $entryUuid = $entryStructure->getEntryUuid();//this is from the request as well
 
         //check in the entries table if this parent_uuid is the right one for the child uuid
-        $entry = $this->searchRepository->where('uuid', '=', $entryUuid);
+        $entry = Entry::where('uuid', '=', $entryUuid)->first();
 
         //if no entry is found, this is a new entry not an edit
         if ($entry === null) {

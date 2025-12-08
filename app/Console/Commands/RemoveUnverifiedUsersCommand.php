@@ -2,16 +2,13 @@
 
 namespace ec5\Console\Commands;
 
-use Illuminate\Console\Command;
-
-use ec5\Models\Eloquent\User;
-use ec5\Models\Eloquent\UserVerify;
-use Config;
-use Exception;
-use PDOException;
-use Log;
 use Carbon\Carbon;
 use DB;
+use ec5\Models\User\User;
+use ec5\Models\User\UserVerify;
+use Illuminate\Console\Command;
+use Log;
+use Throwable;
 
 class RemoveUnverifiedUsersCommand extends Command
 {
@@ -32,9 +29,8 @@ class RemoveUnverifiedUsersCommand extends Command
     /**
      * Execute the console command.
      *
-     * @return mixed
      */
-    public function handle()
+    public function handle(): void
     {
         /**
          * Get unverified and local users older than the settings (usually 7 days)
@@ -43,24 +39,23 @@ class RemoveUnverifiedUsersCommand extends Command
             DB::beginTransaction();
 
             //remove unverified users
-            User::where('state', Config::get('ec5Strings.user_state.unverified'))
-                ->where('provider', Config::get('ec5Strings.providers.local'))
-                ->whereDate('created_at', '<', Carbon::now()->subDays(env('ACCOUNT_UNVERIFIED_EXPIRES_IN')))
+            User::where('state', config('epicollect.strings.user_state.unverified'))
+                ->where('provider', config('epicollect.strings.providers.local'))
+                ->whereDate('created_at', '<', Carbon::now()->subDays(config('auth.account_unverified.expire')))
                 ->delete();
 
             //remove expired verification tokens (belonging to the removed users)
-            UserVerify::whereDate('created_at', '<', Carbon::now()->subDays(env('ACCOUNT_UNVERIFIED_EXPIRES_IN')))
+            UserVerify::whereDate('created_at', '<', Carbon::now()->subDays(config('auth.account_unverified.expire')))
                 ->delete();
 
             DB::commit();
-        }
-        catch (PDOException $e) {
+        } catch (Throwable $e) {
             Log::error('failed to remove unverified users', ['exception' => $e]);
-            DB::rollBack();
-        }
-        catch (Exception $e) {
-            Log::error('failed to remove unverified users', ['exception' => $e]);
-            DB::rollBack();
+            try {
+                DB::rollBack();
+            } catch (Throwable $e) {
+                Log::error('failed to rollback -> remove unverified users', ['exception' => $e]);
+            }
         }
     }
 }

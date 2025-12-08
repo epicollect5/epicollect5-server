@@ -5,9 +5,7 @@ window.EC5.projectDetails = window.EC5.projectDetails || {};
 (function projectDetails(module) {
 
     module.statusPairs = {
-        trashed: ['restore', 'delete'],
-        locked: ['unlock'],
-        active: ['trashed', 'locked']
+        trashed: ['restore', 'delete'], locked: ['unlock'], active: ['trashed', 'locked']
     };
 
     module.currentSettingsValue = function (which) {
@@ -15,7 +13,6 @@ window.EC5.projectDetails = window.EC5.projectDetails || {};
     };
 
     module.updateSettings = function (which) {
-
         var onValue = module.currentSettingsValue(which);
         var settings_elements = $('.settings-' + which);
 
@@ -27,8 +24,7 @@ window.EC5.projectDetails = window.EC5.projectDetails || {};
 
                 if ($(item).data('value') === onValue) {
                     $(this).addClass('btn-action');
-                }
-                else {
+                } else {
                     $(this).removeClass('btn-action');
                 }
 
@@ -43,8 +39,7 @@ window.EC5.projectDetails = window.EC5.projectDetails || {};
         settings_elements.each(function (idx, item) {
             if ($(item).data('value') === onValue) {
                 $(this).addClass('btn-action');
-            }
-            else {
+            } else {
                 $(this).removeClass('btn-action');
             }
         });
@@ -58,13 +53,13 @@ window.EC5.projectDetails = window.EC5.projectDetails || {};
         data[action] = setTo;
 
         $.when(window.EC5.projectUtils.postRequest(url, data))
-            .done(function (data) {
+            .done(function (response) {
                 try {
-                    $.each(data, function (key, value) {
+                    $.each(response.data, function (key, value) {
                         window.EC5.projectDetails.parameters[key] = value;
                     });
                     module.updateSettings(action);
-                    window.EC5.toast.showSuccess('Setting updated.');
+                    window.EC5.toast.showSuccess('Settings updated.');
                 } catch (e) {
                     window.EC5.projectUtils.showErrors(e);
                 }
@@ -74,13 +69,18 @@ window.EC5.projectDetails = window.EC5.projectDetails || {};
                 //show errors to user
                 window.EC5.projectUtils.showErrors(e);
             }).always(function () {
-                window.EC5.overlay.fadeOut();
-            });
+            window.EC5.overlay.fadeOut();
+        });
     };
 
 })(window.EC5.projectDetails);
 
 $(document).ready(function () {
+
+    //run only on project details page
+    if ($('.page-project-details').length === 0) {
+        return false;
+    }
 
     $('[data-toggle="tooltip"]').tooltip();
 
@@ -110,11 +110,32 @@ $(document).ready(function () {
         visibility: project_details.attr('data-js-visibility'),
         logo_url: project_details.attr('data-js-logo_url'),
         category: project_details.attr('data-js-category'),
-        slug: project_details.attr('data-js-slug')
+        slug: project_details.attr('data-js-slug'),
+        app_link_visibility: project_details.attr('data-js-app_link_visibility')
     };
 
-    $('.btn-settings-submit').on('click', function () {
+    //generate QR Code on project details page only
+    if ($('.deeplink-btn-panel').length > 0) {
+        var qrCodeWrapper = $('#qrcode');
+        var qrcode = new window.QRCode('qrcode', {
+            text: qrCodeWrapper.data('url'),
+            width: 1024,
+            height: 1024,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
 
+        //download QR code (the hidden one, size is bigger)
+        $('#qrcode-download').on('click', function () {
+            // Find the image inside the #qrcode div
+            var image = qrCodeWrapper.find('img');
+            // Copy that to the download link
+            $(this).attr('href', image.attr('src'));
+        })
+    }
+
+    $('.btn-settings-submit').on('click', function () {
         var ele = $(this);
         var action = ele.attr('data-setting-type');
         var setTo = ele.attr('data-value');
@@ -126,11 +147,11 @@ $(document).ready(function () {
 
     }); //end my button
 
-    $(['access', 'status', 'visibility']).each(function (i, action) {
+    $(['access', 'status', 'visibility', 'app_link_visibility']).each(function (i, action) {
         window.EC5.projectDetails.updateSettings(action);
     });
 
-    $('#project-category').on('change', function (e) {
+    $('#project-category').on('change', function () {
         var action = 'category';
         var setTo = $(this).val();
 
@@ -178,6 +199,181 @@ $(document).ready(function () {
             //do nothing
         });
     });
+
+    $('.deeplink-copy-btn').on('click', function () {
+        var self = $(this);
+        var url = self.data('url')
+        console.log(url);
+        navigator.clipboard.writeText(url).then(function () {
+            self.find('i').tooltip('show');
+            window.setTimeout(function () {
+                self.find('i').tooltip('hide');
+            }, 1500);
+        }, function () {
+            //do nothing
+        });
+    });
+
+    var $counterMediaWrapper = $('.counter-media');
+    var $counterQuotaWrapper = $('.counter-quota');
+    var $panelQuotaWrapper = $('.panel-quota');
+    var projectSlug = $counterMediaWrapper.data('project-slug');
+    var refreshMediaOverviewBtn = $('.btn-refresh-media-overview');
+    refreshMediaOverviewBtn.on('click', function () {
+        updateMediaCountersAPI();
+    });
+
+    updateMediaCountersDB();
+
+    function updateMediaCountersDB() {
+        //get cached media stats from database
+        var photoFiles = $counterMediaWrapper.find('.count-photo').data('photo-files');
+        var audioFiles = $counterMediaWrapper.find('.count-audio').data('audio-files');
+        var videoFiles = $counterMediaWrapper.find('.count-video').data('video-files');
+        var photoBytes = $counterMediaWrapper.find('.size-photo').data('photo-bytes');
+        var audioBytes = $counterMediaWrapper.find('.size-audio').data('audio-bytes');
+        var videoBytes = $counterMediaWrapper.find('.size-video').data('video-bytes');
+        var totalBytes = $counterMediaWrapper.find('.size-total').data('total-bytes');
+        var totalFiles = $counterMediaWrapper.find('.count-total').data('total-files');
+        var photoPct, audioPct, videoPct;
+        if (totalBytes === 0) {
+            photoPct = audioPct = videoPct = 0;
+        } else {
+            photoPct = (photoBytes / totalBytes * 100).toFixed(1);
+            audioPct = (audioBytes / totalBytes * 100).toFixed(1);
+            videoPct = (videoBytes / totalBytes * 100).toFixed(1);
+        }
+
+        $counterMediaWrapper.find('.progress-bar[data-type="photo"]')
+            .css('width', photoPct + '%');
+
+        $counterMediaWrapper.find('.progress-bar[data-type="audio"]')
+            .css('width', audioPct + '%');
+
+        if (totalBytes > 0) {
+            videoPct = (100 - parseFloat(photoPct) - parseFloat(audioPct)).toFixed(1);
+        }
+        $counterMediaWrapper.find('.progress-bar[data-type="video"]')
+            .css('width', videoPct + '%');
+
+        // Table counts
+        $counterMediaWrapper.find('.count-photo').text(photoFiles);
+        $counterMediaWrapper.find('.count-audio').text(audioFiles);
+        $counterMediaWrapper.find('.count-video').text(videoFiles);
+        $counterMediaWrapper.find('.count-total').text(totalFiles);
+
+        // Table sizes
+        $counterMediaWrapper.find('.size-photo').text(window.EC5.common.formatBytes(photoBytes, 2));
+        $counterMediaWrapper.find('.size-audio').text(window.EC5.common.formatBytes(audioBytes, 2));
+        $counterMediaWrapper.find('.size-video').text(window.EC5.common.formatBytes(videoBytes, 2));
+        $counterMediaWrapper.find('.size-total').text(window.EC5.common.formatBytes(totalBytes, 2));
+
+
+        //Update table text percentage
+        $counterMediaWrapper.find('.ratio-photo').text(photoPct + '%');
+        $counterMediaWrapper.find('.ratio-audio').text(audioPct + '%');
+        $counterMediaWrapper.find('.ratio-video').text(videoPct + '%');
+        if (totalBytes === 0) {
+            $counterMediaWrapper.find('.ratio-total').text('0%');
+        } else {
+            $counterMediaWrapper.find('.ratio-total').text('100%');
+        }
+
+        // hide loader, show stats
+        $counterMediaWrapper.find('.loader').fadeOut(function () {
+            $counterMediaWrapper.find('.media-stats').removeClass('hidden').fadeIn();
+        });
+        $counterQuotaWrapper.find('.loader').fadeOut(function () {
+            $counterQuotaWrapper.find('.quota-stats').removeClass('hidden').fadeIn();
+        });
+
+    }
+
+    // AJAX call using EC5 conventions (jQuery)
+    function updateMediaCountersAPI() {
+        window.EC5.overlay.fadeIn();
+        /* ---------- Media counter ---------- */
+        $counterMediaWrapper.find('.media-stats')
+            .addClass('hidden')      // hide instantly
+            .hide();                 // (optional) force display:none
+
+        $counterMediaWrapper.find('.loader')
+            .fadeIn();
+
+        /* ---------- Quota counter ---------- */
+        $counterQuotaWrapper.find('.quota-stats')
+            .addClass('hidden')
+            .hide();
+
+        $counterQuotaWrapper.find('.loader')
+            .fadeIn();
+        $.get(window.EC5.SITE_URL + '/api/internal/counters/media/' + projectSlug)
+            .done(function (response) {
+                var counters = response.data.counters;
+                var sizes = response.data.sizes;
+
+                var totalBytes = sizes.total_bytes;
+                var photoPct, audioPct, videoPct;
+                if (totalBytes === 0) {
+                    photoPct = audioPct = videoPct = 0;
+                } else {
+                    photoPct = (sizes.photo_bytes / totalBytes * 100).toFixed(1);
+                    audioPct = (sizes.audio_bytes / totalBytes * 100).toFixed(1);
+                    videoPct = (sizes.video_bytes / totalBytes * 100).toFixed(1);
+                }
+
+                $counterMediaWrapper.find('.progress-bar[data-type="photo"]')
+                    .css('width', photoPct + '%');
+
+                $counterMediaWrapper.find('.progress-bar[data-type="audio"]')
+                    .css('width', audioPct + '%');
+
+                if (totalBytes > 0) {
+                    videoPct = (100 - parseFloat(photoPct) - parseFloat(audioPct)).toFixed(1);
+                }
+                $counterMediaWrapper.find('.progress-bar[data-type="video"]')
+                    .css('width', videoPct + '%');
+
+                // Table counts
+                $counterMediaWrapper.find('.count-photo').text(counters.photo);
+                $counterMediaWrapper.find('.count-audio').text(counters.audio);
+                $counterMediaWrapper.find('.count-video').text(counters.video);
+                $counterMediaWrapper.find('.count-total').text(counters.total);
+
+                // Table sizes
+                $counterMediaWrapper.find('.size-photo').text(window.EC5.common.formatBytes(sizes.photo_bytes, 2));
+                $counterMediaWrapper.find('.size-audio').text(window.EC5.common.formatBytes(sizes.audio_bytes, 2));
+                $counterMediaWrapper.find('.size-video').text(window.EC5.common.formatBytes(sizes.video_bytes, 2));
+                $counterMediaWrapper.find('.size-total').text(window.EC5.common.formatBytes(sizes.total_bytes, 2));
+
+
+                //Update table text percentage
+                $counterMediaWrapper.find('.ratio-photo').text(photoPct + '%');
+                $counterMediaWrapper.find('.ratio-audio').text(audioPct + '%');
+                $counterMediaWrapper.find('.ratio-video').text(videoPct + '%');
+                if (totalBytes === 0) {
+                    $counterMediaWrapper.find('.ratio-total').text('0%');
+                } else {
+                    $counterMediaWrapper.find('.ratio-total').text('100%');
+                }
+                //update last updated at
+                $panelQuotaWrapper.find('.bytes-updated-at span').text(response.data.updated_at_human_readable);
+            })
+            .fail(function () {
+                $counterMediaWrapper.find('.loader').text('Error loading data');
+                $counterQuotaWrapper.find('.loader').text('Error loading data');
+            }).always(function () {
+            // hide loader, show stats
+            $counterMediaWrapper.find('.loader').fadeOut(function () {
+                $counterMediaWrapper.find('.media-stats').removeClass('hidden').fadeIn();
+            });
+            $counterQuotaWrapper.find('.loader').fadeOut(function () {
+                $counterQuotaWrapper.find('.quota-stats').removeClass('hidden').fadeIn();
+            });
+
+            window.EC5.overlay.fadeOut();
+        });
+    }
 });
 
 

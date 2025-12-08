@@ -72,41 +72,7 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => ec5\Models\Users\User::class,
-        ]
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Resetting Passwords
-    |--------------------------------------------------------------------------
-    |
-    | Here you may set the options for resetting passwords including the view
-    | that is your password reset e-mail. You may also set the name of the
-    | table that maintains all of the reset tokens for your application.
-    |
-    | You may specify multiple password reset configurations if you have more
-    | than one user table or model in the application and you want to have
-    | separate password reset settings based on the specific user types.
-    |
-    | The expire time is the number of minutes that the reset token should be
-    | considered valid. This security feature keeps tokens short-lived so
-    | they have less time to be guessed. You may change this as needed.
-    |
-    */
-
-    'passwords' => [
-        'session_users' => [
-            'provider' => 'session_users',
-            'email' => 'auth.emails.password',
-            'table' => 'password_resets',
-            'expire' => 60,
-        ],
-        'jwt_users' => [
-            'provider' => 'jwt_users',
-            'email' => 'auth.emails.password',
-            'table' => 'password_resets',
-            'expire' => 60,
+            'model' => \ec5\Models\User\User::class,
         ]
     ],
 
@@ -131,6 +97,7 @@ return [
         'expire' => env('JWT_PASSWORDLESS_EXPIRE', 86400)
     ],
 
+    'passwordless_token_expire' => (int) env('PASSWORDLESS_TOKEN_EXPIRES_IN', 1800),
     /*
     |--------------------------------------------------------------------------
     | Passport
@@ -140,7 +107,12 @@ return [
     'passport' => [
         'expire' => 7200
     ],
-
+    'account_code' => [
+        'expire' => env('ACCOUNT_CODE_EXPIRES_IN', 7200)
+    ],
+    'account_unverified' => [
+        'expire' => env(' ACCOUNT_UNVERIFIED_EXPIRES_IN', 3)
+    ],
     /*
     |--------------------------------------------------------------------------
     | Auth Methods
@@ -149,7 +121,21 @@ return [
     | Supported: "local", "google", "ldap", "apple", "passwordless"
     */
 
-    'auth_methods' => explode(',', env('AUTH_METHODS')),
+    'auth_methods' => array_filter(
+        explode(',', env('AUTH_METHODS', '')),
+        fn ($method) => trim($method) !== ''
+    ),
+    /*
+    |--------------------------------------------------------------------------
+    | Auth Allowed Domains
+    |--------------------------------------------------------------------------
+    | The domains allowed for authentication
+    | If empty, all domains are allowed
+    */
+    'auth_allowed_domains' => array_filter(
+        explode(',', env('AUTH_ALLOWED_DOMAINS', '')),
+        fn ($domain) => trim($domain) !== ''
+    ),
 
 
     /**
@@ -166,5 +152,21 @@ return [
      */
     'auth_web_enabled' => env('AUTH_WEB_ENABLED', true),
 
-    'ip_whitelist' => explode(',', env('IP_WHITELIST')),
+    'ip_whitelist' => explode(',', env('IP_WHITELIST') ?? ''),
+
+    'bcrypt_rounds' => env('BCRYPT_ROUNDS', 12),
+
+    'google' => [
+        'connect_redirect_uri' => env('APP_URL').'/profile/connect-google-callback',
+        'recaptcha_site_key' => env('GOOGLE_RECAPTCHA_SITE_KEY')
+    ],
+    //Apple redirect does not work with ip or localhost, and must be secure https://
+    //They are defined at https://developer.apple.com/account/resources/identifiers
+    'apple' => [
+        'public_keys_endpoint' => env('APPLE_PUBLIC_KEYS_ENDPOINT'),
+        'login_client_id' => env('APPLE_LOGIN_CLIENT_ID'),
+        'login_redirect_uri' => env('APP_URL').'/handle/apple',
+        'connect_client_id' => env('APPLE_CONNECT_CLIENT_ID'),
+        'connect_redirect_uri' => env('APP_URL').'/profile/connect-apple-callback',
+    ]
 ];

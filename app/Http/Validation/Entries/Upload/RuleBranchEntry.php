@@ -2,45 +2,29 @@
 
 namespace ec5\Http\Validation\Entries\Upload;
 
-use ec5\Libraries\EC5Logger\EC5Logger;
-use ec5\Models\Projects\Project;
-use ec5\Repositories\QueryBuilder\Entry\Upload\Search\BranchEntryRepository as BranchEntrySearchRepository;
-use ec5\Repositories\QueryBuilder\Entry\Upload\Search\EntryRepository as EntrySearchRepository;
-
-use ec5\Http\Validation\Entries\Upload\RuleAnswers as AnswerValidator;
-
-use ec5\Models\Entries\EntryStructure;
+use ec5\DTO\EntryStructureDTO;
+use ec5\DTO\ProjectDTO;
+use ec5\Models\Entries\BranchEntry;
+use ec5\Models\Entries\Entry;
 
 class RuleBranchEntry extends EntryValidationBase
 {
-    protected $entrySearchRepository;
-
-    /**
-     * RuleBranchEntry constructor.
-     * @param EntrySearchRepository $entrySearchRepository
-     * @param BranchEntrySearchRepository $branchEntrySearchRepository
-     * @param RuleAnswers $answerValidator
-     */
-    public function __construct(EntrySearchRepository $entrySearchRepository, BranchEntrySearchRepository $branchEntrySearchRepository, AnswerValidator $answerValidator)
+    public function __construct(RuleAnswers $ruleAnswers)
     {
-        $this->entrySearchRepository = $entrySearchRepository;
-
-        parent::__construct($branchEntrySearchRepository, $answerValidator);
+        parent::__construct($ruleAnswers);
     }
 
     /**
      * Function for additional checks
      * Checking that any relationships are valid
      *
-     * @param Project $project
-     * @param EntryStructure $branchEntryStructure
+     * @param ProjectDTO $project
+     * @param EntryStructureDTO $branchEntryStructure
+     *
      */
-    public function additionalChecks(Project $project, EntryStructure $branchEntryStructure)
+    public function additionalChecks(ProjectDTO $project, EntryStructureDTO $branchEntryStructure): void
     {
-
         $projectExtra = $project->getProjectExtra();
-
-        $branchEntryStructure->setAsBranch();
 
         $formRef = $branchEntryStructure->getFormRef();
 
@@ -57,16 +41,15 @@ class RuleBranchEntry extends EntryValidationBase
             return;
         }
 
-        // Check branch entry owner exists
+        // Check the 'branch entry owner' (the hierarchy entry) exists
         $branchOwnerUuid = $branchEntryStructure->getOwnerUuid();//this is the one from the request
-        $owner = $this->entrySearchRepository->where('uuid', '=', $branchOwnerUuid);
-
+        $owner = Entry::where('uuid', '=', $branchOwnerUuid)->first();
         // If we have no owner entry
         if (!$owner) {
             $this->errors[$branchOwnerInputRef] = ['ec5_17'];
             return;
         }
-        $branchEntryStructure->addBranchOwnerEntryToStructure($owner);
+        $branchEntryStructure->setOwnerEntryID($owner->id);
 
         /* DETERMINE WHETHER ADD OR EDIT */
         // Check if this entry can be edited
@@ -88,7 +71,6 @@ class RuleBranchEntry extends EntryValidationBase
 
         if (count($inputs) == 0) {
             // Form inputs don't exist
-            EC5Logger::error('Branch upload failed - inputs dont exist', $project, $inputs);
             $this->errors['upload'] = ['ec5_15'];
             return;
         }
@@ -99,7 +81,7 @@ class RuleBranchEntry extends EntryValidationBase
     }
 
     /**
-     * @param EntryStructure $branchEntryStructure
+     * @param EntryStructureDTO $branchEntryStructure
      * @return bool
      *
      * When bulk uploading branches for edits, users are providing the uuid
@@ -108,17 +90,15 @@ class RuleBranchEntry extends EntryValidationBase
      * If they upload other branch entries with a different owner uuid but the same project,
      * they would edit those entries without even knowing
      */
-    public function checkMatchingOwnerUuid(EntryStructure $branchEntryStructure)
+    public function checkMatchingOwnerUuid(EntryStructureDTO $branchEntryStructure): bool
     {
-        // Check branch entry owner exists
+        // Check the branch entry owner exists
         $branchOwnerUuid = $branchEntryStructure->getOwnerUuid();//this one if from the request
         $branchUuid = $branchEntryStructure->getEntryUuid();
 
         //check in the branch entries table if this owner_uuid is the right one for the branch uuid
-        //searchRepository -> this must be the branch entry search?
-        $owner = $this->searchRepository->where('uuid', '=', $branchUuid);
-
-        if($owner === null) {
+        $owner = BranchEntry::where('uuid', '=', $branchUuid)->first();
+        if ($owner === null) {
             //no branch found, this is a new branch to add
             return true;
         }

@@ -7,11 +7,12 @@ window.EC5.projects = window.EC5.projects || {};
  */
 (function projects(module) {
 
+    module.loader = $('.loader');
+
+
     // Default ordering object
     module.defaultOrdering = {
-        field: 'created_at',
-        type: 'asc',
-        label: 'Date Asc'
+        field: 'created_at', type: 'asc', label: 'Date Asc'
     };
 
     // Object to store the current filters
@@ -66,6 +67,8 @@ window.EC5.projects = window.EC5.projects || {};
      */
     module.init = function (url, domElements, options, successCallback, errorCallback) {
 
+        window.EC5.overlay.fadeIn();
+
         module.url = url;
         module.domElements = domElements;
         module.options = options ? options : module.options;
@@ -91,20 +94,27 @@ window.EC5.projects = window.EC5.projects || {};
 
                 // Make visible if hidden
                 module.domElements.projects_div.removeClass('hidden');
-
+                window.scrollTo({top: 0, behavior: 'auto'});
+                module.loader.addClass('hidden');
+                window.setTimeout(function () {
+                    window.EC5.overlay.fadeOut();
+                }, 500);
             }
         };
         module.errorCallback = errorCallback ? errorCallback : function (error) {
             if (error.responseJSON.errors) {
                 // Show the errors
                 if (error.responseJSON.errors.length > 0) {
-
                     var i;
                     for (i = 0; i < error.responseJSON.errors.length; i++) {
                         window.EC5.toast.showError(error.responseJSON.errors[i].title);
                     }
                 }
             }
+            module.loader.addClass('hidden');
+            window.setTimeout(function () {
+                window.EC5.overlay.fadeOut();
+            }, 500);
         };
 
     };
@@ -115,13 +125,11 @@ window.EC5.projects = window.EC5.projects || {};
      * criteria, with pagination
      */
     module.getProjects = function () {
-
         // Make ajax request to load projects
+        module.domElements.projects_div.addClass('hidden');
+        module.loader.removeClass('hidden');
         $.ajax({
-            url: module.options.url,
-            type: 'GET',
-            dataType: 'json',
-            data: {
+            url: module.options.url, type: 'GET', dataType: 'json', data: {
                 page: module.options.page,
                 search: module.options.search,
                 filter_type: module.options.filter_type,
@@ -137,7 +145,7 @@ window.EC5.projects = window.EC5.projects || {};
      * @returns {*}
      */
     module.getDefaultView = function () {
-        // Check if default view is list, Otherwise grid view will be loaded by default
+        // Check if default view is a list, Otherwise the grid view will be loaded by default
         return localStorage.getItem('ec5-projects-list-view') === '1' ? 'list' : 'grid';
     };
 
@@ -160,7 +168,9 @@ window.EC5.projects = window.EC5.projects || {};
                     // Get the projects
                     module.getProjects();
 
-                    window.scrollTo(0, 0);
+                    //show loader overlay
+                    //show overlay
+                    window.EC5.overlay.fadeIn();
                 });
             }
 
@@ -228,6 +238,7 @@ window.EC5.projects = window.EC5.projects || {};
                     module.domElements.filter_controls.on('click', module.domElements.filter_dropdown_class, function (e) {
 
                         e.preventDefault();
+                        window.EC5.overlay.fadeIn();
 
                         // If a different filter has been selected
                         if ($(this).data('filterValue').toLowerCase().trim() !== module.domElements.filter_dropdown.text().toLowerCase().trim()) {
@@ -244,8 +255,10 @@ window.EC5.projects = window.EC5.projects || {};
                             // Set active filter
                             module.domElements.filter_dropdown.html(module.options.filter_value + '&nbsp;<span class="caret"></span>');
 
+                        } else {
+                            //do nothing and just remove the overlay
+                            window.EC5.overlay.fadeOut();
                         }
-
                     });
                 }
 
@@ -258,18 +271,12 @@ window.EC5.projects = window.EC5.projects || {};
 
                         // Reset ordering object
                         module.defaultOrdering = {
-                            field: 'created_at',
-                            type: 'asc',
-                            label: 'Date Asc'
+                            field: 'created_at', type: 'asc', label: 'Date Asc'
                         };
 
                         // Reset object to store the current filters
                         module.options = {
-                            page: 1,
-                            search: '',
-                            filter_type: '',
-                            filter_value: '',
-                            order: module.defaultOrdering
+                            page: 1, search: '', filter_type: '', filter_value: '', order: module.defaultOrdering
                         };
 
                         // Clear any inputs

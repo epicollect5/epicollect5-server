@@ -1,32 +1,18 @@
+@import "mixins";
+
 .page-project-home {
   .h1, .h2, .h3, h1, h2, h3 {
     margin: 0;
   }
-  .project-home__logo {
+  .project-logo {
     margin: 0 auto;
-    border: 2px solid $deep-purple;
   }
-  .project-home__logo-wrapper {
-    border: none;
-    position: relative;
-    display: block;
-    .loader {
-      position: absolute;
-      z-index: 21;
-    }
-    img {
-      opacity: 0;
-      z-index: 22;
-      position: relative;
-      //min-height: 256px;
-      margin: 0 auto;
-    }
+  .project-logo-wrapper {
+    @include project-logo-wrapper(256px, 256px);
   }
-
   .project-home__project-view-btn {
     text-align: center;
   }
-
   .project-home__stats {
     text-transform: uppercase;
     //padding:6px 16px;
@@ -36,13 +22,11 @@
       vertical-align: middle;
     }
   }
-
   .project-home__project-name h1 {
     font-size: 36px;
     @include card-project-name();
     display: block;
   }
-
   .project-home__project-name {
     //padding-bottom:0;
     overflow: hidden;
@@ -50,17 +34,42 @@
   .project-home__small-description {
     padding-top: 0;
     h2 {
-      word-wrap: break-word;
+      word-break: break-all;
+      overflow-wrap: break-word;
     }
   }
+  .project-home__project-description {
+    .well {
+      word-break: break-all;
+      overflow-wrap: break-word;
+    }
+  }
+
   .project-home__action-btns {
-    margin-top:15px;
+    margin-top: 15px;
     .btn {
-      width:150px;
+      width: 200px;
+    }
+    .material-icons {
+      vertical-align: middle;
     }
   }
 }
+
 .project-home__share-btns {
   margin-top: -30px;
   text-align: center;
+}
+
+#modal-app-link {
+  #qrcode {
+    img {
+      margin: 0 auto;
+    }
+  }
+  .btn-action {
+    .material-icons {
+      vertical-align: middle;
+    }
+  }
 }

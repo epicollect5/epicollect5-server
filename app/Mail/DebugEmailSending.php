@@ -8,7 +8,8 @@ use Illuminate\Queue\SerializesModels;
 
 class DebugEmailSending extends Mailable
 {
-    use Queueable, SerializesModels;
+    use Queueable;
+    use SerializesModels;
 
     /**
      * Create a new message instance.
@@ -26,7 +27,11 @@ class DebugEmailSending extends Mailable
      */
     public function build()
     {
-        return $this->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'))
+        return $this
+            ->from(
+                config('mail.from.address'),
+                config('mail.from.name')
+            )
             ->subject('This is a test email using Mailgun')
             ->view('emails.debug_email_sending');
     }

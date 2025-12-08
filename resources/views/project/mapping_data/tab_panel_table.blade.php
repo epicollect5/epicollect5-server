@@ -13,7 +13,7 @@
 
                 {{--skip readme, we do not map those as no answer is given--}}
                 {{--todo readme should be a constant--}}
-                @if ($projectExtra['inputs'][$inputRef]['data']['type'] != Config::get('ec5Strings.inputs_type.readme'))
+                @if ($projectExtra['inputs'][$inputRef]['data']['type'] != config('epicollect.strings.inputs_type.readme'))
                     @include('project.mapping_data.table_panel_table_input' , [
                     'input' => $projectExtra['inputs'][$inputRef],
                     'mappedInput' => $mapping['forms'][$formRef][$inputRef],
@@ -36,7 +36,7 @@
                     @if(count($mapping['forms'][$formRef][$inputRef]['branch']) > 0)
                         @foreach($projectExtra['forms'][$formRef]['branch'][$inputRef] as $branchInputRef)
 
-                            @if ($projectExtra['inputs'][$branchInputRef]['data']['type'] != Config::get('ec5Strings.inputs_type.readme'))
+                            @if ($projectExtra['inputs'][$branchInputRef]['data']['type'] != config('epicollect.strings.inputs_type.readme'))
                                 @include('project.mapping_data.tab_panel_table_branch', [
                              'branchInput' => $projectExtra['inputs'][$branchInputRef]['data'],
                              'branchInputRef' => $branchInputRef,
@@ -53,14 +53,13 @@
                     @if(count($mapping['forms'][$formRef][$inputRef]['group']) > 0)
                         @foreach($projectExtra['forms'][$formRef]['group'][$inputRef] as $groupInputRef)
 
-                            @if ($projectExtra['inputs'][$groupInputRef]['data']['type'] != Config::get('ec5Strings.inputs_type.readme'))
+                            @if ($projectExtra['inputs'][$groupInputRef]['data']['type'] != config('epicollect.strings.inputs_type.readme'))
                                 @include('project.mapping_data.tab_panel_table_group', [
                             'groupInput' => $projectExtra['inputs'][$groupInputRef]['data'],
                             'mappedGroupInput' => $mapping['forms'][$formRef][$inputRef]['group'][$groupInputRef],
                              'isNestedGroup' => false
                             ])
                             @endif
-
 
                         @endforeach
                     @endif
