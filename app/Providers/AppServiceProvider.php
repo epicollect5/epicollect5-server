@@ -14,6 +14,7 @@ use Throwable;
 class AppServiceProvider extends ServiceProvider
 {
     private const string EPICOLLECT_MEDIA_BUCKET_PRODUCTION = 'epicollect5-media-bucket-production';
+    private const string EXCEPTION_MESSAGE = 'Production media bucket is not allowed in this environment.';
 
     /**
      * Bootstraps core application services and enforces environment-specific configuration.
@@ -32,7 +33,7 @@ class AppServiceProvider extends ServiceProvider
         }
 
         //skip ide helper in production
-        if ($this->app->isLocal()) {
+        if ($this->app->environment('development')) {
             $this->app->register(IdeHelperServiceProvider::class);
         }
 
@@ -43,8 +44,8 @@ class AppServiceProvider extends ServiceProvider
         // If not in production domain but using production bucket, throw error
         if (config('epicollect.setup.system.storage_driver') === 's3') {
             if ($host !== 'five.epicollect.net' && $bucket === self::EPICOLLECT_MEDIA_BUCKET_PRODUCTION) {
-                Log::error(__METHOD__ . ' failed.', ['exception' => 'Forbidden: Production media bucket is not allowed in this environment.']);
-                throw new HttpException(500);
+                Log::error(__METHOD__ . ' failed.', ['exception' => self::EXCEPTION_MESSAGE]);
+                throw new HttpException(500, self::EXCEPTION_MESSAGE);
             }
         }
 

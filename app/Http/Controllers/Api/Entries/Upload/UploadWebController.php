@@ -125,10 +125,6 @@ class UploadWebController extends UploadControllerBase
          */
         $this->removeLeftoverBranchEntries($formRef, $projectExtra);
 
-        //Throttle for half a second so the server does not get smashed by uploads
-        time_nanosleep(0, (int)(config('epicollect.setup.api.response_delay.upload')));
-
-
         /* PASSED */
         // Send http status code 200, ok!
         return Response::apiSuccessCode($responseCode);
@@ -143,8 +139,9 @@ class UploadWebController extends UploadControllerBase
      */
     public function storeBulk()
     {
-        //flag that this is  bulk upload (to skip create_at override)
+        //Flag the upload as bulk
         $this->entriesUploadService->isBulkUpload = true;
+        // Process the upload
         return $this->store();
     }
 

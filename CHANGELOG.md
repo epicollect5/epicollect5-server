@@ -1,5 +1,33 @@
 ## Release Notes
 
+# 12.4.14
+
+- Fixed missing $errors array initialization
+- Removed unused endpoints
+
+# 12.4.13
+
+- Set garbage collector to run weekly on Sunday at 04:00 UTC
+
+# 12.4.12
+
+- Added laravel cache garbage collector package
+- Garbage collector will run daily at 03:00 UTC
+
+# 12.4.11
+
+- Fixed wrong date in project details page
+
+# 12.4.10
+
+- Minor fix for ide helper loading only in development environments
+
+# 12.4.9
+
+- Removed multiple artificial response delays — faster uploads, media serving, exports, and token issuance.
+- Added bulk-upload rate limiting (per-user and per-IP) and applied throttling to bulk-upload endpoints.
+- Dataviewer 0.1.2
+
 # 12.4.8
 
 - Added storage bucket validation on boot to prevent incorrect production-bucket usage.

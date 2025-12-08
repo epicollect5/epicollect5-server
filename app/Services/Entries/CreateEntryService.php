@@ -16,7 +16,7 @@ class CreateEntryService
 {
     use Entries;
 
-    public array $errors;
+    public array $errors = [];
 
     /**
      * @throws Throwable

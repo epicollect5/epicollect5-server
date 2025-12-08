@@ -1,6 +1,8 @@
 @php
     use Carbon\Carbon;
     $updatedAt = $requestAttributes->requestedProject->getUpdatedAt();
+    $createdAtUTC = Carbon::parse($requestAttributes->requestedProject->created_at)->setTimezone('UTC');
+    $createdOnForHumans = $createdAtUTC->format('D d M Y, H:i');
 @endphp
 {{-- Success Message --}}
 @if (session('projectCreated') && session('tab') === 'create')
@@ -60,7 +62,7 @@
                                     calendar_today
                                 </i>
                                 &nbsp;Created on
-                                {{ Carbon::parse($requestAttributes->requestedProject->created_at)->setTimezone('UTC')->format('D M Y, H:i') }}
+                                {{ $createdOnForHumans }}
                                 UTC
                             </h5>
                         </div>

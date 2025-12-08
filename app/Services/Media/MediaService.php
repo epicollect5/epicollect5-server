@@ -134,7 +134,6 @@ class MediaService
                 return Response::toMediaStreamS3(request(), $diskRoot.$path, $type);
             default:
                 // photo/avatar full response
-                sleep(config('epicollect.setup.api_sleep_time.media'));
                 $stream = $disk->readStream($path);
                 $imageContent = stream_get_contents($stream);
                 fclose($stream);
@@ -156,7 +155,6 @@ class MediaService
             return Response::toMediaStreamLocal(request(), $realFilepath, $type);
         }
 
-        sleep(config('epicollect.setup.api_sleep_time.media'));
         return Response::make(file_get_contents($realFilepath), 200, [
             'Content-Type' => $contentType
         ]);

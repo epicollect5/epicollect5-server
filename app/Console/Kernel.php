@@ -2,19 +2,18 @@
 
 namespace ec5\Console;
 
-use ec5\Console\Commands\BenchmarkJsonCompression;
 use ec5\Console\Commands\SystemCheckStorageCommand;
 use ec5\Console\Commands\RemoveUnverifiedUsersCommand;
 use ec5\Console\Commands\SeedEntriesCommand;
 use ec5\Console\Commands\SeedMediaCommand;
 use ec5\Console\Commands\SeedSuperadminCommand;
 use ec5\Console\Commands\SystemClearOpcache;
-use ec5\Console\Commands\SystemMigrateEntriesJson;
 use ec5\Console\Commands\SystemProjectStorageCommand;
 use ec5\Console\Commands\SystemStatsCommand;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use Illuminate\Support\Facades\App;
+use jdavidbakr\LaravelCacheGarbageCollector\LaravelCacheGarbageCollector;
 
 class Kernel extends ConsoleKernel
 {
@@ -28,11 +27,10 @@ class Kernel extends ConsoleKernel
         SystemCheckStorageCommand::class,
         SystemClearOpcache::class,
         SystemProjectStorageCommand::class,
-        SystemMigrateEntriesJson::class,
         SeedEntriesCommand::class,
         SeedMediaCommand::class,
         SeedSuperadminCommand::class,
-        BenchmarkJsonCompression::class
+        LaravelCacheGarbageCollector::class
     ];
 
     /**
@@ -44,13 +42,19 @@ class Kernel extends ConsoleKernel
             //grab system stats for the current day
             $schedule->command('system:stats')
                 ->dailyAt('01:00')
-                ->timezone('Europe/London')
+                ->timezone('UTC')
                 ->withoutOverlapping();
 
             //check storage available
             $schedule->command('system:check-storage')
                 ->dailyAt('07:00')
-                ->timezone('Europe/London')
+                ->timezone('UTC')
+                ->withoutOverlapping();
+
+            //clear laravel expired cache files on Sunday at 04:00 UTC
+            $schedule->command('cache:gc')
+                ->weeklyOn(0, '04:00')
+                ->timezone('UTC')
                 ->withoutOverlapping();
         } else {
             //run commands every hour locally (for debugging)

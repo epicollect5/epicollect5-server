@@ -39,7 +39,8 @@
     "symfony/dom-crawler": "^7.1",
     "ext-mbstring": "*",
     "ext-simdjson": "*",
-    "intervention/image-laravel": "^1.5"
+    "intervention/image-laravel": "^1.5",
+    "jdavidbakr/laravel-cache-garbage-collector": "^2.3"
   },
   "require-dev": {
     "ext-xdebug": "*",
