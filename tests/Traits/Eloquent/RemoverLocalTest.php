@@ -19,9 +19,6 @@ class RemoverLocalTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-
-
-
         $this->overrideStorageDriver('local');
     }
 
@@ -212,10 +209,4 @@ class RemoverLocalTest extends TestCase
         );
         $this->assertEquals(($filesPerDisk * count($deletableDisks)) - $maxFiles, $totalRemaining);
     }
-
-
-
-
-
-
 }

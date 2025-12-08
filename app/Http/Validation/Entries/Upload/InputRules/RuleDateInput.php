@@ -50,7 +50,8 @@ class RuleDateInput extends RuleInputBase
         if (!strtotime($answer)) {
             Log::error('Date wrong format uploaded - strtotime failed', [
                 'project slug' => $project->slug,
-                'date' => $answer
+                'date' => $answer,
+                'platform' => $entryStructure->getPlatform()
             ]);
             $this->errors[$inputDetails['ref']] = ['ec5_79'];
         }
@@ -80,9 +81,9 @@ class RuleDateInput extends RuleInputBase
     }
 
     //see t.ly/YEox
-    private function validateDate($date, $format = 'Y-m-d'): bool
+    private function validateDate($date): bool
     {
-        $d = DateTime::createFromFormat($format, $date);
-        return $d && $d->format($format) == $date;
+        $d = DateTime::createFromFormat('Y-m-d', $date);
+        return $d && $d->format('Y-m-d') == $date;
     }
 }
