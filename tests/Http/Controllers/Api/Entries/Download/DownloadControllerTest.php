@@ -206,6 +206,9 @@ class DownloadControllerTest extends TestCase
         $this->assertZipContent($filePath, $format, $numOfForms, $numOfBranches, $access);
 
         Storage::delete($filePath);
+        Storage::disk('audio')->deleteDirectory($project->ref);
+        Storage::disk('photo')->deleteDirectory($project->ref);
+        Storage::disk('video')->deleteDirectory($project->ref);
     }
 
     public function test_download_json_private()
@@ -393,6 +396,9 @@ class DownloadControllerTest extends TestCase
 
         $this->assertZipContent($filePath, $format, $numOfForms, $numOfBranches);
 
+        Storage::disk('audio')->deleteDirectory($project->ref);
+        Storage::disk('photo')->deleteDirectory($project->ref);
+        Storage::disk('video')->deleteDirectory($project->ref);
         Storage::delete($filePath);
     }
 
