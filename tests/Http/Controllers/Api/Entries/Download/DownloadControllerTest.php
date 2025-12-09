@@ -84,6 +84,9 @@ class DownloadControllerTest extends TestCase
             );
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_download_json_public()
     {
         //create user
@@ -1013,7 +1016,7 @@ class DownloadControllerTest extends TestCase
 
                     // --- 3. Validate Query String based on Extension/Media Type ---
 
-                    if ($extension === 'jpg' || $extension === 'jpeg') {
+                    if ($extension === 'jpg') {
                         // PHOTO Validation
                         $this->assertEquals(
                             'photo',
@@ -1100,7 +1103,7 @@ class DownloadControllerTest extends TestCase
      * @param array $allowedExtensions Allowed file extensions.
      * @return void
      */
-    private function traverseAndAssertJsonValue($value, array $protocols, array $allowedExtensions): void
+    private function traverseAndAssertJsonValue(mixed $value, array $protocols, array $allowedExtensions): void
     {
         // If the value is an array or object, recurse through its elements/properties
         if (is_array($value) || is_object($value)) {
