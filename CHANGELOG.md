@@ -1,5 +1,11 @@
 ## Release Notes
 
+# 12.4.15
+
+- Fixed URLs in CSV/JSON downloads
+- Fixed missing svg image for dataviewer photo popups
+- Added public-access validation paths and stronger URL/filename format checks for CSV/JSON/ZIP exports.
+
 # 12.4.14
 
 - Fixed missing $errors array initialization

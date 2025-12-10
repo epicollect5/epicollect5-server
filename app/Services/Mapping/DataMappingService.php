@@ -594,13 +594,17 @@ class DataMappingService
                 }
                 break;
             case 'photo':
-                $parsedAnswer = $this->getMediaUrl($type, 'photo', $answer);
+                //entry_original is the default format
+                $format = config('epicollect.strings.media_formats.entry_original');
+                $parsedAnswer = $this->getMediaUrl($type, $format, $answer);
                 break;
             case 'video':
-                $parsedAnswer = $this->getMediaUrl($type, 'video', $answer);
+                $format = config('epicollect.strings.media_formats.video');
+                $parsedAnswer = $this->getMediaUrl($type, $format, $answer);
                 break;
             case 'audio':
-                $parsedAnswer = $this->getMediaUrl($type, 'audio', $answer);
+                $format = config('epicollect.strings.media_formats.audio');
+                $parsedAnswer = $this->getMediaUrl($type, $format, $answer);
                 break;
             case 'integer':
                 //force cast to int
