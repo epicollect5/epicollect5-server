@@ -196,7 +196,7 @@ class DownloadControllerTest extends TestCase
         $numOfBranches = 0;
         foreach ($projectDefinition['data']['project']['forms'] as $form) {
             foreach ($form['inputs'] as $input) {
-                if ($input['type'] === 'branch') {
+                if ($input['type'] === config('epicollect.strings.inputs_type.branch')) {
                     $numOfBranches++;
                 }
             }
@@ -388,7 +388,7 @@ class DownloadControllerTest extends TestCase
         $numOfBranches = 0;
         foreach ($projectDefinition['data']['project']['forms'] as $form) {
             foreach ($form['inputs'] as $input) {
-                if ($input['type'] === 'branch') {
+                if ($input['type'] === config('epicollect.strings.inputs_type.branch')) {
                     $numOfBranches++;
                 }
             }
@@ -515,7 +515,7 @@ class DownloadControllerTest extends TestCase
         $numOfBranches = 0;
         foreach ($projectDefinition['data']['project']['forms'] as $form) {
             foreach ($form['inputs'] as $input) {
-                if ($input['type'] === 'branch') {
+                if ($input['type'] === config('epicollect.strings.inputs_type.branch')) {
                     $numOfBranches++;
                 }
             }
@@ -955,16 +955,6 @@ class DownloadControllerTest extends TestCase
         $this->assertTrue($fileFound);
     }
 
-
-
-    /**
-     * Parses CSV content and asserts that any URLs found adhere to the
-     * correct query string format based on the expected media type (extension),
-     * including validation for the UUID_timestamp filename format.
-     *
-     * @param string $csvContent The raw CSV data.
-     * @return void
-     */
     /**
      * Parses CSV content and asserts that any URLs found adhere to the
      * correct query string format. Fails if the extension is not JPG or MP4.
