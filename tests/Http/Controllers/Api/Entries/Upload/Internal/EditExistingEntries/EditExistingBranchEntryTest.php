@@ -24,7 +24,7 @@ class EditExistingBranchEntryTest extends TestCase
     use DatabaseTransactions;
     use Assertions;
 
-    private $endpoint = 'api/internal/web-upload/';
+    private string $endpoint = 'api/internal/web-upload/';
 
     public function setUp(): void
     {
@@ -186,7 +186,7 @@ class EditExistingBranchEntryTest extends TestCase
         }
 
         $payloadAnswers = $branchEntryPayloads[0]['data']['branch_entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswerBranch($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
 
         $response = [];
         try {
@@ -314,7 +314,7 @@ class EditExistingBranchEntryTest extends TestCase
         }
 
         $payloadAnswers = $branchEntryPayloads[0]['data']['branch_entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswerBranch($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
 
         $response = [];
         try {
@@ -442,7 +442,7 @@ class EditExistingBranchEntryTest extends TestCase
         }
 
         $payloadAnswers = $branchEntryPayloads[0]['data']['branch_entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswerBranch($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
 
         $response = [];
         try {
@@ -570,7 +570,7 @@ class EditExistingBranchEntryTest extends TestCase
         }
 
         $payloadAnswers = $branchEntryPayloads[0]['data']['branch_entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswerBranch($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
 
         $response = [];
         try {
@@ -698,7 +698,7 @@ class EditExistingBranchEntryTest extends TestCase
         }
 
         $payloadAnswers = $branchEntryPayloads[0]['data']['branch_entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswerBranch($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
 
         $response = [];
         try {
@@ -826,7 +826,7 @@ class EditExistingBranchEntryTest extends TestCase
         }
 
         $payloadAnswers = $branchEntryPayloads[0]['data']['branch_entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswerBranch($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
 
         $response = [];
         try {
@@ -954,7 +954,7 @@ class EditExistingBranchEntryTest extends TestCase
         }
 
         $payloadAnswers = $branchEntryPayloads[0]['data']['branch_entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswerBranch($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
 
         $response = [];
         try {
@@ -1082,7 +1082,7 @@ class EditExistingBranchEntryTest extends TestCase
         }
 
         $payloadAnswers = $branchEntryPayloads[0]['data']['branch_entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswerBranch($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
 
         $response = [];
         try {
@@ -1210,7 +1210,7 @@ class EditExistingBranchEntryTest extends TestCase
         }
 
         $payloadAnswers = $branchEntryPayloads[0]['data']['branch_entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswerBranch($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
 
         $response = [];
         try {
@@ -1348,7 +1348,7 @@ class EditExistingBranchEntryTest extends TestCase
         }
 
         $payloadAnswers = $branchEntryPayloads[0]['data']['branch_entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswerBranch($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
 
         $response = [];
         try {
@@ -1486,7 +1486,7 @@ class EditExistingBranchEntryTest extends TestCase
         }
 
         $payloadAnswers = $branchEntryPayloads[0]['data']['branch_entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswerBranch($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
 
         $response = [];
         try {
@@ -1615,7 +1615,7 @@ class EditExistingBranchEntryTest extends TestCase
         }
 
         $payloadAnswers = $branchEntryPayloads[0]['data']['branch_entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswerBranch($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
 
         $response = [];
         try {
@@ -1744,7 +1744,7 @@ class EditExistingBranchEntryTest extends TestCase
         }
 
         $payloadAnswers = $branchEntryPayloads[0]['data']['branch_entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswerBranch($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
 
         $response = [];
         try {
@@ -1873,7 +1873,7 @@ class EditExistingBranchEntryTest extends TestCase
         }
 
         $payloadAnswers = $branchEntryPayloads[0]['data']['branch_entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswerBranch($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
 
         $response = [];
         try {
@@ -2002,7 +2002,7 @@ class EditExistingBranchEntryTest extends TestCase
         }
 
         $payloadAnswers = $branchEntryPayloads[0]['data']['branch_entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswerBranch($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
 
         $response = [];
         try {
@@ -2131,7 +2131,7 @@ class EditExistingBranchEntryTest extends TestCase
         }
 
         $payloadAnswers = $branchEntryPayloads[0]['data']['branch_entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswerBranch($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
 
         $response = [];
         try {
@@ -2260,7 +2260,7 @@ class EditExistingBranchEntryTest extends TestCase
         }
 
         $payloadAnswers = $branchEntryPayloads[0]['data']['branch_entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswerBranch($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
 
         $response = [];
         try {
@@ -2399,7 +2399,7 @@ class EditExistingBranchEntryTest extends TestCase
         }
 
         $payloadAnswers = $branchEntryPayloads[0]['data']['branch_entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswerBranch($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
 
         $response = [];
         try {
@@ -2539,7 +2539,7 @@ class EditExistingBranchEntryTest extends TestCase
         }
 
         $payloadAnswers = $branchEntryPayloads[0]['data']['branch_entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswerBranch($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
 
         $response = [];
         try {
@@ -2679,7 +2679,7 @@ class EditExistingBranchEntryTest extends TestCase
         }
 
         $payloadAnswers = $branchEntryPayloads[0]['data']['branch_entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswerBranch($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
 
         $response = [];
         try {
@@ -2828,7 +2828,7 @@ class EditExistingBranchEntryTest extends TestCase
         }
 
         $payloadAnswers = $branchEntryPayloads[0]['data']['branch_entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswerBranch($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
 
         $response = [];
         try {
@@ -2966,7 +2966,7 @@ class EditExistingBranchEntryTest extends TestCase
         }
 
         $payloadAnswers = $branchEntryPayloads[0]['data']['branch_entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswerBranch($payloadAnswers, $branchEntryPayloads[0], $inputRef, $editedInputAnswer);
 
         $response = [];
         try {
@@ -3000,16 +3000,6 @@ class EditExistingBranchEntryTest extends TestCase
 
         } catch (\Throwable $e) {
             $this->logTestError($e, $response);
-        }
-    }
-
-    private function setEditedAnswer($payloadAnswers, &$payload, $inputRef, $editedInputAnswer)
-    {
-        foreach ($payloadAnswers as $ref => $payloadAnswer) {
-            if ($ref === $inputRef) {
-                $payload['data']['branch_entry']['answers'][$inputRef] = $editedInputAnswer;
-                break;
-            }
         }
     }
 }

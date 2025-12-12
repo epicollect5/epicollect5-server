@@ -14,7 +14,8 @@ return new class () extends Migration {
 
         // Create the table with Schema Builder
         Schema::create($tableName, function (Blueprint $table) {
-            $table->integer('entry_id')->primary();
+            $table->integer('id', true);
+            $table->integer('entry_id')->unique();
             $table->integer('project_id')->nullable(false);
             $table->json('entry_data')->nullable(false);
             $table->json('geo_json_data')->nullable();

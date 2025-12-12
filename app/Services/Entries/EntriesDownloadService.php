@@ -338,7 +338,7 @@ class EntriesDownloadService
                 $chunkSize = config('epicollect.limits.download_entries_chunk_size');
                 $buffer = '';
                 $rowCount = 0; // Track the number of rows processed
-                $total = $query->count('id'); // Get total number of entries
+                $total = $query->count(); // Get total number of entries
 
                 foreach ($query->lazyByIdDesc($chunkSize) as $entry) {
 

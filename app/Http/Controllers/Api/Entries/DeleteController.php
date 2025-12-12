@@ -8,11 +8,13 @@ use ec5\Http\Controllers\Controller;
 use ec5\Http\Validation\Entries\Delete\RuleDelete;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
+use ec5\Models\Project\Project;
 use ec5\Services\Entries\DeleteEntryService;
 use ec5\Traits\Eloquent\Remover;
 use ec5\Traits\Requests\RequestAttributes;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Str;
 use Log;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -149,6 +151,22 @@ class DeleteController extends Controller
             $this->errors[] = ['deletion-entries' => ['ec5_91']];
             return false;
         }
+
+        //does the project slug matches? Otherwise, bail out
+        if (trim($this->requestedProject()->slug) !== Str::slug($data['project-name'])) {
+            $this->errors[] = ['deletion-entries' => ['ec5_399']];
+            return false;
+        }
+
+        //does the project ID matches the one in the DB? Otherwise, bail out
+        $projectId = Project::where('slug', Str::slug($data['project-name']))
+            ->where('name', $data['project-name'])
+            ->first()->id;
+        if ($this->requestedProject()->getId() !== $projectId) {
+            $this->errors[] = ['deletion-entries' => ['ec5_399']];
+            return false;
+        }
+
         return true;
     }
 

@@ -10,6 +10,7 @@ use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use ec5\Traits\Assertions;
+use Exception;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Str;
 use Storage;
@@ -400,7 +401,7 @@ class DownloadSubsetControllerTest extends TestCase
             );
         try {
             $response->assertStatus(200);
-        } catch (\Exception $exception) {
+        } catch (Throwable $exception) {
             $this->logTestError($exception, $response);
         }
 
@@ -497,7 +498,7 @@ class DownloadSubsetControllerTest extends TestCase
             );
         try {
             $response->assertStatus(200);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->logTestError($exception, $response);
         }
 
@@ -533,7 +534,6 @@ class DownloadSubsetControllerTest extends TestCase
     public function test_error_response_with_wrong_params()
     {
         //create user
-        $format = 'json';
         $user = factory(User::class)->create();
         //create project
         $project = factory(Project::class)->create(
@@ -621,7 +621,7 @@ class DownloadSubsetControllerTest extends TestCase
             ]
         );
 
-        $response = $this->actingAs($user)->get('api/internal/download-entries/' . $project->slug)
+        $this->actingAs($user)->get('api/internal/download-entries/' . $project->slug)
             ->assertStatus(400)
             ->assertJsonStructure([
                 'errors' => [
@@ -682,7 +682,7 @@ class DownloadSubsetControllerTest extends TestCase
             ->withCookie(config('epicollect.setup.cookies.download_entries'), 'gibberish');
 
 
-        //for reasons unknown when using withCookie() we need to change approch to test the response
+        //for reasons unknown when using withCookie() we need to change approach to test the response
         $this->assertEquals(400, $response->getStatusCode());
 
         $jsonContent = json_decode($response->getContent(), true);

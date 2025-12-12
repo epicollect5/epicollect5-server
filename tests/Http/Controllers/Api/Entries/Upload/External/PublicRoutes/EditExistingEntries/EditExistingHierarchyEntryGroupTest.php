@@ -151,7 +151,7 @@ class EditExistingHierarchyEntryGroupTest extends TestCase
         }
 
         $payloadAnswers = $entryPayloads[0]['data']['entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $entryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswerHierarchy($payloadAnswers, $entryPayloads[0], $inputRef, $editedInputAnswer);
 
         $response = [];
         try {
@@ -246,7 +246,7 @@ class EditExistingHierarchyEntryGroupTest extends TestCase
         }
 
         $payloadAnswers = $entryPayloads[0]['data']['entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $entryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswerHierarchy($payloadAnswers, $entryPayloads[0], $inputRef, $editedInputAnswer);
 
         $response = [];
         try {
@@ -341,7 +341,7 @@ class EditExistingHierarchyEntryGroupTest extends TestCase
         }
 
         $payloadAnswers = $entryPayloads[0]['data']['entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $entryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswerHierarchy($payloadAnswers, $entryPayloads[0], $inputRef, $editedInputAnswer);
 
         $response = [];
         try {
@@ -436,7 +436,7 @@ class EditExistingHierarchyEntryGroupTest extends TestCase
         }
 
         $payloadAnswers = $entryPayloads[0]['data']['entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $entryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswerHierarchy($payloadAnswers, $entryPayloads[0], $inputRef, $editedInputAnswer);
 
         $response = [];
         try {
@@ -531,7 +531,7 @@ class EditExistingHierarchyEntryGroupTest extends TestCase
         }
 
         $payloadAnswers = $entryPayloads[0]['data']['entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $entryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswerHierarchy($payloadAnswers, $entryPayloads[0], $inputRef, $editedInputAnswer);
 
         $response = [];
         try {
@@ -626,7 +626,7 @@ class EditExistingHierarchyEntryGroupTest extends TestCase
         }
 
         $payloadAnswers = $entryPayloads[0]['data']['entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $entryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswerHierarchy($payloadAnswers, $entryPayloads[0], $inputRef, $editedInputAnswer);
 
         $response = [];
         try {
@@ -721,7 +721,7 @@ class EditExistingHierarchyEntryGroupTest extends TestCase
         }
 
         $payloadAnswers = $entryPayloads[0]['data']['entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $entryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswerHierarchy($payloadAnswers, $entryPayloads[0], $inputRef, $editedInputAnswer);
 
         $response = [];
         try {
@@ -816,7 +816,7 @@ class EditExistingHierarchyEntryGroupTest extends TestCase
         }
 
         $payloadAnswers = $entryPayloads[0]['data']['entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $entryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswerHierarchy($payloadAnswers, $entryPayloads[0], $inputRef, $editedInputAnswer);
 
         $response = [];
         try {
@@ -911,7 +911,7 @@ class EditExistingHierarchyEntryGroupTest extends TestCase
         }
 
         $payloadAnswers = $entryPayloads[0]['data']['entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $entryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswerHierarchy($payloadAnswers, $entryPayloads[0], $inputRef, $editedInputAnswer);
 
         $response = [];
         try {
@@ -1006,7 +1006,7 @@ class EditExistingHierarchyEntryGroupTest extends TestCase
         }
 
         $payloadAnswers = $entryPayloads[0]['data']['entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $entryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswerHierarchy($payloadAnswers, $entryPayloads[0], $inputRef, $editedInputAnswer);
 
         $response = [];
         try {
@@ -1101,7 +1101,7 @@ class EditExistingHierarchyEntryGroupTest extends TestCase
         }
 
         $payloadAnswers = $entryPayloads[0]['data']['entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $entryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswerHierarchy($payloadAnswers, $entryPayloads[0], $inputRef, $editedInputAnswer);
 
         $response = [];
         try {
@@ -1196,7 +1196,7 @@ class EditExistingHierarchyEntryGroupTest extends TestCase
         }
 
         $payloadAnswers = $entryPayloads[0]['data']['entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $entryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswerHierarchy($payloadAnswers, $entryPayloads[0], $inputRef, $editedInputAnswer);
 
         $response = [];
         try {
@@ -1291,7 +1291,7 @@ class EditExistingHierarchyEntryGroupTest extends TestCase
         }
 
         $payloadAnswers = $entryPayloads[0]['data']['entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $entryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswerHierarchy($payloadAnswers, $entryPayloads[0], $inputRef, $editedInputAnswer);
 
         $response = [];
         try {
@@ -1386,7 +1386,7 @@ class EditExistingHierarchyEntryGroupTest extends TestCase
         }
 
         $payloadAnswers = $entryPayloads[0]['data']['entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $entryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswerHierarchy($payloadAnswers, $entryPayloads[0], $inputRef, $editedInputAnswer);
 
         $response = [];
         try {
@@ -1481,7 +1481,7 @@ class EditExistingHierarchyEntryGroupTest extends TestCase
         }
 
         $payloadAnswers = $entryPayloads[0]['data']['entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $entryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswerHierarchy($payloadAnswers, $entryPayloads[0], $inputRef, $editedInputAnswer);
 
         $response = [];
         try {
@@ -1576,7 +1576,7 @@ class EditExistingHierarchyEntryGroupTest extends TestCase
         }
 
         $payloadAnswers = $entryPayloads[0]['data']['entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $entryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswerHierarchy($payloadAnswers, $entryPayloads[0], $inputRef, $editedInputAnswer);
 
         $response = [];
         try {
@@ -1671,7 +1671,7 @@ class EditExistingHierarchyEntryGroupTest extends TestCase
         }
 
         $payloadAnswers = $entryPayloads[0]['data']['entry']['answers'];
-        $this->setEditedAnswer($payloadAnswers, $entryPayloads[0], $inputRef, $editedInputAnswer);
+        $this->setEditedAnswerHierarchy($payloadAnswers, $entryPayloads[0], $inputRef, $editedInputAnswer);
 
         $response = [];
         try {
@@ -1703,16 +1703,6 @@ class EditExistingHierarchyEntryGroupTest extends TestCase
 
         } catch (\Throwable $e) {
             $this->logTestError($e, $response);
-        }
-    }
-
-    private function setEditedAnswer($payloadAnswers, &$payload, $inputRef, $editedInputAnswer)
-    {
-        foreach ($payloadAnswers as $ref => $payloadAnswer) {
-            if ($ref === $inputRef) {
-                $payload['data']['entry']['answers'][$inputRef] = $editedInputAnswer;
-                break;
-            }
         }
     }
 }

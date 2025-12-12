@@ -264,14 +264,31 @@ class Entry extends Model
      */
     public function getEntriesByFormForArchive(int $projectId, array $params, array $columns = array('*')): Builder
     {
-        // Ensure 'id' is included in the columns
-        if (!in_array('id', $columns)) {
-            $columns[] = 'id';
+        // Replace '*' with explicit 'e.*' to avoid ambiguity
+        if (in_array('*', $columns)) {
+            $columns = array_diff($columns, ['*']);
+            $columns[] = 'e.*';
+        }
+
+        // Ensure 'id' is prefixed with 'e.' if it exists
+        if (in_array('id', $columns)) {
+            $columns = array_diff($columns, ['id']);
+            $columns[] = 'e.id';
+        }
+
+        // Prefix other common columns that might be ambiguous
+        $columnsToPrefix = ['uuid', 'title', 'user_id', 'uploaded_at', 'created_at', 'updated_at'];
+        foreach ($columnsToPrefix as $col) {
+            if (in_array($col, $columns)) {
+                $columns = array_diff($columns, [$col]);
+                $columns[] = 'e.' . $col;
+            }
         }
 
         // Remove entry_data and geo_json_data from $columns completely
         // We do this for the COALESCE to work properly
-        $columns = array_diff($columns, ['entry_data', 'geo_json_data']);
+        $columns = array_diff($columns, ['entry_data', 'geo_json_data', 'e.entry_data', 'e.geo_json_data']);
+
         $tableJson = config('epicollect.tables.entries_json');
 
         // Use raw SQL to apply FORCE INDEX
@@ -284,8 +301,8 @@ class Entry extends Model
                     DB::raw('COALESCE(e.geo_json_data, ej.geo_json_data) as geo_json_data')
                 ]
             ))
-             ->where('e.project_id', '=', $projectId)
-             ->where('e.form_ref', '=', $params['form_ref'])
+            ->where('e.project_id', '=', $projectId)
+            ->where('e.form_ref', '=', $params['form_ref'])
             ->where(function ($query) use ($params) {
                 // If we have a user ID
                 if (!empty($params['user_id'])) {

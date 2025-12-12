@@ -190,17 +190,32 @@ class BranchEntry extends Model
      */
     public function getBranchEntriesByBranchRefForArchive(int $projectId, array $params, array $columns = array('*')): Builder
     {
-        // Ensure 'id' is included in the columns
-        if (!in_array('id', $columns)) {
-            $columns[] = 'id';
+        // Replace '*' with explicit 'be.*' to avoid ambiguity
+        if (in_array('*', $columns)) {
+            $columns = array_diff($columns, ['*']);
+            $columns[] = 'be.*';
+        }
+
+        // Ensure 'id' is prefixed with 'be.' if it exists
+        if (in_array('id', $columns)) {
+            $columns = array_diff($columns, ['id']);
+            $columns[] = 'be.id';
+        }
+
+        // Prefix other common columns that might be ambiguous
+        $columnsToPrefix = ['uuid', 'title', 'user_id', 'uploaded_at', 'created_at', 'updated_at'];
+        foreach ($columnsToPrefix as $col) {
+            if (in_array($col, $columns)) {
+                $columns = array_diff($columns, [$col]);
+                $columns[] = 'be.' . $col;
+            }
         }
 
         // Remove entry_data and geo_json_data from $columns completely
         // We do this for the COALESCE to work properly
-        $columns = array_diff($columns, ['entry_data', 'geo_json_data']);
+        $columns = array_diff($columns, ['entry_data', 'geo_json_data', 'be.entry_data', 'be.geo_json_data']);
 
-        // Optimized version without user_id filtering and sorting for better performance during bulk exports
-        //Use raw SQL to apply FORCE INDEX
+        // Use raw SQL to apply FORCE INDEX
         $q = DB::table(DB::raw(config('epicollect.tables.branch_entries') . ' as be FORCE INDEX (idx_branch_entries_project_form_ref_id)'))
             ->leftJoin('branch_entries_json as bej', 'be.id', '=', 'bej.entry_id')
             ->select(array_merge(

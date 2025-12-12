@@ -154,24 +154,64 @@ class CreateEntryService
         return true;
     }
 
+    /**
+     * @throws Throwable
+     */
     protected function updateExistingEntry(EntryStructureDTO $entryStructure, $entry, $editEntry): int
     {
         $table = config('epicollect.tables.entries');
+        $tableJson = config('epicollect.tables.entries_json');
         if ($entryStructure->isBranch()) {
             $table = config('epicollect.tables.branch_entries');
+            $tableJson = config('epicollect.tables.branch_entries_json');
         }
 
         $entryInsertId = $editEntry->id;
+        $projectId = $entryStructure->getProjectId(); // Need project_id for JSON table
 
-        // Should the user id of the entry be updated?
+
+        //Do we need to update the user_id?
+        $newUserId = null;
         if ($entryStructure->shouldUpdateUserId()) {
-            $entry['user_id'] = $entryStructure->getUserId();
+            $newUserId = $entryStructure->getUserId();
+            // Update the array for completeness, though we will use $newUserId directly
+            $entry['user_id'] = $newUserId;
         }
 
-        // Update db entry. imp: laravel will only update if the row exists and a change has been made
-        DB::table($table)
-            ->where('id', $editEntry->id)
-            ->update($entry);
+        // Perform all updates within a transaction for safety
+        try {
+            DB::beginTransaction();
+            // 1. Insert/Update into the dedicated JSON table (UPSERT logic)
+            // This ensures the row exists in the JSON table.
+            // It UPDATES existing rows or INSERTS a new one for old entries being migrated.
+            DB::table($tableJson)->updateOrInsert(
+                [
+                    'entry_id' => $editEntry->id,
+                    'project_id' => $projectId,
+                ],
+                [
+                    'entry_data' => $entry['entry_data'],
+                    'geo_json_data' => $entry['geo_json_data'] ?? null,
+                ]
+            );
+
+            // 2. Update main table (non-JSON fields)
+            // Note: entry_data and geo_json_data are set to null to avoid conflicts
+            DB::table($table)
+                ->where('id', $editEntry->id)
+                ->update([
+                    'title' => $entry['title'],
+                    'uploaded_at' => $entry['uploaded_at'],
+                    'entry_data' => null,
+                    'geo_json_data' => null,
+                    //update user_id if needed
+                    'user_id' => $newUserId ?? $editEntry->user_id,
+                ]);
+            DB::commit();
+        } catch (Throwable $e) {
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
+            DB::rollBack();
+        }
 
         return $entryInsertId;
     }

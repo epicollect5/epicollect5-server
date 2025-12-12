@@ -14,7 +14,8 @@ return new class () extends Migration {
         $branchEntriesTable = config('epicollect.tables.branch_entries');
         // Create the table with Schema Builder
         Schema::create($tableName, function (Blueprint $table) use ($branchEntriesTable) {
-            $table->integer('entry_id')->primary();
+            $table->integer('id', true);
+            $table->integer('entry_id')->unique();
             $table->integer('project_id')->nullable(false);
             $table->json('entry_data')->nullable(false);
             $table->json('geo_json_data')->nullable();
