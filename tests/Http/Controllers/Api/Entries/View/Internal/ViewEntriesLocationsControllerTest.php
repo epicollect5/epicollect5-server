@@ -7,6 +7,7 @@ use ec5\Libraries\Utilities\Common;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
+use ec5\Models\Entries\EntryJson;
 use ec5\Models\Project\ProjectRole;
 use ec5\Models\User\User;
 use ec5\Traits\Assertions;
@@ -984,7 +985,15 @@ class ViewEntriesLocationsControllerTest extends ViewEntriesBaseControllerTest
             Entry::where('uuid', $entryPayloads[0]['data']['id'])->get()
         );
 
+        //nullify geojson data in both tables entries and entries_json
         Entry::where('uuid', $entryPayloads[0]['data']['id'])->update([
+            'geo_json_data' => null
+        ]);
+        EntryJson::where(
+            'entry_id',
+            Entry::where('uuid', $entryPayloads[0]['data']['id'])->first()->id
+        )
+            ->update([
             'geo_json_data' => null
         ]);
 
@@ -1012,6 +1021,9 @@ class ViewEntriesLocationsControllerTest extends ViewEntriesBaseControllerTest
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_entries_locations_endpoint_no_locations_found_because_no_locations_for_question()
     {
         //generate entries

@@ -8,6 +8,7 @@ use ec5\Console\Commands\SeedEntriesCommand;
 use ec5\Console\Commands\SeedMediaCommand;
 use ec5\Console\Commands\SeedSuperadminCommand;
 use ec5\Console\Commands\SystemClearOpcache;
+use ec5\Console\Commands\SystemMigrateEntriesJson;
 use ec5\Console\Commands\SystemProjectStorageCommand;
 use ec5\Console\Commands\SystemStatsCommand;
 use Illuminate\Console\Scheduling\Schedule;
@@ -23,6 +24,7 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         SystemStatsCommand::class,
         RemoveUnverifiedUsersCommand::class,
+        SystemMigrateEntriesJson::class,
         SystemCheckStorageCommand::class,
         SystemCheckStorageCommand::class,
         SystemClearOpcache::class,

@@ -317,5 +317,23 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
             ]);
         }
     }
+    protected function setEditedAnswerHierarchy($payloadAnswers, &$payload, $inputRef, $editedInputAnswer): void
+    {
+        foreach ($payloadAnswers as $ref => $payloadAnswer) {
+            if ($ref === $inputRef) {
+                $payload['data']['entry']['answers'][$inputRef] = $editedInputAnswer;
+                break;
+            }
+        }
+    }
 
+    protected function setEditedAnswerBranch($payloadAnswers, &$payload, $inputRef, $editedInputAnswer): void
+    {
+        foreach ($payloadAnswers as $ref => $payloadAnswer) {
+            if ($ref === $inputRef) {
+                $payload['data']['branch_entry']['answers'][$inputRef] = $editedInputAnswer;
+                break;
+            }
+        }
+    }
 }

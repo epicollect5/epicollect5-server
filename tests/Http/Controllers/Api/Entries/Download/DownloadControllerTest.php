@@ -173,6 +173,7 @@ class DownloadControllerTest extends TestCase
         $response = $this->actingAs($user)->call('GET', 'api/internal/download-entries/' . $project->slug, $params, $cookies);
 
         $response->assertStatus(200);
+
         // Assert that the returned file is a zip file
         $this->assertTrue($response->headers->get('Content-Type') === 'application/zip');
         //assert filename
