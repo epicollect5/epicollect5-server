@@ -211,6 +211,7 @@ class CreateEntryService
         } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             DB::rollBack();
+            return 0;
         }
 
         return $entryInsertId;

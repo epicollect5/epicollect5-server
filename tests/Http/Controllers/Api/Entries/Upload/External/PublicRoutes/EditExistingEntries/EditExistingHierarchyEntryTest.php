@@ -675,7 +675,7 @@ class EditExistingHierarchyEntryTest extends TestCase
         $inputDropdown = [];
         $editedInputAnswer = [];
         foreach ($inputs as $input) {
-            if ($input['type'] === config('epicollect.strings.inputs_type.time')) {
+            if ($input['type'] === config('epicollect.strings.inputs_type.dropdown')) {
                 $inputRef = $input['ref'];
                 $inputDropdown = $input;
                 break;
