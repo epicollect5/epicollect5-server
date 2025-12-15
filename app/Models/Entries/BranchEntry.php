@@ -106,9 +106,10 @@ class BranchEntry extends Model
         // Remove entry_data and geo_json_data from $columns completely
         // We do this for the COALESCE to work properly
         $columns = array_diff($columns, ['entry_data', 'geo_json_data']);
+        $branchEntriesJsonTable = config('epicollect.tables.branch_entries_json');
 
         $q = DB::table($this->table . ' as be')
-            ->leftJoin('branch_entries_json as bej', 'be.id', '=', 'bej.entry_id')
+            ->leftJoin($branchEntriesJsonTable.' as bej', 'be.id', '=', 'bej.entry_id')
             ->select(array_merge(
                 $columns,
                 [
@@ -156,9 +157,10 @@ class BranchEntry extends Model
         // Remove entry_data and geo_json_data from $columns completely
         // We do this for the COALESCE to work properly
         $columns = array_diff($columns, ['entry_data', 'geo_json_data']);
+        $branchEntriesJsonTable = config('epicollect.tables.branch_entries_json');
 
         $q = DB::table(config('epicollect.tables.branch_entries') . ' as be')
-            ->leftJoin('branch_entries_json as bej', 'be.id', '=', 'bej.entry_id')
+            ->leftJoin($branchEntriesJsonTable.' as bej', 'be.id', '=', 'bej.entry_id')
             ->select(array_merge(
                 $columns,
                 [
@@ -215,10 +217,11 @@ class BranchEntry extends Model
         // Remove entry_data and geo_json_data from $columns completely
         // We do this for the COALESCE to work properly
         $columns = array_diff($columns, ['entry_data', 'geo_json_data', 'be.entry_data', 'be.geo_json_data']);
+        $branchEntriesJsonTable = config('epicollect.tables.branch_entries_json');
 
         // Use raw SQL to apply FORCE INDEX
         $q = DB::table(DB::raw(config('epicollect.tables.branch_entries') . ' as be FORCE INDEX (idx_branch_entries_project_form_ref_id)'))
-            ->leftJoin('branch_entries_json as bej', 'be.id', '=', 'bej.entry_id')
+            ->leftJoin($branchEntriesJsonTable.' as bej', 'be.id', '=', 'bej.entry_id')
             ->select(array_merge(
                 $columns,
                 [
@@ -279,9 +282,10 @@ class BranchEntry extends Model
         // Remove entry_data and geo_json_data from $columns completely
         // We do this for the COALESCE to work properly
         $columns = array_diff($columns, ['entry_data', 'geo_json_data']);
+        $branchEntriesJsonTable = config('epicollect.tables.branch_entries_json');
 
         $q = DB::table($this->table . ' as be')
-            ->leftJoin('branch_entries_json as bej', 'be.id', '=', 'bej.entry_id')
+            ->leftJoin($branchEntriesJsonTable.' as bej', 'be.id', '=', 'bej.entry_id')
             ->select(array_merge(
                 $columns,
                 [

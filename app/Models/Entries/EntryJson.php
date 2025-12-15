@@ -15,7 +15,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class EntryJson extends Model
 {
     protected $table = 'entries_json';
-    protected $guarded = [];
     public $timestamps = false;
 
     protected $fillable = [
