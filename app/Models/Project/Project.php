@@ -49,12 +49,13 @@ class Project extends Model
     ];
 
     //used to init ProjectDTO, returns a bundle with data from multiple tables
-    public static function findBySlug($slug)
+    public static function findBySlug($slug): ?object
     {
         $query = DB::table(config('epicollect.tables.projects'));
         $query = $query->where('projects.slug', $slug);
         // Skip rows where status is 'archived'
-        $query = $query->where('status', '<>', 'archived');
+        $archivedStatus = config('epicollect.strings.project_status.archived');
+        $query = $query->where('status', '<>', $archivedStatus);
 
         $query = $query->leftJoin(
             config('epicollect.tables.project_stats'),
@@ -86,6 +87,7 @@ class Project extends Model
 
     public function myProjects($perPage, $userId, $params): Paginator
     {
+        $archivedStatus = config('epicollect.strings.project_status.archived');
         return DB::table($this->getTable())
             ->leftJoin(config('epicollect.tables.project_roles'), $this->getQualifiedKeyName(), '=', 'project_roles.project_id')
             ->where('project_roles.user_id', $userId)
@@ -99,7 +101,7 @@ class Project extends Model
                     $query->where('name', 'LIKE', '%' . $params['search'] . '%');
                 }
             })
-            ->where('status', '<>', 'archived')
+            ->where('status', '<>', $archivedStatus)
             ->orderBy('created_at', 'desc')
             ->simplePaginate($perPage);
     }
@@ -177,9 +179,11 @@ class Project extends Model
         return (string)$updatedAt;
     }
 
-    public function admin($params = []): Paginator|array
+    public function admin(array $params = [], bool $archived = false): Paginator|array
     {
         $perPage  = config('epicollect.limits.admin_projects_per_page');
+        $operator = $archived ? '=' : '<>';
+        $archivedStatus = config('epicollect.strings.project_status.archived');
 
         // Determine order by column
         $orderBy = match ($params['order_by'] ?? null) {
@@ -205,7 +209,7 @@ class Project extends Model
                     $query->where($this->getTable() . '.visibility', '=', $params['visibility']);
                 }
             })
-            ->where($this->getTable() . '.status', '<>', 'archived')
+            ->where($this->getTable() . '.status', $operator, $archivedStatus)
             ->orderBy($this->projectStatsTable . '.'.$orderBy, 'desc')  // Ensure sorting works
             ->select(
                 $this->getTable() . '.*',
@@ -217,6 +221,10 @@ class Project extends Model
             ->simplePaginate($perPage);
     }
 
+    public function adminArchived(array $params = []): Paginator|array
+    {
+        return $this->admin($params, true);
+    }
 
     /**
      * @throws Throwable
@@ -317,5 +325,4 @@ class Project extends Model
             return false;
         }
     }
-
 }

@@ -8,6 +8,7 @@ use ec5\Console\Commands\SeedEntriesCommand;
 use ec5\Console\Commands\SeedMediaCommand;
 use ec5\Console\Commands\SeedSuperadminCommand;
 use ec5\Console\Commands\SystemClearOpcache;
+use ec5\Console\Commands\SystemProjectWiperCommand;
 use ec5\Console\Commands\SystemProjectStorageCommand;
 use ec5\Console\Commands\SystemStatsCommand;
 use Illuminate\Console\Scheduling\Schedule;
@@ -24,9 +25,9 @@ class Kernel extends ConsoleKernel
         SystemStatsCommand::class,
         RemoveUnverifiedUsersCommand::class,
         SystemCheckStorageCommand::class,
-        SystemCheckStorageCommand::class,
         SystemClearOpcache::class,
         SystemProjectStorageCommand::class,
+        SystemProjectWiperCommand::class,
         SeedEntriesCommand::class,
         SeedMediaCommand::class,
         SeedSuperadminCommand::class,

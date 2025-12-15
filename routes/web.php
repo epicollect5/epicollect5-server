@@ -54,6 +54,7 @@ Route::group(['middleware' => $passwordlessMiddleware], function () use ($passwo
 Route::group(['middleware' => 'auth.admin'], function () {
     // Administration
     Route::get('admin/projects', 'Web\Admin\AdminController@showProjects')->name('admin-projects');
+    Route::get('admin/projects-archived', 'Web\Admin\AdminController@showProjectsArchived')->name('admin-projects-archived');
     Route::get('admin/stats', 'Web\Admin\AdminController@showStats')->name('admin-stats');
     Route::get('admin/users', 'Web\Admin\AdminController@showUsers')->name('admin-users');
     Route::get('admin/settings', 'Web\Admin\AdminController@showSettings')->name('admin-settings-show');

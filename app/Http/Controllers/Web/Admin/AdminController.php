@@ -138,6 +138,35 @@ class AdminController extends Controller
         return view('admin.admin', $payload);
     }
 
+    /**
+     * @throws Throwable
+     */
+    public function showProjectsArchived(Request $request)
+    {
+        $view = 'admin.tables.projects_archived';
+        $action = 'projects-archived';
+
+        $params = $request->all();
+
+        //get projects archived paginated
+        $projects = $this->projectModel->adminArchived($params);
+        $projects->appends($params);
+        $payload = [
+            'projects' => $projects,
+            'action' => $action
+        ];
+
+        // If ajax, return rendered html from $ajaxView
+        if ($request->ajax()) {
+            return response()->json(view($view, $payload)->render());
+        }
+
+
+
+        // Return view with relevant params
+        return view('admin.admin', $payload);
+    }
+
     public function showStats()
     {
         $action = 'stats';
