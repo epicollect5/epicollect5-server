@@ -32,6 +32,7 @@ class BranchEntry extends Model
     use SerializeDates;
 
     protected $table = 'branch_entries';
+    protected $guarded = [];
     /**
      *  Disable eloquent timestamps because we are using
      * "uploaded_at" -> when entry is uploaded or edited

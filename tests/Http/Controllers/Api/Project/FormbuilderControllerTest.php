@@ -14,6 +14,7 @@ use Faker\Factory as Faker;
 use Faker\Generator;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Str;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 use Throwable;
 
@@ -69,6 +70,7 @@ class FormbuilderControllerTest extends TestCase
         $this->project = $project;
     }
 
+    #[DataProvider('multipleRunProvider')]
     public function test_should_save_project()
     {
         // Convert data array to JSON
@@ -96,73 +98,6 @@ class FormbuilderControllerTest extends TestCase
         }
 
         $this->assertSame(json_decode($response->getContent(), true), $this->projectDefinition);
-    }
-
-    //todo: this does not work
-    //    public function test_should_not_save_project()
-    //    {
-    //        // Temporarily change the session driver for this test to 'file'
-    //        config(['session.driver' => 'file']);
-    //        // Convert data array to JSON
-    //        $jsonData = json_encode($this->projectDefinition);
-    //        // Gzip Compression
-    //        $gzippedData = gzencode($jsonData);
-    //        // Base64 Encoding
-    //        $base64EncodedData = base64_encode($gzippedData);
-    //
-    //
-    //        $this->actingAs($this->user);
-    //
-    //        // Step 2: Travel forward in time, beyond session lifetime (default is 24 hours)
-    //        $sessionLifetimeMinutes = config('session.lifetime'); // Session duration from config
-    //        $travelDuration = $sessionLifetimeMinutes + 1; // Travel just beyond the session expiry
-    //        $this->travel($travelDuration)->minutes();
-    //
-    //        Session::flush(); // Clear session data
-    //        session()->invalidate(); // This will destroy the session and simulate an expired session
-    //
-    //        // Simulate a token mismatch by setting an invalid CSRF token
-    //        $invalidCsrfToken = 'invalid_token';
-    //        session()->put('_token', $invalidCsrfToken);
-    //
-    //        //see https://github.com/laravel/framework/issues/46455
-    //        $response = $this
-    //            ->call(
-    //                'POST',
-    //                'api/internal/formbuilder/' . $this->project->slug,
-    //                [],
-    //                [],
-    //                [],
-    //                ['X-CSRF-TOKEN' => $invalidCsrfToken], // Simulating an invalid token,
-    //                $base64EncodedData
-    //            );
-    //        try {
-    //            $response->assertStatus(200);
-    //        } catch (Throwable $exception) {
-    //            $this->logTestError($exception, $response);
-    //        }
-    //
-    //        $this->assertSame(json_decode($response->getContent(), true), $this->projectDefinition);
-    //    }
-
-    /* This method does not follow optimal testing practices
-    since the application does not get rebooted before each request
-    like a production environment,
-    but these tests are still useful to find bugs when uploading
-    a project definition
-
-    be aware __construct() are called only the first time,
-    so it might have some false positives or not detect
-    some errors
-    */
-    public function test_multiple_projects()
-    {
-        //create some projects with custom project definition
-        $n = rand(25, 50);
-        for ($i = 0; $i < $n; $i++) {
-            sleep(1);
-            $this->test_should_save_project();
-        }
     }
 
     public function test_should_catch_duplicated_form_name()

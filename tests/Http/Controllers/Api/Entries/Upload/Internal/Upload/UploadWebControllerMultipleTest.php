@@ -12,6 +12,7 @@ use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 use Throwable;
 
@@ -116,6 +117,7 @@ class UploadWebControllerMultipleTest extends TestCase
         }
     }
 
+    #[DataProvider('multipleRunProvider')]
     public function test_should_upload_top_hierarchy_entry()
     {
         $response = [];
@@ -252,14 +254,6 @@ class UploadWebControllerMultipleTest extends TestCase
             );
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
-        }
-    }
-
-    public function test_should_upload_multiple_top_hierarchy_entries()
-    {
-        $entriesCount = rand(50, 100);
-        for ($i = 0; $i < $entriesCount; $i++) {
-            $this->test_should_upload_top_hierarchy_entry();
         }
     }
 }

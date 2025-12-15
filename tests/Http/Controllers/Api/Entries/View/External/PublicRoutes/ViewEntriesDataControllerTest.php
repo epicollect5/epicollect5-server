@@ -6,13 +6,14 @@ use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
 use ec5\Traits\Assertions;
-use Exception;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Http\Controllers\Api\Entries\View\ViewEntriesBaseControllerTest;
 
 class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
 {
-    use DatabaseTransactions, Assertions;
+    use DatabaseTransactions;
+    use Assertions;
 
     private $endpoint = 'api/entries/';
 
@@ -35,6 +36,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
 
     }
 
+    #[DataProvider('multipleRunProvider')]
     public function test_entries_external_endpoint_form_0_single_entry()
     {
         //set the project as public
@@ -85,7 +87,8 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
             //timestamp
             $this->assertEquals(
                 str_replace(' ', 'T', $entryFromDB->created_at) . '.000Z',
-                $entryFromResponse['entry']['created_at']);
+                $entryFromResponse['entry']['created_at']
+            );
             //answers
             $entryFromDBEntryData = json_decode($entryFromDB->entry_data, true);
             $this->assertEquals($entryFromDBEntryData['entry']['answers'], $entryFromResponse['entry']['answers']);
@@ -98,6 +101,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
         }
     }
 
+    #[DataProvider('multipleRunProvider')]
     public function test_entries_external_endpoint_default_to_first_form()
     {
         //set the project as public
@@ -147,7 +151,8 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
             //timestamp
             $this->assertEquals(
                 str_replace(' ', 'T', $entryFromDB->created_at) . '.000Z',
-                $entryFromResponse['entry']['created_at']);
+                $entryFromResponse['entry']['created_at']
+            );
             //answers
             $entryFromDBEntryData = json_decode($entryFromDB->entry_data, true);
             $this->assertEquals($entryFromDBEntryData['entry']['answers'], $entryFromResponse['entry']['answers']);
@@ -160,13 +165,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
         }
     }
 
-    public function test_entries_external_endpoint_form_0_single_entry_loop()
-    {
-        for ($i = 0; $i < rand(5, 10); $i++) {
-            $this->test_entries_external_endpoint_form_0_single_entry();
-        }
-    }
-
+    #[DataProvider('multipleRunProvider')]
     public function test_entries_external_endpoint_child_form_1_single_entry()
     {
         //set the project as public
@@ -241,7 +240,8 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
             //timestamp
             $this->assertEquals(
                 str_replace(' ', 'T', $childEntryFromDB->created_at) . '.000Z',
-                $entryFromResponse['entry']['created_at']);
+                $entryFromResponse['entry']['created_at']
+            );
             //answers
             $childEntryFromDBEntryData = json_decode($childEntryFromDB->entry_data, true);
             $this->assertEquals($childEntryFromDBEntryData['entry']['answers'], $entryFromResponse['entry']['answers']);
@@ -258,6 +258,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
         }
     }
 
+    #[DataProvider('multipleRunProvider')]
     public function test_entries_external_endpoint_form_0_multiple_entries()
     {
         //set the project as public
@@ -310,6 +311,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
         }
     }
 
+    #[DataProvider('multipleRunProvider')]
     public function test_entries_external_endpoint_child_form_multiple_entries()
     {
         //set the project as public
@@ -390,6 +392,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
     }
 
     //branches
+    #[DataProvider('multipleRunProvider')]
     public function test_entries_external_endpoint_branch_of_form_0_single_entry()
     {
         //set the project as public
@@ -438,7 +441,8 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
                 $formRef,
                 $branches[0]['branch'],
                 $parentEntryFromDB->uuid,
-                $branchRef);
+                $branchRef
+            );
             $entryRowBundle = $this->entryGenerator->createBranchEntryRow(
                 $this->user,
                 $this->project,
@@ -478,7 +482,8 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
             //timestamp
             $this->assertEquals(
                 str_replace(' ', 'T', $branchEntryFromDB->created_at) . '.000Z',
-                $entryFromResponse['branch_entry']['created_at']);
+                $entryFromResponse['branch_entry']['created_at']
+            );
             //answers
             $branchEntryFromDBEntryData = json_decode($branchEntryFromDB->entry_data, true);
             $this->assertEquals($branchEntryFromDBEntryData['branch_entry']['answers'], $entryFromResponse['branch_entry']['answers']);
@@ -494,13 +499,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
         }
     }
 
-    public function test_entries_external_endpoint_branch_of_form_0_single_entry_loop()
-    {
-        for ($i = 0; $i < rand(10, 50); $i++) {
-            $this->test_entries_external_endpoint_branch_of_form_0_single_entry();
-        }
-    }
-
+    #[DataProvider('multipleRunProvider')]
     public function test_entries_external_endpoint_branch_of_form_0_multiple_entries()
     {
         //set the project as public
@@ -550,7 +549,8 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
                 $formRef,
                 $branches[0]['branch'],
                 $parentEntryFromDB->uuid,
-                $branchRef);
+                $branchRef
+            );
             $entryRowBundle = $this->entryGenerator->createBranchEntryRow(
                 $this->user,
                 $this->project,
@@ -590,6 +590,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
         }
     }
 
+    #[DataProvider('multipleRunProvider')]
     public function test_branch_entries_internal_filter_by_owner_entry_uuid()
     {
         //set the project as public
@@ -646,7 +647,8 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
                         $formRef,
                         $branch['branch'],
                         $entryFromDB->uuid,
-                        $branch['ref']);
+                        $branch['ref']
+                    );
                     $entryRowBundle = $this->entryGenerator->createBranchEntryRow(
                         $this->user,
                         $this->project,
@@ -693,7 +695,8 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
             foreach ($branchEntries as $branchEntry) {
                 $this->assertEquals(
                     $ownerEntryFromDB->uuid,
-                    $branchEntry['relationships']['branch']['data']['owner_entry_uuid']);
+                    $branchEntry['relationships']['branch']['data']['owner_entry_uuid']
+                );
 
             }
         } catch (\Throwable $e) {

@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class BranchEntryJson extends Model
 {
     protected $table = 'branch_entries_json';
+    protected $guarded = [];
     public $timestamps = false;
 
     protected $fillable = [

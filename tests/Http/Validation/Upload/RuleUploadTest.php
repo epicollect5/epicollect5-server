@@ -119,6 +119,7 @@ class RuleUploadTest extends TestCase
         );
     }
 
+
     public function test_should_be_valid_parent_entry()
     {
         //create entry based on the project

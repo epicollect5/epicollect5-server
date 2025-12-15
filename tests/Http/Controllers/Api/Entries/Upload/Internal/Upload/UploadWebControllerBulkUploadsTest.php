@@ -13,6 +13,7 @@ use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use ec5\Traits\Assertions;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 use Throwable;
 
@@ -118,6 +119,10 @@ class UploadWebControllerBulkUploadsTest extends TestCase
         }
     }
 
+    /**
+     * @throws Throwable
+     */
+    #[DataProvider('multipleRunProvider')]
     public function test_should_not_touch_created_at_on_bulk_upload()
     {
         $response = [];
@@ -166,14 +171,6 @@ class UploadWebControllerBulkUploadsTest extends TestCase
         } catch (Throwable $e) {
             //dd($e->getMessage(), $response, json_encode($entry), json_encode($projectDefinition));
             $this->logTestError($e, $response);
-        }
-    }
-
-    public function test_should_not_touch_created_at_on_bulk_upload_loop()
-    {
-        $entriesCount = rand(2, 10);
-        for ($i = 0; $i < $entriesCount; $i++) {
-            $this->test_should_not_touch_created_at_on_bulk_upload();
         }
     }
 

@@ -154,32 +154,12 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
 
     protected function tearDown(): void
     {
-        //        // Remove properties defined during the test
-        //        $refl = new \ReflectionObject($this);
-        //        foreach ($refl->getProperties() as $prop) {
-        //            if (!$prop->isStatic() && 0 !== strpos($prop->getDeclaringClass()->getName(), 'PHPUnit_')) {
-        //                $prop->setAccessible(true);
-        //                $prop->setValue($this, null);
-        //            }
-        //        }
-
         // Clean up your resources here
         parent::tearDown();
         gc_collect_cycles(); // Invoke garbage collection
     }
 
-    public static function multipleRunProvider(): array
-    {
-        // Define how many times you want to run the test
-        $runs = 1;
-        $testCases = [];
 
-        for ($i = 0; $i < $runs; $i++) {
-            $testCases[] = [$i]; // Provide index or any other data you need
-        }
-
-        return $testCases;
-    }
 
     protected function getModifiedMapping($mapping): array
     {
@@ -335,5 +315,11 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
                 break;
             }
         }
+    }
+
+    public static function multipleRunProvider(): array
+    {
+        // Run the test 10 times
+        return array_map(fn ($i) => [$i], range(1, 10));
     }
 }

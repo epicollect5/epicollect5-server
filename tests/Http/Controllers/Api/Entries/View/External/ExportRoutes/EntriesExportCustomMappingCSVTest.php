@@ -422,6 +422,7 @@ class EntriesExportCustomMappingCSVTest extends ViewEntriesBaseControllerTest
         }
     }
 
+    #[DataProvider('multipleRunProvider')]
     public function test_entries_export_endpoint_child_single_entry_custom_mapping_modified_csv()
     {
         //set project as public so the endpoint is accessible without auth
@@ -593,13 +594,7 @@ class EntriesExportCustomMappingCSVTest extends ViewEntriesBaseControllerTest
         }
     }
 
-    public function test_entries_export_endpoint_child_single_entry_loop()
-    {
-        for ($i = 0; $i < rand(10, 50); $i++) {
-            $this->test_entries_export_endpoint_child_single_entry_custom_mapping_modified_csv();
-        }
-    }
-
+    #[DataProvider('multipleRunProvider')]
     public function test_entries_export_endpoint_branch_of_form_0_single_entry_custom_mapping_modified_csv()
     {
         //set project as public so the endpoint is accessible without auth
@@ -783,13 +778,6 @@ class EntriesExportCustomMappingCSVTest extends ViewEntriesBaseControllerTest
             $this->assertEquals($branchEntryFromDB->owner_entry_id, $ownerEntry->id);
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
-        }
-    }
-
-    public function test_entries_export_endpoint_branch_of_form_0_single_entry_loop()
-    {
-        for ($i = 0; $i < rand(5, 10); $i++) {
-            $this->test_entries_export_endpoint_branch_of_form_0_single_entry_custom_mapping_modified_csv();
         }
     }
 

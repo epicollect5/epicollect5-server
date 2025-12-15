@@ -12,6 +12,7 @@ use ec5\Models\Project\ProjectRole;
 use ec5\Models\User\User;
 use ec5\Traits\Assertions;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Http\Controllers\Api\Entries\View\ViewEntriesBaseControllerTest;
 use Throwable;
 
@@ -22,6 +23,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
 
     private string $endpoint = 'api/entries/';
 
+    #[DataProvider('multipleRunProvider')]
     public function test_parent_entry_row_stored_to_db()
     {
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
@@ -39,14 +41,6 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
             $entryPayload
         );
 
-    }
-
-    public function test_multiple_parent_entry_rows_stored_to_db()
-    {
-        $count = rand(5, 10);
-        for ($i = 0; $i < $count; $i++) {
-            $this->test_parent_entry_row_stored_to_db();
-        }
     }
 
     public function test_entries_external_endpoint_catch_user_not_logged_in()
@@ -151,7 +145,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
         }
     }
 
-
+    #[DataProvider('multipleRunProvider')]
     public function test_entries_external_endpoint_form_0_single_entry()
     {
         //generate entries
@@ -217,6 +211,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
         }
     }
 
+    #[DataProvider('multipleRunProvider')]
     public function test_entries_external_endpoint_default_to_first_form()
     {
         //generate entries
@@ -278,13 +273,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
         }
     }
 
-    public function test_entries_external_endpoint_form_0_single_entry_loop()
-    {
-        for ($i = 0; $i < rand(5, 10); $i++) {
-            $this->test_entries_external_endpoint_form_0_single_entry();
-        }
-    }
-
+    #[DataProvider('multipleRunProvider')]
     public function test_entries_external_endpoint_child_form_1_single_entry()
     {
         //generate a parent entry (form 0)
@@ -377,6 +366,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
         }
     }
 
+    #[DataProvider('multipleRunProvider')]
     public function test_entries_external_endpoint_form_0_multiple_entries()
     {
         //generate entries
@@ -429,6 +419,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
         }
     }
 
+    #[DataProvider('multipleRunProvider')]
     public function test_entries_external_endpoint_child_form_multiple_entries()
     {
         //generate a parent entry (form 0)
@@ -923,6 +914,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
     }
 
     //branches
+    #[DataProvider('multipleRunProvider')]
     public function test_entries_external_endpoint_branch_of_form_0_single_entry()
     {
         //generate a parent entry (form 0)
@@ -1026,13 +1018,6 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
             $this->assertEquals($branchEntryFromDB->owner_input_ref, $entryFromResponse['relationships']['branch']['data']['owner_input_ref']);
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
-        }
-    }
-
-    public function test_entries_external_endpoint_branch_of_form_0_single_entry_loop()
-    {
-        for ($i = 0; $i < rand(10, 50); $i++) {
-            $this->test_entries_external_endpoint_branch_of_form_0_single_entry();
         }
     }
 

@@ -10,6 +10,7 @@ use ec5\Models\Project\ProjectRole;
 use ec5\Models\User\User;
 use ec5\Traits\Assertions;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Http\Controllers\Api\Entries\View\ViewEntriesBaseControllerTest;
 use Throwable;
 
@@ -21,6 +22,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
     /**
      * @throws Throwable
      */
+    #[DataProvider('multipleRunProvider')]
     public function test_parent_entry_row_stored_to_db()
     {
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
@@ -43,17 +45,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
     /**
      * @throws Throwable
      */
-    public function test_multiple_parent_entry_rows_stored_to_db()
-    {
-        $count = rand(5, 10);
-        for ($i = 0; $i < $count; $i++) {
-            $this->test_parent_entry_row_stored_to_db();
-        }
-    }
-
-    /**
-     * @throws Throwable
-     */
+    #[DataProvider('multipleRunProvider')]
     public function test_entries_internal_endpoint_form_0_single_entry()
     {
         //generate entries
@@ -174,16 +166,6 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
             $this->assertEquals($entryFromDB->user_id, $entryFromResponse['relationships']['user']['data']['id']);
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
-        }
-    }
-
-    /**
-     * @throws Throwable
-     */
-    public function test_entries_internal_endpoint_form_0_single_entry_loop()
-    {
-        for ($i = 0; $i < rand(5, 10); $i++) {
-            $this->test_entries_internal_endpoint_form_0_single_entry();
         }
     }
 
@@ -832,6 +814,7 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
     /**
      * @throws Throwable
      */
+    #[DataProvider('multipleRunProvider')]
     public function test_entries_internal_endpoint_branch_of_form_0_single_entry()
     {
         //generate a parent entry (form 0)
@@ -932,16 +915,6 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
             $this->assertEquals($branchEntryFromDB->owner_input_ref, $entryFromResponse['relationships']['branch']['data']['owner_input_ref']);
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
-        }
-    }
-
-    /**
-     * @throws Throwable
-     */
-    public function test_entries_internal_endpoint_branch_of_form_0_single_entry_loop()
-    {
-        for ($i = 0; $i < rand(10, 50); $i++) {
-            $this->test_entries_internal_endpoint_branch_of_form_0_single_entry();
         }
     }
 

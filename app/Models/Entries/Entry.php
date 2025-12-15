@@ -33,6 +33,7 @@ class Entry extends Model
     use SerializeDates;
 
     protected $table = 'entries';
+    protected $guarded = [];
     /**
      *  Disable eloquent timestamps because we are using
      * "uploaded_at" -> when entry is uploaded or edited

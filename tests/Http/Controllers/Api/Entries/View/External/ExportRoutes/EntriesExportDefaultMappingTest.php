@@ -8,6 +8,7 @@ use ec5\Models\Project\ProjectStructure;
 use ec5\Traits\Assertions;
 use Exception;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Http\Controllers\Api\Entries\View\ViewEntriesBaseControllerTest;
 use Throwable;
 
@@ -21,6 +22,7 @@ class EntriesExportDefaultMappingTest extends ViewEntriesBaseControllerTest
     /**
      * @throws Throwable
      */
+    #[DataProvider('multipleRunProvider')]
     public function test_parent_entry_row_stored_to_db()
     {
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
@@ -43,17 +45,7 @@ class EntriesExportDefaultMappingTest extends ViewEntriesBaseControllerTest
     /**
      * @throws Throwable
      */
-    public function test_multiple_parent_entry_rows_stored_to_db()
-    {
-        $count = rand(5, 10);
-        for ($i = 0; $i < $count; $i++) {
-            $this->test_parent_entry_row_stored_to_db();
-        }
-    }
-
-    /**
-     * @throws Throwable
-     */
+    #[DataProvider('multipleRunProvider')]
     public function test_entries_export_endpoint_parent_single_entry()
     {
         //set project as public so the endpoint is accessible without auth
@@ -131,15 +123,6 @@ class EntriesExportDefaultMappingTest extends ViewEntriesBaseControllerTest
         }
     }
 
-    /**
-     * @throws Throwable
-     */
-    public function test_entries_export_endpoint_parent_single_entry_loop()
-    {
-        for ($i = 0; $i < rand(10, 50); $i++) {
-            $this->test_entries_export_endpoint_parent_single_entry();
-        }
-    }
 
     /**
      * @throws Throwable
@@ -210,6 +193,7 @@ class EntriesExportDefaultMappingTest extends ViewEntriesBaseControllerTest
     /**
      * @throws Throwable
      */
+    #[DataProvider('multipleRunProvider')]
     public function test_entries_export_endpoint_child_single_entry()
     {
         //set project as public so the endpoint is accessible without auth
@@ -321,19 +305,9 @@ class EntriesExportDefaultMappingTest extends ViewEntriesBaseControllerTest
     }
 
     /**
-     * @throws Exception
      * @throws Throwable
      */
-    public function test_entries_export_endpoint_child_single_entry_loop()
-    {
-        for ($i = 0; $i < rand(10, 50); $i++) {
-            $this->test_entries_export_endpoint_child_single_entry();
-        }
-    }
-
-    /**
-     * @throws Throwable
-     */
+    #[DataProvider('multipleRunProvider')]
     public function test_entries_export_endpoint_branch_of_form_0_single_entry()
     {
         //set project as public so the endpoint is accessible without auth
@@ -455,15 +429,4 @@ class EntriesExportDefaultMappingTest extends ViewEntriesBaseControllerTest
             $this->logTestError($e, $response);
         }
     }
-
-    /**
-     * @throws Throwable
-     */
-    public function test_entries_export_endpoint_branch_of_form_0_single_entry_loop()
-    {
-        for ($i = 0; $i < rand(5, 10); $i++) {
-            $this->test_entries_export_endpoint_branch_of_form_0_single_entry();
-        }
-    }
-
 }

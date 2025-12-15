@@ -13,6 +13,7 @@ use ec5\Models\User\User;
 use ec5\Traits\Assertions;
 use Exception;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Http\Controllers\Api\Entries\View\ViewEntriesBaseControllerTest;
 use Throwable;
 
@@ -24,6 +25,7 @@ class ViewEntriesLocationsControllerTest extends ViewEntriesBaseControllerTest
     /**
      * @throws Throwable
      */
+    #[DataProvider('multipleRunProvider')]
     public function test_parent_entry_row_stored_to_db()
     {
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
@@ -41,18 +43,6 @@ class ViewEntriesLocationsControllerTest extends ViewEntriesBaseControllerTest
             $entryPayload
         );
     }
-
-    /**
-     * @throws Throwable
-     */
-    public function test_multiple_parent_entry_rows_stored_to_db()
-    {
-        $count = rand(50, 100);
-        for ($i = 0; $i < $count; $i++) {
-            $this->test_parent_entry_row_stored_to_db();
-        }
-    }
-
 
     /**
      * @throws Throwable
