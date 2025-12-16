@@ -2,8 +2,11 @@
 
 namespace Tests\Commands;
 
+use Carbon\Carbon;
 use ec5\Models\Entries\BranchEntry;
+use ec5\Models\Entries\BranchEntryJson;
 use ec5\Models\Entries\Entry;
+use ec5\Models\Entries\EntryJson;
 use ec5\Models\Project\Project;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
@@ -119,8 +122,6 @@ class SystemMigrateEntriesJsonTest extends TestCase
                 $this->assertNull($entry->geo_json_data);
             }
         }
-
-
 
         // Run migration
         $this->artisan('system:migrate-entries-json --limit=10')
@@ -256,4 +257,207 @@ class SystemMigrateEntriesJsonTest extends TestCase
             }
         }
     }
+
+    public function test_migrate_entries_filtered_by_year()
+    {
+        // Create a 2024 entry
+        $entry2024 = factory(Entry::class)->create([
+            'project_id' => $this->project->id,
+            'entry_data' => json_encode(['foo' => 'bar']),
+            'geo_json_data' => json_encode(['lat' => 1]),
+            'created_at' => Carbon::create(2024, 1, 1),
+            'uploaded_at' => Carbon::create(2024, 1, 1)
+        ]);
+
+        // Create a 2023 entry
+        $entry2023 = factory(Entry::class)->create([
+            'project_id' => $this->project->id,
+            'entry_data' => json_encode(['foo' => 'bar']),
+            'geo_json_data' => json_encode(['lat' => 1]),
+            'created_at' => Carbon::create(2023, 1, 1),
+            'uploaded_at' => Carbon::create(2023, 1, 1)
+        ]);
+
+
+        // Run migration filtered by year 2024
+        $this->artisan('system:migrate-entries-json', ['--year' => 2024])
+            ->assertExitCode(0);
+
+        // Assert only 2024 entry was migrated
+        $this->assertDatabaseHas('entries_json', ['entry_id' => $entry2024->id]);
+        $this->assertDatabaseMissing('entries_json', ['entry_id' => $entry2023->id]);
+
+        //assert entry_data and geo_json_data are nullified in source table
+        // IMP:
+        //  Do NOT use the Entry model here.
+        //  Entry has a custom accessor that transparently falls back to entries_json,
+        //  so reading $entry->entry_data would return non-null even when the source
+        //  column has been correctly nullified by the migration.
+        //  Always assert directly against the database table for migration tests.
+        $this->assertDatabaseHas('entries', [
+            'id' => $entry2024->id,
+            'entry_data' => null,
+            'geo_json_data' => null,
+        ]);
+        $src2023 = DB::table('entries')->where('id', $entry2023->id)->first();
+
+        $this->assertNotNull($src2023->entry_data);
+        $this->assertEquals(['foo' => 'bar'], json_decode($src2023->entry_data, true));
+
+        $this->assertNotNull($src2023->geo_json_data);
+        $this->assertEquals(['lat' => 1], json_decode($src2023->geo_json_data, true));
+
+
+
+        $this->assertNotNull(EntryJson::where('entry_id', $entry2024->id)->first()->entry_data);
+        $this->assertNotNull(EntryJson::where('entry_id', $entry2024->id)->first()->geo_json_data);
+        $this->assertNull(EntryJson::where('entry_id', $entry2023->id)->first());
+        $this->assertNull(EntryJson::where('entry_id', $entry2023->id)->first());
+    }
+
+    public function test_migrate_branch_entries_filtered_by_year()
+    {
+        $parentEntry = factory(Entry::class)->create([
+            'project_id' => $this->project->id,
+        ]);
+
+        // Create a 2024 entry
+        $branchEntry2024 = factory(BranchEntry::class)->create([
+            'project_id' => $this->project->id,
+            'owner_entry_id' => $parentEntry->id,
+            'owner_uuid' => $parentEntry->uuid,
+            'entry_data' => json_encode(['foo' => 'bar']),
+            'geo_json_data' => json_encode(['lat' => 1]),
+            'created_at' => Carbon::create(2024, 1, 1),
+            'uploaded_at' => Carbon::create(2024, 1, 1)
+        ]);
+
+        // Create a 2023 entry
+        $branchEntry2023 = factory(BranchEntry::class)->create([
+            'project_id' => $this->project->id,
+            'owner_entry_id' => $parentEntry->id,
+            'owner_uuid' => $parentEntry->uuid,
+            'entry_data' => json_encode(['foo' => 'bar']),
+            'geo_json_data' => json_encode(['lat' => 1]),
+            'created_at' => Carbon::create(2023, 1, 1),
+            'uploaded_at' => Carbon::create(2023, 1, 1)
+        ]);
+
+
+        // Run migration filtered by year 2024
+        $this->artisan('system:migrate-entries-json', ['--year' => 2024, '--branch' => true])
+            ->assertExitCode(0);
+
+        //assert entry_data and geo_json_data are nullified in source table
+        // IMP:
+        //  Do NOT use the Entry model here.
+        //  Entry has a custom accessor that transparently falls back to entries_json,
+        //  so reading $entry->entry_data would return non-null even when the source
+        //  column has been correctly nullified by the migration.
+        //  Always assert directly against the database table for migration tests.
+        $this->assertDatabaseHas('branch_entries', [
+            'id' => $branchEntry2024->id,
+            'entry_data' => null,
+            'geo_json_data' => null,
+        ]);
+        $src2023 = DB::table('branch_entries')->where('id', $branchEntry2023->id)->first();
+
+        $this->assertNotNull($src2023->entry_data);
+        $this->assertEquals(['foo' => 'bar'], json_decode($src2023->entry_data, true));
+
+        $this->assertNotNull($src2023->geo_json_data);
+        $this->assertEquals(['lat' => 1], json_decode($src2023->geo_json_data, true));
+
+
+        $this->assertNotNull(BranchEntryJson::where('entry_id', $branchEntry2024->id)->first()->entry_data);
+        $this->assertNotNull(BranchEntryJson::where('entry_id', $branchEntry2024->id)->first()->geo_json_data);
+        $this->assertNull(BranchEntryJson::where('entry_id', $branchEntry2023->id)->first());
+        $this->assertNull(BranchEntryJson::where('entry_id', $branchEntry2023->id)->first());
+    }
+
+    public function test_migrate_entries_respects_limit()
+    {
+        // Create 3 entries for this project
+        factory(Entry::class, 3)->create([
+            'project_id' => $this->project->id,
+            'entry_data' => json_encode(['foo' => 'bar']),
+            'geo_json_data' => json_encode(['lat' => 1]),
+        ]);
+
+        $entriesCountBefore = DB::table($this->srcTableEntries)
+            ->where('project_id', $this->project->id)
+            ->whereNotNull('entry_data')
+            ->count();
+
+        // Run migration with limit = 1
+        $this->artisan('system:migrate-entries-json', [
+            '--project' => $this->project->id,
+            '--limit' => 1,
+        ])->assertExitCode(0);
+
+        // Only 1 entry should be migrated
+        $this->assertEquals(
+            1,
+            DB::table($this->dstTableEntriesJson)
+                ->where('project_id', $this->project->id)
+                ->count()
+        );
+
+        // Source table should still contain $entriesCountBefore - 1 non-null entries
+        $this->assertEquals(
+            $entriesCountBefore - 1,
+            DB::table($this->srcTableEntries)
+                ->where('project_id', $this->project->id)
+                ->whereNotNull('entry_data')
+                ->count()
+        );
+    }
+
+    public function test_migrate_branch_entries_respects_limit()
+    {
+        // Create a parent entry
+        $parentEntry = factory(Entry::class)->create([
+            'project_id' => $this->project->id,
+        ]);
+
+        // Create 3 branch entries for this project
+        factory(BranchEntry::class, 3)->create([
+            'project_id' => $this->project->id,
+            'owner_entry_id' => $parentEntry->id,
+            'owner_uuid' => $parentEntry->uuid,
+            'entry_data' => json_encode(['foo' => 'bar']),
+            'geo_json_data' => json_encode(['lat' => 1]),
+        ]);
+
+        $branchEntriesCountBefore = DB::table($this->srcTableBranchEntries)
+            ->where('project_id', $this->project->id)
+            ->whereNotNull('entry_data')
+            ->count();
+
+        // Run migration with limit = 1
+        $this->artisan('system:migrate-entries-json', [
+            '--project' => $this->project->id,
+            '--branch' => true,
+            '--limit' => 1,
+        ])->assertExitCode(0);
+
+        // Only 1 entry should be migrated
+        $this->assertEquals(
+            1,
+            DB::table($this->dstTableBranchEntriesJson)
+                ->where('project_id', $this->project->id)
+                ->count()
+        );
+
+        // Source table should still contain $entriesCountBefore - 1 non-null entries
+        $this->assertEquals(
+            $branchEntriesCountBefore - 1,
+            DB::table($this->srcTableBranchEntries)
+                ->where('project_id', $this->project->id)
+                ->whereNotNull('entry_data')
+                ->count()
+        );
+    }
+
+
 }
