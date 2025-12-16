@@ -34,7 +34,6 @@ class Entry extends Model
 
     protected $table = 'entries';
 
-    protected $guarded = [];
     /**
      *  Disable eloquent timestamps because we are using
      * "uploaded_at" -> when entry is uploaded or edited
