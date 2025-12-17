@@ -2,6 +2,7 @@
 
 namespace ec5\Console\Commands;
 
+use Carbon\CarbonInterval;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use ec5\Libraries\Utilities\Common;
@@ -39,25 +40,28 @@ class SystemMigrateEntriesJson extends Command
             $this->warn('🔍 DRY RUN MODE - No changes will be made to the database');
         }
 
-        // Count total entries to migrate
-        $countQuery = DB::table($srcTable)->whereNotNull('entry_data');
+        // Count total entries to migrate (skip if filtering by year as it's slow)
+        if (!$year) {
+            $countQuery = DB::table($srcTable)->whereNotNull('entry_data');
 
-        if ($projectId) {
-            $countQuery->where('project_id', $projectId);
+            if ($projectId) {
+                $countQuery->where('project_id', $projectId);
+            }
+
+            $totalCount = $countQuery->count();
+            $entriesToProcess = min($totalCount, $limit);
+
+            if ($totalCount === 0) {
+                $this->info('✅ No entries found to migrate.');
+                return 0;
+            }
+
+            $this->info("Migrating $entriesToProcess entries from $srcTable → $dstTable...");
+        } else {
+            $this->info("Migrating entries from $srcTable → $dstTable (limit: $limit)...");
+            $this->info("   ⚠️  Skipping count due to year filter (slow on large tables)");
         }
-        if ($year) {
-            $countQuery->whereYear('created_at', $year);
-        }
 
-        $totalCount = $countQuery->count();
-        $entriesToProcess = min($totalCount, $limit);
-
-        if ($totalCount === 0) {
-            $this->info('✅ No entries found to migrate.');
-            return 0;
-        }
-
-        $this->info("Migrating $entriesToProcess entries from $srcTable → $dstTable...");
         $this->info(sprintf(
             "   Filters: project=%s | year=%s | limit=%d | chunk=%d",
             $projectId ?: '—',
@@ -75,10 +79,8 @@ class SystemMigrateEntriesJson extends Command
         $migrated = 0;
         $wouldMigrate = 0;
         $processed = 0;
-
-        // Progress bar setup
-        $bar = $this->output->createProgressBar($entriesToProcess);
-        $bar->setFormat('   🧩 [%bar%] %current%/%max% | %percent:3s%% | %elapsed:6s% | Mem: %memory%');
+        $skipped = 0;
+        $failed = 0;
 
         // Build base query
         $query = DB::table($srcTable)
@@ -90,26 +92,58 @@ class SystemMigrateEntriesJson extends Command
             $query->where('project_id', $projectId);
         }
         if ($year) {
-            $query->whereYear('created_at', $year);
+            $query->where('created_at', '>=', "$year-01-01 00:00:00")
+                ->where('created_at', '<', ($year + 1) . "-01-01 00:00:00");
         }
 
-        // Process using chunk() for efficient memory usage
-        $query->chunk(self::CHUNK_SIZE, function ($entries) use (
-            $srcTable,
-            $dstTable,
-            $isDryRun,
-            &$migrated,
-            &$wouldMigrate,
-            &$processed,
-            $bar,
-            $entriesToProcess
-        ) {
-            foreach ($entries as $entry) {
-                // Stop if we've reached the limit
-                if ($processed >= $entriesToProcess) {
-                    return false; // Stop chunking
-                }
+        // Pre-fetch all entry IDs to process
+        $this->info("📋 Fetching entry IDs...");
+        $entryIds = $query->limit($limit)->pluck('id');
+        $this->info("   Found " . $entryIds->count() . " entries to process");
 
+        // Progress bar setup (or chunk counter for year filtering)
+        $useProgressBar = !$year;
+        $bar = null;
+
+        if ($useProgressBar) {
+            $bar = $this->output->createProgressBar($entryIds->count());
+            $bar->setFormat('   🧩 [%bar%] %current%/%max% | %percent:3s%% | %elapsed:6s% | Mem: %memory%');
+        }
+
+        // Process in chunks
+        $chunkNumber = 0;
+        $totalChunks = ceil($entryIds->count() / self::CHUNK_SIZE);
+
+        foreach ($entryIds->chunk(self::CHUNK_SIZE) as $chunkIds) {
+            $chunkNumber++;
+
+            // Log chunk progress if not using progress bar
+            if (!$useProgressBar) {
+                $chunkStart = ($chunkNumber - 1) * self::CHUNK_SIZE + 1;
+                $chunkEnd = min($chunkNumber * self::CHUNK_SIZE, $entryIds->count());
+                $currentMemory = memory_get_usage(true);
+                $elapsed = round(microtime(true) - $startTime, 1);
+
+                // Calculate interval
+                $elapsedInterval = \Carbon\CarbonInterval::seconds($elapsed)
+                    ->cascade()
+                    ->forHumans(['short' => true]); // 'short' gives you '1m 10s' instead of '1 minute 10 seconds'
+
+                $output = sprintf(
+                    "\r   🧩 Chunk %5d/%-5d | Entries %7d-%-7d | Migrated: %6d | Elapsed: %12s | Mem: %10s\x1B[K",
+                    $chunkNumber,
+                    $totalChunks,
+                    $chunkStart,
+                    $chunkEnd,
+                    $migrated,
+                    str_pad($elapsedInterval, 12, ' ', STR_PAD_LEFT), // Lock to 12 chars
+                    Common::formatBytes($currentMemory)
+                );
+
+                $this->output->write($output, false);
+            }
+
+            foreach ($chunkIds as $entryId) {
                 if (!$isDryRun) {
                     DB::beginTransaction();
                 }
@@ -117,7 +151,7 @@ class SystemMigrateEntriesJson extends Command
                 try {
                     // Row-level lock
                     $locked = DB::table($srcTable)
-                        ->where('id', $entry->id)
+                        ->where('id', $entryId)
                         ->when(!$isDryRun, fn ($q) => $q->lockForUpdate())
                         ->first();
 
@@ -126,6 +160,7 @@ class SystemMigrateEntriesJson extends Command
                             DB::rollBack();
                         }
                         $bar->advance();
+                        $skipped++;
                         $processed++;
                         continue;
                     }
@@ -168,6 +203,7 @@ class SystemMigrateEntriesJson extends Command
                             $migrated++;
                         } else {
                             DB::rollBack();
+                            $failed++;
                             $this->warn("❌ MD5 mismatch for entry ID $locked->id");
                         }
                     }
@@ -176,24 +212,27 @@ class SystemMigrateEntriesJson extends Command
                     if (!$isDryRun) {
                         DB::rollBack();
                     }
-                    $this->error("⚠️ Error on entry ID $entry->id: {$e->getMessage()}");
+                    $this->error("⚠️ Error on entry ID $entryId: {$e->getMessage()}");
                 }
 
-                $bar->advance();
+                $bar?->advance();
                 $processed++;
 
-                // Update memory display
-                $currentMemory = memory_get_usage(true);
-                $bar->setMessage(Common::formatBytes($currentMemory), 'memory');
+                // Update memory display for progress bar
+                if ($useProgressBar) {
+                    $currentMemory = memory_get_usage(true);
+                    $bar->setMessage(Common::formatBytes($currentMemory), 'memory');
+                }
             }
 
             // Memory cleanup after each chunk
             gc_collect_cycles();
+        }
 
-            return true; // Continue to next chunk
-        });
-
-        $bar->finish();
+        $bar?->finish();
+        if (!$useProgressBar) {
+            $this->newLine(); // Clean line after chunk updates
+        }
         $this->newLine(2);
 
         // --- Final stats ---
@@ -206,19 +245,23 @@ class SystemMigrateEntriesJson extends Command
 
         if ($isDryRun) {
             $this->info("   🔍 Would migrate: $wouldMigrate/$processed entries");
+            $this->info("   🗑 Skipped: $skipped/$processed entries");
+            $this->info("   🚫 Failed: $failed/$processed entries");
             $this->warn("   ⚠️  No changes were made to the database");
         } else {
             $this->info("   🧾 Migrated entries: $migrated/$processed");
+            $this->info("   🗑 Skipped: $skipped/$processed entries");
+            $this->info("   🚫 Failed: $failed/$processed entries");
         }
 
         if ($projectName) {
             $this->info("   📁 Project: $projectName ( id -> $projectId)");
         }
 
-        $this->info("   ⏱ Total time: {$elapsedTotal}s");
-        $this->info("   ⏱ Avg per entry: " . round($elapsedTotal / max($processed, 1) * 1000, 2) . "ms");
-        $this->info("   💾 Memory delta: " . Common::formatBytes($memoryDelta));
-        $this->info("   📈 Peak memory: " . Common::formatBytes($peakMemoryFinal));
+        $this->comment("   ⏱ Total time: " . CarbonInterval::seconds($elapsedTotal)->cascade()->forHumans());
+        $this->comment("   ⏱ Avg per entry: " . round($elapsedTotal / max($processed, 1) * 1000, 2) . "ms");
+        $this->comment("   💾 Memory delta: " . Common::formatBytes($memoryDelta));
+        $this->comment("   📈 Peak memory: " . Common::formatBytes($peakMemoryFinal));
 
         return 0;
     }
