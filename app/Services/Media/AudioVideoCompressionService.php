@@ -83,11 +83,17 @@ class AudioVideoCompressionService
             if ($type === 'video') {
                 // Video format configuration
                 $format = (new X264('aac'))
-                    ->setKiloBitrate(800)     // video bitrate
-                    ->setAudioKiloBitrate(96); // audio bitrate AAC
+                    // We remove ->setKiloBitrate() because CRF handles it
+                    ->setAdditionalParameters([
+                        '-crf', '23',          // Target quality (23 is standard, 20 is high quality)
+                        '-maxrate', '4000k',   // The "Cap": Don't let it spike above 4Mbps
+                        '-bufsize', '8000k',   // Usually 2x the maxrate
+                        '-preset', 'veryfast',
+                        '-movflags', 'faststart'
+                    ]);
                 FFMpeg::fromDisk($disk)
                     ->open($path)
-                    ->addFilter('-vf', 'scale=-2:480') // width auto, divisible by 2; max height 480
+                    ->addFilter('-vf', 'scale=-2:720') // width auto, divisible by 2; max height 720
                     ->export()
                     ->toDisk($disk)
                     ->inFormat($format)
@@ -97,7 +103,12 @@ class AudioVideoCompressionService
                 // Instead, export without format and add codec params directly
                 FFMpeg::fromDisk($disk)
                     ->open($path)
-                    ->addFilter(['-vn', '-c:a', 'aac', '-b:a', '128k', '-ar', '44100'])
+                    ->addFilter([
+                        '-vn',
+                        '-c:a', 'aac',
+                        '-q:a', '3',
+                        '-ar', '44100'
+                    ])
                     ->export()
                     ->toDisk($disk)
                     ->save($compressedPath);

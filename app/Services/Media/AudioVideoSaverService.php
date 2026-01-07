@@ -109,8 +109,9 @@ class AudioVideoSaverService
             }
 
             if ($fileSaved) {
-                //compress the file if it's not a photo
-                if (in_array($disk, ['video', 'audio'])) {
+                //compress the file if it is a video
+                // Audio from Android is already compressed, .wav from iOS is rare and ignored
+                if ($disk === 'video') {
                     $compressionService = app(AudioVideoCompressionService::class);
                     $compressionSuccess = $compressionService->compress($disk, $targetPath, $disk);
 
