@@ -190,7 +190,7 @@ return [
     "ec5_252" => "The website is currently undergoing maintenance. Please try again later.",
     "ec5_253" => "Invalid client credentials.",
     "ec5_254" => "Could not generate access token. Please contact support.",
-    "ec5_255" => "Too many requests have been made. Please try again later.",
+    "ec5_255" => "Too many requests. Try again later.",
     "ec5_256" => "Access denied.",
     "ec5_257" => "Unauthorized client access.",
     "ec5_258" => "You have already created an App for this project.",

@@ -54,9 +54,8 @@ class ToProjectMobileLogoS3Macro extends ServiceProvider
                         'Content-Type' => config('epicollect.media.content_type.photo')
                     ]);
 
-                } catch (FileNotFoundException $e) {
-                    Log::error('Cannot find S3 project mobile logo', ['exception' => $e]);
-
+                } catch (FileNotFoundException) {
+                    //ignore as legacy projects might not have a logo
                 } catch (Throwable $e) {
                     Log::error('Cannot generate S3 project mobile logo', ['exception' => $e]);
                 }

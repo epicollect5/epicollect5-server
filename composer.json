@@ -41,7 +41,8 @@
     "ext-simdjson": "*",
     "intervention/image-laravel": "^1.5",
     "pbmedia/laravel-ffmpeg": "^8.7",
-    "php-ffmpeg/php-ffmpeg": "^1.3"
+    "php-ffmpeg/php-ffmpeg": "^1.3",
+    "jdavidbakr/laravel-cache-garbage-collector": "^2.3"
   },
   "require-dev": {
     "ext-xdebug": "*",
