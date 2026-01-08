@@ -4,16 +4,14 @@ namespace Tests\Services\Media;
 
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectStats;
-use ec5\Services\Media\AudioVideoCompressionService;
 use ec5\Services\Media\AudioVideoSaverService;
 use Exception;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\UploadedFile;
-use Mockery;
-use Ramsey\Uuid\Uuid;
-use Tests\TestCase;
-use Storage;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
+use Ramsey\Uuid\Uuid;
+use Storage;
+use Tests\TestCase;
 
 class AudioVideoSaverServiceLocalTest extends TestCase
 {
@@ -43,14 +41,6 @@ class AudioVideoSaverServiceLocalTest extends TestCase
         // Create a fake audio mp4 file
         $file = UploadedFile::fake()
             ->create($fileName, $fileSizeKB, 'audio/mp4'); // size in KB
-
-        // --- Mock compression service (simulate success) ---
-        $mockCompression = Mockery::mock(AudioVideoCompressionService::class);
-        $mockCompression->shouldReceive('compress')
-            ->once()
-            ->with($disk, $project->ref . '/' . $fileName, $disk)
-            ->andReturn(true);
-        $this->app->instance(AudioVideoCompressionService::class, $mockCompression);
 
         // Mock Storage facade for successful save
         Storage::shouldReceive('disk')

@@ -2,21 +2,19 @@
 
 namespace Tests\Services\Media;
 
+use Aws\Command;
+use Aws\S3\Exception\S3Exception;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectStats;
-use ec5\Services\Media\AudioVideoCompressionService;
 use ec5\Services\Media\AudioVideoSaverService;
 use Exception;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Mockery;
-use Ramsey\Uuid\Uuid;
-use Tests\TestCase;
-use Storage;
-use Aws\S3\Exception\S3Exception;
-use Aws\Command;
 use GuzzleHttp\Psr7\Response;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
+use Ramsey\Uuid\Uuid;
+use Storage;
+use Tests\TestCase;
 
 class AudioVideoSaverServiceS3Test extends TestCase
 {
@@ -106,7 +104,7 @@ class AudioVideoSaverServiceS3Test extends TestCase
         $this->assertFalse($result);
     }
 
-    public function test_service_successfully_compresses_and_saves_file_to_s3()
+    public function test_service_successfully_saves_file_to_s3()
     {
         // Create project & stats
         $project = factory(Project::class)->create();
@@ -118,15 +116,6 @@ class AudioVideoSaverServiceS3Test extends TestCase
         $disk = 'audio';
         $filePath = 'temp/' . $fileName;
         $fileBytes = 21;
-
-        // --- Mock compression service (simulate success) ---
-        $mockCompression = Mockery::mock(AudioVideoCompressionService::class);
-        // No FFMpeg chain needed as compression is mocked
-        $mockCompression->shouldReceive('compress')
-            ->once()
-            ->with($disk, $project->ref . '/' . $fileName, $disk)
-            ->andReturn(true);
-        $this->app->instance(AudioVideoCompressionService::class, $mockCompression);
 
         // --- Mock all Storage interactions ---
         Storage::shouldReceive('disk')
