@@ -176,11 +176,16 @@ class UploadAppControllerAudioLocalTest extends TestCase
             //assert file is uploaded
             $audios = Storage::disk('audio')->files($this->project->ref);
             $this->assertCount(1, $audios);
+            $uploadedFile = $audios[0];
+            $actualBytes = Storage::disk('audio')->size($uploadedFile);
+
+            //check if the file is compressed
+            $this->assertLessThanOrEqual($expectedBytes, $actualBytes);
 
             //asset storage stats are updated
             $projectStats = ProjectStats::where('project_id', $this->project->id)->first();
-            $this->assertEquals($expectedBytes, $projectStats->total_bytes);
-            $this->assertEquals($expectedBytes, $projectStats->audio_bytes);
+            $this->assertEquals($actualBytes, $projectStats->total_bytes);
+            $this->assertEquals($actualBytes, $projectStats->audio_bytes);
             $this->assertEquals(1, $projectStats->total_files);
             $this->assertEquals(0, $projectStats->photo_files);
             $this->assertEquals(1, $projectStats->audio_files);
@@ -298,10 +303,14 @@ class UploadAppControllerAudioLocalTest extends TestCase
             $audios = Storage::disk('audio')->files($this->project->ref);
             $this->assertCount(1, $audios);
 
+            $actualBytes = Storage::disk('audio')->size($audios[0]);
+            //check compression was successful
+            $this->assertLessThanOrEqual($expectedBytes, $actualBytes);
+
             //asset storage stats are updated
             $projectStats = ProjectStats::where('project_id', $this->project->id)->first();
-            $this->assertEquals($expectedBytes, $projectStats->total_bytes);
-            $this->assertEquals($expectedBytes, $projectStats->audio_bytes);
+            $this->assertEquals($actualBytes, $projectStats->total_bytes);
+            $this->assertEquals($actualBytes, $projectStats->audio_bytes);
             $this->assertEquals(0, $projectStats->photo_bytes);
             $this->assertEquals(0, $projectStats->video_bytes);
             $this->assertEquals(1, $projectStats->total_files);
@@ -351,6 +360,9 @@ class UploadAppControllerAudioLocalTest extends TestCase
 
             $filename = $entryPayloads[0]['data']['entry']['answers'][$inputRef]['answer'];
             $entryUuid = $entryPayloads[0]['data']['entry']['entry_uuid'];
+            //iOS audio files are always wav so replace original extension (mp4)
+            $filename = str_replace('.mp4', '.wav', $filename);
+            $entryPayloads[0]['data']['entry']['answers'][$inputRef]['answer'] = $filename;
 
             //generate a fake payload for the top parent form
             $payload = $this->entryGenerator->createFilePayload(
@@ -386,6 +398,11 @@ class UploadAppControllerAudioLocalTest extends TestCase
             //assert file is uploaded
             $audios = Storage::disk('audio')->files($this->project->ref);
             $this->assertCount(1, $audios);
+            $uploadedFile = $audios[0];
+            $actualBytes = Storage::disk('audio')->size($uploadedFile);
+
+            //wav files are never compress due to iOS limitations
+            $this->assertEquals($expectedBytes, $actualBytes);
 
             //asset storage stats are updated
             $projectStats = ProjectStats::where('project_id', $this->project->id)->first();
@@ -618,10 +635,14 @@ class UploadAppControllerAudioLocalTest extends TestCase
             $audios = Storage::disk('audio')->files($this->project->ref);
             $this->assertCount(1, $audios);
 
+            $actualBytes = Storage::disk('audio')->size($audios[0]);
+            //check compression was successful
+            $this->assertLessThanOrEqual($expectedBytes, $actualBytes);
+
             //asset storage stats are updated
             $projectStats = ProjectStats::where('project_id', $this->project->id)->first();
-            $this->assertEquals($expectedBytes, $projectStats->total_bytes);
-            $this->assertEquals($expectedBytes, $projectStats->audio_bytes);
+            $this->assertEquals($actualBytes, $projectStats->total_bytes);
+            $this->assertEquals($actualBytes, $projectStats->audio_bytes);
             $this->assertEquals(0, $projectStats->photo_bytes);
             $this->assertEquals(0, $projectStats->video_bytes);
             $this->assertEquals(1, $projectStats->total_files);
