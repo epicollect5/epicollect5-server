@@ -91,9 +91,12 @@ class AudioVideoCompressionService
                         '-preset', 'veryfast',
                         '-movflags', 'faststart'
                     ]);
+                // Width: Auto (divisible by 2), but don't exceed original width
+                // Height: 720, but don't exceed original height
+                $scaleFilter = "scale='min(iw,-2)':'min(ih,720)'";
                 FFMpeg::fromDisk($disk)
                     ->open($path)
-                    ->addFilter('-vf', 'scale=-2:720') // width auto, divisible by 2; max height 720
+                    ->addFilter('-vf', $scaleFilter)
                     ->export()
                     ->toDisk($disk)
                     ->inFormat($format)
@@ -120,7 +123,15 @@ class AudioVideoCompressionService
             // Just verify it exists and has reasonable content
             sleep(1); // Let filesystem catch up
 
-            if ($this->verifyCompressedFile($disk, $path, $compressedPath)) {
+            $verificationResult = $this->verifyCompressedFile($disk, $path, $compressedPath);
+            if ($verificationResult === 'keep_original') {
+                Log::error('Compression result larger than original - skipping swap', ['path' => $path]);
+                Storage::disk($disk)->delete($compressedPath);
+                $success = true; // Return true to stop retries, we are done.
+            }
+
+            if ($verificationResult === 'replace') {
+
                 // Log compression stats
                 $diskInstance = Storage::disk($disk);
                 $originalSize = $diskInstance->size($path);
@@ -135,7 +146,6 @@ class AudioVideoCompressionService
                     'compression_rate_percent' => round($compressionRate, 2)
                 ]);
 
-                // Replace original
                 if (Storage::disk($disk)->move($compressedPath, $path)) {
                     $success = true;
                 } else {
@@ -143,11 +153,10 @@ class AudioVideoCompressionService
                     Log::error('Failed to move compressed file', ['path' => $path]);
                     Storage::disk($disk)->delete($compressedPath);
                 }
-            } else {
-                // Cleanup failed compression
+            }
+            if ($verificationResult === 'fail') {
                 Storage::disk($disk)->delete($compressedPath);
             }
-
         } catch (Throwable $e) {
             Log::error('Compression error', [
                 'path' => $path,
@@ -168,46 +177,18 @@ class AudioVideoCompressionService
      * If FFmpeg completed without errors, the file is playable - we just
      * need basic sanity checks here.
      */
-    private function verifyCompressedFile(string $disk, string $originalPath, string $compressedPath): bool
+    private function verifyCompressedFile(string $disk, string $originalPath, string $compressedPath): string
     {
-        try {
-            $diskInstance = Storage::disk($disk);
+        $diskInstance = Storage::disk($disk);
 
-            if (!$diskInstance->exists($compressedPath)) {
-                Log::warning('Compressed file does not exist', ['path' => $compressedPath]);
-                return false;
-            }
-
-            $compressedSize = $diskInstance->size($compressedPath);
-
-            // Sanity check: file must have content (minimum 1KB for valid media)
-            if ($compressedSize < 1000) {
-                Log::warning('Compressed file suspiciously small', [
-                    'path' => $compressedPath,
-                    'size' => $compressedSize
-                ]);
-                return false;
-            }
-
-            // Optional: verify compression actually reduced size
-            $originalSize = $diskInstance->size($originalPath);
-            if ($compressedSize >= $originalSize) {
-                Log::info('Compressed file not smaller, keeping original', [
-                    'path' => $compressedPath,
-                    'original_size' => $originalSize,
-                    'compressed_size' => $compressedSize
-                ]);
-                return false;
-            }
-
-            return true;
-
-        } catch (Throwable $e) {
-            Log::error('Failed to verify compressed file', [
-                'compressedPath' => $compressedPath,
-                'error' => $e->getMessage(),
-            ]);
-            return false;
+        if (!$diskInstance->exists($compressedPath) || $diskInstance->size($compressedPath) < 1000) {
+            return 'fail';
         }
+
+        if ($diskInstance->size($compressedPath) >= $diskInstance->size($originalPath)) {
+            return 'keep_original';
+        }
+
+        return 'replace';
     }
 }
