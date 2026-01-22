@@ -67,8 +67,7 @@ return [
             'root' => storage_path('app/temp'),
             'throw' => true,
             'visibility' => 'public',
-            'directory_visibility' => 'public',
-
+            'directory_visibility' => 'public'
         ],
 
         'local' => [

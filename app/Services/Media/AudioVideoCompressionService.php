@@ -68,8 +68,11 @@ class AudioVideoCompressionService
      */
     private function tryCompress(string $disk, string $path, string $type): bool
     {
+        $dir = pathinfo($path, PATHINFO_DIRNAME);
         $base = pathinfo($path, PATHINFO_FILENAME);
-        $compressedPath = $base . '_compressed.mp4';
+        $compressedFilename = $base . '_compressed.mp4';
+        $compressedPath = ($dir && $dir !== '.') ? $dir . '/' . $compressedFilename : $compressedFilename;
+
         $media = FFMpeg::fromDisk($disk)->open($path);
         // These methods are passed to the underlying driver via __call()
         $format  = $media()->getFormat();

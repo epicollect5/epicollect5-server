@@ -1,14 +1,14 @@
 <?php
 
-namespace Tests\Services\Media;
+namespace Services\Media;
 
 use ec5\Services\Media\AudioVideoCompressionService;
+use FFMpeg\FFMpeg;
 use Illuminate\Support\Facades\Storage;
-use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
 use Tests\TestCase;
 use Throwable;
 
-class AudioVideoCompressionServiceTest extends TestCase
+class AudioVideoCompressionServiceLocalTest extends TestCase
 {
     private AudioVideoCompressionService $service;
     private string $sampleMediaPath;
@@ -16,6 +16,7 @@ class AudioVideoCompressionServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->overrideStorageDriver('local');
         $this->service = new AudioVideoCompressionService();
         $this->sampleMediaPath = base_path('tests/Files/ffmpeg');
     }
@@ -23,7 +24,7 @@ class AudioVideoCompressionServiceTest extends TestCase
     protected function tearDown(): void
     {
         // Clean up any test files created
-        $this->cleanupTestFiles('video', ['test_720p.mp4','test_360p.mp4']);
+        $this->cleanupTestFiles('video', ['test_720p.mp4','test_360p.mp4','test_720.mp4','test_to_720.mp4']);
         $this->cleanupTestFiles('audio', ['test_stereo.mp4', 'test_mono.mp4']);
 
         parent::tearDown();
@@ -48,7 +49,7 @@ class AudioVideoCompressionServiceTest extends TestCase
         $this->assertLessThan($originalSize, $compressedSize);
 
         // Verify it's actually 720p now
-        $this->assertVideoIs720pOrLess('video', $destinationFilename);
+        $this->assertVideoIs720pOrLess($destinationFilename);
     }
 
     public function test_it_compresses_1080p_video_to_720p_landscape()
@@ -64,7 +65,7 @@ class AudioVideoCompressionServiceTest extends TestCase
         $this->assertTrue(Storage::disk('video')->exists($destinationFilename));
 
         // Verify it's actually 720p now
-        $this->assertVideoIs720pOrLess('video', $destinationFilename);
+        $this->assertVideoIs720pOrLess($destinationFilename);
     }
 
     public function test_it_skips_video_already_at_720p_landscape()
@@ -128,7 +129,7 @@ class AudioVideoCompressionServiceTest extends TestCase
         $this->assertLessThan($originalSize, $compressedSize);
 
         // Verify it's mono now
-        $this->assertAudioIsMono('audio', 'test_stereo.mp4');
+        $this->assertAudioIsMono();
     }
 
     public function test_it_compresses_stereo_audio_wav_to_mono()
@@ -147,7 +148,7 @@ class AudioVideoCompressionServiceTest extends TestCase
         $this->assertLessThan($originalSize, $compressedSize);
 
         // Verify it's mono now
-        $this->assertAudioIsMono('audio', 'test_stereo.mp4');
+        $this->assertAudioIsMono();
     }
 
     public function test_it_skips_already_compressed_mono_audio()
@@ -170,7 +171,7 @@ class AudioVideoCompressionServiceTest extends TestCase
         $sourcePath = $this->sampleMediaPath . DIRECTORY_SEPARATOR . $fixtureFilename;
 
         if (!file_exists($sourcePath)) {
-            $this->fail("Fixture file not found: {$sourcePath}");
+            $this->fail("Fixture file not found: $sourcePath");
         }
 
         // Open a read stream for the local fixture file
@@ -188,7 +189,7 @@ class AudioVideoCompressionServiceTest extends TestCase
         }
 
         if (!$success) {
-            $this->fail("Failed to write fixture to disk: {$disk}");
+            $this->fail("Failed to write fixture to disk: $disk");
         }
     }
 
@@ -201,61 +202,89 @@ class AudioVideoCompressionServiceTest extends TestCase
         }
     }
 
-    private function assertVideoIs720pOrLess(string $disk, string $filename): void
+    private function assertVideoIs720pOrLess(string $filename): void
     {
         try {
-            // Use the package to open the file - it handles S3 vs Local abstraction
-            $media = FFMpeg::fromDisk($disk)->open($filename);
+            // Resolve the real filesystem path from the Laravel disk
+            $fullPath = Storage::disk('video')->path($filename);
 
-            // Get the underlying video stream
-            $videoStream = $media->getVideoStream();
+            if (!file_exists($fullPath)) {
+                $this->fail("Video file not found at path: $fullPath");
+            }
 
-            $width = (int) $videoStream->get('width');
-            $height = (int) $videoStream->get('height');
+            // Bypass LaravelFFMpeg to avoid temp cache / stale probe issues
+            // This avoids errors where width and height are not correctly read
+            $ffmpeg = FFMpeg::create();
+            $video = $ffmpeg
+                ->open($fullPath)
+                ->getStreams()
+                ->videos()
+                ->first();
+
+            if (!$video) {
+                $this->fail("No video stream found in file: $filename");
+            }
+
+            $width  = (int) $video->get('width');
+            $height = (int) $video->get('height');
 
             $shortSide = min($width, $height);
 
             $this->assertLessThanOrEqual(
                 720,
                 $shortSide,
-                "Video dimensions {$width}x{$height} (short side: {$shortSide}px) exceed the 720p limit."
+                "Video dimensions {$width}x$height (short side: {$shortSide}px) exceed the 720p limit."
+            );
+        } catch (Throwable $e) {
+            $this->fail('Failed assertVideoIs720pOrLess: ' . $e->getMessage());
+        }
+    }
+
+
+    private function assertAudioIsMono(): void
+    {
+        try {
+            // Resolve the full filesystem path from the Laravel disk
+            $fullPath = Storage::disk('audio')->path('test_stereo.mp4');
+
+            if (!file_exists($fullPath)) {
+                $this->fail("Audio file not found at path: $fullPath");
+            }
+
+            // Bypass LaravelFFMpeg facade to avoid stale temp copies
+            // This avoids errors where channels are not correctly read
+            $ffmpeg = FFMpeg::create();
+            $streams = $ffmpeg
+                ->open($fullPath)
+                ->getStreams();
+
+            // Find the audio stream
+            $audioStream = null;
+            foreach ($streams as $stream) {
+                if ($stream->get('codec_type') === 'audio') {
+                    $audioStream = $stream;
+                    break;
+                }
+            }
+
+            if (!$audioStream) {
+                $this->fail("No audio stream found in file: test_stereo.mp4");
+            }
+
+            $channels = (int) $audioStream->get('channels');
+
+            if ($channels === 0) {
+                $this->fail('Could not read audio channel information from stream');
+            }
+
+            $this->assertSame(
+                1,
+                $channels,
+                "Audio should be mono (1 channel), found $channels"
             );
 
         } catch (Throwable $e) {
-            $this->fail('Could not get video dimensions: ' . $e->getMessage());
+            $this->fail('Failed assertAudioIsMono: ' . $e->getMessage());
         }
     }
-
-    private function assertAudioIsMono(string $disk, string $filename): void
-    {
-        $media = FFMpeg::fromDisk($disk)->open($filename);
-
-        $streams = $media->getStreams(); // array of Stream objects
-
-        $audioStream = null;
-
-        foreach ($streams as $stream) {
-            if ($stream->get('codec_type') === 'audio') {
-                $audioStream = $stream;
-                break;
-            }
-        }
-
-        if (!$audioStream) {
-            $this->fail('No audio stream found in media file');
-        }
-
-        $channels = (int) $audioStream->get('channels');
-
-        if ($channels === 0) {
-            $this->fail('Could not read audio channel information from stream');
-        }
-
-        $this->assertSame(
-            1,
-            $channels,
-            'Audio should be mono (1 channel)'
-        );
-    }
-
 }

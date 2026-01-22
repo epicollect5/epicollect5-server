@@ -19,6 +19,7 @@ use Exception;
 use Faker\Factory as Faker;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Storage;
+use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
 use Random\RandomException;
 use Tests\TestCase;
 use Throwable;
@@ -386,9 +387,30 @@ class UploadAppControllerAudioS3Test extends TestCase
                 ['Content-Type' => 'multipart/form-data']
             );
 
-            // Get the temporary file path from the UploadedFile
-            $tempFilePath = $payload['name']->getRealPath();
-            $expectedBytes = filesize($tempFilePath);
+            $sourcePath = base_path('tests/Files/audio.wav');
+            $inputPath = 'audio.wav'; // relative path ON the disk
+            $outputPath = 'audio_compressed.mp4';
+
+            Storage::disk('temp')->put(
+                $inputPath,
+                file_get_contents($sourcePath)
+            );
+
+            FFMpeg::fromDisk('temp')
+                ->open($inputPath)
+                ->addFilter([
+                    '-vn',
+                    '-c:a', 'aac',
+                    '-b:a', '64k',
+                    '-ac', '1',
+                    '-ar', '44100',
+                    '-f', 'mp4'
+                ])
+                ->export()
+                ->save($outputPath);
+
+            $expectedBytes = Storage::disk('temp')->size($outputPath);
+
 
             $response[0]->assertStatus(200)
                 ->assertExactJson(

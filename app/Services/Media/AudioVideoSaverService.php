@@ -109,7 +109,7 @@ class AudioVideoSaverService
             }
 
             if ($fileSaved) {
-                //compress the file if it is a video
+                //compress the file if it is a video or audio
                 if ($disk === 'video' || $disk === 'audio') {
                     $compressionService = app(AudioVideoCompressionService::class);
                     $compressionSuccess = $compressionService->compress($disk, $targetPath, $disk);
