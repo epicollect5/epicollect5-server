@@ -30,13 +30,6 @@ class AudioVideoCompressionService
         $maxRetries = 3;
         $delay = 1; // seconds
 
-        //skip .wav files (do not compress them) due to legacy implementation.
-        //on iOS we can only record .wav files using Cordova
-        //iOS user base is non existent anyway
-        if (str_ends_with($path, '.wav')) {
-            return true;
-        }
-
         for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
             Log::info("Compression attempt $attempt/$maxRetries", [
                 'disk' => $disk,
@@ -75,42 +68,74 @@ class AudioVideoCompressionService
      */
     private function tryCompress(string $disk, string $path, string $type): bool
     {
-        //keep original extension (mp4 or wav for ios audio files)
-        $compressedPath = preg_replace('/(\.\w+)$/', '_compressed$1', $path);
+        $base = pathinfo($path, PATHINFO_FILENAME);
+        $compressedPath = $base . '_compressed.mp4';
+        $media = FFMpeg::fromDisk($disk)->open($path);
+        // These methods are passed to the underlying driver via __call()
+        $format  = $media()->getFormat();
+        $bitrate = (int) $format->get('bit_rate');
         $success = false;
 
         try {
             if ($type === 'video') {
-                // Video format configuration
+
+                // 1. Check Dimensions (using the package helper)
+                $videoStream = $media->getVideoStream();
+                $w = $videoStream->get('width');
+                $h = $videoStream->get('height');
+
+                // Find the "Short Side" (e.g., 720 in a 720x1280 portrait video)
+                $shortSide = min($w, $h);
+
+                // SKIP LOGIC:
+                // If it's already 720p (or less)
+                if ($shortSide <= 720) {
+                    Log::info('Skipping: Video is already 720p', ['path' => $path]);
+                    return true;
+                }
+
+                // Video format: Targets 720p and 30fps but keeps audio channels
                 $format = (new X264('aac'))
-                    // We remove ->setKiloBitrate() because CRF handles it
+                    ->setAudioKiloBitrate(128) // Higher bitrate for potential Stereo
                     ->setAdditionalParameters([
-                        '-crf', '23',          // Target quality (23 is standard, 20 is high quality)
-                        '-maxrate', '4000k',   // The "Cap": Don't let it spike above 4Mbps
-                        '-bufsize', '8000k',   // Usually 2x the maxrate
+                        '-crf', '23',
+                        '-maxrate', '2000k',
+                        '-bufsize', '4000k',
+                        '-r', '30',              // Force 30fps consistency
                         '-preset', 'veryfast',
                         '-movflags', 'faststart'
                     ]);
-                // Width: Auto (divisible by 2), but don't exceed original width
-                // Height: 720, but don't exceed original height
-                $scaleFilter = "scale='min(iw,-2)':'min(ih,720)'";
-                FFMpeg::fromDisk($disk)
-                    ->open($path)
-                    ->addFilter('-vf', $scaleFilter)
+
+                // Logic: Shortest side max 720, maintain aspect ratio, no upscaling
+                $scaleFilter = "scale='if(gt(iw,ih),-2,min(iw,720))':'if(gt(iw,ih),min(ih,720),-2)'";
+
+                $media->addFilter(function ($filters) use ($scaleFilter) {
+                    $filters->custom($scaleFilter);
+                })
                     ->export()
                     ->toDisk($disk)
                     ->inFormat($format)
                     ->save($compressedPath);
             } elseif ($type === 'audio') {
+                $audioStream = $media->getAudioStream();
+                $channels = (int) $audioStream->get('channels');
+
+                // SKIP: If already Mono and <= 70kbps (catches your old 96k/stereo uploads)
+                if ($channels === 1 && $bitrate > 0 && $bitrate <= 70000) {
+                    return true;
+                }
+
                 // Don't use Aac() format - it requires libfdk_aac
                 // Instead, export without format and add codec params directly
                 FFMpeg::fromDisk($disk)
                     ->open($path)
                     ->addFilter([
-                        '-vn',
-                        '-c:a', 'aac',
-                        '-q:a', '3',
-                        '-ar', '44100'
+                        '-vn', //no video
+                        '-c:a', 'aac', //codec
+                        '-b:a', '64k', // Bitrate
+                        '-ac', '1', // Channels (Mono)
+                        '-ar', '44100', // Sample rate
+                         '-f', 'mp4'// container
                     ])
                     ->export()
                     ->toDisk($disk)
@@ -124,14 +149,8 @@ class AudioVideoCompressionService
             sleep(1); // Let filesystem catch up
 
             $verificationResult = $this->verifyCompressedFile($disk, $path, $compressedPath);
-            if ($verificationResult === 'keep_original') {
-                Log::error('Compression result larger than original - skipping swap', ['path' => $path]);
-                Storage::disk($disk)->delete($compressedPath);
-                $success = true; // Return true to stop retries, we are done.
-            }
 
             if ($verificationResult === 'replace') {
-
                 // Log compression stats
                 $diskInstance = Storage::disk($disk);
                 $originalSize = $diskInstance->size($path);
@@ -184,11 +203,6 @@ class AudioVideoCompressionService
         if (!$diskInstance->exists($compressedPath) || $diskInstance->size($compressedPath) < 1000) {
             return 'fail';
         }
-
-        if ($diskInstance->size($compressedPath) >= $diskInstance->size($originalPath)) {
-            return 'keep_original';
-        }
-
         return 'replace';
     }
 }

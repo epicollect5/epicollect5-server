@@ -110,8 +110,7 @@ class AudioVideoSaverService
 
             if ($fileSaved) {
                 //compress the file if it is a video
-                // Audio from Android is already compressed, .wav from iOS is rare and ignored
-                if ($disk === 'video') {
+                if ($disk === 'video' || $disk === 'audio') {
                     $compressionService = app(AudioVideoCompressionService::class);
                     $compressionSuccess = $compressionService->compress($disk, $targetPath, $disk);
 
