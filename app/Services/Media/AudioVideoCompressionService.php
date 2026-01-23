@@ -71,8 +71,15 @@ class AudioVideoCompressionService
     {
         $dir = pathinfo($path, PATHINFO_DIRNAME);
         $base = pathinfo($path, PATHINFO_FILENAME);
+        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
         $compressedFilename = $base . '_compressed.mp4';
         $compressedPath = ($dir && $dir !== '.') ? $dir . '/' . $compressedFilename : $compressedFilename;
+
+        // LEGACY GUARD: Skip compression for .wav files and return true
+        if ($extension === 'wav') {
+            Log::info('Skipping: .wav file detected for legacy support', ['path' => $path]);
+            return true;
+        }
 
         $media = FFMpeg::fromDisk($disk)->open($path);
         // These methods are passed to the underlying driver via __call()

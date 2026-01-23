@@ -19,7 +19,6 @@ use Exception;
 use Faker\Factory as Faker;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Storage;
-use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
 use Random\RandomException;
 use Tests\TestCase;
 use Throwable;
@@ -329,7 +328,7 @@ class UploadAppControllerAudioS3Test extends TestCase
         }
     }
 
-    public function test_it_should_upload_a_top_hierarchy_audio_ios()
+    public function test_it_should_upload_a_top_hierarchy_audio_ios_wav()
     {
         $response = [];
         $inputRef = null;
@@ -365,10 +364,9 @@ class UploadAppControllerAudioS3Test extends TestCase
             $filename = $entryPayloads[0]['data']['entry']['answers'][$inputRef]['answer'];
             $entryUuid = $entryPayloads[0]['data']['entry']['entry_uuid'];
 
-            //iOS audio files are always wav so replace original extension (mp4)
+            //iOS audio files as wav are skipped from compression for legacy reasons
             $filename = str_replace('.mp4', '.wav', $filename);
             $entryPayloads[0]['data']['entry']['answers'][$inputRef]['answer'] = $filename;
-
 
             //generate a fake payload for the top parent form
             $payload = $this->entryGenerator->createFilePayload(
@@ -379,6 +377,7 @@ class UploadAppControllerAudioS3Test extends TestCase
                 $inputRef,
                 'iOS'
             );
+            $expectedBytes = $payload['name']->getSize();
 
             //multipart upload from app with json encoded string and file (Cordova FileTransfer)
             $response[] = $this->post(
@@ -386,35 +385,6 @@ class UploadAppControllerAudioS3Test extends TestCase
                 ['data' => json_encode($payload['data']), 'name' => $payload['name']],
                 ['Content-Type' => 'multipart/form-data']
             );
-
-            $sourcePath = base_path('tests/Files/audio.wav');
-            $inputPath = 'audio.wav'; // relative path ON the disk
-            $outputPath = 'audio_compressed.mp4';
-
-            Storage::disk('temp')->put(
-                $inputPath,
-                file_get_contents($sourcePath)
-            );
-
-            FFMpeg::fromDisk('temp')
-                ->open($inputPath)
-                ->addFilter([
-                    '-vn',
-                    '-c:a', 'aac',
-                    '-b:a', '64k',
-                    '-ac', '1',
-                    '-ar', '44100',
-                    '-f', 'mp4'
-                ])
-                ->export()
-                ->save($outputPath);
-
-            $expectedBytes = Storage::disk('temp')->size($outputPath);
-
-            // Cleanup temp files used for expectedBytes calculation
-            Storage::disk('temp')->delete($inputPath);
-            Storage::disk('temp')->delete($outputPath);
-
 
             $response[0]->assertStatus(200)
                 ->assertExactJson(

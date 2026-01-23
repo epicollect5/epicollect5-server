@@ -49,6 +49,11 @@ class ToMediaStreamS3Macro extends ServiceProvider
                 $filesize = $head['ContentLength'];
                 $contentType = config('epicollect.media.content_type.' . $inputType, 'application/octet-stream');
 
+                //handle wav files for legacy reasons
+                if ($inputType === 'audio' && pathinfo($filepath, PATHINFO_EXTENSION) === 'wav') {
+                    $contentType = 'audio/wav';
+                }
+
                 $start = 0;
                 $end = $filesize - 1;
                 $status = 200;

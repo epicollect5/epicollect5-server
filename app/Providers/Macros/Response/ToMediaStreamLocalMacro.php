@@ -23,6 +23,13 @@ class ToMediaStreamLocalMacro extends ServiceProvider
         Response::macro('toMediaStreamLocal', function (Request $request, $filepath, $inputType) {
             try {
                 $contentType = config('epicollect.media.content_type.' . $inputType);
+
+                //handle wav files for legacy reasons
+                if ($inputType === 'audio' && pathinfo($filepath, PATHINFO_EXTENSION) === 'wav') {
+                    $contentType = 'audio/wav';
+                }
+
+
                 $filesize = filesize($filepath);
                 $start = 0;
                 $end = $filesize - 1;

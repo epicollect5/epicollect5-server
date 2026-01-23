@@ -19,7 +19,6 @@ use Exception;
 use Faker\Factory as Faker;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Storage;
-use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
 use Random\RandomException;
 use Tests\TestCase;
 use Throwable;
@@ -326,7 +325,7 @@ class UploadAppControllerAudioLocalTest extends TestCase
         }
     }
 
-    public function test_it_should_upload_a_top_hierarchy_audio_ios()
+    public function test_it_should_upload_a_top_hierarchy_audio_ios_wav()
     {
         $response = [];
         $inputRef = null;
@@ -360,8 +359,9 @@ class UploadAppControllerAudioLocalTest extends TestCase
             }
 
             $filename = $entryPayloads[0]['data']['entry']['answers'][$inputRef]['answer'];
+
             $entryUuid = $entryPayloads[0]['data']['entry']['entry_uuid'];
-            //iOS audio files are always wav so replace original extension (mp4)
+            //iOS audio files are always wav and skipped for legacy reasons
             $filename = str_replace('.mp4', '.wav', $filename);
             $entryPayloads[0]['data']['entry']['answers'][$inputRef]['answer'] = $filename;
 
@@ -382,30 +382,7 @@ class UploadAppControllerAudioLocalTest extends TestCase
                 ['Content-Type' => 'multipart/form-data']
             );
 
-            $sourcePath = base_path('tests/Files/audio.wav');
-            $inputPath = 'audio.wav'; // relative path ON the disk
-            $outputPath = 'audio_compressed.mp4';
-
-            Storage::disk('temp')->put(
-                $inputPath,
-                file_get_contents($sourcePath)
-            );
-
-            FFMpeg::fromDisk('temp')
-                ->open($inputPath)
-                ->addFilter([
-                    '-vn',
-                    '-c:a', 'aac',
-                    '-b:a', '64k',
-                    '-ac', '1',
-                    '-ar', '44100',
-                    '-f', 'mp4'
-                ])
-                ->export()
-                ->save($outputPath);
-
-            $expectedBytes = Storage::disk('temp')->size($outputPath);
-
+            $expectedBytes = $payload['name']->getSize();
 
             $response[0]->assertStatus(200)
                 ->assertExactJson(

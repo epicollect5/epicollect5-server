@@ -164,23 +164,20 @@ class AudioVideoCompressionServiceLocalTest extends TestCase
         $this->assertAudioIsMono();
     }
 
-    public function test_it_compresses_stereo_audio_wav_to_mono()
+    public function test_it_skips_compression_of_audio_wav()
     {
         // Copy stereo audio fixture
-        $this->copySampleMediaToStorage('audio.wav', 'audio', 'test_stereo.mp4');
+        $this->copySampleMediaToStorage('audio.wav', 'audio', 'test_mono.wav');
 
-        $originalSize = Storage::disk('audio')->size('test_stereo.mp4');
+        $originalSize = Storage::disk('audio')->size('test_mono.wav');
 
-        $result = $this->service->compress('audio', 'test_stereo.mp4', 'audio');
+        $result = $this->service->compress('audio', 'test_mono.wav', 'audio');
 
         $this->assertTrue($result);
 
-        // Should be compressed to smaller size
-        $compressedSize = Storage::disk('audio')->size('test_stereo.mp4');
-        $this->assertLessThan($originalSize, $compressedSize);
-
-        // Verify it's mono now
-        $this->assertAudioIsMono();
+        // Should not be compressed to smaller size
+        $compressedSize = Storage::disk('audio')->size('test_mono.wav');
+        $this->assertEquals($originalSize, $compressedSize);
     }
 
     public function test_it_skips_already_compressed_mono_audio()
