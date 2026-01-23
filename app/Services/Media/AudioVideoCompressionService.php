@@ -178,6 +178,9 @@ class AudioVideoCompressionService
             }
             if ($verificationResult === 'fail') {
                 Storage::disk($disk)->delete($compressedPath);
+            } else {
+                Log::error('Compression verification failed', ['path' => $path]);
+                Storage::disk($disk)->delete($compressedPath);
             }
         } catch (Throwable $e) {
             Log::error('Compression error', [

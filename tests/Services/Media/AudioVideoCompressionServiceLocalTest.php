@@ -1,6 +1,6 @@
 <?php
 
-namespace Services\Media;
+namespace Tests\Services\Media;
 
 use ec5\Services\Media\AudioVideoCompressionService;
 use FFMpeg\FFMpeg;

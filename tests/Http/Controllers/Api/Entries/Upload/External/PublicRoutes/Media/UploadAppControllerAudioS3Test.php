@@ -411,6 +411,10 @@ class UploadAppControllerAudioS3Test extends TestCase
 
             $expectedBytes = Storage::disk('temp')->size($outputPath);
 
+            // Cleanup temp files used for expectedBytes calculation
+            Storage::disk('temp')->delete($inputPath);
+            Storage::disk('temp')->delete($outputPath);
+
 
             $response[0]->assertStatus(200)
                 ->assertExactJson(
