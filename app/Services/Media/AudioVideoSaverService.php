@@ -109,7 +109,19 @@ class AudioVideoSaverService
             }
 
             if ($fileSaved) {
-                $fileBytes = $isS3 ? Storage::disk('s3')->size($file['path']) : $file->getSize();
+                //compress the file if it is a video or audio (.wav currently skipped for legacy reasons)
+                if ($disk === 'video' || $disk === 'audio') {
+                    $compressionService = app(AudioVideoCompressionService::class);
+                    $compressionSuccess = $compressionService->compress($disk, $targetPath, $disk);
+
+                    if (!$compressionSuccess) {
+                        Log::warning("Compression failed for $targetPath");
+                        // Optionally return false to force user re-upload
+                    }
+                }
+
+                // Get actual file size after potential compression
+                $fileBytes = Storage::disk($disk)->size($targetPath);
                 match($disk) {
                     'photo' => $photoBytes = $fileBytes,
                     'audio' => $audioBytes = $fileBytes,

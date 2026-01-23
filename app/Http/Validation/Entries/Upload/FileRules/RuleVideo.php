@@ -7,7 +7,7 @@ use ec5\Http\Validation\ValidationBase;
 class RuleVideo extends ValidationBase
 {
     protected array $rules = [
-        'file' => 'required|mimetypes:video/mp4,video/avi,video/mpeg,video/quicktime|max:500000'
+        'file' => 'required|mimetypes:video/mp4|max:500000'
     ];
 
     protected array $messages = [

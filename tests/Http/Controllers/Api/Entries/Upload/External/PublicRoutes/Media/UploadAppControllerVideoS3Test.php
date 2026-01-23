@@ -155,6 +155,7 @@ class UploadAppControllerVideoS3Test extends TestCase
             );
 
             // Get the temporary file path from the UploadedFile
+            //File is already compressed to compression will be skipped
             $tempFilePath = $payload['name']->getRealPath();
             $expectedBytes = filesize($tempFilePath);
 

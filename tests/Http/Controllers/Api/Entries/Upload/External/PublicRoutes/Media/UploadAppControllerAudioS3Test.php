@@ -177,10 +177,14 @@ class UploadAppControllerAudioS3Test extends TestCase
             $audios = Storage::disk('audio')->files($this->project->ref);
             $this->assertCount(1, $audios);
 
+            $actualBytes = Storage::disk('audio')->size($audios[0]);
+            //check compression was successful
+            $this->assertLessThanOrEqual($expectedBytes, $actualBytes);
+
             //asset storage stats are updated
             $projectStats = ProjectStats::where('project_id', $this->project->id)->first();
-            $this->assertEquals($expectedBytes, $projectStats->total_bytes);
-            $this->assertEquals($expectedBytes, $projectStats->audio_bytes);
+            $this->assertEquals($actualBytes, $projectStats->total_bytes);
+            $this->assertEquals($actualBytes, $projectStats->audio_bytes);
             $this->assertEquals(1, $projectStats->total_files);
             $this->assertEquals(0, $projectStats->photo_files);
             $this->assertEquals(1, $projectStats->audio_files);
@@ -300,10 +304,14 @@ class UploadAppControllerAudioS3Test extends TestCase
             $audios = Storage::disk('audio')->files($this->project->ref);
             $this->assertCount(1, $audios);
 
+            $actualBytes = Storage::disk('audio')->size($audios[0]);
+            //check compression was successful
+            $this->assertLessThanOrEqual($expectedBytes, $actualBytes);
+
             //asset storage stats are updated
             $projectStats = ProjectStats::where('project_id', $this->project->id)->first();
-            $this->assertEquals($expectedBytes, $projectStats->total_bytes);
-            $this->assertEquals($expectedBytes, $projectStats->audio_bytes);
+            $this->assertEquals($actualBytes, $projectStats->total_bytes);
+            $this->assertEquals($actualBytes, $projectStats->audio_bytes);
             $this->assertEquals(0, $projectStats->photo_bytes);
             $this->assertEquals(0, $projectStats->video_bytes);
             $this->assertEquals(1, $projectStats->total_files);
@@ -320,7 +328,7 @@ class UploadAppControllerAudioS3Test extends TestCase
         }
     }
 
-    public function test_it_should_upload_a_top_hierarchy_audio_ios()
+    public function test_it_should_upload_a_top_hierarchy_audio_ios_wav()
     {
         $response = [];
         $inputRef = null;
@@ -356,6 +364,10 @@ class UploadAppControllerAudioS3Test extends TestCase
             $filename = $entryPayloads[0]['data']['entry']['answers'][$inputRef]['answer'];
             $entryUuid = $entryPayloads[0]['data']['entry']['entry_uuid'];
 
+            //iOS audio files as wav are skipped from compression for legacy reasons
+            $filename = str_replace('.mp4', '.wav', $filename);
+            $entryPayloads[0]['data']['entry']['answers'][$inputRef]['answer'] = $filename;
+
             //generate a fake payload for the top parent form
             $payload = $this->entryGenerator->createFilePayload(
                 $formRef,
@@ -365,6 +377,7 @@ class UploadAppControllerAudioS3Test extends TestCase
                 $inputRef,
                 'iOS'
             );
+            $expectedBytes = $payload['name']->getSize();
 
             //multipart upload from app with json encoded string and file (Cordova FileTransfer)
             $response[] = $this->post(
@@ -372,10 +385,6 @@ class UploadAppControllerAudioS3Test extends TestCase
                 ['data' => json_encode($payload['data']), 'name' => $payload['name']],
                 ['Content-Type' => 'multipart/form-data']
             );
-
-            // Get the temporary file path from the UploadedFile
-            $tempFilePath = $payload['name']->getRealPath();
-            $expectedBytes = filesize($tempFilePath);
 
             $response[0]->assertStatus(200)
                 ->assertExactJson(
@@ -624,10 +633,14 @@ class UploadAppControllerAudioS3Test extends TestCase
             $audios = Storage::disk('audio')->files($this->project->ref);
             $this->assertCount(1, $audios);
 
+            $actualBytes = Storage::disk('audio')->size($audios[0]);
+            //check compression was successful
+            $this->assertLessThanOrEqual($expectedBytes, $actualBytes);
+
             //asset storage stats are updated
             $projectStats = ProjectStats::where('project_id', $this->project->id)->first();
-            $this->assertEquals($expectedBytes, $projectStats->total_bytes);
-            $this->assertEquals($expectedBytes, $projectStats->audio_bytes);
+            $this->assertEquals($actualBytes, $projectStats->total_bytes);
+            $this->assertEquals($actualBytes, $projectStats->audio_bytes);
             $this->assertEquals(0, $projectStats->photo_bytes);
             $this->assertEquals(0, $projectStats->video_bytes);
             $this->assertEquals(1, $projectStats->total_files);

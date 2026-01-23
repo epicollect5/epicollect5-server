@@ -24,7 +24,5 @@ class RuleVideoInput extends RuleInputBase
 
         // Set remaining rules in the parent class
         parent::setRules($inputDetails, $answer, $project);
-
     }
-
 }

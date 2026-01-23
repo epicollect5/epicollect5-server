@@ -8,10 +8,10 @@ use ec5\Services\Media\AudioVideoSaverService;
 use Exception;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\UploadedFile;
-use Ramsey\Uuid\Uuid;
-use Tests\TestCase;
-use Storage;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
+use Ramsey\Uuid\Uuid;
+use Storage;
+use Tests\TestCase;
 
 class AudioVideoSaverServiceLocalTest extends TestCase
 {
@@ -76,6 +76,10 @@ class AudioVideoSaverServiceLocalTest extends TestCase
                return true;
            })
            ->andReturn(true);
+
+        Storage::shouldReceive('size')
+            ->with($targetPath)
+            ->andReturn($fileBytes);
 
         // Assert service returns true on successful save
         $result = AudioVideoSaverService::saveFile(
