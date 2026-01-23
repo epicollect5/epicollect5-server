@@ -25,7 +25,7 @@ class AudioVideoCompressionServiceLocalTest extends TestCase
     {
         // Clean up any test files created
         $this->cleanupTestFiles('video', ['test_720p.mp4','test_360p.mp4','test_720.mp4','test_to_720.mp4']);
-        $this->cleanupTestFiles('audio', ['test_stereo.mp4', 'test_mono.mp4']);
+        $this->cleanupTestFiles('audio', ['test_stereo.mp4', 'test_mono.mp4','test_mono.wav']);
 
         parent::tearDown();
     }
