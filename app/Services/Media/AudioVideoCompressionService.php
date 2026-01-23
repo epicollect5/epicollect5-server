@@ -2,6 +2,7 @@
 
 namespace ec5\Services\Media;
 
+use Exception;
 use FFMpeg;
 use FFMpeg\Format\Video\X264;
 use Illuminate\Support\Facades\Log;
@@ -153,34 +154,35 @@ class AudioVideoCompressionService
 
             $verificationResult = $this->verifyCompressedFile($disk, $path, $compressedPath);
 
-            if ($verificationResult === 'replace') {
-                // Log compression stats
-                $diskInstance = Storage::disk($disk);
-                $originalSize = $diskInstance->size($path);
-                $compressedSize = $diskInstance->size($compressedPath);
-                $compressionRate = $originalSize > 0 ? ($originalSize - $compressedSize) / $originalSize * 100 : 0;
 
-                Log::info('Media compressed successfully', [
-                    'path' => $path,
-                    'type' => $type,
-                    'original_size_mb' => round($originalSize / 1024 / 1024, 2),
-                    'compressed_size_mb' => round($compressedSize / 1024 / 1024, 2),
-                    'compression_rate_percent' => round($compressionRate, 2)
-                ]);
+            switch ($verificationResult) {
+                case 'replace':
+                    // Log compression stats
+                    $diskInstance = Storage::disk($disk);
+                    $originalSize = $diskInstance->size($path);
+                    $compressedSize = $diskInstance->size($compressedPath);
+                    $compressionRate = $originalSize > 0 ? ($originalSize - $compressedSize) / $originalSize * 100 : 0;
 
-                if (Storage::disk($disk)->move($compressedPath, $path)) {
-                    $success = true;
-                } else {
-                    // Cleanup failed move
-                    Log::error('Failed to move compressed file', ['path' => $path]);
-                    Storage::disk($disk)->delete($compressedPath);
-                }
-            }
-            if ($verificationResult === 'fail') {
-                Storage::disk($disk)->delete($compressedPath);
-            } else {
-                Log::error('Compression verification failed', ['path' => $path]);
-                Storage::disk($disk)->delete($compressedPath);
+                    Log::info('Media compressed successfully', [
+                        'path' => $path,
+                        'type' => $type,
+                        'original_size_mb' => round($originalSize / 1024 / 1024, 2),
+                        'compressed_size_mb' => round($compressedSize / 1024 / 1024, 2),
+                        'compression_rate_percent' => round($compressionRate, 2)
+                    ]);
+
+                    if (Storage::disk($disk)->move($compressedPath, $path)) {
+                        $success = true;
+                    } else {
+                        // Cleanup failed move
+                        Log::error('Failed to move compressed file', ['path' => $path]);
+                        Storage::disk($disk)->delete($compressedPath);
+                    }
+                    break;
+                case 'fail':
+                    throw new Exception('Compression failed');
+                default:
+                    throw new Exception("Unknown verification result: $verificationResult");
             }
         } catch (Throwable $e) {
             Log::error('Compression error', [

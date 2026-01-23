@@ -52,6 +52,38 @@ class AudioVideoCompressionServiceLocalTest extends TestCase
         $this->assertVideoIs720pOrLess($destinationFilename);
     }
 
+    public function test_it_compresses_2K_video_to_720p_landscape()
+    {
+        // Copy fixture to test location
+        $sourceFilename = 'video_2K.mp4';
+        $destinationFilename = 'test_to_720.mp4';
+        $this->copySampleMediaToStorage($sourceFilename, 'video', $destinationFilename);
+
+        $result = $this->service->compress('video', $destinationFilename, 'video');
+
+        $this->assertTrue($result);
+        $this->assertTrue(Storage::disk('video')->exists($destinationFilename));
+
+        // Verify it's actually 720p now
+        $this->assertVideoIs720pOrLess($destinationFilename);
+    }
+
+    public function test_it_compresses_4K_video_to_720p_landscape()
+    {
+        // Copy fixture to test location
+        $sourceFilename = 'video_4K.mp4';
+        $destinationFilename = 'test_to_720.mp4';
+        $this->copySampleMediaToStorage($sourceFilename, 'video', $destinationFilename);
+
+        $result = $this->service->compress('video', $destinationFilename, 'video');
+
+        $this->assertTrue($result);
+        $this->assertTrue(Storage::disk('video')->exists($destinationFilename));
+
+        // Verify it's actually 720p now
+        $this->assertVideoIs720pOrLess($destinationFilename);
+    }
+
     public function test_it_compresses_1080p_video_to_720p_landscape()
     {
         // Copy fixture to test location
