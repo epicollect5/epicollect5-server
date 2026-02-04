@@ -101,7 +101,7 @@ class AudioVideoCompressionService
                 // SKIP LOGIC:
                 // If it's already 720p (or less)
                 if ($shortSide <= 720) {
-                    Log::info('Skipping: Video is already 720p', ['path' => $path]);
+                    Log::info('Skipping: Video is already 720p or less', ['path' => $path]);
                     return true;
                 }
 
@@ -133,6 +133,7 @@ class AudioVideoCompressionService
 
                 // SKIP: If already Mono and <= 70kbps (catches your old 96k/stereo uploads)
                 if ($channels === 1 && $bitrate > 0 && $bitrate <= 70000) {
+                    Log::info('Skipping: Mono audio is already 70kbps or less', ['path' => $path]);
                     return true;
                 }
 
