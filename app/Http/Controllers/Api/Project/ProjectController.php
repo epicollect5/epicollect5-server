@@ -153,7 +153,7 @@ class ProjectController
         $version = Project::version($slug);
         if (!$version) {
             $errors = ['version' => ['ec5_11']];
-            return Response::apiErrorCode('500', $errors);
+            return Response::apiErrorCode('400', $errors);
         }
 
         //return updated_at as the version

@@ -169,7 +169,9 @@ class Project extends Model
     {
         $updatedAt = Project::join(config('epicollect.tables.project_structures'), 'projects.id', '=', config('epicollect.tables.project_structures') . '.project_id')
             ->where('projects.slug', $slug)
-            //imp: this nis needed to drop the milliseconds (pre Laravel 7 behaviour)
+            ->where('projects.status', '<>', config('epicollect.strings.project_status.archived'))
+            ->where('projects.status', '<>', config('epicollect.strings.project_status.trashed'))
+            //imp: this is needed to drop the milliseconds (pre Laravel 7 behaviour)
             ->select(DB::raw("DATE_FORMAT(project_structures.updated_at, '%Y-%m-%d %H:%i:%s') as updated_at"))
             ->pluck('updated_at')
             ->first();
