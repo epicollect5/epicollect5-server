@@ -131,9 +131,9 @@ class AudioVideoCompressionService
                 $audioStream = $media->getAudioStream();
                 $channels = (int) $audioStream->get('channels');
 
-                // SKIP: If already Mono and <= 70kbps (catches your old 96k/stereo uploads)
-                if ($channels === 1 && $bitrate > 0 && $bitrate <= 70000) {
-                    Log::info('Skipping: Mono audio is already 70kbps or less', ['path' => $path]);
+                // SKIP: If already Mono and <= 80kbps (catches old 96k/stereo uploads)
+                if ($channels === 1 && $bitrate > 0 && $bitrate <= 80000) {
+                    Log::info('Skipping: Mono audio is already 80kbps or less', ['path' => $path]);
                     return true;
                 }
 
