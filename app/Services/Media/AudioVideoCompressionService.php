@@ -160,8 +160,7 @@ class AudioVideoCompressionService
             // Just verify it exists and has reasonable content
             sleep(1); // Let filesystem catch up
 
-            $verificationResult = $this->verifyCompressedFile($disk, $path, $compressedPath);
-
+            $verificationResult = $this->verifyCompressedFile($disk, $compressedPath);
 
             switch ($verificationResult) {
                 case 'replace':
@@ -212,7 +211,7 @@ class AudioVideoCompressionService
      * If FFmpeg completed without errors, the file is playable - we just
      * need basic sanity checks here.
      */
-    private function verifyCompressedFile(string $disk, string $originalPath, string $compressedPath): string
+    private function verifyCompressedFile(string $disk, string $compressedPath): string
     {
         $diskInstance = Storage::disk($disk);
 
