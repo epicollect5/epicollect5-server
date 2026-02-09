@@ -1,5 +1,15 @@
 ## Release Notes
 
+# 12.5.00
+
+- Automatic media compression on upload with retrying;
+- Videos downscaled to 720p, audio re-encoded when beneficial
+- WAV streaming content-type corrected for proper playback;
+- WAV files skipped for legacy compatibility;
+- Added extensive local and S3 tests validating compression results, dimensions, channels, and recorded stored sizes.
+- Added FFmpeg runtime support and configuration;
+- Tightened accepted video upload mimetypes to video/mp4 and video/quicktime.
+
 # 12.4.15
 
 - Fixed URLs in CSV/JSON downloads

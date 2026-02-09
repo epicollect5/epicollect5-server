@@ -376,23 +376,6 @@
     </div>
 @endif
 
-<div class="row">
-    <div class="col-sm-12 col-md-12 col-lg-12">
-        <div class="panel panel-default">
-            <div class="panel-body project-details-panel--feedback ">
-                <span>
-                    <strong>For any questions or to report any bugs, please reach out to us at
-                        <a href="https://community.epicollect.net" target="_blank">
-                            community.epicollect.net
-                        </a>
-                    </strong>
-                </span>
-            </div>
-        </div>
-    </div>
-</div>
-
-
 @if (auth()->check() && auth()->user()->server_role == 'superadmin')
     <div class="row">
         <div class="col-sm-12 col-md-12 col-lg-12">
