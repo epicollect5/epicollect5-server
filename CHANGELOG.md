@@ -1,5 +1,10 @@
 ## Release Notes
 
+# 12.5.10
+
+- Fixed project version endpoint throwing error 500
+- Removed community teaser in project details page
+
 # 12.5.00
 
 - Automatic media compression on upload with retrying;
