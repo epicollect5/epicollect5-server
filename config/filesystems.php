@@ -91,7 +91,7 @@ return [
         'photo' => array_merge([
             'driver' => config('epicollect.setup.system.storage_driver'),
             'root' => config('epicollect.setup.system.storage_driver') === 'local'
-                ? storage_path('app/entries/photo/entry_original')
+                ? storage_path('app/entries/photo')
                 : 'app/entries/photo',
             'throw' => true,
             'permissions' => [
@@ -112,7 +112,7 @@ return [
         'project' => array_merge([
             'driver' => config('epicollect.setup.system.storage_driver'),
             'root' => config('epicollect.setup.system.storage_driver') === 'local'
-                ? storage_path('app/projects/project_thumb')
+                ? storage_path('app/projects')
                 : 'app/projects',
             'throw' => true,
             'permissions' => [
