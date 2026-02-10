@@ -55,8 +55,10 @@ Route::group(['middleware' => ['throttle:600,1']], function () {
         // Entry uploads
         Route::post('api/upload/{project_slug}', 'Api\Entries\Upload\UploadAppController@postUpload');
 
-        //route for debugging, works only on localhost
-        Route::post('api/bulk-upload/{project_slug}', 'Api\Entries\Upload\UploadAppController@postUploadBulk');
+        //route for debugging, only available in non-production environments
+        Route::group(['middleware' => ['throttle:bulk-upload']], function () {
+            Route::post('api/bulk-upload/{project_slug}', 'Api\Entries\Upload\UploadAppController@postUploadBulk');
+        });
 
         //Media Controller for access to media files (even via the browser, this is why we are not using the internal endpoint)
         Route::get('api/media/{project_slug}/', 'Api\Project\MediaController@getMedia');
@@ -104,7 +106,6 @@ Route::group(['middleware' => ['throttle:600,1']], function () {
     // Projects searching (by name, will use StartsWith so more results are possible)
     // Use ?exact=true query string for exact match
     Route::get('api/projects/{name?}', 'Api\Project\ProjectController@search');
-
 
     // Project version
     Route::get('api/project-version/{project_slug}', 'Api\Project\ProjectController@version');

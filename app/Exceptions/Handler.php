@@ -22,7 +22,6 @@ use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Illuminate\Session\TokenMismatchException;
 use Redirect;
-use App;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -112,12 +111,6 @@ class Handler extends ExceptionHandler
 
         // Handle not found exceptions
         if ($e instanceof NotFoundHttpException) {
-            //in production, redirect all pages not found to home page
-            if (App::environment() === 'production') {
-                return redirect()->route('home');
-            }
-
-            //in development, return a 422 error for debugging
             return $this->middlewareErrorResponse($request, 'page not found exception', 'ec5_219', 422);
         }
 
@@ -170,7 +163,7 @@ class Handler extends ExceptionHandler
                 Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             }
 
-            return $this->middlewareErrorResponse($request, 'too many requests', 'ec5_255', 429);
+            return $this->middlewareErrorResponse($request, 'rate-limiter', 'ec5_255', 429);
         }
 
         return parent::render($request, $e);

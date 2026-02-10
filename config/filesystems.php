@@ -51,143 +51,142 @@ return [
     |
     */
 
-    'disks' => array(
+    'disks' => [
         //this is needed to server the image placeholder for example
-        'public' => array(
+        'public' => [
             'driver' => 'local',
             'root' => public_path('images'),
             'throw' => true,
             'visibility' => 'public',
             'directory_visibility' => 'public',
-        ),
+        ],
 
         //temp files are always stored locally
-        'temp' => array(
+        'temp' => [
             'driver' => 'local',
             'root' => storage_path('app/temp'),
             'throw' => true,
             'visibility' => 'public',
-            'directory_visibility' => 'public',
+            'directory_visibility' => 'public'
+        ],
 
-        ),
-
-        'local' => array(
+        'local' => [
             'driver' => config('epicollect.setup.system.storage_driver'),
             'root' => storage_path('app'),
             'throw' => true,
-            'permissions' => array(
-                'file' => array(
+            'permissions' => [
+                'file' => [
                     'public' => 0644,
                     'private' => 0600,
-                ),
-                'dir' => array(
+                ],
+                'dir' => [
                     'public' => 0755,
                     'private' => 0700,
-                ),
-            )
-        ),
+                ],
+            ]
+        ],
 
         //imp: Laravel Team is against having a permission different from 755 on public folders
         //see https://github.com/laravel/docs/pull/8003
-        'photo' => array_merge(array(
+        'photo' => array_merge([
             'driver' => config('epicollect.setup.system.storage_driver'),
             'root' => config('epicollect.setup.system.storage_driver') === 'local'
-                ? storage_path('app/entries/photo/entry_original')
+                ? storage_path('app/entries/photo')
                 : 'app/entries/photo',
             'throw' => true,
-            'permissions' => array(
-                'file' => array(
+            'permissions' => [
+                'file' => [
                     'public' => 0644,
                     'private' => 0600,
-                ),
-                'dir' => array(
+                ],
+                'dir' => [
                     'public' => 0755,
                     'private' => 0700,
-                ),
-            )
+                ],
+            ]
 
-        ), $doSpaces),
+        ], $doSpaces),
 
         //imp: Laravel Team is against having a permission different from 755 on public folders
         //see https://github.com/laravel/docs/pull/8003
-        'project' => array_merge(array(
+        'project' => array_merge([
             'driver' => config('epicollect.setup.system.storage_driver'),
             'root' => config('epicollect.setup.system.storage_driver') === 'local'
-                ? storage_path('app/projects/project_thumb')
+                ? storage_path('app/projects')
                 : 'app/projects',
             'throw' => true,
-            'permissions' => array(
-                'file' => array(
+            'permissions' => [
+                'file' => [
                     'public' => 0644,
                     'private' => 0600,
-                ),
-                'dir' => array(
+                ],
+                'dir' => [
                     'public' => 0755,
                     'private' => 0700,
-                ),
-            )
-        ), $doSpaces),
+                ],
+            ]
+        ], $doSpaces),
 
         //imp: Laravel Team is against having a permission different from 755 on public folders
         //see https://github.com/laravel/docs/pull/8003
-        'video' => array_merge(array(
+        'video' => array_merge([
             'driver' => config('epicollect.setup.system.storage_driver'),
             'root' => config('epicollect.setup.system.storage_driver') === 'local'
                 ? storage_path('app/entries/video')
                 : 'app/entries/video',
             'throw' => true,
-            'permissions' => array(
-                'file' => array(
+            'permissions' => [
+                'file' => [
                     'public' => 0644,
                     'private' => 0600,
-                ),
-                'dir' => array(
+                ],
+                'dir' => [
                     'public' => 0755,
                     'private' => 0700,
-                ),
-            )
-        ), $doSpaces),
+                ],
+            ]
+        ], $doSpaces),
 
         //imp: Laravel Team is against having a permission different from 755 on public folders
         //see https://github.com/laravel/docs/pull/8003
-        'audio' => array_merge(array(
+        'audio' => array_merge([
             'driver' => config('epicollect.setup.system.storage_driver'),
             'root' => config('epicollect.setup.system.storage_driver') === 'local'
                 ? storage_path('app/entries/audio')
                 : 'app/entries/audio',
             'throw' => true,
-            'permissions' => array(
-                'file' => array(
+            'permissions' => [
+                'file' => [
                     'public' => 0644,
                     'private' => 0600,
-                ),
-                'dir' => array(
+                ],
+                'dir' => [
                     'public' => 0755,
                     'private' => 0700,
-                ),
-            )
-        ), $doSpaces),
+                ],
+            ]
+        ], $doSpaces),
 
         //imp: Laravel Team is against having a permission different from 755 on public folders
         //see https://github.com/laravel/docs/pull/8003
         //zip archive are stored locally, served and deleted straight away
-        'entries_zip' => array(
+        'entries_zip' => [
             'driver' => 'local',
             'root' => storage_path('app/entries/zip'),
             'throw' => true,
-            'permissions' => array(
-                'file' => array(
+            'permissions' => [
+                'file' => [
                     'public' => 0644,
                     'private' => 0600,
-                ),
-                'dir' => array(
+                ],
+                'dir' => [
                     'public' => 0755,
                     'private' => 0700,
-                ),
-            )
-        ),
+                ],
+            ]
+        ],
 
-        's3' => array(
+        's3' => [
             'driver' => 's3',
             'use_path_style_endpoint' => env('DO_SPACES_USE_PATH_STYLE_ENDPOINT', false),
             'region'   => env('DO_SPACES_REGION'),
@@ -195,6 +194,6 @@ return [
             'endpoint' => env('DO_SPACES_ENDPOINT'),
             'key'      => env('DO_SPACES_KEY'),
             'secret'   => env('DO_SPACES_SECRET'),
-        )
-    )
+        ]
+]
 ];

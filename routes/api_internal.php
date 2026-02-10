@@ -51,7 +51,7 @@ Route::group(['middleware' => ['project.permissions']], function () {
     Route::post('api/internal/web-upload/{project_slug}', 'Api\Entries\Upload\UploadWebController@store');
 
     //wrapping this endpoint to check for bulk upload permissions
-    Route::group(['middleware' => ['project.permissions.bulk-upload']], function () {
+    Route::group(['middleware' => ['project.permissions.bulk-upload', 'throttle:bulk-upload']], function () {
         Route::post('api/internal/bulk-upload/{project_slug}', 'Api\Entries\Upload\UploadWebController@storeBulk');
     });
 

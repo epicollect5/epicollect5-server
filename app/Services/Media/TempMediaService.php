@@ -58,7 +58,6 @@ class TempMediaService
                 return Response::toMediaStreamLocal(request(), $realFilepath, $type);
             }
 
-            sleep(config('epicollect.setup.api_sleep_time.media'));
             return Response::make(
                 file_get_contents($realFilepath),
                 200,

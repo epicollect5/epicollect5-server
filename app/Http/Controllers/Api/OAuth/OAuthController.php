@@ -60,9 +60,6 @@ class OAuthController
                 OAuthAccessToken::where('client_id', $payload['client_id'])->delete();
             }
 
-            //Slow down the response to avoid overloading the server
-            sleep(config('epicollect.setup.api_sleep_time.oauth'));
-
             // return a new access token
             return $this->server->respondToAccessTokenRequest($request, new Psr7Response());
         } catch (OAuthServerException $e) {

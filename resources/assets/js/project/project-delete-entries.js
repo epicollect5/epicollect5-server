@@ -5,6 +5,7 @@
 document.addEventListener('DOMContentLoaded', function () {
 
     var page = $('.page-entries-deletion');
+    var delay = 2000;
 
     //enable only on page-entries-deletion
     if (page.length > 0) {
@@ -99,7 +100,9 @@ document.addEventListener('DOMContentLoaded', function () {
                             if (response.data.counters.total > 0) {
                                 // If there are more entries to delete, call the function recursively
                                 remainingEntries = response.data.counters.total;
-                                _deleteEntriesRecursively(endpoint, payload, projectSlug);
+                                window.setTimeout(function () {
+                                    _deleteEntriesRecursively(endpoint, payload, projectSlug);
+                                }, delay);
                             } else {
                                 // To remove the confirmation dialog, remove the event listener
                                 window.removeEventListener('beforeunload', handleBeforeUnload);
@@ -158,11 +161,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     //Also handle any bug that can cause the total to be less than 0
                     if (remainingMedia <= 0) {
-                        //all media deleted, start deleting entries
-                        _deleteEntriesRecursively(endpointEntries, payload, projectSlug);
+                        //all media deleted, start deleting entries (with delay)
+                        window.setTimeout(function () {
+                            _deleteEntriesRecursively(endpointEntries, payload, projectSlug);
+                        }, delay);
                     } else {
-                        // If there are more media to delete, call the function recursively
-                        _deleteMediaRecursively(endpointMedia, payload, projectSlug);
+                        // If there are more media to delete, call the function recursively (with delay)
+                        window.setTimeout(function () {
+                            _deleteMediaRecursively(endpointMedia, payload, projectSlug);
+                        }, delay);
                     }
                 })
                 .fail(function (e) {

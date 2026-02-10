@@ -2,6 +2,7 @@
 
 namespace ec5\Providers;
 
+use App;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -37,6 +38,49 @@ class RateLimiterServiceProvider extends ServiceProvider
         $this->configurePasswordlessLimiter();
         $this->configureApiExportLimiters();
         $this->configureOauthTokenLimiter();
+        $this->configureBulkUploadLimiter();
+    }
+
+    /**
+     * Configure rate limiter for bulk upload
+     *  30 requests per minute by default, per user
+     *  2x for IP, to account for shared IPs
+     */
+    private function configureBulkUploadLimiter(): void
+    {
+        $limit = config('epicollect.setup.api.rate_limit_per_minute.bulk_upload');
+        RateLimiter::for('bulk-upload', function (Request $request) use ($limit) {
+
+            if (App::environment('production')) {
+                if (!$request->user()) {
+                    //safety net just in case the user is not found, limit by IP only
+                    return [
+                        Limit::perMinute(2 * $limit)->by($request->ip())
+                    ];
+                }
+                //If the user is found, limit by user and IP
+                return [
+                    //Limit per user (if authenticated, in development we might not have it)
+                    Limit::perMinute($limit)->by($request->user()->id),
+                    //Limit per IP, slightly higher for shared IPs
+                    Limit::perMinute(2 * $limit)->by($request->ip())
+                ];
+            }
+
+            //in development, check if we have a user
+            if ($request->user()) {
+                return [
+                    Limit::perMinute($limit)->by($request->user()->id),
+                    Limit::perMinute(2 * $limit)->by($request->ip())
+                ];
+            }
+
+            //no user, use debug as user id
+            return [
+                Limit::perMinute($limit)->by('debug'),
+                Limit::perMinute(2 * $limit)->by($request->ip())
+            ];
+        });
     }
 
     /**

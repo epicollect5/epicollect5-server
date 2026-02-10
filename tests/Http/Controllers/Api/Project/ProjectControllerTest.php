@@ -301,7 +301,61 @@ class ProjectControllerTest extends TestCase
         $ref = Generators::projectRef();
 
         $response = $this->json('GET', 'api/project-version/' . $ref)
-            ->assertStatus(500)
+            ->assertStatus(400)
+            ->assertExactJson([
+                'errors' => [
+                    [
+                        'code' => 'ec5_11',
+                        'title' => 'Project does not exist.',
+                        'source' => 'version'
+                    ]
+                ]
+            ])
+            ->assertJsonStructure(['errors' => [
+                [
+                    'code',
+                    'title',
+                    'source'
+                ]
+            ]]);
+
+        $responseError = ($response->json())['errors']; // Convert the JSON data response to an array.
+        $this->assertKeysNotEmpty($responseError);
+    }
+
+    public function test_project_version_should_bail_if_project_is_trashed()
+    {
+        $this->project->status = config('epicollect.strings.project_status.trashed');
+        $this->project->save();
+        $response = $this->json('GET', 'api/project-version/' . $this->project->slug)
+            ->assertStatus(400)
+            ->assertExactJson([
+                'errors' => [
+                    [
+                        'code' => 'ec5_11',
+                        'title' => 'Project does not exist.',
+                        'source' => 'version'
+                    ]
+                ]
+            ])
+            ->assertJsonStructure(['errors' => [
+                [
+                    'code',
+                    'title',
+                    'source'
+                ]
+            ]]);
+
+        $responseError = ($response->json())['errors']; // Convert the JSON data response to an array.
+        $this->assertKeysNotEmpty($responseError);
+    }
+
+    public function test_project_version_should_bail_if_project_is_archived()
+    {
+        $this->project->status = config('epicollect.strings.project_status.archived');
+        $this->project->save();
+        $response = $this->json('GET', 'api/project-version/' . $this->project->slug)
+            ->assertStatus(400)
             ->assertExactJson([
                 'errors' => [
                     [

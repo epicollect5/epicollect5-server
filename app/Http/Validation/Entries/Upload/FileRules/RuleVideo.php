@@ -7,8 +7,10 @@ use ec5\Http\Validation\ValidationBase;
 class RuleVideo extends ValidationBase
 {
     protected array $rules = [
-        'file' => 'required|mimetypes:video/mp4,video/avi,video/mpeg,video/quicktime|max:500000'
+        //mimetypes to support both Android and iOS videos (quicktime is iOS)
+        'file' => 'required|mimetypes:video/mp4,video/quicktime|max:500000'
     ];
+
 
     protected array $messages = [
         'required' => 'ec5_21',

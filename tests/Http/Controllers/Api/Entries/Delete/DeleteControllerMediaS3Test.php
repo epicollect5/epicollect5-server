@@ -661,7 +661,7 @@ class DeleteControllerMediaS3Test extends TestCase
                 $response[0]->assertExactJson([
                     "errors" => [[
                         "code" => "ec5_255",
-                        "title" => "Too many requests have been made. Please try again later.",
+                        "title" => "Too many requests. Try again later.",
                         "source" => "errors"
                     ]]
                 ]);

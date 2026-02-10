@@ -1,6 +1,8 @@
 @php
     use Carbon\Carbon;
     $updatedAt = $requestAttributes->requestedProject->getUpdatedAt();
+    $createdAtUTC = Carbon::parse($requestAttributes->requestedProject->created_at)->setTimezone('UTC');
+    $createdOnForHumans = $createdAtUTC->format('D d M Y, H:i');
 @endphp
 {{-- Success Message --}}
 @if (session('projectCreated') && session('tab') === 'create')
@@ -60,7 +62,7 @@
                                     calendar_today
                                 </i>
                                 &nbsp;Created on
-                                {{ Carbon::parse($requestAttributes->requestedProject->created_at)->setTimezone('UTC')->format('D M Y, H:i') }}
+                                {{ $createdOnForHumans }}
                                 UTC
                             </h5>
                         </div>
@@ -373,23 +375,6 @@
         </div>
     </div>
 @endif
-
-<div class="row">
-    <div class="col-sm-12 col-md-12 col-lg-12">
-        <div class="panel panel-default">
-            <div class="panel-body project-details-panel--feedback ">
-                <span>
-                    <strong>For any questions or to report any bugs, please reach out to us at
-                        <a href="https://community.epicollect.net" target="_blank">
-                            community.epicollect.net
-                        </a>
-                    </strong>
-                </span>
-            </div>
-        </div>
-    </div>
-</div>
-
 
 @if (auth()->check() && auth()->user()->server_role == 'superadmin')
     <div class="row">

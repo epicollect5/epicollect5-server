@@ -21,7 +21,6 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
     public function export()
     {
         //Slow down api responses to avoid overloading the server
-        sleep(config('epicollect.setup.api_sleep_time.entries'));
         $jsonPerPageLimit = config('epicollect.limits.entries_export_per_page_json');
         $csvPerPageLimit = config('epicollect.limits.entries_export_per_page_csv');
 

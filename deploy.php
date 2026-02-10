@@ -402,6 +402,16 @@ localhost('production')
     ->set('deploy_path', '/var/www/html_prod')
     ->set('branch', 'master');
 
+// Dev server
+localhost('dev')
+    ->set('deploy_path', '/var/www/html_prod')
+    ->set('branch', 'dev');
+
+// Staging server (Release candidate)
+localhost('staging')
+    ->set('deploy_path', '/var/www/html_prod')
+    ->set('branch', 'staging');
+
 // Tasks
 desc('Execute artisan migrate');
 task('artisan:migrate', function () {

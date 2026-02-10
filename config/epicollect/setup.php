@@ -37,14 +37,11 @@ return [
     'api' => [
         'responseContentTypeHeaderKey' => 'Content-Type',
         'responseContentTypeHeaderValue' => 'application/vnd.api+json; charset=utf-8',
-        'response_delay' => [
-            'media' => env('RESPONSE_DELAY_MEDIA_REQUEST', 250000000),
-            'upload' => env('RESPONSE_DELAY_UPLOAD_REQUEST', 500000000)
-        ],
         'rate_limit_per_minute' => [
             'media' => (int) env('API_RATE_LIMIT_MEDIA', 30),
             'entries' => (int) env('API_RATE_LIMIT_ENTRIES', 60),
             'project' => (int) env('API_RATE_LIMIT_PROJECT', 60),
+            'bulk_upload' => (int) env('API_RATE_LIMIT_BULK_UPLOAD', 60)
         ]
     ],
     'ldap' => [
@@ -70,15 +67,8 @@ return [
         'enabled' => (bool) env('PHPINFO_ENABLED', false),
     ],
     'locks' => [
+        'duration_bulk_upload_lock' => (int) env('DURATION_BULK_UPLOAD_LOCK', 300),
         'duration_archive_download_lock' => (int) env('DURATION_ARCHIVE_DOWNLOAD_LOCK', 300),
         'duration_bulk_entries_deletion_lock' => (int) env('DURATION_BULK_ENTRIES_DELETION_LOCK', 600)
-    ],
-    //sleep time in seconds - deliberate delays to prevent server overload and control API throughput
-    'api_sleep_time' => [
-        'oauth' => (int) env('API_SLEEP_TIME_OAUTH', 3),
-        'project' => (int) env('API_SLEEP_TIME_PROJECT', 1),
-        'entries' => (int) env('API_SLEEP_TIME_ENTRIES', 1),
-        'media' => (int) env('API_SLEEP_TIME_MEDIA', 1),
     ]
-
 ];

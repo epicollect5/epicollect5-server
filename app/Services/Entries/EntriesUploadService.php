@@ -15,7 +15,7 @@ class EntriesUploadService
 {
     use RequestAttributes;
 
-    public array $errors;
+    public array $errors = [];
     public EntryStructureDTO $entryStructure;
     public bool $isBulkUpload = false;
     private RuleUpload $ruleUpload;

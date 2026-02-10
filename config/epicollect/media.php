@@ -28,8 +28,6 @@ return [
             'mobile' => 48
         ]
     ],
-    'video' => [],
-    'audio' => [],
     // List of formats accessible by the media controller
     'formats' => [
         'entry_original',

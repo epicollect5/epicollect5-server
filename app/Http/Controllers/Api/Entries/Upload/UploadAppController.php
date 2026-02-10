@@ -30,8 +30,6 @@ class UploadAppController extends UploadControllerBase
         if (!$this->entriesUploadService->upload()) {
             return Response::apiErrorCode(400, $this->entriesUploadService->errors);
         }
-        //let the server breathe a bit
-        sleep(config('epicollect.setup.api_sleep_time.entries'));
         /* PASSED */
         // Send http status code 200, ok!
         return Response::apiSuccessCode('ec5_237');
@@ -43,9 +41,10 @@ class UploadAppController extends UploadControllerBase
     public function postUploadBulk()
     {
         //kick out if in production, this route is only for debugging locally
-        if (!App::isLocal()) {
-            return Response::apiErrorCode(400, ['bulk-upload' => ['ec5_363']]);
+        if (App::environment('production')) {
+            return Response::apiErrorCode(400, ['upload-controller' => ['ec5_363']]);
         }
+
         $this->entriesUploadService->isBulkUpload = true;
         return $this->postUpload();
     }

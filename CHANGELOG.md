@@ -1,5 +1,54 @@
 ## Release Notes
 
+# 12.5.10
+
+- Fixed project version endpoint throwing error 500
+- Removed community teaser in project details page
+
+# 12.5.00
+
+- Automatic media compression on upload with retrying;
+- Videos downscaled to 720p, audio re-encoded when beneficial
+- WAV streaming content-type corrected for proper playback;
+- WAV files skipped for legacy compatibility;
+- Added extensive local and S3 tests validating compression results, dimensions, channels, and recorded stored sizes.
+- Added FFmpeg runtime support and configuration;
+- Tightened accepted video upload mimetypes to video/mp4 and video/quicktime.
+
+# 12.4.15
+
+- Fixed URLs in CSV/JSON downloads
+- Fixed missing svg image for dataviewer photo popups
+- Added public-access validation paths and stronger URL/filename format checks for CSV/JSON/ZIP exports.
+
+# 12.4.14
+
+- Fixed missing $errors array initialization
+- Removed unused endpoints
+
+# 12.4.13
+
+- Set garbage collector to run weekly on Sunday at 04:00 UTC
+
+# 12.4.12
+
+- Added laravel cache garbage collector package
+- Garbage collector will run daily at 03:00 UTC
+
+# 12.4.11
+
+- Fixed wrong date in project details page
+
+# 12.4.10
+
+- Minor fix for ide helper loading only in development environments
+
+# 12.4.9
+
+- Removed multiple artificial response delays — faster uploads, media serving, exports, and token issuance.
+- Added bulk-upload rate limiting (per-user and per-IP) and applied throttling to bulk-upload endpoints.
+- Dataviewer 0.1.2
+
 # 12.4.8
 
 - Added storage bucket validation on boot to prevent incorrect production-bucket usage.
