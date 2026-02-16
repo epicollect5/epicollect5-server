@@ -42,12 +42,15 @@ class PhotoSaverServiceS3Test extends TestCase
         $fileName = Uuid::uuid4()->toString(). '_' . time() . '.jpg';
         $disk = 'photo';
 
+        // The actual filename that will be saved (with .webp extension)
+        $webpFileName = pathinfo($fileName, PATHINFO_FILENAME) . '.webp';
+
         // Create a fake uploaded file
         $uploadedFile = File::fake()->image($fileName, 1024, 768);
 
         // Alternative approach - mock Storage directly with the full method chain
         Storage::shouldReceive('disk->put')
-            ->with($project->ref . '/' . $fileName, Mockery::any())
+            ->with($project->ref . '/' . $webpFileName, Mockery::any())
             ->times(4) // Expect 4 calls (1 initial + 3 retries)
             ->andThrow(new S3Exception(
                 'Too Many Requests',
@@ -76,13 +79,15 @@ class PhotoSaverServiceS3Test extends TestCase
         ]);
         $fileName = Uuid::uuid4()->toString(). '_' . time() . '.jpg';
         $disk = 'photo';
+        // The actual filename that will be saved (with .webp extension)
+        $webpFileName = pathinfo($fileName, PATHINFO_FILENAME) . '.webp';
 
         // Create a fake uploaded file
         $uploadedFile = File::fake()->image($fileName, 1024, 768);
 
         Storage::shouldReceive('disk->put')
             //imp: match the  number of args expected, passing any() for the 3rd arg
-            ->with($project->ref . '/' . $fileName, Mockery::any())
+            ->with($project->ref . '/' . $webpFileName, Mockery::any())
             ->times(4) // Expect 4 calls (1 initial + 3 retries)
             ->andThrow(new S3Exception(
                 'Service Unavailable',
@@ -117,13 +122,14 @@ class PhotoSaverServiceS3Test extends TestCase
         $fileName = Uuid::uuid4()->toString(). '_' . time() . '.jpg';
         $disk = 'photo';
         $fileSize = 1024 * 768 * 3; // Approx size for a 1024x768 image
+        $webpFileName = pathinfo($fileName, PATHINFO_FILENAME) . '.webp';
 
         // Create a fake uploaded file
         $uploadedFile = File::fake()
             ->image($fileName, 1024, 768)
             ->size($fileSize / 1024); // size() expects KB
 
-        $encodedImage = PhotoSaverService::processImage($uploadedFile->getPathname(), [1024, 768], 70);
+        $encodedImage = PhotoSaverService::processImage($uploadedFile->getPathname(), [1024, 768], config('epicollect.media.quality.webp'));
         $compressedSize = strlen($encodedImage);
 
         // Mock Storage facade for successful save
@@ -133,7 +139,7 @@ class PhotoSaverServiceS3Test extends TestCase
             ->andReturnSelf();
 
         Storage::shouldReceive('put')
-            ->with($project->ref . '/' . $fileName, Mockery::any())
+            ->with($project->ref . '/' . $webpFileName, Mockery::any())
             ->once()
             ->andReturn(true);
 
@@ -167,6 +173,7 @@ class PhotoSaverServiceS3Test extends TestCase
         ]);
         $fileName = 'test-photo.jpg';
         $disk = 'photo';
+        $webpFileName = pathinfo($fileName, PATHINFO_FILENAME) . '.webp';
 
         // Create a fake uploaded file
         $uploadedFile = File::fake()->image('test.jpg', 100, 100);
@@ -178,7 +185,7 @@ class PhotoSaverServiceS3Test extends TestCase
             ->andReturnSelf();
 
         Storage::shouldReceive('put')
-            ->with($project->ref . '/' . $fileName, Mockery::any())
+            ->with($project->ref . '/' . $webpFileName, Mockery::any())
             ->once() // Expect only 1 call (no retries for 403)
             ->andThrow(new S3Exception(
                 'Forbidden',
@@ -207,6 +214,7 @@ class PhotoSaverServiceS3Test extends TestCase
         ]);
         $fileName = 'test-photo.jpg';
         $disk = 'photo';
+        $webpFileName = pathinfo($fileName, PATHINFO_FILENAME) . '.webp';
 
         // Create a fake uploaded file
         $uploadedFile = File::fake()->image('test.jpg', 100, 100);
@@ -218,7 +226,7 @@ class PhotoSaverServiceS3Test extends TestCase
             ->andReturnSelf();
 
         Storage::shouldReceive('put')
-            ->with($project->ref . '/' . $fileName, Mockery::any())
+            ->with($project->ref . '/' . $webpFileName, Mockery::any())
             ->times(4) // Expect 4 calls (1 initial + 3 retries)
             ->andReturn(false);
 

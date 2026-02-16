@@ -296,6 +296,8 @@ return [
         'video' => 'video'
     ],
     'media_file_extension' => [
+        'avif' => 'avif',
+        'webp' => 'webp',
         'jpg' => 'jpg',
         'mp4' => 'mp4'
     ]

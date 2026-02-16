@@ -60,28 +60,26 @@ class MediaService
      */
     public function serveLocalFile(string $type, string $format, string $projectRef, ?string $name)
     {
-        if (!$name) {
-            return $this->placeholderOrFallback($type);
-        }
+        $diskName = Common::resolveDisk($format);
 
-        // Resolve the disk and check existence via Storage
-        $diskName   = Common::resolveDisk($format);
-        $disk       = Storage::disk($diskName);
-        $pathInDisk = $projectRef . '/' . $name;
+        return match ($format) {
+            config('epicollect.strings.media_formats.entry_original') =>
+            Response::toEntryOriginalLocal($projectRef, $name, $type),
 
-        if (!$disk->exists($pathInDisk)) {
-            return $this->placeholderOrFallback($type, $name);
-        }
+            config('epicollect.strings.media_formats.project_thumb') =>
+            Response::toProjectThumbLocal($projectRef, $name),
 
-        $realFilepath = $disk->path($pathInDisk);
-
-        return $this->buildResponse($type, $realFilepath);
+            config('epicollect.strings.inputs_type.audio'),
+            config('epicollect.strings.inputs_type.video') =>
+            Response::toMediaStreamLocal(
+                request(),
+                Storage::disk($diskName)->path($projectRef . '/' . $name),
+                $type
+            ),
+        };
     }
 
 
-    /**
-     * Serve S3 media
-     */
     private function serveS3(array $params, object $project)
     {
         $format = $params['format'];
@@ -90,18 +88,40 @@ class MediaService
 
         try {
             return match ($format) {
-                // real files
-                'entry_original', 'audio', 'video', 'project_thumb'
-                => $this->serveS3File($type, $format, $project->ref, $name),
+                // audio
+                config('epicollect.strings.inputs_type.audio') =>
+                Response::toMediaStreamS3(
+                    request(),
+                    config("filesystems.disks.audio.root") . '/' . $project->ref . '/' . $name,
+                    $type
+                ),
 
-                // generated
-                'entry_thumb'
-                => Response::toEntryThumbS3($project->ref, $name),
+                // video
+                config('epicollect.strings.inputs_type.video') =>
+                Response::toMediaStreamS3(
+                    request(),
+                    config("filesystems.disks.video.root") . '/' . $project->ref . '/' . $name,
+                    $type
+                ),
 
-                'project_mobile_logo'
-                => Response::toProjectMobileLogoS3($project->ref, $name),
+                // original photo
+                config('epicollect.strings.media_formats.entry_original') =>
+                Response::toEntryOriginalS3($project->ref, $name),
 
-                default => Response::apiErrorCode(400, ['media-service' => ['ec5_103']]),
+                // generated thumbnails
+                config('epicollect.strings.media_formats.entry_thumb') =>
+                Response::toEntryThumbS3($project->ref, $name),
+
+                //project avatar
+                config('epicollect.strings.media_formats.project_thumb') =>
+                Response::toProjectThumbS3($project->ref, $name),
+
+                //project avatar for mobile app
+                config('epicollect.strings.media_formats.project_mobile_logo') =>
+                Response::toProjectMobileLogoS3($project->ref, $name),
+
+                // unknown formats
+                default => Response::apiErrorCode(400, ['media-service' => ['ec5_103']])
             };
         } catch (Throwable $e) {
             Log::error('Cannot serve S3 media', ['exception' => $e]);
