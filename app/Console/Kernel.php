@@ -2,17 +2,19 @@
 
 namespace ec5\Console;
 
-use ec5\Console\Commands\SystemCheckStorageCommand;
 use ec5\Console\Commands\RemoveUnverifiedUsersCommand;
 use ec5\Console\Commands\SeedEntriesCommand;
 use ec5\Console\Commands\SeedMediaCommand;
 use ec5\Console\Commands\SeedSuperadminCommand;
+use ec5\Console\Commands\SystemCheckStorageCommand;
 use ec5\Console\Commands\SystemClearOpcache;
 use ec5\Console\Commands\SystemProjectStorageCommand;
 use ec5\Console\Commands\SystemStatsCommand;
+use ec5\Console\Commands\SystemStatsUploadCommand;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Artisan;
 use jdavidbakr\LaravelCacheGarbageCollector\LaravelCacheGarbageCollector;
 
 class Kernel extends ConsoleKernel
@@ -22,6 +24,7 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         SystemStatsCommand::class,
+        SystemStatsUploadCommand::class,
         RemoveUnverifiedUsersCommand::class,
         SystemCheckStorageCommand::class,
         SystemCheckStorageCommand::class,
@@ -43,7 +46,11 @@ class Kernel extends ConsoleKernel
             $schedule->command('system:stats')
                 ->dailyAt('01:00')
                 ->timezone('UTC')
-                ->withoutOverlapping();
+                ->withoutOverlapping()
+                ->onSuccess(function () {
+                    // Upload stats to S3 after successful collection
+                    Artisan::call('system:stats-upload');
+                });
 
             //check storage available
             $schedule->command('system:check-storage')
