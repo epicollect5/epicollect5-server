@@ -17,7 +17,6 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use jdavidbakr\LaravelCacheGarbageCollector\LaravelCacheGarbageCollector;
-use Throwable;
 
 class Kernel extends ConsoleKernel
 {
@@ -50,12 +49,12 @@ class Kernel extends ConsoleKernel
                 ->withoutOverlapping()
                 ->onSuccess(function () {
                     // Upload stats to S3 after successful collection
-                    try {
-                        Artisan::call('system:stats-upload');
-                    } catch (Throwable $e) {
+                    $exitCode = Artisan::call('system:stats-upload');
+                    if ($exitCode !== 0) {
                         Log::error('system:stats-upload failed in scheduler', [
-                            'error' => $e->getMessage()
-                        ]);
+                                'exit_code' => $exitCode,
+                                 'output' => trim(Artisan::output()),
+                             ]);
                     }
                 });
 

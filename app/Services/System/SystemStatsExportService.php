@@ -59,8 +59,7 @@ class SystemStatsExportService
                 'projects' => ($p['today']['public']['hidden'] ?? 0) + ($p['today']['public']['listed'] ?? 0) +
                     ($p['today']['private']['hidden'] ?? 0) + ($p['today']['private']['listed'] ?? 0),
                 'entries' => ($e['today']['public'] ?? 0) + ($e['today']['private'] ?? 0) +
-                    ($b['today']['public'] ?? 0) + ($b['today']['private'] ?? 0),
-                'views' => 0
+                    ($b['today']['public'] ?? 0) + ($b['today']['private'] ?? 0)
             ];
         })->values()->toArray();
 
@@ -69,8 +68,8 @@ class SystemStatsExportService
             "date" => $today->format('Y-m-d'),
             "stats" => [
                 ["title" => "Projects", "value" => $pTotal, "label" => "Total uploaded projects", "diff" => $diffs['projects']],
-                ["title" => "User accounts", "value" => $uTotal, "label" => "Total registered accounts", "diff" => $diffs['users']],
-                ["title" => "Total entries", "value" => $eTotal, "label" => "Total entries in all projects", "diff" => $diffs['entries']],
+                ["title" => "Users", "value" => $uTotal, "label" => "Total registered accounts", "diff" => $diffs['users']],
+                ["title" => "Entries", "value" => $eTotal, "label" => "Total entries in all projects", "diff" => $diffs['entries']],
             ],
             "charts" => [
                 [

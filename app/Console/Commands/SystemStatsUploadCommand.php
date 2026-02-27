@@ -4,6 +4,7 @@ namespace ec5\Console\Commands;
 
 use ec5\Services\System\SystemStatsExportService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class SystemStatsUploadCommand extends Command
@@ -26,6 +27,7 @@ class SystemStatsUploadCommand extends Command
         } catch (Throwable $e) {
             $this->error('❌ Upload failed.');
             $this->line('Error: ' . $e->getMessage());
+            Log::error('system:stats-upload failed', ['exception' => $e->getMessage()]);
 
             return self::FAILURE;
         }
