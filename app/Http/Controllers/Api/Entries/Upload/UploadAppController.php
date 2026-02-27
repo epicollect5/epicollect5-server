@@ -2,7 +2,6 @@
 
 namespace ec5\Http\Controllers\Api\Entries\Upload;
 
-use App;
 use ec5\Services\Entries\EntriesUploadService;
 use Response;
 use Throwable;
@@ -38,8 +37,8 @@ class UploadAppController extends UploadControllerBase
      */
     public function uploadBulk()
     {
-        //kick out if in production, this route is only for debugging locally
-        if (App::environment('production')) {
+        //kick out if in production, this route is only for debugging
+        if (app()->isProduction()) {
             return Response::apiErrorCode(400, ['upload-controller' => ['ec5_363']]);
         }
 

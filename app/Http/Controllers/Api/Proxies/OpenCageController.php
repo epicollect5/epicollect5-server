@@ -38,7 +38,7 @@ class OpenCageController extends Controller
     {
         //Kick out if in production, this route is only for debugging locally
         if (app()->isProduction()) {
-            return Response::apiErrorCode(400, ['upload-controller' => ['ec5_91']]);
+            return Response::apiErrorCode(400, ['opencage-controller' => ['ec5_91']]);
         }
 
         return $this->fetchAPI($search);

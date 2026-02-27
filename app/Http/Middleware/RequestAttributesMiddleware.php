@@ -141,7 +141,7 @@ abstract class RequestAttributesMiddleware
         $projectService = new ProjectService();
         // Retrieve user role
         $this->requestedProjectRole = $projectService->getRole($this->requestedProject->getId(), $this->requestedUser);
-        // If no role is found, but the user is an admin/super admin, add the creator role
+        // If no role is found, but the user is a super admin, add the creator role
         if (
             !$this->requestedProjectRole->getRole() && $this->requestedUser && $this->requestedUser->isSuperAdmin()
         ) {

@@ -55,7 +55,7 @@ class ProjectRoleDTO
 
     public function canEditData(): bool
     {
-        //When debug.permission_bypass is true, allow superadmin to edit data
+        //When debug.permission_bypass is true, allow devs to edit data
         if (
             app()->bound('debug.permission_bypass')
             && app('debug.permission_bypass') === true
