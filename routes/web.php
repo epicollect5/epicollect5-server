@@ -222,9 +222,9 @@ Route::group(['middleware' => 'auth'], function () {
     // Users must authenticate in order to add/edit entries, even for public projects
     //Also the viewer role cannot add/edit entries
     Route::group(['middleware' => ['project.permissions', 'project.permissions.viewer.role']], function () {
-        // Data editor Add/Edit
-        Route::get('project/{project_slug}/add-entry', 'Web\Project\ProjectDataController@add')->name('data-editor-add');
-        Route::get('project/{project_slug}/edit-entry', 'Web\Project\ProjectDataController@edit')->name('data-editor-edit');
+        // PWA Add/Edit
+        Route::get('project/{project_slug}/add-entry', 'Web\Project\ProjectDataController@add')->name('pwa-add');
+        Route::get('project/{project_slug}/edit-entry', 'Web\Project\ProjectDataController@edit')->name('pwa-edit');
     });
 });
 // END My Project routes

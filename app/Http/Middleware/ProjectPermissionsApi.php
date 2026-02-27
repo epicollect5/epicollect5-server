@@ -5,14 +5,14 @@ namespace ec5\Http\Middleware;
 use ec5\DTO\ProjectDTO;
 use ec5\Models\OAuth\OAuthClientProject;
 use Illuminate\Http\Request;
+use Laminas\Diactoros\ResponseFactory;
+use Laminas\Diactoros\ServerRequestFactory;
+use Laminas\Diactoros\StreamFactory;
+use Laminas\Diactoros\UploadedFileFactory;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use League\OAuth2\Server\ResourceServer;
 use Log;
 use Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory;
-use Laminas\Diactoros\ResponseFactory;
-use Laminas\Diactoros\StreamFactory;
-use Laminas\Diactoros\UploadedFileFactory;
-use Laminas\Diactoros\ServerRequestFactory;
 
 class ProjectPermissionsApi extends RequestAttributesMiddleware
 {
@@ -94,7 +94,7 @@ class ProjectPermissionsApi extends RequestAttributesMiddleware
             $doesClientExist = OAuthClientProject::doesExist($clientId, $this->requestedProject->getId());
             if (!$doesClientExist) {
                 // Unauthorized error
-                Log::error(__METHOD__ . ' failed.', ['exception' => 'ec5_257']);
+                Log::error(__METHOD__ . ' API failed.', ['exception' => 'ec5_257']);
                 $this->error = 'ec5_257';
                 return false;
             }

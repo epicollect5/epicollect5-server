@@ -4,7 +4,6 @@ namespace ec5\Http\Controllers\Api\Entries\Upload;
 
 use App;
 use ec5\Services\Entries\EntriesUploadService;
-use Illuminate\Http\JsonResponse;
 use Response;
 use Throwable;
 
@@ -20,10 +19,9 @@ class UploadAppController extends UploadControllerBase
     */
 
     /**
-     * @return JsonResponse
      * @throws Throwable
      */
-    public function postUpload()
+    public function upload()
     {
         //Log::info('request', ['request' => request()->all()]);
         /* UPLOAD AND CHECK IT WAS SUCCESSFUL */
@@ -38,7 +36,7 @@ class UploadAppController extends UploadControllerBase
     /**
      * @throws Throwable
      */
-    public function postUploadBulk()
+    public function uploadBulk()
     {
         //kick out if in production, this route is only for debugging locally
         if (App::environment('production')) {
@@ -46,8 +44,10 @@ class UploadAppController extends UploadControllerBase
         }
 
         $this->entriesUploadService->isBulkUpload = true;
-        return $this->postUpload();
+        return $this->upload();
     }
+
+
 
     /**
      * @throws Throwable
