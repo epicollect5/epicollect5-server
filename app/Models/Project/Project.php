@@ -49,7 +49,7 @@ class Project extends Model
     ];
 
     //used to init ProjectDTO, returns a bundle with data from multiple tables
-    public static function findBySlug($slug)
+    public static function findBySlug($slug): ?object
     {
         $query = DB::table(config('epicollect.tables.projects'));
         $query = $query->where('projects.slug', $slug);

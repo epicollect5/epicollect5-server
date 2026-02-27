@@ -14,7 +14,7 @@
 Route::group(['middleware' => ['project.permissions']], function () {
 
     //used by the dataviewer
-    Route::get('api/internal/project/{project_slug}', 'Api\Project\ProjectController@show');
+    Route::get('api/internal/project/{project_slug}', 'Api\Project\ProjectController@fetch');
 
     //Datasets
     // Route::get('api/internal/datasets/{project_slug}', 'Api\Project\DatasetController@show');
@@ -42,12 +42,12 @@ Route::group(['middleware' => ['project.permissions']], function () {
     Route::get('api/internal/upload-headers/{project_slug}', 'Api\Entries\DownloadTemplateController@sendTemplateResponseJSON');
 
     // Entries for table (dataviewer)
-    Route::get('api/internal/entries/{project_slug}', 'Api\Entries\View\ViewEntriesDataController@show');
+    Route::get('api/internal/entries/{project_slug}', 'Api\Entries\View\ViewEntriesDataController@fetch');
 
     // Entries for map (dataviewer)
     Route::get('api/internal/entries-locations/{project_slug}', 'Api\Entries\View\ViewEntriesLocationsController@show');
 
-    // Web entry uploads, for data editor and bulk upload from dataviewer
+    // Web entry uploads, for pwa and bulk upload from dataviewer
     Route::post('api/internal/web-upload/{project_slug}', 'Api\Entries\Upload\UploadWebController@store');
 
     //wrapping this endpoint to check for bulk upload permissions
@@ -58,7 +58,7 @@ Route::group(['middleware' => ['project.permissions']], function () {
     Route::get('api/internal/can-bulk-upload/{project_slug}', 'Api\Entries\View\ViewEntriesLocationsController@show');
 
     // Web file uploads
-    Route::post('api/internal/web-upload-file/{project_slug}', 'Api\Entries\Upload\UploadTempFileController@store');
+    Route::post('api/internal/upload-file/{project_slug}', 'Api\Entries\Upload\UploadTempFileController@store');
 
     // Web answer uniqueness checks
     Route::post('api/internal/unique-answer/{project_slug}', 'Api\Entries\Upload\UploadUniquenessController@index');
@@ -97,7 +97,7 @@ Route::group(['middleware' => ['project.permissions']], function () {
 Route::group(['middleware' => ['project.permissions.required.role']], function () {
 
     // Formbuilder expects all users to be authenticated with a project role of at least MANAGER
-    Route::get('api/internal/formbuilder/{project_slug}', ['uses' => 'Api\Project\ProjectController@show']);
+    Route::get('api/internal/formbuilder/{project_slug}', ['uses' => 'Api\Project\ProjectController@fetch']);
 
     Route::post('api/internal/formbuilder/{project_slug}', ['uses' => 'Api\Project\FormBuilderController@store'])->name('formbuilder-store');
 
@@ -111,8 +111,8 @@ Route::group(['middleware' => 'auth'], function () {
     // Check a project name exists
     Route::get('api/internal/exists/{project_slug}', 'Api\Project\ProjectController@exists');
 
-    // Proxies.
-    Route::get('api/proxies/opencage/{search}', 'Api\Proxies\OpenCageController@fetchAPI');
+    // Proxies
+    Route::get('api/internal/proxies/opencage/{search}', 'Api\Proxies\OpenCageController@fetchAPI');
 });
 
 //This route has a rate limiter to prevent abuse

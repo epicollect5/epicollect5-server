@@ -5,8 +5,8 @@ namespace ec5\Http\Controllers\Api\Project;
 use ec5\Http\Validation\Media\RuleMedia;
 use ec5\Services\Media\MediaService;
 use ec5\Services\Media\TempMediaService;
-use Response;
 use ec5\Traits\Requests\RequestAttributes;
+use Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class MediaController
@@ -67,6 +67,16 @@ class MediaController
         return $this->mediaService->serve(request()->all(), $this->requestedProject());
     }
 
+    public function getMediaDebugPWA()
+    {
+        //Kick out if in production, this route is only for debugging locally
+        if (app()->isProduction()) {
+            return Response::apiErrorCode(400, ['upload-controller' => ['ec5_91']]);
+        }
+
+        return $this->getMedia();
+    }
+
     /**
      * Retrieves a temporary media file from the configured storage driver.
      *
@@ -84,5 +94,14 @@ class MediaController
             request()->all(),
             $this->requestedProject()
         );
+    }
+    public function getTempMediaDebugPWA()
+    {
+        //Kick out if in production, this route is only for debugging locally
+        if (app()->isProduction()) {
+            return Response::apiErrorCode(400, ['upload-controller' => ['ec5_91']]);
+        }
+
+        return $this->getTempMedia();
     }
 }

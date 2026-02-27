@@ -99,7 +99,7 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
     /**
      * @throws Throwable
      */
-    public function show(): JsonResponse
+    public function fetch(): JsonResponse
     {
         $allowedKeys = array_keys(config('epicollect.strings.search_data_entries'));
         $perPage = config('epicollect.limits.entries_table.per_page');
@@ -115,6 +115,19 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
         }
         // Form
         return $this->sendEntriesJSON($params);
+    }
+
+    /**
+     * @throws Throwable
+     */
+    public function fetchDebugPWA(): JsonResponse
+    {
+        //Kick out if in production, this route is only for debugging locally
+        if (app()->isProduction()) {
+            return Response::apiErrorCode(400, ['upload-controller' => ['ec5_91']]);
+        }
+
+        return $this->fetch();
     }
 
     /**

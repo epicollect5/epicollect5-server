@@ -5,6 +5,7 @@ namespace ec5\Http\Controllers\Api\Proxies;
 use ec5\Http\Controllers\Controller;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use Illuminate\Support\Facades\Response;
 
 //forward geocoding by Open Cage Data (free trial, 2500 request per day, 1 req/sec)
 //https://api.opencagedata.com/geocode/v1/json?q=PLACENAME&key=xxxxxxxxxx
@@ -28,5 +29,18 @@ class OpenCageController extends Controller
 
         //return JSON by setting header
         return response($response_data)->header('Content-Type', 'application/vnd.api+json;');
+    }
+
+    /**
+     * @throws GuzzleException
+     */
+    public function fetchAPIDebugPWA($search)
+    {
+        //Kick out if in production, this route is only for debugging locally
+        if (app()->isProduction()) {
+            return Response::apiErrorCode(400, ['opencage-controller' => ['ec5_91']]);
+        }
+
+        return $this->fetchAPI($search);
     }
 }

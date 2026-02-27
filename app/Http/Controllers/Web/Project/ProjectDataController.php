@@ -6,11 +6,11 @@ class ProjectDataController
 {
     public function edit()
     {
-        return view('project.data_editor');
+        return view('project.pwa');
     }
 
     public function add()
     {
-        return view('project.data_editor');
+        return view('project.pwa');
     }
 }

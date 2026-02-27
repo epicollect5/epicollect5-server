@@ -73,4 +73,14 @@ class UploadTempFileController extends UploadControllerBase
         /* PASSED */
         return Response::apiSuccessCode('ec5_242');
     }
+
+    public function storeDebugPWA(RuleFileEntry $ruleFileEntry)
+    {
+        //Kick out if in production, this route is only for debugging locally
+        if (app()->isProduction()) {
+            return Response::apiErrorCode(400, ['upload-controller' => ['ec5_91']]);
+        }
+
+        return $this->store($ruleFileEntry);
+    }
 }

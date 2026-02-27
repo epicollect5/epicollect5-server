@@ -60,7 +60,8 @@ class Kernel extends HttpKernel
             ShareErrorsFromSession::class,
             VerifyCsrfToken::class
         ],
-        'api_external' => []
+        'api_external' => [
+        ]
     ];
 
     /**

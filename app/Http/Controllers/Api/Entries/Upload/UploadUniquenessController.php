@@ -77,4 +77,18 @@ class UploadUniquenessController extends UploadControllerBase
 
         return Response::apiSuccessCode('ec5_249');
     }
+
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
+    public function indexDebugPWA(RuleUniqueness $ruleUniqueness): JsonResponse
+    {
+        //Kick out if in production, this route is only for debugging locally
+        if (app()->isProduction()) {
+            return Response::apiErrorCode(400, ['upload-controller' => ['ec5_91']]);
+        }
+
+        return $this->index($ruleUniqueness);
+    }
 }

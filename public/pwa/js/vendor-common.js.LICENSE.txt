@@ -1,0 +1,28 @@
+/* @preserve
+ * Leaflet 1.9.4, a JS library for interactive maps. https://leafletjs.com
+ * (c) 2010-2023 Vladimir Agafonkin, (c) 2010-2011 CloudMade
+ */
+
+/*!
+ * leaflet.fullscreen
+ * (c) Bruno B.; MIT License
+ * https://github.com/brunob/leaflet.fullscreen
+ */
+
+/*!
+ * pinia v2.3.1
+ * (c) 2025 Eduardo San Martin Morote
+ * @license MIT
+ */
+
+/*!
+ * vue-router v4.6.4
+ * (c) 2025 Eduardo San Martin Morote
+ * @license MIT
+ */
+
+/*! #__NO_SIDE_EFFECTS__ */
+
+/*! GENERATED FILE - DO NOT EDIT DIRECTLY. Edit files in src/ and run 'npm run build' */
+
+/*!__STENCIL_STATIC_IMPORT_SWITCH__*/
