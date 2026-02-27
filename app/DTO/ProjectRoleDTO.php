@@ -58,6 +58,7 @@ class ProjectRoleDTO
         //When debug.permission_bypass is true, allow devs to edit data
         if (
             app()->bound('debug.permission_bypass')
+            && !app()->isProduction()
             && app('debug.permission_bypass') === true
         ) {
             return true;
