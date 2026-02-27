@@ -15,7 +15,9 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Log;
 use jdavidbakr\LaravelCacheGarbageCollector\LaravelCacheGarbageCollector;
+use Throwable;
 
 class Kernel extends ConsoleKernel
 {
@@ -26,7 +28,6 @@ class Kernel extends ConsoleKernel
         SystemStatsCommand::class,
         SystemStatsUploadCommand::class,
         RemoveUnverifiedUsersCommand::class,
-        SystemCheckStorageCommand::class,
         SystemCheckStorageCommand::class,
         SystemClearOpcache::class,
         SystemProjectStorageCommand::class,
@@ -49,7 +50,13 @@ class Kernel extends ConsoleKernel
                 ->withoutOverlapping()
                 ->onSuccess(function () {
                     // Upload stats to S3 after successful collection
-                    Artisan::call('system:stats-upload');
+                    try {
+                        Artisan::call('system:stats-upload');
+                    } catch (Throwable $e) {
+                        Log::error('system:stats-upload failed in scheduler', [
+                            'error' => $e->getMessage()
+                        ]);
+                    }
                 });
 
             //check storage available

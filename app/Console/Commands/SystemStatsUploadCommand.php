@@ -27,16 +27,9 @@ class SystemStatsUploadCommand extends Command
             $this->error('❌ Upload failed.');
             $this->line('Error: ' . $e->getMessage());
 
-            // Optional: output the stack trace for deep debugging
-            if ($this->confirm('Do you want to see the full stack trace?')) {
-                $this->line($e->getTraceAsString());
-            }
-
             return self::FAILURE;
         }
 
         return self::SUCCESS;
     }
-
-
 }
