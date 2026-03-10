@@ -188,8 +188,8 @@
 
 # 12.2.3
 
-- Fixed tampered created_at when performing bulk edit via csv
-  uploads -> https://github.com/epicollect5/epicollect5-development-plan/issues/210
+- Fixed tampered created_at when performing bulk edit via CSV
+  uploads → https://github.com/epicollect5/epicollect5-development-plan/issues/210
 - Fixed API rate limiting tests by properly clearing rate limiter caches
 
 # 12.2.2
@@ -273,7 +273,7 @@
 
 # 11.1.18
 
-- Added compression to tables with json columns (for new installations)
+- Added compression to tables with JSON columns (for new installations)
 
 # 11.1.17
 
