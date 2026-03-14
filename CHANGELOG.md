@@ -1,5 +1,11 @@
 ## Release Notes
 
+# 12.5.11
+
+- System statistics generation, export, and download for administrators.
+- Admin endpoints to view and download aggregated system statistics.
+- Manual command to upload stats and automated scheduled uploads to an external dashboard.
+
 # 12.5.10
 
 - Fixed project version endpoint throwing error 500
@@ -156,7 +162,7 @@
 - Separate configurable chunk sizes for entries and media; clearer chunked-deletion success messaging.
 - Centralized validation and lock-based error responses to prevent concurrent deletion conflicts.
 - Frontend scripts and deletion flows modularized for clarity and maintainability.
-- Extensive new and updated tests for media deletion, counters, chunking, storage drivers and concurrency.
+- Extensive new and updated tests for media deletion, counters, chunking, storage drivers, and concurrency.
 
 # 12.2.7
 
