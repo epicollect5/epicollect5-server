@@ -194,6 +194,17 @@ return [
             'endpoint' => env('DO_SPACES_ENDPOINT'),
             'key'      => env('DO_SPACES_KEY'),
             'secret'   => env('DO_SPACES_SECRET'),
-        ]
+        ],
+        's3-cgps-dashboard' => [
+            'driver' => 's3',
+            'key'    => env('AWS_ACCESS_KEY_ID_CGPS_DASHBOARD'),
+            'secret' => env('AWS_SECRET_ACCESS_KEY_CGPS_DASHBOARD'),
+            'bucket' => env('AWS_BUCKET_CGPS_DASHBOARD'),
+            'region' => env('AWS_REGION_CGPS_DASHBOARD'),
+            // Hardcoding the endpoint to AWS London prevents DigitalOcean redirection
+            'endpoint' => env('AWS_ENDPOINT_CGPS_DASHBOARD'),
+            'use_path_style_endpoint' => false,
+            'throw'  => true
+        ],
 ]
 ];

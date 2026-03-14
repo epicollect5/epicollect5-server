@@ -4,6 +4,9 @@ namespace ec5\Http\Controllers\Web\Admin;
 
 use ec5\Http\Controllers\Controller;
 use ec5\Models\System\SystemStats;
+use ec5\Services\System\SystemStatsExportService;
+use Exception;
+use Illuminate\Support\Facades\Log;
 use Response;
 
 class AdminDataController extends Controller
@@ -66,5 +69,24 @@ class AdminDataController extends Controller
         }
 
         return Response::apiData($stats);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function getSystemStats(SystemStatsExportService $service)
+    {
+        try {
+            $payload = $service->generatePayload();
+        } catch (Exception $e) {
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
+            return Response::apiErrorCode(400, ['systems-stats' => 'ec5_356']);
+        }
+        return response()->json($payload);
+    }
+
+    public function downloadSystemStats(SystemStatsExportService $service)
+    {
+        return $service->downloadFromS3();
     }
 }
