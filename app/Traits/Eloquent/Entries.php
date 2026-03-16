@@ -77,7 +77,7 @@ trait Entries
             ? str_replace(' ', 'T', Carbon::parse($date)->format('Y-m-d H:i:s')) . '.000Z'
             : null;
 
-        $result = DB::table('entries')
+        $result = DB::table($this->table)
             ->where('project_id', $projectId)
             ->where('form_ref', $formRef)
             ->whereNotNull('geo_json_data')
