@@ -118,15 +118,6 @@ class BranchEntryCounter extends Model
      */
     public function getBranchEntryCounts($projectId, $formRef, $ownerInputRef, $ownerEntryUuid): mixed
     {
-        DB::table($this->table)
-            ->select(DB::raw("COUNT(*) as branch_entries_count"))
-            ->where('project_id', '=', $projectId)
-            ->where('form_ref', '=', $formRef)
-            ->where('owner_input_ref', '=', $ownerInputRef)
-            ->where('owner_uuid', '=', $ownerEntryUuid)
-            ->toSql();
-
-
         $stats = DB::table($this->table)
             ->select(DB::raw("COUNT(*) as branch_entries_count"))
             ->where('project_id', '=', $projectId)
