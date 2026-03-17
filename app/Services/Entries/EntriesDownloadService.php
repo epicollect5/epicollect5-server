@@ -154,6 +154,7 @@ class EntriesDownloadService
                 'project' => $this->project->name,
                 'total_duration' => round($this->totalDuration / 60, 2) . ' minutes'
             ]);
+
             $this->buildZipArchive($projectDir, $project->slug, $format);
         } catch (Throwable $e) {
             Log::error('buildZipArchive failed', ['exception' => $e->getMessage()]);
@@ -206,6 +207,15 @@ class EntriesDownloadService
                 return false;
             }
         }
+
+        // Skip forms/branches with no entries — avoids empty (header-only) files in the ZIP
+        if ($query->count('id') === 0) {
+            Log::info(__METHOD__ . ' skipped empty query, no file written', [
+                'file' => $fileName . '.' . $format,
+            ]);
+            return true;
+        }
+
 
         $outputFile = $projectDir . '/' . $fileName . '.' . $format;
         switch ($format) {
