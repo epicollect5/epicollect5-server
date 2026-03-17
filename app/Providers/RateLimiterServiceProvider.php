@@ -130,7 +130,7 @@ class RateLimiterServiceProvider extends ServiceProvider
             // Stricter limit for Google Apps Script on entries export
             // due to IPs rotation and potential abuse, as observed in production
             if ($name === 'api-export-entries' &&
-                str_contains($request->userAgent() ?? '', 'Google-Apps-Script')) {
+                stripos($request->userAgent() ?? '', 'Google-Apps-Script') !== false) {
                 return Limit::perMinute(
                     config('epicollect.limits.api_export.google_apps_scripts')
                 )->by($request->ip(). '|'. $request->path());

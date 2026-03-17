@@ -15,6 +15,7 @@ use ec5\Services\Mapping\ProjectMappingService;
 use ec5\Services\Project\ProjectExtraService;
 use ec5\Traits\Assertions;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
 use Laravel\Passport\ClientRepository;
 use Tests\TestCase;
@@ -173,15 +174,11 @@ class RateLimitsEntriesGasExportTest extends TestCase
 
             $this->assertEquals($apiEntriesRateLimit, $successfulRequests);
 
-            //when the limit is hit, should return status 429
             try {
                 $entriesClient->request('GET', $entriesURL . $this->project->slug);
-            } catch (Throwable $e) {
-                if ($e->hasResponse()) {
-                    $response = $e->getResponse();
-                    // Assert the status code
-                    $this->assertEquals(429, $response->getStatusCode());
-                }
+                $this->fail('Expected a 429 Too Many Requests response but no exception was thrown.');
+            } catch (ClientException $e) {
+                $this->assertEquals(429, $e->getResponse()->getStatusCode());
             }
 
         } catch (GuzzleException $e) {
