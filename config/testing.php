@@ -162,6 +162,10 @@ return [
         'name' => 'Api Rate Limits Entries',
         'slug' => 'api-rate-limits-entries'
     ],
+    'API_RATE_LIMITS_ENTRIES_GAS' => [
+        'name' => 'Api Rate Limits Entries GAS',
+        'slug' => 'api-rate-limits-entries-gas'
+    ],
     'API_RATE_LIMITS_MEDIA' => [
         'name' => 'Api Rate Limits Media',
         'slug' => 'api-rate-limits-media'

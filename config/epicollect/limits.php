@@ -92,5 +92,6 @@ return [
         'project' => (int) env('API_RATE_LIMIT_PROJECT', 60),
         'entries' => (int) env('API_RATE_LIMIT_ENTRIES', 60),
         'media' => (int) env('API_RATE_LIMIT_MEDIA', 30),
+        'google_apps_scripts' => (int) env('API_RATE_LIMIT_GOOGLE_APP_SCRIPTS', 10)
     ]
 ];
