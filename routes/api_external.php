@@ -170,3 +170,5 @@ Route::group(['middleware' => ['auth', 'throttle:account-deletion']], function (
     //request user account deletion
     Route::post('/api/profile/account-deletion-request', 'Api\Auth\AccountController@handleDeletionRequest')->name('externalAccountDelete');
 });
+
+Route::post('api/import/project/validate', 'Api\Project\ProjectController@validateImport')->name('validate-import');

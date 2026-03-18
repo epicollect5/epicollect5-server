@@ -9,17 +9,17 @@ use ec5\Http\Validation\Project\RuleProjectDefinition as ProjectDefinitionValida
 use ec5\Libraries\Utilities\Generators;
 use ec5\Services\Project\ProjectService;
 use ec5\Traits\Project\ProjectTools;
-use Exception;
 use File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Redirect;
+use Throwable;
 
 class ProjectImportController
 {
     use ProjectTools;
 
-    const IMPORT = 'import';
+    public const string IMPORT = 'import';
 
     protected $project;
     protected $type;
@@ -38,17 +38,20 @@ class ProjectImportController
         $this->project = $project;
     }
 
+    /**
+     * @throws Throwable
+     */
     public function import(
         Request                    $request,
         ProjectDefinitionValidator $projectDefinitionValidator,
         ImportJsonValidator        $importJsonValidator,
         ImportRequestValidator     $importRequestValidator,
         ProjectService             $projectService
-    )
-    {
+    ) {
         $this->type = ProjectImportController::IMPORT;
         // Get all the form post data
         $payload = $request->all();
+
         $payload['slug'] = Str::slug($payload['name'], '-');
         // Run validation
         $importRequestValidator->validate($payload, true);
@@ -72,7 +75,7 @@ class ProjectImportController
         // Decode json file contents into array
         try {
             $data = json_decode(File::get($file->getRealPath()), true);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $request->flash();
             return Redirect::to('myprojects/create')
                 ->withErrors(['file' => ['ec5_69']])

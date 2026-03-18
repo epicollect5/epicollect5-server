@@ -4,13 +4,13 @@ namespace ec5\DTO;
 
 use ec5\Http\Validation\Project\RuleProjectDefinition;
 use ec5\Libraries\Utilities\Common;
+use ec5\Services\Mapping\ProjectMappingService;
 use Exception;
 use Illuminate\Support\Str;
 use Ramsey\Uuid\Uuid;
 use ReflectionClass;
 use ReflectionProperty;
 use stdClass;
-use ec5\Services\Mapping\ProjectMappingService;
 
 /*
 |--------------------------------------------------------------------------
@@ -209,7 +209,7 @@ class ProjectDTO
         // Validate the Project Definition and create the Project Extra data
         $projectDefinitionValidator->validate($this);
         if ($projectDefinitionValidator->hasErrors()) {
-            throw new Exception(config('epicollect.codes.ec5_225'));
+            throw new Exception(config('epicollect.codes.ec5_39'));
         }
         //EC5 AUTO mapping
         $mapping = $this->projectMappingService->createEC5AUTOMapping($this->getProjectExtra()->getData());

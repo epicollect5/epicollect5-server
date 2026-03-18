@@ -3,14 +3,20 @@
 namespace ec5\Http\Controllers\Api\Project;
 
 use Auth;
+use ec5\DTO\ProjectDTO;
 use ec5\Http\Validation\Entries\Upload\RuleCanBulkUpload;
+use ec5\Http\Validation\Project\RuleImportJson as ImportJsonValidator;
 use ec5\Http\Validation\Project\RuleName;
+use ec5\Http\Validation\Project\RuleProjectDefinition as ProjectDefinitionValidator;
+use ec5\Libraries\Utilities\Generators;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectStats;
 use ec5\Services\Media\MediaCounterService;
 use ec5\Traits\Requests\RequestAttributes;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Log;
 use Response;
 use Throwable;
 
@@ -235,6 +241,59 @@ class ProjectController
         }
 
         $data = ['message' => config('epicollect.codes.ec5_362')];
+        return Response::apiData($data);
+    }
+
+    public function validateImport(
+        Request                    $request,
+        ProjectDefinitionValidator $projectDefinitionValidator,
+        ImportJsonValidator        $importJsonValidator,
+        ProjectDTO                    $projectDTO
+    ) {
+        $data = $request->all();
+
+        // Validate the json
+        $importJsonValidator->validate($data);
+
+        if ($importJsonValidator->hasErrors()) {
+            return Response::apiErrorCode('400', $importJsonValidator->errors());
+        }
+
+        $name = data_get($data, 'data.project.name', 'Imported Project');
+        $payload = [
+            'name' => $name,
+            'created_by' => 0, // Set to 0 or any default value since we don't have a user context in this API
+        ];
+
+        // Generate new project ref
+        $newProjectRef = Generators::projectRef();
+        $projectDefinitionData = $data['data'];
+
+        try {
+            // Import this project
+            $projectDTO->import(
+                $newProjectRef,
+                $payload['name'],
+                $payload['created_by'],
+                $projectDefinitionData,
+                $projectDefinitionValidator
+            );
+        } catch (Throwable $e) {
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
+            return Response::apiErrorCode('400', $projectDefinitionValidator->errors());
+        }
+
+        $data = [
+            'type' => 'project-json-validation',
+            'id' => $newProjectRef,
+            'project' => [
+                'name' => $data['data']['project']['name'],
+                'slug' => Str::slug($data['data']['project']['name'], '-'),
+            ],
+            'validation' => 'passed',
+            'validated_at' => now()->toDateTimeString().'.000Z'
+        ];
+
         return Response::apiData($data);
     }
 }
