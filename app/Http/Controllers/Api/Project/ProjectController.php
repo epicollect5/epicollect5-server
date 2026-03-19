@@ -299,17 +299,17 @@ class ProjectController
             return Response::apiErrorCode('400', $errors);
         }
 
-        $data = [
+        $response = [
             'type' => 'project-json-validation',
             'id' => $newProjectRef,
             'project' => [
-                'name' => $data['data']['project']['name'],
-                'slug' => Str::slug($data['data']['project']['name'], '-'),
+                'name' => $payload['name'],
+                'slug' => Str::slug($payload['name'], '-'),
             ],
             'validation' => 'passed',
-            'validated_at' => now()->toDateTimeString().'.000Z'
+            'validated_at' =>  now()->toIso8601String()
         ];
 
-        return Response::apiData($data);
+        return Response::apiData($response);
     }
 }
