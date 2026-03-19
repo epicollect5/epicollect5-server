@@ -162,6 +162,7 @@ Route::group(['middleware' => ['throttle:240,1']], function () {
         //COG-UK uploads (private imports)
         Route::post('api/import/entries/{project_slug}', 'Api\Entries\Upload\UploadAppController@import')->name('private-import');
     });
+    Route::post('api/import/project/validate', 'Api\Project\ProjectController@validateImport')->name('api-import-project-validate');
 });
 
 //Following routes required authentication (to be logged in)
@@ -170,5 +171,3 @@ Route::group(['middleware' => ['auth', 'throttle:account-deletion']], function (
     //request user account deletion
     Route::post('/api/profile/account-deletion-request', 'Api\Auth\AccountController@handleDeletionRequest')->name('externalAccountDelete');
 });
-
-Route::post('api/import/project/validate', 'Api\Project\ProjectController@validateImport')->name('validate-import');

@@ -11,6 +11,7 @@ use ec5\Services\Project\ProjectService;
 use ec5\Traits\Project\ProjectTools;
 use File;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Redirect;
 use Throwable;
@@ -21,13 +22,13 @@ class ProjectImportController
 
     public const string IMPORT = 'import';
 
-    protected $project;
-    protected $type;
+    protected ProjectDTO $project;
+    protected String $type;
 
     /**
      * @var array
      */
-    protected $errors = [];
+    protected array $errors = [];
 
     /**
      * ProjectCreateController constructor.
@@ -76,6 +77,7 @@ class ProjectImportController
         try {
             $data = json_decode(File::get($file->getRealPath()), true);
         } catch (Throwable $e) {
+            Log::info(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             $request->flash();
             return Redirect::to('myprojects/create')
                 ->withErrors(['file' => ['ec5_69']])
@@ -112,7 +114,8 @@ class ProjectImportController
                 $projectDefinitionData,
                 $projectDefinitionValidator
             );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
+            Log::info(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             $request->flash();
             return Redirect::to('myprojects/create')
                 ->withErrors($projectDefinitionValidator->errors())

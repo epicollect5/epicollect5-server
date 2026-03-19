@@ -276,6 +276,12 @@ class RuleInput extends ValidationBase
         $match = false;
 
         foreach ($this->data['possible_answers'] as $value) {
+            //if answer_ref key is not found, bail out
+            if (!isset($value['answer_ref'])) {
+                $this->addAdditionalError($this->data['ref'], 'ec5_355');
+                return;
+            }
+
             if ($value['answer_ref'] == $this->data['default']) {
                 $match = true;
             }

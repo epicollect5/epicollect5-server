@@ -89,6 +89,14 @@ class RuleProjectDefinition
             return false;
         }
 
+        //does it have a valid category?
+        $category = $projectData['category'] ?? '';
+        $categories = array_keys(config('epicollect.strings.project_categories'));
+        if (!empty($category) && !in_array($category, $categories)) {
+            $this->errors['validation'] = ['ec5_39'];
+            return false;
+        }
+
         // Test projectDetails, has to have existing ref as ref, bail if error
         $test = $this->validateProjectDetails($project->ref, $projectData);
         if (!$test) {

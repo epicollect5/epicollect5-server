@@ -117,4 +117,7 @@ abstract class RuleProjectDefinitionBaseTest extends TestCase
 
         $this->inputsLimit = config('epicollect.limits.formlimits.inputs');
     }
+
+
+
 }

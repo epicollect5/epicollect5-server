@@ -42,6 +42,9 @@ return [
             'entries' => (int) env('API_RATE_LIMIT_ENTRIES', 60),
             'project' => (int) env('API_RATE_LIMIT_PROJECT', 60),
             'bulk_upload' => (int) env('API_RATE_LIMIT_BULK_UPLOAD', 60)
+        ],
+        'import_project' => [
+            'validation_key' => env('API_IMPORT_PROJECT_VALIDATION_KEY', null)
         ]
     ],
     'ldap' => [

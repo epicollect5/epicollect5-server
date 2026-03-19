@@ -250,8 +250,17 @@ class ProjectController
         ImportJsonValidator        $importJsonValidator,
         ProjectDTO                    $projectDTO
     ) {
-        $data = $request->all();
 
+        //Check Authorization Header
+        $token = $request->bearerToken();
+        $expectedToken = config('epicollect.setup.api.import_project.validation_key'); // Ensure this is mapped in config/app.php
+
+        if (!$token || $token !== $expectedToken) {
+            return Response::apiErrorCode('400', ['error' => ['ec5_257']]);
+        }
+
+
+        $data = $request->all();
         // Validate the json
         $importJsonValidator->validate($data);
 
@@ -280,7 +289,14 @@ class ProjectController
             );
         } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
-            return Response::apiErrorCode('400', $projectDefinitionValidator->errors());
+            $errors = $projectDefinitionValidator->errors();
+            if (empty($errors)) {
+                $errors = [
+                    'validation' => [config('epicollect.codes.ec5_39')],
+                    'exception' => [$e->getMessage()]
+                ];
+            }
+            return Response::apiErrorCode('400', $errors);
         }
 
         $data = [

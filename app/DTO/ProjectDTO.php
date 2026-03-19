@@ -6,6 +6,7 @@ use ec5\Http\Validation\Project\RuleProjectDefinition;
 use ec5\Libraries\Utilities\Common;
 use ec5\Services\Mapping\ProjectMappingService;
 use Exception;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Ramsey\Uuid\Uuid;
 use ReflectionClass;
@@ -209,6 +210,7 @@ class ProjectDTO
         // Validate the Project Definition and create the Project Extra data
         $projectDefinitionValidator->validate($this);
         if ($projectDefinitionValidator->hasErrors()) {
+            Log::error(__METHOD__ . ' failed.', ['errors' => $projectDefinitionValidator->errors()]);
             throw new Exception(config('epicollect.codes.ec5_39'));
         }
         //EC5 AUTO mapping
