@@ -93,7 +93,7 @@ class RuleProjectDefinition
         $category = $projectData['category'] ?? '';
         $categories = array_keys(config('epicollect.strings.project_categories'));
         if (!empty($category) && !in_array($category, $categories)) {
-            $this->errors['validation'] = ['ec5_39'];
+            $this->errors['validation'] = ['ec5_408'];
             return false;
         }
 
