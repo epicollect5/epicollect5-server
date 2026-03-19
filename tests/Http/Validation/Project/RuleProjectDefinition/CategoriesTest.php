@@ -1,11 +1,10 @@
 <?php
 
-namespace Http\Validation\Project\RuleProjectDefinition;
+namespace Tests\Http\Validation\Project\RuleProjectDefinition;
 
 use ec5\DTO\ProjectDTO;
 use ec5\Services\Mapping\ProjectMappingService;
 use Exception;
-use Tests\Http\Validation\Project\RuleProjectDefinition\RuleProjectDefinitionBaseTest;
 use Throwable;
 
 class CategoriesTest extends RuleProjectDefinitionBaseTest

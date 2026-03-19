@@ -255,7 +255,7 @@ class ProjectController
         $token = $request->bearerToken();
         $expectedToken = config('epicollect.setup.api.import_project.validation_key'); // Ensure this is mapped in config/app.php
 
-        if (!$token || $token !== $expectedToken) {
+        if (!$token || !hash_equals($expectedToken, $token)) {
             return Response::apiErrorCode('400', ['error' => ['ec5_257']]);
         }
 
@@ -292,8 +292,7 @@ class ProjectController
             $errors = $projectDefinitionValidator->errors();
             if (empty($errors)) {
                 $errors = [
-                    'validation' => [config('epicollect.codes.ec5_39')],
-                    'exception' => [$e->getMessage()]
+                    'validation' => [config('epicollect.codes.ec5_39')]
                 ];
             }
             return Response::apiErrorCode('400', $errors);
