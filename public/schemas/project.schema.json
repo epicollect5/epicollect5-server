@@ -1,9 +1,41 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://epicollect.net/schemas/form/v1.9.7",
-  "title": "Epicollect5 Form",
-  "description": "Schema for a single Epicollect5 form definition (JSON Schema Draft 2020-12, validated with opis/json-schema).",
-  "$ref": "#/$defs/form",
+  "$id": "https://epicollect.net/schemas/project-export/v1.9.7",
+  "title": "Epicollect5 Project Export",
+  "description": "Schema for the full Epicollect5 project export envelope (JSON Schema Draft 2020-12, validated with opis/json-schema).",
+  "type": "object",
+  "required": [
+    "data"
+  ],
+  "properties": {
+    "data": {
+      "type": "object",
+      "required": [
+        "id",
+        "type",
+        "project"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Project identifier. A 32-character lowercase hex UUIDv4 without dashes. Must be identical to project.ref.",
+          "pattern": "^[a-f0-9]{32}$",
+          "$comment": "data.id must equal project.ref. JSON Schema cannot enforce cross-field equality — application logic must verify this constraint."
+        },
+        "type": {
+          "type": "string",
+          "description": "Resource type. Always 'project' for project exports.",
+          "const": "project"
+        },
+        "project": {
+          "$ref": "#/$defs/project"
+        }
+      },
+      "unevaluatedProperties": false,
+      "description": "Project export envelope. data.id must be identical to project.ref — enforced by application logic."
+    }
+  },
+  "unevaluatedProperties": false,
   "$defs": {
     "numericString": {
       "title": "Numeric value",
@@ -1030,7 +1062,175 @@
         }
       },
       "unevaluatedProperties": false
+    },
+    "project": {
+      "type": "object",
+      "title": "Project",
+      "description": "Top-level project definition.\n\nLimits enforced by JSON Schema:\n- status and can_bulk_upload are NOT validated here — the application overwrites them on import (status -> active, can_bulk_upload -> nobody).\n- Max 5 forms (formsMaxCount=5)\n- project.name: alphanumeric + spaces, min 3, max 50\n- form.name: alphanumeric + spaces + hyphens + underscores, max 50\n- small_description: min 15, max 100\n- description: max 3000 (empty allowed)\n\nLimits that MUST be enforced by application logic (cannot be expressed in JSON Schema):\n- inputsMaxCount=300: total inputs per form across all nesting levels (top-level + branch + group children)\n- titlesMaxCount=3: at most 3 inputs per form may have is_title=true\n- searchMaxCount=5: combined searchsingle + searchmultiple inputs across the entire project\n- Jump 'to' refs must point to input refs that exist within the same form\n- Input refs must be unique across the entire project",
+      "required": [
+        "ref",
+        "name",
+        "slug",
+        "forms",
+        "category",
+        "logo_url",
+        "description",
+        "small_description",
+        "entries_limits",
+        "visibility",
+        "access",
+        "status"
+      ],
+      "properties": {
+        "ref": {
+          "type": "string",
+          "description": "Unique project reference. A 32-character lowercase hex UUIDv4 without dashes.",
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable project name. Min 3, max 50 characters. Alphanumeric characters, spaces and underscores only. Literal < and > are forbidden — use &lt; and &gt; instead. Emojis are not allowed (enforced by application logic) (enforced by application logic).",
+          "minLength": 3,
+          "maxLength": 50,
+          "pattern": "^[a-zA-Z0-9 _]+$"
+        },
+        "slug": {
+          "type": "string",
+          "description": "URL-safe form identifier. Lowercase alphanumeric characters and hyphens only.",
+          "pattern": "^[a-z0-9-]+$"
+        },
+        "forms": {
+          "type": "array",
+          "description": "Ordered list of forms in the project. Min 1, max 5 (formsMaxCount=5).",
+          "minItems": 1,
+          "maxItems": 5,
+          "items": {
+            "$ref": "#/$defs/form"
+          }
+        },
+        "access": {
+          "type": "string",
+          "description": "Who can submit entries to this project.",
+          "enum": [
+            "public",
+            "private"
+          ]
+        },
+        "category": {
+          "type": "string",
+          "description": "Project category.",
+          "enum": [
+            "general",
+            "social",
+            "art",
+            "humanities",
+            "biology",
+            "economics",
+            "science"
+          ]
+        },
+        "homepage": {
+          "type": "string",
+          "description": "Full URL to the project homepage on Epicollect5.",
+          "format": "uri"
+        },
+        "logo_url": {
+          "type": "string",
+          "description": "URL to the project logo image. Empty string when no logo is set."
+        },
+        "created_at": {
+          "type": "string",
+          "description": "Project creation timestamp in 'YYYY-MM-DD HH:mm:ss' format.",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$"
+        },
+        "visibility": {
+          "type": "string",
+          "description": "Whether the project is publicly listed on the Epicollect5 website.",
+          "enum": [
+            "hidden",
+            "listed"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "description": "Long-form project description. Empty string allowed when not set. Max 3000 characters when provided. HTML allowed except literal < and > — use &lt; and &gt; instead. Emojis are not allowed (enforced by application logic).",
+          "maxLength": 3000,
+          "pattern": "^[^<>]*$"
+        },
+        "small_description": {
+          "type": "string",
+          "description": "Short project description shown in listings. Min 15, max 100 characters. Plain text. Literal < and > are forbidden — use &lt; and &gt; instead. Emojis are not allowed (enforced by application logic) (enforced by application logic).",
+          "minLength": 15,
+          "maxLength": 100,
+          "pattern": "^[^<>]*$"
+        },
+        "entries_limits": {
+          "description": "Per-form or per-branch entry count limits. Either an empty array [] (no limits set) or an object keyed by a valid EC5 ref ({32-char hex} followed by one or more _{13-char hex} segments) with string-encoded positive integer values. e.g. {\"form_ref\": \"20\", \"branch_ref\": \"500\"}.",
+          "oneOf": [
+            {
+              "type": "array",
+              "maxItems": 0,
+              "description": "Empty array — no entry limits set."
+            },
+            {
+              "type": "object",
+              "description": "Object keyed by EC5 ref with string-encoded positive integer limits.",
+              "propertyNames": {
+                "pattern": "^[a-f0-9]{32}(_[a-f0-9]{13})+$",
+                "$comment": "Key must be a valid form ref or input ref — {32hex} followed by one or more _{13hex} segments."
+              },
+              "additionalProperties": {
+                "type": "string",
+                "pattern": "^[1-9][0-9]*$",
+                "description": "Entry limit as a string-encoded positive integer."
+              }
+            }
+          ]
+        },
+        "status": {
+          "type": "string",
+          "description": "Project lifecycle status.",
+          "enum": [
+            "active",
+            "locked",
+            "trashed"
+          ]
+        },
+        "can_bulk_upload": {
+          "type": "string",
+          "description": "Who is allowed to bulk-upload entries. Optional — if present must be one of the valid values. New projects should use 'nobody'.",
+          "enum": [
+            "nobody",
+            "members",
+            "everybody"
+          ],
+          "$comment": "Optional field. Not part of the core project definition — stored as a database flag. If present it must be valid. Application sets to 'nobody' on import."
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "entryLimit": {
+      "type": "object",
+      "title": "Entry Limit",
+      "description": "A per-form entry count limit.",
+      "required": [
+        "form_ref",
+        "limit"
+      ],
+      "properties": {
+        "form_ref": {
+          "type": "string",
+          "description": "Ref of the form this limit applies to. Must match the pattern of a valid form ref.",
+          "pattern": "^[a-f0-9]{32}_[a-f0-9]{13}$"
+        },
+        "limit": {
+          "type": "integer",
+          "description": "Maximum number of entries allowed for this form.",
+          "minimum": 1
+        }
+      },
+      "unevaluatedProperties": false
     }
   },
-  "$comment": "v1.9.7 — 2026-03-20 — 2026-03-20 — 2026-03-20 — 2026-03-19 — 2026-03-19 — 2026-03-19. Epicollect5 form definition schema. JSON Schema Draft 2020-12, validated with opis/json-schema (PHP). Emoji validation enforced by application logic. status and can_bulk_upload are optional — app overwrites to active/nobody on import."
+  "$comment": "v1.9.7 — 2026-03-20 — 2026-03-20 — 2026-03-20. Epicollect5 project export schema. JSON Schema Draft 2020-12, validated with opis/json-schema (PHP). Emoji validation enforced by application logic. can_bulk_upload is optional — if present must be nobody|members|everybody. App sets to nobody on import."
 }
