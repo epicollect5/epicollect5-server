@@ -155,7 +155,7 @@ Route::group(['middleware' => ['throttle:api-export-media']], function () {
 
 // Throttle WRITE endpoints - 240 requests per minute
 // For CGPS use only, this is not documented
-Route::group(['middleware' => ['throttle:240,1']], function () {
+Route::group(['middleware' => ['throttle:600,1']], function () {
     /* Import endpoints */
     // Set project permissions api middleware
     Route::group(['middleware' => ['project.permissions.api']], function () {

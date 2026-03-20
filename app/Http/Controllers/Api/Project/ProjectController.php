@@ -8,6 +8,7 @@ use ec5\Http\Validation\Entries\Upload\RuleCanBulkUpload;
 use ec5\Http\Validation\Project\RuleImportJson as ImportJsonValidator;
 use ec5\Http\Validation\Project\RuleName;
 use ec5\Http\Validation\Project\RuleProjectDefinition as ProjectDefinitionValidator;
+use ec5\Http\Validation\Schemas\ProjectSchemaValidator;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectStats;
@@ -248,38 +249,46 @@ class ProjectController
         Request                    $request,
         ProjectDefinitionValidator $projectDefinitionValidator,
         ImportJsonValidator        $importJsonValidator,
-        ProjectDTO                    $projectDTO
+        ProjectSchemaValidator     $projectSchemaValidator,   // <-- injected as singleton
+        ProjectDTO                 $projectDTO
     ) {
-
-        //Check Authorization Header
+        // 1. Check Authorization Header
         $token = $request->bearerToken();
-        $expectedToken = config('epicollect.setup.api.import_project.validation_key'); // Ensure this is mapped in config/app.php
+        $expectedToken = config('epicollect.setup.api.import_project.validation_key');
 
         if (!$token || !hash_equals($expectedToken, $token)) {
             return Response::apiErrorCode('400', ['error' => ['ec5_257']]);
         }
 
+        $data = $request->post();
 
-        $data = $request->all();
-        // Validate the json
+        // 2. Basic structure check — is the payload shaped like a project request?
+        //    Checks: data required, data.type = 'project', data.project is array
         $importJsonValidator->validate($data);
 
         if ($importJsonValidator->hasErrors()) {
             return Response::apiErrorCode('400', $importJsonValidator->errors());
         }
 
+        // 3. JSON Schema validation — full structural gate
+        //    Validates against public/schemas/ec5-project-schema.json
+        //    Checks: ref patterns, input keys, possible_answers limits,
+        //    enums, string lengths, emoji/< > restrictions etc.
+        if (!$projectSchemaValidator->validate($data)) {
+            return Response::apiSchemaError('400', $projectSchemaValidator->schemaId(), $projectSchemaValidator->violations());
+        }
+
         $name = data_get($data, 'data.project.name', 'Imported Project');
         $payload = [
-            'name' => $name,
-            'created_by' => 0, // Set to 0 or any default value since we don't have a user context in this API
+            'name'       => $name,
+            'created_by' => 0,
         ];
 
-        // Generate new project ref
+        // 4. Generate new project ref
         $newProjectRef = Generators::projectRef();
         $projectDefinitionData = $data['data'];
 
         try {
-            // Import this project
             $projectDTO->import(
                 $newProjectRef,
                 $payload['name'],
@@ -298,17 +307,10 @@ class ProjectController
             return Response::apiErrorCode('400', $errors);
         }
 
-        $response = [
-            'type' => 'project-json-validation',
-            'id' => $newProjectRef,
-            'project' => [
-                'name' => $payload['name'],
-                'slug' => Str::slug($payload['name'], '-'),
-            ],
-            'validation' => 'passed',
-            'validated_at' =>  now()->toIso8601String()
-        ];
-
-        return Response::apiData($response);
+        return Response::apiSchemaSuccess(
+            $newProjectRef,
+            $payload['name'],
+            $projectSchemaValidator->schemaId()
+        );
     }
 }

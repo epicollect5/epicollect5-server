@@ -265,6 +265,11 @@ class ProjectImportControllerTest extends TestCase
         $user = factory(User::class)->create();
         //create a mock project with that user and use ref as name to avoid conflicts
         $ref = Generators::projectRef();
+        factory(Project::class)->create([
+            'created_by' => $user->id,
+            'name' => $ref,
+            'slug' => $ref
+        ]);
         //try to import a project with the same name (ref)
         $response = $this
             ->actingAs($user, self::DRIVER)
