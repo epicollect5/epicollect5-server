@@ -5,6 +5,7 @@ namespace ec5\Http\Validation\Schemas;
 use Log;
 use Opis\JsonSchema\Errors\ErrorFormatter;
 use Opis\JsonSchema\Validator;
+use RuntimeException;
 use Throwable;
 
 /**
@@ -26,13 +27,22 @@ class ProjectSchemaValidator
     {
         $this->validator = new Validator();
 
-        // Load schema once at construction (singleton = loaded once per request lifecycle)
         try {
             $schemaPath = public_path('schemas/project.schema.json');
             $schemaJson = file_get_contents($schemaPath);
-            $this->schema = json_decode($schemaJson);
+            if ($schemaJson === false) {
+                throw new RuntimeException("Unable to read schema file: {$schemaPath}");
+            }
+
+            $schema = json_decode($schemaJson);
+            if (!is_object($schema)) {
+                throw new RuntimeException("Invalid schema JSON: {$schemaPath}");
+            }
+
+            $this->schema = $schema;
         } catch (Throwable $e) {
-            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e]);
+            throw new RuntimeException('Project schema could not be loaded.', 0, $e);
         }
     }
 

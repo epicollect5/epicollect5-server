@@ -13,7 +13,6 @@ class PreventRequestsDuringMaintenance extends Middleware
      *
      */
     protected $except = [
-        'api/import/project/validate',
-        'public/schema/*',
+        'api/import/project/validate'
     ];
 }
