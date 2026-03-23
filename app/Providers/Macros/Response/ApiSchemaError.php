@@ -41,7 +41,7 @@ class ApiSchemaError extends ServiceProvider
                 ['errors' => $errors],
                 (int) $httpStatusCode,
                 ['Content-Type' => 'application/vnd.api+json; charset=utf-8'],
-                0
+                JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
             );
         });
     }

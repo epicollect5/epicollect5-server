@@ -54,7 +54,7 @@ class ApiSchemaSuccess extends ServiceProvider
                 ],
                 200,
                 ['Content-Type' => 'application/vnd.api+json; charset=utf-8'],
-                0
+                JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
             );
         });
     }
