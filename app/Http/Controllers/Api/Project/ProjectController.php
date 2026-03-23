@@ -301,7 +301,7 @@ class ProjectController
             $errors = $projectDefinitionValidator->errors();
             if (empty($errors)) {
                 $errors = [
-                    'validation' => [config('epicollect.codes.ec5_39')]
+                    'validation' => ['ec5_39']
                 ];
             }
             return Response::apiErrorCode('400', $errors);

@@ -14,7 +14,7 @@ use Illuminate\Support\Str;
  * Formats the response as:
  * {
  *   "data": {
- *     "type":         "schema-validator",
+ *     "type":         "project-json-validator",
  *     "id":           "abc123...",
  *     "project": {
  *       "name":       "My Project",
@@ -41,7 +41,7 @@ class ApiSchemaSuccess extends ServiceProvider
             return new JsonResponse(
                 [
                     'data' => [
-                        'type'         => 'schema-validator',
+                        'type'         => 'project-json-validator',
                         'id'           => $projectRef,
                         'project'      => [
                             'name' => $name,

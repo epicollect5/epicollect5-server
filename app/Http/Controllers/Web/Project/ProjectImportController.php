@@ -23,7 +23,7 @@ class ProjectImportController
     public const string IMPORT = 'import';
 
     protected ProjectDTO $project;
-    protected String $type;
+    protected string $type;
 
     /**
      * @var array

@@ -33,7 +33,7 @@ class ApiSchemaError extends ServiceProvider
                 return [
                     'schema'   => $schemaId,
                     'title'  => $message,
-                    'source' => 'schema-validator',
+                    'source' => 'project-json-validator',
                 ];
             }, $violations);
 
