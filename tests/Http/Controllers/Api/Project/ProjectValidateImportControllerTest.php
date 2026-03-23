@@ -9,9 +9,8 @@ use Tests\TestCase;
 
 class ProjectValidateImportControllerTest extends TestCase
 {
-
-    private const ROUTE = 'api/import/project/validate';
-    private const VALID_TOKEN = 'test-import-validation-token';
+    private const string ROUTE = 'api/import/project/validate';
+    private const string VALID_TOKEN = 'test-import-validation-token';
 
     public function setUp(): void
     {
@@ -193,7 +192,7 @@ class ProjectValidateImportControllerTest extends TestCase
         $this->assertNotEmpty($errors);
         // Every error entry must carry 'source' = 'schema-validator'
         foreach ($errors as $error) {
-            $this->assertEquals('schema-validator', $error['source']);
+            $this->assertEquals('project-json-validator', $error['source']);
             $this->assertNotEmpty($error['schema']);
             $this->assertNotEmpty($error['title']);
         }
@@ -224,7 +223,7 @@ class ProjectValidateImportControllerTest extends TestCase
             ]);
 
         $data = $response->json('data');
-        $this->assertEquals('project-json-validation', $data['type']);
+        $this->assertEquals('project-json-validator', $data['type']);
         $this->assertEquals('passed', $data['validation']);
         $this->assertNotEmpty($data['id']);
         $this->assertNotEmpty($data['schema']);

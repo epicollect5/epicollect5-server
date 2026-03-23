@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://epicollect.net/schemas/project-export/v1.9.7",
+  "$id": "https://epicollect.net/schemas/project-export/v2.0.0",
   "title": "Epicollect5 Project Export",
   "description": "Schema for the full Epicollect5 project export envelope (JSON Schema Draft 2020-12, validated with opis/json-schema).",
   "type": "object",
@@ -39,7 +39,7 @@
   "$defs": {
     "numericString": {
       "title": "Numeric value",
-      "description": "A numeric constraint for min/max fields. Accepts: null (not set), empty string (not set), a number (integer or float), or a numeric string. Application logic must ensure min <= max when both are set.",
+      "description": "A numeric constraint for min/max fields. Accepts: null (not set), empty string (not set), integer, number, or a numeric string. Leading-dot decimals like .5 are accepted — the server will sanitise them to 0.5 on import.",
       "oneOf": [
         {
           "type": "null"
@@ -56,9 +56,10 @@
         },
         {
           "type": "string",
-          "pattern": "^-?\\d+(\\.\\d+)?$"
+          "pattern": "^-?(\\d+(\\.\\d*)?|\\.\\d+)$"
         }
-      ]
+      ],
+      "$comment": "Leading-dot decimals (.5, -.5) are valid here to avoid rejecting existing projects. The server normalises these to canonical form (0.5, -0.5) before persisting."
     },
     "form": {
       "type": "object",
@@ -1232,5 +1233,5 @@
       "unevaluatedProperties": false
     }
   },
-  "$comment": "v1.9.7 — 2026-03-20 — 2026-03-20 — 2026-03-20. Epicollect5 project export schema. JSON Schema Draft 2020-12, validated with opis/json-schema (PHP). Emoji validation enforced by application logic. can_bulk_upload is optional — if present must be nobody|members|everybody. App sets to nobody on import."
+  "$comment": "v2.0.0 — 2026-03-23 — 2026-03-20 — 2026-03-20. Epicollect5 project export schema. JSON Schema Draft 2020-12, validated with opis/json-schema (PHP). Emoji validation enforced by application logic. can_bulk_upload is optional — if present must be nobody|members|everybody. App sets to nobody on import."
 }
