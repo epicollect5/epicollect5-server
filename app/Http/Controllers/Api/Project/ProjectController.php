@@ -249,7 +249,7 @@ class ProjectController
         Request                    $request,
         ProjectDefinitionValidator $projectDefinitionValidator,
         ImportJsonValidator        $importJsonValidator,
-        ProjectSchemaValidator     $projectSchemaValidator,   // <-- injected as singleton
+        ProjectSchemaValidator     $projectSchemaValidator,
         ProjectDTO                 $projectDTO
     ) {
         // 1. Check Authorization Header
@@ -271,7 +271,7 @@ class ProjectController
         }
 
         // 3. JSON Schema validation — full structural gate
-        //    Validates against public/schemas/ec5-project-schema.json
+        //    Validates against public/schemas/project.schema.json
         //    Checks: ref patterns, input keys, possible_answers limits,
         //    enums, string lengths, emoji/< > restrictions etc.
         if (!$projectSchemaValidator->validate($data)) {
