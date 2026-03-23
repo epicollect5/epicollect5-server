@@ -14,6 +14,11 @@ class SystemStatsUploadCommand extends Command
 
     public function handle(SystemStatsExportService $service): int
     {
+        if (config('epicollect.setup.cgps_dashboard_upload_enabled') !== true) {
+            $this->info('⚠️ CGPS Dashboard upload is disabled in configuration. Exiting.');
+            return self::FAILURE;
+        }
+
         $this->info('🚀 Initializing Stats Export...');
 
         try {
