@@ -12,7 +12,7 @@ use Illuminate\Support\ServiceProvider;
  * Used exclusively for JSON Schema validation failures.
  * Formats each schema violation as:
  * {
- *   "version":   "https://epicollect.net/schemas/project-export/v1.1.0",
+ *   "schema":   "https://epicollect.net/schemas/project-export/v1.1.0",
  *   "title":  "/data/project/category: The data should match one item from enum",
  *   "source": "schema"
  * }
@@ -31,9 +31,9 @@ class ApiSchemaError extends ServiceProvider
         ) {
             $errors = array_map(function (string $message) use ($schemaId) {
                 return [
-                    'version'   => $schemaId,
+                    'schema'   => $schemaId,
                     'title'  => $message,
-                    'source' => 'schema',
+                    'source' => 'schema-validator',
                 ];
             }, $violations);
 
