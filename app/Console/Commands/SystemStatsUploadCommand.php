@@ -14,6 +14,12 @@ class SystemStatsUploadCommand extends Command
 
     public function handle(SystemStatsExportService $service): int
     {
+        $host = request()->getHost() ?? ''; // Real-time HTTP host
+        if ($host !== 'five.epicollect.net') {
+            $this->info('⚠️ This command can only be run on the production environment. Exiting.');
+            return self::FAILURE;
+        }
+
         if (config('epicollect.setup.cgps_dashboard_upload_enabled') !== true) {
             $this->info('⚠️ CGPS Dashboard upload is disabled in configuration. Exiting.');
             return self::FAILURE;
