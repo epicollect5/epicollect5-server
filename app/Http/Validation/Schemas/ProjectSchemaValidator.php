@@ -2,20 +2,18 @@
 
 namespace ec5\Http\Validation\Schemas;
 
-use Log;
 use Opis\JsonSchema\Errors\ErrorFormatter;
 use Opis\JsonSchema\Validator;
-use RuntimeException;
-use Throwable;
 
 /**
  * Validates a project definition JSON payload against the
  * Epicollect5 project export JSON Schema (Draft 2020-12).
  *
- * The schema is loaded once and cached in the singleton instance,
- * which is bound in AppServiceProvider.
+ * The schema is loaded once at construction time.
+ * The schema $id is rewritten dynamically using APP_URL so the
+ * version reference in responses reflects the actual server.
  *
- * Schema location: public/schemas/ec5-project-schema.json
+ * Schema location: public/schemas/project.schema.json
  */
 class ProjectSchemaValidator
 {
@@ -27,22 +25,16 @@ class ProjectSchemaValidator
     {
         $this->validator = new Validator();
 
-        try {
-            $schemaPath = public_path('schemas/project.schema.json');
-            $schemaJson = file_get_contents($schemaPath);
-            if ($schemaJson === false) {
-                throw new RuntimeException("Unable to read schema file: {$schemaPath}");
-            }
+        $schemaPath = public_path('schemas/project.schema.json');
+        $schemaJson = file_get_contents($schemaPath);
+        $this->schema = json_decode($schemaJson);
 
-            $schema = json_decode($schemaJson);
-            if (!is_object($schema)) {
-                throw new RuntimeException("Invalid schema JSON: {$schemaPath}");
-            }
-
-            $this->schema = $schema;
-        } catch (Throwable $e) {
-            Log::error(__METHOD__ . ' failed.', ['exception' => $e]);
-            throw new RuntimeException('Project schema could not be loaded.', 0, $e);
+        // Rewrite $id to reflect the actual server (APP_URL) rather than
+        // the hardcoded epicollect.net placeholder in the schema file.
+        // e.g. https://my-server.com/schemas/project-export/v1.9.7
+        if (isset($this->schema->{'$id'})) {
+            $version = basename($this->schema->{'$id'}); // e.g. v1.9.7
+            $this->schema->{'$id'} = rtrim(config('app.url'), '/') . '/schemas/project-export/' . $version;
         }
     }
 
@@ -59,7 +51,9 @@ class ProjectSchemaValidator
         // opis/json-schema requires the data as a decoded object, not an array
         $payload = json_decode(json_encode($data));
 
-        $result = $this->validator->validate($payload, $this->schema);
+        // maxErrors(0) tells opis to collect ALL errors instead of stopping at the first.
+        // Without this, validation short-circuits and only the first violation is reported.
+        $result = $this->validator->validate($payload, $this->schema, null, ['maxErrors' => 0]);
 
         if (!$result->isValid()) {
             $formatter = new ErrorFormatter();
