@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://epicollect.net/schemas/project-export/v2.0.0",
+  "$id": "https://epicollect.net/schemas/project-export/v2.0.1",
   "title": "Epicollect5 Project Export",
-  "description": "Schema for the full Epicollect5 project export envelope (JSON Schema Draft 2020-12, validated with opis/json-schema).",
+  "description": "Schema for the full Epicollect5 project envelope (JSON Schema Draft 2020-12, validated with opis/json-schema).",
   "type": "object",
   "required": [
     "data"
@@ -39,27 +39,23 @@
   "$defs": {
     "numericString": {
       "title": "Numeric value",
-      "description": "A numeric constraint for min/max fields. Accepts: null (not set), empty string (not set), integer, number, or a numeric string. Leading-dot decimals like .5 are accepted — the server will sanitise them to 0.5 on import.",
+      "description": "A numeric constraint for min/max fields. Accepts: null (not set), empty string (not set), integer, number, or a numeric string. Leading-dot decimals like .5 are accepted.",
       "oneOf": [
         {
           "type": "null"
         },
         {
-          "type": "string",
-          "maxLength": 0
-        },
-        {
-          "type": "integer"
-        },
-        {
-          "type": "number"
+          "type": [
+            "integer",
+            "number"
+          ]
         },
         {
           "type": "string",
-          "pattern": "^-?(\\d+(\\.\\d*)?|\\.\\d+)$"
+          "pattern": "^(|-?(\\d+(\\.\\d*)?|\\.\\d+))$"
         }
       ],
-      "$comment": "Leading-dot decimals (.5, -.5) are valid here to avoid rejecting existing projects. The server normalises these to canonical form (0.5, -0.5) before persisting."
+      "$comment": "Leading-dot decimals (.5, -.5) are valid here. The server normalises these to canonical form (0.5, -0.5) before persisting."
     },
     "form": {
       "type": "object",
@@ -1166,7 +1162,7 @@
           "pattern": "^[^<>]*$"
         },
         "entries_limits": {
-          "description": "Per-form or per-branch entry count limits. Either an empty array [] (no limits set) or an object keyed by a valid EC5 ref ({32-char hex} followed by one or more _{13-char hex} segments) with string-encoded positive integer values. e.g. {\"form_ref\": \"20\", \"branch_ref\": \"500\"}.",
+          "description": "Per-form or per-branch entry count limits. Either an empty array [] (no limits set) or an object keyed by a valid EC5 ref ({32-char hex} followed by one or more _{13-char hex} segments) with string-encoded integer values. e.g. {\"form_ref\": \"20\", \"branch_ref\": \"500\"}. '0' is accepted for backward compatibility but discouraged — prefer an empty array ([]) to indicate no limits. Upper bound is 50000.",
           "oneOf": [
             {
               "type": "array",
@@ -1175,15 +1171,16 @@
             },
             {
               "type": "object",
-              "description": "Object keyed by EC5 ref with string-encoded positive integer limits.",
+              "description": "Object keyed by EC5 ref with string-encoded entry limits (0..50000).",
               "propertyNames": {
                 "pattern": "^[a-f0-9]{32}(_[a-f0-9]{13})+$",
                 "$comment": "Key must be a valid form ref or input ref — {32hex} followed by one or more _{13hex} segments."
               },
               "additionalProperties": {
                 "type": "string",
-                "pattern": "^[1-9][0-9]*$",
-                "description": "Entry limit as a string-encoded positive integer."
+                "pattern": "^(?:0|[1-9][0-9]{0,3}|[1-4][0-9]{4}|50000)$",
+                "description": "Entry limit as a string-encoded integer between 0 and 50000 (inclusive). '0' is accepted for backward compatibility but discouraged — prefer an empty array ([]) to represent no limits.",
+                "$comment": "Pattern enforces 0..50000 (string). Prefer empty array to indicate no entry limits."
               }
             }
           ]
@@ -1226,12 +1223,13 @@
         },
         "limit": {
           "type": "integer",
-          "description": "Maximum number of entries allowed for this form.",
-          "minimum": 1
+          "description": "Maximum number of entries allowed for this form (0 allowed but discouraged).",
+          "minimum": 0,
+          "$comment": "0 is accepted for backward compatibility but discouraged — prefer entries_limits empty array to indicate no limits. Upper bound effectively 50000 for entries_limits string representation."
         }
       },
       "unevaluatedProperties": false
     }
   },
-  "$comment": "v2.0.0 — 2026-03-23 — 2026-03-20 — 2026-03-20. Epicollect5 project export schema. JSON Schema Draft 2020-12, validated with opis/json-schema (PHP). Emoji validation enforced by application logic. can_bulk_upload is optional — if present must be nobody|members|everybody. App sets to nobody on import."
+  "$comment": "v2.0.1 — 2026-03-23. Epicollect5 project export schema. JSON Schema Draft 2020-12, validated with opis/json-schema (PHP). Emoji validation enforced by application logic. can_bulk_upload is optional — if present must be nobody|members|everybody. App sets to nobody on import."
 }
