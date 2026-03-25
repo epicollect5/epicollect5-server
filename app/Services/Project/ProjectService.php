@@ -243,4 +243,123 @@ class ProjectService
             return false;
         }
     }
+
+    public function sanitiseProjectDefinitionForDownload(array $projectDefinition): array
+    {
+        // [BUG] where small description is too short on old projects, add '_' to make it valid
+        $smallDescriptionMinLength = config('epicollect.limits.project.small_desc.min');
+        if (strlen($projectDefinition['project']['small_description']) < $smallDescriptionMinLength) {
+            $projectDefinition['project']['small_description'] = str_pad(
+                $projectDefinition['project']['small_description'],
+                $smallDescriptionMinLength,
+                '_'
+            );
+        }
+
+        //[BUG] where small description has invalid characters, replace with '_'
+        $projectDefinition['project']['small_description'] = str_replace(
+            ['<', '>'],
+            '_',
+            $projectDefinition['project']['small_description']
+        );
+
+        // [BUG] where some descriptions have invisible/whitespace characters, these must be replaced with a normal space
+        $projectDefinition['project']['small_description'] = preg_replace('/\s+/u', ' ', $projectDefinition['project']['small_description']);
+        $projectDefinition['project']['description'] = preg_replace('/\s+/u', ' ', $projectDefinition['project']['description']);
+
+        if (!isset($projectDefinition['project']['forms']) || !is_array($projectDefinition['project']['forms'])) {
+            return $projectDefinition;
+        }
+
+        foreach ($projectDefinition['project']['forms'] as $formIndex => $form) {
+            // [BUG] sanitise form name to remove any invisible/whitespace characters
+            if (isset($form['name'])) {
+                $projectDefinition['project']['forms'][$formIndex]['name'] = preg_replace('/\s+/u', ' ', $form['name']);
+            }
+
+            if (!isset($form['inputs']) || !is_array($form['inputs'])) {
+                continue;
+            }
+
+            foreach ($form['inputs'] as $inputIndex => $input) {
+                // [BUG] where group has inputs when the question is branch, it should be an empty array
+                if (
+                    isset($input['type']) &&
+                    $input['type'] === config('epicollect.strings.inputs_type.branch')
+                ) {
+                    $projectDefinition['project']['forms'][$formIndex]['inputs'][$inputIndex]['group'] = [];
+
+                    // Loop all the branch jumps
+                    if (isset($input['branch']) && is_array($input['branch'])) {
+                        foreach ($input['branch'] as $branchInputIndex => $branchInput) {
+                            if (isset($branchInput['jumps']) && is_array($branchInput['jumps'])) {
+                                foreach ($branchInput['jumps'] as $jumpIndex => $jump) {
+                                    // Remove 'has_valid_destination' if present
+                                    if (isset($jump['has_valid_destination'])) {
+                                        unset($projectDefinition['project']['forms'][$formIndex]['inputs'][$inputIndex]['branch'][$branchInputIndex]['jumps'][$jumpIndex]['has_valid_destination']);
+                                    }
+                                    // Set answer_ref to null if needed
+                                    if (
+                                        isset($jump['to'], $jump['when']) &&
+                                        $jump['to'] === 'END' &&
+                                        $jump['when'] === 'ALL' &&
+                                        (!isset($jump['answer_ref']) || $jump['answer_ref'] === '')
+                                    ) {
+                                        $projectDefinition['project']['forms'][$formIndex]['inputs'][$inputIndex]['branch'][$branchInputIndex]['jumps'][$jumpIndex]['answer_ref'] = null;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // [BUG] sanitise min and max for decimal inputs to ensure leading zero
+                if (
+                    isset($input['type']) &&
+                    $input['type'] === config('epicollect.strings.inputs_type.decimal')
+                ) {
+                    if (isset($input['min'])) {
+                        $projectDefinition['project']['forms'][$formIndex]['inputs'][$inputIndex]['min'] = $this->sanitizeDecimalValue($input['min']);
+                    }
+                    if (isset($input['max'])) {
+                        $projectDefinition['project']['forms'][$formIndex]['inputs'][$inputIndex]['max'] = $this->sanitizeDecimalValue($input['max']);
+                    }
+                }
+
+                // Handle direct input jumps
+                if (isset($input['jumps']) && is_array($input['jumps'])) {
+                    foreach ($input['jumps'] as $jumpIndex => $jump) {
+                        if (isset($jump['has_valid_destination'])) {
+                            unset($projectDefinition['project']['forms'][$formIndex]['inputs'][$inputIndex]['jumps'][$jumpIndex]['has_valid_destination']);
+                        }
+                        if (
+                            isset($jump['to'], $jump['when']) &&
+                            $jump['to'] === 'END' &&
+                            $jump['when'] === 'ALL' &&
+                            (!isset($jump['answer_ref']) || $jump['answer_ref'] === '')
+                        ) {
+                            $projectDefinition['project']['forms'][$formIndex]['inputs'][$inputIndex]['jumps'][$jumpIndex]['answer_ref'] = null;
+                        }
+                    }
+                }
+            }
+        }
+
+        return $projectDefinition;
+    }
+
+    /**
+     * Sanitize decimal value to ensure it has a leading zero if missing.
+     * E.g., .5 becomes 0.5, -.78 becomes -0.78
+     *
+     * @param mixed $value
+     * @return mixed
+     */
+    private function sanitizeDecimalValue(mixed $value): mixed
+    {
+        if (is_string($value) && preg_match('/^(-?)\.(\d+)$/', $value, $matches)) {
+            return $matches[1] . '0.' . $matches[2];
+        }
+        return $value;
+    }
 }

@@ -291,6 +291,26 @@
 
 
 </div><!-- end row -->
+
+
+<div class="row">
+    <div class="col-sm-12 col-md-12 col-lg-12">
+        <div class="panel panel-default project-details-panel">
+            <div class="panel-heading">
+                <div class="panel-title">{{ trans('site.project_definition') }}</div>
+            </div>
+            <div class="panel-body">
+                <a class="btn btn-action"
+                   href="{{ url('/myprojects/'.$requestAttributes->requestedProject->slug.'/download-project-definition')}}">
+                    <i class="material-icons" style="margin-top:-2px">code</i>
+                    {{trans('site.download')}}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 @if(config('epicollect.setup.system.app_link_enabled'))
     <div class="row flexbox">
         <div class="col-sm-12 col-md-12 col-lg-7 app-link-view__wrapper equal-height">

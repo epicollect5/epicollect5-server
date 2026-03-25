@@ -4,6 +4,7 @@ namespace ec5\Http\Controllers\Web\Project;
 
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectStats;
+use ec5\Services\Project\ProjectService;
 use ec5\Traits\Eloquent\StatsRefresher;
 use ec5\Traits\Requests\RequestAttributes;
 use Response;
@@ -61,10 +62,14 @@ class ProjectController
     /**
      * Download the project definition as JSON
      */
-    public function downloadProjectDefinition()
+    public function downloadProjectDefinition(ProjectService $projectService)
     {
+        $projectDefinition = $this->requestedProject()->getProjectDefinition()->getData();
+        //sanitise before download due to legacy bugs
+        $payload = $projectService->sanitiseProjectDefinitionForDownload($projectDefinition);
+
         return Response::toJSONFile(
-            ['data' => $this->requestedProject()->getProjectDefinition()->getData()],
+            ['data' => $payload],
             $this->requestedProject()->slug . '.json'
         );
     }
