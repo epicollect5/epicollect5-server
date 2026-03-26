@@ -217,6 +217,26 @@ class ProjectServiceTest extends TestCase
                                 'type' => 'text', // not decimal
                                 'min' => '.4', // should not change
                             ],
+                            [
+                                'type' => 'group',
+                                'group' => [
+                                    [
+                                        'type' => config('epicollect.strings.inputs_type.decimal'),
+                                        'min' => '.2',
+                                        'max' => '-.3',
+                                    ],
+                                ],
+                            ],
+                            [
+                                'type' => 'branch',
+                                'branch' => [
+                                    [
+                                        'type' => config('epicollect.strings.inputs_type.decimal'),
+                                        'min' => '.2',
+                                        'max' => '-.3',
+                                    ],
+                                ],
+                            ],
                         ],
                     ],
                 ],
@@ -235,5 +255,13 @@ class ProjectServiceTest extends TestCase
 
         // Check non-decimal input, should not change
         $this->assertEquals('.4', $sanitised['project']['forms'][0]['inputs'][2]['min']);
+
+        // Check nested decimal input in group
+        $this->assertEquals('0.2', $sanitised['project']['forms'][0]['inputs'][3]['group'][0]['min']);
+        $this->assertEquals('-0.3', $sanitised['project']['forms'][0]['inputs'][3]['group'][0]['max']);
+
+        // Check nested decimal input in branch
+        $this->assertEquals('0.2', $sanitised['project']['forms'][0]['inputs'][4]['branch'][0]['min']);
+        $this->assertEquals('-0.3', $sanitised['project']['forms'][0]['inputs'][4]['branch'][0]['max']);
     }
 }

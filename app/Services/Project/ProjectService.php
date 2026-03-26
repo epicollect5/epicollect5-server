@@ -17,6 +17,47 @@ use Throwable;
 class ProjectService
 {
     /**
+     * Recursively sanitize jumps in an input and its nested branch and group inputs.
+     *
+     * @param array &$input
+     * @return void
+     */
+    private function sanitizeJumpsInInput(array &$input): void
+    {
+        // Sanitize jumps at this input level
+        if (isset($input['jumps']) && is_array($input['jumps'])) {
+            foreach ($input['jumps'] as $jumpIndex => $jump) {
+                // Remove 'has_valid_destination' if present
+                if (isset($jump['has_valid_destination'])) {
+                    unset($input['jumps'][$jumpIndex]['has_valid_destination']);
+                }
+                // Set answer_ref to null if needed
+                if (
+                    isset($jump['to'], $jump['when']) &&
+                    $jump['to'] === 'END' &&
+                    $jump['when'] === 'ALL' &&
+                    (!isset($jump['answer_ref']) || $jump['answer_ref'] === '')
+                ) {
+                    $input['jumps'][$jumpIndex]['answer_ref'] = null;
+                }
+            }
+        }
+
+        // Recursively sanitize branch inputs
+        if (isset($input['branch']) && is_array($input['branch'])) {
+            foreach ($input['branch'] as &$branchInput) {
+                $this->sanitizeJumpsInInput($branchInput);
+            }
+        }
+
+        // Recursively sanitize group inputs
+        if (isset($input['group']) && is_array($input['group'])) {
+            foreach ($input['group'] as &$groupInput) {
+                $this->sanitizeJumpsInInput($groupInput);
+            }
+        }
+    }
+    /**
      * @throws Throwable
      */
     public function storeProject(ProjectDTO $project)
@@ -288,60 +329,13 @@ class ProjectService
                     $input['type'] === config('epicollect.strings.inputs_type.branch')
                 ) {
                     $projectDefinition['project']['forms'][$formIndex]['inputs'][$inputIndex]['group'] = [];
-
-                    // Loop all the branch jumps
-                    if (isset($input['branch']) && is_array($input['branch'])) {
-                        foreach ($input['branch'] as $branchInputIndex => $branchInput) {
-                            if (isset($branchInput['jumps']) && is_array($branchInput['jumps'])) {
-                                foreach ($branchInput['jumps'] as $jumpIndex => $jump) {
-                                    // Remove 'has_valid_destination' if present
-                                    if (isset($jump['has_valid_destination'])) {
-                                        unset($projectDefinition['project']['forms'][$formIndex]['inputs'][$inputIndex]['branch'][$branchInputIndex]['jumps'][$jumpIndex]['has_valid_destination']);
-                                    }
-                                    // Set answer_ref to null if needed
-                                    if (
-                                        isset($jump['to'], $jump['when']) &&
-                                        $jump['to'] === 'END' &&
-                                        $jump['when'] === 'ALL' &&
-                                        (!isset($jump['answer_ref']) || $jump['answer_ref'] === '')
-                                    ) {
-                                        $projectDefinition['project']['forms'][$formIndex]['inputs'][$inputIndex]['branch'][$branchInputIndex]['jumps'][$jumpIndex]['answer_ref'] = null;
-                                    }
-                                }
-                            }
-                        }
-                    }
                 }
+
+                // Recursively sanitize jumps in this input (including nested branch/group)
+                $this->sanitizeJumpsInInput($projectDefinition['project']['forms'][$formIndex]['inputs'][$inputIndex]);
 
                 // [BUG] sanitise min and max for decimal inputs to ensure leading zero
-                if (
-                    isset($input['type']) &&
-                    $input['type'] === config('epicollect.strings.inputs_type.decimal')
-                ) {
-                    if (isset($input['min'])) {
-                        $projectDefinition['project']['forms'][$formIndex]['inputs'][$inputIndex]['min'] = $this->sanitizeDecimalValue($input['min']);
-                    }
-                    if (isset($input['max'])) {
-                        $projectDefinition['project']['forms'][$formIndex]['inputs'][$inputIndex]['max'] = $this->sanitizeDecimalValue($input['max']);
-                    }
-                }
-
-                // Handle direct input jumps
-                if (isset($input['jumps']) && is_array($input['jumps'])) {
-                    foreach ($input['jumps'] as $jumpIndex => $jump) {
-                        if (isset($jump['has_valid_destination'])) {
-                            unset($projectDefinition['project']['forms'][$formIndex]['inputs'][$inputIndex]['jumps'][$jumpIndex]['has_valid_destination']);
-                        }
-                        if (
-                            isset($jump['to'], $jump['when']) &&
-                            $jump['to'] === 'END' &&
-                            $jump['when'] === 'ALL' &&
-                            (!isset($jump['answer_ref']) || $jump['answer_ref'] === '')
-                        ) {
-                            $projectDefinition['project']['forms'][$formIndex]['inputs'][$inputIndex]['jumps'][$jumpIndex]['answer_ref'] = null;
-                        }
-                    }
-                }
+                $this->sanitizeDecimalInInput($projectDefinition['project']['forms'][$formIndex]['inputs'][$inputIndex]);
             }
         }
 
@@ -361,5 +355,37 @@ class ProjectService
             return $matches[1] . '0.' . $matches[2];
         }
         return $value;
+    }
+
+    /**
+     * Recursively sanitize decimal min and max in an input and its nested branch and group inputs.
+     *
+     * @param array &$input
+     * @return void
+     */
+    private function sanitizeDecimalInInput(array &$input): void
+    {
+        if (isset($input['type']) && $input['type'] === config('epicollect.strings.inputs_type.decimal')) {
+            if (isset($input['min'])) {
+                $input['min'] = $this->sanitizeDecimalValue($input['min']);
+            }
+            if (isset($input['max'])) {
+                $input['max'] = $this->sanitizeDecimalValue($input['max']);
+            }
+        }
+
+        // Sanitize branch inputs
+        if (isset($input['branch']) && is_array($input['branch'])) {
+            foreach ($input['branch'] as &$branchInput) {
+                $this->sanitizeDecimalInInput($branchInput);
+            }
+        }
+
+        // Sanitize group inputs
+        if (isset($input['group']) && is_array($input['group'])) {
+            foreach ($input['group'] as &$groupInput) {
+                $this->sanitizeDecimalInInput($groupInput);
+            }
+        }
     }
 }
