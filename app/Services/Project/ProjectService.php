@@ -285,7 +285,7 @@ class ProjectService
         }
     }
 
-    public function sanitiseProjectDefinitionForDownload(array $projectDefinition): array
+    public function sanitiseProjectDefinitionForExport(array $projectDefinition): array
     {
         // [BUG] where small description is too short on old projects, add '_' to make it valid
         $smallDescriptionMinLength = config('epicollect.limits.project.small_desc.min');

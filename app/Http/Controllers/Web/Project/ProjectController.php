@@ -66,7 +66,7 @@ class ProjectController
     {
         $projectDefinition = $this->requestedProject()->getProjectDefinition()->getData();
         //sanitise before download due to legacy bugs
-        $payload = $projectService->sanitiseProjectDefinitionForDownload($projectDefinition);
+        $payload = $projectService->sanitiseProjectDefinitionForExport($projectDefinition);
 
         return Response::toJSONFile(
             ['data' => $payload],

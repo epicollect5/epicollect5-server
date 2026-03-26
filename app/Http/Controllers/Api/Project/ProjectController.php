@@ -13,6 +13,7 @@ use ec5\Libraries\Utilities\Generators;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectStats;
 use ec5\Services\Media\MediaCounterService;
+use ec5\Services\Project\ProjectService;
 use ec5\Traits\Requests\RequestAttributes;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -30,9 +31,11 @@ class ProjectController
      * @return JsonResponse
      * @throws Throwable
      */
-    public function show(ProjectStats $projectStats)
+    public function show(ProjectStats $projectStats, ProjectService $projectService)
     {
-        $data = $this->requestedProject()->getProjectDefinition()->getData();
+        $rawData = $this->requestedProject()->getProjectDefinition()->getData();
+        //we need to sanitise the project definition due to legacy bugs that went through over the years
+        $data = $projectService->sanitiseProjectDefinitionForExport($rawData);
 
         //HACK:, we needed to expose the creation date of a project at a later stage, and this was the laziest way ;)
         $data['project']['created_at'] = $this->requestedProject()->getCreatedAt();
@@ -43,7 +46,6 @@ class ProjectController
         //HACK:, we needed to expose the project homepage property of a project at a later stage, and this was the laziest way ;)
         $homepage = config('app.url') . '/project/' . $this->requestedProject()->slug;
         $data['project']['homepage'] = $homepage;
-
 
         $projectExtra = $this->requestedProject()->getProjectExtra()->getData();
 

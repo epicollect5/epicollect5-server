@@ -76,7 +76,7 @@ class ProjectServiceTest extends TestCase
             ],
         ];
 
-        $sanitised = $this->projectService->sanitiseProjectDefinitionForDownload($projectDefinition);
+        $sanitised = $this->projectService->sanitiseProjectDefinitionForExport($projectDefinition);
 
         // Check direct input jumps
         $this->assertNull($sanitised['project']['forms'][0]['inputs'][0]['jumps'][0]['answer_ref']);
@@ -109,7 +109,7 @@ class ProjectServiceTest extends TestCase
             ],
         ];
 
-        $sanitised = $this->projectService->sanitiseProjectDefinitionForDownload($projectDefinition);
+        $sanitised = $this->projectService->sanitiseProjectDefinitionForExport($projectDefinition);
 
         $this->assertEquals($projectDefinition['project']['forms'], $sanitised['project']['forms']);
     }
@@ -140,7 +140,7 @@ class ProjectServiceTest extends TestCase
             ],
         ];
 
-        $sanitised = $this->projectService->sanitiseProjectDefinitionForDownload($projectDefinition);
+        $sanitised = $this->projectService->sanitiseProjectDefinitionForExport($projectDefinition);
 
         $this->assertArrayNotHasKey('answer_ref', $sanitised['project']['forms'][0]['inputs'][0]['jumps'][0]);
     }
@@ -171,7 +171,7 @@ class ProjectServiceTest extends TestCase
             ],
         ];
 
-        $sanitised = $this->projectService->sanitiseProjectDefinitionForDownload($projectDefinition);
+        $sanitised = $this->projectService->sanitiseProjectDefinitionForExport($projectDefinition);
 
         $this->assertArrayNotHasKey('has_valid_destination', $sanitised['project']['forms'][0]['inputs'][0]['jumps'][0]);
     }
@@ -187,7 +187,7 @@ class ProjectServiceTest extends TestCase
         ];
 
         // Mock config if needed, but since it's config, assume it's set
-        $sanitised = $this->projectService->sanitiseProjectDefinitionForDownload($projectDefinition);
+        $sanitised = $this->projectService->sanitiseProjectDefinitionForExport($projectDefinition);
 
         // Assuming min is 15, it should pad with 13 '_'
         $this->assertEquals('Hi' . str_repeat('_', 13), $sanitised['project']['small_description']);
@@ -243,7 +243,7 @@ class ProjectServiceTest extends TestCase
             ],
         ];
 
-        $sanitised = $this->projectService->sanitiseProjectDefinitionForDownload($projectDefinition);
+        $sanitised = $this->projectService->sanitiseProjectDefinitionForExport($projectDefinition);
 
         // Check first decimal input
         $this->assertEquals('0.5', $sanitised['project']['forms'][0]['inputs'][0]['min']);
