@@ -48,3 +48,20 @@
 - `database/migrations/`: Database schema definitions.
 - `config/epicollect/`: The "Source of Truth" for system limits and strings.
 
+## PHP style: string interpolation
+
+When writing PHP strings:
+
+- **Do not use curly braces for simple variables** inside double-quoted strings.
+    - Prefer: `"Expected an index on $entriesTable ..."`
+    - Avoid: `"Expected an index on {$entriesTable} ..."`
+
+- Use curly braces **only when required** to disambiguate complex expressions or adjacent characters (property/array
+  access, method calls, or when immediately followed by letters/numbers/underscore).
+    - Examples where braces may be needed:
+        - `"Hello {$user->name}"`
+        - `"Value: {$arr['key']}"`
+        - `"table_${suffix}"` (or `"table_{$suffix}"` if needed for clarity)
+
+- If the string contains mixed dynamic parts and reads better, prefer **explicit concatenation**:
+    - `"Expected an index on " . $entriesTable . " covering ... Available indexes: " . json_encode($indexes)`
