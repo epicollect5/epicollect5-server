@@ -1,5 +1,10 @@
 ## Release Notes
 
+# 12.5.13
+
+- Improved EntryCounter with conditional updates to reduce database load and added tests for counter updates on entry
+  creation and deletion.
+
 # 12.5.12
 
 - Added lower limit for GAS due to IPs rotation.
