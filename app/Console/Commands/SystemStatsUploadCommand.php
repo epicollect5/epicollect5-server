@@ -16,7 +16,7 @@ class SystemStatsUploadCommand extends Command
     {
         $host = request()->getHost() ?? ''; // Real-time HTTP host
         if ($host !== 'five.epicollect.net') {
-            $this->info('⚠️ This command can only be run on the production environment. Exiting.');
+            $this->info('⚠️ This command is intended to run in the production environment. Current host: ' . $host . '. Exiting.');
             return self::FAILURE;
         }
 
