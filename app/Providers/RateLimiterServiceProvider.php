@@ -3,10 +3,10 @@
 namespace ec5\Providers;
 
 use App;
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\ServiceProvider;
 
 class RateLimiterServiceProvider extends ServiceProvider
 {
@@ -126,10 +126,28 @@ class RateLimiterServiceProvider extends ServiceProvider
     private function configureApiExportLimiter(string $name, string $configKey): void
     {
         RateLimiter::for($name, function (Request $request) use ($name, $configKey) {
-            return Limit::perMinute(
-                config("epicollect.limits.api_export.$configKey")
-            )->by($request->ip());
+            $limits = [
+                Limit::perMinute(
+                    config("epicollect.limits.api_export.$configKey")
+                )->by($request->ip())
+            ];
+
+            // Google Apps Script rotates IPs, so we add a shared UA-based cap for entries export.
+            if ($name === 'api-export-entries' && $this->isGoogleAppsScriptRequest($request)) {
+                $limits[] = Limit::perMinute(
+                    config('epicollect.limits.api_export.entries_google_apps_scripts', 10)
+                )->by('google-apps-scripts'. '|' . $request->route('project_slug'));
+            }
+
+            return $limits;
         });
+    }
+
+    private function isGoogleAppsScriptRequest(Request $request): bool
+    {
+        $userAgent = (string) $request->userAgent();
+
+        return stripos($userAgent, 'Google-Apps-Script') !== false;
     }
 
     /**

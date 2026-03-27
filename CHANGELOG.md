@@ -1,5 +1,10 @@
 ## Release Notes
 
+# 12.5.12
+
+- Added lower limit for GAS due to IPs rotation.
+- Added safety flag not to run stats upload to CGPS dashboard if the host is not five.epicollect.net
+
 # 12.5.11
 
 - System statistics generation, export, and download for administrators.

@@ -8,6 +8,7 @@ return [
     | to be created.
     */
     'cgps_epicollect_server_url' => 'https://five.epicollect.net',
+    'cgps_dashboard_upload_enabled' => (bool) env('CGPS_DASHBOARD_UPLOAD_ENABLED', false),
 
     'super_admin_user' => [
         'first_name' => env('SUPER_ADMIN_FIRST_NAME'),
