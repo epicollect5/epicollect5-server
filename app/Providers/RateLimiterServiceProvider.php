@@ -136,7 +136,7 @@ class RateLimiterServiceProvider extends ServiceProvider
             if ($name === 'api-export-entries' && $this->isGoogleAppsScriptRequest($request)) {
                 $limits[] = Limit::perMinute(
                     config('epicollect.limits.api_export.entries_google_apps_scripts', 10)
-                )->by($request->ip(). '|' . $request->route('project_slug'));
+                )->by('google-apps-scripts'. '|' . $request->route('project_slug'));
             }
 
             return $limits;
