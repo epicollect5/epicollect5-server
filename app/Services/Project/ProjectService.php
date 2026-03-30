@@ -287,14 +287,27 @@ class ProjectService
 
     public function sanitiseProjectDefinitionForExport(array $projectDefinition): array
     {
+        //[BUG] trim new lines form descriptions as these can cause issues with export and import
+        $projectDefinition['project']['small_description'] = trim($projectDefinition['project']['small_description']);
+        $projectDefinition['project']['description'] = trim($projectDefinition['project']['description']);
+
         // [BUG] where small description is too short on old projects, add '_' to make it valid
         $smallDescriptionMinLength = config('epicollect.limits.project.small_desc.min');
-        if (strlen($projectDefinition['project']['small_description']) < $smallDescriptionMinLength) {
-            $projectDefinition['project']['small_description'] = str_pad(
-                $projectDefinition['project']['small_description'],
-                $smallDescriptionMinLength,
-                '_'
-            );
+        // Use multibyte-safe length check and padding to support UTF-8 languages
+        $smallDesc = $projectDefinition['project']['small_description'];
+        if (mb_strlen($smallDesc, 'UTF-8') < $smallDescriptionMinLength) {
+            $needed = $smallDescriptionMinLength - mb_strlen($smallDesc, 'UTF-8');
+            // Pad with ASCII underscores (single-byte) to reach the required character count
+            $projectDefinition['project']['small_description'] = $smallDesc . str_repeat('_', $needed);
+        }
+
+        $smallDescriptionMinLength = config('epicollect.limits.project.form.name.min');
+        // Use multibyte-safe length check and padding to support UTF-8 languages
+        $smallDesc = $projectDefinition['project']['small_description'];
+        if (mb_strlen($smallDesc, 'UTF-8') < $smallDescriptionMinLength) {
+            $needed = $smallDescriptionMinLength - mb_strlen($smallDesc, 'UTF-8');
+            // Pad with ASCII underscores (single-byte) to reach the required character count
+            $projectDefinition['project']['small_description'] = $smallDesc . str_repeat('_', $needed);
         }
 
         //[BUG] where small description has invalid characters, replace with '_'

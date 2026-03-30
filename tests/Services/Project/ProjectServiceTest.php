@@ -264,4 +264,105 @@ class ProjectServiceTest extends TestCase
         $this->assertEquals('0.2', $sanitised['project']['forms'][0]['inputs'][4]['branch'][0]['min']);
         $this->assertEquals('-0.3', $sanitised['project']['forms'][0]['inputs'][4]['branch'][0]['max']);
     }
+
+    public function test_sanitise_project_definition_for_download_trims_and_normalizes_whitespace()
+    {
+        $rawSmall = "  \n This   is   small \r\n ";
+        $rawDesc = "Line1\n\nLine2\r\n   More\t text ";
+
+        $projectDefinition = [
+            'project' => [
+                'small_description' => $rawSmall,
+                'description' => $rawDesc,
+                'forms' => [],
+            ],
+        ];
+
+        $sanitised = $this->projectService->sanitiseProjectDefinitionForExport($projectDefinition);
+
+        // Build expected small_description following the same steps as the service:
+        // 1) trim, 2) pad to min length, 3) replace invalid chars, 4) collapse whitespace
+        $min = config('epicollect.limits.project.small_desc.min');
+        $trimSmall = trim($rawSmall);
+        if (mb_strlen($trimSmall, 'UTF-8') < $min) {
+            $padded = $trimSmall . str_repeat('_', $min - mb_strlen($trimSmall, 'UTF-8'));
+        } else {
+            $padded = $trimSmall;
+        }
+        $replaced = str_replace(['<', '>'], '_', $padded);
+        $expectedSmall = preg_replace('/\s+/u', ' ', $replaced);
+
+        // Expected description: trim + collapse whitespace
+        $expectedDesc = preg_replace('/\s+/u', ' ', trim($rawDesc));
+
+        $this->assertEquals($expectedSmall, $sanitised['project']['small_description']);
+        $this->assertEquals($expectedDesc, $sanitised['project']['description']);
+    }
+
+    public function test_sanitise_project_definition_for_download_handles_newline_only_inputs()
+    {
+        $rawSmall = "\n";
+        $rawDesc = "\r\n";
+
+        $projectDefinition = [
+            'project' => [
+                'small_description' => $rawSmall,
+                'description' => $rawDesc,
+                'forms' => [],
+            ],
+        ];
+
+        $sanitised = $this->projectService->sanitiseProjectDefinitionForExport($projectDefinition);
+
+        // After trim/collapse, these should become empty (then padded for small_description)
+        $min = config('epicollect.limits.project.small_desc.min');
+        $expectedSmall = str_repeat('_', $min);
+        $expectedDesc = '';
+
+        $this->assertEquals($expectedSmall, $sanitised['project']['small_description']);
+        $this->assertEquals($expectedDesc, $sanitised['project']['description']);
+    }
+
+    public function test_sanitise_project_definition_for_download_replaces_angle_brackets()
+    {
+        $rawSmall = "Bad <small> name";
+        $rawDesc = "Good > desc";
+
+        $projectDefinition = [
+            'project' => [
+                'small_description' => $rawSmall,
+                'description' => $rawDesc,
+                'forms' => [],
+            ],
+        ];
+
+        $sanitised = $this->projectService->sanitiseProjectDefinitionForExport($projectDefinition);
+
+        $this->assertStringNotContainsString('<', $sanitised['project']['small_description']);
+        $this->assertStringNotContainsString('>', $sanitised['project']['small_description']);
+        $this->assertStringContainsString('_', $sanitised['project']['small_description']);
+
+        // Note: the service only replaces angle brackets in small_description
+        // description is left unchanged
+        $this->assertStringContainsString('>', $sanitised['project']['description']);
+    }
+
+    public function test_sanitise_project_definition_for_download_handles_very_long_strings()
+    {
+        $long = str_repeat('あ', 5000); // multibyte Japanese char repeated
+
+        $projectDefinition = [
+            'project' => [
+                'small_description' => $long,
+                'description' => $long,
+                'forms' => [],
+            ],
+        ];
+
+        $sanitised = $this->projectService->sanitiseProjectDefinitionForExport($projectDefinition);
+
+        // small_description should be preserved (no truncation here), but ensure length matches
+        $this->assertEquals(mb_strlen($long, 'UTF-8'), mb_strlen($sanitised['project']['small_description'], 'UTF-8'));
+        $this->assertEquals(mb_strlen($long, 'UTF-8'), mb_strlen($sanitised['project']['description'], 'UTF-8'));
+    }
 }

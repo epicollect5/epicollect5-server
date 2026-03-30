@@ -302,8 +302,8 @@
             <div class="panel-body">
                 <a class="btn btn-action"
                    href="{{ url('/myprojects/'.$requestAttributes->requestedProject->slug.'/download-project-definition')}}">
-                    <i class="material-icons" style="margin-top:-2px">data_object</i>
-                    {{trans('site.download')}}
+                    <i class="material-icons" style="margin-top:-2px">download</i>
+                    {{trans('site.export')}}
                 </a>
             </div>
         </div>
