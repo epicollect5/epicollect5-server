@@ -111,6 +111,10 @@ Route::group(['middleware' => 'auth.admin'], function () {
     Route::get('admin/tools/count-media/{days?}', 'Web\Admin\Tools\SearchToolsController@countMedia');
 
     Route::get('admin/tools/carbon', 'Web\Admin\Tools\PHPToolsController@carbon');
+
+    Route::get('admin/tools/bulk-export', 'Web\Admin\Tools\BulkExportController@show');
+    Route::post('admin/tools/bulk-export', 'Web\Admin\Tools\BulkExportController@upload');
+    Route::get('admin/tools/bulk-export/download/{slug}', 'Web\Admin\Tools\BulkExportController@download');
 });
 
 // Projects & categories
