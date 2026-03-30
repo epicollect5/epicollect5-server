@@ -35,7 +35,6 @@ class ProjectDefinitionDTO extends ProjectDTOBase
                 ],
                 'access' => '',
                 'status' => '',
-                'logo_url' => '',
                 'visibility' => '',
                 'small_description' => '',
                 'description' => '',

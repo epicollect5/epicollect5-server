@@ -176,7 +176,6 @@ class ProjectExtraService
                 'slug' => $project['slug'],
                 'access' => $project['access'],
                 'status' => $project['status'],
-                'logo_url' => $project['logo_url'],
                 'visibility' => $project['visibility'],
                 'small_description' => $project['small_description'],
                 'description' => $project['description'],

@@ -22,7 +22,6 @@ class Project extends Model
      * @property string $ref
      * @property string $description
      * @property string $small_description
-     * @property string $logo_url
      * @property string $access
      * @property string $visibility
      * @property string $category

@@ -41,7 +41,6 @@ class ProjectDTO
     public string $ref = '';
     public string $description = '';
     public string $small_description = '';
-    public string $logo_url = '';
     public string $access = '';
     public string $visibility = '';
     public string $category = '';
@@ -75,7 +74,6 @@ class ProjectDTO
      * "ref": "914c66a1ab074819b0dde5a2bc282f06"
      * "description": "Magnam eum perspiciatis quibusdam eveniet consequatur."
      * "small_description": "Aliquam quidem.Quod quasi perspiciatis sit qui. Perferendis nam quisquam incidunt porro."
-     * "logo_url": ""
      * "access": "private"
      * "visibility": "listed"
      * "category": "general"
@@ -194,10 +192,9 @@ class ProjectDTO
         $projectDefinitionData,
         RuleProjectDefinition $projectDefinitionValidator
     ): void {
-        // Take new name, slug, default logo_url
+        // Take new name, slug
         $projectDefinitionData['project']['name'] = $projectName;
         $projectDefinitionData['project']['slug'] = Str::slug($projectName, '-');
-        $projectDefinitionData['project']['logo_url'] = '';
         $projectDefinitionData['id'] = $projectRef;
         // Swap the old project ref with the new one
         $existingProjectRef = $projectDefinitionData['project']['ref'];

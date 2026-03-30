@@ -44,7 +44,6 @@ trait Archiver
             //reset all other columns to generic values
             $project->small_description = 'Project was archived';
             $project->description = '';
-            $project->logo_url = '';
             $project->access = config('epicollect.strings.project_access.private');
             $project->visibility = config('epicollect.strings.project_visibility.hidden');
             $project->category = config('epicollect.strings.project_categories.general');

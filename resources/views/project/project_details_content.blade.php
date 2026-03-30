@@ -3,6 +3,7 @@
     $updatedAt = $requestAttributes->requestedProject->getUpdatedAt();
     $createdAtUTC = Carbon::parse($requestAttributes->requestedProject->created_at)->setTimezone('UTC');
     $createdOnForHumans = $createdAtUTC->format('D d M Y, H:i');
+    $logoUrl = url('/api/internal/media/'.$requestAttributes->requestedProject->slug . '?type=photo&name=logo.jpg&format=project_thumb');
 @endphp
 {{-- Success Message --}}
 @if (session('projectCreated') && session('tab') === 'create')
@@ -38,13 +39,7 @@
                         <div class="project-logo-wrapper">
                             <img class="project-logo img-responsive img-circle" width="128" height="128"
                                  alt="Project logo"
-                                 src="@if($requestAttributes->requestedProject->logo_url == '')
-                         {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
-                              @else
-                              {{ url('/api/internal/media/'.$requestAttributes->requestedProject->slug . '?type=photo&name=logo.jpg&format=project_thumb') }}
-                              @endif"
-                            >
-
+                                 src=" {{ $logoUrl }} ">
                             <div class="loader"></div>
                         </div>
                     </div>
@@ -430,7 +425,7 @@
      data-js-status="{{ $requestAttributes->requestedProject->status }}"
      data-js-access="{{ $requestAttributes->requestedProject->access }}"
      data-js-visibility="{{ $requestAttributes->requestedProject->visibility }}"
-     data-js-logo_url="{{ $requestAttributes->requestedProject->logo_url }}"
+     data-js-logo_url="{{ $logoUrl }}"
      data-js-category="{{ $requestAttributes->requestedProject->category }}"
      data-js-slug="{{ $requestAttributes->requestedProject->slug }}"
      data-js-app_link_visibility="{{ $requestAttributes->requestedProject->app_link_visibility }}">

@@ -136,7 +136,6 @@ class ProjectDefinitionGenerator
                     "status" => "active",
                     "category" => "general",
                     "homepage" => "",
-                    "logo_url" => "",
                     "created_at" => Carbon::now()->format('Y-m-d H:i:s'),
                     "visibility" => "hidden",
                     "description" => self::generateDescription(),

@@ -10,16 +10,14 @@
                                 <img class="projects-list__project-logo img-responsive img-circle" width="128"
                                      height="128"
                                      alt="{{$project->name}}"
-                                     src="@if (!empty($project->logo_url)){{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb') }}
-                                @else
-                                {{ url('/images/ec5-placeholder-256x256.jpg') }}
-                                @endif">
+                                     src="{{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb') }}">
                             </div>
                             <span class="project-name">@if ($project->status == 'trashed')
                                     {{ $project->name }}
                                 @else
                                     <a href="{{ url('project') . '/' . $project->slug }}">{{ $project->name }}</a>
-                                @endif</span>
+                                @endif
+                            </span>
                             {{--truncate small desc for layout, see if it break and lower from 100 to until it is fixed --}}
                             <div class="project-small-description">{{ $project->small_description }}</div>
                             <div class="text-center">
@@ -123,10 +121,7 @@
                                         <img class="projects-list__project-logo img-responsive img-circle" width="128"
                                              height="128"
                                              alt="{{$project->name}}"
-                                             src="@if (!empty($project->logo_url)){{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb') }}
-                                    @else
-                                    {{ url('/images/ec5-placeholder-256x256.jpg') }}
-                                    @endif">
+                                             src="{{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb') }}">
                                     </div>
                                     <span class="project-name">@if ($project->status == 'trashed')
                                             {{ $project->name }}

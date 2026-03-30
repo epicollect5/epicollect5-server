@@ -95,7 +95,6 @@ $factory->define(Project::class, function (Faker\Generator $faker) {
         'ref' => Generators::projectRef(),
         'description' => $faker->sentence,
         'small_description' => $faker->text($smallDescMin) . $faker->text($smallDescMax - $smallDescMin),
-        'logo_url' => '',
         'access' => config('epicollect.strings.project_access.private'),
         'visibility' => config('epicollect.strings.project_visibility.hidden'),
         'category' => config('epicollect.strings.project_categories.general'),
@@ -120,7 +119,6 @@ $factory->define(ProjectDTO::class, function (Faker\Generator $faker) {
         'ref' => Generators::projectRef(),
         'description' => $faker->sentence,
         'small_description' => $faker->text($smallDescMin) . $faker->text($smallDescMax - $smallDescMin),
-        'logo_url' => '',
         'access' => 'public',
         'visibility' => 'listed',
         'category' => 'general',
@@ -145,7 +143,6 @@ $factory->define(ProjectStructure::class, function (Faker\Generator $faker, $par
             'id' => $projectRef,
             'type' => 'project',
             'project' => [
-                'logo_url' => '',
                 'category' => 'general',
                 'forms' => [
                     [
@@ -285,7 +282,6 @@ $factory->define(ProjectStructure::class, function (Faker\Generator $faker, $par
                     'access' => $project->access,
                     'status' => $project->status,
                     'category' => $project->category,
-                    'logo_url' => '',
                     'visibility' => $project->category,
                     'description' => $project->description,
                     'small_description' => $project->small_description

@@ -43,7 +43,6 @@ class ProjectValidateImportControllerTest extends TestCase
                 'visibility'        => 'hidden',
                 'description'       => 'A minimal project for schema-validation tests.',
                 'small_description' => 'Minimal test project.',
-                'logo_url'          => '',
                 'homepage'          => config('app.url') . '/project/ec5-validimport-test',
                 'created_at'        => Carbon::now()->format('Y-m-d H:i:s'),
                 'entries_limits'    => [],

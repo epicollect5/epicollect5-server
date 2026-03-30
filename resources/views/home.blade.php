@@ -104,9 +104,7 @@
                                      src="
                                                 {{-- If a private project, show lock --}}
                                                      @if ($project->access == config('epicollect.strings.project_access.private')) {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
-                            @elseif($project->logo_url == '')
-                                {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
-                            @else
+                               @else
                                 {{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb') }} @endif"
                                      alt="{{ $project->name }}">
                                 <div class="loader"></div>
@@ -173,8 +171,7 @@
                                          src="
                                                 {{-- If a private project, show lock --}}
                                                        @if ($project->access == config('epicollect.strings.project_access.private')) {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
-                                @elseif($project->logo_url == '')
-                                    {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
+
                                 @else
                                     {{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb') }} @endif"
                                          alt="{{ $project->name }}">

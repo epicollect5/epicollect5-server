@@ -26,13 +26,5 @@ trait ProjectTools
                 return ['db' => ['ec5_104']];
             }
         }
-        //update logo_url as we are creating an avatar placeholder
-        if (Project::where('id', $projectId)->update([
-            'logo_url' => $projectRef
-        ])) {
-            return [];
-        } else {
-            return ['db' => ['ec5_104']];
-        }
     }
 }

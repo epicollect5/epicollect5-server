@@ -44,7 +44,6 @@ abstract class RuleProjectDefinitionBaseTest extends TestCase
             'small_description' => 'Just a test',
             'status' => 'active',
             'visibility' => 'hidden',
-            'logo_url' => 'path-to-file',
             'description' => 'A long description here',
             'entries_limits' => [],
             'category' => config('epicollect.strings.project_categories.general'),
