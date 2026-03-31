@@ -65,13 +65,15 @@ class EntryCounter extends Model
         $formCounts = $project->getProjectStats()->form_counts;
         $branches = $project->getProjectStats()->branch_counts;
         $childCounts = 0;
-        $branchCounts = 0;
+        $branchCounts = [];
+        $needToUpdate = false;
 
         //are there any child forms? 1 is the minimum (parent) so look for > 1
         if (!empty($formCounts)) {
             if (count($formCounts) > 1) {
                 //grab child counts from DB
                 $childCounts = $this->getEntryChildCounts($entryStructure->getProjectId(), $entryStructure->getFormRef(), $entryStructure->getEntryUuid());
+                $needToUpdate = true;
             }
         }
 
@@ -80,9 +82,14 @@ class EntryCounter extends Model
             //grab branch counts from DB
             $branchEntryCounter = new BranchEntryCounter();
             $branchCounts = $branchEntryCounter->getEntryBranchCounts($project, $entryStructure->getProjectId(), $entryStructure->getFormRef(), $entryStructure->getEntryUuid());
+            $needToUpdate = true;
         }
 
-        // Update this entry
+        // Update this entry if needed
+        if (!$needToUpdate) {
+            return;
+        }
+
         DB::table($this->table)
             ->where('project_id', '=', $entryStructure->getProjectId())
             ->where('uuid', '=', $entryStructure->getEntryUuid())
