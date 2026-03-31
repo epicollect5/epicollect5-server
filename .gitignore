@@ -22,3 +22,5 @@ resources/assets/data-admin/node_modules/
 /_ide_helper_models.php
 /_ide_helper.php
 /export_commits.sh
+plan-*.md
+*.log
