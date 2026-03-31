@@ -16,10 +16,9 @@
                     <div class="panel-body">
                         <a href="{{url('project/' . $requestAttributes->requestedProject->slug . '/data')}}">
                             <img class="project-home__logo img-responsive img-circle" width="256" height="256"
-                                 alt="Project logo" src="@if($requestAttributes->requestedProject->logo_url == '') {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
-                                 @else
+                                 alt="Project logo" src="
                                  {{ url('/api/internal/media/'.$requestAttributes->requestedProject->slug . '?type=photo&name=logo.jpg&format=project_thumb') }}
-                                 @endif">
+                                 ">
                         </a>
                     </div>
 

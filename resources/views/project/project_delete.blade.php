@@ -17,10 +17,9 @@
                         <div class="project-logo-wrapper">
                             <img class="project-logo img-responsive img-circle" width="256" height="256"
                                  alt="Project logo"
-                                 src="@if($requestAttributes->requestedProject->logo_url == '') {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
-                                 @else
+                                 src="
                                  {{ url('/api/internal/media/'.$requestAttributes->requestedProject->slug . '?type=photo&name=logo.jpg&format=project_thumb') }}
-                                 @endif">
+                                 ">
 
                             <div class="loader"></div>
                         </div>

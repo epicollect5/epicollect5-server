@@ -16,10 +16,7 @@
 />
 <meta
         property="og:image"
-        content="@if($requestAttributes->requestedProject->logo_url == '') {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
-              @else
-              {{ url('/api/internal/media/'.$requestAttributes->requestedProject->slug . '?type=photo&name=logo.jpg&format=project_thumb') }}
-              @endif"
+        content="{{ url('/api/internal/media/'.$requestAttributes->requestedProject->slug . '?type=photo&name=logo.jpg&format=project_thumb') }}"
 />
 <meta
         property="og:image:width"
@@ -45,8 +42,7 @@
         content="{{$requestAttributes->requestedProject->small_description}}"/>
 <meta
         name="twitter:image"
-        content="@if($requestAttributes->requestedProject->logo_url == '') {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
-              @else
+        content="
               {{ url('/api/internal/media/'.$requestAttributes->requestedProject->slug . '?type=photo&name=logo.jpg&format=project_thumb') }}
-              @endif"/>
+             "/>
 

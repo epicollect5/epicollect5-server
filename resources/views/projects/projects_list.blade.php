@@ -19,9 +19,8 @@
                             <div class="flexbox col-direction project-summary">
                                 <div class="thumbnail">
                                     <img class="projects-list__project-logo img-responsive img-circle" width="128"
-                                         height="128" alt="{{ $project->name }}" src="{{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb') }}
-                                @else
-                                    {{ url('/images/ec5-placeholder-256x256.jpg') }} @endif">
+                                         height="128" alt="{{ $project->name }}"
+                                         src="{{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb') }}">
                                 </div>
                                 <span class="project-name"> {{ $project->name }}</span>
                                 {{-- truncate small desc for layout, see if it break and lower from 100 to until it is fixed --}}
