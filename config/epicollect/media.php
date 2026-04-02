@@ -73,5 +73,7 @@ return [
         'project_mobile_logo' => 'project',
         'audio' => 'audio',
         'video' => 'video'
-    ]
+    ],
+    // TTL in minutes for pre-signed S3 URLs used in 302 redirects
+    's3_temp_url_ttl' => 5,
 ];
