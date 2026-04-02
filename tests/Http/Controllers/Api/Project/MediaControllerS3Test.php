@@ -440,17 +440,8 @@ class MediaControllerS3Test extends TestCase
             );
 
         $response = $this->get('api/internal/media/' . $this->project->slug . '?type=photo&name=logo.jpg&format=project_thumb')
-            ->assertStatus(200);
-
-        // Get the image content from the response
-        $imageContent = $response->getContent();
-        // Create an Intervention Image instance from the image content
-        $image = Image::read($imageContent);
-
-        $this->assertEquals(config('epicollect.media.project_thumb')[0], $image->width());
-        $this->assertEquals(config('epicollect.media.project_thumb')[1], $image->height());
-
-        $response->assertHeader('Content-Type', config('epicollect.media.content_type.photo'));
+            ->assertStatus(302);
+        $this->assertNotEmpty($response->headers->get('Location'));
     }
 
     #[DataProvider('multipleRunProvider')]
@@ -474,18 +465,11 @@ class MediaControllerS3Test extends TestCase
         $relativePath = $this->project->ref . '/' . $filename;
         Storage::disk('photo')->put($this->project->ref . '/' . $filename, $imageData);
         $this->assertTrue(Storage::disk('photo')->exists($relativePath), "File was not created at: $relativePath");
-        //entry_original
+        //entry_original → S3 returns a 302 redirect to a pre-signed URL
         $queryString = '?type=photo&name=' . $filename . '&format=entry_original';
         $response = $this->json('GET', 'api/internal/media/' . $this->project->slug . $queryString)
-            ->assertStatus(200);
-        $response->assertHeader('Content-Type', config('epicollect.media.content_type.photo'));
-
-        // Get the image content from the response
-        $imageContent = $response->getContent();
-        // Create an Intervention Image instance from the image content
-        $entryOriginal = Image::read($imageContent);
-        $this->assertEquals($entryOriginal->width(), config('epicollect.media.entry_original_landscape')[0]);
-        $this->assertEquals($entryOriginal->height(), config('epicollect.media.entry_original_landscape')[1]);
+            ->assertStatus(302);
+        $this->assertNotEmpty($response->headers->get('Location'));
 
         //entry_thumb
         $queryString = '?type=photo&name=' . $filename . '&format=entry_thumb';
@@ -526,19 +510,11 @@ class MediaControllerS3Test extends TestCase
         $imageData = (string)$image->encode(new JpegEncoder(50));
         Storage::disk('photo')->put($this->project->ref . '/' . $filename, $imageData);
 
-        //entry_original
+        //entry_original → S3 returns a 302 redirect to a pre-signed URL
         $queryString = '?type=photo&name=' . $filename . '&format=entry_original';
         $response = $this->json('GET', 'api/internal/media/' . $this->project->slug . $queryString)
-            ->assertStatus(200);
-        $response->assertHeader('Content-Type', config('epicollect.media.content_type.photo'));
-
-
-        // Get the image content from the response
-        $imageContent = $response->getContent();
-        // Create an Intervention Image instance from the image content
-        $entryOriginal = Image::read($imageContent);
-        $this->assertEquals($entryOriginal->width(), config('epicollect.media.entry_original_portrait')[0]);
-        $this->assertEquals($entryOriginal->height(), config('epicollect.media.entry_original_portrait')[1]);
+            ->assertStatus(302);
+        $this->assertNotEmpty($response->headers->get('Location'));
 
         //delete fake files
         Storage::disk('photo')->deleteDirectory($this->project->ref);
@@ -597,9 +573,9 @@ class MediaControllerS3Test extends TestCase
             'Range' => 'bytes=0-10'
         ])->get('api/internal/media/' . $this->project->slug . $queryString);
 
-        // Assert the response is a partial response
-        $response->assertStatus(206);//
-        $response->assertHeader('Content-Type', config('epicollect.media.content_type.audio'));
+        // S3 now returns a 302 redirect; S3 itself handles 206 for range requests after following the redirect
+        $response->assertStatus(302);
+        $this->assertNotEmpty($response->headers->get('Location'));
         //delete fake files
         Storage::disk('audio')->deleteDirectory($this->project->ref);
     }
@@ -623,11 +599,11 @@ class MediaControllerS3Test extends TestCase
         $response = $this->withHeaders([
             'Range' => 'bytes=0-10'
         ])->get('api/internal/media/' . $this->project->slug . $queryString);
-        // Assert the response is a partial response
-        $response->assertStatus(206);
-        $response->assertHeader('Content-Type', config('epicollect.media.content_type.video'));
+        // S3 now returns a 302 redirect; S3 itself handles 206 for range requests after following the redirect
+        $response->assertStatus(302);
+        $this->assertNotEmpty($response->headers->get('Location'));
         //delete fake files
-        Storage::disk('audio')->deleteDirectory($this->project->ref);
+        Storage::disk('video')->deleteDirectory($this->project->ref);
     }
 
     /**
@@ -656,7 +632,7 @@ class MediaControllerS3Test extends TestCase
         $audioFilename = $entryUuid. '_' . time() . '.mp4';
         Storage::disk('audio')->put($this->project->ref . '/' . $audioFilename, str_repeat('A', 2048));
 
-        //try to get the audio file using a range request to get 206 response
+        //try to get the audio file using a range request
         $queryString = '?type=audio&name=' . $audioFilename . '&format=audio';
         $response = [];
         try {
@@ -665,7 +641,9 @@ class MediaControllerS3Test extends TestCase
                     'Range' => 'bytes=0-10'
                 ])
                 ->get('api/internal/media/' . $this->project->slug . $queryString);
-            $response[0]->assertStatus(206);
+            // S3 now returns a 302 redirect; S3 itself handles 206 for range requests after following the redirect
+            $response[0]->assertStatus(302);
+            $this->assertNotEmpty($response[0]->headers->get('Location'));
 
             //now remove all the leftover fake files
             Storage::disk('audio')->deleteDirectory($this->project->ref);
@@ -708,12 +686,9 @@ class MediaControllerS3Test extends TestCase
         try {
             $response[] = $this->actingAs($this->user)
                 ->get('api/internal/media/' . $this->project->slug . $queryString);
-            $response[0]->assertStatus(200);
-
-            // Assert headers
-            $response[0]->assertHeader('Content-Type', 'audio/mp4');
-            $response[0]->assertHeader('Content-Length', (string) strlen($audioContent));
-            $response[0]->assertHeader('Accept-Ranges', 'bytes');
+            // S3 now returns a 302 redirect to a pre-signed URL
+            $response[0]->assertStatus(302);
+            $this->assertNotEmpty($response[0]->headers->get('Location'));
 
             //now remove all the leftover fake files
             Storage::disk('audio')->deleteDirectory($this->project->ref);
@@ -758,7 +733,9 @@ class MediaControllerS3Test extends TestCase
                     'Range' => 'bytes=0-10'
                 ])
                 ->get('api/internal/media/' . $this->project->slug . $queryString);
-            $response[0]->assertStatus(206);
+            // S3 now returns a 302 redirect; S3 itself handles 206 for range requests after following the redirect
+            $response[0]->assertStatus(302);
+            $this->assertNotEmpty($response[0]->headers->get('Location'));
 
             //now remove all the leftover fake files
             Storage::disk('audio')->deleteDirectory($this->project->ref);
@@ -801,13 +778,9 @@ class MediaControllerS3Test extends TestCase
         try {
             $response[] = $this->actingAs($this->user)
                 ->get('api/internal/media/' . $this->project->slug . $queryString);
-            $response[0]->assertStatus(200);
-
-            // Assert headers
-            $response[0]->assertHeader('Content-Type', 'video/mp4');
-            $response[0]->assertHeader('Content-Length', (string) strlen($videoContent));
-            $response[0]->assertHeader('Accept-Ranges', 'bytes');
-
+            // S3 now returns a 302 redirect to a pre-signed URL
+            $response[0]->assertStatus(302);
+            $this->assertNotEmpty($response[0]->headers->get('Location'));
 
             //now remove all the leftover fake files
             Storage::disk('audio')->deleteDirectory($this->project->ref);

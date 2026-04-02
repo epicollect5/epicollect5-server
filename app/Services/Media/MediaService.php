@@ -110,7 +110,11 @@ class MediaService
     }
 
     /**
-     * Serve a S3 real file
+     * Serve a S3 real file via a 302 redirect to a pre-signed S3 URL.
+     *
+     * Validates file existence first, then generates a short-lived pre-signed URL
+     * and returns an HTTP 302 redirect. S3 natively handles 200 for full responses
+     * and 206 for byte-range (audio/video seek/stream) requests after redirection.
      */
     private function serveS3File(string $type, string $format, string $projectRef, ?string $name)
     {
@@ -125,23 +129,10 @@ class MediaService
             return $this->placeholderOrFallback($type, $name);
         }
 
-        switch ($format) {
-            case config('epicollect.strings.inputs_type.audio'):
-                $diskRoot = config("filesystems.disks.audio.root").'/';
-                return Response::toMediaStreamS3(request(), $diskRoot.$path, $type);
-            case config('epicollect.strings.inputs_type.video'):
-                $diskRoot = config("filesystems.disks.video.root").'/';
-                return Response::toMediaStreamS3(request(), $diskRoot.$path, $type);
-            default:
-                // photo/avatar full response
-                $stream = $disk->readStream($path);
-                $imageContent = stream_get_contents($stream);
-                fclose($stream);
+        $ttl = config('epicollect.media.s3_temp_url_ttl', 5);
+        $url = $disk->temporaryUrl($path, now()->addMinutes($ttl));
 
-                return response($imageContent, 200, [
-                    'Content-Type' => $this->resolveContentType($type),
-                ]);
-        }
+        return redirect($url, 302);
     }
 
     /**

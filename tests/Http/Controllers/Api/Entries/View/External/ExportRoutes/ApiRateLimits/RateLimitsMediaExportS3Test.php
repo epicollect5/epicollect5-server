@@ -200,7 +200,7 @@ class RateLimitsMediaExportS3Test extends TestCase
                 ]
             );
 
-            $response->assertStatus(200);
+            $response->assertStatus(302);
             $successfulRequests++;
         }
 
