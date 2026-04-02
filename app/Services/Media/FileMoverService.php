@@ -67,7 +67,7 @@ class FileMoverService
                     $fileName,
                     'photo',
                     $dimensions,
-                    70
+                    config('epicollect.media.quality.webp')
                 );
 
                 if (!$photoSaved) {

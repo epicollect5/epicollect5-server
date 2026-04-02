@@ -5,10 +5,10 @@ namespace ec5\Services\Media;
 use Aws\S3\Exception\S3Exception;
 use ec5\Libraries\Utilities\Common;
 use ec5\Models\Project\ProjectStats;
+use Intervention\Image\Drivers\Imagick\Encoders\WebpEncoder;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Drivers\Imagick\Driver;
-use Intervention\Image\Drivers\Imagick\Encoders\JpegEncoder;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Laravel\Facades\Image;
 use InvalidArgumentException;
@@ -83,6 +83,10 @@ class PhotoSaverService
                 // Fix folder chain permissions up to app/ to fix laravel 700 issue since 9+
                 Common::setPermissionsRecursiveUp($newDirFullPath);
             }
+
+            //replace filename extension with webp
+            $ext = config('epicollect.strings.media_file_extension.webp');
+            $fileName = pathinfo($fileName, PATHINFO_FILENAME) . '.'.$ext;
 
             // Store the image into the storage location with the specified driver
             Storage::disk($disk)->put(
@@ -169,6 +173,11 @@ class PhotoSaverService
             $fileSaved = false;
             for ($retry = 0; $retry <= $maxRetries; $retry++) {
                 try {
+
+                    //replace filename extension with webp
+                    $ext = config('epicollect.strings.media_file_extension.webp');
+                    $fileName = pathinfo($fileName, PATHINFO_FILENAME) . '.'.$ext;
+
                     $fileSaved = Storage::disk($disk)->put(
                         $projectRef . '/' . $fileName,
                         $imageContent
@@ -227,8 +236,8 @@ class PhotoSaverService
             $img->cover($width, $height);
         }
 
-        // Encode the image as JPEG with the specified quality
-        $encodedImage = $img->encode(new JpegEncoder($quality));
+        // Encode the image as webp with the specified quality
+        $encodedImage = $img->encode(new WebpEncoder($quality, false));
 
         // Destroy the image object after use to free up memory
         unset($img);
@@ -266,7 +275,22 @@ class PhotoSaverService
             $image->cover($width, $height);
         }
 
-        $encoded = $image->toJpeg($quality);
+        $encoded = $image->toWebp($quality);
+        $encodedJpg = $image->toJpeg(70);
+
+        $webpSize = strlen($encoded);
+        $jpegSize = strlen($encodedJpg);
+
+        Log::info('Image compression results', [
+            'webp_quality' => $quality,
+            'webp_size_bytes' => $webpSize,
+            'jpeg_quality' => 70,
+            'jpeg_size_bytes' => $jpegSize,
+            'difference_bytes' => $jpegSize - $webpSize,
+            'reduction_percent' => round((1 - $webpSize / $jpegSize) * 100, 2) . '%',
+        ]);
+
+
 
         unset($image);
 

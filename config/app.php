@@ -191,6 +191,10 @@ return [
         ec5\Providers\Macros\Response\ToEntryThumbS3Macro::class,
         ec5\Providers\Macros\Response\ToProjectMobileLogoLocalMacro::class,
         ec5\Providers\Macros\Response\ToProjectMobileLogoS3Macro::class,
+        ec5\Providers\Macros\Response\ToProjectThumbLocalMacro::class,
+        ec5\Providers\Macros\Response\ToProjectThumbS3Macro::class,
+        ec5\Providers\Macros\Response\ToEntryOriginalLocalMacro::class,
+        ec5\Providers\Macros\Response\ToEntryOriginalS3Macro::class,
 
         //Rate Limiter
         ec5\Providers\RateLimiterServiceProvider::class,
