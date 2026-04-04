@@ -23,7 +23,7 @@ class ProjectController
      * @return JsonResponse
      * @throws Throwable
      */
-    public function show(ProjectStats $projectStats)
+    public function fetch(ProjectStats $projectStats)
     {
         $data = $this->requestedProject()->getProjectDefinition()->getData();
 
@@ -71,6 +71,19 @@ class ProjectController
         ];
 
         return Response::apiData($data, $meta);
+    }
+
+    /**
+     * @throws Throwable
+     */
+    public function fetchDebugPWA(ProjectStats $projectStats): JsonResponse
+    {
+        //Kick out if in production, this route is only for debugging locally
+        if (app()->isProduction()) {
+            return Response::apiErrorCode(400, ['upload-controller' => ['ec5_91']]);
+        }
+
+        return $this->fetch($projectStats);
     }
 
     /**

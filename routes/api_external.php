@@ -43,37 +43,37 @@ Route::group(['middleware' => ['throttle:600,1']], function () {
     /* LEGACY END POINTS */
 
 
+
+
     // Set project permissions middleware
     Route::group(['middleware' => ['project.permissions', 'project.permissions.viewer.role']], function () {
 
         // Project (this is used by the mobile apps to download a project)
-        Route::get('api/project/{project_slug}', 'Api\Project\ProjectController@show');
+        Route::get('api/project/{project_slug}', 'Api\Project\ProjectController@fetch');
 
         //Datasets (used by mobile app to download datasets zip archive)
         //   Route::get('api/datasets/{project_slug}', 'Api\Project\DatasetController@download');
 
         // Entry uploads
-        Route::post('api/upload/{project_slug}', 'Api\Entries\Upload\UploadAppController@postUpload');
+        Route::post('api/upload/{project_slug}', 'Api\Entries\Upload\UploadAppController@upload');
 
         //route for debugging, only available in non-production environments
         Route::group(['middleware' => ['throttle:bulk-upload']], function () {
-            Route::post('api/bulk-upload/{project_slug}', 'Api\Entries\Upload\UploadAppController@postUploadBulk');
+            Route::post('api/bulk-upload/{project_slug}', 'Api\Entries\Upload\UploadAppController@uploadBulk');
         });
+
 
         //Media Controller for access to media files (even via the browser, this is why we are not using the internal endpoint)
         Route::get('api/media/{project_slug}/', 'Api\Project\MediaController@getMedia');
 
-        // Temp Media (used by PWA debug to get a temp file)
-        Route::get('api/temp-media/{project_slug}/', 'Api\Project\MediaController@getTempMedia');
-
         /* LEGACY END POINTS */
         // Project
-        Route::get('api/json/project/{project_slug}', 'Api\Project\ProjectController@show');
+        Route::get('api/json/project/{project_slug}', 'Api\Project\ProjectController@fetch');
 
         // Entry uploads
         Route::post(
             'api/json/upload/{project_slug}',
-            'Api\Entries\Upload\UploadAppController@postUpload'
+            'Api\Entries\Upload\UploadAppController@upload'
         );
 
         // Media
@@ -82,7 +82,7 @@ Route::group(['middleware' => ['throttle:600,1']], function () {
 
 
         // Entries for mobile app download
-        Route::get('api/entries/{project_slug}', 'Api\Entries\View\ViewEntriesDataController@show');
+        Route::get('api/entries/{project_slug}', 'Api\Entries\View\ViewEntriesDataController@fetch');
 
         // Entry viewing for map
         Route::get(
@@ -96,12 +96,19 @@ Route::group(['middleware' => ['throttle:600,1']], function () {
             'Api\Entries\Upload\UploadTempFileController@store'
         );
 
-        // Web answer uniqueness checks
-        Route::post(
-            'api/unique-answer/{project_slug}',
-            'Api\Entries\Upload\UploadUniquenessController@index'
-        );
+        //route for debugging, only available in non-production environments
+        Route::get('api/pwa/project-debug/{project_slug}', 'Api\Project\ProjectController@fetchDebugPWA');
+        Route::post('api/pwa/upload-debug/{project_slug}', 'Api\Entries\Upload\UploadWebController@storeDebugPWA');
+        Route::get('api/pwa/entries-debug/{project_slug}', 'Api\Entries\View\ViewEntriesDataController@fetchDebugPWA');
+        Route::post('api/pwa/unique-answer-debug/{project_slug}', 'Api\Entries\Upload\UploadUniquenessController@indexDebugPWA');
+        Route::post('api/pwa/upload-file-debug/{project_slug}', 'Api\Entries\Upload\UploadTempFileController@storeDebugPWA');
+        // Temp Media (used by PWA debug to get a temp file)
+        Route::get('api/pwa/temp-media/{project_slug}/', 'Api\Project\MediaController@getTempMediaDebugPWA');
+        Route::get('api/pwa/media-debug/{project_slug}', 'Api\Project\MediaController@getMediaDebugPWA');
+        Route::get('api/pwa/temp-media-debug/{project_slug}', 'Api\Project\MediaController@getTempMediaDebugPWA');
     });
+
+    Route::get('api/pwa/proxies/opencage-debug/{search}', 'Api\Proxies\OpenCageController@fetchAPIDebugPWA');
 
     // Projects searching (by name, will use StartsWith so more results are possible)
     // Use ?exact=true query string for exact match

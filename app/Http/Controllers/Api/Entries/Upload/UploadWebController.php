@@ -131,6 +131,25 @@ class UploadWebController extends UploadControllerBase
     }
 
     /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     * @throws Throwable
+     */
+    public function storeDebugPWA()
+    {
+        //Kick out if in production, this route is only for debugging locally
+        if (app()->isProduction()) {
+            return Response::apiErrorCode(400, ['upload-controller' => ['ec5_91']]);
+        }
+
+        // 🔑 set the debug bypass flag
+        app()->instance('debug.permission_bypass', true);
+
+        return $this->store();
+
+    }
+
+    /**
      * Handles bulk upload requests by delegating to the store method.
      *
      * Marks the upload as a bulk operation and invokes the standard entry upload logic. This method is intended for endpoints that require bulk upload permission checks.
