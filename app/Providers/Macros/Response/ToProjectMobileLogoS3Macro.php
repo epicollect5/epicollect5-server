@@ -52,8 +52,8 @@ class ToProjectMobileLogoS3Macro extends ServiceProvider
 
                     // Logo: immutable when URL carries ?v= version token, hourly otherwise
                     $cacheControl = request('v')
-                        ? 'public, max-age=31536000, immutable'
-                        : 'public, max-age=3600';
+                        ? config('epicollect.media.cache_control.logo_with_version')
+                        : config('epicollect.media.cache_control.logo_without_version');
 
                     return response($thumbnailData, 200, [
                         'Content-Type' => config('epicollect.media.content_type.photo'),
@@ -79,7 +79,7 @@ class ToProjectMobileLogoS3Macro extends ServiceProvider
 
             return response($thumbnailData, 200, [
                 'Content-Type' => config('epicollect.media.content_type.photo'),
-                'Cache-Control' => 'no-store',
+                'Cache-Control' => config('epicollect.media.cache_control.placeholder'),
             ]);
         });
     }

@@ -194,8 +194,7 @@ class HomeControllerTest extends TestCase
 
     public function test_home_page_falls_back_to_dynamic_when_cache_expires()
     {
-        // Expire cache immediately
-        Cache::put('home_page_cached_content', '<div>Expired</div>', now()->subSeconds(1));
+        // Ensure cache is empty (simulating expired cache)
         Cache::forget('home_page_cached_content');
 
         $this

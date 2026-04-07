@@ -13,7 +13,6 @@ use Throwable;
 class GenerateHomePageCacheService
 {
     private const string CACHE_KEY = 'home_page_cached_content';
-    private const string ETAG_CACHE_KEY = 'home_page_cached_etag';
     private const int CACHE_TTL_HOURS = 24;
 
     /**
@@ -102,25 +101,34 @@ class GenerateHomePageCacheService
                 return url('/images/ec5-placeholder-256x256.jpg');
             }
 
-            // Build media endpoint URL to fetch logo
-            $mediaUrl = url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb&v=' . strtotime($project->structure_last_updated));
+            // Build media endpoint URL to fetch project_thumb logo
+            $mediaUrl = url('/api/internal/media/' . $project->slug .
+                '?type=photo&name=logo.jpg&format=project_thumb&v=' . strtotime($project->structure_last_updated));
 
-            // Fetch the image from the media endpoint
+            // Fetch the resized image from the media endpoint
             $response = Http::timeout(10)->get($mediaUrl);
 
             if (!$response->successful()) {
+                Log::warning('Failed to fetch project logo, status: ' . $response->status(), [
+                    'project_slug' => $project->slug,
+                    'url' => $mediaUrl,
+                ]);
                 return url('/images/ec5-placeholder-256x256.jpg');
             }
 
             $imageData = $response->body();
+            if (empty($imageData)) {
+                return url('/images/ec5-placeholder-256x256.jpg');
+            }
+
             $mimeType = $response->header('Content-Type') ?? 'image/jpeg';
 
             // Convert to base64 data URI
             $base64 = base64_encode($imageData);
             return "data:" . $mimeType . ";base64," . $base64;
         } catch (Throwable $e) {
-            Log::warning('Failed to fetch project logo for base64 encoding', [
-                'project_slug' => $project->slug,
+            Log::warning('Exception while fetching project logo for base64 encoding', [
+                'project_slug' => $project->slug ?? 'unknown',
                 'exception' => $e->getMessage(),
             ]);
             return url('/images/ec5-placeholder-256x256.jpg');

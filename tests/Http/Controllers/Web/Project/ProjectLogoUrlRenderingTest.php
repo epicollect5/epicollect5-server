@@ -2,6 +2,7 @@
 
 namespace Tests\Http\Controllers\Web\Project;
 
+use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
@@ -31,24 +32,34 @@ class ProjectLogoUrlRenderingTest extends TestCase
     {
         $creator = factory(User::class)->create();
 
+        // Use shared generator for project definition
+        $projectDefinition = ProjectDefinitionGenerator::createProject(1);
+
         $project = factory(Project::class)->create(
             array_merge([
                 'created_by' => $creator->id,
+                'name' => array_get($projectDefinition, 'data.project.name'),
+                'slug' => array_get($projectDefinition, 'data.project.slug'),
+                'ref' => array_get($projectDefinition, 'data.project.ref'),
                 'access' => config('epicollect.strings.project_access.public'),
                 'visibility' => config('epicollect.strings.project_visibility.listed'),
-                'status' => config('epicollect.strings.project_status.active')
+                'status' => config('epicollect.strings.project_status.active'),
+                'logo_url' => 'logo.jpg' // Set logo_url to trigger media endpoint URL in templates
             ], $projectOverrides)
         );
 
-        // Set up project stats and project structures
+        // Set up project structure with generated definition
+        factory(ProjectStructure::class)->create([
+            'project_id' => $project->id,
+            'project_definition' => json_encode($projectDefinition['data'])
+        ]);
+
+        // Set up project stats
         factory(ProjectStats::class)->create([
             'project_id' => $project->id,
             'total_entries' => 0
         ]);
 
-        factory(ProjectStructure::class)->create([
-            'project_id' => $project->id
-        ]);
 
         return ['creator' => $creator, 'project' => $project];
     }
@@ -61,11 +72,18 @@ class ProjectLogoUrlRenderingTest extends TestCase
     {
         $data = $this->createProjectWithStructure();
         $project = $data['project'];
+        $expectedTimestamp = (string)strtotime($project->structure_last_updated);
 
         $response = $this
             ->get('project/' . $project->slug)
             ->assertStatus(200)
             ->assertViewIs('project.project_home');
+
+        // Assert the cache-busting v= parameter is present with correct timestamp
+        $response->assertSee('v=' . $expectedTimestamp);
+        // Assert the logo URL contains the project slug and format parameter
+        $response->assertSee('api/internal/media/' . $project->slug);
+        $response->assertSee('format=project_thumb');
     }
 
     /**
@@ -76,11 +94,18 @@ class ProjectLogoUrlRenderingTest extends TestCase
     {
         $data = $this->createProjectWithStructure();
         $project = $data['project'];
+        $expectedTimestamp = (string)strtotime($project->structure_last_updated);
 
         $response = $this
             ->get('project/' . $project->slug . '/data')
             ->assertStatus(200)
             ->assertViewIs('project.dataviewer');
+
+        // Assert the cache-busting v= parameter is present with correct timestamp
+        $response->assertSee('v=' . $expectedTimestamp);
+        // Assert the logo URL contains the project slug and format parameter
+        $response->assertSee('api/internal/media/' . $project->slug);
+        $response->assertSee('format=project_thumb');
     }
 
     /**
@@ -91,11 +116,18 @@ class ProjectLogoUrlRenderingTest extends TestCase
     {
         $data = $this->createProjectWithStructure();
         $project = $data['project'];
+        $expectedTimestamp = (string)strtotime($project->structure_last_updated);
 
         $response = $this
             ->get('open/project/' . $project->slug)
             ->assertStatus(200)
             ->assertViewIs('project.project_open');
+
+        // Assert the cache-busting v= parameter is present with correct timestamp
+        $response->assertSee('v=' . $expectedTimestamp);
+        // Assert the logo URL contains the project slug and format parameter
+        $response->assertSee('api/internal/media/' . $project->slug);
+        $response->assertSee('format=project_thumb');
     }
 
     /**
@@ -107,7 +139,16 @@ class ProjectLogoUrlRenderingTest extends TestCase
         $creator = factory(User::class)->create();
         $user = factory(User::class)->create();
 
-        $project = factory(Project::class)->create(['created_by' => $creator->id]);
+        // Use shared generator for project definition
+        $projectDefinition = ProjectDefinitionGenerator::createProject(1);
+
+        $project = factory(Project::class)->create([
+            'created_by' => $creator->id,
+            'name' => array_get($projectDefinition, 'data.project.name'),
+            'slug' => array_get($projectDefinition, 'data.project.slug'),
+            'ref' => array_get($projectDefinition, 'data.project.ref'),
+            'logo_url' => 'logo.jpg'
+        ]);
 
         factory(ProjectRole::class)->create([
             'user_id' => $user->id,
@@ -115,14 +156,28 @@ class ProjectLogoUrlRenderingTest extends TestCase
             'role' => config('epicollect.strings.project_roles.manager')
         ]);
 
+        factory(ProjectStructure::class)->create([
+            'project_id' => $project->id,
+            'project_definition' => json_encode($projectDefinition['data'])
+        ]);
+
         factory(ProjectStats::class)->create(['project_id' => $project->id, 'total_entries' => 0]);
-        factory(ProjectStructure::class)->create(['project_id' => $project->id]);
+
+        // Reload project to get the updated structure_last_updated timestamp
+        $project = $project->fresh();
+        $expectedTimestamp = (string)strtotime($project->structure_last_updated);
 
         $response = $this
             ->actingAs($user, self::DRIVER)
             ->get('myprojects/' . $project->slug . '/leave')
             ->assertStatus(200)
             ->assertViewIs('project.project_leave');
+
+        // Assert the cache-busting v= parameter is present with correct timestamp
+        $response->assertSee('v=' . $expectedTimestamp);
+        // Assert the logo URL contains the project slug and format parameter
+        $response->assertSee('api/internal/media/' . $project->slug);
+        $response->assertSee('format=project_thumb');
     }
 
     /**
@@ -133,9 +188,16 @@ class ProjectLogoUrlRenderingTest extends TestCase
     {
         $creator = factory(User::class)->create();
 
+        // Use shared generator for project definition
+        $projectDefinition = ProjectDefinitionGenerator::createProject(1);
+
         $project = factory(Project::class)->create([
             'created_by' => $creator->id,
-            'status' => config('epicollect.strings.project_status.trashed')
+            'name' => array_get($projectDefinition, 'data.project.name'),
+            'slug' => array_get($projectDefinition, 'data.project.slug'),
+            'ref' => array_get($projectDefinition, 'data.project.ref'),
+            'status' => config('epicollect.strings.project_status.trashed'),
+            'logo_url' => 'logo.jpg'
         ]);
 
         factory(ProjectRole::class)->create([
@@ -144,14 +206,28 @@ class ProjectLogoUrlRenderingTest extends TestCase
             'role' => config('epicollect.strings.project_roles.creator')
         ]);
 
+        factory(ProjectStructure::class)->create([
+            'project_id' => $project->id,
+            'project_definition' => json_encode($projectDefinition['data'])
+        ]);
+
         factory(ProjectStats::class)->create(['project_id' => $project->id, 'total_entries' => 0]);
-        factory(ProjectStructure::class)->create(['project_id' => $project->id]);
+
+        // Reload project to get the updated structure_last_updated timestamp
+        $project = $project->fresh();
+        $expectedTimestamp = (string)strtotime($project->structure_last_updated);
 
         $response = $this
             ->actingAs($creator, self::DRIVER)
             ->get('myprojects/' . $project->slug . '/delete')
             ->assertStatus(200)
             ->assertViewIs('project.project_delete');
+
+        // Assert the cache-busting v= parameter is present with correct timestamp
+        $response->assertSee('v=' . $expectedTimestamp);
+        // Assert the logo URL contains the project slug and format parameter
+        $response->assertSee('api/internal/media/' . $project->slug);
+        $response->assertSee('format=project_thumb');
     }
 
     /**
@@ -162,9 +238,16 @@ class ProjectLogoUrlRenderingTest extends TestCase
     {
         $creator = factory(User::class)->create();
 
+        // Use shared generator for project definition
+        $projectDefinition = ProjectDefinitionGenerator::createProject(1);
+
         $project = factory(Project::class)->create([
             'created_by' => $creator->id,
-            'status' => config('epicollect.strings.project_status.locked')
+            'name' => array_get($projectDefinition, 'data.project.name'),
+            'slug' => array_get($projectDefinition, 'data.project.slug'),
+            'ref' => array_get($projectDefinition, 'data.project.ref'),
+            'status' => config('epicollect.strings.project_status.locked'),
+            'logo_url' => 'logo.jpg'
         ]);
 
         factory(ProjectRole::class)->create([
@@ -173,14 +256,28 @@ class ProjectLogoUrlRenderingTest extends TestCase
             'role' => config('epicollect.strings.project_roles.creator')
         ]);
 
+        factory(ProjectStructure::class)->create([
+            'project_id' => $project->id,
+            'project_definition' => json_encode($projectDefinition['data'])
+        ]);
+
         factory(ProjectStats::class)->create(['project_id' => $project->id, 'total_entries' => 0]);
-        factory(ProjectStructure::class)->create(['project_id' => $project->id]);
+
+        // Reload project to get the updated structure_last_updated timestamp
+        $project = $project->fresh();
+        $expectedTimestamp = (string)strtotime($project->structure_last_updated);
 
         $response = $this
             ->actingAs($creator, self::DRIVER)
             ->get('myprojects/' . $project->slug . '/delete-entries')
             ->assertStatus(200)
             ->assertViewIs('project.project_delete_entries');
+
+        // Assert the cache-busting v= parameter is present with correct timestamp
+        $response->assertSee('v=' . $expectedTimestamp);
+        // Assert the logo URL contains the project slug and format parameter
+        $response->assertSee('api/internal/media/' . $project->slug);
+        $response->assertSee('format=project_thumb');
     }
 
     /**
@@ -191,7 +288,10 @@ class ProjectLogoUrlRenderingTest extends TestCase
     {
         $creator = factory(User::class)->create();
 
-        $project = factory(Project::class)->create(['created_by' => $creator->id]);
+        $project = factory(Project::class)->create([
+            'created_by' => $creator->id,
+            'logo_url' => 'logo.jpg' // Set logo_url to trigger media endpoint URL
+        ]);
 
         factory(ProjectRole::class)->create([
             'user_id' => $creator->id,
@@ -202,11 +302,21 @@ class ProjectLogoUrlRenderingTest extends TestCase
         factory(ProjectStats::class)->create(['project_id' => $project->id, 'total_entries' => 0]);
         factory(ProjectStructure::class)->create(['project_id' => $project->id]);
 
+        // Reload project to get the updated structure_last_updated timestamp
+        $project = $project->fresh();
+        $expectedTimestamp = (string)strtotime($project->structure_last_updated);
+
         $response = $this
             ->actingAs($creator, self::DRIVER)
             ->get('myprojects/' . $project->slug)
             ->assertStatus(200)
             ->assertViewIs('project.project_details');
+
+        // Assert the cache-busting v= parameter is present with correct timestamp
+        $response->assertSee('v=' . $expectedTimestamp);
+        // Assert the logo URL contains the project slug and format parameter
+        $response->assertSee('api/internal/media/' . $project->slug);
+        $response->assertSee('format=project_thumb');
     }
 
     /**

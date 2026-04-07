@@ -51,8 +51,9 @@
         <hr>
 
         <div class="page-home__server-stats row">
-            <h3 class="text-center server-stats__stats-teaser">Thousands of people use Epicollect5 to collect data for
-                thousands of projects every day.</h3>
+            <h3 class="text-center server-stats__stats-teaser">
+                Thousands of people use Epicollect5 to collect data for thousands of projects every day.
+            </h3>
             <div class="col-xs-12 col-sm-4 col-md-4 col-lg-4 text-center server-stats__stats-wrapper">
                 <div class="circle stats-users">
                     <div class="circle-content">
