@@ -48,6 +48,7 @@ class ProjectDTO
     public string $status = '';
     public string $can_bulk_upload = 'nobody';
     public string $app_link_visibility = 'hidden';
+    public string $structure_last_updated = '';
     private ProjectMappingService $projectMappingService;
 
     public function __construct(
