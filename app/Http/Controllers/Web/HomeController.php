@@ -7,6 +7,8 @@ use ec5\Libraries\Utilities\Common;
 use ec5\Models\Project\Project;
 use ec5\Models\System\SystemStats;
 use Illuminate\Contracts\View\Factory;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 use Log;
 use Throwable;
@@ -29,10 +31,21 @@ class HomeController extends Controller
     /**
      * Show home page (available to all users)
      *
-     * @return Factory|View
+     * @return Factory|View|Response
      */
     public function index()
     {
+        // Attempt to retrieve cached featured projects content (includes stats)
+        $homepageCachedContent = Cache::get('home_page_cached_content', '');
+
+        // If cache exists, render it through the home-cached view
+        if (!empty($homepageCachedContent)) {
+            return view('home-cached', [
+                'homepageCachedContent' => $homepageCachedContent,
+            ]);
+        }
+
+        // Cache miss - fall back to dynamic rendering
         try {
             //get all featured projects (ordered by updated timestamp)
             $allFeaturedProjects = $this->projectModel->featured();
