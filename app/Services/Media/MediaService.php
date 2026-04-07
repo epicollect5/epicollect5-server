@@ -78,7 +78,7 @@ class MediaService
         // project_thumb: immutable when URL carries ?v= version token, hourly otherwise
         if ($format === 'project_thumb') {
             $cacheControl = request('v') ? 'public, max-age=31536000, immutable' : 'public, max-age=3600';
-            return Response::make(file_get_contents($realFilepath), 200, [
+            return response()->file($realFilepath, [
                 'Content-Type' => $this->resolveContentType($type),
                 'Cache-Control' => $cacheControl,
             ]);
@@ -171,7 +171,7 @@ class MediaService
             return Response::toMediaStreamLocal(request(), $realFilepath, $type);
         }
 
-        return Response::make(file_get_contents($realFilepath), 200, [
+        return response()->file($realFilepath, [
             'Content-Type' => $contentType,
             'Cache-Control' => 'no-store',
         ]);
