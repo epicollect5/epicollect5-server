@@ -106,8 +106,8 @@
                                                      @if ($project->access == config('epicollect.strings.project_access.private')) {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
                             @elseif($project->logo_url == '')
                                 {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
-                            @else
-                                {{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb') }} @endif"
+                                @else
+                                {{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb&v=' . strtotime($project->structure_last_updated)) }} @endif"
                                      alt="{{ $project->name }}">
                                 <div class="loader"></div>
                             </a>
@@ -175,8 +175,8 @@
                                                        @if ($project->access == config('epicollect.strings.project_access.private')) {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
                                 @elseif($project->logo_url == '')
                                     {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
-                                @else
-                                    {{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb') }} @endif"
+                                    @else
+                                        {{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb&v=' . strtotime($project->structure_last_updated)) }} @endif"
                                          alt="{{ $project->name }}">
 
                                     <div class="loader"></div>
