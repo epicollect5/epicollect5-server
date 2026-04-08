@@ -13,7 +13,7 @@ use Throwable;
 
 class GenerateHomePageCacheService
 {
-    private const string CACHE_KEY = 'home_page_cached_content';
+    private const string CACHE_KEY = 'homepage_cached_content';
     private const int CACHE_TTL_HOURS = 24;
 
     /**

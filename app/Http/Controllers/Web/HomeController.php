@@ -36,7 +36,7 @@ class HomeController extends Controller
     public function index()
     {
         // Attempt to retrieve cached featured projects content (includes stats)
-        $homepageCachedContent = Cache::get('home_page_cached_content', '');
+        $homepageCachedContent = Cache::get('homepage_cached_content', '');
 
         // If cache exists, render it through the home-cached view
         if (!empty($homepageCachedContent)) {

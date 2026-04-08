@@ -13,7 +13,7 @@ class HomeControllerTest extends TestCase
     use DatabaseTransactions;
 
     public const string DRIVER = 'web';
-    private const string HOME_CACHE_KEY = 'home_page_cached_content';
+    private const string HOME_CACHE_KEY = 'homepage_cached_content';
 
     protected function setUp(): void
     {
@@ -48,7 +48,7 @@ class HomeControllerTest extends TestCase
     {
         // Set cached content
         $cachedHtml = '<div>Cached Featured Projects and Stats</div>';
-        Cache::put('home_page_cached_content', $cachedHtml, now()->addHours(24));
+        Cache::put('homepage_cached_content', $cachedHtml, now()->addHours(24));
 
         $this
            ->get(route('home'))
@@ -59,7 +59,7 @@ class HomeControllerTest extends TestCase
     public function test_home_page_renders_dynamically_when_cache_empty()
     {
         // Ensure cache is empty
-        Cache::forget('home_page_cached_content');
+        Cache::forget('homepage_cached_content');
 
         $this
            ->get(route('home'))
@@ -111,7 +111,7 @@ class HomeControllerTest extends TestCase
     {
         // Simulate cache hit
         $cachedContent = '<p>Featured Projects Section</p>';
-        Cache::put('home_page_cached_content', $cachedContent, now()->addHours(24));
+        Cache::put('homepage_cached_content', $cachedContent, now()->addHours(24));
 
         $this
            ->get(route('home'))
@@ -119,13 +119,13 @@ class HomeControllerTest extends TestCase
            ->assertSee('Featured Projects Section');
 
         // Verify cache was used
-        $this->assertTrue(Cache::has('home_page_cached_content'));
+        $this->assertTrue(Cache::has('homepage_cached_content'));
     }
 
     public function test_home_page_cache_miss_performs_database_queries()
     {
         // Ensure cache is empty
-        Cache::forget('home_page_cached_content');
+        Cache::forget('homepage_cached_content');
 
         // This should execute database queries
         $this
@@ -137,7 +137,7 @@ class HomeControllerTest extends TestCase
     public function test_home_page_renders_with_empty_featured_projects()
     {
         // Cache is empty, no featured projects exist
-        Cache::forget('home_page_cached_content');
+        Cache::forget('homepage_cached_content');
 
         $this
            ->get(route('home'))
@@ -160,7 +160,7 @@ class HomeControllerTest extends TestCase
     public function test_cached_content_returns_correct_content_type()
     {
         $cachedContent = '<div>Cached HTML</div>';
-        Cache::put('home_page_cached_content', $cachedContent, now()->addHours(24));
+        Cache::put('homepage_cached_content', $cachedContent, now()->addHours(24));
 
         $this
            ->get(route('home'))
@@ -174,7 +174,7 @@ class HomeControllerTest extends TestCase
 
         // Cache is set
         $cachedContent = '<div>Public Featured Projects</div>';
-        Cache::put('home_page_cached_content', $cachedContent, now()->addHours(24));
+        Cache::put('homepage_cached_content', $cachedContent, now()->addHours(24));
 
         // Both authenticated and unauthenticated users should see same cached content
         $this
@@ -192,7 +192,7 @@ class HomeControllerTest extends TestCase
     public function test_home_page_cache_persists_across_requests()
     {
         $cachedContent = '<div>Persistent Cache</div>';
-        Cache::put('home_page_cached_content', $cachedContent, now()->addHours(24));
+        Cache::put('homepage_cached_content', $cachedContent, now()->addHours(24));
 
         // First request
         $this->get(route('home'))
@@ -203,13 +203,13 @@ class HomeControllerTest extends TestCase
             ->assertSee('Persistent Cache');
 
         // Verify cache still exists
-        $this->assertTrue(Cache::has('home_page_cached_content'));
+        $this->assertTrue(Cache::has('homepage_cached_content'));
     }
 
     public function test_home_page_falls_back_to_dynamic_when_cache_expires()
     {
         // Ensure cache is empty (simulating expired cache)
-        Cache::forget('home_page_cached_content');
+        Cache::forget('homepage_cached_content');
 
         $this
            ->get(route('home'))
