@@ -13,6 +13,19 @@ class HomeControllerTest extends TestCase
     use DatabaseTransactions;
 
     public const string DRIVER = 'web';
+    private const string HOME_CACHE_KEY = 'home_page_cached_content';
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Cache::forget(self::HOME_CACHE_KEY);
+    }
+
+    protected function tearDown(): void
+    {
+        Cache::forget(self::HOME_CACHE_KEY);
+        parent::tearDown();
+    }
 
     public function test_home_page_renders_correctly()
     {
@@ -117,7 +130,8 @@ class HomeControllerTest extends TestCase
         // This should execute database queries
         $this
            ->get(route('home'))
-           ->assertStatus(200);
+           ->assertStatus(200)
+           ->assertSee(trans('site.home_title'));
     }
 
     public function test_home_page_renders_with_empty_featured_projects()
@@ -165,6 +179,11 @@ class HomeControllerTest extends TestCase
         // Both authenticated and unauthenticated users should see same cached content
         $this
             ->actingAs($user)
+            ->get(route('home'))
+            ->assertStatus(200)
+            ->assertSee('Public Featured Projects');
+
+        $this
             ->get(route('home'))
             ->assertStatus(200)
             ->assertSee('Public Featured Projects');

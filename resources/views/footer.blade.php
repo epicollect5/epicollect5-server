@@ -18,7 +18,8 @@
                     </li>
                     <li>
                         <small>
-                            <a href="https://community.epicollect.net" target="_blank">Contact Us</a>
+                            <a href="https://community.epicollect.net" target="_blank" rel="noopener noreferrer">Contact
+                                Us</a>
                         </small>
                     </li>
                 </ul>
@@ -42,7 +43,7 @@
                     </li>
                     <li>
                         <small>
-                            <a href="https://community.epicollect.net">Community Support</a>
+                            <a href="https://community.epicollect.net" rel="noopener noreferrer">Community Support</a>
                         </small>
                     </li>
                     <li>
