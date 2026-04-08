@@ -59,9 +59,9 @@ class Kernel extends ConsoleKernel
                              ]);
                     }
                     // Regenerate home page cache after stats update
-                    $exitCode = Artisan::call('home:cache-content');
+                    $exitCode = Artisan::call('system:cache-homepage');
                     if ($exitCode !== 0) {
-                        Log::error('home:cache-content failed in scheduler', [
+                        Log::error('system:cache-homepage failed in scheduler', [
                                 'exit_code' => $exitCode,
                                  'output' => trim(Artisan::output()),
                              ]);

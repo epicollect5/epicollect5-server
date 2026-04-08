@@ -11,7 +11,7 @@ class GenerateHomePageCacheCommand extends Command
     /**
      * The name and signature of the console command.
      */
-    protected $signature = 'home:cache-content';
+    protected $signature = 'system:cache-homepage';
 
     /**
      * The console command description.
