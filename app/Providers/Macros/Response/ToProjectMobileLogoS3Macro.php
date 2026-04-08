@@ -50,8 +50,14 @@ class ToProjectMobileLogoS3Macro extends ServiceProvider
                     );
                     $thumbnailData = $thumbnail->toJpeg(70);
 
+                    // Logo: immutable when URL carries ?v= version token, hourly otherwise
+                    $cacheControl = request('v')
+                        ? config('epicollect.media.cache_control.logo_with_version')
+                        : config('epicollect.media.cache_control.logo_without_version');
+
                     return response($thumbnailData, 200, [
-                        'Content-Type' => config('epicollect.media.content_type.photo')
+                        'Content-Type' => config('epicollect.media.content_type.photo'),
+                        'Cache-Control' => $cacheControl,
                     ]);
 
                 } catch (FileNotFoundException) {
@@ -72,7 +78,8 @@ class ToProjectMobileLogoS3Macro extends ServiceProvider
             $thumbnailData = $thumbnail->toJpeg(70);
 
             return response($thumbnailData, 200, [
-                'Content-Type' => config('epicollect.media.content_type.photo')
+                'Content-Type' => config('epicollect.media.content_type.photo'),
+                'Cache-Control' => config('epicollect.media.cache_control.placeholder'),
             ]);
         });
     }

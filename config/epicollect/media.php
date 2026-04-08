@@ -73,5 +73,10 @@ return [
         'project_mobile_logo' => 'project',
         'audio' => 'audio',
         'video' => 'video'
+    ],
+    'cache_control' => [
+        'logo_with_version' => 'public, max-age=31536000, immutable',
+        'logo_without_version' => 'public, max-age=3600',
+        'placeholder' => 'no-store',
     ]
 ];

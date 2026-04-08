@@ -88,6 +88,7 @@ class Project extends Model
     {
         return DB::table($this->getTable())
             ->leftJoin(config('epicollect.tables.project_roles'), $this->getQualifiedKeyName(), '=', 'project_roles.project_id')
+            ->leftJoin(config('epicollect.tables.project_structures'), 'projects.id', '=', 'project_structures.project_id')
             ->where('project_roles.user_id', $userId)
             ->where(function ($query) use ($params) {
                 if (!empty($params['filter_type']) && !empty($params['filter_value'])) {
@@ -100,7 +101,12 @@ class Project extends Model
                 }
             })
             ->where('status', '<>', 'archived')
-            ->orderBy('created_at', 'desc')
+            ->orderBy('projects.created_at', 'desc')
+            ->select(
+                'projects.*',
+                'project_roles.role',
+                DB::raw('DATE_FORMAT(project_structures.updated_at, "%Y-%m-%d %H:%i:%s") as structure_last_updated')
+            )
             ->simplePaginate($perPage);
     }
 
@@ -116,11 +122,18 @@ class Project extends Model
         $sortOrder = config('epicollect.mappings.search_projects_defaults.sort_order');
 
         // Base query
-        $query = DB::table($this->getTable())->join($this->projectStatsTable, 'projects.id', '=', $this->projectStatsTable . '.project_id')
+        $query = DB::table($this->getTable())
+            ->join($this->projectStatsTable, 'projects.id', '=', $this->projectStatsTable . '.project_id')
+            ->leftJoin(config('epicollect.tables.project_structures'), 'projects.id', '=', 'project_structures.project_id')
             ->where('status', '<>', $trashedStatus)
             ->where('status', '<>', $archivedStatus)
             ->where('access', $publicAccess)
-            ->where('visibility', $listedVisibility);
+            ->where('visibility', $listedVisibility)
+            ->select(
+                'projects.*',
+                'project_stats.total_entries',
+                DB::raw('DATE_FORMAT(project_structures.updated_at, "%Y-%m-%d %H:%i:%s") as structure_last_updated')
+            );
 
         // Filter by name
         if (!empty($params['name'])) {
@@ -140,7 +153,12 @@ class Project extends Model
             $sortOrder = $params['sort_order'];
         }
 
-        $query->orderBy($sortBy, $sortOrder);
+        // Sorting — qualify column to avoid ambiguity across joined tables
+        $qualifiedSortBy = match ($sortBy) {
+            'total_entries' => 'project_stats.total_entries',
+            default         => 'projects.' . $sortBy,
+        };
+        $query->orderBy($qualifiedSortBy, $sortOrder);
 
         return $query->simplePaginate($projectsPerPage);
     }
@@ -148,7 +166,12 @@ class Project extends Model
     public function featured(): Collection|array
     {
         return Project::join(config('epicollect.tables.projects_featured'), 'projects.id', '=', config('epicollect.tables.projects_featured') . '.project_id')
+            ->leftJoin(config('epicollect.tables.project_structures'), 'projects.id', '=', 'project_structures.project_id')
             ->orderBy('projects_featured.id', 'asc')
+            ->select(
+                'projects.*',
+                DB::raw('DATE_FORMAT(project_structures.updated_at, "%Y-%m-%d %H:%i:%s") as structure_last_updated')
+            )
             ->get();
     }
 

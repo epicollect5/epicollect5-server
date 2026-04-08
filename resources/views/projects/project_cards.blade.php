@@ -10,10 +10,8 @@
                                 <img class="projects-list__project-logo img-responsive img-circle" width="128"
                                      height="128"
                                      alt="{{$project->name}}"
-                                     src="@if (!empty($project->logo_url)){{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb') }}
-                                @else
-                                {{ url('/images/ec5-placeholder-256x256.jpg') }}
-                                @endif">
+                                     src="{{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb&v=' . strtotime($project->structure_last_updated)) }}
+                               ">
                             </div>
                             <span class="project-name">@if ($project->status == 'trashed')
                                     {{ $project->name }}
@@ -123,10 +121,7 @@
                                         <img class="projects-list__project-logo img-responsive img-circle" width="128"
                                              height="128"
                                              alt="{{$project->name}}"
-                                             src="@if (!empty($project->logo_url)){{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb') }}
-                                    @else
-                                    {{ url('/images/ec5-placeholder-256x256.jpg') }}
-                                    @endif">
+                                             src="{{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb&v=' . strtotime($project->structure_last_updated)) }}">
                                     </div>
                                     <span class="project-name">@if ($project->status == 'trashed')
                                             {{ $project->name }}

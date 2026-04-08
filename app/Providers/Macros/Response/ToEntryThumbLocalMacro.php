@@ -42,7 +42,8 @@ class ToEntryThumbLocalMacro extends ServiceProvider
                     $thumbnailData = $thumbnail->toJpeg(70);
 
                     return response($thumbnailData, 200, [
-                        'Content-Type' => config('epicollect.media.content_type.photo')
+                        'Content-Type' => config('epicollect.media.content_type.photo'),
+                        'Cache-Control' => 'no-store',
                     ]);
 
                 } catch (FileNotFoundException) {
@@ -54,6 +55,7 @@ class ToEntryThumbLocalMacro extends ServiceProvider
                     }
                     $response = Response::make($file);
                     $response->header('Content-Type', config('epicollect.media.content_type.photo'));
+                    $response->header('Cache-Control', 'no-store');
                     return $response;
                 } catch (Throwable $e) {
                     Log::error('Cannot generate thumbnail', ['exception' => $e]);
@@ -64,6 +66,7 @@ class ToEntryThumbLocalMacro extends ServiceProvider
             $file = Storage::disk('public')->get($photoPlaceholderFilename);
             $response = Response::make($file);
             $response->header('Content-Type', config('epicollect.media.content_type.photo'));
+            $response->header('Cache-Control', 'no-store');
             return $response;
         });
     }

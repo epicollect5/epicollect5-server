@@ -75,6 +75,15 @@ class MediaService
 
         $realFilepath = $disk->path($pathInDisk);
 
+        // project_thumb: immutable when URL carries ?v= version token, hourly otherwise
+        if ($format === 'project_thumb') {
+            $cacheControl = request('v') ? 'public, max-age=31536000, immutable' : 'public, max-age=3600';
+            return response()->file($realFilepath, [
+                'Content-Type' => $this->resolveContentType($type),
+                'Cache-Control' => $cacheControl,
+            ]);
+        }
+
         return $this->buildResponse($type, $realFilepath);
     }
 
@@ -138,8 +147,15 @@ class MediaService
                 $imageContent = stream_get_contents($stream);
                 fclose($stream);
 
+                // project_thumb: immutable when URL carries ?v= version token, hourly otherwise
+                // entry photos (entry_original): no-store — user-submitted content must never be served stale
+                $cacheControl = ($format === 'project_thumb')
+                    ? (request('v') ? 'public, max-age=31536000, immutable' : 'public, max-age=3600')
+                    : 'no-store';
+
                 return response($imageContent, 200, [
                     'Content-Type' => $this->resolveContentType($type),
+                    'Cache-Control' => $cacheControl,
                 ]);
         }
     }
@@ -155,8 +171,9 @@ class MediaService
             return Response::toMediaStreamLocal(request(), $realFilepath, $type);
         }
 
-        return Response::make(file_get_contents($realFilepath), 200, [
-            'Content-Type' => $contentType
+        return response()->file($realFilepath, [
+            'Content-Type' => $contentType,
+            'Cache-Control' => 'no-store',
         ]);
     }
 
@@ -196,7 +213,10 @@ class MediaService
                 }
             }
 
-            return Response::make($file, 200, ['Content-Type' => $contentType]);
+            return Response::make($file, 200, [
+                'Content-Type' => $contentType,
+                'Cache-Control' => 'no-store',
+            ]);
         }
 
         // Non-photo formats (audio/video) just return API 404
