@@ -1,8 +1,8 @@
 <div class="panel panel-default page-mapping-data" data-url="{{ Request::fullUrl() }}">
     <div class="panel-heading">
         <span>{{ trans('site.mapping_data') }}</span>
-        <a href="https://docs.epicollect.net/web-application/mapping-data" target="_blank"><i
-                    class="material-symbols-outlined">help</i></a>
+        <a href="https://docs.epicollect.net/web-application/mapping-data" target="_blank" rel="noopener noreferrer">
+            <i class="material-symbols-outlined">help</i></a>
     </div>
     <div class="panel-body">
         <!-- Nav tabs -->
