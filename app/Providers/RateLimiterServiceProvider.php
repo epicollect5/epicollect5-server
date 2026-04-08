@@ -125,14 +125,14 @@ class RateLimiterServiceProvider extends ServiceProvider
      */
     private function configureApiExportLimiter(string $name, string $configKey): void
     {
+        //to avoid rotating ips when exporting entries, we limit by project slug instead of IP or user ID
         RateLimiter::for($name, function (Request $request) use ($name, $configKey) {
             $limits = [
                 Limit::perMinute(
                     config("epicollect.limits.api_export.$configKey")
                 )->by($request->route('project_slug'))
             ];
-
-            // Google Apps Script rotates IPs, so we add a shared UA-based cap for entries export.
+            // If this is an entries export request from Google Apps Script, apply a stricter limit to prevent abuse
             if ($name === 'api-export-entries' && $this->isGoogleAppsScriptRequest($request)) {
                 $limits[] = Limit::perMinute(
                     config('epicollect.limits.api_export.entries_google_apps_scripts', 10)
