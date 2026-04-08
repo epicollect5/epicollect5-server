@@ -118,9 +118,6 @@ class HomeControllerTest extends TestCase
         $this
            ->get(route('home'))
            ->assertStatus(200);
-
-        // Should still render successfully with dynamic data
-        $this->assertTrue(true);
     }
 
     public function test_home_page_renders_with_empty_featured_projects()
@@ -171,8 +168,6 @@ class HomeControllerTest extends TestCase
             ->get(route('home'))
             ->assertStatus(200)
             ->assertSee('Public Featured Projects');
-
-        $this->assertTrue(true);
     }
 
     public function test_home_page_cache_persists_across_requests()
