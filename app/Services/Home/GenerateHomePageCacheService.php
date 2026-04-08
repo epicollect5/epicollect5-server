@@ -6,8 +6,9 @@ use ec5\Libraries\Utilities\Common;
 use ec5\Models\Project\Project;
 use ec5\Models\System\SystemStats;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Laravel\Facades\Image;
 use Throwable;
 
 class GenerateHomePageCacheService
@@ -85,7 +86,8 @@ class GenerateHomePageCacheService
     }
 
     /**
-     * Retrieve project logo as base64 data URI via media endpoint
+     * Retrieve project logo as base64 WebP data URI
+     * Reads directly from storage (local or S3), resizes to project_thumb dimensions, converts to WebP
      * Falls back to placeholder URL if fetch fails
      */
     private function getProjectLogoBase64(object $project): string
@@ -101,33 +103,42 @@ class GenerateHomePageCacheService
                 return url('/images/ec5-placeholder-256x256.jpg');
             }
 
-            // Build media endpoint URL to fetch project_thumb logo
-            $mediaUrl = url('/api/internal/media/' . $project->slug .
-                '?type=photo&name=logo.jpg&format=project_thumb&v=' . strtotime($project->structure_last_updated));
+            // Get project thumb dimensions from config
+            $dimensions = config('epicollect.media.project_thumb_homepage');
+            $width = $dimensions[0];
+            $height = $dimensions[1];
 
-            // Fetch the resized image from the media endpoint
-            $response = Http::timeout(10)->get($mediaUrl);
+            // Check if logo exists in project disk
+            $disk = Storage::disk(Common::resolveDisk('project_thumb'));
+            $logoPath = $project->ref . '/logo.jpg';
 
-            if (!$response->successful()) {
-                Log::warning('Failed to fetch project logo, status: ' . $response->status(), [
+            if (!$disk->exists($logoPath)) {
+                Log::warning('Project logo file not found', [
                     'project_slug' => $project->slug,
-                    'url' => $mediaUrl,
+                    'logo_path' => $logoPath,
                 ]);
                 return url('/images/ec5-placeholder-256x256.jpg');
             }
 
-            $imageData = $response->body();
-            if (empty($imageData)) {
+            // Read image from storage (works for both local and S3)
+            $stream = $disk->readStream($logoPath);
+            if (!$stream) {
                 return url('/images/ec5-placeholder-256x256.jpg');
             }
 
-            $mimeType = $response->header('Content-Type') ?? 'image/jpeg';
+            // Read image from stream
+            $image = Image::read($stream);
+            fclose($stream);
+
+            // Resize to project_thumb dimensions and convert to WebP with quality 70
+            $image->cover($width, $height);
+            $webpData = $image->toWebp(50);
 
             // Convert to base64 data URI
-            $base64 = base64_encode($imageData);
-            return "data:" . $mimeType . ";base64," . $base64;
+            $base64 = base64_encode((string)$webpData);
+            return 'data:image/webp;base64,' . $base64;
         } catch (Throwable $e) {
-            Log::warning('Exception while fetching project logo for base64 encoding', [
+            Log::warning('Exception while processing project logo for base64 encoding', [
                 'project_slug' => $project->slug ?? 'unknown',
                 'exception' => $e->getMessage(),
             ]);

@@ -129,7 +129,7 @@ class RateLimiterServiceProvider extends ServiceProvider
             $limits = [
                 Limit::perMinute(
                     config("epicollect.limits.api_export.$configKey")
-                )->by($request->ip())
+                )->by($request->route('project_slug'))
             ];
 
             // Google Apps Script rotates IPs, so we add a shared UA-based cap for entries export.
