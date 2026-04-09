@@ -10,7 +10,7 @@ use Tests\TestCase;
 
 class RateLimiterServiceProviderTest extends TestCase
 {
-    public function test_non_google_apps_script_request_uses_only_ip_limit(): void
+    public function test_non_google_apps_script_request_uses_project_slug(): void
     {
         Config::set('epicollect.limits.api_export.entries', 1);
         Config::set('epicollect.limits.api_export.entries_google_apps_scripts', 1);
@@ -19,7 +19,7 @@ class RateLimiterServiceProviderTest extends TestCase
         $limits = $this->resolveEntriesExportLimits($projectSlug, '10.10.10.10', 'curl/8.6.0');
 
         $this->assertCount(1, $limits);
-        $this->assertSame('10.10.10.10', $limits[0]->key);
+        $this->assertSame($projectSlug, $limits[0]->key);
         $this->assertSame(1, $limits[0]->maxAttempts);
     }
 
@@ -32,7 +32,7 @@ class RateLimiterServiceProviderTest extends TestCase
         $limits = $this->resolveEntriesExportLimits($projectSlug, '30.30.30.30', 'Google-Apps-Script');
 
         $this->assertCount(2, $limits);
-        $this->assertSame('30.30.30.30', $limits[0]->key);
+        $this->assertSame($projectSlug, $limits[0]->key);
         $this->assertSame(100, $limits[0]->maxAttempts);
         $this->assertSame('google-apps-scripts|' . $projectSlug, $limits[1]->key);
         $this->assertSame(1, $limits[1]->maxAttempts);

@@ -6,10 +6,7 @@ use ec5\Http\Controllers\Controller;
 use ec5\Libraries\Utilities\Common;
 use ec5\Models\Project\Project;
 use ec5\Models\System\SystemStats;
-use Illuminate\Contracts\View\Factory;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\View\View;
 use Log;
 use Throwable;
 
@@ -25,13 +22,10 @@ class HomeController extends Controller
     {
         $this->projectModel = $projectModel;
         $this->dailySystemStats = $systemStats;
-        $this->dailySystemStats->initDailyStats();
     }
 
     /**
      * Show home page (available to all users)
-     *
-     * @return Factory|View|Response
      */
     public function index()
     {
@@ -67,6 +61,7 @@ class HomeController extends Controller
         }
 
         try {
+            $this->dailySystemStats->initDailyStats();
             //get total of users
             $users = Common::roundNumber($this->dailySystemStats->getUserStats()->total, 0);
             //get sum of all projects
