@@ -13,14 +13,26 @@ use Throwable;
 
 class GenerateHomePageCacheService
 {
-    private const string CACHE_KEY = 'homepage_cached_content';
-    private const int CACHE_TTL_HOURS = 24;
-
     /**
      * Generate and cache the featured projects content with base64-encoded logos
      */
     public function generate(): bool
     {
+        define(
+            'CACHE_KEY',
+            config(
+                'epicollect.setup.system.cache.homepage_cache_key',
+                'homepage_cached_content'
+            )
+        );
+        define(
+            'CACHE_TTL_HOURS',
+            config(
+                'epicollect.setup.system.cache.homepage_cache_ttl_hours',
+                24
+            )
+        );
+
         try {
             // Fetch featured projects
             $allFeaturedProjects = (new Project())->featured();
@@ -68,7 +80,7 @@ class GenerateHomePageCacheService
             ])->render();
 
             // Cache for 24 hours
-            Cache::put(self::CACHE_KEY, $html, now()->addHours(self::CACHE_TTL_HOURS));
+            Cache::put(CACHE_KEY, $html, now()->addHours(CACHE_TTL_HOURS));
 
             Log::info('Home page cache generated successfully', [
                 'featured_projects_count' => count($projectsFirstRow) + count($projectsSecondRow),
@@ -127,12 +139,25 @@ class GenerateHomePageCacheService
             }
 
             // Read image from stream
-            $image = Image::read($stream);
-            fclose($stream);
+            try {
+                $image = Image::read($stream);
+                fclose($stream);
 
-            // Resize to project_thumb dimensions and convert to WebP with quality 70
-            $image->cover($width, $height);
-            $webpData = $image->toWebp(50);
+                // Resize to project_thumb dimensions and convert to WebP with quality 70
+                $image->cover($width, $height);
+                $webpData = $image->toWebp(50);
+            } catch (Throwable $e) {
+                Log::warning('Failed to process project logo image', [
+                    'project_slug' => $project->slug,
+                    'exception' => $e->getMessage(),
+                ]);
+                return url('/images/ec5-placeholder-256x256.jpg');
+            } finally {
+                // Ensure stream is closed if it wasn't already
+                if (is_resource($stream)) {
+                    fclose($stream);
+                }
+            }
 
             // Convert to base64 data URI
             $base64 = base64_encode((string)$webpData);

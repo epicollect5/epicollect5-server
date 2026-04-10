@@ -30,7 +30,7 @@ class HomeController extends Controller
     public function index()
     {
         // Attempt to retrieve cached featured projects content (includes stats)
-        $homepageCachedContent = Cache::get('homepage_cached_content', '');
+        $homepageCachedContent = Cache::get(config('epicollect.setup.system.cache.homepage_cache_key'), '');
 
         // If cache exists, render it through the home-cached view
         if (!empty($homepageCachedContent)) {
