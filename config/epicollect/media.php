@@ -9,7 +9,7 @@ return [
     'entry_original_landscape' => [1024, 768],
     'entry_thumb' => [100, 100],
     'project_thumb' => [512, 512],
-    'project_thumb_homepage' => [256, 256],
+    'project_thumb_small' => [256, 256],
     'project_mobile_logo' => [128, 128],
     'project_avatar' => [
         'filename' => 'logo.jpg',
@@ -76,8 +76,7 @@ return [
         'video' => 'video'
     ],
     'cache_control' => [
-        'logo_with_version' => 'public, max-age=31536000, immutable',
-        'logo_without_version' => 'public, max-age=3600',
-        'placeholder' => 'no-store',
+        'always' => 'public, max-age=31536000, immutable',
+        'never' => 'no-store'
     ]
 ];

@@ -111,10 +111,10 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
         }
         // Branch
         if ($params['branch_ref'] != '') {
-            return $this->sendBranchEntriesJSON($params);
+            return $this->sendBranchEntriesJSON($params, false);
         }
         // Form
-        return $this->sendEntriesJSON($params);
+        return $this->sendEntriesJSON($params, false);
     }
 
     /**
@@ -168,6 +168,7 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
                 $projectMapping = $this->requestedProject()->getProjectMapping();
                 $data['mapping'] = $projectMapping->getMapDetails($options['map_index']);
             } else {
+                $entry['entry']['uploaded_at'] = DateFormatConverter::getSanitisedUploadedAt($row->uploaded_at);
                 $entry['attributes']['branch_counts'] = json_decode($row->branch_counts, true);
                 $entry['attributes']['child_counts'] = json_decode($row->child_counts, true);
                 // Add the user id
@@ -253,6 +254,7 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
                 $projectMapping = $this->requestedProject()->getProjectMapping();
                 $data['mapping'] = $projectMapping->getMapDetails($params['map_index']);
             } else {
+                $entry['branch_entry']['uploaded_at'] = DateFormatConverter::getSanitisedUploadedAt($row->uploaded_at);
                 // Add the user id
                 $entry['relationships']['user']['data']['id'] = $row->user_id;
                 $data['entries'][] = $entry;

@@ -104,7 +104,7 @@ class GenerateHomePageCacheService
             }
 
             // Get project thumb dimensions from config
-            $dimensions = config('epicollect.media.project_thumb_homepage');
+            $dimensions = config('epicollect.media.project_thumb_small');
             $width = $dimensions[0];
             $height = $dimensions[1];
 

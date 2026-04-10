@@ -2,13 +2,13 @@
 
 namespace ec5\Providers\Macros\Response;
 
+use File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\ServiceProvider;
 use Intervention\Image\Laravel\Facades\Image;
 use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
-use File;
 use Throwable;
 
 class ToEntryThumbLocalMacro extends ServiceProvider
@@ -40,10 +40,13 @@ class ToEntryThumbLocalMacro extends ServiceProvider
                         config('epicollect.media.entry_thumb')[1]
                     );
                     $thumbnailData = $thumbnail->toJpeg(70);
+                    $cacheControl = request('v')
+                        ? config('epicollect.media.cache_control.always')
+                        : config('epicollect.media.cache_control.never');
 
                     return response($thumbnailData, 200, [
                         'Content-Type' => config('epicollect.media.content_type.photo'),
-                        'Cache-Control' => 'no-store',
+                        'Cache-Control' => $cacheControl,
                     ]);
 
                 } catch (FileNotFoundException) {
@@ -55,7 +58,7 @@ class ToEntryThumbLocalMacro extends ServiceProvider
                     }
                     $response = Response::make($file);
                     $response->header('Content-Type', config('epicollect.media.content_type.photo'));
-                    $response->header('Cache-Control', 'no-store');
+                    $response->header('Cache-Control', config('epicollect.media.cache_control.always'));
                     return $response;
                 } catch (Throwable $e) {
                     Log::error('Cannot generate thumbnail', ['exception' => $e]);
@@ -66,7 +69,7 @@ class ToEntryThumbLocalMacro extends ServiceProvider
             $file = Storage::disk('public')->get($photoPlaceholderFilename);
             $response = Response::make($file);
             $response->header('Content-Type', config('epicollect.media.content_type.photo'));
-            $response->header('Cache-Control', 'no-store');
+            $response->header('Cache-Control', config('epicollect.media.cache_control.always'));
             return $response;
         });
     }

@@ -75,17 +75,6 @@ class MediaService
 
         $realFilepath = $disk->path($pathInDisk);
 
-        // project_thumb: immutable when URL carries ?v= version token, hourly otherwise
-        if ($format === 'project_thumb') {
-            $cacheControl = request('v') ? 'public, max-age=31536000, immutable' : 'public, max-age=3600';
-            // Read file content directly so it's accessible in tests and streaming contexts
-            $fileContent = file_get_contents($realFilepath);
-            return response($fileContent, 200, [
-                'Content-Type' => $this->resolveContentType($type),
-                'Cache-Control' => $cacheControl,
-            ]);
-        }
-
         return $this->buildResponse($type, $realFilepath);
     }
 
@@ -149,11 +138,12 @@ class MediaService
                 $imageContent = stream_get_contents($stream);
                 fclose($stream);
 
-                // project_thumb: immutable when URL carries ?v= version token, hourly otherwise
-                // entry photos (entry_original): no-store — user-submitted content must never be served stale
-                $cacheControl = ($format === 'project_thumb')
-                    ? (request('v') ? 'public, max-age=31536000, immutable' : 'public, max-age=3600')
-                    : 'no-store';
+                // immutable when URL carries ?v= version token, no store otherwise:
+                // we want to leverage browser caching when possible,
+                // but we also want to make sure that user-submitted content (entry photos) is never served stale
+                $cacheControl = request('v')
+                    ? config('epicollect.media.cache_control.always')
+                    : config('epicollect.media.cache_control.never');
 
                 return response($imageContent, 200, [
                     'Content-Type' => $this->resolveContentType($type),
@@ -175,10 +165,13 @@ class MediaService
 
         // Read file content directly so it's accessible in tests and streaming contexts
         $fileContent = file_get_contents($realFilepath);
+        $cacheControl = request('v')
+            ? config('epicollect.media.cache_control.always')
+            : config('epicollect.media.cache_control.never');
 
         return response($fileContent, 200, [
             'Content-Type' => $contentType,
-            'Cache-Control' => 'no-store',
+            'Cache-Control' => $cacheControl,
         ]);
     }
 
@@ -220,7 +213,7 @@ class MediaService
 
             return Response::make($file, 200, [
                 'Content-Type' => $contentType,
-                'Cache-Control' => 'no-store',
+                'Cache-Control' => config('epicollect.media.cache_control.always')
             ]);
         }
 

@@ -34,7 +34,7 @@ class HomeController extends Controller
 
         // If cache exists, render it through the home-cached view
         if (!empty($homepageCachedContent)) {
-            return view('home-cached', [
+            return view('home_cached', [
                 'homepageCachedContent' => $homepageCachedContent,
             ]);
         }
