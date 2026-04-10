@@ -13,24 +13,19 @@ class HomeControllerTest extends TestCase
     use DatabaseTransactions;
 
     public const string DRIVER = 'web';
+    public string $cacheKey;
 
 
     protected function setUp(): void
     {
         parent::setUp();
-        define(
-            'HOME_CACHE_KEY',
-            config(
-                'epicollect.setup.system.cache.homepage_cache_key',
-                'homepage_cached_content'
-            )
-        );
-        Cache::forget(HOME_CACHE_KEY);
+        $this->cacheKey = config('epicollect.setup.system.cache.homepage_cache_key');
+        Cache::forget($this->cacheKey);
     }
 
     protected function tearDown(): void
     {
-        Cache::forget(HOME_CACHE_KEY);
+        Cache::forget($this->cacheKey);
         parent::tearDown();
     }
 
