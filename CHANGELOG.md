@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 12.5.15
+
+- Bug fixes and stability improvements.
+
 # 12.5.14
 
 - Implemented 24-hour homepage caching to improve performance for featured projects display.
