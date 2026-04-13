@@ -22,7 +22,7 @@ class GenerateHomePageCacheService
             'epicollect.setup.system.cache.homepage_cache_key',
             'homepage_cached_content'
         );
-        $cacheTtlHours = config(
+        $cacheTTLHours = config(
             'epicollect.setup.system.cache.homepage_cache_ttl_hours',
             24
         );
@@ -74,7 +74,7 @@ class GenerateHomePageCacheService
             ])->render();
 
             // Cache for configured TTL hours
-            Cache::put($cacheKey, $html, now()->addHours($cacheTtlHours));
+            Cache::put($cacheKey, $html, now()->addHours($cacheTTLHours));
 
             Log::info('Home page cache generated successfully', [
                 'featured_projects_count' => count($projectsFirstRow) + count($projectsSecondRow),
