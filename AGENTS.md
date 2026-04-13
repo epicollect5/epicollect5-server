@@ -70,3 +70,14 @@ When writing PHP strings:
 
 - **Tinker is strictly prohibited:** Copilot Agents must not use, invoke, or interact with Tinker in any form during
   autonomous actions, suggestions, or when generating code within this repository.
+
+## Running Tools
+
+Always use these flags when running CLI tools:
+
+- Tests: `vendor/bin/phpunit --no-progress`
+- PHPStan: `vendor/bin/phpstan analyse --no-progress --error-format=raw`
+- Psalm: `vendor/bin/psalm --no-progress --no-suggestions --output-format=text`
+- phpcs: `vendor/bin/phpcs --report=emacs -q`
+- PHP-CS-Fixer: `vendor/bin/php-cs-fixer fix --show-progress=none -q -n`
+- Rector: `vendor/bin/rector process --no-progress-bar --output-format=github`Copy
