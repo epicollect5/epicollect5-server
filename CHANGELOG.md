@@ -1,5 +1,16 @@
 ## Release Notes
 
+# 12.5.14
+
+- Implemented 24-hour homepage caching to improve performance for featured projects display.
+- Added intelligent cache-busting for project logos and media assets using timestamps.
+- Implemented comprehensive HTTP cache control headers across all media responses.
+- Updated rate limiting to be keyed by project slug instead of request IP.
+- Added extensive test coverage for homepage caching behavior.
+- Added tests validating project logo URL rendering with cache-busting parameters.
+- Added comprehensive media cache header validation tests.
+- Added admin bulk project export feature (from CSV list of projects) for internal use.
+
 # 12.5.13
 
 - Improved EntryCounter with conditional updates to reduce database load and added tests for counter updates on entry
