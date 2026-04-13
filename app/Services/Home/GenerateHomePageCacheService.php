@@ -18,19 +18,13 @@ class GenerateHomePageCacheService
      */
     public function generate(): bool
     {
-        define(
-            'CACHE_KEY',
-            config(
-                'epicollect.setup.system.cache.homepage_cache_key',
-                'homepage_cached_content'
-            )
+        $cacheKey = config(
+            'epicollect.setup.system.cache.homepage_cache_key',
+            'homepage_cached_content'
         );
-        define(
-            'CACHE_TTL_HOURS',
-            config(
-                'epicollect.setup.system.cache.homepage_cache_ttl_hours',
-                24
-            )
+        $cacheTtlHours = config(
+            'epicollect.setup.system.cache.homepage_cache_ttl_hours',
+            24
         );
 
         try {
@@ -79,8 +73,8 @@ class GenerateHomePageCacheService
                 'entries' => $totalAllEntries,
             ])->render();
 
-            // Cache for 24 hours
-            Cache::put(CACHE_KEY, $html, now()->addHours(CACHE_TTL_HOURS));
+            // Cache for configured TTL hours
+            Cache::put($cacheKey, $html, now()->addHours($cacheTtlHours));
 
             Log::info('Home page cache generated successfully', [
                 'featured_projects_count' => count($projectsFirstRow) + count($projectsSecondRow),
