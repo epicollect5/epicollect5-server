@@ -7,6 +7,7 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 
 class RateLimiterServiceProvider extends ServiceProvider
 {
@@ -132,8 +133,8 @@ class RateLimiterServiceProvider extends ServiceProvider
                     config("epicollect.limits.api_export.$configKey")
                 )->by($request->route('project_slug'))
             ];
-            // If this is an entries export request from Google Apps Script, apply a stricter limit to prevent abuse
-            if ($name === 'api-export-entries' && $this->isGoogleAppsScriptRequest($request)) {
+            // If this is an entries export request from Google Ecosystem, we can apply a stricter limit to prevent abuse
+            if ($name === 'api-export-entries' && $this->isGoogleEcosystemRequest($request)) {
                 $limits[] = Limit::perMinute(
                     config('epicollect.limits.api_export.entries_google_apps_scripts', 10)
                 )->by('google-apps-scripts'. '|' . $request->route('project_slug'));
@@ -143,11 +144,16 @@ class RateLimiterServiceProvider extends ServiceProvider
         });
     }
 
-    private function isGoogleAppsScriptRequest(Request $request): bool
+    private function isGoogleEcosystemRequest(Request $request): bool
     {
         $userAgent = (string) $request->userAgent();
 
-        return stripos($userAgent, 'Google-Apps-Script') !== false;
+        // Catching all variants identified in the access logs
+        return Str::contains($userAgent, [
+            'Google-Apps-Script',
+            'GoogleDocs',
+            'apps-spreadsheets'
+        ], true); // 'true' makes it case-insensitive
     }
 
     /**
