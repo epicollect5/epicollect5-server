@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 12.5.16
+
+- Dataviewer 0.1.6 with removal of Mapbox dependency.
+
 # 12.5.15
 
 - Bug fixes and stability improvements.
