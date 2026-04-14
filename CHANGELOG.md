@@ -1,5 +1,10 @@
 ## Release Notes
 
+# 12.5.18
+
+- Improved rate limiting detection to recognize requests from Google applications.
+- Expanded test coverage to verify rate-limiting across multiple Google applications.
+
 # 12.5.16
 
 - Dataviewer 0.1.6 with removal of Mapbox dependency.
