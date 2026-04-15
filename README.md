@@ -23,6 +23,7 @@ mobile clients and the web interface.
 - Composer (no specific version; repo uses modern Laravel installer scripts).
 - Node.js + npm/yarn for asset builds (Gulp, Sass, etc.).
 - Optional: `dep` if you use the PHP Deployer `deploy.php` script for production releases.
+- Swap file (4GB) recommended for high usage servers
 
 ## Setup and local workflow
 
