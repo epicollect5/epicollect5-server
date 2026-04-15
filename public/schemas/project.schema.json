@@ -1509,11 +1509,45 @@
         },
         "group": {
           "description": "Mapped child inputs for a group, if applicable.",
-          "$ref": "#/$defs/mappedInputs"
+          "oneOf": [
+            {
+              "type": "array",
+              "maxItems": 0,
+              "description": "Empty array when no child inputs."
+            },
+            {
+              "type": "object",
+              "patternProperties": {
+                "^[a-f0-9]{32}(_[a-f0-9]{13})+$": {
+                  "$ref": "#/$defs/mappedInputEntry"
+                }
+              },
+              "additionalProperties": false,
+              "minProperties": 1,
+              "description": "Object keyed by input ref when child inputs exist."
+            }
+          ]
         },
         "branch": {
           "description": "Mapped child inputs for a branch, if applicable.",
-          "$ref": "#/$defs/mappedInputs"
+          "oneOf": [
+            {
+              "type": "array",
+              "maxItems": 0,
+              "description": "Empty array when no child inputs."
+            },
+            {
+              "type": "object",
+              "patternProperties": {
+                "^[a-f0-9]{32}(_[a-f0-9]{13})+$": {
+                  "$ref": "#/$defs/mappedInputEntry"
+                }
+              },
+              "additionalProperties": false,
+              "minProperties": 1,
+              "description": "Object keyed by input ref when child inputs exist."
+            }
+          ]
         },
         "map_to": {
           "type": "string",
@@ -1531,22 +1565,52 @@
           "$comment": "Server parity with RuleMappingInput: required|string|max:20|regex:/^[A-Za-z0-9\\_]+$/ + reserved map_to blacklist. Remaining server check that cannot be fully expressed in JSON Schema: map_to uniqueness within each form mapping."
         },
         "possible_answers": {
-          "type": "object",
-          "description": "Mapped possible answers for choice-based inputs, keyed by answer reference.",
-          "patternProperties": {
-            "^[a-f0-9]{13}$": {
-              "$ref": "#/$defs/mappedPossibleAnswer"
+          "description": "Mapped possible answers for choice-based inputs.",
+          "oneOf": [
+            {
+              "type": "array",
+              "maxItems": 0,
+              "description": "Empty array when no possible answers."
+            },
+            {
+              "type": "object",
+              "patternProperties": {
+                "^[a-f0-9]{13}$": {
+                  "$ref": "#/$defs/mappedPossibleAnswerValue"
+                }
+              },
+              "additionalProperties": false,
+              "minProperties": 1,
+              "description": "Object keyed by answer ref when possible answers exist."
             }
-          },
-          "additionalProperties": false
+          ]
         }
       },
       "unevaluatedProperties": false
     },
-    "mappedPossibleAnswer": {
+    "mappedNestedInputEntry": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/mappedInputEntry"
+        },
+        {
+          "type": "object",
+          "required": [
+            "ref"
+          ],
+          "properties": {
+            "ref": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{32}(_[a-f0-9]{13})+$"
+            }
+          }
+        }
+      ]
+    },
+    "mappedPossibleAnswerValue": {
       "type": "object",
-      "title": "Mapped Possible Answer",
-      "description": "Details for a single mapped possible answer.",
+      "title": "Mapped Possible Answer Value",
+      "description": "Details for a single mapped possible answer (internal fields only).",
       "required": [
         "map_to"
       ],
@@ -1557,6 +1621,25 @@
         }
       },
       "unevaluatedProperties": false
+    },
+    "mappedPossibleAnswer": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/mappedPossibleAnswerValue"
+        },
+        {
+          "type": "object",
+          "required": [
+            "answer_ref"
+          ],
+          "properties": {
+            "answer_ref": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{13}$"
+            }
+          }
+        }
+      ]
     }
   },
   "$comment": "v2.2.7 — 2024-05-15"
