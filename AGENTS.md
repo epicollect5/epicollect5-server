@@ -65,6 +65,7 @@ When writing PHP strings:
 
 - If the string contains mixed dynamic parts and reads better, prefer **explicit concatenation**:
     - `"Expected an index on " . $entriesTable . " covering ... Available indexes: " . json_encode($indexes)`
+- Formatting using Laravel Pint - psr12
 
 ## Restrictions
 
@@ -76,8 +77,4 @@ When writing PHP strings:
 Always use these flags when running CLI tools:
 
 - Tests: `vendor/bin/phpunit --no-progress`
-- PHPStan: `vendor/bin/phpstan analyse --no-progress --error-format=raw`
-- Psalm: `vendor/bin/psalm --no-progress --no-suggestions --output-format=text`
 - phpcs: `vendor/bin/phpcs --report=emacs -q`
-- PHP-CS-Fixer: `vendor/bin/php-cs-fixer fix --show-progress=none -q -n`
-- Rector: `vendor/bin/rector process --no-progress-bar --output-format=github`Copy
