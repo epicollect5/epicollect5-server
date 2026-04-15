@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://epicollect.net/schemas/project-export/v2.2.0",
+  "$id": "https://epicollect.net/schemas/project/v2.2.7",
   "title": "Epicollect5 Project Export",
   "description": "Schema for the full Epicollect5 project envelope (JSON Schema Draft 2020-12, validated with opis/json-schema).",
   "type": "object",
@@ -36,6 +36,20 @@
       },
       "unevaluatedProperties": false,
       "description": "Project export envelope. data.id must be identical to project.ref — enforced by application logic."
+    },
+    "meta": {
+      "type": "object",
+      "description": "Optional metadata for the project, including auto-generated project mapping.",
+      "properties": {
+        "project_mapping": {
+          "type": "array",
+          "description": "An array of project mapping configurations.",
+          "items": {
+            "$ref": "#/$defs/project_mapping"
+          }
+        }
+      },
+      "unevaluatedProperties": false
     }
   },
   "unevaluatedProperties": false,
@@ -63,8 +77,6 @@
     "form": {
       "type": "object",
       "title": "Form",
-      "maxItems": 5,
-      "minItems": 1,
       "description": "A single form within a project.\n\nLimits enforced by JSON Schema:\n- Max 300 inputs at top level (maxItems=300)\n- form.name: alphanumeric + spaces + hyphens + underscores, max 50\n\nLimits that MUST be enforced by application logic:\n- inputsMaxCount=300: total inputs counted recursively across all nesting levels\n- titlesMaxCount=3: at most 3 inputs per form may have is_title=true\n- searchMaxCount=5: combined searchsingle + searchmultiple per project (not per form)\n- Jump 'to' refs must point to input refs that exist within the same form\n- Input refs must be unique across the entire project",
       "required": [
         "ref",
@@ -311,12 +323,15 @@
                 ]
               },
               "possible_answers": {
+                "type": "array",
                 "maxItems": 0
               },
               "branch": {
+                "type": "array",
                 "maxItems": 0
               },
               "group": {
+                "type": "array",
                 "maxItems": 0
               },
               "question": {
@@ -361,12 +376,15 @@
                 ]
               },
               "possible_answers": {
+                "type": "array",
                 "maxItems": 0
               },
               "branch": {
+                "type": "array",
                 "maxItems": 0
               },
               "group": {
+                "type": "array",
                 "maxItems": 0
               }
             }
@@ -399,6 +417,7 @@
                 ]
               },
               "possible_answers": {
+                "type": "array",
                 "maxItems": 0
               }
             }
@@ -430,6 +449,7 @@
                 ]
               },
               "possible_answers": {
+                "type": "array",
                 "maxItems": 0
               }
             }
@@ -461,6 +481,7 @@
                 ]
               },
               "possible_answers": {
+                "type": "array",
                 "maxItems": 0
               }
             }
@@ -492,6 +513,7 @@
                 ]
               },
               "possible_answers": {
+                "type": "array",
                 "maxItems": 0
               }
             }
@@ -524,6 +546,7 @@
                 ]
               },
               "possible_answers": {
+                "type": "array",
                 "maxItems": 0
               }
             }
@@ -555,6 +578,7 @@
                 ]
               },
               "possible_answers": {
+                "type": "array",
                 "maxItems": 0
               },
               "datetime_format": {
@@ -595,6 +619,7 @@
                 ]
               },
               "possible_answers": {
+                "type": "array",
                 "maxItems": 0
               },
               "datetime_format": {
@@ -641,6 +666,7 @@
                 ]
               },
               "possible_answers": {
+                "type": "array",
                 "minItems": 1,
                 "maxItems": 300
               }
@@ -679,6 +705,7 @@
                 ]
               },
               "possible_answers": {
+                "type": "array",
                 "minItems": 1,
                 "maxItems": 300
               }
@@ -717,6 +744,7 @@
                 ]
               },
               "possible_answers": {
+                "type": "array",
                 "minItems": 1,
                 "maxItems": 300
               }
@@ -738,13 +766,16 @@
           "then": {
             "properties": {
               "possible_answers": {
+                "type": "array",
                 "minItems": 1,
                 "maxItems": 1000
               },
               "branch": {
+                "type": "array",
                 "maxItems": 0
               },
               "group": {
+                "type": "array",
                 "maxItems": 0
               },
               "default": {
@@ -782,13 +813,16 @@
           "then": {
             "properties": {
               "possible_answers": {
+                "type": "array",
                 "minItems": 1,
                 "maxItems": 1000
               },
               "branch": {
+                "type": "array",
                 "maxItems": 0
               },
               "group": {
+                "type": "array",
                 "maxItems": 0
               },
               "default": {
@@ -843,6 +877,7 @@
                 ]
               },
               "possible_answers": {
+                "type": "array",
                 "maxItems": 0
               }
             }
@@ -880,6 +915,7 @@
                 ]
               },
               "possible_answers": {
+                "type": "array",
                 "maxItems": 0
               }
             }
@@ -917,6 +953,7 @@
                 ]
               },
               "possible_answers": {
+                "type": "array",
                 "maxItems": 0
               }
             }
@@ -948,6 +985,7 @@
                 ]
               },
               "possible_answers": {
+                "type": "array",
                 "maxItems": 0
               }
             }
@@ -985,12 +1023,15 @@
                 ]
               },
               "branch": {
+                "type": "array",
                 "minItems": 1
               },
               "possible_answers": {
+                "type": "array",
                 "maxItems": 0
               },
               "group": {
+                "type": "array",
                 "maxItems": 0
               }
             }
@@ -1028,6 +1069,7 @@
                 ]
               },
               "group": {
+                "type": "array",
                 "minItems": 1
               }
             }
@@ -1053,9 +1095,11 @@
           "then": {
             "properties": {
               "branch": {
+                "type": "array",
                 "maxItems": 0
               },
               "group": {
+                "type": "array",
                 "maxItems": 0
               }
             }
@@ -1078,6 +1122,7 @@
           "then": {
             "properties": {
               "question": {
+                "type": "string",
                 "maxLength": 255
               }
             }
@@ -1114,6 +1159,7 @@
           "if": {
             "properties": {
               "possible_answers": {
+                "type": "array",
                 "maxItems": 0
               }
             }
@@ -1394,7 +1440,124 @@
         }
       },
       "unevaluatedProperties": false
+    },
+    "project_mapping": {
+      "type": "object",
+      "title": "Project Mapping",
+      "description": "Mapping structure generated by project-mapping-service.js",
+      "required": [
+        "name",
+        "forms",
+        "map_index",
+        "is_default"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name of the mapping, e.g., 'EC5_AUTO'.",
+          "const": "EC5_AUTO"
+        },
+        "forms": {
+          "type": "object",
+          "description": "Mapped forms, keyed by form reference.",
+          "patternProperties": {
+            "^[a-f0-9]{32}_[a-f0-9]{13}$": {
+              "$ref": "#/$defs/mappedInputs"
+            }
+          },
+          "additionalProperties": false
+        },
+        "map_index": {
+          "type": "integer",
+          "description": "Mapping index.",
+          "const": 0
+        },
+        "is_default": {
+          "type": "boolean",
+          "description": "Indicates if this is the default mapping. For local import, always true",
+          "const": true
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "mappedInputs": {
+      "type": "object",
+      "description": "A collection of mapped input entries, keyed by input reference.",
+      "patternProperties": {
+        "^[a-f0-9]{32}(_[a-f0-9]{13})+$": {
+          "$ref": "#/$defs/mappedInputEntry"
+        }
+      },
+      "additionalProperties": false
+    },
+    "mappedInputEntry": {
+      "type": "object",
+      "title": "Mapped Input Entry",
+      "description": "Details for a single mapped input.",
+      "required": [
+        "hide",
+        "group",
+        "branch",
+        "map_to",
+        "possible_answers"
+      ],
+      "properties": {
+        "hide": {
+          "type": "boolean",
+          "description": "Whether this input should be hidden in the mapping.",
+          "const": false
+        },
+        "group": {
+          "description": "Mapped child inputs for a group, if applicable.",
+          "$ref": "#/$defs/mappedInputs"
+        },
+        "branch": {
+          "description": "Mapped child inputs for a branch, if applicable.",
+          "$ref": "#/$defs/mappedInputs"
+        },
+        "map_to": {
+          "type": "string",
+          "description": "The generated 'map_to' key for this input.",
+          "maxLength": 20,
+          "pattern": "^[A-Za-z0-9_]+$",
+          "not": {
+            "enum": [
+              "ec5_uuid",
+              "ec5_parent_uuid",
+              "ec5_branch_uuid",
+              "ec5_branch_owner_uuid"
+            ]
+          },
+          "$comment": "Server parity with RuleMappingInput: required|string|max:20|regex:/^[A-Za-z0-9\\_]+$/ + reserved map_to blacklist. Remaining server check that cannot be fully expressed in JSON Schema: map_to uniqueness within each form mapping."
+        },
+        "possible_answers": {
+          "type": "object",
+          "description": "Mapped possible answers for choice-based inputs, keyed by answer reference.",
+          "patternProperties": {
+            "^[a-f0-9]{13}$": {
+              "$ref": "#/$defs/mappedPossibleAnswer"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "mappedPossibleAnswer": {
+      "type": "object",
+      "title": "Mapped Possible Answer",
+      "description": "Details for a single mapped possible answer.",
+      "required": [
+        "map_to"
+      ],
+      "properties": {
+        "map_to": {
+          "type": "string",
+          "description": "The display label of the answer option."
+        }
+      },
+      "unevaluatedProperties": false
     }
   },
-  "$comment": "v2.2.4 — 2026-03-31"
+  "$comment": "v2.2.7 — 2024-05-15"
 }

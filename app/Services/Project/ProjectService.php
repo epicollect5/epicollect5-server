@@ -289,6 +289,9 @@ class ProjectService
         //[BUG] trim new lines form descriptions as these can cause issues with export and import
         $projectDefinition['project']['small_description'] = trim($projectDefinition['project']['small_description']);
         $projectDefinition['project']['description'] = trim($projectDefinition['project']['description']);
+        $projectDefinition['project']['homepage'] = '';
+        $projectDefinition['project']['logo_url'] = '';
+
 
         // [BUG] where small description is too short on old projects, add '_' to make it valid
         $smallDescriptionMinLength = config('epicollect.limits.project.small_desc.min');

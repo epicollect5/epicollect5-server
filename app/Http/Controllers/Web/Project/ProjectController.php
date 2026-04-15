@@ -65,12 +65,21 @@ class ProjectController
     public function downloadProjectDefinition(ProjectService $projectService)
     {
         $projectDefinition = $this->requestedProject()->getProjectDefinition()->getData();
+        $projectMapping = $this->requestedProject()->getProjectMapping()->getData();
+        $defaultMappingIndex = $this->requestedProject()->getProjectMapping()->getDefaultMapIndex();
+        $defaultMapping = $projectMapping[$defaultMappingIndex];
+
         //sanitise before download due to legacy bugs
         $payload = $projectService->sanitiseProjectDefinitionForExport($projectDefinition);
 
         return Response::toJSONFile(
-            ['data' => $payload],
-            $this->requestedProject()->slug . '.json'
+            [
+                'meta' => [
+                    'project_mapping' => [$defaultMapping]
+                ],
+                'data' => $payload
+            ],
+            $this->requestedProject()->slug . '.project.epicollect.json'
         );
     }
 
