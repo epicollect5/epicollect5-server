@@ -1,0 +1,306 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://epicollect.net/schemas/entry-data/v1.0.0",
+  "title": "Epicollect5 Stored Entry Data",
+  "description": "Schema for the normalised JSON persisted in entries.entry_data and branch_entries.entry_data.",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/entryEnvelope"
+    },
+    {
+      "$ref": "#/$defs/branchEntryEnvelope"
+    }
+  ],
+  "$defs": {
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    },
+    "formRef": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{32}_[a-f0-9]{13}$"
+    },
+    "inputRef": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{32}(_[a-f0-9]{13}){2,}$"
+    },
+    "optionalFormRef": {
+      "oneOf": [
+        {
+          "const": ""
+        },
+        {
+          "$ref": "#/$defs/formRef"
+        }
+      ]
+    },
+    "optionalInputRef": {
+      "oneOf": [
+        {
+          "const": ""
+        },
+        {
+          "$ref": "#/$defs/inputRef"
+        }
+      ]
+    },
+    "optionalUuid": {
+      "oneOf": [
+        {
+          "const": ""
+        },
+        {
+          "$ref": "#/$defs/uuid"
+        }
+      ]
+    },
+    "isoInstant": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+    },
+    "projectVersion": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$"
+    },
+    "locationAnswer": {
+      "type": "object",
+      "required": [
+        "accuracy",
+        "latitude",
+        "longitude"
+      ],
+      "properties": {
+        "accuracy": {
+          "type": "number"
+        },
+        "latitude": {
+          "type": "number",
+          "minimum": -90,
+          "maximum": 90
+        },
+        "longitude": {
+          "type": "number",
+          "minimum": -180,
+          "maximum": 180
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "answerValue": {
+      "description": "Validated answer values persisted in entry_data. Jumped answers are stored as an empty string.",
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "$ref": "#/$defs/locationAnswer"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "answerItem": {
+      "type": "object",
+      "required": [
+        "answer",
+        "was_jumped"
+      ],
+      "properties": {
+        "answer": {
+          "$ref": "#/$defs/answerValue"
+        },
+        "was_jumped": {
+          "type": "boolean"
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "answersMap": {
+      "type": "object",
+      "propertyNames": {
+        "$ref": "#/$defs/inputRef"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/answerItem"
+      }
+    },
+    "attributes": {
+      "type": "object",
+      "required": [
+        "form"
+      ],
+      "properties": {
+        "form": {
+          "type": "object",
+          "required": [
+            "ref",
+            "type"
+          ],
+          "properties": {
+            "ref": {
+              "$ref": "#/$defs/formRef"
+            },
+            "type": {
+              "const": "hierarchy"
+            }
+          },
+          "unevaluatedProperties": false
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "relationships": {
+      "type": "object",
+      "required": [
+        "branch",
+        "parent"
+      ],
+      "properties": {
+        "branch": {
+          "type": "object",
+          "required": [
+            "data"
+          ],
+          "properties": {
+            "data": {
+              "type": "object",
+              "required": [
+                "owner_input_ref",
+                "owner_entry_uuid"
+              ],
+              "properties": {
+                "owner_input_ref": {
+                  "$ref": "#/$defs/optionalInputRef"
+                },
+                "owner_entry_uuid": {
+                  "$ref": "#/$defs/optionalUuid"
+                }
+              },
+              "unevaluatedProperties": false
+            }
+          },
+          "unevaluatedProperties": false
+        },
+        "parent": {
+          "type": "object",
+          "required": [
+            "data"
+          ],
+          "properties": {
+            "data": {
+              "type": "object",
+              "required": [
+                "parent_form_ref",
+                "parent_entry_uuid"
+              ],
+              "properties": {
+                "parent_form_ref": {
+                  "$ref": "#/$defs/optionalFormRef"
+                },
+                "parent_entry_uuid": {
+                  "$ref": "#/$defs/optionalUuid"
+                }
+              },
+              "unevaluatedProperties": false
+            }
+          },
+          "unevaluatedProperties": false
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "entryBody": {
+      "type": "object",
+      "required": [
+        "title",
+        "answers",
+        "created_at",
+        "entry_uuid",
+        "project_version"
+      ],
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "answers": {
+          "$ref": "#/$defs/answersMap"
+        },
+        "created_at": {
+          "$ref": "#/$defs/isoInstant"
+        },
+        "entry_uuid": {
+          "$ref": "#/$defs/uuid"
+        },
+        "project_version": {
+          "$ref": "#/$defs/projectVersion"
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "entryEnvelope": {
+      "type": "object",
+      "required": [
+        "id",
+        "type",
+        "entry",
+        "attributes",
+        "relationships"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "type": {
+          "const": "entry"
+        },
+        "entry": {
+          "$ref": "#/$defs/entryBody"
+        },
+        "attributes": {
+          "$ref": "#/$defs/attributes"
+        },
+        "relationships": {
+          "$ref": "#/$defs/relationships"
+        }
+      },
+      "unevaluatedProperties": false,
+      "$comment": "Application logic must ensure id matches entry.entry_uuid."
+    },
+    "branchEntryEnvelope": {
+      "type": "object",
+      "required": [
+        "id",
+        "type",
+        "branch_entry",
+        "attributes",
+        "relationships"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "type": {
+          "const": "branch_entry"
+        },
+        "branch_entry": {
+          "$ref": "#/$defs/entryBody"
+        },
+        "attributes": {
+          "$ref": "#/$defs/attributes"
+        },
+        "relationships": {
+          "$ref": "#/$defs/relationships"
+        }
+      },
+      "unevaluatedProperties": false,
+      "$comment": "Application logic must ensure id matches branch_entry.entry_uuid."
+    }
+  }
+}

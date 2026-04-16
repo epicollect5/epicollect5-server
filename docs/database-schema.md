@@ -240,6 +240,87 @@ Notes:
 - The foreign key from `project_id` to `projects.id` was dropped in 2023.
 - The original migration sets compressed row format for this table.
 
+Persisted JSON contracts:
+- `entry_data` stores the normalised entry envelope described by `public/schemas/entry-data.schema.json`
+- `geo_json_data` stores a location index described by `public/schemas/geo-json-data.schema.json`
+
+Example `entry_data` value:
+
+```json
+{
+  "id": "3ac0f40b-5ca2-4c29-8db4-c9758784128a",
+  "type": "entry",
+  "entry": {
+    "title": "Corporis voluptatem soluta quisquam sit odio voluptas est.",
+    "answers": {
+      "1e7640c890164034a4cff02ba2d99a52_5784e0609397d_5784e066e710d": {
+        "answer": "Corporis voluptatem soluta quisquam sit odio voluptas est.",
+        "was_jumped": false
+      },
+      "1e7640c890164034a4cff02ba2d99a52_5784e0609397d_5810ba45ae824": {
+        "answer": {
+          "accuracy": 7,
+          "latitude": 61.886241,
+          "longitude": -65.348699
+        },
+        "was_jumped": false
+      }
+    },
+    "created_at": "2026-04-09T16:39:09.000Z",
+    "entry_uuid": "3ac0f40b-5ca2-4c29-8db4-c9758784128a",
+    "project_version": "2026-04-09 18:31:16"
+  },
+  "attributes": {
+    "form": {
+      "ref": "1e7640c890164034a4cff02ba2d99a52_5784e0609397d",
+      "type": "hierarchy"
+    }
+  },
+  "relationships": {
+    "branch": {
+      "data": {
+        "owner_input_ref": "",
+        "owner_entry_uuid": ""
+      }
+    },
+    "parent": {
+      "data": {
+        "parent_form_ref": "",
+        "parent_entry_uuid": ""
+      }
+    }
+  }
+}
+```
+
+Example `geo_json_data` value:
+
+```json
+{
+  "1e7640c890164034a4cff02ba2d99a52_5784e0609397d_5810ba45ae824": {
+    "id": "3ac0f40b-5ca2-4c29-8db4-c9758784128a",
+    "type": "Feature",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        -65.348699,
+        61.886241
+      ]
+    },
+    "properties": {
+      "uuid": "3ac0f40b-5ca2-4c29-8db4-c9758784128a",
+      "title": "Corporis voluptatem soluta quisquam sit odio voluptas est.",
+      "accuracy": 7,
+      "created_at": "2026-04-09",
+      "possible_answers": {
+        "5784e0e6e711f": 1,
+        "5784e108e7124": 1
+      }
+    }
+  }
+}
+```
+
 ### `branch_entries`
 
 Purpose: branch form submissions owned by an entry.
@@ -276,6 +357,8 @@ Foreign keys:
 Notes:
 - The foreign key from `project_id` to `projects.id` was dropped in 2023.
 - The original migration sets compressed row format for this table.
+
+`branch_entries.entry_data` and `branch_entries.geo_json_data` use the same published schemas as `entries`, with `type` set to `branch_entry` and the branch ownership fields populated under `relationships.branch.data`.
 
 ### `system_stats`
 

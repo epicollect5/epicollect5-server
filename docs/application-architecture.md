@@ -248,6 +248,185 @@ The architecture treats entry writes as a coordinated workflow:
 - update counters
 - move media files when needed
 
+Active API payload types handled in this codebase are:
+- `entry`
+- `branch_entry`
+- `file_entry`
+- `delete`
+
+`archive` is not an active entry API payload type. The remaining reference in `EntryStructureDTO` was legacy commentary rather than a live validator/controller contract.
+
+Published request schemas:
+- `public/schemas/file-entry-payload.schema.json`
+- `public/schemas/delete-entry-payload.schema.json`
+
+Representative `file_entry` upload payload:
+
+```json
+{
+  "data": {
+    "type": "file_entry",
+    "id": "941c3f6d-025c-49b5-b1e9-dd727d38ec98",
+    "attributes": {
+      "form": {
+        "ref": "3f15caf2bfc8480e9cca098435dbf8d3_59527e36cf2a1",
+        "type": "hierarchy"
+      }
+    },
+    "relationships": {
+      "parent": {
+        "data": {
+          "parent_form_ref": "",
+          "parent_entry_uuid": ""
+        }
+      },
+      "branch": {
+        "data": {
+          "owner_input_ref": "",
+          "owner_entry_uuid": ""
+        }
+      }
+    },
+    "file_entry": {
+      "entry_uuid": "941c3f6d-025c-49b5-b1e9-dd727d38ec98",
+      "name": "941c3f6d-025c-49b5-b1e9-dd727d38ec98_1775752749.jpg",
+      "type": "photo",
+      "input_ref": "3f15caf2bfc8480e9cca098435dbf8d3_59527e36cf2a1_59527e36cf2a2",
+      "project_version": "2026-04-09 18:31:16",
+      "created_at": "2026-04-09T16:39:09.000Z",
+      "device_id": "android-device-id",
+      "platform": "Android"
+    }
+  }
+}
+```
+
+Representative `delete` payload:
+
+```json
+{
+  "data": {
+    "type": "delete",
+    "id": "941c3f6d-025c-49b5-b1e9-dd727d38ec98",
+    "attributes": {
+      "form": {
+        "ref": "3f15caf2bfc8480e9cca098435dbf8d3_59527e36cf2a1",
+        "type": "hierarchy"
+      },
+      "branch_counts": null,
+      "child_counts": 0
+    },
+    "relationships": {
+      "branch": {
+        "data": {
+          "owner_input_ref": "",
+          "owner_entry_uuid": ""
+        }
+      },
+      "parent": {
+        "data": {
+          "parent_form_ref": "",
+          "parent_entry_uuid": ""
+        }
+      },
+      "user": {
+        "data": {
+          "id": 1
+        }
+      }
+    },
+    "delete": {
+      "entry_uuid": "941c3f6d-025c-49b5-b1e9-dd727d38ec98"
+    }
+  }
+}
+```
+
+Persisted JSON is stored as a normalised contract rather than as the raw upload payload:
+- `entry_data` stores the envelope returned by `EntryStructureDTO::getValidatedEntry()`
+- `geo_json_data` stores one GeoJSON `Feature` per location input, keyed by input ref
+
+Published schemas:
+- `public/schemas/entry-data.schema.json`
+- `public/schemas/geo-json-data.schema.json`
+
+Representative `entry_data` shape:
+
+```json
+{
+  "id": "3ac0f40b-5ca2-4c29-8db4-c9758784128a",
+  "type": "entry",
+  "entry": {
+    "title": "Corporis voluptatem soluta quisquam sit odio voluptas est.",
+    "answers": {
+      "1e7640c890164034a4cff02ba2d99a52_5784e0609397d_5784e066e710d": {
+        "answer": "Corporis voluptatem soluta quisquam sit odio voluptas est.",
+        "was_jumped": false
+      },
+      "1e7640c890164034a4cff02ba2d99a52_5784e0609397d_5810ba45ae824": {
+        "answer": {
+          "accuracy": 7,
+          "latitude": 61.886241,
+          "longitude": -65.348699
+        },
+        "was_jumped": false
+      }
+    },
+    "created_at": "2026-04-09T16:39:09.000Z",
+    "entry_uuid": "3ac0f40b-5ca2-4c29-8db4-c9758784128a",
+    "project_version": "2026-04-09 18:31:16"
+  },
+  "attributes": {
+    "form": {
+      "ref": "1e7640c890164034a4cff02ba2d99a52_5784e0609397d",
+      "type": "hierarchy"
+    }
+  },
+  "relationships": {
+    "branch": {
+      "data": {
+        "owner_input_ref": "",
+        "owner_entry_uuid": ""
+      }
+    },
+    "parent": {
+      "data": {
+        "parent_form_ref": "",
+        "parent_entry_uuid": ""
+      }
+    }
+  }
+}
+```
+
+Representative `geo_json_data` shape:
+
+```json
+{
+  "1e7640c890164034a4cff02ba2d99a52_5784e0609397d_5810ba45ae824": {
+    "id": "3ac0f40b-5ca2-4c29-8db4-c9758784128a",
+    "type": "Feature",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        -65.348699,
+        61.886241
+      ]
+    },
+    "properties": {
+      "uuid": "3ac0f40b-5ca2-4c29-8db4-c9758784128a",
+      "title": "Corporis voluptatem soluta quisquam sit odio voluptas est.",
+      "accuracy": 7,
+      "created_at": "2026-04-09",
+      "possible_answers": {
+        "5784e0e6e711f": 1,
+        "5784e108e7124": 1
+      }
+    }
+  }
+}
+```
+
 ### Users and providers
 
 Authentication data is split between:

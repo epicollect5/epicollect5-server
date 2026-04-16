@@ -1,0 +1,237 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://epicollect.net/schemas/delete-entry-payload/v1.0.0",
+  "title": "Epicollect5 Delete Entry Payload",
+  "description": "Schema for the single-entry deletion payload posted by the dataviewer delete action.",
+  "type": "object",
+  "required": [
+    "data"
+  ],
+  "properties": {
+    "data": {
+      "$ref": "#/$defs/deleteEnvelope"
+    }
+  },
+  "unevaluatedProperties": false,
+  "$defs": {
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    },
+    "formRef": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{32}_[a-f0-9]{13}$"
+    },
+    "inputRef": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{32}(_[a-f0-9]{13}){2,}$"
+    },
+    "optionalFormRef": {
+      "oneOf": [
+        {
+          "const": ""
+        },
+        {
+          "$ref": "#/$defs/formRef"
+        }
+      ]
+    },
+    "optionalInputRef": {
+      "oneOf": [
+        {
+          "const": ""
+        },
+        {
+          "$ref": "#/$defs/inputRef"
+        }
+      ]
+    },
+    "optionalUuid": {
+      "oneOf": [
+        {
+          "const": ""
+        },
+        {
+          "$ref": "#/$defs/uuid"
+        }
+      ]
+    },
+    "attributes": {
+      "type": "object",
+      "required": [
+        "form"
+      ],
+      "properties": {
+        "form": {
+          "type": "object",
+          "required": [
+            "ref",
+            "type"
+          ],
+          "properties": {
+            "ref": {
+              "$ref": "#/$defs/formRef"
+            },
+            "type": {
+              "const": "hierarchy"
+            }
+          },
+          "unevaluatedProperties": false
+        },
+        "branch_counts": {
+          "type": [
+            "object",
+            "array",
+            "integer",
+            "null"
+          ]
+        },
+        "child_counts": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "relationships": {
+      "type": "object",
+      "required": [
+        "parent",
+        "branch"
+      ],
+      "properties": {
+        "parent": {
+          "oneOf": [
+            {
+              "type": "object",
+              "maxProperties": 0
+            },
+            {
+              "type": "object",
+              "required": [
+                "data"
+              ],
+              "properties": {
+                "data": {
+                  "type": "object",
+                  "required": [
+                    "parent_form_ref",
+                    "parent_entry_uuid"
+                  ],
+                  "properties": {
+                    "parent_form_ref": {
+                      "$ref": "#/$defs/optionalFormRef"
+                    },
+                    "parent_entry_uuid": {
+                      "$ref": "#/$defs/optionalUuid"
+                    }
+                  },
+                  "unevaluatedProperties": false
+                }
+              },
+              "unevaluatedProperties": false
+            }
+          ]
+        },
+        "branch": {
+          "oneOf": [
+            {
+              "type": "object",
+              "maxProperties": 0
+            },
+            {
+              "type": "object",
+              "required": [
+                "data"
+              ],
+              "properties": {
+                "data": {
+                  "type": "object",
+                  "required": [
+                    "owner_input_ref",
+                    "owner_entry_uuid"
+                  ],
+                  "properties": {
+                    "owner_input_ref": {
+                      "$ref": "#/$defs/optionalInputRef"
+                    },
+                    "owner_entry_uuid": {
+                      "$ref": "#/$defs/optionalUuid"
+                    }
+                  },
+                  "unevaluatedProperties": false
+                }
+              },
+              "unevaluatedProperties": false
+            }
+          ]
+        },
+        "user": {
+          "type": "object",
+          "required": [
+            "data"
+          ],
+          "properties": {
+            "data": {
+              "type": "object",
+              "required": [
+                "id"
+              ],
+              "properties": {
+                "id": {
+                  "type": "integer"
+                }
+              },
+              "unevaluatedProperties": false
+            }
+          },
+          "unevaluatedProperties": false
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "deleteNode": {
+      "type": "object",
+      "required": [
+        "entry_uuid"
+      ],
+      "properties": {
+        "entry_uuid": {
+          "$ref": "#/$defs/uuid"
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "deleteEnvelope": {
+      "type": "object",
+      "required": [
+        "type",
+        "id",
+        "attributes",
+        "relationships",
+        "delete"
+      ],
+      "properties": {
+        "type": {
+          "const": "delete"
+        },
+        "id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "attributes": {
+          "$ref": "#/$defs/attributes"
+        },
+        "relationships": {
+          "$ref": "#/$defs/relationships"
+        },
+        "delete": {
+          "$ref": "#/$defs/deleteNode"
+        }
+      },
+      "unevaluatedProperties": false,
+      "$comment": "Application logic must ensure data.id matches data.delete.entry_uuid."
+    }
+  }
+}
