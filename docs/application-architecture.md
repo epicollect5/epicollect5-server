@@ -69,7 +69,7 @@ Guard and middleware:
 
 ### 1. Routing and middleware
 
-The first layer is route grouping plus middleware in [Kernel.php](/Users/mmenegazzo/Sites/epicollect5-server/app/Http/Kernel.php).
+The first layer is route grouping plus middleware in [Kernel.php](../app/Http/Kernel.php).
 
 Important middleware responsibilities:
 - authentication and guest redirection
