@@ -85,3 +85,7 @@ Always use these flags when running CLI tools:
 - phpcs: `vendor/bin/phpcs --report=emacs -q`
 - PHP-CS-Fixer: `vendor/bin/php-cs-fixer fix --show-progress=none -q -n`
 - Rector: `vendor/bin/rector process --no-progress-bar --output-format=github`Copy
+
+# Writing Docs
+
+- Write schema docs into plain Markdown sections and bullet lists so it renders consistently in the docs' viewer.
