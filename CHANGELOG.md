@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 12.5.19
+
+- Data Editor 0.0.5 (Removed Mapbox dependency)
+
 # 12.5.18
 
 - Improved rate limiting detection to recognize requests from Google applications.
