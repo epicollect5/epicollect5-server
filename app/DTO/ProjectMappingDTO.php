@@ -15,12 +15,18 @@ use ec5\Services\Mapping\ProjectMappingService;
 
 class ProjectMappingDTO extends ProjectDTOBase
 {
-    public function create(array $data): void
+    public function init(array|string $data): void
     {
         // Older rows may contain more than one default mapping due to a bug.
         // Normalize on read so the UI and API see a single effective default
         // without rewriting the stored JSON.
-        $this->data = $this->normalizeDefaultMappings($data);
+        parent::init($data);
+        $this->data = $this->normalizeDefaultMappings($this->data);
+    }
+
+    public function create(array $data): void
+    {
+        $this->data = $data;
     }
 
     public function updateProjectDetails(array $data)
@@ -170,7 +176,7 @@ class ProjectMappingDTO extends ProjectDTOBase
 
         foreach ($data as $mapIndex => $mapping) {
             //cache default mapping
-            if (($mapping['is_default']) === true) {
+            if (($mapping['is_default'] ?? false) === true) {
                 $defaultMappings[] = $mapIndex;
             }
             $data[$mapIndex]['is_default'] = false;
