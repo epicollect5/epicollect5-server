@@ -17,7 +17,10 @@ class ProjectMappingDTO extends ProjectDTOBase
 {
     public function create(array $data): void
     {
-        $this->data = $data;
+        // Older rows may contain more than one default mapping due to a bug.
+        // Normalize on read so the UI and API see a single effective default
+        // without rewriting the stored JSON.
+        $this->data = $this->normalizeDefaultMappings($data);
     }
 
     public function updateProjectDetails(array $data)
@@ -92,6 +95,7 @@ class ProjectMappingDTO extends ProjectDTOBase
 
     public function updateMap(int $mapIndex, array $map): void
     {
+        $map['is_default'] = $this->data[$mapIndex]['is_default'];
         $this->data[$mapIndex] = $map;
     }
 
@@ -158,5 +162,42 @@ class ProjectMappingDTO extends ProjectDTOBase
             'map_name' => $this->data[$mapIndex]['name'],
             'map_index' => $mapIndex
         ];
+    }
+
+    private function normalizeDefaultMappings(array $data): array
+    {
+        $defaultMappings = [];
+
+        foreach ($data as $mapIndex => $mapping) {
+            //cache default mapping
+            if (($mapping['is_default']) === true) {
+                $defaultMappings[] = $mapIndex;
+            }
+            $data[$mapIndex]['is_default'] = false;
+        }
+
+        //if only one mapping found, restore it as is
+        if (count($defaultMappings) === 1) {
+            $data[$defaultMappings[0]]['is_default'] = true;
+            return $data;
+        }
+
+        if (count($defaultMappings) > 1) {
+            // If both EC5 AUTO and a custom mapping are marked as default,
+            // prefer the custom one and let the user correct it in the UI.
+            foreach ($defaultMappings as $mapIndex) {
+                if ($mapIndex !== 0) {
+                    $data[$mapIndex]['is_default'] = true;
+                    return $data;
+                }
+            }
+        }
+
+        if (isset($data[0])) {
+            // Fall back to EC5 AUTO when no valid single default exists.
+            $data[0]['is_default'] = true;
+        }
+
+        return $data;
     }
 }
