@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 12.5.20
+
+- Dataviewer 0.1.7 with removal of pink background from day picker
+
 # 12.5.19
 
 - Data Editor 0.0.5 (Removed Mapbox dependency)
