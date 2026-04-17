@@ -29,7 +29,6 @@ window.EC5.mapping = window.EC5.mapping || {};
         mapping[mapIndex].name = mapName;
         mapping[mapIndex].forms = {};
         mapping[mapIndex].map_index = mapIndex;
-        mapping[mapIndex].is_default = window.EC5.mapping.getDefaultMapIndex() === mapIndex;
 
         tables.each(function (index, table) {
 
@@ -159,8 +158,7 @@ window.EC5.mapping = window.EC5.mapping || {};
                                                     isMappingValid = false;
                                                     $(nestedGroupInput).find('.mapping-data__map-to input').parent().addClass('has-error');
                                                 }
-                                            }
-                                            else {
+                                            } else {
                                                 //this row is the possible answers for the current nested group input question
                                                 $(nestedGroupInput).find('.mapping-data__possible_answer__map-to input').each(function (index, inputItem) {
 
@@ -187,8 +185,7 @@ window.EC5.mapping = window.EC5.mapping || {};
                                         //skip by nestedGroupInputs.length to skip to the next branch input
                                         rowIndex += nestedGroupInputs.length;
                                     }
-                                }
-                                else {
+                                } else {
                                     //this row is the possible answers for the current branch question
                                     $(branchInput)
                                         .find('.mapping-data__possible_answer__map-to input')
@@ -254,8 +251,7 @@ window.EC5.mapping = window.EC5.mapping || {};
                                         isMappingValid = false;
                                         $(groupInput).find('.mapping-data__map-to input').parent().addClass('has-error');
                                     }
-                                }
-                                else {
+                                } else {
                                     //this row is the possible answers for the current group question
                                     $(groupInput).find('.mapping-data__possible_answer__map-to input').each(function (index, inputItem) {
 
@@ -283,8 +279,7 @@ window.EC5.mapping = window.EC5.mapping || {};
                             break;
                     }
                     rowIndex++;
-                }
-                else {
+                } else {
                     //get possible answers for current input
                     $(rows[rowIndex]).find('.mapping-data__possible_answer__map-to input').each(function (index, inputItem) {
 
@@ -320,10 +315,9 @@ window.EC5.mapping = window.EC5.mapping || {};
                     if ($.inArray(item.trim(), duplicates) === -1) {
                         //no, add it
                         duplicates.push(item.trim());
-                    }
-                    else {
+                    } else {
                         //we have a duplicate, bail out
-                        hasDuplicateIdentifier = { key: item, formRef: formIndex };
+                        hasDuplicateIdentifier = {key: item, formRef: formIndex};
                         isMappingValid = false;
                         console.log(item);
                         return false;
@@ -332,24 +326,20 @@ window.EC5.mapping = window.EC5.mapping || {};
             });
         });
 
-        console.log(JSON.stringify(mapping[mapIndex]));
-
         if (isMappingValid) {
             //post mapping
             window.EC5.projectUtils.postRequest(postURL + '/update', {
                 action: action,
                 map_index: mapIndex,
                 mapping: mapping[mapIndex]
-            }).done(function (response) {
-                // console.log(JSON.stringify(response));
+            }).done(function () {
                 window.EC5.overlay.fadeOut();
                 window.EC5.toast.showSuccess(mapName + ' updated');
             }).fail(function (error) {
                 window.EC5.overlay.fadeOut();
                 window.EC5.projectUtils.showErrors(error);
             });
-        }
-        else {
+        } else {
             if (hasDuplicateIdentifier) {
                 //highlight duplicate identifiers in the dom
                 tables.each(function (index, table) {
@@ -367,8 +357,7 @@ window.EC5.mapping = window.EC5.mapping || {};
                 });
 
                 window.EC5.toast.showError(mapName + ' has got duplicate identifier: ' + hasDuplicateIdentifier.key);
-            }
-            else {
+            } else {
                 window.EC5.toast.showError(mapName + ' has got invalid identifier(s)');
             }
             window.EC5.overlay.fadeOut();
