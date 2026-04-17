@@ -35,8 +35,14 @@ use Illuminate\Support\Str;
 $factory->define(User::class, function (Faker\Generator $faker) {
 
     static $password;
+    static $testUserId = null;
+
+    if ($testUserId === null) {
+        $testUserId = config('testing.TEST_USER_ID_BASE');
+    }
 
     return [
+        'id' => $testUserId++,
         'name' => $faker->name,
         'last_name' => $faker->lastName,
         'email' => $faker->safeEmail,

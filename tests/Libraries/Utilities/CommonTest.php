@@ -99,4 +99,46 @@ class CommonTest extends TestCase
         $this->assertStringNotContainsString($existingRef, json_encode($result));
         $this->assertStringContainsString($newRef, json_encode($result));
     }
+
+    public function test_generated_numeric_constraints_stay_within_php_limits(): void
+    {
+        for ($projectIndex = 0; $projectIndex < 10; $projectIndex++) {
+            $projectDefinition = ProjectDefinitionGenerator::createProject(3);
+
+            foreach ($projectDefinition['data']['project']['forms'] as $form) {
+                $this->assertGeneratedNumericConstraintsWithinBounds($form['inputs']);
+            }
+        }
+    }
+
+    private function assertGeneratedNumericConstraintsWithinBounds(array $inputs): void
+    {
+        foreach ($inputs as $input) {
+            if ($input['type'] === 'integer') {
+                $this->assertIsInt($input['min']);
+                $this->assertIsInt($input['max']);
+                $this->assertGreaterThanOrEqual(-PHP_INT_MAX, $input['min']);
+                $this->assertLessThanOrEqual(PHP_INT_MAX, $input['max']);
+                $this->assertTrue($input['min'] <= $input['max']);
+            }
+
+            if ($input['type'] === 'decimal') {
+                $this->assertMatchesRegularExpression('/^-?(?:\d+(?:\.\d*)?|\.\d+)$/', $input['min']);
+                $this->assertMatchesRegularExpression('/^-?(?:\d+(?:\.\d*)?|\.\d+)$/', $input['max']);
+                $this->assertNotFalse(filter_var($input['min'], FILTER_VALIDATE_FLOAT));
+                $this->assertNotFalse(filter_var($input['max'], FILTER_VALIDATE_FLOAT));
+                $this->assertGreaterThanOrEqual(-PHP_FLOAT_MAX, (float) $input['min']);
+                $this->assertLessThanOrEqual(PHP_FLOAT_MAX, (float) $input['max']);
+                $this->assertTrue((float) $input['min'] <= (float) $input['max']);
+            }
+
+            if (!empty($input['group'])) {
+                $this->assertGeneratedNumericConstraintsWithinBounds($input['group']);
+            }
+
+            if (!empty($input['branch'])) {
+                $this->assertGeneratedNumericConstraintsWithinBounds($input['branch']);
+            }
+        }
+    }
 }

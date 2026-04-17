@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'TEST_USER_ID_BASE' => (int) env('TEST_USER_ID_BASE', 900000),
     'LOCAL_SERVER' => env('LOCAL_SERVER'),
     'UNIT_TEST_RANDOM_EMAIL' => env('UNIT_TEST_RANDOM_EMAIL'),
     'SUPER_ADMIN_EMAIL' => env('SUPER_ADMIN_EMAIL'),
