@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 12.5.21
+
+- Middleware updates to bail out on export for trashed and archived projects
+
 # 12.5.20
 
 - Dataviewer 0.1.7 with removal of pink background from day picker
