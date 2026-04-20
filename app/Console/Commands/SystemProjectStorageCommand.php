@@ -96,7 +96,8 @@ class SystemProjectStorageCommand extends Command
                 'photo_files' => $mediaStats['counters']['photo'],
                 'audio_files' => $mediaStats['counters']['audio'],
                 'video_files' => $mediaStats['counters']['video'],
-                'total_bytes_updated_at' => now()
+                'total_bytes_updated_at' => now(),
+                'updated_at' => now()
             ]);
     }
 }
