@@ -12,7 +12,10 @@ class BranchEntriesTotalsService
 
     private function getTotal(): array
     {
-        return $this->getEntriesTotal($this->table)->toArray();
+        // Use cached project_stats branch counts for internal/system reporting.
+        // We accept about 0.5% drift in exchange for avoiding a full count() on branch_entries,
+        // which is acceptable here because these totals are rounded anyway.
+        return $this->getBranchEntriesTotalFromProjectStats()->toArray();
     }
 
     private function getYesterday(): array
