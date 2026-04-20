@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 12.5.22
+
+- Retrieving entry and branch entry totals from the project_stats table rather full counts(*)
+
 # 12.5.21
 
 - Middleware updates to bail out on export for trashed and archived projects
