@@ -5,14 +5,14 @@ namespace ec5\Http\Middleware;
 use ec5\DTO\ProjectDTO;
 use ec5\Models\OAuth\OAuthClientProject;
 use Illuminate\Http\Request;
+use Laminas\Diactoros\ResponseFactory;
+use Laminas\Diactoros\ServerRequestFactory;
+use Laminas\Diactoros\StreamFactory;
+use Laminas\Diactoros\UploadedFileFactory;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use League\OAuth2\Server\ResourceServer;
 use Log;
 use Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory;
-use Laminas\Diactoros\ResponseFactory;
-use Laminas\Diactoros\StreamFactory;
-use Laminas\Diactoros\UploadedFileFactory;
-use Laminas\Diactoros\ServerRequestFactory;
 
 class ProjectPermissionsApi extends RequestAttributesMiddleware
 {
@@ -55,6 +55,14 @@ class ProjectPermissionsApi extends RequestAttributesMiddleware
      */
     public function hasPermission(): bool
     {
+        if (
+            $this->requestedProject->isTrashed() ||
+            $this->requestedProject->isArchived()
+        ) {
+            $this->error = 'ec5_11';
+            return false;
+        }
+
         $responseFactory = new ResponseFactory();
         $streamFactory = new StreamFactory();
         $uploadedFileFactory = new UploadedFileFactory();

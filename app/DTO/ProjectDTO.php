@@ -4,13 +4,13 @@ namespace ec5\DTO;
 
 use ec5\Http\Validation\Project\RuleProjectDefinition;
 use ec5\Libraries\Utilities\Common;
+use ec5\Services\Mapping\ProjectMappingService;
 use Exception;
 use Illuminate\Support\Str;
 use Ramsey\Uuid\Uuid;
 use ReflectionClass;
 use ReflectionProperty;
 use stdClass;
-use ec5\Services\Mapping\ProjectMappingService;
 
 /*
 |--------------------------------------------------------------------------
@@ -456,6 +456,11 @@ class ProjectDTO
     public function isTrashed(): bool
     {
         return $this->status === config('epicollect.strings.project_status.trashed');
+    }
+
+    public function isArchived(): bool
+    {
+        return $this->status === config('epicollect.strings.project_status.archived');
     }
 
     public function canBulkUpload(): string
