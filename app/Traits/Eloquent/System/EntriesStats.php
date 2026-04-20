@@ -11,36 +11,45 @@ trait EntriesStats
 {
     public function getEntriesTotalFromProjectStats(): Collection
     {
-        $projectsTable = config('epicollect.tables.projects');
         $projectStatsTable = config('epicollect.tables.project_stats');
 
-        return DB::table($projectStatsTable)
-            ->join($projectsTable, $projectsTable . '.id', '=', $projectStatsTable . '.project_id')
-            ->selectRaw("COALESCE(SUM($projectStatsTable.total_entries), 0) as entries_total, $projectsTable.access")
-            ->groupBy($projectsTable . '.access')
-            ->orderBy($projectsTable . '.access')
-            ->get();
+        return $this->getEntriesStatsFromProjectStats("$projectStatsTable.total_entries");
     }
 
     public function getBranchEntriesTotalFromProjectStats(): Collection
     {
+        return $this->getEntriesStatsFromProjectStats(
+            'branch_entries_stats.branch_entries_total',
+            function ($query, $projectStatsTable) {
+                $query->leftJoin(
+                    DB::raw(
+                        "JSON_TABLE(COALESCE($projectStatsTable.branch_counts, JSON_OBJECT()), '$.*' " .
+                        "COLUMNS (branch_entries_total INT PATH '$.count')) as branch_entries_stats"
+                    ),
+                    DB::raw('1'),
+                    '=',
+                    DB::raw('1')
+                );
+            }
+        );
+    }
+
+    /**
+     * Helper to fetch entry totals from project stats.
+     */
+    protected function getEntriesStatsFromProjectStats(string $sumExpression, ?callable $extraJoins = null): Collection
+    {
         $projectsTable = config('epicollect.tables.projects');
         $projectStatsTable = config('epicollect.tables.project_stats');
 
-        return DB::table($projectStatsTable)
-            ->join($projectsTable, $projectsTable . '.id', '=', $projectStatsTable . '.project_id')
-            ->leftJoin(
-                DB::raw(
-                    "JSON_TABLE(COALESCE($projectStatsTable.branch_counts, JSON_OBJECT()), '$.*' " .
-                    "COLUMNS (branch_entries_total INT PATH '$.count')) as branch_entries_stats"
-                ),
-                DB::raw('1'),
-                '=',
-                DB::raw('1')
-            )
-            ->selectRaw(
-                "COALESCE(SUM(branch_entries_stats.branch_entries_total), 0) as entries_total, $projectsTable.access"
-            )
+        $query = DB::table($projectStatsTable)
+            ->join($projectsTable, $projectsTable . '.id', '=', $projectStatsTable . '.project_id');
+
+        if ($extraJoins) {
+            $extraJoins($query, $projectStatsTable);
+        }
+
+        return $query->selectRaw("COALESCE(SUM($sumExpression), 0) as entries_total, $projectsTable.access")
             ->groupBy($projectsTable . '.access')
             ->orderBy($projectsTable . '.access')
             ->get();
