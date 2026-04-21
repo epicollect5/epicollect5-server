@@ -31,7 +31,7 @@ class ProjectStatsTest extends TestCase
             'video_files' => 30,
             'total_bytes' => 600,
             'total_files' => 60,
-            'total_bytes_updated_at' => $this->now,
+            'total_bytes_updated_at' => $this->now->copy()->subHour(),
             'updated_at' => $this->now->copy()->subHour()
         ]);
         $this->assertDatabaseHas('project_stats', [

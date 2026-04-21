@@ -50,11 +50,7 @@ return new class () extends Migration {
                         $timestamps[] = Carbon::parse($projectStatsRow->total_bytes_updated_at);
                     }
 
-                    $updatedAt = collect($timestamps)
-                        ->sortByDesc(function (Carbon $timestamp) {
-                            return $timestamp->getTimestamp();
-                        })
-                        ->first();
+                    $updatedAt = collect($timestamps)->max();
 
                     if (empty($updatedAt)) {
                         $updatedAt = ProjectStructure::where(
