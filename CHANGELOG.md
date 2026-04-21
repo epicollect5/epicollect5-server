@@ -1,5 +1,11 @@
 ## Release Notes
 
+# 12.5.23
+
+- Project mapping now enforces a single-default constraint—only one mapping can be default;
+- Updating a mapping will not create a second default, and legacy multi-default data is normalized on load.
+- UI mapping updates no longer attempt to override the default flag, preventing accidental changes.
+
 # 12.5.22
 
 - Retrieving entry and branch entry totals from the project_stats table rather full counts(*)
