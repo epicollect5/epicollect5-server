@@ -12,10 +12,13 @@ class EntriesTotalsService
 
     /**
      * Return the total number of entries (split by private and public)
+     * Uses cached project_stats totals for system/internal reporting.
+     * We accept about 0.5% drift in exchange for avoiding a full count() on the entries table,
+     * which is acceptable here because these totals are rounded anyway.
      */
     private function getTotal(): array
     {
-        return $this->getEntriesTotal($this->table)->toArray();
+        return $this->getEntriesTotalFromProjectStats()->toArray();
     }
 
     /**

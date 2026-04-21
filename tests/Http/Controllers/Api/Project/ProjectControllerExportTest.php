@@ -320,6 +320,52 @@ class ProjectControllerExportTest extends TestCase
         $this->clearDatabase(['user' => $this->user, 'project' => $this->project]);
     }
 
+    public function test_should_catch_export_project_when_project_is_trashed()
+    {
+        $this->setupProject();
+
+        $this->project->status = config('epicollect.strings.project_status.trashed');
+        $this->project->save();
+
+        $response = $this->json('GET', '/api/export/project/' . $this->project->slug);
+
+        $response->assertStatus(404)
+            ->assertExactJson([
+                "errors" => [
+                    [
+                        "code" => "ec5_11",
+                        "title" => "Project does not exist.",
+                        "source" => "middleware"
+                    ]
+                ]
+            ]);
+
+        $this->clearDatabase(['user' => $this->user, 'project' => $this->project]);
+    }
+
+    public function test_should_catch_export_project_when_project_is_archived()
+    {
+        $this->setupProject();
+
+        $this->project->status = config('epicollect.strings.project_status.archived');
+        $this->project->save();
+
+        $response = $this->json('GET', '/api/export/project/' . $this->project->slug);
+
+        $response->assertStatus(404)
+            ->assertExactJson([
+                "errors" => [
+                    [
+                        "code" => "ec5_11",
+                        "title" => "Project does not exist.",
+                        "source" => "middleware"
+                    ]
+                ]
+            ]);
+
+        $this->clearDatabase(['user' => $this->user, 'project' => $this->project]);
+    }
+
     //imp: the one below is a custom setup project method called only when needed
     //imp: since some tests do not need it, but we are not using transactions
     private function setupProject()

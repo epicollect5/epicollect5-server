@@ -138,8 +138,16 @@ class MediaService
                 $imageContent = stream_get_contents($stream);
                 fclose($stream);
 
+                // immutable when URL carries ?v= version token, no store otherwise:
+                // we want to leverage browser caching when possible,
+                // but we also want to make sure that user-submitted content (entry photos) is never served stale
+                $cacheControl = request('v')
+                    ? config('epicollect.media.cache_control.always')
+                    : config('epicollect.media.cache_control.never');
+
                 return response($imageContent, 200, [
                     'Content-Type' => $this->resolveContentType($type),
+                    'Cache-Control' => $cacheControl,
                 ]);
         }
     }
@@ -155,8 +163,15 @@ class MediaService
             return Response::toMediaStreamLocal(request(), $realFilepath, $type);
         }
 
-        return Response::make(file_get_contents($realFilepath), 200, [
-            'Content-Type' => $contentType
+        // Read file content directly so it's accessible in tests and streaming contexts
+        $fileContent = file_get_contents($realFilepath);
+        $cacheControl = request('v')
+            ? config('epicollect.media.cache_control.always')
+            : config('epicollect.media.cache_control.never');
+
+        return response($fileContent, 200, [
+            'Content-Type' => $contentType,
+            'Cache-Control' => $cacheControl,
         ]);
     }
 
@@ -196,7 +211,10 @@ class MediaService
                 }
             }
 
-            return Response::make($file, 200, ['Content-Type' => $contentType]);
+            return Response::make($file, 200, [
+                'Content-Type' => $contentType,
+                'Cache-Control' => config('epicollect.media.cache_control.always')
+            ]);
         }
 
         // Non-photo formats (audio/video) just return API 404

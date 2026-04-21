@@ -2,6 +2,7 @@
 
 namespace ec5\Console;
 
+use ec5\Console\Commands\GenerateHomePageCacheCommand;
 use ec5\Console\Commands\RemoveUnverifiedUsersCommand;
 use ec5\Console\Commands\SeedEntriesCommand;
 use ec5\Console\Commands\SeedMediaCommand;
@@ -26,6 +27,7 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         SystemStatsCommand::class,
         SystemStatsUploadCommand::class,
+        GenerateHomePageCacheCommand::class,
         RemoveUnverifiedUsersCommand::class,
         SystemCheckStorageCommand::class,
         SystemClearOpcache::class,
@@ -52,6 +54,14 @@ class Kernel extends ConsoleKernel
                     $exitCode = Artisan::call('system:stats-upload');
                     if ($exitCode !== 0) {
                         Log::error('system:stats-upload failed in scheduler', [
+                                'exit_code' => $exitCode,
+                                 'output' => trim(Artisan::output()),
+                             ]);
+                    }
+                    // Regenerate home page cache after stats update
+                    $exitCode = Artisan::call('system:cache-homepage');
+                    if ($exitCode !== 0) {
+                        Log::error('system:cache-homepage failed in scheduler', [
                                 'exit_code' => $exitCode,
                                  'output' => trim(Artisan::output()),
                              ]);

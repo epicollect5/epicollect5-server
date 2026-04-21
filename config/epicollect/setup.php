@@ -20,7 +20,11 @@ return [
         'email' => env('SYSTEM_EMAIL', 'system@example.com'),
         'app_link_enabled' => (bool) env('APP_LINK_ENABLED', false),
         'version' => env('PRODUCTION_SERVER_VERSION', '1.0.0'),
-        'storage_driver' => env('STORAGE_DRIVER', 'local')
+        'storage_driver' => env('STORAGE_DRIVER', 'local'),
+        'cache' => [
+            'homepage_cache_key' => 'homepage_cached_content',
+            'homepage_cache_ttl_hours' => 24, // in hours
+        ]
     ],
     'opencage' => [
         'endpoint' => env('OPENCAGE_ENDPOINT'),

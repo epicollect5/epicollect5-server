@@ -1,4 +1,6 @@
-<?php /** @noinspection DuplicatedCode */
+<?php
+
+/** @noinspection DuplicatedCode */
 
 namespace ec5\Http\Controllers\Web\Project;
 
@@ -12,7 +14,6 @@ use Response;
 
 class ProjectMappingController
 {
-
     use RequestAttributes;
 
     public function show()
@@ -100,8 +101,7 @@ class ProjectMappingController
     public function update(
         RuleMappingStructure $ruleMappingStructure,
         RuleMappingUpdate    $ruleMappingUpdate
-    )
-    {
+    ) {
         if (!$this->requestedProjectRole()->canEditProject()) {
             return view('errors.gen_error')->withErrors(['errors' => 'ec5_91']);
         }

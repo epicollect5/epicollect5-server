@@ -65,3 +65,16 @@ When writing PHP strings:
 
 - If the string contains mixed dynamic parts and reads better, prefer **explicit concatenation**:
     - `"Expected an index on " . $entriesTable . " covering ... Available indexes: " . json_encode($indexes)`
+- Formatting using Laravel Pint - psr12
+
+## Restrictions
+
+- **Tinker is strictly prohibited:** Copilot Agents must not use, invoke, or interact with Tinker in any form during
+  autonomous actions, suggestions, or when generating code within this repository.
+
+## Running Tools
+
+Always use these flags when running CLI tools:
+
+- Tests: `vendor/bin/phpunit --no-progress`
+- phpcs: `vendor/bin/phpcs --report=emacs -q`

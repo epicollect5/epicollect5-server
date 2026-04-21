@@ -3,7 +3,6 @@
     $updatedAt = $requestAttributes->requestedProject->getUpdatedAt();
     $createdAtUTC = Carbon::parse($requestAttributes->requestedProject->created_at)->setTimezone('UTC');
     $createdOnForHumans = $createdAtUTC->format('D d M Y, H:i');
-    $logoUrl = url('/api/internal/media/'.$requestAttributes->requestedProject->slug . '?type=photo&name=logo.jpg&format=project_thumb');
 @endphp
 {{-- Success Message --}}
 @if (session('projectCreated') && session('tab') === 'create')
@@ -39,7 +38,13 @@
                         <div class="project-logo-wrapper">
                             <img class="project-logo img-responsive img-circle" width="128" height="128"
                                  alt="Project logo"
-                                 src=" {{ $logoUrl }} ">
+                                 src="@if($requestAttributes->requestedProject->logo_url == '')
+                         {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
+                              @else
+                              {{ url('/api/internal/media/'.$requestAttributes->requestedProject->slug . '?type=photo&name=logo.jpg&format=project_thumb&v=' . strtotime($requestAttributes->requestedProject->structure_last_updated)) }}
+                              @endif"
+                            >
+
                             <div class="loader"></div>
                         </div>
                     </div>
@@ -286,26 +291,6 @@
 
 
 </div><!-- end row -->
-
-
-<div class="row">
-    <div class="col-sm-12 col-md-12 col-lg-12">
-        <div class="panel panel-default project-details-panel">
-            <div class="panel-heading">
-                <div class="panel-title">{{ trans('site.project_definition') }}</div>
-            </div>
-            <div class="panel-body">
-                <a class="btn btn-action"
-                   href="{{ url('/myprojects/'.$requestAttributes->requestedProject->slug.'/download-project-definition')}}">
-                    <i class="material-icons" style="margin-top:-2px">download</i>
-                    {{trans('site.export')}}
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-
-
 @if(config('epicollect.setup.system.app_link_enabled'))
     <div class="row flexbox">
         <div class="col-sm-12 col-md-12 col-lg-7 app-link-view__wrapper equal-height">
@@ -425,7 +410,7 @@
      data-js-status="{{ $requestAttributes->requestedProject->status }}"
      data-js-access="{{ $requestAttributes->requestedProject->access }}"
      data-js-visibility="{{ $requestAttributes->requestedProject->visibility }}"
-     data-js-logo_url="{{ $logoUrl }}"
+     data-js-logo_url="{{ $requestAttributes->requestedProject->logo_url }}"
      data-js-category="{{ $requestAttributes->requestedProject->category }}"
      data-js-slug="{{ $requestAttributes->requestedProject->slug }}"
      data-js-app_link_visibility="{{ $requestAttributes->requestedProject->app_link_visibility }}">

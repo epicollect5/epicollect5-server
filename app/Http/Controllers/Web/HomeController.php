@@ -6,8 +6,7 @@ use ec5\Http\Controllers\Controller;
 use ec5\Libraries\Utilities\Common;
 use ec5\Models\Project\Project;
 use ec5\Models\System\SystemStats;
-use Illuminate\Contracts\View\Factory;
-use Illuminate\View\View;
+use Illuminate\Support\Facades\Cache;
 use Log;
 use Throwable;
 
@@ -23,16 +22,24 @@ class HomeController extends Controller
     {
         $this->projectModel = $projectModel;
         $this->dailySystemStats = $systemStats;
-        $this->dailySystemStats->initDailyStats();
     }
 
     /**
      * Show home page (available to all users)
-     *
-     * @return Factory|View
      */
     public function index()
     {
+        // Attempt to retrieve cached featured projects content (includes stats)
+        $homepageCachedContent = Cache::get(config('epicollect.setup.system.cache.homepage_cache_key'), '');
+
+        // If cache exists, render it through the home-cached view
+        if (!empty($homepageCachedContent)) {
+            return view('home_cached', [
+                'homepageCachedContent' => $homepageCachedContent,
+            ]);
+        }
+
+        // Cache miss - fall back to dynamic rendering
         try {
             //get all featured projects (ordered by updated timestamp)
             $allFeaturedProjects = $this->projectModel->featured();
@@ -54,6 +61,7 @@ class HomeController extends Controller
         }
 
         try {
+            $this->dailySystemStats->initDailyStats();
             //get total of users
             $users = Common::roundNumber($this->dailySystemStats->getUserStats()->total, 0);
             //get sum of all projects

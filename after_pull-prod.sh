@@ -27,3 +27,5 @@ php artisan optimize:clear
 php artisan system:clear-opcache;
 
 php artisan config:cache;
+
+php artisan system:cache-homepage

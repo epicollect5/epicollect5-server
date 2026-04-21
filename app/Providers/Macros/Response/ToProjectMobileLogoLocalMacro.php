@@ -2,13 +2,13 @@
 
 namespace ec5\Providers\Macros\Response;
 
+use File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\ServiceProvider;
 use Intervention\Image\Laravel\Facades\Image;
 use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
-use File;
 use Throwable;
 
 class ToProjectMobileLogoLocalMacro extends ServiceProvider
@@ -42,8 +42,14 @@ class ToProjectMobileLogoLocalMacro extends ServiceProvider
                     );
                     $thumbnailData = $thumbnail->toJpeg(70);
 
+                    // Logo: immutable when URL carries ?v= version token, hourly otherwise
+                    $cacheControl = request('v')
+                        ? config('epicollect.media.cache_control.always')
+                        : config('epicollect.media.cache_control.never');
+
                     return response($thumbnailData, 200, [
-                        'Content-Type' => config('epicollect.media.content_type.photo')
+                        'Content-Type' => config('epicollect.media.content_type.photo'),
+                        'Cache-Control' => $cacheControl,
                     ]);
 
                 } catch (FileNotFoundException $e) {
@@ -64,7 +70,8 @@ class ToProjectMobileLogoLocalMacro extends ServiceProvider
             $resizedData = $resizedPlaceholder->toJpeg(70);
 
             return response($resizedData, 200, [
-                'Content-Type' => config('epicollect.media.content_type.photo')
+                'Content-Type' => config('epicollect.media.content_type.photo'),
+                'Cache-Control' => config('epicollect.media.cache_control.always'),
             ]);
         });
     }

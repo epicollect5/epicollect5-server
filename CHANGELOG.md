@@ -1,5 +1,51 @@
 ## Release Notes
 
+# 12.5.23
+
+- Project mapping now enforces a single-default constraint—only one mapping can be default;
+- Updating a mapping will not create a second default, and legacy multi-default data is normalized on load.
+- UI mapping updates no longer attempt to override the default flag, preventing accidental changes.
+
+# 12.5.22
+
+- Retrieving entry and branch entry totals from the project_stats table rather full counts(*)
+
+# 12.5.21
+
+- Middleware updates to bail out on export for trashed and archived projects
+
+# 12.5.20
+
+- Dataviewer 0.1.7 with removal of pink background from day picker
+
+# 12.5.19
+
+- Data Editor 0.0.5 (Removed Mapbox dependency)
+
+# 12.5.18
+
+- Improved rate limiting detection to recognize requests from Google applications.
+- Expanded test coverage to verify rate-limiting across multiple Google applications.
+
+# 12.5.16
+
+- Dataviewer 0.1.6 with removal of Mapbox dependency.
+
+# 12.5.15
+
+- Bug fixes and stability improvements.
+
+# 12.5.14
+
+- Implemented 24-hour homepage caching to improve performance for featured projects display.
+- Added intelligent cache-busting for project logos and media assets using timestamps.
+- Implemented comprehensive HTTP cache control headers across all media responses.
+- Updated rate limiting to be keyed by project slug instead of request IP.
+- Added extensive test coverage for homepage caching behavior.
+- Added tests validating project logo URL rendering with cache-busting parameters.
+- Added comprehensive media cache header validation tests.
+- Added admin bulk project export feature (from CSV list of projects) for internal use.
+
 # 12.5.13
 
 - Improved EntryCounter with conditional updates to reduce database load and added tests for counter updates on entry

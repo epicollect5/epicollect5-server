@@ -13,7 +13,10 @@
     <meta property="og:description" content="{{$requestAttributes->requestedProject->small_description}}"/>
     <meta property="og:type" content="article"/>
     <meta property="og:image"
-          content="{{ url('/api/internal/media/'.$requestAttributes->requestedProject->slug . '?type=photo&name=logo.jpg&format=project_thumb') }}"
+          content="@if($requestAttributes->requestedProject->logo_url == '') {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
+          @else
+           {{ url('/api/internal/media/'.$requestAttributes->requestedProject->slug . '?type=photo&name=logo.jpg&format=project_thumb&v=' . strtotime($requestAttributes->requestedProject->structure_last_updated)) }}
+          @endif"
     />
     <meta property="og:image:width" content="200"/>
     <meta property="og:image:height" content="200"/>

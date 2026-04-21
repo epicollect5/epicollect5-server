@@ -51,8 +51,9 @@
         <hr>
 
         <div class="page-home__server-stats row">
-            <h3 class="text-center server-stats__stats-teaser">Thousands of people use Epicollect5 to collect data for
-                thousands of projects every day.</h3>
+            <h3 class="text-center server-stats__stats-teaser">
+                Thousands of people use Epicollect5 to collect data for thousands of projects every day.
+            </h3>
             <div class="col-xs-12 col-sm-4 col-md-4 col-lg-4 text-center server-stats__stats-wrapper">
                 <div class="circle stats-users">
                     <div class="circle-content">
@@ -104,8 +105,10 @@
                                      src="
                                                 {{-- If a private project, show lock --}}
                                                      @if ($project->access == config('epicollect.strings.project_access.private')) {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
-                               @else
-                                {{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb') }} @endif"
+                            @elseif($project->logo_url == '')
+                                {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
+                                @else
+                                {{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb&v=' . strtotime($project->structure_last_updated)) }} @endif"
                                      alt="{{ $project->name }}">
                                 <div class="loader"></div>
                             </a>
@@ -130,7 +133,8 @@
                 <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
                     <div class="panel panel-default">
                         <div class="panel-body">
-                            <a href="https://community.epicollect.net" class="thumbnail" target="_blank">
+                            <a href="https://community.epicollect.net" class="thumbnail" target="_blank"
+                               rel="noopener noreferrer">
                                 <img class="img-responsive img-circle" width="128" height="128"
                                      src="{{ asset('/images/epicollect5-rounded-no-borders.jpg')  }}"
                                      alt="Community Logo">
@@ -146,6 +150,7 @@
                             <div class="page-home-view-btn">
                                 <a class="btn btn-action"
                                    href="https://community.epicollect.net"
+                                   rel="noopener noreferrer"
                                    target="_blank"
                                 >
                                     {{ trans('site.join_community') }}
@@ -171,9 +176,10 @@
                                          src="
                                                 {{-- If a private project, show lock --}}
                                                        @if ($project->access == config('epicollect.strings.project_access.private')) {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
-
-                                @else
-                                    {{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb') }} @endif"
+                                @elseif($project->logo_url == '')
+                                    {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
+                                    @else
+                                        {{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb&v=' . strtotime($project->structure_last_updated)) }} @endif"
                                          alt="{{ $project->name }}">
 
                                     <div class="loader"></div>

@@ -19,8 +19,10 @@ resources/assets/data-admin/node_modules/
 /.history
 .phpunit.result.cache
 /.phpstorm.meta.php
+/.aiassistant
 /_ide_helper_models.php
 /_ide_helper.php
 /export_commits.sh
 plan-*.md
 *.log
+.aiassistant

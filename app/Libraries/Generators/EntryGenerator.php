@@ -747,13 +747,13 @@ class EntryGenerator
                 foreach ($groupInputs as $groupInput) {
                     $answers[$groupInput['ref']] = $this->createAnswer($groupInput, $uuid);
                     if ($groupInput['is_title']) {
-                        $titles[] = $this->getAnswerForTitle($answers[$groupInput['ref']]['answer']);
+                        $titles[] = $this->getAnswerForTitle($answers[$groupInput['ref']]['answer'], $groupInput);
                     }
                 }
             }
 
             if ($input['is_title']) {
-                $titles[] = $this->getAnswerForTitle($answers[$input['ref']]['answer']);
+                $titles[] = $this->getAnswerForTitle($answers[$input['ref']]['answer'], $input);
             }
         }
 
@@ -763,13 +763,37 @@ class EntryGenerator
     }
 
     //Get answer as a string for title generation ( can be array for multiple choice)
-    private function getAnswerForTitle($answer): string
+    private function getAnswerForTitle($answer, $input): string
     {
         if (is_array($answer)) {
-            // Filter out empty values and join with comma-space
-            return implode(', ', array_filter($answer, function ($value) {
-                return $value !== null && $value !== '';
-            }));
+            //if the input is a multiple choice, we want to get the possible answer label instead of the answer_ref for title generation
+            if (in_array($input['type'], $this->multipleChoiceQuestionTypes)) {
+                $possibleAnswers = $input['possible_answers'];
+                $answerLabels = [];
+                foreach ($answer as $answerRef) {
+                    foreach ($possibleAnswers as $possibleAnswer) {
+                        if ($possibleAnswer['answer_ref'] === $answerRef) {
+                            $answerLabels[] = $possibleAnswer['answer'];
+                        }
+                    }
+                }
+                return implode(', ', $answerLabels);
+            } else {
+                // Filter out empty values and join with comma-space
+                return implode(', ', array_filter($answer, function ($value) {
+                    return $value !== null && $value !== '';
+                }));
+            }
+        } else {
+            //if radio map like possible answer label instead of answer_ref for title generation
+            if ($input['type'] === 'radio') {
+                $possibleAnswers = $input['possible_answers'];
+                foreach ($possibleAnswers as $possibleAnswer) {
+                    if ($possibleAnswer['answer_ref'] === $answer) {
+                        return $possibleAnswer['answer'];
+                    }
+                }
+            }
         }
 
         return (string) $answer;

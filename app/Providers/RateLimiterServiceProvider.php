@@ -7,6 +7,7 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 
 class RateLimiterServiceProvider extends ServiceProvider
 {
@@ -125,15 +126,15 @@ class RateLimiterServiceProvider extends ServiceProvider
      */
     private function configureApiExportLimiter(string $name, string $configKey): void
     {
+        //to avoid rotating ips when exporting entries, we limit by project slug instead of IP or user ID
         RateLimiter::for($name, function (Request $request) use ($name, $configKey) {
             $limits = [
                 Limit::perMinute(
                     config("epicollect.limits.api_export.$configKey")
-                )->by($request->ip())
+                )->by($request->route('project_slug'))
             ];
-
-            // Google Apps Script rotates IPs, so we add a shared UA-based cap for entries export.
-            if ($name === 'api-export-entries' && $this->isGoogleAppsScriptRequest($request)) {
+            // If this is an entries export request from Google Ecosystem, we can apply a stricter limit to prevent abuse
+            if ($name === 'api-export-entries' && $this->isGoogleEcosystemRequest($request)) {
                 $limits[] = Limit::perMinute(
                     config('epicollect.limits.api_export.entries_google_apps_scripts', 10)
                 )->by('google-apps-scripts'. '|' . $request->route('project_slug'));
@@ -143,11 +144,16 @@ class RateLimiterServiceProvider extends ServiceProvider
         });
     }
 
-    private function isGoogleAppsScriptRequest(Request $request): bool
+    private function isGoogleEcosystemRequest(Request $request): bool
     {
         $userAgent = (string) $request->userAgent();
 
-        return stripos($userAgent, 'Google-Apps-Script') !== false;
+        // Catching all variants identified in the access logs
+        return Str::contains($userAgent, [
+            'Google-Apps-Script',
+            'GoogleDocs',
+            'apps-spreadsheets'
+        ], true); // 'true' makes it case-insensitive
     }
 
     /**

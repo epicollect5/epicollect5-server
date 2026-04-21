@@ -80,4 +80,9 @@ class DateFormatConverter
         // Always format with .000 milliseconds
         return $entryCreatedAt->format('Y-m-d\TH:i:s') . '.000Z';
     }
+
+    public static function getSanitisedUploadedAt($rawUpdatedAt): string
+    {
+        return self::getSanitisedCreateAt($rawUpdatedAt);
+    }
 }
