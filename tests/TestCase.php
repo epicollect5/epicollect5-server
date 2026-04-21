@@ -123,7 +123,7 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
 
         try {
             $testUserIds = $this->getTestUserIds();
-            $projectIds = $this->getTestProjectIds($testUserIds);
+            $projectIds = $this->getTestProjectIds($testUserIds, $user);
 
             if ($project) {
                 $projectIds[] = $project->id;
@@ -132,12 +132,16 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
             $projectIds = array_values(array_unique(array_filter($projectIds)));
             $this->deleteProjectsByIds($projectIds);
 
-            // Delete users with an email that ends with '@example.com'
+            OAuthClient::whereIn('user_id', $testUserIds)->delete();
+            UserProvider::whereIn('user_id', $testUserIds)->delete();
+            User::where('id', '>=', config('testing.TEST_USER_ID_BASE'))->delete();
+
+            // Delete users with testing email domains
             User::where('email', 'like', '%@example.%')->delete();
             User::where('email', 'like', '%random@unit.tests%')->delete();
             if ($user) {
                 User::where('id', $user->id)->delete();
-                UserProvider::where('id', $user->id)->delete();
+                UserProvider::where('user_id', $user->id)->delete();
                 OAuthClient::where('user_id', $user->id)->delete();
             }
 
@@ -145,7 +149,7 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
                 OAuthAccessToken::where('client_id', $clientId)->delete();
             }
 
-            //also remove leftover users from other tests or failures
+            // Also remove leftover users from other tests or failures.
             User::where('email', 'LIKE', '%@example.org%')->delete();
         } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
@@ -160,14 +164,20 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
             ->all();
     }
 
-    private function getTestProjectIds(array $testUserIds): array
+    private function getTestProjectIds(array $testUserIds, ?User $user = null): array
     {
-        if (empty($testUserIds)) {
-            return [];
-        }
-
         return Project::query()
-            ->whereIn('created_by', $testUserIds)
+            ->where(function ($query) use ($testUserIds, $user) {
+                $query->where('created_by', '>=', config('testing.TEST_USER_ID_BASE'));
+
+                if (!empty($testUserIds)) {
+                    $query->orWhereIn('created_by', $testUserIds);
+                }
+
+                if ($user) {
+                    $query->orWhere('created_by', $user->id);
+                }
+            })
             ->pluck('id')
             ->all();
     }

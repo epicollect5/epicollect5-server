@@ -38,7 +38,11 @@ $factory->define(User::class, function (Faker\Generator $faker) {
     static $testUserId = null;
 
     if ($testUserId === null) {
-        $testUserId = config('testing.TEST_USER_ID_BASE');
+        $testUserIdBase = config('testing.TEST_USER_ID_BASE');
+        $latestTestUserId = User::query()
+            ->where('id', '>=', $testUserIdBase)
+            ->max('id');
+        $testUserId = $latestTestUserId === null ? $testUserIdBase : $latestTestUserId + 1;
     }
 
     return [
