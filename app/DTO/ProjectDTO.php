@@ -294,7 +294,7 @@ class ProjectDTO
      */
     public function addProjectDefinition($projectDefinitionData): ProjectDTO
     {
-        $this->projectDefinition->init($projectDefinitionData);
+        $this->projectDefinition->init(self::sanitizeProjectDefinitionForUse($projectDefinitionData));
         return $this;
     }
 
@@ -477,7 +477,7 @@ class ProjectDTO
         //[BUG] trim new lines form descriptions as these can cause issues with export and import
         $projectDefinition['project']['small_description'] = trim($projectDefinition['project']['small_description']);
         $projectDefinition['project']['description'] = trim($projectDefinition['project']['description']);
-        $projectDefinition['project']['logo_url'] = '';
+        unset($projectDefinition['project']['logo_url']);
 
         // [BUG] where small description is too short on old projects, add '_' to make it valid
         $smallDescriptionMinLength = config('epicollect.limits.project.small_desc.min');
@@ -531,6 +531,8 @@ class ProjectDTO
                 continue;
             }
 
+            self::sanitizeJumpsInInputList($projectDefinition['project']['forms'][$formIndex]['inputs']);
+
             foreach ($form['inputs'] as $inputIndex => $input) {
                 // [BUG] where group has inputs when the question is branch, it should be an empty array
                 if (
@@ -539,9 +541,6 @@ class ProjectDTO
                 ) {
                     $projectDefinition['project']['forms'][$formIndex]['inputs'][$inputIndex]['group'] = [];
                 }
-
-                // Recursively sanitize jumps in this input (including nested branch/group)
-                self::sanitizeJumpsInInput($projectDefinition['project']['forms'][$formIndex]['inputs'][$inputIndex]);
 
                 // [BUG] sanitise min and max for decimal inputs to ensure leading zero
                 self::sanitizeDecimalInInput($projectDefinition['project']['forms'][$formIndex]['inputs'][$inputIndex]);
@@ -554,7 +553,44 @@ class ProjectDTO
     /**
      * Recursively sanitize jumps in an input and its nested branch and group inputs.
      */
-    private static function sanitizeJumpsInInput(array &$input): void
+    public static function sanitizeProjectDefinitionForUse(array|string $projectDefinitionData): array|string
+    {
+        if (!is_array($projectDefinitionData)) {
+            $projectDefinitionData = json_decode($projectDefinitionData, true);
+        }
+
+        if (
+            !is_array($projectDefinitionData) ||
+            !isset($projectDefinitionData['project']['forms']) ||
+            !is_array($projectDefinitionData['project']['forms'])
+        ) {
+            return $projectDefinitionData;
+        }
+
+        foreach ($projectDefinitionData['project']['forms'] as $formIndex => $form) {
+            if (!isset($form['inputs']) || !is_array($form['inputs'])) {
+                continue;
+            }
+
+            self::sanitizeJumpsInInputList($projectDefinitionData['project']['forms'][$formIndex]['inputs']);
+        }
+
+        return $projectDefinitionData;
+    }
+
+    private static function sanitizeJumpsInInputList(array &$inputs, bool $stripTerminalEndJumps = true): void
+    {
+        $lastInputIndex = count($inputs) - 1;
+
+        foreach ($inputs as $inputIndex => &$input) {
+            self::sanitizeJumpsInInput($input, $stripTerminalEndJumps && $inputIndex === $lastInputIndex);
+        }
+    }
+
+    /**
+     * Recursively sanitize jumps in an input and its nested branch and group inputs.
+     */
+    private static function sanitizeJumpsInInput(array &$input, bool $removeEndJumpToTerminalInput = false): void
     {
         // Sanitize jumps at this input level
         if (isset($input['jumps']) && is_array($input['jumps'])) {
@@ -563,6 +599,12 @@ class ProjectDTO
                 if (isset($jump['has_valid_destination'])) {
                     unset($input['jumps'][$jumpIndex]['has_valid_destination']);
                 }
+
+                if ($removeEndJumpToTerminalInput && isset($jump['to']) && $jump['to'] === 'END') {
+                    unset($input['jumps'][$jumpIndex]);
+                    continue;
+                }
+
                 // Set answer_ref to null if needed
                 if (
                     isset($jump['to'], $jump['when']) &&
@@ -573,20 +615,18 @@ class ProjectDTO
                     $input['jumps'][$jumpIndex]['answer_ref'] = null;
                 }
             }
+
+            $input['jumps'] = array_values($input['jumps']);
         }
 
         // Recursively sanitize branch inputs
         if (isset($input['branch']) && is_array($input['branch'])) {
-            foreach ($input['branch'] as &$branchInput) {
-                self::sanitizeJumpsInInput($branchInput);
-            }
+            self::sanitizeJumpsInInputList($input['branch']);
         }
 
         // Recursively sanitize group inputs
         if (isset($input['group']) && is_array($input['group'])) {
-            foreach ($input['group'] as &$groupInput) {
-                self::sanitizeJumpsInInput($groupInput);
-            }
+            self::sanitizeJumpsInInputList($input['group'], false);
         }
     }
 

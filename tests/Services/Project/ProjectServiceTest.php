@@ -50,6 +50,7 @@ class ProjectServiceTest extends TestCase
                                 'type' => config('epicollect.strings.inputs_type.branch'),
                                 'branch' => [
                                     [
+                                        'ref' => 'branch_input_1',
                                         'jumps' => [
                                             [
                                                 'to' => 'END',
@@ -67,6 +68,15 @@ class ProjectServiceTest extends TestCase
                                                 'answer_ref' => 'branch_ref', // already set
                                             ],
                                         ],
+                                        'branch' => [],
+                                        'group' => [],
+                                    ],
+                                    [
+                                        'ref' => 'branch_input_2',
+                                        'type' => 'text',
+                                        'jumps' => [],
+                                        'branch' => [],
+                                        'group' => [],
                                     ],
                                 ],
                             ],
@@ -156,6 +166,7 @@ class ProjectServiceTest extends TestCase
                         'name' => 'Form 1',
                         'inputs' => [
                             [
+                                'ref' => 'input_1',
                                 'type' => 'text',
                                 'jumps' => [
                                     [
@@ -164,6 +175,15 @@ class ProjectServiceTest extends TestCase
                                         'has_valid_destination' => true,
                                     ],
                                 ],
+                                'branch' => [],
+                                'group' => [],
+                            ],
+                            [
+                                'ref' => 'input_2',
+                                'type' => 'text',
+                                'jumps' => [],
+                                'branch' => [],
+                                'group' => [],
                             ],
                         ],
                     ],
@@ -174,6 +194,79 @@ class ProjectServiceTest extends TestCase
         $sanitised = $this->projectService->sanitiseProjectDefinitionForExport($projectDefinition);
 
         $this->assertArrayNotHasKey('has_valid_destination', $sanitised['project']['forms'][0]['inputs'][0]['jumps'][0]);
+    }
+
+    public function test_sanitise_project_definition_for_download_removes_terminal_end_jumps_in_forms_and_branches()
+    {
+        $projectDefinition = [
+            'project' => [
+                'small_description' => 'Test',
+                'description' => 'Test',
+                'forms' => [
+                    [
+                        'name' => 'Form 1',
+                        'inputs' => [
+                            [
+                                'ref' => 'input_1',
+                                'type' => 'text',
+                                'jumps' => [
+                                    [
+                                        'to' => 'END',
+                                        'when' => 'ALL',
+                                    ],
+                                ],
+                                'branch' => [],
+                                'group' => [],
+                            ],
+                            [
+                                'ref' => 'branch_1',
+                                'type' => config('epicollect.strings.inputs_type.branch'),
+                                'jumps' => [
+                                    [
+                                        'to' => 'END',
+                                        'when' => 'ALL',
+                                    ],
+                                ],
+                                'branch' => [
+                                    [
+                                        'ref' => 'branch_input_1',
+                                        'type' => 'text',
+                                        'jumps' => [
+                                            [
+                                                'to' => 'END',
+                                                'when' => 'ALL',
+                                            ],
+                                        ],
+                                        'branch' => [],
+                                        'group' => [],
+                                    ],
+                                    [
+                                        'ref' => 'branch_input_2',
+                                        'type' => 'text',
+                                        'jumps' => [
+                                            [
+                                                'to' => 'END',
+                                                'when' => 'ALL',
+                                            ],
+                                        ],
+                                        'branch' => [],
+                                        'group' => [],
+                                    ],
+                                ],
+                                'group' => [],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $sanitised = $this->projectService->sanitiseProjectDefinitionForExport($projectDefinition);
+
+        $this->assertCount(1, $sanitised['project']['forms'][0]['inputs'][0]['jumps']);
+        $this->assertSame([], $sanitised['project']['forms'][0]['inputs'][1]['jumps']);
+        $this->assertCount(1, $sanitised['project']['forms'][0]['inputs'][1]['branch'][0]['jumps']);
+        $this->assertSame([], $sanitised['project']['forms'][0]['inputs'][1]['branch'][1]['jumps']);
     }
 
     public function test_sanitise_project_definition_for_download_handles_small_description_padding()
