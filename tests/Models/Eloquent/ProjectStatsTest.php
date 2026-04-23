@@ -31,7 +31,8 @@ class ProjectStatsTest extends TestCase
             'video_files' => 30,
             'total_bytes' => 600,
             'total_files' => 60,
-            'total_bytes_updated_at' => $this->now
+            'total_bytes_updated_at' => $this->now->copy()->subHour(),
+            'updated_at' => $this->now->copy()->subHour()
         ]);
         $this->assertDatabaseHas('project_stats', [
             'id' => $this->projectStats->id,
@@ -67,9 +68,7 @@ class ProjectStatsTest extends TestCase
             'total_files' => 0
         ]);
 
-        ///assert that total_bytes_updated_at is updated to a recent time (within the last minute)
-        $updatedAt = Carbon::parse($this->projectStats->fresh()->total_bytes_updated_at);
-        $this->assertTrue($updatedAt->greaterThan(now()->subMinute()));
+        $this->assertProjectStatsTouched();
     }
 
 
@@ -87,9 +86,7 @@ class ProjectStatsTest extends TestCase
             'total_bytes' => 590,
             'total_files' => 59
         ]);
-        //assert that total_bytes_updated_at is updated to a recent time (within the last minute)
-        $updatedAt = Carbon::parse($this->projectStats->fresh()->total_bytes_updated_at);
-        $this->assertTrue($updatedAt->greaterThan(now()->subMinute()));
+        $this->assertProjectStatsTouched();
     }
 
     public function test_audio_deleted()
@@ -106,9 +103,7 @@ class ProjectStatsTest extends TestCase
             'total_bytes' => 580,
             'total_files' => 58
         ]);
-        //assert that total_bytes_updated_at is updated to a recent time (within the last minute)
-        $updatedAt = Carbon::parse($this->projectStats->fresh()->total_bytes_updated_at);
-        $this->assertTrue($updatedAt->greaterThan(now()->subMinute()));
+        $this->assertProjectStatsTouched();
     }
 
     public function test_video_deleted()
@@ -125,9 +120,7 @@ class ProjectStatsTest extends TestCase
             'total_bytes' => 570,
             'total_files' => 57
         ]);
-        //assert that total_bytes_updated_at is updated to a recent time (within the last minute)
-        $updatedAt = Carbon::parse($this->projectStats->fresh()->total_bytes_updated_at);
-        $this->assertTrue($updatedAt->greaterThan(now()->subMinute()));
+        $this->assertProjectStatsTouched();
     }
 
     public function test_one_file_per_media_type_deleted()
@@ -144,9 +137,7 @@ class ProjectStatsTest extends TestCase
             'total_bytes' => 540,
             'total_files' => 54
         ]);
-        //assert that total_bytes_updated_at is updated to a recent time (within the last minute)
-        $updatedAt = Carbon::parse($this->projectStats->fresh()->total_bytes_updated_at);
-        $this->assertTrue($updatedAt->greaterThan(now()->subMinute()));
+        $this->assertProjectStatsTouched();
     }
 
     public function test_photo_added()
@@ -163,9 +154,7 @@ class ProjectStatsTest extends TestCase
             'total_bytes' => 610,
             'total_files' => 61
         ]);
-        //assert that total_bytes_updated_at is updated to a recent time (within the last minute)
-        $updatedAt = Carbon::parse($this->projectStats->fresh()->total_bytes_updated_at);
-        $this->assertTrue($updatedAt->greaterThan(now()->subMinute()));
+        $this->assertProjectStatsTouched();
     }
 
     public function test_audio_added()
@@ -182,9 +171,7 @@ class ProjectStatsTest extends TestCase
             'total_bytes' => 620,
             'total_files' => 62
         ]);
-        //assert that total_bytes_updated_at is updated to a recent time (within the last minute)
-        $updatedAt = Carbon::parse($this->projectStats->fresh()->total_bytes_updated_at);
-        $this->assertTrue($updatedAt->greaterThan(now()->subMinute()));
+        $this->assertProjectStatsTouched();
     }
 
     public function test_video_added()
@@ -201,9 +188,7 @@ class ProjectStatsTest extends TestCase
             'total_bytes' => 630,
             'total_files' => 63
         ]);
-        //assert that total_bytes_updated_at is updated to a recent time (within the last minute)
-        $updatedAt = Carbon::parse($this->projectStats->fresh()->total_bytes_updated_at);
-        $this->assertTrue($updatedAt->greaterThan(now()->subMinute()));
+        $this->assertProjectStatsTouched();
     }
 
     public function test_one_file_per_media_type_added()
@@ -221,8 +206,16 @@ class ProjectStatsTest extends TestCase
             'total_files' => 66
         ]);
 
-        //assert that total_bytes_updated_at is updated to a recent time (within the last minute)
-        $updatedAt = Carbon::parse($this->projectStats->fresh()->total_bytes_updated_at);
-        $this->assertTrue($updatedAt->greaterThan(now()->subMinute()));
+        $this->assertProjectStatsTouched();
+    }
+
+    private function assertProjectStatsTouched(): void
+    {
+        $projectStats = $this->projectStats->fresh();
+        $totalBytesUpdatedAt = Carbon::parse($projectStats->total_bytes_updated_at);
+        $updatedAt = Carbon::parse($projectStats->updated_at);
+
+        $this->assertTrue($totalBytesUpdatedAt->greaterThan(now()->subMinute()));
+        $this->assertTrue($updatedAt->greaterThan($this->now->copy()->subMinute()));
     }
 }

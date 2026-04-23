@@ -366,7 +366,8 @@ $factory->define(ProjectStats::class, function () {
         'video_files' => 0,
         'video_bytes' => 0,
         'form_counts' => json_encode([]),
-        'branch_counts' => json_encode([])
+        'branch_counts' => json_encode([]),
+        'updated_at' => Carbon::now()
     ];
 });
 

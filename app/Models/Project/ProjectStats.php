@@ -22,8 +22,10 @@ class ProjectStats extends Model
     use SerializeDates;
 
     protected $table = 'project_stats';
-    public $timestamps = false;
+    public $timestamps = true;
     public $guarded = [];
+    /** @noinspection PhpMissingClassConstantTypeInspection */
+    public const CREATED_AT = null;
 
     public function getMostRecentEntryTimestamp(): string
     {
@@ -110,7 +112,8 @@ class ProjectStats extends Model
             ->update(
                 [
                     'form_counts' => json_encode($statsCount),
-                    'total_entries' => $totalCount
+                    'total_entries' => $totalCount,
+                    'updated_at' => now()
                 ]
             );
     }
@@ -142,7 +145,10 @@ class ProjectStats extends Model
 
         DB::table($this->table)
             ->where('project_id', '=', $projectId)
-            ->update(['branch_counts' => json_encode($statsCount)]);
+            ->update([
+                'branch_counts' => json_encode($statsCount),
+                'updated_at' => now()
+            ]);
     }
 
     /**
@@ -193,6 +199,7 @@ class ProjectStats extends Model
                     'total_bytes' => DB::raw('photo_bytes + audio_bytes + video_bytes'),
                     'total_files' => DB::raw('photo_files + audio_files + video_files'),
                     'total_bytes_updated_at' => now(),
+                    'updated_at' => now(),
                 ]);
 
         } catch (Throwable $e) {
@@ -290,6 +297,7 @@ class ProjectStats extends Model
                     'total_bytes' => $photoBytes + $audioBytes + $videoBytes,
                     'total_files' => $photoFiles + $audioFiles + $videoFiles,
                     'total_bytes_updated_at' => now(),
+                    'updated_at' => now(),
                 ]);
 
         } catch (Throwable $e) {
