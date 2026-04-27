@@ -1,16 +1,18 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://epicollect.net/schemas/entry-data/v1.0.0",
-  "title": "Epicollect5 Stored Entry Data",
-  "description": "Schema for the normalised JSON persisted in entries.entry_data and branch_entries.entry_data.",
-  "oneOf": [
-    {
-      "$ref": "#/$defs/entryEnvelope"
-    },
-    {
-      "$ref": "#/$defs/branchEntryEnvelope"
-    }
+  "$id": "https://epicollect.net/schemas/branch-entry-payload/v1.0.0",
+  "title": "Epicollect5 Branch Entry Payload",
+  "description": "Schema for the JSON body submitted by the branch entry upload endpoint. The data field accepts the stored branch entry envelope or the pre-normalized upload form with an empty parent relationship object and a populated branch relationship object.",
+  "type": "object",
+  "required": [
+    "data"
   ],
+  "properties": {
+    "data": {
+      "$ref": "#/$defs/branchEntryUploadEnvelope"
+    }
+  },
+  "unevaluatedProperties": false,
   "$defs": {
     "uuid": {
       "type": "string",
@@ -179,66 +181,6 @@
       },
       "unevaluatedProperties": false
     },
-    "relationships": {
-      "type": "object",
-      "required": [
-        "branch",
-        "parent"
-      ],
-      "properties": {
-        "branch": {
-          "type": "object",
-          "required": [
-            "data"
-          ],
-          "properties": {
-            "data": {
-              "type": "object",
-              "required": [
-                "owner_input_ref",
-                "owner_entry_uuid"
-              ],
-              "properties": {
-                "owner_input_ref": {
-                  "$ref": "#/$defs/optionalInputRef"
-                },
-                "owner_entry_uuid": {
-                  "$ref": "#/$defs/optionalUuid"
-                }
-              },
-              "unevaluatedProperties": false
-            }
-          },
-          "unevaluatedProperties": false
-        },
-        "parent": {
-          "type": "object",
-          "required": [
-            "data"
-          ],
-          "properties": {
-            "data": {
-              "type": "object",
-              "required": [
-                "parent_form_ref",
-                "parent_entry_uuid"
-              ],
-              "properties": {
-                "parent_form_ref": {
-                  "$ref": "#/$defs/optionalFormRef"
-                },
-                "parent_entry_uuid": {
-                  "$ref": "#/$defs/optionalUuid"
-                }
-              },
-              "unevaluatedProperties": false
-            }
-          },
-          "unevaluatedProperties": false
-        }
-      },
-      "unevaluatedProperties": false
-    },
     "entryBody": {
       "type": "object",
       "required": [
@@ -261,42 +203,95 @@
         "entry_uuid": {
           "$ref": "#/$defs/uuid"
         },
+        "device_id": {
+          "type": "string"
+        },
+        "platform": {
+          "type": "string"
+        },
         "project_version": {
           "$ref": "#/$defs/projectVersion"
         }
       },
       "unevaluatedProperties": false
     },
-    "entryEnvelope": {
+    "relationships": {
       "type": "object",
       "required": [
-        "id",
-        "type",
-        "entry",
-        "attributes",
-        "relationships"
+        "branch",
+        "parent"
       ],
       "properties": {
-        "id": {
-          "$ref": "#/$defs/uuid"
+        "branch": {
+          "oneOf": [
+            {
+              "type": "object",
+              "maxProperties": 0
+            },
+            {
+              "type": "object",
+              "required": [
+                "data"
+              ],
+              "properties": {
+                "data": {
+                  "type": "object",
+                  "required": [
+                    "owner_input_ref",
+                    "owner_entry_uuid"
+                  ],
+                  "properties": {
+                    "owner_input_ref": {
+                      "$ref": "#/$defs/optionalInputRef"
+                    },
+                    "owner_entry_uuid": {
+                      "$ref": "#/$defs/optionalUuid"
+                    }
+                  },
+                  "unevaluatedProperties": false
+                }
+              },
+              "unevaluatedProperties": false
+            }
+          ]
         },
-        "type": {
-          "const": "entry"
-        },
-        "entry": {
-          "$ref": "#/$defs/entryBody"
-        },
-        "attributes": {
-          "$ref": "#/$defs/attributes"
-        },
-        "relationships": {
-          "$ref": "#/$defs/relationships"
+        "parent": {
+          "oneOf": [
+            {
+              "type": "object",
+              "maxProperties": 0
+            },
+            {
+              "type": "object",
+              "required": [
+                "data"
+              ],
+              "properties": {
+                "data": {
+                  "type": "object",
+                  "required": [
+                    "parent_form_ref",
+                    "parent_entry_uuid"
+                  ],
+                  "properties": {
+                    "parent_form_ref": {
+                      "$ref": "#/$defs/optionalFormRef"
+                    },
+                    "parent_entry_uuid": {
+                      "$ref": "#/$defs/optionalUuid"
+                    }
+                  },
+                  "unevaluatedProperties": false
+                }
+              },
+              "unevaluatedProperties": false
+            }
+          ]
         }
       },
-      "unevaluatedProperties": false,
-      "$comment": "Application logic must ensure id matches entry.entry_uuid."
+      "unevaluatedProperties": false
     },
-    "branchEntryEnvelope": {
+    "branchEntryUploadEnvelope": {
       "type": "object",
       "required": [
         "id",

@@ -22,6 +22,11 @@
 - **Deployment**: `after_pull-dev.sh` and `after_pull-prod.sh` manage post-deployment tasks like migrations and cache
   clearing.
 
+## Context
+
+- Use docs/ as the source of truth for architecture and conventions
+- Use public/schemas/ for JSON structure and validation rules
+
 ## Project-Specific Conventions
 
 - **Trait-Heavy Logic**: Shared functionality is often found in `app/Traits/` (e.g., `ec5\Traits\Eloquent\Entries` for

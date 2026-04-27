@@ -1,16 +1,18 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://epicollect.net/schemas/entry-data/v1.0.0",
-  "title": "Epicollect5 Stored Entry Data",
-  "description": "Schema for the normalised JSON persisted in entries.entry_data and branch_entries.entry_data.",
-  "oneOf": [
-    {
-      "$ref": "#/$defs/entryEnvelope"
-    },
-    {
-      "$ref": "#/$defs/branchEntryEnvelope"
-    }
+  "$id": "https://epicollect.net/schemas/entry-payload/v1.0.0",
+  "title": "Epicollect5 Entry Payload",
+  "description": "Schema for the JSON body submitted by the entry upload endpoint. The data field accepts the stored entry envelope or the pre-normalized upload form with empty parent and branch relationship objects.",
+  "type": "object",
+  "required": [
+    "data"
   ],
+  "properties": {
+    "data": {
+      "$ref": "#/$defs/entryUploadEnvelope"
+    }
+  },
+  "unevaluatedProperties": false,
   "$defs": {
     "uuid": {
       "type": "string",
@@ -179,66 +181,6 @@
       },
       "unevaluatedProperties": false
     },
-    "relationships": {
-      "type": "object",
-      "required": [
-        "branch",
-        "parent"
-      ],
-      "properties": {
-        "branch": {
-          "type": "object",
-          "required": [
-            "data"
-          ],
-          "properties": {
-            "data": {
-              "type": "object",
-              "required": [
-                "owner_input_ref",
-                "owner_entry_uuid"
-              ],
-              "properties": {
-                "owner_input_ref": {
-                  "$ref": "#/$defs/optionalInputRef"
-                },
-                "owner_entry_uuid": {
-                  "$ref": "#/$defs/optionalUuid"
-                }
-              },
-              "unevaluatedProperties": false
-            }
-          },
-          "unevaluatedProperties": false
-        },
-        "parent": {
-          "type": "object",
-          "required": [
-            "data"
-          ],
-          "properties": {
-            "data": {
-              "type": "object",
-              "required": [
-                "parent_form_ref",
-                "parent_entry_uuid"
-              ],
-              "properties": {
-                "parent_form_ref": {
-                  "$ref": "#/$defs/optionalFormRef"
-                },
-                "parent_entry_uuid": {
-                  "$ref": "#/$defs/optionalUuid"
-                }
-              },
-              "unevaluatedProperties": false
-            }
-          },
-          "unevaluatedProperties": false
-        }
-      },
-      "unevaluatedProperties": false
-    },
     "entryBody": {
       "type": "object",
       "required": [
@@ -261,13 +203,95 @@
         "entry_uuid": {
           "$ref": "#/$defs/uuid"
         },
+        "device_id": {
+          "type": "string"
+        },
+        "platform": {
+          "type": "string"
+        },
         "project_version": {
           "$ref": "#/$defs/projectVersion"
         }
       },
       "unevaluatedProperties": false
     },
-    "entryEnvelope": {
+    "relationships": {
+      "type": "object",
+      "required": [
+        "branch",
+        "parent"
+      ],
+      "properties": {
+        "branch": {
+          "oneOf": [
+            {
+              "type": "object",
+              "maxProperties": 0
+            },
+            {
+              "type": "object",
+              "required": [
+                "data"
+              ],
+              "properties": {
+                "data": {
+                  "type": "object",
+                  "required": [
+                    "owner_input_ref",
+                    "owner_entry_uuid"
+                  ],
+                  "properties": {
+                    "owner_input_ref": {
+                      "$ref": "#/$defs/optionalInputRef"
+                    },
+                    "owner_entry_uuid": {
+                      "$ref": "#/$defs/optionalUuid"
+                    }
+                  },
+                  "unevaluatedProperties": false
+                }
+              },
+              "unevaluatedProperties": false
+            }
+          ]
+        },
+        "parent": {
+          "oneOf": [
+            {
+              "type": "object",
+              "maxProperties": 0
+            },
+            {
+              "type": "object",
+              "required": [
+                "data"
+              ],
+              "properties": {
+                "data": {
+                  "type": "object",
+                  "required": [
+                    "parent_form_ref",
+                    "parent_entry_uuid"
+                  ],
+                  "properties": {
+                    "parent_form_ref": {
+                      "$ref": "#/$defs/optionalFormRef"
+                    },
+                    "parent_entry_uuid": {
+                      "$ref": "#/$defs/optionalUuid"
+                    }
+                  },
+                  "unevaluatedProperties": false
+                }
+              },
+              "unevaluatedProperties": false
+            }
+          ]
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "entryUploadEnvelope": {
       "type": "object",
       "required": [
         "id",
@@ -295,35 +319,6 @@
       },
       "unevaluatedProperties": false,
       "$comment": "Application logic must ensure id matches entry.entry_uuid."
-    },
-    "branchEntryEnvelope": {
-      "type": "object",
-      "required": [
-        "id",
-        "type",
-        "branch_entry",
-        "attributes",
-        "relationships"
-      ],
-      "properties": {
-        "id": {
-          "$ref": "#/$defs/uuid"
-        },
-        "type": {
-          "const": "branch_entry"
-        },
-        "branch_entry": {
-          "$ref": "#/$defs/entryBody"
-        },
-        "attributes": {
-          "$ref": "#/$defs/attributes"
-        },
-        "relationships": {
-          "$ref": "#/$defs/relationships"
-        }
-      },
-      "unevaluatedProperties": false,
-      "$comment": "Application logic must ensure id matches branch_entry.entry_uuid."
     }
   }
 }

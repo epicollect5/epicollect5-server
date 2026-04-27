@@ -16,6 +16,204 @@ class EntryApiPayloadSchemaTest extends TestCase
         $this->validator = new Validator();
     }
 
+    public function test_documented_entry_payload_matches_schema(): void
+    {
+        $payload = [
+            'data' => [
+                'id' => '3bae8c50-425e-11f1-92bc-0f179dd3fef7',
+                'type' => 'entry',
+                'entry' => [
+                    'entry_uuid' => '3bae8c50-425e-11f1-92bc-0f179dd3fef7',
+                    'created_at' => '2026-04-27T17:26:32.085Z',
+                    'device_id' => '',
+                    'platform' => 'WEB',
+                    'title' => 'Mirko 22',
+                    'answers' => [
+                        '115844851c6446949b2a1b9f3d5cc7eb_69ecfdf0c0a72_69ecfdfa50ced' => [
+                            'answer' => 'Mirko',
+                            'was_jumped' => false
+                        ],
+                        '115844851c6446949b2a1b9f3d5cc7eb_69ecfdf0c0a72_69ecfe2a50cf0' => [
+                            'answer' => 22,
+                            'was_jumped' => false
+                        ],
+                        '115844851c6446949b2a1b9f3d5cc7eb_69ecfdf0c0a72_69ecfe0e50cee' => [
+                            'answer' => [
+                                'latitude' => 45.900601,
+                                'longitude' => 12.004917,
+                                'accuracy' => 35
+                            ],
+                            'was_jumped' => false
+                        ],
+                        '115844851c6446949b2a1b9f3d5cc7eb_69ecfdf0c0a72_69ecfe1950cef' => [
+                            'answer' => [
+                                'latitude' => 45.900564,
+                                'longitude' => 12.004922,
+                                'accuracy' => 35
+                            ],
+                            'was_jumped' => false
+                        ],
+                        '115844851c6446949b2a1b9f3d5cc7eb_69ecfdf0c0a72_69ecfe3850cf1' => [
+                            'answer' => '',
+                            'was_jumped' => false
+                        ],
+                        '115844851c6446949b2a1b9f3d5cc7eb_69ecfdf0c0a72_69ecfe3950cf2' => [
+                            'answer' => '',
+                            'was_jumped' => false
+                        ],
+                        '115844851c6446949b2a1b9f3d5cc7eb_69ecfdf0c0a72_69ecfe3b50cf3' => [
+                            'answer' => '',
+                            'was_jumped' => false
+                        ]
+                    ],
+                    'project_version' => '2026-04-25 17:48:00'
+                ],
+                'attributes' => [
+                    'form' => [
+                        'ref' => '115844851c6446949b2a1b9f3d5cc7eb_69ecfdf0c0a72',
+                        'type' => 'hierarchy'
+                    ]
+                ],
+                'relationships' => [
+                    'parent' => (object) [],
+                    'branch' => (object) []
+                ],
+            ]
+        ];
+
+        $this->assertMatchesSchema('entry-payload.schema.json', $payload);
+    }
+
+    public function test_documented_child_entry_payload_matches_schema(): void
+    {
+        $payload = [
+            'data' => [
+                'id' => '21adfbe0-4260-11f1-8107-e7c795b0ed19',
+                'type' => 'entry',
+                'entry' => [
+                    'entry_uuid' => '21adfbe0-4260-11f1-8107-e7c795b0ed19',
+                    'created_at' => '2026-04-27T17:40:07.454Z',
+                    'device_id' => '',
+                    'platform' => 'WEB',
+                    'title' => 'Tim 77',
+                    'answers' => [
+                        '115844851c6446949b2a1b9f3d5cc7eb_69ef9f5482716_69ecfdfa50ced' => [
+                            'answer' => 'Tim',
+                            'was_jumped' => false
+                        ],
+                        '115844851c6446949b2a1b9f3d5cc7eb_69ef9f5482716_69ecfe2a50cf0' => [
+                            'answer' => 77,
+                            'was_jumped' => false
+                        ],
+                        '115844851c6446949b2a1b9f3d5cc7eb_69ef9f5482716_69ecfe0e50cee' => [
+                            'answer' => [
+                                'latitude' => 45.900612,
+                                'longitude' => 12.004866,
+                                'accuracy' => 35
+                            ],
+                            'was_jumped' => false
+                        ],
+                        '115844851c6446949b2a1b9f3d5cc7eb_69ef9f5482716_69ecfe1950cef' => [
+                            'answer' => [
+                                'latitude' => '',
+                                'longitude' => '',
+                                'accuracy' => ''
+                            ],
+                            'was_jumped' => false
+                        ],
+                        '115844851c6446949b2a1b9f3d5cc7eb_69ef9f5482716_69ecfe3850cf1' => [
+                            'answer' => '',
+                            'was_jumped' => false
+                        ],
+                        '115844851c6446949b2a1b9f3d5cc7eb_69ef9f5482716_69ecfe3950cf2' => [
+                            'answer' => '',
+                            'was_jumped' => false
+                        ],
+                        '115844851c6446949b2a1b9f3d5cc7eb_69ef9f5482716_69ecfe3b50cf3' => [
+                            'answer' => '',
+                            'was_jumped' => false
+                        ]
+                    ],
+                    'project_version' => '2026-04-27 17:39:47'
+                ],
+                'attributes' => [
+                    'form' => [
+                        'ref' => '115844851c6446949b2a1b9f3d5cc7eb_69ef9f5482716',
+                        'type' => 'hierarchy'
+                    ]
+                ],
+                'relationships' => [
+                    'parent' => [
+                        'data' => [
+                            'parent_form_ref' => '115844851c6446949b2a1b9f3d5cc7eb_69ecfdf0c0a72',
+                            'parent_entry_uuid' => '3bae8c50-425e-11f1-92bc-0f179dd3fef7'
+                        ]
+                    ],
+                    'branch' => (object) []
+                ]
+            ]
+        ];
+
+        $this->assertMatchesSchema('entry-payload.schema.json', $payload);
+    }
+
+    public function test_documented_branch_entry_payload_matches_schema(): void
+    {
+        $payload = [
+            'data' => [
+                'type' => 'branch_entry',
+                'id' => '844162c0-425e-11f1-900f-1f17686d0dda',
+                'attributes' => [
+                    'form' => [
+                        'ref' => 'ebaacb1a19194c948fa07725668ecc0a_5784e776184c6',
+                        'type' => 'hierarchy'
+                    ]
+                ],
+                'relationships' => [
+                    'parent' => (object) [],
+                    'branch' => [
+                        'data' => [
+                            'owner_input_ref' => 'ebaacb1a19194c948fa07725668ecc0a_5784e776184c6_5784e7862d022',
+                            'owner_entry_uuid' => '5fca5281-aea0-497a-879f-b0f9f7ee0666'
+                        ]
+                    ]
+                ],
+                'branch_entry' => [
+                    'entry_uuid' => '844162c0-425e-11f1-900f-1f17686d0dda',
+                    'created_at' => '2026-04-27T17:35:43.340Z',
+                    'device_id' => '',
+                    'platform' => 'WEB',
+                    'title' => 'John',
+                    'answers' => [
+                        'ebaacb1a19194c948fa07725668ecc0a_5784e776184c6_5784e7862d022_5784e7992d023' => [
+                            'answer' => 'John',
+                            'was_jumped' => false
+                        ],
+                        'ebaacb1a19194c948fa07725668ecc0a_5784e776184c6_5784e7862d022_5784e7a42d024' => [
+                            'answer' => 56,
+                            'was_jumped' => false
+                        ],
+                        'ebaacb1a19194c948fa07725668ecc0a_5784e776184c6_5784e7862d022_69d8ca88e7c39' => [
+                            'answer' => '',
+                            'was_jumped' => false
+                        ],
+                        'ebaacb1a19194c948fa07725668ecc0a_5784e776184c6_5784e7862d022_69d8d12c62b94' => [
+                            'answer' => [
+                                'latitude' => 45.900564,
+                                'longitude' => 12.004922,
+                                'accuracy' => 35
+                            ],
+                            'was_jumped' => false
+                        ]
+                    ],
+                    'project_version' => '2026-04-10 12:44:56'
+                ]
+            ]
+        ];
+
+        $this->assertMatchesSchema('branch-entry-payload.schema.json', $payload);
+    }
+
     public function test_documented_file_entry_payload_matches_schema(): void
     {
         $payload = [
