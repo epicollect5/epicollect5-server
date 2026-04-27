@@ -109,6 +109,7 @@ class AudioVideoCompressionService
                 $format = (new X264('aac'))
                     ->setAudioKiloBitrate(128) // Higher bitrate for potential Stereo
                     ->setAdditionalParameters([
+                        '-threads', '1',
                         '-crf', '23',
                         '-maxrate', '2000k',
                         '-bufsize', '4000k',
@@ -142,6 +143,7 @@ class AudioVideoCompressionService
                 FFMpeg::fromDisk($disk)
                     ->open($path)
                     ->addFilter([
+                        '-threads', '1',
                         '-vn', //no video
                         '-c:a', 'aac', //codec
                         '-b:a', '64k', // Bitrate
