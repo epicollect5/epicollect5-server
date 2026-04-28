@@ -16,7 +16,7 @@
                     <div class="panel-body">
                         <a href="{{url('project/' . $requestAttributes->requestedProject->slug . '/data')}}">
                             <img class="project-home__logo img-responsive img-circle" width="256" height="256"
-                                 alt="Project logo" src="{{ url('/api/internal/media/' . $requestAttributes->requestedProject->slug . '?type=photo&name=logo.jpg&format=project_thumb&v=' . strtotime($requestAttributes->requestedProject->structure_last_updated)) }}">
+                                 alt="Project logo" src="{{ url('/api/internal/media/' . $requestAttributes->requestedProject->slug . '?type=photo&name=logo.jpg&format=project_thumb&v=' . $requestAttributes->requestedProject->project_definition_version) }}">
                         </a>
                     </div>
 

@@ -134,6 +134,7 @@ return [
             'total_bytes',
             'form_counts',
             'branch_counts',
+            'project_definition_version',
             'structure_last_updated'
         ],
         'project_mapping' => [

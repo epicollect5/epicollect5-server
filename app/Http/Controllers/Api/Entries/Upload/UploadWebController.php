@@ -51,8 +51,6 @@ class UploadWebController extends UploadControllerBase
         $data = request()->get('data');
         $projectId = $this->requestedProject()->getId();
 
-        dd($data);
-
         //was an entry or branch entry upload?
         $uuid = $data['id'];
 

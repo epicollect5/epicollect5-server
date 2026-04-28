@@ -16,7 +16,7 @@
 />
 <meta
         property="og:image"
-        content="{{ url('/api/internal/media/' . $requestAttributes->requestedProject->slug . '?type=photo&name=logo.jpg&format=project_thumb&v=' . strtotime($requestAttributes->requestedProject->structure_last_updated)) }}"
+        content="{{ url('/api/internal/media/' . $requestAttributes->requestedProject->slug . '?type=photo&name=logo.jpg&format=project_thumb&v=' . $requestAttributes->requestedProject->project_definition_version) }}"
 />
 <meta
         property="og:image:width"
@@ -42,4 +42,4 @@
         content="{{$requestAttributes->requestedProject->small_description}}"/>
 <meta
         name="twitter:image"
-        content="{{ url('/api/internal/media/' . $requestAttributes->requestedProject->slug . '?type=photo&name=logo.jpg&format=project_thumb&v=' . strtotime($requestAttributes->requestedProject->structure_last_updated)) }}"/>
+        content="{{ url('/api/internal/media/' . $requestAttributes->requestedProject->slug . '?type=photo&name=logo.jpg&format=project_thumb&v=' . $requestAttributes->requestedProject->project_definition_version) }}"/>

@@ -19,7 +19,7 @@
                             <div class="flexbox col-direction project-summary">
                                 <div class="thumbnail">
                                     <img class="projects-list__project-logo img-responsive img-circle" width="128"
-                                        height="128" alt="{{ $project->name }}" src="{{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb&v=' . strtotime($project->structure_last_updated)) }}">
+                                        height="128" alt="{{ $project->name }}" src="{{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb&v=' . $project->project_definition_version) }}">
                                 </div>
                                 <span class="project-name"> {{ $project->name }}</span>
                                 {{-- truncate small desc for layout, see if it break and lower from 100 to until it is fixed --}}

@@ -49,6 +49,7 @@ class ProjectDTO
     public string $can_bulk_upload = 'nobody';
     public string $app_link_visibility = 'hidden';
     public string $structure_last_updated = '';
+    public string $project_definition_version = '';
     private ProjectMappingService $projectMappingService;
 
     public function __construct(
@@ -107,9 +108,11 @@ class ProjectDTO
             'form_counts' => isset($data->form_counts) ? json_decode($data->form_counts, true) : [],
             'branch_counts' => isset($data->branch_counts) ? json_decode($data->branch_counts, true) : [],
             'structure_last_updated' => $data->structure_last_updated ?? '',
+            'project_definition_version' => $data->project_definition_version ?? ($data->structure_last_updated ?? '')
         ]);
         // Add all the project data object properties to this class
         $this->addProjectDetails(get_object_vars($data));
+        $this->project_definition_version = $this->projectStats->project_definition_version;
         // Lastly, initialize the protected class properties
         // Set timestamps
         $this->created_at = $data->created_at ?? null;

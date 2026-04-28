@@ -73,7 +73,8 @@ class ProjectController
             ],
             'project_mapping' => $this->requestedProject()->getProjectMapping()->getData(),
             'project_stats' => array_merge($this->requestedProject()->getProjectStats()->toArray(), [
-                'structure_last_updated' => $this->requestedProject()->getProjectStats()->structure_last_updated
+                'structure_last_updated' => $this->requestedProject()->getProjectStats()->structure_last_updated,
+                'project_definition_version' => $this->requestedProject()->getProjectStats()->project_definition_version,
             ])
         ];
 
@@ -87,6 +88,7 @@ class ProjectController
      */
     public function export(ProjectStats $projectStats)
     {
+        // We need to sanitise the project definition due to legacy bugs that went through over the years
         $data = $this->requestedProject()->getSanitisedProjectDefinition();
         //todo HACK!!!, we needed to expose the creation date of a project at a later stage and this was the laziest way ;)
         $data['project']['created_at'] = $this->requestedProject()->getCreatedAt();
@@ -102,7 +104,8 @@ class ProjectController
         $meta = [
             'project_mapping' => $this->requestedProject()->getProjectMapping()->getData(),
             'project_stats' => array_merge($this->requestedProject()->getProjectStats()->toArray(), [
-                'structure_last_updated' => $this->requestedProject()->getProjectStats()->structure_last_updated
+                'structure_last_updated' => $this->requestedProject()->getProjectStats()->structure_last_updated,
+                'project_definition_version' => $this->requestedProject()->getProjectStats()->project_definition_version,
             ])
         ];
 
@@ -168,7 +171,8 @@ class ProjectController
             'type' => 'project-version',
             'id' => $slug,
             'attributes' => [
-                'structure_last_updated' => $version,//legacy
+                'structure_last_updated' => $version, // legacy
+                'project_definition_version' => (string)strtotime($version),
                 'version' => (string)strtotime($version)
             ]
 

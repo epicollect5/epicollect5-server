@@ -332,6 +332,28 @@ class ProjectLogoUrlRenderingTest extends TestCase
         $this->assertNotNull($projectData->structure_last_updated);
         $this->assertNotEmpty($projectData->structure_last_updated);
         $this->assertTrue(strtotime($projectData->structure_last_updated) !== false);
+        $this->assertNotNull($projectData->project_definition_version);
+        $this->assertNotEmpty($projectData->project_definition_version);
+        $this->assertSame(
+            (string)strtotime($projectData->project_definition_version),
+            (string)strtotime($projectData->structure_last_updated)
+        );
+    }
+
+    public function test_project_definition_version_is_populated_in_public_project_results()
+    {
+        $data = $this->createProjectWithStructure();
+        $project = $data['project'];
+
+        $projects = (new Project())->publicAndListed();
+        $projectData = collect($projects->items())->firstWhere('slug', $project->slug);
+
+        $this->assertNotNull($projectData);
+        $this->assertNotEmpty($projectData->project_definition_version);
+        $this->assertSame(
+            (string)strtotime($projectData->structure_last_updated),
+            $projectData->project_definition_version
+        );
     }
 
 }
