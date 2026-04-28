@@ -14,7 +14,7 @@
             <span class="icon-bar"></span>
         </button>
         <a class="navbar-brand" href="{{ url('/') }}">
-            <img src="{{ asset('/images/brand.png') }}" width="180" height="40"
+            <img src="{{ static_asset('/images/brand.png') }}" width="180" height="40"
                  alt="Epicollect5: Mobile & Web Application for free and easy data collection.">
         </a>
         <!--googleoff: index-->
@@ -33,7 +33,7 @@
                     @if (Auth::user()->avatar)
                         {{ Auth::user()->avatar }}
                         @else
-                        {{ asset('images/avatar-placeholder.png') }}
+                        {{ static_asset('images/avatar-placeholder.png') }}
                         @endif
                                 ">
                     </li>

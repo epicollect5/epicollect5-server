@@ -1,5 +1,10 @@
 ## Release Notes
 
+# 12.5.24
+
+- Added configurable static asset serving with support for local and CDN drivers via environment variables.
+- Images (static, not user uploads) throughout the application now use the new static_asset() helper for URL resolution.
+
 # 12.5.23
 
 - Project mapping now enforces a single-default constraint—only one mapping can be default;

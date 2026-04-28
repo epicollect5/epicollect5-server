@@ -15,7 +15,7 @@
                 <label class="control-label">{{ trans('site.project_name') }}</label>
                 <input required id="project-name" type="text" name="name" class="form-control"
                        placeholder="Awesome Project name" value="{{ old('name') }}">
-                <img id="project-loader-gif" src="{{ asset('/images/ajax-loader.gif') }}" class="hidden"/>
+                <img id="project-loader-gif" src="{{ static_asset('/images/ajax-loader.gif') }}" class="hidden"/>
                 @if ($errors->has('name'))
                     <small>{{ $errors->first('name') }}</small>
                 @endif
@@ -37,4 +37,3 @@
         </form>
     </div>
 </div>
-

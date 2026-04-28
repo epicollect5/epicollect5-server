@@ -17,12 +17,13 @@
                         <p>
                             <a href="
                             https://play.google.com/store/apps/details?id=uk.ac.imperial.epicollect.five">
-                                <img src="{{ asset('/images/more-pages/play-store-badge.jpg') }}" width="140"
+
+                                <img src="{{ static_asset('/images/more-pages/play-store-badge.jpg') }}" width="140"
                                      alt="Epicollect5 Play Store badge"/>
                             </a>
 
                             <a href="https://itunes.apple.com/us/app/epicollect5/id1183858199?mt=8">
-                                <img src="{{ asset('/images/more-pages/app-store-badge.jpg') }}" width="140"
+                                <img src="{{ static_asset('/images/more-pages/app-store-badge.jpg') }}" width="140"
                                      alt="Epicollect5 App Store badge"/>
                             </a>
 
@@ -35,7 +36,7 @@
             <div class="col-md-6">
                 <div class="panel panel-default">
                     <div class="panel-body text-center">
-                        <img src="{{ asset('/images/more-pages/more-collect-1.jpg') }}" class="img-responsive"
+                        <img src="{{ static_asset('/images/more-pages/more-collect-1.jpg') }}" class="img-responsive"
                              alt="Download the app">
                     </div>
                 </div>
@@ -63,7 +64,8 @@
             <div class="col-md-6 col-md-pull-6">
                 <div class="panel panel-default">
                     <div class="panel-body text-left">
-                        <img src="{{ asset('/images/more-pages/more-collect-2.jpg') }}"
+
+                        <img src="{{ static_asset('/images/more-pages/more-collect-2.jpg') }}"
                              class="img-responsive img-with-border" alt="Add your project">
                     </div>
                 </div>

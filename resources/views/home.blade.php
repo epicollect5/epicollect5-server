@@ -23,7 +23,7 @@
 
         <div class="row page-home-intro">
             <div class="col-xs-12 col-sm-12 col-md-4 col-lg-4 col-sm-12 text-center intro-thumbnail">
-                <img src="{{ asset('/images/ec5-intro-create-project.jpg') }}" class="img-responsive"
+                <img src="{{ static_asset('/images/ec5-intro-create-project.jpg') }}" class="img-responsive"
                      alt="Create your project and forms on the website">
 
                 <div class="loader"></div>
@@ -31,7 +31,7 @@
                 <a href="{{ url('/more-create') }}" class="btn btn-default btn-action">Tell me more</a>
             </div>
             <div class="col-xs-12 col-sm-12 col-md-4 col-lg-4 col-sm-12 text-center intro-thumbnail">
-                <img src="{{ asset('/images/ec5-intro-collect-data.jpg') }}" class="img-responsive"
+                <img src="{{ static_asset('/images/ec5-intro-collect-data.jpg') }}" class="img-responsive"
                      alt="Download project on device and collect data online or offline">
 
                 <div class="loader"></div>
@@ -39,7 +39,7 @@
                 <a href="{{ url('/more-collect') }}" class="btn btn-default btn-action">Tell me more</a>
             </div>
             <div class="col-xs-12 col-sm-12 col-md-4 col-lg-4 col-sm-12 text-center intro-thumbnail">
-                <img src="{{ asset('/images/ec5-intro-view-data.jpg') }}" class="img-responsive"
+                <img src="{{ static_asset('/images/ec5-intro-view-data.jpg') }}" class="img-responsive"
                      alt="View, analyse and export your data (json, csv)">
 
                 <div class="loader"></div>
@@ -134,7 +134,7 @@
                             <a href="https://community.epicollect.net" class="thumbnail" target="_blank"
                                rel="noopener noreferrer">
                                 <img class="img-responsive img-circle" width="128" height="128"
-                                     src="{{ asset('/images/epicollect5-rounded-no-borders.jpg')  }}"
+                                     src="{{ static_asset('/images/epicollect5-rounded-no-borders.jpg') }}"
                                      alt="Community Logo">
                                 <div class="loader"></div>
                             </a>

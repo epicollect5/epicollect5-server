@@ -59,7 +59,7 @@
 
 <div class="container">
     <div class="content">
-        <img src="{{ asset('/images/brand.png') }}"
+        <img src="{{ static_asset('/images/brand.png') }}"
              alt="Epicollect5"
              width="180"
              height="40">

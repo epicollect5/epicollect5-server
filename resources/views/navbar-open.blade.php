@@ -19,7 +19,7 @@
 <nav class="navbar navbar-default navbar-fixed-top site-navbar project-open-navbar">
 
     <a class="navbar-brand" href="{{ url('/') }}">
-        <img src="{{ asset('/images/brand.png') }}" width="180" height="40"
+        <img src="{{ static_asset('/images/brand.png') }}" width="180" height="40"
              alt="Epicollect5: Mobile & Web Application for free and easy data collection.">
     </a>
 

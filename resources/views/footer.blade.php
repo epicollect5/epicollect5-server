@@ -26,11 +26,11 @@
             </div>
             <div class="col-xs-12 col-sm-12 col-md-4 col-lg-4 footer-bdi-logo">
                 <a href="http://www.ox.ac.uk">
-                    <img src="{{ asset('images/src_images_footer_oxford.png') }}" alt="University of Oxford"
+                    <img src="{{ static_asset('images/src_images_footer_oxford.png') }}" alt="University of Oxford"
                          width="75" height="75">
                 </a>
                 <a href="https://www.bdi.ox.ac.uk/">
-                    <img src="{{ asset('images/src_images_footer_bdi.png') }}" alt="Big Data Institute" width="75"
+                    <img src="{{ static_asset('images/src_images_footer_bdi.png') }}" alt="Big Data Institute" width="75"
                          height="75">
                 </a>
             </div>

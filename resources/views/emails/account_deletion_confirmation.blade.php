@@ -66,7 +66,7 @@
     <tr>
         <td align="center"
             style="margin: 20px 0 0 0;padding: 10px 0px 20px 0px; font-size: 22px; font-family: Arimo, Arial, sans-serif; color: #673C90;">
-            <img style="border-radius: 50%" src="{{ asset('images/epicollect-icon-og-256x256@2x.png') }}"
+            <img style="border-radius: 50%" src="{{ static_asset('images/epicollect-icon-og-256x256@2x.png') }}"
                  width="128" height="128"/>
         </td>
     </tr>

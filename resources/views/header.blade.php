@@ -14,7 +14,7 @@
     <meta property="og:title" content="@yield('title')"/>
     <meta property="og:description" content="@yield('description')"/>
     <meta property="og:type" content="website"/>
-    <meta property="og:image" content="{{asset('images/epicollect-icon-og-256x256@2x.png')}}"/>
+    <meta property="og:image" content="{{ static_asset('images/epicollect-icon-og-256x256@2x.png') }}"/>
     <meta property="og:image:width" content="128"/>
     <meta property="og:image:height" content="128"/>
 
@@ -23,7 +23,7 @@
     <meta name="twitter:site" content="@EpiCollect"/>
     <meta name="twitter:title" content="Epicollect5"/>
     <meta name="twitter:description" content="@yield('title')"/>
-    <meta name="twitter:image" content="{{asset('images/epicollect-icon-og-256x256@2x.png')}}"/>
+    <meta name="twitter:image" content="{{ static_asset('images/epicollect-icon-og-256x256@2x.png') }}"/>
 @endif
 
 @if(Route::currentRouteName() === 'login')
