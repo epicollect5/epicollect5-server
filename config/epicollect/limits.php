@@ -45,6 +45,16 @@ return [
     'entries_export_per_page_csv' => (int)env('ENTRIES_EXPORT_PER_PAGE_CSV', 1000),
     'entries_limits_max' => 50000,
     'emails_limit_max' => 100, ///for user import from csv
+    'numeric_constraints' => [
+        'integer' => [
+            'min' => -9007199254740991,
+            'max' => 9007199254740991
+        ],
+        'decimal' => [
+            'min' => -1.7976931348623157e308,
+            'max' => 1.7976931348623157e308
+        ]
+    ],
     // Max lengths for entry answers
     'entry_answer_limits' => [
         'text' => 255,

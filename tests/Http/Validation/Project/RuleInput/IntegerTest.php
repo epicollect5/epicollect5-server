@@ -48,6 +48,7 @@ class IntegerTest extends GeneralTest
 
     public function test_min_max()
     {
+        $integerMax = config('epicollect.limits.numeric_constraints.integer.max');
 
         // Integers allowed
         $this->inputDetails['min'] = 1;
@@ -89,11 +90,21 @@ class IntegerTest extends GeneralTest
         $this->assertTrue($this->validator->hasErrors());
         $this->validator->resetErrors();
 
+        // Shared range upper bound enforced
+        $this->inputDetails['min'] = $integerMax + 1;
+        $this->inputDetails['max'] = $integerMax + 2;
+        $this->validator->validate($this->inputDetails);
+        $this->validator->additionalChecks($this->parentRef);
+        $this->assertContains('ec5_28', $this->validator->errors['xxx_123456789abcd']);
+        $this->validator->resetErrors();
+
         $this->reset();
     }
 
     public function test_default()
     {
+        $integerMax = config('epicollect.limits.numeric_constraints.integer.max');
+
         // Valid default
         $this->inputDetails['default'] = '300';
         $this->validator->validate($this->inputDetails);
@@ -124,6 +135,13 @@ class IntegerTest extends GeneralTest
         $this->validator->validate($this->inputDetails);
         $this->validator->additionalChecks($this->parentRef);
         $this->assertTrue($this->validator->hasErrors());
+        $this->validator->resetErrors();
+
+        // Shared range upper bound enforced
+        $this->inputDetails['default'] = (string) ($integerMax + 1);
+        $this->validator->validate($this->inputDetails);
+        $this->validator->additionalChecks($this->parentRef);
+        $this->assertContains('ec5_28', $this->validator->errors['xxx_123456789abcd']);
         $this->validator->resetErrors();
 
         $this->reset();

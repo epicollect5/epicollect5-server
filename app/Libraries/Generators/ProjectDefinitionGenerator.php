@@ -708,8 +708,9 @@ class ProjectDefinitionGenerator
 
     private static function generateRandomMinMaxInteger(): array
     {
-        $min = random_int(-PHP_INT_MAX, PHP_INT_MAX);
-        $max = random_int($min, PHP_INT_MAX);
+        $numericConstraints = config('epicollect.limits.numeric_constraints.integer');
+        $min = random_int($numericConstraints['min'], $numericConstraints['max']);
+        $max = random_int($min, $numericConstraints['max']);
 
         return ['min' => $min, 'max' => $max];
     }

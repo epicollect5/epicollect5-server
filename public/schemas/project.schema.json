@@ -58,7 +58,7 @@
   "$defs": {
     "numericString": {
       "title": "Numeric value",
-      "description": "A numeric constraint for min/max fields. Accepts: null (not set), empty string (not set), integer, number, or a numeric string. Leading-dot decimals like .5 are accepted.",
+      "description": "A numeric constraint for min/max fields. Accepts: null (not set), empty string (not set), integer, number, or a numeric string. Leading-dot decimals like .5 are accepted. Application logic enforces shared runtime bounds across PHP, JavaScript and JSON consumers.",
       "oneOf": [
         {
           "type": "null"
@@ -458,7 +458,7 @@
           }
         },
         {
-          "description": "integer: max answer length 255. No possible_answers.",
+          "description": "integer: max answer length 255. No possible_answers. Application logic enforces a shared min/max range of -9007199254740991 to 9007199254740991 for min, max and default.",
           "if": {
             "properties": {
               "type": {
@@ -490,7 +490,7 @@
           }
         },
         {
-          "description": "decimal: max answer length 255. No possible_answers.",
+          "description": "decimal: max answer length 255. No possible_answers. Application logic enforces IEEE-754 double finite bounds for min, max and default.",
           "if": {
             "properties": {
               "type": {
