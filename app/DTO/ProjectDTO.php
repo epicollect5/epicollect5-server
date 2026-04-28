@@ -2,6 +2,7 @@
 
 namespace ec5\DTO;
 
+use ec5\Http\Validation\Project\Mapping\RuleImportProjectMapping;
 use ec5\Http\Validation\Project\RuleProjectDefinition;
 use ec5\Libraries\Utilities\Common;
 use ec5\Services\Mapping\ProjectMappingService;
@@ -187,6 +188,8 @@ class ProjectDTO
      * @param $createdBy
      * @param $projectDefinitionData
      * @param RuleProjectDefinition $projectDefinitionValidator
+     * @param mixed|null $projectMappings
+     * @param RuleImportProjectMapping|null $importProjectMappingValidator
      * @throws Exception
      */
     public function import(
@@ -194,7 +197,9 @@ class ProjectDTO
         $projectName,
         $createdBy,
         $projectDefinitionData,
-        RuleProjectDefinition $projectDefinitionValidator
+        RuleProjectDefinition $projectDefinitionValidator,
+        mixed $projectMappings = null,
+        ?RuleImportProjectMapping $importProjectMappingValidator = null
     ): void {
         // Take new name, slug
         $projectDefinitionData['project']['name'] = $projectName;
@@ -205,6 +210,9 @@ class ProjectDTO
         $projectDefinitionDataString = str_replace($existingProjectRef, $projectRef, json_encode($projectDefinitionData));
         // Decode back to array
         $projectDefinitionData = json_decode($projectDefinitionDataString, true);
+        // Normalise legacy-safe project definition data before validation and persistence.
+        $projectDefinitionData = self::sanitiseProjectDefinitionForExport($projectDefinitionData);
+        $projectMappings = $this->replaceProjectRefInProjectMappings($projectMappings, $existingProjectRef, $projectRef);
         $this->addProjectDetails(array_merge($projectDefinitionData['project'], ['created_by' => $createdBy]));
         // Add this updated project definition to the Project Definition model
         $this->addProjectDefinition($projectDefinitionData);
@@ -217,7 +225,46 @@ class ProjectDTO
         //EC5 AUTO mapping
         $mapping = $this->projectMappingService->createEC5AUTOMapping($this->getProjectExtra()->getData());
         $this->projectMapping->setEC5AUTOMapping($mapping);
+
+        if ($projectMappings !== null) {
+            if ($importProjectMappingValidator === null || !$importProjectMappingValidator->validate($this, $projectMappings)) {
+                Log::error(__METHOD__ . ' failed.', ['errors' => $importProjectMappingValidator?->errors() ?? []]);
+                throw new Exception(config('epicollect.codes.ec5_39'));
+            }
+            if (is_array($projectMappings) && count($projectMappings) > 0) {
+                $defaultImportedMapping = $this->getDefaultImportedMapping($projectMappings);
+                if (($defaultImportedMapping['name'] ?? '') !== config('epicollect.mappings.default_mapping_name')) {
+                    $this->projectMapping->addImportedMapping($defaultImportedMapping);
+                }
+            }
+        }
+
         // No need to initialise the Project Stats, as they will be empty
+    }
+
+    private function replaceProjectRefInProjectMappings(
+        mixed $projectMappings,
+        string $existingProjectRef,
+        string $projectRef
+    ): mixed {
+        if ($projectMappings === null) {
+            return null;
+        }
+
+        $projectMappingsString = str_replace($existingProjectRef, $projectRef, json_encode($projectMappings));
+
+        return json_decode($projectMappingsString, true);
+    }
+
+    private function getDefaultImportedMapping(array $projectMappings): array
+    {
+        foreach ($projectMappings as $mapping) {
+            if (($mapping['is_default'] ?? false) === true) {
+                return $mapping;
+            }
+        }
+
+        return $projectMappings[0];
     }
 
     /**

@@ -334,6 +334,58 @@ class ProjectMappingControllerTest extends TestCase
         }
     }
 
+    public function test_existing_mapping_is_updated_without_is_default_and_map_index_in_mapping_payload()
+    {
+        $projectStructures = ProjectStructure::where('project_id', $this->project->id)
+            ->first();
+        $projectMappings = json_decode($projectStructures->project_mapping, true);
+        $this->assertCount(1, $projectMappings);
+
+        $projectMappings[] = [
+            'name' => 'Random Name',
+            'forms' => $projectMappings[0]['forms'],
+            'map_index' => 1,
+            'is_default' => false
+        ];
+
+        ProjectStructure::where('project_id', $this->project->id)->update(
+            [
+                'project_mapping' => json_encode($projectMappings)
+            ]
+        );
+
+        $projectStructures = ProjectStructure::where('project_id', $this->project->id)
+            ->first();
+        $projectMappings = json_decode($projectStructures->project_mapping, true);
+        $this->assertCount(2, $projectMappings);
+
+        $modifiedMapping = $this->getModifiedMapping($projectMappings[1]);
+        unset($modifiedMapping['is_default'], $modifiedMapping['map_index']);
+
+        $params = [
+            'action' => 'update',
+            'map_index' => 1,
+            'mapping' => $modifiedMapping
+        ];
+
+        $response = [];
+        try {
+            $response[] = $this->actingAs($this->user)
+                ->post('myprojects/' . $this->project->slug . '/mapping-data/update', $params);
+            $response[0]->assertStatus(200);
+
+            $jsonResponse = json_decode($response[0]->getContent(), true);
+            $this->assertFalse($jsonResponse['data']['mapping'][1]['is_default']);
+            $this->assertEquals(1, $jsonResponse['data']['mapping'][1]['map_index']);
+            $this->assertEquals(
+                $modifiedMapping['forms'],
+                $jsonResponse['data']['mapping'][1]['forms']
+            );
+        } catch (\Throwable $e) {
+            $this->logTestError($e, $response);
+        }
+    }
+
     public function test_existing_mapping_is_set_as_default()
     {
         //get mapping

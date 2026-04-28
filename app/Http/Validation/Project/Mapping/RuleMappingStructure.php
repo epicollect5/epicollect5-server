@@ -11,8 +11,8 @@ class RuleMappingStructure extends ValidationBase
     protected array $rules = [
         'name' => 'required|string|min:3|max:20|regex:/^[A-Za-z0-9 \-\_]+$/',
         'forms' => 'required|array',
-        'is_default' => 'required|boolean',
-        'map_index' => 'required|integer'
+        'is_default' => 'boolean',
+        'map_index' => 'integer'
     ];
 
     protected RuleMappingInput $ruleMappingInput;

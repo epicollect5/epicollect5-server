@@ -83,6 +83,18 @@ class ProjectMappingDTO extends ProjectDTOBase
         }
     }
 
+    public function addImportedMapping(array $mapping): void
+    {
+        end($this->data);
+        $nextAvailableMapIndex = key($this->data) + 1;
+
+        $mapping['map_index'] = $nextAvailableMapIndex;
+        $mapping['is_default'] = true;
+
+        $this->data[$nextAvailableMapIndex] = $mapping;
+        $this->setDefault($nextAvailableMapIndex);
+    }
+
     public function setDefault(int $mapIndex): void
     {
         // Set all mappings as default false

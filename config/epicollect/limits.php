@@ -40,9 +40,9 @@ return [
     'entries_map' => [
         'per_page' => env('ENTRIES_MAP_PER_PAGE', 50000),
     ], //this is a test with new dataviewer
-    'entries_export_per_page_json' => 1000,
+    'entries_export_per_page_json' => (int) env('ENTRIES_EXPORT_PER_PAGE_JSON', 1000),
     'entries_export_chunk' => 100,
-    'entries_export_per_page_csv' => 1000,
+    'entries_export_per_page_csv' => (int)env('ENTRIES_EXPORT_PER_PAGE_CSV', 1000),
     'entries_limits_max' => 50000,
     'emails_limit_max' => 100, ///for user import from csv
     // Max lengths for entry answers

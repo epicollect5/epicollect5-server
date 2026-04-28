@@ -3,6 +3,7 @@
 namespace ec5\Http\Controllers\Web\Project;
 
 use ec5\DTO\ProjectDTO;
+use ec5\Http\Validation\Project\Mapping\RuleImportProjectMapping as ImportProjectMappingValidator;
 use ec5\Http\Validation\Project\RuleImportJson as ImportJsonValidator;
 use ec5\Http\Validation\Project\RuleImportRequest as ImportRequestValidator;
 use ec5\Http\Validation\Project\RuleProjectDefinition as ProjectDefinitionValidator;
@@ -45,6 +46,7 @@ class ProjectImportController
     public function import(
         Request                    $request,
         ProjectDefinitionValidator $projectDefinitionValidator,
+        ImportProjectMappingValidator $importProjectMappingValidator,
         ImportJsonValidator        $importJsonValidator,
         ImportRequestValidator     $importRequestValidator,
         ProjectService             $projectService
@@ -112,13 +114,19 @@ class ProjectImportController
                 $payload['name'],
                 $payload['created_by'],
                 $projectDefinitionData,
-                $projectDefinitionValidator
+                $projectDefinitionValidator,
+                $data['meta']['project_mapping'] ?? null,
+                $importProjectMappingValidator
             );
         } catch (Throwable $e) {
             Log::info(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             $request->flash();
+            $errors = $importProjectMappingValidator->errors();
+            if (empty($errors)) {
+                $errors = $projectDefinitionValidator->errors();
+            }
             return Redirect::to('myprojects/create')
-                ->withErrors($projectDefinitionValidator->errors())
+                ->withErrors($errors)
                 ->with(['tab' => $this->type]);
         }
 

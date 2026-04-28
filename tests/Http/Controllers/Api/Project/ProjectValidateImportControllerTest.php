@@ -80,6 +80,30 @@ class ProjectValidateImportControllerTest extends TestCase
         ];
     }
 
+    private function minimalValidMappingPayload(string $mappingName = 'Imported Mapping'): array
+    {
+        $payload = $this->minimalValidPayload();
+        $formRef = $payload['project']['forms'][0]['ref'];
+        $inputRef = $payload['project']['forms'][0]['inputs'][0]['ref'];
+
+        return [
+            'name' => $mappingName,
+            'forms' => [
+                $formRef => [
+                    $inputRef => [
+                        'hide' => false,
+                        'group' => [],
+                        'branch' => [],
+                        'map_to' => 'imported_name',
+                        'possible_answers' => []
+                    ]
+                ]
+            ],
+            'map_index' => 0,
+            'is_default' => true
+        ];
+    }
+
     // -------------------------------------------------------------------------
     // Token gate
     // -------------------------------------------------------------------------
@@ -229,5 +253,98 @@ class ProjectValidateImportControllerTest extends TestCase
         $this->assertNotEmpty($data['validated_at']);
         $this->assertNotEmpty($data['project']['name']);
         $this->assertNotEmpty($data['project']['slug']);
+    }
+
+    public function test_accepts_valid_payload_with_custom_project_mapping(): void
+    {
+        $projectDefinition = [
+            'data' => $this->minimalValidPayload(),
+            'meta' => [
+                'project_mapping' => [
+                    $this->minimalValidMappingPayload('Imported Mapping')
+                ]
+            ]
+        ];
+
+        $response = $this->json('POST', self::ROUTE, $projectDefinition, [
+            'Authorization' => 'Bearer ' . self::VALID_TOKEN
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [
+                    'type',
+                    'id',
+                    'project' => ['name', 'slug'],
+                    'validation',
+                    'schema',
+                    'validated_at',
+                ]
+            ]);
+
+        $this->assertEquals('passed', $response->json('data.validation'));
+    }
+
+    public function test_accepts_valid_payload_with_ec5_auto_project_mapping(): void
+    {
+        $projectDefinition = [
+            'data' => $this->minimalValidPayload(),
+            'meta' => [
+                'project_mapping' => [
+                    $this->minimalValidMappingPayload('EC5_AUTO')
+                ]
+            ]
+        ];
+
+        $response = $this->json('POST', self::ROUTE, $projectDefinition, [
+            'Authorization' => 'Bearer ' . self::VALID_TOKEN
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [
+                    'type',
+                    'id',
+                    'project' => ['name', 'slug'],
+                    'validation',
+                    'schema',
+                    'validated_at',
+                ]
+            ]);
+
+        $this->assertEquals('passed', $response->json('data.validation'));
+    }
+
+    public function test_rejects_payload_with_invalid_project_mapping(): void
+    {
+        $invalidMapping = $this->minimalValidMappingPayload('Imported Mapping');
+        $invalidMapping['forms'] = [
+            'invalid_form_ref' => $invalidMapping['forms'][array_key_first($invalidMapping['forms'])]
+        ];
+
+        $projectDefinition = [
+            'data' => $this->minimalValidPayload(),
+            'meta' => [
+                'project_mapping' => [
+                    $invalidMapping
+                ]
+            ]
+        ];
+
+        $response = $this->json('POST', self::ROUTE, $projectDefinition, [
+            'Authorization' => 'Bearer ' . self::VALID_TOKEN
+        ]);
+
+        $response->assertStatus(400)
+            ->assertJsonStructure([
+                'errors' => [
+                    ['code', 'title', 'source']
+                ]
+            ]);
+
+        $errors = $response->json('errors');
+        $this->assertCount(1, $errors);
+        $this->assertEquals('ec5_15', $errors[0]['code']);
+        $this->assertEquals('invalid_form_ref', $errors[0]['source']);
     }
 }
