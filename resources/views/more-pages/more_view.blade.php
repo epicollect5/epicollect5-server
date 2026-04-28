@@ -27,7 +27,7 @@
                             col-md-6">
                             <div class="panel panel-default">
                                 <div class="panel-body text-center">
-                                    <img src="{{ asset('/images/more-pages/more-view-1.jpg') }}"
+                                    <img src="{{ static_asset('/images/more-pages/more-view-1.jpg') }}"
                                         class="img-responsive img-with-border" alt="View collected data on a table">
                                 </div>
                             </div>
@@ -52,7 +52,7 @@
                                     col-md-6 col-md-pull-6">
                                     <div class="panel panel-default">
                                         <div class="panel-body text-left">
-                                            <img src="{{ asset('/images/more-pages/more-view-2.jpg') }}"
+                                            <img src="{{ static_asset('/images/more-pages/more-view-2.jpg') }}"
                                                 class="img-responsive img-with-border" alt="View data collected on a map">
                                         </div>
                                     </div>
@@ -80,7 +80,7 @@
                             <div class="col-md-6">
                                 <div class="panel panel-default">
                                     <div class="panel-body text-center">
-                                        <img src="{{ asset('/images/more-pages/more-view-3.jpg') }}"
+                                        <img src="{{ static_asset('/images/more-pages/more-view-3.jpg') }}"
                                             class="img-responsive img-with-border" alt="Download your data">
                                     </div>
                                 </div>

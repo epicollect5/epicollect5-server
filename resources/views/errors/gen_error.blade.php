@@ -11,7 +11,7 @@
     <nav class="navbar navbar-default navbar-fixed-top site-navbar">
         <div class="navbar-header">
             <a class="navbar-brand" href="{{ url('/') }}">
-                <img src="{{ asset('/images/brand.png') }}"
+                <img src="{{ static_asset('/images/brand.png') }}"
                      width="180"
                      height="40"
                      alt="Epicollect5"

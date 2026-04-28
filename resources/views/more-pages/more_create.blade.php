@@ -24,7 +24,7 @@
                             col-md-6">
                             <div class="panel panel-default">
                                 <div class="panel-body text-center">
-                                    <img src="{{ asset('/images/more-pages/more-create-1.jpg') }}"
+                                    <img src="{{ static_asset('/images/more-pages/more-create-1.jpg') }}"
                                         class="img-responsive img-with-border" alt="Create a project">
                                 </div>
                             </div>
@@ -50,7 +50,7 @@
                                     col-md-6 col-md-pull-6">
                                     <div class="panel panel-default">
                                         <div class="panel-body text-left">
-                                            <img src="{{ asset('/images/more-pages/more-create-2.jpg') }}"
+                                            <img src="{{ static_asset('/images/more-pages/more-create-2.jpg') }}"
                                                 class="img-responsive img-with-border" alt="Add questions">
                                         </div>
                                     </div>
@@ -90,7 +90,7 @@
                             <div class="col-md-6">
                                 <div class="panel panel-default">
                                     <div class="panel-body text-center">
-                                        <img src="{{ asset('/images/more-pages/more-create-3.jpg') }}"
+                                        <img src="{{ static_asset('/images/more-pages/more-create-3.jpg') }}"
                                             class="img-responsive" alt="Publish and share">
                                     </div>
                                 </div>

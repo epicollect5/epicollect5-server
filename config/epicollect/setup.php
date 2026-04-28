@@ -26,6 +26,10 @@ return [
             'homepage_cache_ttl_hours' => 24, // in hours
         ]
     ],
+    'static_assets' => [
+        'driver' => env('STATIC_ASSETS_DRIVER', 'local'),
+        'cdn_endpoint' => env('STATIC_ASSETS_CDN_ENDPOINT'),
+    ],
     'opencage' => [
         'endpoint' => env('OPENCAGE_ENDPOINT'),
         'key' => env('OPENCAGE_KEY')

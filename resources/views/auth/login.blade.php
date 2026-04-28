@@ -17,13 +17,13 @@
                         <div class="btn-login-wrapper">
                             @if (in_array('google', $authMethods))
                                 <a href="{{ url('redirect/google') }}" class="btn-login-google">
-                                    <img class="img-responsive" src="{{ asset('/images/login-google@2x.png') }}"
+                                    <img class="img-responsive" src="{{ static_asset('/images/login-google@2x.png') }}"
                                          alt="Sign in with Google">
                                 </a>
                             @endif
                             @if (in_array('apple', $authMethods))
                                 <a href="#" class="btn-login-apple">
-                                    <img class="img-responsive" src="{{ asset('/images/login-apple@2x.png') }}"
+                                    <img class="img-responsive" src="{{ static_asset('/images/login-apple@2x.png') }}"
                                          alt="Sign in with Apple">
                                 </a>
                             @endif

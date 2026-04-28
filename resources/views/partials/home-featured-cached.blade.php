@@ -75,7 +75,7 @@
                     <a href="https://community.epicollect.net" class="thumbnail" target="_blank"
                        rel="noopener noreferrer">
                         <img class="img-responsive img-circle" width="128" height="128"
-                             src="{{ asset('/images/epicollect5-rounded-no-borders.jpg')  }}"
+                             src="{{ static_asset('/images/epicollect5-rounded-no-borders.jpg') }}"
                              alt="Community Logo">
                         <div class="loader"></div>
                     </a>
@@ -134,4 +134,3 @@
 @endif
 
 <hr>
-
