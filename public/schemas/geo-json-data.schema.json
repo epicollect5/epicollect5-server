@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://epicollect.net/schemas/geo-json-data/v1.0.0",
+  "title": "Epicollect5 Stored Entry GeoJSON",
+  "description": "Schema for the location index JSON persisted in entries.geo_json_data and branch_entries.geo_json_data.",
+  "type": "object",
+  "propertyNames": {
+    "$ref": "#/$defs/inputRef"
+  },
+  "additionalProperties": {
+    "$ref": "#/$defs/feature"
+  },
+  "$defs": {
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    },
+    "inputRef": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{32}(_[a-f0-9]{13}){2,}$"
+    },
+    "possibleAnswers": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {
+        "const": 1
+      }
+    },
+    "feature": {
+      "type": "object",
+      "required": [
+        "id",
+        "type",
+        "geometry",
+        "properties"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "type": {
+          "const": "Feature"
+        },
+        "geometry": {
+          "type": "object",
+          "required": [
+            "type",
+            "coordinates"
+          ],
+          "properties": {
+            "type": {
+              "const": "Point"
+            },
+            "coordinates": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "number",
+                  "minimum": -180,
+                  "maximum": 180
+                },
+                {
+                  "type": "number",
+                  "minimum": -90,
+                  "maximum": 90
+                }
+              ],
+              "items": false
+            }
+          },
+          "unevaluatedProperties": false
+        },
+        "properties": {
+          "type": "object",
+          "required": [
+            "uuid",
+            "title",
+            "accuracy",
+            "created_at",
+            "possible_answers"
+          ],
+          "properties": {
+            "uuid": {
+              "$ref": "#/$defs/uuid"
+            },
+            "title": {
+              "type": "string"
+            },
+            "accuracy": {
+              "type": "number"
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date"
+            },
+            "possible_answers": {
+              "$ref": "#/$defs/possibleAnswers"
+            }
+          },
+          "unevaluatedProperties": false
+        }
+      },
+      "unevaluatedProperties": false
+    }
+  }
+}

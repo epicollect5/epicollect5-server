@@ -14,7 +14,6 @@ class RuleProjectExtraDetails extends ValidationBase
         'access' => 'required|in:public,private',
         'visibility' => 'required|in:listed,hidden',
         'status' => 'required|in:active,trashed,locked',
-        'logo_url' => '',
         'description' => '',
         'category' => '',
         'entries_limits' => 'present|array'

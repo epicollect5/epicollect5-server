@@ -9,6 +9,7 @@ use ec5\Models\OAuth\OAuthAccessToken;
 use ec5\Models\OAuth\OAuthClient;
 use ec5\Models\OAuth\OAuthClientProject;
 use ec5\Models\Project\Project;
+use ec5\Models\Project\ProjectFeatured;
 use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
@@ -121,35 +122,80 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
         $clientId = $params['client_id'] ?? null;
 
         try {
-            // Delete users with an email that ends with '@example.com'
+            $testUserIds = $this->getTestUserIds();
+            $projectIds = $this->getTestProjectIds($testUserIds, $user);
+
+            if ($project) {
+                $projectIds[] = $project->id;
+            }
+
+            $projectIds = array_values(array_unique(array_filter($projectIds)));
+            $this->deleteProjectsByIds($projectIds);
+
+            OAuthClient::whereIn('user_id', $testUserIds)->delete();
+            UserProvider::whereIn('user_id', $testUserIds)->delete();
+            User::where('id', '>=', config('testing.TEST_USER_ID_BASE'))->delete();
+
+            // Delete users with testing email domains
             User::where('email', 'like', '%@example.%')->delete();
             User::where('email', 'like', '%random@unit.tests%')->delete();
             if ($user) {
                 User::where('id', $user->id)->delete();
-                UserProvider::where('id', $user->id)->delete();
+                UserProvider::where('user_id', $user->id)->delete();
                 OAuthClient::where('user_id', $user->id)->delete();
-            }
-            if ($project) {
-                Project::where('id', $project->id)->delete();
-                ProjectRole::where('project_id', $project->id)->delete();
-                ProjectStructure::where('project_id', $project->id)->delete();
-                ProjectStats::where('project_id', $project->id)->delete();
-                Entry::where('project_id', $project->id)->delete();
-                BranchEntry::where('project_id', $project->id)->delete();
-                OAuthClientProject::where('project_id', $project->id)->delete();
             }
 
             if ($clientId) {
                 OAuthAccessToken::where('client_id', $clientId)->delete();
             }
 
-            //also remove leftover users from other tests or failures
+            // Also remove leftover users from other tests or failures.
             User::where('email', 'LIKE', '%@example.org%')->delete();
-            //remove leftover projects from other tests or failures
-            //todo
         } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
         }
+    }
+
+    private function getTestUserIds(): array
+    {
+        return User::query()
+            ->where('id', '>=', config('testing.TEST_USER_ID_BASE'))
+            ->pluck('id')
+            ->all();
+    }
+
+    private function getTestProjectIds(array $testUserIds, ?User $user = null): array
+    {
+        return Project::query()
+            ->where(function ($query) use ($testUserIds, $user) {
+                $query->where('created_by', '>=', config('testing.TEST_USER_ID_BASE'));
+
+                if (!empty($testUserIds)) {
+                    $query->orWhereIn('created_by', $testUserIds);
+                }
+
+                if ($user) {
+                    $query->orWhere('created_by', $user->id);
+                }
+            })
+            ->pluck('id')
+            ->all();
+    }
+
+    private function deleteProjectsByIds(array $projectIds): void
+    {
+        if (empty($projectIds)) {
+            return;
+        }
+
+        ProjectFeatured::whereIn('project_id', $projectIds)->delete();
+        OAuthClientProject::whereIn('project_id', $projectIds)->delete();
+        ProjectRole::whereIn('project_id', $projectIds)->delete();
+        ProjectStructure::whereIn('project_id', $projectIds)->delete();
+        ProjectStats::whereIn('project_id', $projectIds)->delete();
+        Entry::whereIn('project_id', $projectIds)->delete();
+        BranchEntry::whereIn('project_id', $projectIds)->delete();
+        Project::whereIn('id', $projectIds)->delete();
     }
 
     protected function tearDown(): void

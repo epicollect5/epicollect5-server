@@ -1003,6 +1003,10 @@ class FormbuilderControllerTest extends TestCase
                 $afterUpdatedAt->toDateTimeString(),
                 $jsonResponse['meta']['project_stats']['structure_last_updated']
             );
+            $this->assertEquals(
+                (string)strtotime($afterUpdatedAt),
+                $jsonResponse['meta']['project_stats']['project_definition_version']
+            );
 
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
@@ -1018,6 +1022,10 @@ class FormbuilderControllerTest extends TestCase
             $this->assertEquals(
                 $afterUpdatedAt->toDateTimeString(),
                 $jsonResponse['data']['attributes']['structure_last_updated']
+            );
+            $this->assertEquals(
+                (string)strtotime($afterUpdatedAt),
+                $jsonResponse['data']['attributes']['project_definition_version']
             );
             $this->assertEquals(
                 (string)strtotime($afterUpdatedAt),

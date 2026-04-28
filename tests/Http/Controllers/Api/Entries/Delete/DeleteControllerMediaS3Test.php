@@ -25,6 +25,7 @@ class DeleteControllerMediaS3Test extends TestCase
 
     private string $endpoint = 'api/internal/deletion/media/';
     private Carbon $baseTimestamp;
+    private array $mediaCleanupDisks = ['photo', 'audio', 'video'];
 
     public function setUp(): void
     {
@@ -107,6 +108,66 @@ class DeleteControllerMediaS3Test extends TestCase
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
+    }
+
+    protected function tearDown(): void
+    {
+        $this->deleteProjectMediaPrefixes();
+
+        parent::tearDown();
+    }
+
+    private function deleteProjectMediaPrefixes(): void
+    {
+        if (!isset($this->project) || !isset($this->project->ref)) {
+            return;
+        }
+
+        foreach ($this->mediaCleanupDisks as $disk) {
+            Storage::disk($disk)->deleteDirectory($this->project->ref);
+        }
+    }
+
+    private function assertMediaCountsEventually(
+        int $expectedPhotos,
+        int $expectedAudios,
+        int $expectedVideos,
+        int $timeoutSeconds = 5,
+        int $pollMilliseconds = 250
+    ): void {
+        $deadline = microtime(true) + $timeoutSeconds;
+
+        do {
+            $lastPhotos = Storage::disk('photo')->files($this->project->ref);
+            $lastAudios = Storage::disk('audio')->files($this->project->ref);
+            $lastVideos = Storage::disk('video')->files($this->project->ref);
+
+            if (
+                count($lastPhotos) === $expectedPhotos &&
+                count($lastAudios) === $expectedAudios &&
+                count($lastVideos) === $expectedVideos
+            ) {
+                $totalRemaining = count($lastPhotos) + count($lastAudios) + count($lastVideos);
+                $expectedTotal = $expectedPhotos + $expectedAudios + $expectedVideos;
+
+                $this->assertEquals($expectedTotal, $totalRemaining, 'Total remaining media files count mismatch');
+                $this->assertCount($expectedPhotos, $lastPhotos, 'Unexpected number of photo files remaining');
+                $this->assertCount($expectedAudios, $lastAudios, 'Unexpected number of audio files remaining');
+                $this->assertCount($expectedVideos, $lastVideos, 'Unexpected number of video files remaining');
+
+                return;
+            }
+
+            usleep($pollMilliseconds * 1000);
+        } while (microtime(true) < $deadline);
+
+        $totalRemaining = count($lastPhotos) + count($lastAudios) + count($lastVideos);
+        $expectedTotal = $expectedPhotos + $expectedAudios + $expectedVideos;
+
+        $this->assertEquals($expectedTotal, $totalRemaining, 'Total remaining media files count mismatch');
+        $this->assertCount($expectedPhotos, $lastPhotos, 'Unexpected number of photo files remaining');
+        $this->assertCount($expectedAudios, $lastAudios, 'Unexpected number of audio files remaining');
+        $this->assertCount($expectedVideos, $lastVideos, 'Unexpected number of video files remaining');
     }
 
     public function test_it_should_catch_wrong_project_name()
@@ -348,6 +409,9 @@ class DeleteControllerMediaS3Test extends TestCase
     {
         $formRef = $this->projectDefinition['data']['project']['forms'][0]['ref'];
         $chunkSize = config('epicollect.setup.bulk_deletion.chunk_size_media');
+        $expectedPhotosRemaining = 100;
+        $expectedAudiosRemaining = $chunkSize + 100;
+        $expectedVideosRemaining = $chunkSize + 100;
 
         $numOfEntries = rand(1000, 1500);
         for ($i = 0; $i < $numOfEntries; $i++) {
@@ -395,23 +459,15 @@ class DeleteControllerMediaS3Test extends TestCase
             ]);
             $this->assertCount($numOfEntries, Entry::where('project_id', $this->project->id)->get());
 
-            //assert media files are deleted, up to 1000
-            $photos = Storage::disk('photo')->files($this->project->ref);
-            $audios = Storage::disk('audio')->files($this->project->ref);
-            $videos = Storage::disk('video')->files($this->project->ref);
-
-            $totalRemaining = sizeof($photos) +  sizeof($audios) + sizeof($videos);
-            $this->assertEquals(3 * ($chunkSize  + 100) - $chunkSize, $totalRemaining, 'Total remaining media files count mismatch');
-            $this->assertCount(100, $photos, 'Unexpected number of photo files remaining');
-            $this->assertCount($chunkSize + 100, $audios, 'Unexpected number of audio files remaining');
-            $this->assertCount($chunkSize + 100, $videos, 'Unexpected number of video files remaining');
-
-            //now remove all the leftover fake files
-            Storage::disk('photo')->deleteDirectory($this->project->ref);
-            Storage::disk('audio')->deleteDirectory($this->project->ref);
-            Storage::disk('video')->deleteDirectory($this->project->ref);
+            $this->assertMediaCountsEventually(
+                $expectedPhotosRemaining,
+                $expectedAudiosRemaining,
+                $expectedVideosRemaining
+            );
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
+        } finally {
+            $this->deleteProjectMediaPrefixes();
         }
     }
 

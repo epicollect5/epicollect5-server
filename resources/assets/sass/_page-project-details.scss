@@ -42,6 +42,11 @@
     overflow-wrap: break-word;
   }
 
+  .details-view__project-details__description {
+    height: 250px;
+    overflow: scroll;
+  }
+
   .project-description {
     max-height: 200px;
     overflow: auto;
@@ -147,6 +152,119 @@
     }
   }
 
+  .project-tools-row {
+    overflow: visible;
+
+    > div.equal-height {
+      margin-bottom: 0;
+    }
+  }
+
+  .project-tools-group {
+    height: 95%;
+
+    > .panel-body {
+      padding: 20px;
+    }
+  }
+
+  .project-tools-grid {
+    display: flex;
+    gap: 20px;
+    height: 100%;
+  }
+
+  .project-tools-item {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    min-height: 180px;
+  }
+
+  .project-tools-item__header {
+    border-bottom: 1px solid #ddd;
+    font-weight: 700;
+    min-height: 51px;
+    padding: 10px 15px;
+  }
+
+  .project-tools-item__body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    padding: 15px;
+  }
+
+  @media (max-width: 1024px) {
+    .project-tools-group {
+      height: auto;
+    }
+
+    .project-tools-grid {
+      display: block;
+    }
+
+    .project-tools-item {
+      min-height: 0;
+    }
+
+    .project-tools-item + .project-tools-item {
+      margin-top: 20px;
+    }
+  }
+
+  .project-tools-panel__description {
+    margin-bottom: 15px;
+  }
+
+  .project-tools-storage {
+    display: grid;
+    gap: 12px;
+  }
+
+  .project-tools-storage__metric {
+    background: #fafafa;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    padding: 12px 14px;
+  }
+
+  .project-tools-storage__label {
+    color: #666;
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+  }
+
+  .project-tools-storage__value {
+    color: $deep-purple;
+    display: block;
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .project-tools-storage__updated {
+    color: #666;
+    font-size: 16px;
+    margin-bottom: 0;
+    margin-top: 12px;
+    text-align: right;
+
+    span {
+      color: #333;
+      font-weight: 700;
+    }
+  }
+
+  .project-tools-panel__actions {
+    margin-top: auto;
+    text-align: left;
+  }
+
   .form-group.file-upload-input {
     input[type="text"] {
       &:hover {
@@ -227,6 +345,9 @@
         margin-left: 40px;
       }
     }
+  }
+  .btn-180 {
+    width: 180px;
   }
 
   .project-details-panel--feedback {

@@ -2,13 +2,16 @@
 
 This document describes the current server-side architecture of Epicollect5 as implemented in this repository.
 
-It is based on the code layout and runtime wiring in `app/`, `routes/`, `config/epicollect/`, and the migration-defined schema.
+It is based on the code layout and runtime wiring in `app/`, `routes/`, `config/epicollect/`, and the migration-defined
+schema.
 
 ## Overview
 
-Epicollect5 Server is a Laravel application with a domain-centered structure built around projects, entries, media, and users.
+Epicollect5 Server is a Laravel application with a domain-centered structure built around projects, entries, media, and
+users.
 
 At a high level:
+
 - `projects` define the form structure, project settings, mappings, and access rules
 - `entries` and `branch_entries` store submitted data and geospatial payloads
 - `project_structures` stores the canonical JSON definition and derived JSON metadata
@@ -27,12 +30,14 @@ The application exposes three main entry points.
 Defined in `routes/web.php`.
 
 Purpose:
+
 - browser-rendered pages
 - login and account management
 - project creation and management
 - admin tools and admin dashboards
 
 Guard and middleware:
+
 - loaded by `RouteServiceProvider` with middleware group `web`
 - uses the `web` guard and session-backed authentication
 
@@ -41,11 +46,13 @@ Guard and middleware:
 Defined in `routes/api_internal.php`.
 
 Purpose:
+
 - endpoints used by the web frontend and dataviewer
 - project management operations
 - entry listing, deletion, download, bulk upload, mapping, counters
 
 Guard and middleware:
+
 - loaded with middleware group `api_internal`
 - still uses the `web` guard so it shares the same session/auth context as the web app
 
@@ -54,6 +61,7 @@ Guard and middleware:
 Defined in `routes/api_external.php`.
 
 Purpose:
+
 - mobile app access
 - public and private project download
 - entry upload
@@ -62,6 +70,7 @@ Purpose:
 - passwordless and third-party login flows
 
 Guard and middleware:
+
 - loaded with middleware group `api_external`
 - uses the `api_external` guard
 
@@ -72,6 +81,7 @@ Guard and middleware:
 The first layer is route grouping plus middleware in [Kernel.php](../app/Http/Kernel.php).
 
 Important middleware responsibilities:
+
 - authentication and guest redirection
 - admin and superadmin checks
 - project permission checks
@@ -80,6 +90,7 @@ Important middleware responsibilities:
 - optional test disk overrides
 
 The project permission middleware family is central to the architecture:
+
 - `ProjectPermissions`
 - `ProjectPermissionsApi`
 - `ProjectPermissionsRequiredRole`
@@ -93,11 +104,13 @@ These middleware do more than allow or deny access. They build request context a
 The request-scoped context is exposed through `ec5\Traits\Requests\RequestAttributes`.
 
 Controllers and services using this trait can access:
+
 - `requestedUser()`
 - `requestedProject()`
 - `requestedProjectRole()`
 
 This is a core design choice in the codebase:
+
 - route middleware resolves the current project and user role
 - downstream services rely on request attributes instead of repeatedly re-querying or recomputing access context
 
@@ -106,30 +119,36 @@ This keeps controllers smaller and standardizes permission-aware behavior across
 ### 3. Controllers
 
 Controllers live under:
+
 - `app/Http/Controllers/Web`
 - `app/Http/Controllers/Api`
 
 Controller responsibilities are usually:
+
 - accept request input
 - invoke validators
 - call services or DTO workflows
 - return standardized responses
 
 Representative patterns:
+
 - project endpoints use `ProjectController`
 - upload endpoints use `UploadAppController` or `UploadWebController`
 - dataviewer and export endpoints use entries view/download controllers
 
 The preferred shape is:
+
 - middleware establishes context
 - controller coordinates
 - service performs business logic
 
 ### 4. Validation layer
 
-Validation is not limited to Laravel form requests. A substantial custom validation layer lives under `app/Http/Validation`.
+Validation is not limited to Laravel form requests. A substantial custom validation layer lives under
+`app/Http/Validation`.
 
 Main areas:
+
 - `Auth`
 - `Entries`
 - `Project`
@@ -137,19 +156,22 @@ Main areas:
 - `Schemas`
 
 These validators enforce domain rules such as:
+
 - project definition validity
 - upload payload structure
 - query-string filters and export parameters
 - input-specific answer validation
 - uniqueness and media constraints
 
-This layer is important because many rules depend on project structure JSON, user role, and entry type rather than simple field constraints.
+This layer is important because many rules depend on project structure JSON, user role, and entry type rather than
+simple field constraints.
 
 ### 5. DTO layer
 
 DTOs in `app/DTO` are a major part of the architecture.
 
 Main DTOs:
+
 - `ProjectDTO`
 - `ProjectDefinitionDTO`
 - `ProjectExtraDTO`
@@ -159,12 +181,14 @@ Main DTOs:
 - `EntryStructureDTO`
 
 Responsibilities:
+
 - hold structured project or entry state
 - normalize JSON stored in the database
 - support create, import, clone, and hydrate workflows
 - provide a stable interface to services and validators
 
 The project stack is especially DTO-driven:
+
 - project rows and structure rows are loaded
 - `Project::findBySlug()` returns a joined record bundle
 - `ProjectDTO::initAllDTOs()` hydrates project details, definition, extra, mapping, and stats into one domain object
@@ -176,6 +200,7 @@ This lets higher layers work with a rich in-memory project object instead of raw
 Business logic is concentrated in `app/Services`.
 
 Main service groups:
+
 - `Services/Project`
 - `Services/Entries`
 - `Services/Media`
@@ -184,19 +209,23 @@ Main service groups:
 - `Services/User`
 
 Examples:
+
 - `ProjectService` stores projects, manages roles, and supports cloning workflows
-- `EntriesUploadService` validates upload requests, checks permissions and versioning, builds `EntryStructureDTO`, and dispatches persistence/media actions
+- `EntriesUploadService` validates upload requests, checks permissions and versioning, builds `EntryStructureDTO`, and
+  dispatches persistence/media actions
 - `CreateEntryService` writes entries in a transaction and updates counters
 - `EntriesViewService` sanitizes and validates query parameters for downloads and dataviewer requests
 - `MediaService` and related media saver/mover services handle local or S3 media storage concerns
 
 The general rule in this codebase is:
+
 - services own the business transaction
 - controllers should not contain multi-step domain logic
 
 ### 7. Models and traits
 
 Eloquent models live under `app/Models`, grouped by domain:
+
 - `Project`
 - `Entries`
 - `User`
@@ -205,11 +234,13 @@ Eloquent models live under `app/Models`, grouped by domain:
 - `Counters`
 
 Notable design traits:
+
 - models mix Eloquent usage with query-builder-heavy methods
 - shared persistence behavior is extracted into traits, especially under `app/Traits/Eloquent`
 - counters are modeled explicitly through `EntryCounter` and `BranchEntryCounter`
 
 This codebase does not follow a pure active-record style. Many read and write paths use:
+
 - Eloquent models for identity and simple persistence
 - query builder for performance-sensitive or highly custom queries
 - traits to share entry-specific DB operations
@@ -226,22 +257,191 @@ A project is split across multiple storage concerns:
 - `project_roles`: per-user membership and project role
 
 This split is central to the application:
+
 - relational columns support search, permissions, and admin views
 - JSON structures support dynamic form building and schema evolution
+
+Imported project definitions are normalised before they are validated and persisted:
+
+- import rewrites project and form refs as needed
+- import sanitises legacy-safe project definition fields before saving to `project_structures`
+- `project_extra` and regenerated mappings are built from this sanitised definition
+
+Read-time sanitisation still exists as a compatibility layer for already-stored legacy projects, but new imports are
+persisted in normalised form rather than saved raw and cleaned only on export.
+
+### Project Mapping
+
+`project.schema.json` allows optional `project_mapping` metadata under the project definition payload.
+
+- schema: `public/schemas/project.schema.json`
+- storage: persisted in `project_structures` alongside the definition and derived `project_extra`
+- runtime model: hydrated through `ProjectMappingDTO`
+- generator: `ProjectMappingService::createEC5AUTOMapping()`
+- UI/controller: `ProjectMappingController`
+
+The server-generated default mapping is the `EC5_AUTO` map at `map_index` `0`.
+
+`EC5_AUTO` is the mapping autogenerated by the system:
+
+- on project create
+- on project import, regardless of whether the incoming file provides `meta.project_mapping`
+
+This auto-generated mapping is the baseline mapping stored with the project structure. Editors can then use the project
+mapping UI to create additional custom mappings, rename them, update their structure, delete them, and choose which one
+is the default.
+
+Import/export behavior is intentionally asymmetric:
+
+- web file export (`downloadProjectDefinition()`) includes only the current default mapping in `meta.project_mapping`
+- on import, `EC5_AUTO` is always regenerated from the imported `project_definition`
+- if the imported default mapping is a custom mapping and it is valid, it is added as `map_index` `1` and becomes the default
+- if the imported default mapping is `EC5_AUTO`, it is validated but discarded and not persisted as a second mapping
+
+This preserves a core invariant in the server: `EC5_AUTO` is system-derived state, not user-authored state, and it must
+always mirror the current `project_definition` exactly.
+
+Its purpose is to provide a stable export-oriented mapping from internal refs to compact field names:
+
+- top-level array: list of mappings for the project
+- `name`: mapping name, with the generated default set to `EC5_AUTO`
+- `forms`: object keyed by form ref
+- form entries: objects keyed by input ref
+- `map_to`: generated export key for that input
+- `possible_answers`: answer-ref to export-label mapping for choice inputs
+- `group`: recursively mapped child inputs for group inputs
+- `branch`: recursively mapped child inputs for branch inputs
+- `hide`: currently generated as `false` for the auto map
+
+The generated `map_to` keys are derived from the input order and question text, normalized to alphanumeric and
+underscore characters, truncated to the configured mapping key length, and kept unique within each form mapping by
+server-side validation.
+
+Representative `project_mapping` sample:
+
+```json
+[
+  {
+    "name": "EC5_AUTO",
+    "forms": {
+      "50849b0c9f2840d7be4647b5bad0f011_69de567e6618d": {
+        "50849b0c9f2840d7be4647b5bad0f011_69de567e6618d_69de57027341d": {
+          "hide": false,
+          "group": [],
+          "branch": [],
+          "map_to": "1_Participant_ID_PIN",
+          "possible_answers": []
+        },
+        "50849b0c9f2840d7be4647b5bad0f011_69de567e6618d_69de57197341e": {
+          "hide": false,
+          "group": [],
+          "branch": [],
+          "map_to": "2_Is_the_date_of_bir",
+          "possible_answers": {
+            "69de57197341f": {
+              "map_to": "Yes"
+            },
+            "69de571f73420": {
+              "map_to": "No"
+            }
+          }
+        },
+        "50849b0c9f2840d7be4647b5bad0f011_69de567e6618d_69de5c9073444": {
+          "hide": false,
+          "group": [],
+          "branch": {
+            "50849b0c9f2840d7be4647b5bad0f011_69de567e6618d_69de5c9073444_69de5cb673445": {
+              "hide": false,
+              "group": [],
+              "branch": [],
+              "map_to": "14_Highest_temperatu",
+              "possible_answers": []
+            },
+            "50849b0c9f2840d7be4647b5bad0f011_69de567e6618d_69de5c9073444_69de5ce773446": {
+              "hide": false,
+              "group": [],
+              "branch": [],
+              "map_to": "15_Temperature_units",
+              "possible_answers": {
+                "69de5ce773447": {
+                  "map_to": "°C"
+                },
+                "69de5cf573448": {
+                  "map_to": "°F"
+                }
+              }
+            }
+          },
+          "map_to": "13_Daily_Vitals",
+          "possible_answers": []
+        },
+        "50849b0c9f2840d7be4647b5bad0f011_69de567e6618d_69de612a73473": {
+          "hide": false,
+          "group": [],
+          "branch": {
+            "50849b0c9f2840d7be4647b5bad0f011_69de567e6618d_69de612a73473_69de614f73476": {
+              "hide": false,
+              "group": {
+                "50849b0c9f2840d7be4647b5bad0f011_69de567e6618d_69de612a73473_69de614f73476_69de615773478": {
+                  "hide": false,
+                  "group": [],
+                  "branch": [],
+                  "map_to": "27_Photo",
+                  "possible_answers": []
+                },
+                "50849b0c9f2840d7be4647b5bad0f011_69de567e6618d_69de612a73473_69de614f73476_69de615d7347c": {
+                  "hide": false,
+                  "group": [],
+                  "branch": [],
+                  "map_to": "28_What_is_being_pho",
+                  "possible_answers": {
+                    "69de615d7347d": {
+                      "map_to": "Skin lesion"
+                    },
+                    "69de617d7347e": {
+                      "map_to": "Mucosal lesion"
+                    },
+                    "69de61877347f": {
+                      "map_to": "Unknown"
+                    },
+                    "69de618a73480": {
+                      "map_to": "Other"
+                    }
+                  }
+                }
+              },
+              "branch": [],
+              "map_to": "25_Photo_Details",
+              "possible_answers": []
+            }
+          },
+          "map_to": "24_PHOTOGRAPHS",
+          "possible_answers": []
+        }
+      }
+    },
+    "map_index": 0,
+    "is_default": true
+  }
+]
+```
 
 ### Entries
 
 The data collection model uses:
+
 - `entries` for top-level form submissions
 - `branch_entries` for branch form submissions tied to an owning entry
 
 Each stored entry can include:
+
 - `entry_data` JSON
 - `geo_json_data` JSON
 - title and timestamps
 - ownership references and form references
 
 The architecture treats entry writes as a coordinated workflow:
+
 - validate payload against the project definition
 - hydrate `EntryStructureDTO`
 - insert or update entry data
@@ -249,16 +449,146 @@ The architecture treats entry writes as a coordinated workflow:
 - move media files when needed
 
 Active API payload types handled in this codebase are:
+
 - `entry`
 - `branch_entry`
 - `file_entry`
 - `delete`
 
-`archive` is not an active entry API payload type. The remaining reference in `EntryStructureDTO` was legacy commentary rather than a live validator/controller contract.
+`archive` is not an active entry API payload type. The remaining reference in `EntryStructureDTO` was legacy commentary
+rather than a live validator/controller contract.
 
 Published request schemas:
+
+- `public/schemas/entry-payload.schema.json`
+- `public/schemas/branch-entry-payload.schema.json`
 - `public/schemas/file-entry-payload.schema.json`
 - `public/schemas/delete-entry-payload.schema.json`
+
+Representative `entry` upload payload:
+
+```json
+{
+  "data": {
+    "id": "3bae8c50-425e-11f1-92bc-0f179dd3fef7",
+    "type": "entry",
+    "entry": {
+      "entry_uuid": "3bae8c50-425e-11f1-92bc-0f179dd3fef7",
+      "created_at": "2026-04-27T17:26:32.085Z",
+      "device_id": "",
+      "platform": "WEB",
+      "title": "Mirko 22",
+      "answers": {
+        "115844851c6446949b2a1b9f3d5cc7eb_69ecfdf0c0a72_69ecfdfa50ced": {
+          "answer": "Mirko",
+          "was_jumped": false
+        }
+      },
+      "project_version": "2026-04-25 17:48:00"
+    },
+    "attributes": {
+      "form": {
+        "ref": "115844851c6446949b2a1b9f3d5cc7eb_69ecfdf0c0a72",
+        "type": "hierarchy"
+      }
+    },
+    "relationships": {
+      "parent": {},
+      "branch": {}
+    }
+  }
+}
+```
+
+Representative child `entry` upload payload:
+`relationships.parent` references the parent entry
+
+```json
+{
+  "data": {
+    "id": "21adfbe0-4260-11f1-8107-e7c795b0ed19",
+    "type": "entry",
+    "entry": {
+      "entry_uuid": "21adfbe0-4260-11f1-8107-e7c795b0ed19",
+      "created_at": "2026-04-27T17:40:07.454Z",
+      "device_id": "",
+      "platform": "WEB",
+      "title": "Tim 77",
+      "answers": {
+        "115844851c6446949b2a1b9f3d5cc7eb_69ef9f5482716_69ecfdfa50ced": {
+          "answer": "Tim",
+          "was_jumped": false
+        },
+        "115844851c6446949b2a1b9f3d5cc7eb_69ef9f5482716_69ecfe1950cef": {
+          "answer": {
+            "latitude": "",
+            "longitude": "",
+            "accuracy": ""
+          },
+          "was_jumped": false
+        }
+      },
+      "project_version": "2026-04-27 17:39:47"
+    },
+    "attributes": {
+      "form": {
+        "ref": "115844851c6446949b2a1b9f3d5cc7eb_69ef9f5482716",
+        "type": "hierarchy"
+      }
+    },
+    "relationships": {
+      "parent": {
+        "data": {
+          "parent_form_ref": "115844851c6446949b2a1b9f3d5cc7eb_69ecfdf0c0a72",
+          "parent_entry_uuid": "3bae8c50-425e-11f1-92bc-0f179dd3fef7"
+        }
+      },
+      "branch": {}
+    }
+  }
+}
+```
+
+Representative `branch_entry` upload payload:
+`relationships.branch` references the branch owner entry
+
+```json
+{
+  "data": {
+    "type": "branch_entry",
+    "id": "844162c0-425e-11f1-900f-1f17686d0dda",
+    "attributes": {
+      "form": {
+        "ref": "ebaacb1a19194c948fa07725668ecc0a_5784e776184c6",
+        "type": "hierarchy"
+      }
+    },
+    "relationships": {
+      "parent": {},
+      "branch": {
+        "data": {
+          "owner_input_ref": "ebaacb1a19194c948fa07725668ecc0a_5784e776184c6_5784e7862d022",
+          "owner_entry_uuid": "5fca5281-aea0-497a-879f-b0f9f7ee0666"
+        }
+      }
+    },
+    "branch_entry": {
+      "entry_uuid": "844162c0-425e-11f1-900f-1f17686d0dda",
+      "created_at": "2026-04-27T17:35:43.340Z",
+      "device_id": "",
+      "platform": "WEB",
+      "title": "John",
+      "answers": {
+        "ebaacb1a19194c948fa07725668ecc0a_5784e776184c6_5784e7862d022_5784e7992d023": {
+          "answer": "John",
+          "was_jumped": false
+        }
+      },
+      "project_version": "2026-04-10 12:44:56"
+    }
+  }
+}
+```
 
 Representative `file_entry` upload payload:
 
@@ -343,10 +673,12 @@ Representative `delete` payload:
 ```
 
 Persisted JSON is stored as a normalised contract rather than as the raw upload payload:
+
 - `entry_data` stores the envelope returned by `EntryStructureDTO::getValidatedEntry()`
 - `geo_json_data` stores one GeoJSON `Feature` per location input, keyed by input ref
 
 Published schemas:
+
 - `public/schemas/entry-data.schema.json`
 - `public/schemas/geo-json-data.schema.json`
 
@@ -430,12 +762,14 @@ Representative `geo_json_data` shape:
 ### Users and providers
 
 Authentication data is split between:
+
 - `users`
 - `users_providers`
 - passwordless tables
 - Passport OAuth tables
 
 This supports:
+
 - local login
 - passwordless login
 - Google login
@@ -462,6 +796,7 @@ The application uses multiple authentication strategies.
 ### Session-backed web auth
 
 Used by:
+
 - browser pages
 - internal API consumed by the web frontend
 
@@ -470,11 +805,13 @@ Used by:
 Implemented via `JwtAuthServiceProvider` and custom classes under `app/Libraries/Auth/Jwt`.
 
 Used for:
+
 - external API flows that need JWT-style auth behavior
 
 ### Passport OAuth
 
 Used for:
+
 - OAuth clients and token issuance
 - project-linked API applications
 
@@ -483,6 +820,7 @@ Used for:
 ### Social and passwordless auth
 
 Supported flows include:
+
 - Google
 - Apple
 - passwordless web
@@ -490,6 +828,7 @@ Supported flows include:
 - local auth for staff/admin scenarios
 
 Authorization is heavily project-role-based. The effective role on a project determines whether a user can:
+
 - view a private project
 - upload entries
 - edit project configuration
@@ -501,6 +840,7 @@ Authorization is heavily project-role-based. The effective role on a project det
 ### Relational storage
 
 MySQL stores:
+
 - users
 - projects and roles
 - entries and branch entries
@@ -510,6 +850,7 @@ MySQL stores:
 ### JSON-in-relational pattern
 
 The application stores dynamic structures in JSON columns:
+
 - `project_definition`
 - `project_extra`
 - `project_mapping`
@@ -518,18 +859,22 @@ The application stores dynamic structures in JSON columns:
 - stats count payloads
 
 This is a key architectural compromise:
+
 - relational columns handle stable lookup and permission concerns
 - JSON handles user-defined project structure and dynamic answer payloads
 
 ### Media storage
 
 Media can be stored on:
+
 - local filesystem
 - S3
 
-The storage mode is environment-driven. `AppServiceProvider` includes a safety check to prevent non-production environments from pointing at the production S3 media bucket.
+The storage mode is environment-driven. `AppServiceProvider` includes a safety check to prevent non-production
+environments from pointing at the production S3 media bucket.
 
 Media handling responsibilities are split across dedicated services:
+
 - temp upload handling
 - file moving
 - photo/audio/video processing
@@ -541,18 +886,21 @@ Media handling responsibilities are split across dedicated services:
 API responses are standardized through response macros under `app/Providers/Macros/Response`.
 
 Common macros include:
+
 - `apiData`
 - `apiErrorCode`
 - `apiSuccessCode`
 - file and stream response helpers for JSON, CSV, TXT, thumbnails, and media
 
-This gives the application a consistent API surface even though the controllers are spread across web and API namespaces.
+This gives the application a consistent API surface even though the controllers are spread across web and API
+namespaces.
 
 ## Configuration as a Source of Truth
 
 The `config/epicollect/` directory is a major architectural component.
 
 These configs centralize:
+
 - table names
 - limits and quotas
 - error codes
@@ -562,9 +910,11 @@ These configs centralize:
 - media-related behavior
 
 Important implication:
+
 - domain constants should come from config, not hardcoded strings
 
 This is especially visible in services and validators that refer to:
+
 - `config('epicollect.tables.*')`
 - `config('epicollect.codes.*')`
 - `config('epicollect.strings.*')`
@@ -581,6 +931,7 @@ Project creation, entry creation, and role updates use DB transactions to keep m
 Shared logic is often placed in traits rather than deep inheritance hierarchies.
 
 Common areas:
+
 - request context access
 - Eloquent entry operations
 - middleware helpers
@@ -589,12 +940,14 @@ Common areas:
 ### Legacy-compatible evolution
 
 The codebase carries forward legacy behaviors in several places:
+
 - custom route guard handling in `RouteServiceProvider`
 - response formatting compatibility
 - mixed Eloquent and raw query patterns
 - migration history that evolves JSON structures in place
 
 This means changes should preserve behavior for existing clients, especially:
+
 - mobile app payloads
 - documented export endpoints
 - dataviewer internal API contracts
@@ -602,6 +955,7 @@ This means changes should preserve behavior for existing clients, especially:
 ## Operational and Admin Concerns
 
 The application includes built-in admin capabilities:
+
 - system stats
 - project and user admin views
 - storage inspection
@@ -623,6 +977,7 @@ When adding new functionality, follow the existing architecture:
 - use response macros for API output consistency
 
 For project-aware features, prefer the established request-context pattern:
+
 - resolve project and role in middleware
 - consume `requestedProject()` and `requestedProjectRole()` downstream
 
@@ -645,6 +1000,7 @@ Main directories and their architectural role:
 ## Summary
 
 Epicollect5 Server is best understood as a project-centric data collection platform built on:
+
 - middleware-resolved request context
 - DTO-driven project state
 - service-layer business logic
@@ -653,6 +1009,7 @@ Epicollect5 Server is best understood as a project-centric data collection platf
 - multiple delivery surfaces sharing the same domain core
 
 That combination is what allows the same backend to support:
+
 - the public site
 - authenticated project management
 - dataviewer/internal APIs

@@ -56,6 +56,7 @@ class EntriesDownloadService
         $this->totalDuration = 0;
         $this->totalEntries = 0;
         $this->project = $project;
+        $projectStats = $project->getProjectStats();
         // Delete all existing files for this user
         Storage::deleteDirectory($projectDir);
 
@@ -71,6 +72,9 @@ class EntriesDownloadService
         ]);
 
         foreach ($forms as $form) {
+            if (!$projectStats->hasFormEntries($form['ref'])) {
+                continue;
+            }
 
             // Set the form ref into the params
             $params['form_ref'] = $form['ref'];
@@ -108,6 +112,10 @@ class EntriesDownloadService
             }
 
             foreach ($branches as $branch) {
+                if (!$projectStats->hasBranchEntries($branch['ref'])) {
+                    continue;
+                }
+
                 // Set the branch ref into the options
                 $params['branch_ref'] = $branch['ref'];
                 $prefix = config('epicollect.strings.branch') . '-' . $branchCount;
@@ -164,6 +172,10 @@ class EntriesDownloadService
 
     private function buildZipArchive($projectDir, $projectSlug, $format): void
     {
+        if (!File::exists($projectDir)) {
+            File::makeDirectory($projectDir, 0755, true);
+        }
+
         $zip = new ZipArchive();
         $zipFileName = $projectSlug . '-' . $format . '.zip';
         $zip->open($projectDir . '/' . $zipFileName, ZipArchive::CREATE);
@@ -174,6 +186,11 @@ class EntriesDownloadService
             //save file names for deletion
             $toDeleteLater[] = $file;
         }
+
+        if (count($toDeleteLater) === 0) {
+            $zip->addFromString('readme.txt', 'No entries found');
+        }
+
         $zip->close();
 
         //delete csv files as they got copied into the zip already

@@ -142,7 +142,7 @@ class DownloadSubsetControllerTest extends TestCase
         // Get the downloaded file's path
         $filePath = $responseContent->getPathname();
 
-        $this->assertZipContent($filePath, $format, 1, 0);
+        $this->assertZipContent($filePath, $format, 0, 0);
 
         Storage::delete($filePath);
     }
@@ -205,7 +205,7 @@ class DownloadSubsetControllerTest extends TestCase
         // Get the downloaded file's path
         $filePath = $responseContent->getPathname();
 
-        $this->assertZipContent($filePath, $format, 1, 0);
+        $this->assertZipContent($filePath, $format, 0, 0);
 
         Storage::delete($filePath);
     }
@@ -268,7 +268,7 @@ class DownloadSubsetControllerTest extends TestCase
         // Get the downloaded file's path
         $filePath = $responseContent->getPathname();
 
-        $this->assertZipContent($filePath, $format, 1, 0);
+        $this->assertZipContent($filePath, $format, 0, 0);
 
         Storage::delete($filePath);
     }
@@ -331,7 +331,7 @@ class DownloadSubsetControllerTest extends TestCase
         // Get the downloaded file's path
         $filePath = $responseContent->getPathname();
 
-        $this->assertZipContent($filePath, $format, 1, 0);
+        $this->assertZipContent($filePath, $format, 0, 0);
 
         Storage::delete($filePath);
     }
@@ -708,7 +708,16 @@ class DownloadSubsetControllerTest extends TestCase
         $zip = new ZipArchive();
         $zip->open($filePath);
         $fileFound = false;
-        $this->assertEquals($zip->numFiles, ($filesCountForm + $filesCountBranch));
+        $expectedFilesCount = $filesCountForm + $filesCountBranch;
+        if ($expectedFilesCount === 0) {
+            $this->assertEquals(1, $zip->numFiles);
+            $this->assertEquals('readme.txt', $zip->statIndex(0)['name']);
+            $this->assertEquals('No entries found', $zip->getFromIndex(0));
+            $zip->close();
+            return;
+        }
+
+        $this->assertEquals($zip->numFiles, $expectedFilesCount);
         $filenamesForm = [];
         $filenamesBranch = [];
 

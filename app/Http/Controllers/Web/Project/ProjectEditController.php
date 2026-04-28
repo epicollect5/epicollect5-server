@@ -151,8 +151,6 @@ class ProjectEditController
             if (!$this->saveLogo('project_thumb')) {
                 return Redirect::back()->withErrors(['message' => 'ec5_83']);
             }
-
-            $params['logo_url'] = $this->requestedProject()->ref;
             // We want to trigger an update on the project_structures table,
             // to signal to the app that this project has been updated with a new logo
             $updateStructures = true;

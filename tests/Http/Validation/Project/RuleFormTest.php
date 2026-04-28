@@ -23,7 +23,7 @@ class RuleFormTest extends TestCase
         $this->validator = new RuleForm();
     }
 
-    public function resetForm()
+    public function resetForm(): void
     {
         // Form has 3 inputs
         // Input 1 has jump to Input 3
@@ -226,5 +226,75 @@ class RuleFormTest extends TestCase
         $this->validator->resetErrors();
         $this->resetForm();
 
+    }
+
+    public function test_terminal_inputs_cannot_jump_to_end()
+    {
+        $this->form['inputs'][3]['jumps'] = [
+            [
+                "to" => "END",
+                "when" => "ALL",
+                "answer_ref" => null
+            ]
+        ];
+
+        $this->validator->validateJumps($this->form['inputs']);
+        $this->assertTrue($this->validator->hasErrors());
+        $this->assertEquals(['ec5_264'], $this->validator->errors()[$this->form['inputs'][3]['ref']]);
+
+        $this->validator->resetErrors();
+        $this->resetForm();
+
+        $this->form['inputs'][1]['type'] = 'branch';
+        $this->form['inputs'][1]['branch'] = [
+            [
+                "max" => null,
+                "min" => null,
+                "ref" => "branch_input_1",
+                "type" => "text",
+                "group" => [],
+                "jumps" => [],
+                "regex" => null,
+                "branch" => [],
+                "verify" => false,
+                "default" => null,
+                "is_title" => false,
+                "question" => "branch-text-1",
+                "uniqueness" => "none",
+                "is_required" => false,
+                "datetime_format" => null,
+                "possible_answers" => [],
+                "set_to_current_datetime" => false
+            ],
+            [
+                "max" => null,
+                "min" => null,
+                "ref" => "branch_input_2",
+                "type" => "text",
+                "group" => [],
+                "jumps" => [
+                    [
+                        "to" => "END",
+                        "when" => "ALL",
+                        "answer_ref" => null
+                    ]
+                ],
+                "regex" => null,
+                "branch" => [],
+                "verify" => false,
+                "default" => null,
+                "is_title" => false,
+                "question" => "branch-text-2",
+                "uniqueness" => "none",
+                "is_required" => false,
+                "datetime_format" => null,
+                "possible_answers" => [],
+                "set_to_current_datetime" => false
+            ]
+        ];
+
+        $this->validator->validateJumps($this->form['inputs']);
+        $this->assertTrue($this->validator->hasErrors());
+        $this->assertEquals(['ec5_264'], $this->validator->errors()['branch_input_2']);
     }
 }

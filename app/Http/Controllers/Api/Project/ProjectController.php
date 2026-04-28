@@ -3,14 +3,22 @@
 namespace ec5\Http\Controllers\Api\Project;
 
 use Auth;
+use ec5\DTO\ProjectDTO;
 use ec5\Http\Validation\Entries\Upload\RuleCanBulkUpload;
+use ec5\Http\Validation\Project\Mapping\RuleImportProjectMapping as ImportProjectMappingValidator;
+use ec5\Http\Validation\Project\RuleImportJson as ImportJsonValidator;
 use ec5\Http\Validation\Project\RuleName;
+use ec5\Http\Validation\Project\RuleProjectDefinition as ProjectDefinitionValidator;
+use ec5\Http\Validation\Schemas\ProjectSchemaValidator;
+use ec5\Libraries\Utilities\Generators;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectStats;
 use ec5\Services\Media\MediaCounterService;
 use ec5\Traits\Requests\RequestAttributes;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Log;
 use Response;
 use Throwable;
 
@@ -25,22 +33,7 @@ class ProjectController
      */
     public function show(ProjectStats $projectStats)
     {
-        $data = $this->requestedProject()->getProjectDefinition()->getData();
-
-        //HACK:, we needed to expose the creation date of a project at a later stage, and this was the laziest way ;)
-        $data['project']['created_at'] = $this->requestedProject()->getCreatedAt();
-
-        //HACK:, we needed to expose the can_bulk_upload property of a project at a later stage, and this was the laziest way ;)
-        $data['project']['can_bulk_upload'] = $this->requestedProject()->getCanBulkUpload();
-
-        //HACK:, we needed to expose the project homepage property of a project at a later stage, and this was the laziest way ;)
-        $homepage = config('app.url') . '/project/' . $this->requestedProject()->slug;
-        $data['project']['homepage'] = $homepage;
-
-
-        $projectExtra = $this->requestedProject()->getProjectExtra()->getData();
-
-        // Update the project stats counts
+        $data = $this->getProjectResponseData(true);
         $projectStats->updateProjectStats($this->requestedProject()->getId());
 
         try {
@@ -57,7 +50,7 @@ class ProjectController
         }
 
         $meta = [
-            'project_extra' => $projectExtra,
+            'project_extra' => $this->requestedProject()->getProjectExtra()->getData(),
             'project_user' => [
                 'name' => $userName,
                 'avatar' => $userAvatar,
@@ -65,9 +58,7 @@ class ProjectController
                 'id' => $this->requestedProjectRole()->getUser()->id ?? null,
             ],
             'project_mapping' => $this->requestedProject()->getProjectMapping()->getData(),
-            'project_stats' => array_merge($this->requestedProject()->getProjectStats()->toArray(), [
-                'structure_last_updated' => $this->requestedProject()->getProjectStats()->structure_last_updated
-            ])
+            'project_stats' => $this->getProjectStatsMeta(),
         ];
 
         return Response::apiData($data, $meta);
@@ -80,26 +71,42 @@ class ProjectController
      */
     public function export(ProjectStats $projectStats)
     {
-        $data = $this->requestedProject()->getProjectDefinition()->getData();
-        //todo HACK!!!, we needed to expose the creation date of a project at a later stage and this was the laziest way ;)
-        $data['project']['created_at'] = $this->requestedProject()->getCreatedAt();
-
-        //todo HACK!!!, we needed to expose the project homepage property of a project at a later stage and this was the laziest way ;)
-        $homepage = config('app.url') . '/project/' . $this->requestedProject()->slug;
-        $data['project']['homepage'] = $homepage;
-
-        //todo: update project stats (a try catch need in case it does not work?)
-        // Update the project stats counts
+        $data = $this->getProjectResponseData();
         $projectStats->updateProjectStats($this->requestedProject()->getId());
 
         $meta = [
             'project_mapping' => $this->requestedProject()->getProjectMapping()->getData(),
-            'project_stats' => array_merge($this->requestedProject()->getProjectStats()->toArray(), [
-                'structure_last_updated' => $this->requestedProject()->getProjectStats()->structure_last_updated
-            ])
+            'project_stats' => $this->getProjectStatsMeta(),
         ];
 
         return Response::apiData($data, $meta);
+    }
+
+    private function getProjectResponseData(bool $includeCanBulkUpload = false): array
+    {
+        // We need to sanitise the project definition due to legacy bugs that went through over the years
+        $project = $this->requestedProject();
+        $data = $project->getSanitisedProjectDefinition();
+
+        // HACK: expose fields added after the original API contract was defined.
+        $data['project']['created_at'] = $project->getCreatedAt();
+        $data['project']['homepage'] = config('app.url') . '/project/' . $project->slug;
+
+        if ($includeCanBulkUpload) {
+            $data['project']['can_bulk_upload'] = $project->getCanBulkUpload();
+        }
+
+        return $data;
+    }
+
+    private function getProjectStatsMeta(): array
+    {
+        $projectStats = $this->requestedProject()->getProjectStats();
+
+        return array_merge($projectStats->toArray(), [
+            'structure_last_updated' => $projectStats->structure_last_updated,
+            'project_definition_version' => $projectStats->project_definition_version,
+        ]);
     }
 
     public function search($name = '')
@@ -161,7 +168,8 @@ class ProjectController
             'type' => 'project-version',
             'id' => $slug,
             'attributes' => [
-                'structure_last_updated' => $version,//legacy
+                'structure_last_updated' => $version, // legacy
+                'project_definition_version' => (string)strtotime($version),
                 'version' => (string)strtotime($version)
             ]
 
@@ -236,5 +244,80 @@ class ProjectController
 
         $data = ['message' => config('epicollect.codes.ec5_362')];
         return Response::apiData($data);
+    }
+
+    public function validateImport(
+        Request                    $request,
+        ProjectDefinitionValidator $projectDefinitionValidator,
+        ImportProjectMappingValidator $importProjectMappingValidator,
+        ImportJsonValidator        $importJsonValidator,
+        ProjectSchemaValidator     $projectSchemaValidator,
+        ProjectDTO                 $projectDTO
+    ) {
+        // 1. Check Authorization Header
+        $token = $request->bearerToken();
+        $expectedToken = config('epicollect.setup.api.import_project.validation_key');
+
+        if (!$token || !hash_equals($expectedToken, $token)) {
+            return Response::apiErrorCode('400', ['error' => ['ec5_257']]);
+        }
+
+        $data = $request->post();
+
+        // 2. Basic structure check — is the payload shaped like a project request?
+        //    Checks: data required, data.type = 'project', data.project is array
+        $importJsonValidator->validate($data);
+
+        if ($importJsonValidator->hasErrors()) {
+            return Response::apiErrorCode('400', $importJsonValidator->errors());
+        }
+
+        // 3. JSON Schema validation — full structural gate
+        //    Validates against public/schemas/project.schema.json
+        //    Checks: ref patterns, input keys, possible_answers limits,
+        //    enums, string lengths, emoji/< > restrictions etc.
+        if (!$projectSchemaValidator->validate($data)) {
+            return Response::apiSchemaError('400', $projectSchemaValidator->schemaId(), $projectSchemaValidator->violations());
+        }
+
+        $name = data_get($data, 'data.project.name', 'Imported Project');
+        $payload = [
+            'name'       => $name,
+            'created_by' => 0,
+        ];
+
+        // 4. Generate new project ref
+        $newProjectRef = Generators::projectRef();
+        $projectDefinitionData = $data['data'];
+
+        try {
+            $projectDTO->import(
+                $newProjectRef,
+                $payload['name'],
+                $payload['created_by'],
+                $projectDefinitionData,
+                $projectDefinitionValidator,
+                data_get($data, 'meta.project_mapping'),
+                $importProjectMappingValidator
+            );
+        } catch (Throwable $e) {
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
+            $errors = $importProjectMappingValidator->errors();
+            if (empty($errors)) {
+                $errors = $projectDefinitionValidator->errors();
+            }
+            if (empty($errors)) {
+                $errors = [
+                    'validation' => ['ec5_39']
+                ];
+            }
+            return Response::apiErrorCode('400', $errors);
+        }
+
+        return Response::apiSchemaSuccess(
+            $newProjectRef,
+            $payload['name'],
+            $projectSchemaValidator->schemaId()
+        );
     }
 }

@@ -99,4 +99,65 @@ class CommonTest extends TestCase
         $this->assertStringNotContainsString($existingRef, json_encode($result));
         $this->assertStringContainsString($newRef, json_encode($result));
     }
+
+    public function test_generated_numeric_constraints_stay_within_shared_limits(): void
+    {
+        $integerConstraints = config('epicollect.limits.numeric_constraints.integer');
+        $decimalConstraints = config('epicollect.limits.numeric_constraints.decimal');
+
+        for ($projectIndex = 0; $projectIndex < 10; $projectIndex++) {
+            $projectDefinition = ProjectDefinitionGenerator::createProject(3);
+
+            foreach ($projectDefinition['data']['project']['forms'] as $form) {
+                $this->assertGeneratedNumericConstraintsWithinBounds(
+                    $form['inputs'],
+                    $integerConstraints,
+                    $decimalConstraints
+                );
+            }
+        }
+    }
+
+    private function assertGeneratedNumericConstraintsWithinBounds(
+        array $inputs,
+        array $integerConstraints,
+        array $decimalConstraints
+    ): void
+    {
+        foreach ($inputs as $input) {
+            if ($input['type'] === 'integer') {
+                $this->assertIsInt($input['min']);
+                $this->assertIsInt($input['max']);
+                $this->assertGreaterThanOrEqual($integerConstraints['min'], $input['min']);
+                $this->assertLessThanOrEqual($integerConstraints['max'], $input['max']);
+                $this->assertTrue($input['min'] <= $input['max']);
+            }
+
+            if ($input['type'] === 'decimal') {
+                $this->assertMatchesRegularExpression('/^-?(?:\d+(?:\.\d*)?|\.\d+)$/', $input['min']);
+                $this->assertMatchesRegularExpression('/^-?(?:\d+(?:\.\d*)?|\.\d+)$/', $input['max']);
+                $this->assertNotFalse(filter_var($input['min'], FILTER_VALIDATE_FLOAT));
+                $this->assertNotFalse(filter_var($input['max'], FILTER_VALIDATE_FLOAT));
+                $this->assertGreaterThanOrEqual($decimalConstraints['min'], (float) $input['min']);
+                $this->assertLessThanOrEqual($decimalConstraints['max'], (float) $input['max']);
+                $this->assertTrue((float) $input['min'] <= (float) $input['max']);
+            }
+
+            if (!empty($input['group'])) {
+                $this->assertGeneratedNumericConstraintsWithinBounds(
+                    $input['group'],
+                    $integerConstraints,
+                    $decimalConstraints
+                );
+            }
+
+            if (!empty($input['branch'])) {
+                $this->assertGeneratedNumericConstraintsWithinBounds(
+                    $input['branch'],
+                    $integerConstraints,
+                    $decimalConstraints
+                );
+            }
+        }
+    }
 }

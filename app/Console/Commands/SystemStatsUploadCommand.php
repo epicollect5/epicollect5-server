@@ -15,7 +15,6 @@ class SystemStatsUploadCommand extends Command
     public function handle(SystemStatsExportService $service): int
     {
         $host = request()->getHost() ?? ''; // Real-time HTTP host
-
         if ($host !== 'five.epicollect.net') {
             $this->info('⚠️ This command is intended to run in the production environment. Current host: ' . $host . '. Exiting.');
             return self::FAILURE;

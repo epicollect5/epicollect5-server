@@ -3,31 +3,33 @@
 namespace ec5\Http\Controllers\Web\Project;
 
 use ec5\DTO\ProjectDTO;
+use ec5\Http\Validation\Project\Mapping\RuleImportProjectMapping as ImportProjectMappingValidator;
 use ec5\Http\Validation\Project\RuleImportJson as ImportJsonValidator;
 use ec5\Http\Validation\Project\RuleImportRequest as ImportRequestValidator;
 use ec5\Http\Validation\Project\RuleProjectDefinition as ProjectDefinitionValidator;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Services\Project\ProjectService;
 use ec5\Traits\Project\ProjectTools;
-use Exception;
 use File;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Redirect;
+use Throwable;
 
 class ProjectImportController
 {
     use ProjectTools;
 
-    const IMPORT = 'import';
+    public const string IMPORT = 'import';
 
-    protected $project;
-    protected $type;
+    protected ProjectDTO $project;
+    protected string $type;
 
     /**
      * @var array
      */
-    protected $errors = [];
+    protected array $errors = [];
 
     /**
      * ProjectCreateController constructor.
@@ -38,17 +40,21 @@ class ProjectImportController
         $this->project = $project;
     }
 
+    /**
+     * @throws Throwable
+     */
     public function import(
         Request                    $request,
         ProjectDefinitionValidator $projectDefinitionValidator,
+        ImportProjectMappingValidator $importProjectMappingValidator,
         ImportJsonValidator        $importJsonValidator,
         ImportRequestValidator     $importRequestValidator,
         ProjectService             $projectService
-    )
-    {
+    ) {
         $this->type = ProjectImportController::IMPORT;
         // Get all the form post data
         $payload = $request->all();
+
         $payload['slug'] = Str::slug($payload['name'], '-');
         // Run validation
         $importRequestValidator->validate($payload, true);
@@ -72,7 +78,8 @@ class ProjectImportController
         // Decode json file contents into array
         try {
             $data = json_decode(File::get($file->getRealPath()), true);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
+            Log::info(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             $request->flash();
             return Redirect::to('myprojects/create')
                 ->withErrors(['file' => ['ec5_69']])
@@ -107,12 +114,19 @@ class ProjectImportController
                 $payload['name'],
                 $payload['created_by'],
                 $projectDefinitionData,
-                $projectDefinitionValidator
+                $projectDefinitionValidator,
+                $data['meta']['project_mapping'] ?? null,
+                $importProjectMappingValidator
             );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
+            Log::info(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             $request->flash();
+            $errors = $importProjectMappingValidator->errors();
+            if (empty($errors)) {
+                $errors = $projectDefinitionValidator->errors();
+            }
             return Redirect::to('myprojects/create')
-                ->withErrors($projectDefinitionValidator->errors())
+                ->withErrors($errors)
                 ->with(['tab' => $this->type]);
         }
 

@@ -9,6 +9,9 @@ use Illuminate\Support\Str;
 
 class ProjectDefinitionGenerator
 {
+    private const DECIMAL_SCALE = 6;
+    private const TEST_PROJECT_NAME_PREFIX = 'EC5 TEST ';
+
     private static function generateDescription(): string
     {
         $faker = Faker::create();
@@ -31,7 +34,7 @@ class ProjectDefinitionGenerator
     private static function generateProjectName(): string
     {
         $faker = Faker::create();
-        return 'EC5 ' . $faker->regexify('[A-Za-z0-9]{10}'); // Change the regex pattern as needed
+        return self::TEST_PROJECT_NAME_PREFIX . $faker->regexify('[A-Za-z0-9]{10}');
     }
 
     private static function generatePossibleAnswerValue(): string
@@ -136,7 +139,6 @@ class ProjectDefinitionGenerator
                     "status" => "active",
                     "category" => "general",
                     "homepage" => "",
-                    "logo_url" => "",
                     "created_at" => Carbon::now()->format('Y-m-d H:i:s'),
                     "visibility" => "hidden",
                     "description" => self::generateDescription(),
@@ -706,10 +708,20 @@ class ProjectDefinitionGenerator
 
     private static function generateRandomMinMaxInteger(): array
     {
-        $min = rand(PHP_INT_MIN, PHP_INT_MAX);
-        $max = rand($min, PHP_INT_MAX);
+        $numericConstraints = config('epicollect.limits.numeric_constraints.integer');
+        $min = random_int($numericConstraints['min'], $numericConstraints['max']);
+        $max = random_int($min, $numericConstraints['max']);
 
-        if ($min > $max) {
+        return ['min' => $min, 'max' => $max];
+    }
+
+    //use strings to avoid rounding issues when doing JSON <> string conversions
+    private static function generateRandomMinMaxDecimal(): array
+    {
+        $min = self::generateRandomDecimalString();
+        $max = self::generateRandomDecimalString();
+
+        if ((float) $min > (float) $max) {
             $temp = $max;
             $max = $min;
             $min = $temp;
@@ -718,19 +730,17 @@ class ProjectDefinitionGenerator
         return ['min' => $min, 'max' => $max];
     }
 
-    //use strings to avoid rounding issues when doing JSON <> string conversions
-    private static function generateRandomMinMaxDecimal(): array
+    private static function generateRandomDecimalString(): string
     {
-        $min = rand(PHP_INT_MIN, PHP_INT_MAX - 1) / mt_getrandmax();
-        $max = rand(PHP_INT_MIN, PHP_INT_MAX - 1) / mt_getrandmax();
+        $sign = random_int(0, 1) === 1 ? '-' : '';
+        $wholePart = (string) random_int(0, PHP_INT_MAX);
+        $fractionPart = str_pad((string) random_int(0, (10 ** self::DECIMAL_SCALE) - 1), self::DECIMAL_SCALE, '0', STR_PAD_LEFT);
 
-        if ($min > $max) {
-            $temp = $max;
-            $max = $min;
-            $min = $temp;
+        if ($fractionPart === str_repeat('0', self::DECIMAL_SCALE)) {
+            return $sign . $wholePart;
         }
 
-        return ['min' => (string)$min, 'max' => (string)$max];
+        return $sign . $wholePart . '.' . $fractionPart;
     }
 
     private static function getRandomRegex(): string

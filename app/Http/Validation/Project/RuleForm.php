@@ -64,7 +64,7 @@ class RuleForm extends ValidationBase
      */
     public function validateJumps(array $inputs): void
     {
-
+        $lastInputPosition = count($inputs) - 1;
         $inputRefs = [];
 
         // Loop all inputs and create map of input refs
@@ -100,8 +100,12 @@ class RuleForm extends ValidationBase
 
                 foreach ($input['jumps'] as $jumpDetails) {
 
-                    // END of form is ok
+                    // END of form/branch is not valid on the terminal input
                     if ($jumpDetails['to'] == 'END') {
+                        if ($position === $lastInputPosition) {
+                            $this->addAdditionalError($input['ref'], 'ec5_264');
+                            return;
+                        }
                         continue;
                     }
 

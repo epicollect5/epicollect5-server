@@ -11,6 +11,7 @@ use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use Faker\Factory as Faker;
+use Faker\Generator;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
@@ -20,12 +21,12 @@ class ProjectImportControllerTest extends TestCase
 {
     use DatabaseTransactions;
 
-    public const DRIVER = 'web';
-    protected $faker;
-    protected $request;
-    protected $validator;
-    protected $access;
-    protected $projectNameMaxLength;
+    public const string DRIVER = 'web';
+    protected Generator $faker;
+    protected array $request;
+    protected RuleImportRequest $validator;
+    protected array $access;
+    protected mixed $projectNameMaxLength;
 
     public function setUp(): void
     {
@@ -231,6 +232,200 @@ class ProjectImportControllerTest extends TestCase
         $this->assertEquals($projectDefinitionExpected['data'], $projectDefinitionImported);
     }
 
+    public function test_project_is_imported_correctly_without_project_mapping()
+    {
+        $user = factory(User::class)->create();
+        $projectName = Generators::projectRef();
+        $projectSlug = Str::slug($projectName);
+        $projectDefinition = ProjectDefinitionGenerator::createProject(1);
+        $projectDefinition['data']['project']['name'] = $projectName;
+        $projectDefinition['data']['project']['slug'] = $projectSlug;
+
+        $fakeFile = $this->makeImportFile($projectDefinition);
+
+        $response = $this->actingAs($user, self::DRIVER)
+            ->post('myprojects/import', [
+                'name' => $projectName,
+                'file' => $fakeFile
+            ]);
+
+        $response->assertRedirect('myprojects/' . $projectSlug)
+            ->assertSessionHas('projectCreated', true)
+            ->assertSessionHas('tab', 'import');
+
+        $projectImported = Project::where('name', $projectName)->first();
+        $projectStructureImported = ProjectStructure::where('project_id', $projectImported->id)->first();
+        $projectMappingImported = json_decode($projectStructureImported->project_mapping, true);
+
+        $this->assertCount(1, $projectMappingImported);
+        $this->assertEquals(config('epicollect.mappings.default_mapping_name'), $projectMappingImported[0]['name']);
+        $this->assertTrue($projectMappingImported[0]['is_default']);
+        $this->assertEquals(0, $projectMappingImported[0]['map_index']);
+    }
+
+    public function test_project_definition_is_sanitised_before_saving_on_import()
+    {
+        $user = factory(User::class)->create();
+        $projectName = Generators::projectRef();
+        $projectSlug = Str::slug($projectName);
+        $projectDefinition = ProjectDefinitionGenerator::createProject(1);
+        $projectDefinition['data']['project']['name'] = $projectName;
+        $projectDefinition['data']['project']['slug'] = $projectSlug;
+        $projectDefinition['data']['project']['small_description'] = "A<\n\n";
+        $projectDefinition['data']['project']['description'] = "Line 1\n\nLine 2";
+        $projectDefinition['data']['project']['logo_url'] = 'https://example.com/logo.png';
+
+        $fakeFile = $this->makeImportFile($projectDefinition);
+
+        $response = $this->actingAs($user, self::DRIVER)
+            ->post('myprojects/import', [
+                'name' => $projectName,
+                'file' => $fakeFile
+            ]);
+
+        $response->assertRedirect('myprojects/' . $projectSlug)
+            ->assertSessionHas('projectCreated', true)
+            ->assertSessionHas('tab', 'import');
+
+        $projectImported = Project::where('name', $projectName)->first();
+        $projectStructureImported = ProjectStructure::where('project_id', $projectImported->id)->first();
+        $projectDefinitionImported = json_decode($projectStructureImported->project_definition, true);
+
+        $this->assertStringStartsWith('A', $projectDefinitionImported['project']['small_description']);
+        $this->assertStringNotContainsString('<', $projectDefinitionImported['project']['small_description']);
+        $this->assertStringNotContainsString('>', $projectDefinitionImported['project']['small_description']);
+        $this->assertGreaterThanOrEqual(
+            config('epicollect.limits.project.small_desc.min'),
+            mb_strlen($projectDefinitionImported['project']['small_description'], 'UTF-8')
+        );
+        $this->assertSame('Line 1 Line 2', $projectDefinitionImported['project']['description']);
+        $this->assertArrayNotHasKey('logo_url', $projectDefinitionImported['project']);
+    }
+
+    public function test_project_is_imported_correctly_with_project_mapping()
+    {
+        $user = factory(User::class)->create();
+        $projectName = Generators::projectRef();
+        $projectSlug = Str::slug($projectName);
+        $projectDefinition = ProjectDefinitionGenerator::createProject(1);
+        $projectDefinition['data']['project']['name'] = $projectName;
+        $projectDefinition['data']['project']['slug'] = $projectSlug;
+
+        $formRef = $projectDefinition['data']['project']['forms'][0]['ref'];
+        $projectDefinition['meta']['project_mapping'] = [
+            [
+                'name' => 'Imported Mapping',
+                'forms' => [
+                    $formRef => []
+                ],
+                'map_index' => 0,
+                'is_default' => true
+            ]
+        ];
+
+        $fakeFile = $this->makeImportFile($projectDefinition);
+
+        $response = $this->actingAs($user, self::DRIVER)
+            ->post('myprojects/import', [
+                'name' => $projectName,
+                'file' => $fakeFile
+            ]);
+
+        $response->assertRedirect('myprojects/' . $projectSlug)
+            ->assertSessionHas('projectCreated', true)
+            ->assertSessionHas('tab', 'import');
+
+        $projectImported = Project::where('name', $projectName)->first();
+        $projectStructureImported = ProjectStructure::where('project_id', $projectImported->id)->first();
+        $projectDefinitionImported = json_decode($projectStructureImported->project_definition, true);
+        $projectMappingImported = json_decode($projectStructureImported->project_mapping, true);
+        $importedFormRef = $projectDefinitionImported['project']['forms'][0]['ref'];
+
+        $this->assertCount(2, $projectMappingImported);
+        $this->assertEquals(config('epicollect.mappings.default_mapping_name'), $projectMappingImported[0]['name']);
+        $this->assertFalse($projectMappingImported[0]['is_default']);
+        $this->assertEquals('Imported Mapping', $projectMappingImported[1]['name']);
+        $this->assertTrue($projectMappingImported[1]['is_default']);
+        $this->assertEquals(1, $projectMappingImported[1]['map_index']);
+        $this->assertArrayHasKey($importedFormRef, $projectMappingImported[1]['forms']);
+    }
+
+    public function test_project_is_imported_correctly_with_ec5_auto_project_mapping()
+    {
+        $user = factory(User::class)->create();
+        $projectName = Generators::projectRef();
+        $projectSlug = Str::slug($projectName);
+        $projectDefinition = ProjectDefinitionGenerator::createProject(1);
+        $projectDefinition['data']['project']['name'] = $projectName;
+        $projectDefinition['data']['project']['slug'] = $projectSlug;
+
+        $formRef = $projectDefinition['data']['project']['forms'][0]['ref'];
+        $projectDefinition['meta']['project_mapping'] = [
+            [
+                'name' => config('epicollect.mappings.default_mapping_name'),
+                'forms' => [
+                    $formRef => []
+                ],
+                'map_index' => 0,
+                'is_default' => true
+            ]
+        ];
+
+        $fakeFile = $this->makeImportFile($projectDefinition);
+
+        $response = $this->actingAs($user, self::DRIVER)
+            ->post('myprojects/import', [
+                'name' => $projectName,
+                'file' => $fakeFile
+            ]);
+
+        $response->assertRedirect('myprojects/' . $projectSlug)
+            ->assertSessionHas('projectCreated', true)
+            ->assertSessionHas('tab', 'import');
+
+        $projectImported = Project::where('name', $projectName)->first();
+        $projectStructureImported = ProjectStructure::where('project_id', $projectImported->id)->first();
+        $projectMappingImported = json_decode($projectStructureImported->project_mapping, true);
+
+        $this->assertCount(1, $projectMappingImported);
+        $this->assertEquals(config('epicollect.mappings.default_mapping_name'), $projectMappingImported[0]['name']);
+        $this->assertTrue($projectMappingImported[0]['is_default']);
+        $this->assertEquals(0, $projectMappingImported[0]['map_index']);
+    }
+
+    public function test_project_import_fails_with_invalid_project_mapping()
+    {
+        $user = factory(User::class)->create();
+        $projectName = Generators::projectRef();
+        $projectDefinition = ProjectDefinitionGenerator::createProject(1);
+        $projectDefinition['data']['project']['name'] = $projectName;
+        $projectDefinition['data']['project']['slug'] = Str::slug($projectName);
+        $projectDefinition['meta']['project_mapping'] = [
+            [
+                'name' => 'Imported Mapping',
+                'forms' => [
+                    'invalid_form_ref' => []
+                ],
+                'map_index' => 0,
+                'is_default' => true
+            ]
+        ];
+
+        $fakeFile = $this->makeImportFile($projectDefinition);
+
+        $response = $this->actingAs($user, self::DRIVER)
+            ->post('myprojects/import', [
+                'name' => $projectName,
+                'file' => $fakeFile
+            ]);
+
+        $response->assertRedirect('myprojects/create')
+            ->assertSessionHasErrors(['invalid_form_ref'])
+            ->assertSessionHas('tab', 'import');
+
+        $this->assertDatabaseMissing('projects', ['name' => $projectName]);
+    }
+
     public function test_file()
     {
         //empty
@@ -258,13 +453,26 @@ class ProjectImportControllerTest extends TestCase
         $this->reset();
     }
 
+    private function makeImportFile(array $projectDefinition): UploadedFile
+    {
+        $fileContent = json_encode($projectDefinition);
+        $tempFile = tempnam(sys_get_temp_dir(), 'fakefile');
+        file_put_contents($tempFile, $fileContent);
+
+        $fakeFile = UploadedFile::fake()->create('fakefile.json', 512, 'application/json');
+        copy($tempFile, $fakeFile->getRealPath());
+        unlink($tempFile);
+
+        return $fakeFile;
+    }
+
     public function test_project_name_already_exists()
     {
         //create a fake user and save it to DB
         $user = factory(User::class)->create();
         //create a mock project with that user and use ref as name to avoid conflicts
         $ref = Generators::projectRef();
-        $project = factory(Project::class)->create([
+        factory(Project::class)->create([
             'created_by' => $user->id,
             'name' => $ref,
             'slug' => $ref

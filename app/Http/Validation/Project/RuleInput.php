@@ -157,6 +157,12 @@ class RuleInput extends ValidationBase
         ) {
             $this->addAdditionalError($this->data['ref'], 'ec5_339');
         }
+
+        $this->validateNumericConstraintsWithinSharedRange(
+            config('epicollect.limits.numeric_constraints.integer.min'),
+            config('epicollect.limits.numeric_constraints.integer.max')
+        );
+
         // If not empty default, min and max
         $this->ifNotEmptyDefaultMinAndMax();
     }
@@ -167,6 +173,12 @@ class RuleInput extends ValidationBase
         if ($this->data['default'] !== '' && !is_numeric($this->data['default'])) {
             $this->addAdditionalError($this->data['ref'], 'ec5_339');
         }
+
+        $this->validateNumericConstraintsWithinSharedRange(
+            config('epicollect.limits.numeric_constraints.decimal.min'),
+            config('epicollect.limits.numeric_constraints.decimal.max')
+        );
+
         // If not empty default, min and max
         $this->ifNotEmptyDefaultMinAndMax();
     }
@@ -258,6 +270,114 @@ class RuleInput extends ValidationBase
         $this->validatePossibleAnswers();
     }
 
+    private function validateNumericConstraintsWithinSharedRange(float|int $min, float|int $max): void
+    {
+        foreach (['min', 'max', 'default'] as $field) {
+            if (!array_key_exists($field, $this->data) || $this->data[$field] === '') {
+                continue;
+            }
+
+            if (!$this->isNumericValueWithinRange($this->data[$field], $min, $max)) {
+                $this->addAdditionalError($this->data['ref'], 'ec5_28');
+            }
+        }
+    }
+
+    private function isNumericValueWithinRange(mixed $value, float|int $min, float|int $max): bool
+    {
+        if (is_int($value)) {
+            return $value >= $min && $value <= $max;
+        }
+
+        if (is_float($value)) {
+            return is_finite($value) && $value >= $min && $value <= $max;
+        }
+
+        if (!is_string($value)) {
+            return false;
+        }
+
+        $value = trim($value);
+        if ($value === '') {
+            return true;
+        }
+
+        $minAsString = (string) $min;
+        $maxAsString = (string) $max;
+        if (
+            !$this->isPlainNumericString($value) ||
+            !$this->isPlainNumericString($minAsString) ||
+            !$this->isPlainNumericString($maxAsString)
+        ) {
+            $floatValue = filter_var($value, FILTER_VALIDATE_FLOAT);
+            return $floatValue !== false && is_finite((float) $floatValue) && $floatValue >= $min && $floatValue <= $max;
+        }
+
+        return $this->compareNumericStrings($value, $minAsString) >= 0 &&
+            $this->compareNumericStrings($value, $maxAsString) <= 0;
+    }
+
+    private function isPlainNumericString(string $value): bool
+    {
+        return preg_match('/^-?(?:\d+(?:\.\d*)?|\.\d+)$/', $value) === 1;
+    }
+
+    private function compareNumericStrings(string $left, string $right): int
+    {
+        [$leftSign, $leftInteger, $leftFraction] = $this->normalizeNumericString($left);
+        [$rightSign, $rightInteger, $rightFraction] = $this->normalizeNumericString($right);
+
+        if ($leftSign !== $rightSign) {
+            return $leftSign <=> $rightSign;
+        }
+
+        $integerComparison = strlen($leftInteger) <=> strlen($rightInteger);
+        if ($integerComparison !== 0) {
+            return $leftSign === 1 ? $integerComparison : -$integerComparison;
+        }
+
+        $integerComparison = strcmp($leftInteger, $rightInteger);
+        if ($integerComparison !== 0) {
+            return $leftSign === 1 ? $integerComparison : -$integerComparison;
+        }
+
+        $fractionLength = max(strlen($leftFraction), strlen($rightFraction));
+        $leftFraction = str_pad($leftFraction, $fractionLength, '0');
+        $rightFraction = str_pad($rightFraction, $fractionLength, '0');
+
+        $fractionComparison = strcmp($leftFraction, $rightFraction);
+        return $leftSign === 1 ? $fractionComparison : -$fractionComparison;
+    }
+
+    private function normalizeNumericString(string $value): array
+    {
+        $sign = 1;
+        if (str_starts_with($value, '-')) {
+            $sign = -1;
+            $value = substr($value, 1);
+        }
+
+        if (str_contains($value, '.')) {
+            [$integerPart, $fractionPart] = explode('.', $value, 2);
+        } else {
+            $integerPart = $value;
+            $fractionPart = '';
+        }
+
+        $integerPart = ltrim($integerPart, '0');
+        $fractionPart = rtrim($fractionPart, '0');
+
+        if ($integerPart === '') {
+            $integerPart = '0';
+        }
+
+        if ($integerPart === '0' && $fractionPart === '') {
+            $sign = 1;
+        }
+
+        return [$sign, $integerPart, $fractionPart];
+    }
+
     private function validatePossibleAnswersCount($code): void
     {
         if (count($this->data['possible_answers']) == 0) {
@@ -276,6 +396,12 @@ class RuleInput extends ValidationBase
         $match = false;
 
         foreach ($this->data['possible_answers'] as $value) {
+            //if answer_ref key is not found, bail out
+            if (!isset($value['answer_ref'])) {
+                $this->addAdditionalError($this->data['ref'], 'ec5_355');
+                return;
+            }
+
             if ($value['answer_ref'] == $this->data['default']) {
                 $match = true;
             }

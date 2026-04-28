@@ -4,6 +4,7 @@ namespace ec5\Http\Controllers\Web\Project;
 
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectStats;
+use ec5\Services\Media\MediaCounterService;
 use ec5\Traits\Eloquent\StatsRefresher;
 use ec5\Traits\Requests\RequestAttributes;
 use Response;
@@ -40,7 +41,7 @@ class ProjectController
     /**
      * Show a Project details
      */
-    public function details()
+    public function details(MediaCounterService $mediaCounterService)
     {
         if (!$this->requestedProjectRole()->canEditProject()) {
             return view('errors.gen_error')->withErrors(['errors' => ['ec5_91']]);
@@ -51,10 +52,16 @@ class ProjectController
             $creatorEmail = Project::creatorEmail($this->requestedProject()->getId());
         }
 
+        $mediaUsage = $mediaCounterService->getMediaStorageUsageFromDB(
+            $this->requestedProject()->getId(),
+            $this->requestedProject()->ref
+        );
+
         return view('project.project_details', [
             'includeTemplate' => 'view',
             'showPanel' => 'details-view',
-            'creatorEmail' => $creatorEmail
+            'creatorEmail' => $creatorEmail,
+            'mediaUsage' => $mediaUsage
         ]);
     }
 
@@ -63,9 +70,23 @@ class ProjectController
      */
     public function downloadProjectDefinition()
     {
+        $projectMapping = $this->requestedProject()->getProjectMapping()->getData();
+        $defaultMappingIndex = $this->requestedProject()->getProjectMapping()->getDefaultMapIndex();
+        $defaultMapping = $projectMapping[$defaultMappingIndex];
+
+        // Sanitise before download due to legacy bugs
+        $payload = $this->requestedProject()->getSanitisedProjectDefinition();
+        //homepage is not needed for imports/exports
+        $payload['project']['homepage'] = '';
+
         return Response::toJSONFile(
-            ['data' => $this->requestedProject()->getProjectDefinition()->getData()],
-            $this->requestedProject()->slug . '.json'
+            [
+                'meta' => [
+                    'project_mapping' => [$defaultMapping]
+                ],
+                'data' => $payload
+            ],
+            $this->requestedProject()->slug . '.project.epicollect.json'
         );
     }
 

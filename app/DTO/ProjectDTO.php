@@ -2,10 +2,12 @@
 
 namespace ec5\DTO;
 
+use ec5\Http\Validation\Project\Mapping\RuleImportProjectMapping;
 use ec5\Http\Validation\Project\RuleProjectDefinition;
 use ec5\Libraries\Utilities\Common;
 use ec5\Services\Mapping\ProjectMappingService;
 use Exception;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Ramsey\Uuid\Uuid;
 use ReflectionClass;
@@ -40,7 +42,6 @@ class ProjectDTO
     public string $ref = '';
     public string $description = '';
     public string $small_description = '';
-    public string $logo_url = '';
     public string $access = '';
     public string $visibility = '';
     public string $category = '';
@@ -49,6 +50,7 @@ class ProjectDTO
     public string $can_bulk_upload = 'nobody';
     public string $app_link_visibility = 'hidden';
     public string $structure_last_updated = '';
+    public string $project_definition_version = '';
     private ProjectMappingService $projectMappingService;
 
     public function __construct(
@@ -75,7 +77,6 @@ class ProjectDTO
      * "ref": "914c66a1ab074819b0dde5a2bc282f06"
      * "description": "Magnam eum perspiciatis quibusdam eveniet consequatur."
      * "small_description": "Aliquam quidem.Quod quasi perspiciatis sit qui. Perferendis nam quisquam incidunt porro."
-     * "logo_url": ""
      * "access": "private"
      * "visibility": "listed"
      * "category": "general"
@@ -108,9 +109,11 @@ class ProjectDTO
             'form_counts' => isset($data->form_counts) ? json_decode($data->form_counts, true) : [],
             'branch_counts' => isset($data->branch_counts) ? json_decode($data->branch_counts, true) : [],
             'structure_last_updated' => $data->structure_last_updated ?? '',
+            'project_definition_version' => $data->project_definition_version ?? ($data->structure_last_updated ?? '')
         ]);
         // Add all the project data object properties to this class
         $this->addProjectDetails(get_object_vars($data));
+        $this->project_definition_version = $this->projectStats->project_definition_version;
         // Lastly, initialize the protected class properties
         // Set timestamps
         $this->created_at = $data->created_at ?? null;
@@ -185,6 +188,8 @@ class ProjectDTO
      * @param $createdBy
      * @param $projectDefinitionData
      * @param RuleProjectDefinition $projectDefinitionValidator
+     * @param mixed|null $projectMappings
+     * @param RuleImportProjectMapping|null $importProjectMappingValidator
      * @throws Exception
      */
     public function import(
@@ -192,30 +197,74 @@ class ProjectDTO
         $projectName,
         $createdBy,
         $projectDefinitionData,
-        RuleProjectDefinition $projectDefinitionValidator
+        RuleProjectDefinition $projectDefinitionValidator,
+        mixed $projectMappings = null,
+        ?RuleImportProjectMapping $importProjectMappingValidator = null
     ): void {
-        // Take new name, slug, default logo_url
+        // Take new name, slug
         $projectDefinitionData['project']['name'] = $projectName;
         $projectDefinitionData['project']['slug'] = Str::slug($projectName, '-');
-        $projectDefinitionData['project']['logo_url'] = '';
         $projectDefinitionData['id'] = $projectRef;
         // Swap the old project ref with the new one
         $existingProjectRef = $projectDefinitionData['project']['ref'];
         $projectDefinitionDataString = str_replace($existingProjectRef, $projectRef, json_encode($projectDefinitionData));
         // Decode back to array
         $projectDefinitionData = json_decode($projectDefinitionDataString, true);
+        // Normalise legacy-safe project definition data before validation and persistence.
+        $projectDefinitionData = self::sanitiseProjectDefinitionForExport($projectDefinitionData);
+        $projectMappings = $this->replaceProjectRefInProjectMappings($projectMappings, $existingProjectRef, $projectRef);
         $this->addProjectDetails(array_merge($projectDefinitionData['project'], ['created_by' => $createdBy]));
         // Add this updated project definition to the Project Definition model
         $this->addProjectDefinition($projectDefinitionData);
         // Validate the Project Definition and create the Project Extra data
         $projectDefinitionValidator->validate($this);
         if ($projectDefinitionValidator->hasErrors()) {
-            throw new Exception(config('epicollect.codes.ec5_225'));
+            Log::error(__METHOD__ . ' failed.', ['errors' => $projectDefinitionValidator->errors()]);
+            throw new Exception(config('epicollect.codes.ec5_39'));
         }
         //EC5 AUTO mapping
         $mapping = $this->projectMappingService->createEC5AUTOMapping($this->getProjectExtra()->getData());
         $this->projectMapping->setEC5AUTOMapping($mapping);
+
+        if ($projectMappings !== null) {
+            if ($importProjectMappingValidator === null || !$importProjectMappingValidator->validate($this, $projectMappings)) {
+                Log::error(__METHOD__ . ' failed.', ['errors' => $importProjectMappingValidator?->errors() ?? []]);
+                throw new Exception(config('epicollect.codes.ec5_39'));
+            }
+            if (is_array($projectMappings) && count($projectMappings) > 0) {
+                $defaultImportedMapping = $this->getDefaultImportedMapping($projectMappings);
+                if (($defaultImportedMapping['name'] ?? '') !== config('epicollect.mappings.default_mapping_name')) {
+                    $this->projectMapping->addImportedMapping($defaultImportedMapping);
+                }
+            }
+        }
+
         // No need to initialise the Project Stats, as they will be empty
+    }
+
+    private function replaceProjectRefInProjectMappings(
+        mixed $projectMappings,
+        string $existingProjectRef,
+        string $projectRef
+    ): mixed {
+        if ($projectMappings === null) {
+            return null;
+        }
+
+        $projectMappingsString = str_replace($existingProjectRef, $projectRef, json_encode($projectMappings));
+
+        return json_decode($projectMappingsString, true);
+    }
+
+    private function getDefaultImportedMapping(array $projectMappings): array
+    {
+        foreach ($projectMappings as $mapping) {
+            if (($mapping['is_default'] ?? false) === true) {
+                return $mapping;
+            }
+        }
+
+        return $projectMappings[0];
     }
 
     /**
@@ -295,7 +344,7 @@ class ProjectDTO
      */
     public function addProjectDefinition($projectDefinitionData): ProjectDTO
     {
-        $this->projectDefinition->init($projectDefinitionData);
+        $this->projectDefinition->init(self::sanitizeProjectDefinitionForUse($projectDefinitionData));
         return $this;
     }
 
@@ -364,6 +413,11 @@ class ProjectDTO
     public function getProjectDefinition(): ProjectDefinitionDTO
     {
         return $this->projectDefinition;
+    }
+
+    public function getSanitisedProjectDefinition(): array
+    {
+        return self::sanitiseProjectDefinitionForExport($this->projectDefinition->getData());
     }
 
     /**
@@ -466,5 +520,204 @@ class ProjectDTO
     public function canBulkUpload(): string
     {
         return $this->can_bulk_upload;
+    }
+
+    public static function sanitiseProjectDefinitionForExport(array $projectDefinition): array
+    {
+        //[BUG] trim new lines form descriptions as these can cause issues with export and import
+        $projectDefinition['project']['small_description'] = trim($projectDefinition['project']['small_description']);
+        $projectDefinition['project']['description'] = trim($projectDefinition['project']['description']);
+        unset($projectDefinition['project']['logo_url']);
+
+        // [BUG] where small description is too short on old projects, add '_' to make it valid
+        $smallDescriptionMinLength = config('epicollect.limits.project.small_desc.min');
+        // Use multibyte-safe length check and padding to support UTF-8 languages
+        $smallDesc = $projectDefinition['project']['small_description'];
+        if (mb_strlen($smallDesc, 'UTF-8') < $smallDescriptionMinLength) {
+            $needed = $smallDescriptionMinLength - mb_strlen($smallDesc, 'UTF-8');
+            // Pad with ASCII underscores (single-byte) to reach the required character count
+            $projectDefinition['project']['small_description'] = $smallDesc . str_repeat('_', $needed);
+        }
+
+        $smallDescriptionMinLength = config('epicollect.limits.project.form.name.min');
+        // Use multibyte-safe length check and padding to support UTF-8 languages
+        $smallDesc = $projectDefinition['project']['small_description'];
+        if (mb_strlen($smallDesc, 'UTF-8') < $smallDescriptionMinLength) {
+            $needed = $smallDescriptionMinLength - mb_strlen($smallDesc, 'UTF-8');
+            // Pad with ASCII underscores (single-byte) to reach the required character count
+            $projectDefinition['project']['small_description'] = $smallDesc . str_repeat('_', $needed);
+        }
+
+        //[BUG] where small description has invalid characters, replace with '_'
+        $projectDefinition['project']['small_description'] = str_replace(
+            ['<', '>'],
+            '_',
+            $projectDefinition['project']['small_description']
+        );
+
+        // [BUG] where some descriptions have invisible/whitespace characters, these must be replaced with a normal space
+        $projectDefinition['project']['small_description'] = preg_replace(
+            '/\s+/u',
+            ' ',
+            $projectDefinition['project']['small_description']
+        );
+        $projectDefinition['project']['description'] = preg_replace(
+            '/\s+/u',
+            ' ',
+            $projectDefinition['project']['description']
+        );
+
+        if (!isset($projectDefinition['project']['forms']) || !is_array($projectDefinition['project']['forms'])) {
+            return $projectDefinition;
+        }
+
+        foreach ($projectDefinition['project']['forms'] as $formIndex => $form) {
+            // [BUG] sanitise form name to remove any invisible/whitespace characters
+            if (isset($form['name'])) {
+                $projectDefinition['project']['forms'][$formIndex]['name'] = preg_replace('/\s+/u', ' ', $form['name']);
+            }
+
+            if (!isset($form['inputs']) || !is_array($form['inputs'])) {
+                continue;
+            }
+
+            self::sanitizeJumpsInInputList($projectDefinition['project']['forms'][$formIndex]['inputs']);
+
+            foreach ($form['inputs'] as $inputIndex => $input) {
+                // [BUG] where group has inputs when the question is branch, it should be an empty array
+                if (
+                    isset($input['type']) &&
+                    $input['type'] === config('epicollect.strings.inputs_type.branch')
+                ) {
+                    $projectDefinition['project']['forms'][$formIndex]['inputs'][$inputIndex]['group'] = [];
+                }
+
+                // [BUG] sanitise min and max for decimal inputs to ensure leading zero
+                self::sanitizeDecimalInInput($projectDefinition['project']['forms'][$formIndex]['inputs'][$inputIndex]);
+            }
+        }
+
+        return $projectDefinition;
+    }
+
+    /**
+     * Recursively sanitize jumps in an input and its nested branch and group inputs.
+     */
+    public static function sanitizeProjectDefinitionForUse(array|string $projectDefinitionData): array|string
+    {
+        if (!is_array($projectDefinitionData)) {
+            $projectDefinitionData = json_decode($projectDefinitionData, true);
+        }
+
+        if (
+            !is_array($projectDefinitionData) ||
+            !isset($projectDefinitionData['project']['forms']) ||
+            !is_array($projectDefinitionData['project']['forms'])
+        ) {
+            return $projectDefinitionData;
+        }
+
+        foreach ($projectDefinitionData['project']['forms'] as $formIndex => $form) {
+            if (!isset($form['inputs']) || !is_array($form['inputs'])) {
+                continue;
+            }
+
+            self::sanitizeJumpsInInputList($projectDefinitionData['project']['forms'][$formIndex]['inputs']);
+        }
+
+        return $projectDefinitionData;
+    }
+
+    private static function sanitizeJumpsInInputList(array &$inputs, bool $stripTerminalEndJumps = true): void
+    {
+        $lastInputIndex = count($inputs) - 1;
+
+        foreach ($inputs as $inputIndex => &$input) {
+            self::sanitizeJumpsInInput($input, $stripTerminalEndJumps && $inputIndex === $lastInputIndex);
+        }
+    }
+
+    /**
+     * Recursively sanitize jumps in an input and its nested branch and group inputs.
+     */
+    private static function sanitizeJumpsInInput(array &$input, bool $removeEndJumpToTerminalInput = false): void
+    {
+        // Sanitize jumps at this input level
+        if (isset($input['jumps']) && is_array($input['jumps'])) {
+            foreach ($input['jumps'] as $jumpIndex => $jump) {
+                // Remove 'has_valid_destination' if present
+                if (isset($jump['has_valid_destination'])) {
+                    unset($input['jumps'][$jumpIndex]['has_valid_destination']);
+                }
+
+                if ($removeEndJumpToTerminalInput && isset($jump['to']) && $jump['to'] === 'END') {
+                    unset($input['jumps'][$jumpIndex]);
+                    continue;
+                }
+
+                // Set answer_ref to null if needed
+                if (
+                    isset($jump['to'], $jump['when']) &&
+                    $jump['to'] === 'END' &&
+                    $jump['when'] === 'ALL' &&
+                    (!isset($jump['answer_ref']) || $jump['answer_ref'] === '')
+                ) {
+                    $input['jumps'][$jumpIndex]['answer_ref'] = null;
+                }
+            }
+
+            $input['jumps'] = array_values($input['jumps']);
+        }
+
+        // Recursively sanitize branch inputs
+        if (isset($input['branch']) && is_array($input['branch'])) {
+            self::sanitizeJumpsInInputList($input['branch']);
+        }
+
+        // Recursively sanitize group inputs
+        if (isset($input['group']) && is_array($input['group'])) {
+            self::sanitizeJumpsInInputList($input['group'], false);
+        }
+    }
+
+    /**
+     * Sanitize decimal value to ensure it has a leading zero if missing.
+     * E.g., .5 becomes 0.5, -.78 becomes -0.78
+     */
+    private static function sanitizeDecimalValue(mixed $value): mixed
+    {
+        if (is_string($value) && preg_match('/^(-?)\.(\d+)$/', $value, $matches)) {
+            return $matches[1] . '0.' . $matches[2];
+        }
+        return $value;
+    }
+
+    /**
+     * Recursively sanitize decimal min and max in an input and its nested branch and group inputs.
+     */
+    private static function sanitizeDecimalInInput(array &$input): void
+    {
+        if (isset($input['type']) && $input['type'] === config('epicollect.strings.inputs_type.decimal')) {
+            if (isset($input['min'])) {
+                $input['min'] = self::sanitizeDecimalValue($input['min']);
+            }
+            if (isset($input['max'])) {
+                $input['max'] = self::sanitizeDecimalValue($input['max']);
+            }
+        }
+
+        // Sanitize branch inputs
+        if (isset($input['branch']) && is_array($input['branch'])) {
+            foreach ($input['branch'] as &$branchInput) {
+                self::sanitizeDecimalInInput($branchInput);
+            }
+        }
+
+        // Sanitize group inputs
+        if (isset($input['group']) && is_array($input['group'])) {
+            foreach ($input['group'] as &$groupInput) {
+                self::sanitizeDecimalInInput($groupInput);
+            }
+        }
     }
 }

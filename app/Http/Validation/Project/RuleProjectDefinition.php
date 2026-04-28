@@ -89,6 +89,20 @@ class RuleProjectDefinition
             return false;
         }
 
+
+        //if category key doesn't exist or is not in the allowed categories, return error
+        if (!isset($projectData['category'])) {
+            $this->errors['validation'] = ['ec5_408'];
+            return false;
+        }
+        //does it have a valid category?
+        $category = $projectData['category'];
+        $categories = array_keys(config('epicollect.strings.project_categories'));
+        if (!in_array($category, $categories)) {
+            $this->errors['validation'] = ['ec5_408'];
+            return false;
+        }
+
         // Test projectDetails, has to have existing ref as ref, bail if error
         $test = $this->validateProjectDetails($project->ref, $projectData);
         if (!$test) {

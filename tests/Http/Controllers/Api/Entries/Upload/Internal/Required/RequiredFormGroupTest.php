@@ -16,6 +16,7 @@ use Exception;
 use Faker\Factory as Faker;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
+use Throwable;
 
 class RequiredFormGroupTest extends TestCase
 {
@@ -88,6 +89,9 @@ class RequiredFormGroupTest extends TestCase
         $this->projectExtra = $projectExtra;
     }
 
+    /**
+     * @throws Exception
+     */
     public function test_form_group_required_text_by_web_upload()
     {
         //get project definition
@@ -96,7 +100,6 @@ class RequiredFormGroupTest extends TestCase
 
         //get the first test question of the first group and add form uniqueness
         $groupInputRef = '';
-        $inputAnswer = [];
         foreach ($inputs as $inputIndex => $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.group')) {
                 $groupInputs = $input['group'];
@@ -131,8 +134,7 @@ class RequiredFormGroupTest extends TestCase
         $this->setRequiredAnswerAsEmpty(
             $payloadAnswers,
             $payload,
-            $groupInputRef,
-            $inputAnswer
+            $groupInputRef
         );
 
         $response = [];
@@ -151,12 +153,15 @@ class RequiredFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             echo print_r($this->projectDefinition, true);
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Exception
+     */
     public function test_form_group_required_integer_by_web_upload()
     {
         //get project definition
@@ -165,7 +170,7 @@ class RequiredFormGroupTest extends TestCase
 
         //get the first test question of the first group and add form uniqueness
         $groupInputRef = '';
-        $inputAnswer = [];
+
         foreach ($inputs as $inputIndex => $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.group')) {
                 $groupInputs = $input['group'];
@@ -200,8 +205,7 @@ class RequiredFormGroupTest extends TestCase
         $this->setRequiredAnswerAsEmpty(
             $payloadAnswers,
             $payload,
-            $groupInputRef,
-            $inputAnswer
+            $groupInputRef
         );
 
         $response = [];
@@ -220,12 +224,15 @@ class RequiredFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             echo print_r($this->projectDefinition, true);
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Exception
+     */
     public function test_form_group_required_decimal_by_web_upload()
     {
         //get project definition
@@ -234,7 +241,7 @@ class RequiredFormGroupTest extends TestCase
 
         //get the first test question of the first group and add form uniqueness
         $groupInputRef = '';
-        $inputAnswer = [];
+
         foreach ($inputs as $inputIndex => $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.group')) {
                 $groupInputs = $input['group'];
@@ -269,8 +276,7 @@ class RequiredFormGroupTest extends TestCase
         $this->setRequiredAnswerAsEmpty(
             $payloadAnswers,
             $payload,
-            $groupInputRef,
-            $inputAnswer
+            $groupInputRef
         );
 
         $response = [];
@@ -289,12 +295,15 @@ class RequiredFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             echo print_r($this->projectDefinition, true);
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Exception
+     */
     public function test_form_group_required_phone_by_web_upload()
     {
         //get project definition
@@ -303,7 +312,7 @@ class RequiredFormGroupTest extends TestCase
 
         //get the first test question of the first group and add form uniqueness
         $groupInputRef = '';
-        $inputAnswer = [];
+
         foreach ($inputs as $inputIndex => $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.group')) {
                 $groupInputs = $input['group'];
@@ -338,8 +347,7 @@ class RequiredFormGroupTest extends TestCase
         $this->setRequiredAnswerAsEmpty(
             $payloadAnswers,
             $payload,
-            $groupInputRef,
-            $inputAnswer
+            $groupInputRef
         );
 
         $response = [];
@@ -358,12 +366,15 @@ class RequiredFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             echo print_r($this->projectDefinition, true);
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Exception
+     */
     public function test_form_group_required_date_by_web_upload()
     {
         //get project definition
@@ -372,7 +383,7 @@ class RequiredFormGroupTest extends TestCase
 
         //get the first test question of the first group and add form uniqueness
         $groupInputRef = '';
-        $inputAnswer = [];
+
         foreach ($inputs as $inputIndex => $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.group')) {
                 $groupInputs = $input['group'];
@@ -407,8 +418,7 @@ class RequiredFormGroupTest extends TestCase
         $this->setRequiredAnswerAsEmpty(
             $payloadAnswers,
             $payload,
-            $groupInputRef,
-            $inputAnswer
+            $groupInputRef
         );
 
         $response = [];
@@ -427,12 +437,15 @@ class RequiredFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             echo print_r($this->projectDefinition, true);
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Exception
+     */
     public function test_form_group_required_time_by_web_upload()
     {
         //get project definition
@@ -441,7 +454,7 @@ class RequiredFormGroupTest extends TestCase
 
         //get the first test question of the first group and add form uniqueness
         $groupInputRef = '';
-        $inputAnswer = [];
+
         foreach ($inputs as $inputIndex => $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.group')) {
                 $groupInputs = $input['group'];
@@ -476,8 +489,7 @@ class RequiredFormGroupTest extends TestCase
         $this->setRequiredAnswerAsEmpty(
             $payloadAnswers,
             $payload,
-            $groupInputRef,
-            $inputAnswer
+            $groupInputRef
         );
 
         $response = [];
@@ -496,12 +508,15 @@ class RequiredFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             echo print_r($this->projectDefinition, true);
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Exception
+     */
     public function test_form_group_required_textbox_by_web_upload()
     {
         //get project definition
@@ -510,7 +525,7 @@ class RequiredFormGroupTest extends TestCase
 
         //get the first test question of the first group and add form uniqueness
         $groupInputRef = '';
-        $inputAnswer = [];
+
         foreach ($inputs as $inputIndex => $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.group')) {
                 $groupInputs = $input['group'];
@@ -545,8 +560,7 @@ class RequiredFormGroupTest extends TestCase
         $this->setRequiredAnswerAsEmpty(
             $payloadAnswers,
             $payload,
-            $groupInputRef,
-            $inputAnswer
+            $groupInputRef
         );
 
         $response = [];
@@ -565,12 +579,15 @@ class RequiredFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             echo print_r($this->projectDefinition, true);
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Exception
+     */
     public function test_form_group_required_radio_by_web_upload()
     {
         //get project definition
@@ -579,7 +596,7 @@ class RequiredFormGroupTest extends TestCase
 
         //get the first test question of the first group and add form uniqueness
         $groupInputRef = '';
-        $inputAnswer = [];
+
         foreach ($inputs as $inputIndex => $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.group')) {
                 $groupInputs = $input['group'];
@@ -614,8 +631,7 @@ class RequiredFormGroupTest extends TestCase
         $this->setRequiredAnswerAsEmpty(
             $payloadAnswers,
             $payload,
-            $groupInputRef,
-            $inputAnswer
+            $groupInputRef
         );
 
         $response = [];
@@ -634,12 +650,15 @@ class RequiredFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             echo print_r($this->projectDefinition, true);
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Exception
+     */
     public function test_form_group_required_dropdown_by_web_upload()
     {
         //get project definition
@@ -648,7 +667,7 @@ class RequiredFormGroupTest extends TestCase
 
         //get the first test question of the first group and add form uniqueness
         $groupInputRef = '';
-        $inputAnswer = [];
+
         foreach ($inputs as $inputIndex => $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.group')) {
                 $groupInputs = $input['group'];
@@ -683,8 +702,7 @@ class RequiredFormGroupTest extends TestCase
         $this->setRequiredAnswerAsEmpty(
             $payloadAnswers,
             $payload,
-            $groupInputRef,
-            $inputAnswer
+            $groupInputRef
         );
 
         $response = [];
@@ -703,12 +721,15 @@ class RequiredFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             echo print_r($this->projectDefinition, true);
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Exception
+     */
     public function test_form_group_required_checkbox_by_web_upload()
     {
         //get project definition
@@ -717,7 +738,7 @@ class RequiredFormGroupTest extends TestCase
 
         //get the first test question of the first group and add form uniqueness
         $groupInputRef = '';
-        $inputAnswer = [];
+
         foreach ($inputs as $inputIndex => $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.group')) {
                 $groupInputs = $input['group'];
@@ -752,8 +773,7 @@ class RequiredFormGroupTest extends TestCase
         $this->setRequiredAnswerAsEmpty(
             $payloadAnswers,
             $payload,
-            $groupInputRef,
-            $inputAnswer
+            $groupInputRef
         );
 
         $response = [];
@@ -772,7 +792,7 @@ class RequiredFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             echo print_r($this->projectDefinition, true);
             $this->logTestError($e, $response);
         }
@@ -784,17 +804,15 @@ class RequiredFormGroupTest extends TestCase
         $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
         $inputs = array_get($this->projectDefinition, 'data.project.forms.0.inputs');
 
-        //get the first test question of the first group and add form uniqueness
+        //get the first searchsingle question of the first group and add form uniqueness
         $groupInputRef = '';
-        $inputAnswer = [];
+
         foreach ($inputs as $inputIndex => $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.group')) {
                 $groupInputs = $input['group'];
                 foreach ($groupInputs as $groupInputIndex => $groupInput) {
                     if ($groupInput['type'] === config('epicollect.strings.inputs_type.searchsingle')) {
-                        $_inputs = & $this->projectDefinition['data']['project']['forms'][0]['inputs'];
-                        $_group = & $_inputs[$inputIndex]['group'][$groupInputIndex];
-                        $_group['is_required'] = true;
+                        $this->projectDefinition['data']['project']['forms'][0]['inputs'][$inputIndex]['group'][$groupInputIndex]['is_required'] = true;
                         $groupInputRef = $groupInput['ref'];
                         break 2;
                     }
@@ -803,9 +821,7 @@ class RequiredFormGroupTest extends TestCase
                 //inject searchsingle question if missing
                 $searchsingleInput = ProjectDefinitionGenerator::createSearchSingleInput($input['ref']);
                 $searchsingleInput['is_required'] = true;
-                $_inputs = & $this->projectDefinition['data']['project']['forms'][0]['inputs'];
-                $_group = & $_inputs[$inputIndex]['group'];
-                $_group[] = $searchsingleInput;
+                $this->projectDefinition['data']['project']['forms'][0]['inputs'][$inputIndex]['group'][] = $searchsingleInput;
                 $groupInputRef = $searchsingleInput['ref'];
                 //override entry generator with new project definition
                 $this->entryGenerator = new EntryGenerator($this->projectDefinition);
@@ -816,6 +832,7 @@ class RequiredFormGroupTest extends TestCase
         //update project in db
         $projectExtraService = new ProjectExtraService();
         $projectExtra = $projectExtraService->generateExtraStructure($this->projectDefinition['data']);
+
 
         ProjectStructure::where('project_id', $this->project->id)->update([
             'project_definition' => json_encode($this->projectDefinition['data']),
@@ -829,8 +846,7 @@ class RequiredFormGroupTest extends TestCase
         $this->setRequiredAnswerAsEmpty(
             $payloadAnswers,
             $payload,
-            $groupInputRef,
-            $inputAnswer
+            $groupInputRef
         );
 
         $response = [];
@@ -849,7 +865,7 @@ class RequiredFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             echo print_r($this->projectDefinition, true);
             $this->logTestError($e, $response);
         }
@@ -863,25 +879,21 @@ class RequiredFormGroupTest extends TestCase
 
         //get the first test question of the first group and add form uniqueness
         $groupInputRef = '';
-        $inputAnswer = [];
+
         foreach ($inputs as $inputIndex => $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.group')) {
                 $groupInputs = $input['group'];
                 foreach ($groupInputs as $groupInputIndex => $groupInput) {
                     if ($groupInput['type'] === config('epicollect.strings.inputs_type.searchmultiple')) {
-                        $_inputs = & $this->projectDefinition['data']['project']['forms'][0]['inputs'];
-                        $_group = & $_inputs[$inputIndex]['group'][$groupInputIndex];
-                        $_group['is_required'] = true;
+                        $this->projectDefinition['data']['project']['forms'][0]['inputs'][$inputIndex]['group'][$groupInputIndex]['is_required'] = true;
                         $groupInputRef = $groupInput['ref'];
-                        break;
+                        break 2;
                     }
                 }
                 //inject searchmultiple question if missing
                 $searchmultipleInput = ProjectDefinitionGenerator::createSearchMultipleInput($input['ref']);
                 $searchmultipleInput['is_required'] = true;
-                $_inputs = & $this->projectDefinition['data']['project']['forms'][0]['inputs'];
-                $_group = & $_inputs[$inputIndex]['group'];
-                $_group[] = $searchmultipleInput;
+                $this->projectDefinition['data']['project']['forms'][0]['inputs'][$inputIndex]['group'][] = $searchmultipleInput;
                 $groupInputRef = $searchmultipleInput['ref'];
                 //override entry generator with new project definition
                 $this->entryGenerator = new EntryGenerator($this->projectDefinition);
@@ -904,8 +916,7 @@ class RequiredFormGroupTest extends TestCase
         $this->setRequiredAnswerAsEmpty(
             $payloadAnswers,
             $payload,
-            $groupInputRef,
-            $inputAnswer
+            $groupInputRef
         );
 
         $response = [];
@@ -924,12 +935,15 @@ class RequiredFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             echo print_r($this->projectDefinition, true);
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Exception
+     */
     public function test_form_group_required_barcode_by_web_upload()
     {
         //get project definition
@@ -938,7 +952,7 @@ class RequiredFormGroupTest extends TestCase
 
         //get the first test question of the first group and add form uniqueness
         $groupInputRef = '';
-        $inputAnswer = [];
+
         foreach ($inputs as $inputIndex => $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.group')) {
                 $groupInputs = $input['group'];
@@ -973,8 +987,7 @@ class RequiredFormGroupTest extends TestCase
         $this->setRequiredAnswerAsEmpty(
             $payloadAnswers,
             $payload,
-            $groupInputRef,
-            $inputAnswer
+            $groupInputRef
         );
 
         $response = [];
@@ -993,13 +1006,13 @@ class RequiredFormGroupTest extends TestCase
                         ]
                     ]
                 );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             echo print_r($this->projectDefinition, true);
             $this->logTestError($e, $response);
         }
     }
 
-    private function setRequiredAnswerAsEmpty($payloadAnswers, &$payload, $groupInputRef, $inputAnswer)
+    private function setRequiredAnswerAsEmpty($payloadAnswers, &$payload, $groupInputRef)
     {
         foreach ($payloadAnswers as $ref => $payloadAnswer) {
             if ($ref === $groupInputRef) {
