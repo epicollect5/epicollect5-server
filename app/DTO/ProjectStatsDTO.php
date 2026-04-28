@@ -58,4 +58,25 @@ class ProjectStatsDTO
             'branch_counts' => is_array($this->branch_counts) ? json_encode($this->branch_counts) : $this->branch_counts,
         ];
     }
+
+    public function hasFormEntries(string $formRef): bool
+    {
+        return $this->getCountByRef($this->form_counts, $formRef) > 0;
+    }
+
+    public function hasBranchEntries(string $branchRef): bool
+    {
+        return $this->getCountByRef($this->branch_counts, $branchRef) > 0;
+    }
+
+    private function getCountByRef(array|string $counts, string $ref): int
+    {
+        if (!is_array($counts)) {
+            return 0;
+        }
+
+        $count = $counts[$ref]['count'] ?? 0;
+
+        return is_numeric($count) ? (int)$count : 0;
+    }
 }

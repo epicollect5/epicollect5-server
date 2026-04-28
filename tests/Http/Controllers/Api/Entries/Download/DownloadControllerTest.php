@@ -6,6 +6,7 @@ use Auth;
 use Carbon\Carbon;
 use ec5\Libraries\Generators\EntryGenerator;
 use ec5\Libraries\Generators\ProjectDefinitionGenerator;
+use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectRole;
@@ -270,7 +271,7 @@ class DownloadControllerTest extends TestCase
         // Get the downloaded file's path
         $filePath = $responseContent->getPathname();
 
-        $this->assertZipContent($filePath, $format, 1, 0);
+        $this->assertZipContent($filePath, $format, 0, 0);
 
         Storage::delete($filePath);
     }
@@ -728,6 +729,138 @@ class DownloadControllerTest extends TestCase
         Storage::delete($filePath);
     }
 
+    /**
+     * @throws Throwable
+     */
+    public function test_download_csv_skips_forms_and_branches_without_entries()
+    {
+        $format = 'csv';
+        $user = factory(User::class)->create();
+        $projectDefinition = ProjectDefinitionGenerator::createProject(2);
+        $project = factory(Project::class)->create(
+            [
+                'ref' => $projectDefinition['data']['project']['ref'],
+                'name' => $projectDefinition['data']['project']['name'],
+                'slug' => $projectDefinition['data']['project']['slug'],
+                'created_by' => $user->id,
+                'access' => config('epicollect.strings.project_access.private')
+            ]
+        );
+
+        factory(ProjectRole::class)->create([
+            'user_id' => $user->id,
+            'project_id' => $project->id,
+            'role' => config('epicollect.strings.project_roles.creator')
+        ]);
+
+        $projectExtraService = new ProjectExtraService();
+        $projectExtra = $projectExtraService->generateExtraStructure($projectDefinition['data']);
+        $projectMappingService = new ProjectMappingService();
+        $projectMapping = [$projectMappingService->createEC5AUTOMapping($projectExtra)];
+
+        factory(ProjectStructure::class)->create(
+            [
+                'project_id' => $project->id,
+                'project_definition' => json_encode($projectDefinition['data']),
+                'project_extra' => json_encode($projectExtra),
+                'project_mapping' => json_encode($projectMapping)
+            ]
+        );
+
+        $forms = $projectDefinition['data']['project']['forms'];
+        $firstFormRef = $forms[0]['ref'];
+        $secondFormRef = $forms[1]['ref'];
+        $firstFormBranches = array_values(array_filter($forms[0]['inputs'], function ($input) {
+            return $input['type'] === config('epicollect.strings.branch');
+        }));
+        $secondFormBranches = array_values(array_filter($forms[1]['inputs'], function ($input) {
+            return $input['type'] === config('epicollect.strings.branch');
+        }));
+        $firstBranchRef = $firstFormBranches[0]['ref'];
+
+        factory(ProjectStats::class)->create(
+            [
+                'project_id' => $project->id,
+                'total_entries' => 1,
+                'form_counts' => json_encode([
+                    $firstFormRef => [
+                        'count' => 1,
+                        'first_entry_created' => '2026-01-01 00:00:00',
+                        'last_entry_created' => '2026-01-01 00:00:00'
+                    ]
+                ]),
+                'branch_counts' => json_encode([
+                    $firstBranchRef => [
+                        'count' => 1,
+                        'first_entry_created' => '2026-01-01 00:00:00',
+                        'last_entry_created' => '2026-01-01 00:00:00'
+                    ]
+                ])
+            ]
+        );
+
+        $entryGenerator = new EntryGenerator($projectDefinition);
+
+        Auth::login($user);
+        $parentEntryPayload = $entryGenerator->createParentEntryPayload($firstFormRef);
+        $parentEntryRowBundle = $entryGenerator->createParentEntryRow(
+            $user,
+            $project,
+            config('epicollect.strings.project_roles.creator'),
+            $projectDefinition,
+            $parentEntryPayload
+        );
+        Auth::logout();
+
+        $this->assertEntryRowAgainstPayload($parentEntryRowBundle, $parentEntryPayload);
+
+        $parentEntryFromDB = Entry::where('uuid', $parentEntryPayload['data']['id'])->first();
+        $this->assertNotNull($parentEntryFromDB);
+
+        $branchEntryPayload = $entryGenerator->createBranchEntryPayload(
+            $firstFormRef,
+            $firstFormBranches[0]['branch'],
+            $parentEntryFromDB->uuid,
+            $firstBranchRef
+        );
+        $branchEntryRowBundle = $entryGenerator->createBranchEntryRow(
+            $user,
+            $project,
+            config('epicollect.strings.project_roles.creator'),
+            $projectDefinition,
+            $branchEntryPayload
+        );
+
+        $this->assertEntryRowAgainstPayload($branchEntryRowBundle, $branchEntryPayload);
+
+        $this->assertCount(1, Entry::where('project_id', $project->id)->get());
+        $this->assertCount(1, BranchEntry::where('project_id', $project->id)->get());
+        $this->assertNotEquals($firstFormRef, $secondFormRef);
+        $this->assertNotEmpty($secondFormBranches);
+
+        $cookies = [config('epicollect.setup.cookies.download_entries') => Carbon::now()->timestamp];
+        $params = [
+            config('epicollect.setup.cookies.download_entries') => Carbon::now()->timestamp,
+            'format' => $format
+        ];
+
+        $response = $this->actingAs($user)->call('GET', 'api/internal/download-entries/' . $project->slug, $params, $cookies);
+
+        $response->assertStatus(200);
+        $this->assertTrue($response->headers->get('Content-Type') === 'application/zip');
+
+        /** @noinspection PhpUndefinedMethodInspection */
+        $responseContent = $response->getFile();
+        $filePath = $responseContent->getPathname();
+
+        $this->assertZipContent($filePath, $format, 1, 1);
+
+        Storage::delete($filePath);
+        Storage::disk('audio')->deleteDirectory($project->ref);
+        Storage::disk('photo')->deleteDirectory($project->ref);
+        Storage::disk('video')->deleteDirectory($project->ref);
+    }
+
     public function test_error_response_with_wrong_params()
     {
         //create user
@@ -905,7 +1038,16 @@ class DownloadControllerTest extends TestCase
         $zip = new ZipArchive();
         $zip->open($filePath);
         $fileFound = false;
-        $this->assertEquals($zip->numFiles, ($filesCountForm + $filesCountBranch));
+        $expectedFilesCount = $filesCountForm + $filesCountBranch;
+        if ($expectedFilesCount === 0) {
+            $this->assertEquals(1, $zip->numFiles);
+            $this->assertEquals('readme.txt', $zip->statIndex(0)['name']);
+            $this->assertEquals('No entries found', $zip->getFromIndex(0));
+            $zip->close();
+            return;
+        }
+
+        $this->assertEquals($zip->numFiles, $expectedFilesCount);
         $filenamesForm = [];
         $filenamesBranch = [];
 
