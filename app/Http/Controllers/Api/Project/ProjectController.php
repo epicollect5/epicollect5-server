@@ -262,7 +262,7 @@ class ProjectController
             return Response::apiErrorCode('400', ['error' => ['ec5_257']]);
         }
 
-        $data = $request->post();
+        $data = $request->all();
 
         // 2. Basic structure check — is the payload shaped like a project request?
         //    Checks: data required, data.type = 'project', data.project is array

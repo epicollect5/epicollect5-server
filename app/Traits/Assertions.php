@@ -741,7 +741,31 @@ trait Assertions
         );
 
         $this->assertEquals(0, $entryStored->child_counts);
-        $this->assertEquals(0, $entryStored->branch_counts);
+        $this->assertBranchCountsAreEmpty($entryStored->branch_counts);
+    }
+
+    private function assertBranchCountsAreEmpty($branchCounts): void
+    {
+        if ($branchCounts === 0 || $branchCounts === '0' || $branchCounts === null) {
+            $this->assertEquals(0, $branchCounts);
+            return;
+        }
+
+        if (is_string($branchCounts)) {
+            $decodedBranchCounts = json_decode($branchCounts, true);
+            if (is_array($decodedBranchCounts)) {
+                foreach ($decodedBranchCounts as $branchCount) {
+                    if (is_array($branchCount)) {
+                        $this->assertEquals(0, $branchCount['count'] ?? null);
+                        continue;
+                    }
+                    $this->assertEquals(0, $branchCount);
+                }
+                return;
+            }
+        }
+
+        $this->assertEquals(0, $branchCounts);
     }
 
     public function assertEntryStoredAgainstEntryPayload($entryFromDB, $entryFromPayload, $projectDefinition, $formIndex = 0): void

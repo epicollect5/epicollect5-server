@@ -115,6 +115,7 @@ class ProjectMappingDTO extends ProjectDTOBase
     {
         //preserve default mapping
         $map['is_default'] = $this->data[$mapIndex]['is_default'];
+        $map['map_index'] = $this->data[$mapIndex]['map_index'] ?? $mapIndex;
         $this->data[$mapIndex] = $map;
     }
 

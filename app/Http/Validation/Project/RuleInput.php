@@ -273,7 +273,11 @@ class RuleInput extends ValidationBase
     private function validateNumericConstraintsWithinSharedRange(float|int $min, float|int $max): void
     {
         foreach (['min', 'max', 'default'] as $field) {
-            if (!array_key_exists($field, $this->data) || $this->data[$field] === '') {
+            if (
+                !array_key_exists($field, $this->data) ||
+                $this->data[$field] === '' ||
+                $this->data[$field] === null
+            ) {
                 continue;
             }
 

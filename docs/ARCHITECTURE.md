@@ -426,6 +426,159 @@ Representative `project_mapping` sample:
 ]
 ```
 
+At rest, `project_mapping` is an array of mapping objects. Each stored mapping includes:
+
+- `name`
+- `forms`
+- `map_index`
+- `is_default`
+
+Example stored shape:
+
+```json
+[
+  {
+    "name": "EC5_AUTO",
+    "forms": {
+      "form_ref_1": {
+        "input_ref_1": {
+          "hide": false,
+          "group": [],
+          "branch": [],
+          "map_to": "participant_id",
+          "possible_answers": []
+        }
+      }
+    },
+    "map_index": 0,
+    "is_default": true
+  },
+  {
+    "name": "Imported Mapping",
+    "forms": {
+      "form_ref_1": {
+        "input_ref_1": {
+          "hide": false,
+          "group": [],
+          "branch": [],
+          "map_to": "imported_name",
+          "possible_answers": []
+        }
+      }
+    },
+    "map_index": 1,
+    "is_default": false
+  }
+]
+```
+
+This stored shape is distinct from the request payloads used by the project mapping UI.
+
+### Project Mapping Actions
+
+The project mapping UI uses dedicated action payloads against the project mapping endpoints.
+
+Routes:
+
+- `POST myprojects/{project_slug}/mapping-data`
+- `POST myprojects/{project_slug}/mapping-data/update`
+- `POST myprojects/{project_slug}/mapping-data/delete`
+
+Important distinction:
+
+- top-level `map_index` identifies which stored mapping to act on
+- nested `mapping` is the mapping content being validated or replaced
+- nested `mapping.map_index` and `mapping.is_default` are stored fields, but they are not required in the update payload
+- when omitted during update, the server preserves the existing stored values
+
+#### Delete
+
+Endpoint:
+
+- `POST myprojects/{project_slug}/mapping-data/delete`
+
+Payload:
+
+```json
+{
+  "map_index": 1
+}
+```
+
+#### Rename
+
+Endpoint:
+
+- `POST myprojects/{project_slug}/mapping-data/update`
+
+Payload:
+
+```json
+{
+  "action": "rename",
+  "map_index": 1,
+  "name": "Renamed Mapping"
+}
+```
+
+#### Make Default
+
+Endpoint:
+
+- `POST myprojects/{project_slug}/mapping-data/update`
+
+Payload:
+
+```json
+{
+  "action": "make-default",
+  "map_index": 1,
+  "mapping": {
+    "name": "Imported Mapping",
+    "forms": {
+      "form_ref_1": {}
+    },
+    "map_index": 1,
+    "is_default": true
+  }
+}
+```
+
+The `mapping` object may be included by the UI, but the action itself is driven by the top-level `map_index`.
+
+#### Update
+
+Endpoint:
+
+- `POST myprojects/{project_slug}/mapping-data/update`
+
+Payload:
+
+```json
+{
+  "action": "update",
+  "map_index": 1,
+  "mapping": {
+    "name": "Imported Mapping",
+    "forms": {
+      "form_ref_1": {
+        "input_ref_1": {
+          "hide": false,
+          "group": [],
+          "branch": [],
+          "map_to": "imported_name",
+          "possible_answers": []
+        }
+      }
+    }
+  }
+}
+```
+
+For `action=update`, the top-level `map_index` is compulsory. The nested `mapping` payload is the replacement mapping
+content. If nested `mapping.map_index` or `mapping.is_default` are missing, the server preserves the existing stored
+values for that mapping.
+
 ### Entries
 
 The data collection model uses:

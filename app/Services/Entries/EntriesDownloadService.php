@@ -12,7 +12,6 @@ use File;
 use Illuminate\Database\Query\Builder;
 use Log;
 use RuntimeException;
-use Storage;
 use Throwable;
 use ZipArchive;
 
@@ -56,9 +55,10 @@ class EntriesDownloadService
         $this->totalDuration = 0;
         $this->totalEntries = 0;
         $this->project = $project;
-        $projectStats = $project->getProjectStats();
-        // Delete all existing files for this user
-        Storage::deleteDirectory($projectDir);
+        // Reset the archive workspace using the real filesystem path.
+        if (File::exists($projectDir)) {
+            File::deleteDirectory($projectDir);
+        }
 
         $format = $params['format'];
         $mapIndex = $params['map_index'];
@@ -72,10 +72,6 @@ class EntriesDownloadService
         ]);
 
         foreach ($forms as $form) {
-            if (!$projectStats->hasFormEntries($form['ref'])) {
-                continue;
-            }
-
             // Set the form ref into the params
             $params['form_ref'] = $form['ref'];
             // Let's start with forms first
@@ -98,6 +94,10 @@ class EntriesDownloadService
                 'duration_seconds' => $duration,
             ]);
 
+            if (!$query->exists()) {
+                continue;
+            }
+
             // Write to file
             if (!$this->writeToFile($query, $projectDir, $fileName, $format)) {
                 return false;
@@ -112,10 +112,6 @@ class EntriesDownloadService
             }
 
             foreach ($branches as $branch) {
-                if (!$projectStats->hasBranchEntries($branch['ref'])) {
-                    continue;
-                }
-
                 // Set the branch ref into the options
                 $params['branch_ref'] = $branch['ref'];
                 $prefix = config('epicollect.strings.branch') . '-' . $branchCount;
@@ -149,6 +145,10 @@ class EntriesDownloadService
                     'duration_seconds' => $duration,
                 ]);
 
+                if (!$query->exists()) {
+                    continue;
+                }
+
                 // Write to file
                 if (!$this->writeToFile($query, $projectDir, $fileName, $format)) {
                     return false;
@@ -178,7 +178,7 @@ class EntriesDownloadService
 
         $zip = new ZipArchive();
         $zipFileName = $projectSlug . '-' . $format . '.zip';
-        $zip->open($projectDir . '/' . $zipFileName, ZipArchive::CREATE);
+        $zip->open($projectDir . '/' . $zipFileName, ZipArchive::CREATE | ZipArchive::OVERWRITE);
         $toDeleteLater = [];
 
         foreach (glob($projectDir . '/*.' . $format) as $file) {

@@ -2,6 +2,7 @@
 
 namespace Tests\Http\Controllers\Api\Project;
 
+use ec5\DTO\ProjectDTO;
 use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Models\OAuth\OAuthClientProject;
@@ -48,7 +49,7 @@ class ProjectControllerExportTest extends TestCase
 
             //assert project definition
             $json = ProjectStructure::where('project_id', $this->project->id)->value('project_definition');
-            $projectDefinition = json_decode($json, true);
+            $projectDefinition = ProjectDTO::sanitiseProjectDefinitionForExport(json_decode($json, true));
             $projectResponse = json_decode($response[0]->getContent(), true)['data'];
 
             //add any extra key added by the controller

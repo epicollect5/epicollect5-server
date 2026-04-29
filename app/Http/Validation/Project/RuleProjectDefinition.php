@@ -65,6 +65,14 @@ class RuleProjectDefinition
      */
     public function validate(ProjectDTO $project): bool
     {
+        $this->errors = [];
+        $this->hasJumps = [];
+        $this->hasLocation = [];
+        $this->formNames = [];
+        $this->formRefs = [];
+        $this->counterSearchInputs = 0;
+        $this->counterTitles = [];
+
         $this->projectExtra = $project->getProjectExtra();
         // Reset the existing data, ready to rebuild
         $this->projectExtra->reset();
@@ -109,11 +117,6 @@ class RuleProjectDefinition
             return false;
         }
 
-        $this->formNames = [];
-        $this->formRefs = [];
-        //search inputs currently 5 max per project
-        $this->counterSearchInputs = 0;
-        $this->counterTitles = [];
         foreach ($forms as $form) {
             //cannot have a form name empty
             if (empty($form['name'])) {

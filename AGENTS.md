@@ -83,3 +83,7 @@ Always use these flags when running CLI tools:
 
 - Tests: `vendor/bin/phpunit --no-progress`
 - phpcs: `vendor/bin/phpcs --report=emacs -q`
+
+## QA Reports
+
+Write QA reports always in docs/ with QA-* prefix

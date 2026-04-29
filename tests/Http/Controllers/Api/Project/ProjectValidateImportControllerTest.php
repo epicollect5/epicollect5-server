@@ -4,12 +4,15 @@ namespace Tests\Http\Controllers\Api\Project;
 
 use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Libraries\Utilities\Generators;
+use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 class ProjectValidateImportControllerTest extends TestCase
 {
-    private const string ROUTE = 'api/import/project/validate';
+    private const string ROUTE = '/api/import/project/validate';
     private const string VALID_TOKEN = 'test-import-validation-token';
 
     public function setUp(): void
@@ -17,6 +20,20 @@ class ProjectValidateImportControllerTest extends TestCase
         parent::setUp();
         // Inject a known token so tests are deterministic and independent of .env
         config()->set('epicollect.setup.api.import_project.validation_key', self::VALID_TOKEN);
+    }
+
+    private function postValidateImport(array $payload = [], ?string $token = self::VALID_TOKEN): TestResponse
+    {
+        $server = ['HTTP_ACCEPT' => 'application/json'];
+
+        if ($token !== null) {
+            $server['HTTP_AUTHORIZATION'] = 'Bearer ' . $token;
+        }
+
+        $request = Request::create(self::ROUTE, 'POST', $payload, [], [], $server);
+        $response = $this->app->make(Kernel::class)->handle($request);
+
+        return TestResponse::fromBaseResponse($response);
     }
 
     /**
@@ -80,11 +97,10 @@ class ProjectValidateImportControllerTest extends TestCase
         ];
     }
 
-    private function minimalValidMappingPayload(string $mappingName = 'Imported Mapping'): array
+    private function minimalValidMappingPayload(array $projectPayload, string $mappingName = 'Imported Mapping'): array
     {
-        $payload = $this->minimalValidPayload();
-        $formRef = $payload['project']['forms'][0]['ref'];
-        $inputRef = $payload['project']['forms'][0]['inputs'][0]['ref'];
+        $formRef = $projectPayload['project']['forms'][0]['ref'];
+        $inputRef = $projectPayload['project']['forms'][0]['inputs'][0]['ref'];
 
         return [
             'name' => $mappingName,
@@ -111,7 +127,7 @@ class ProjectValidateImportControllerTest extends TestCase
     public function test_rejects_request_with_no_token(): void
     {
         // No Authorization header at all
-        $response = $this->json('POST', self::ROUTE, []);
+        $response = $this->postValidateImport([], null);
 
         $response->assertStatus(400)
             ->assertJsonStructure([
@@ -128,9 +144,7 @@ class ProjectValidateImportControllerTest extends TestCase
 
     public function test_rejects_request_with_invalid_token(): void
     {
-        $response = $this->json('POST', self::ROUTE, [], [
-            'Authorization' => 'Bearer wrong-token'
-        ]);
+        $response = $this->postValidateImport([], 'wrong-token');
 
         $response->assertStatus(400)
             ->assertJsonStructure([
@@ -152,9 +166,7 @@ class ProjectValidateImportControllerTest extends TestCase
     public function test_rejects_payload_missing_data_key(): void
     {
         // Payload has no 'data' key at all
-        $response = $this->json('POST', self::ROUTE, ['foo' => 'bar'], [
-            'Authorization' => 'Bearer ' . self::VALID_TOKEN
-        ]);
+        $response = $this->postValidateImport(['foo' => 'bar']);
 
         $response->assertStatus(400)
             ->assertJsonStructure([
@@ -174,9 +186,7 @@ class ProjectValidateImportControllerTest extends TestCase
         // Remove the 'type' key from data so ImportJsonValidator fires
         unset($projectDefinition['data']['type']);
 
-        $response = $this->json('POST', self::ROUTE, $projectDefinition, [
-            'Authorization' => 'Bearer ' . self::VALID_TOKEN
-        ]);
+        $response = $this->postValidateImport($projectDefinition);
 
         $response->assertStatus(400)
             ->assertJsonStructure([
@@ -200,9 +210,7 @@ class ProjectValidateImportControllerTest extends TestCase
         // Inject an invalid enum value to trigger a schema violation
         $projectDefinition['data']['project']['category'] = 'invalid-category-xyz';
 
-        $response = $this->json('POST', self::ROUTE, $projectDefinition, [
-            'Authorization' => 'Bearer ' . self::VALID_TOKEN
-        ]);
+        $response = $this->postValidateImport($projectDefinition);
 
         $response->assertStatus(400)
             ->assertJsonStructure([
@@ -229,9 +237,7 @@ class ProjectValidateImportControllerTest extends TestCase
     {
         $projectDefinition = ['data' => $this->minimalValidPayload()];
 
-        $response = $this->json('POST', self::ROUTE, $projectDefinition, [
-            'Authorization' => 'Bearer ' . self::VALID_TOKEN
-        ]);
+        $response = $this->postValidateImport($projectDefinition);
 
         $response->assertStatus(200)
             ->assertJsonStructure([
@@ -257,18 +263,17 @@ class ProjectValidateImportControllerTest extends TestCase
 
     public function test_accepts_valid_payload_with_custom_project_mapping(): void
     {
+        $projectPayload = $this->minimalValidPayload();
         $projectDefinition = [
-            'data' => $this->minimalValidPayload(),
+            'data' => $projectPayload,
             'meta' => [
                 'project_mapping' => [
-                    $this->minimalValidMappingPayload('Imported Mapping')
+                    $this->minimalValidMappingPayload($projectPayload, 'Imported Mapping')
                 ]
             ]
         ];
 
-        $response = $this->json('POST', self::ROUTE, $projectDefinition, [
-            'Authorization' => 'Bearer ' . self::VALID_TOKEN
-        ]);
+        $response = $this->postValidateImport($projectDefinition);
 
         $response->assertStatus(200)
             ->assertJsonStructure([
@@ -287,18 +292,17 @@ class ProjectValidateImportControllerTest extends TestCase
 
     public function test_accepts_valid_payload_with_ec5_auto_project_mapping(): void
     {
+        $projectPayload = $this->minimalValidPayload();
         $projectDefinition = [
-            'data' => $this->minimalValidPayload(),
+            'data' => $projectPayload,
             'meta' => [
                 'project_mapping' => [
-                    $this->minimalValidMappingPayload('EC5_AUTO')
+                    $this->minimalValidMappingPayload($projectPayload, 'EC5_AUTO')
                 ]
             ]
         ];
 
-        $response = $this->json('POST', self::ROUTE, $projectDefinition, [
-            'Authorization' => 'Bearer ' . self::VALID_TOKEN
-        ]);
+        $response = $this->postValidateImport($projectDefinition);
 
         $response->assertStatus(200)
             ->assertJsonStructure([
@@ -317,13 +321,14 @@ class ProjectValidateImportControllerTest extends TestCase
 
     public function test_rejects_payload_with_invalid_project_mapping(): void
     {
-        $invalidMapping = $this->minimalValidMappingPayload('Imported Mapping');
+        $projectPayload = $this->minimalValidPayload();
+        $invalidMapping = $this->minimalValidMappingPayload($projectPayload, 'Imported Mapping');
         $invalidMapping['forms'] = [
             'invalid_form_ref' => $invalidMapping['forms'][array_key_first($invalidMapping['forms'])]
         ];
 
         $projectDefinition = [
-            'data' => $this->minimalValidPayload(),
+            'data' => $projectPayload,
             'meta' => [
                 'project_mapping' => [
                     $invalidMapping
@@ -331,20 +336,18 @@ class ProjectValidateImportControllerTest extends TestCase
             ]
         ];
 
-        $response = $this->json('POST', self::ROUTE, $projectDefinition, [
-            'Authorization' => 'Bearer ' . self::VALID_TOKEN
-        ]);
+        $response = $this->postValidateImport($projectDefinition);
 
         $response->assertStatus(400)
             ->assertJsonStructure([
                 'errors' => [
-                    ['code', 'title', 'source']
+                    ['schema', 'title', 'source']
                 ]
             ]);
 
         $errors = $response->json('errors');
         $this->assertCount(1, $errors);
-        $this->assertEquals('ec5_15', $errors[0]['code']);
-        $this->assertEquals('invalid_form_ref', $errors[0]['source']);
+        $this->assertEquals('project-json-validator', $errors[0]['source']);
+        $this->assertStringContainsString('invalid_form_ref', $errors[0]['title']);
     }
 }

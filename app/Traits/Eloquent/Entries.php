@@ -158,9 +158,11 @@ trait Entries
             } else {
                 $q->orderBy($filters['sort_by'], $filters['sort_order']);
             }
+            $q->orderBy('id', $filters['sort_order']);
         } else {
             //default sorting, most recent first
             $q->orderBy('created_at', 'DESC');
+            $q->orderBy('id', 'DESC');
         }
         return $q;
     }

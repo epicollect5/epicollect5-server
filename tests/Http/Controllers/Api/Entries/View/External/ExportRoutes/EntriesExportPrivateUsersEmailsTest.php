@@ -194,6 +194,7 @@ class EntriesExportPrivateUsersEmailsTest extends TestCase
 
         $formRef = array_get($projectDefinition, 'data.project.forms.0.ref');
         $entryPayloads = [];
+        $collectorEmailsByEntryUuid = [];
         for ($i = 0; $i < $numOfCollectors; $i++) {
             $entryPayloads[$i] = $entryGenerator->createParentEntryPayload($formRef);
             $entryRowBundle = $entryGenerator->createParentEntryRow(
@@ -203,6 +204,7 @@ class EntriesExportPrivateUsersEmailsTest extends TestCase
                 $projectDefinition,
                 $entryPayloads[$i]
             );
+            $collectorEmailsByEntryUuid[$entryPayloads[$i]['data']['id']] = $collectors[$i]->email;
 
             $this->assertEntryRowAgainstPayload(
                 $entryRowBundle,
@@ -257,11 +259,11 @@ class EntriesExportPrivateUsersEmailsTest extends TestCase
 
             //assert the entries from the response
             $entriesFromResponse = $jsonResponse['data']['entries'];
-            foreach ($entriesFromResponse as $index => $entryFromResponse) {
-                $entryFromDB = Entry::where('uuid', $entryPayloads[$index]['data']['id'])->first();
+            foreach ($entriesFromResponse as $entryFromResponse) {
+                $entryFromDB = Entry::where('uuid', $entryFromResponse['ec5_uuid'])->first();
                 $this->assertEquals($entryFromDB->uuid, $entryFromResponse['ec5_uuid']);
                 $this->assertEquals($entryFromDB->title, $entryFromResponse['title']);
-                $this->assertEquals($collectors[$index]->email, $entryFromResponse['created_by']);
+                $this->assertEquals($collectorEmailsByEntryUuid[$entryFromResponse['ec5_uuid']], $entryFromResponse['created_by']);
                 //timestamp
                 $this->assertEquals(
                     str_replace(' ', 'T', $entryFromDB->created_at) . '.000Z',

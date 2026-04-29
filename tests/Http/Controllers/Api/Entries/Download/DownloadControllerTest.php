@@ -195,13 +195,6 @@ class DownloadControllerTest extends TestCase
 
         $numOfForms = sizeof($projectDefinition['data']['project']['forms']);
         $numOfBranches = 0;
-        foreach ($projectDefinition['data']['project']['forms'] as $form) {
-            foreach ($form['inputs'] as $input) {
-                if ($input['type'] === config('epicollect.strings.inputs_type.branch')) {
-                    $numOfBranches++;
-                }
-            }
-        }
 
         $access = $project->access;
         $this->assertZipContent($filePath, $format, $numOfForms, $numOfBranches, $access);
@@ -387,13 +380,6 @@ class DownloadControllerTest extends TestCase
 
         $numOfForms = sizeof($projectDefinition['data']['project']['forms']);
         $numOfBranches = 0;
-        foreach ($projectDefinition['data']['project']['forms'] as $form) {
-            foreach ($form['inputs'] as $input) {
-                if ($input['type'] === config('epicollect.strings.inputs_type.branch')) {
-                    $numOfBranches++;
-                }
-            }
-        }
 
         $this->assertZipContent($filePath, $format, $numOfForms, $numOfBranches);
 
@@ -514,13 +500,6 @@ class DownloadControllerTest extends TestCase
 
         $numOfForms = sizeof($projectDefinition['data']['project']['forms']);
         $numOfBranches = 0;
-        foreach ($projectDefinition['data']['project']['forms'] as $form) {
-            foreach ($form['inputs'] as $input) {
-                if ($input['type'] === config('epicollect.strings.inputs_type.branch')) {
-                    $numOfBranches++;
-                }
-            }
-        }
 
         $access = $project->access;
         $this->assertZipContent($filePath, $format, $numOfForms, $numOfBranches, $access);
@@ -540,16 +519,8 @@ class DownloadControllerTest extends TestCase
         $user = factory(User::class)->create();
         //create a project with a random number of forms and branches (min 1)
         $projectDefinition = ProjectDefinitionGenerator::createProject(rand(1, 5));
-        $forms = $projectDefinition['data']['project']['forms'];
-        $filesCountForm = sizeof($forms);
+        $filesCountForm = 0;
         $filesCountBranch = 0;
-        foreach ($forms as $form) {
-            foreach ($form['inputs'] as $input) {
-                if ($input['type'] === config('epicollect.strings.branch')) {
-                    $filesCountBranch++;
-                }
-            }
-        }
         //create a project with existing name, slug and ref
         $project = factory(Project::class)->create(
             [
@@ -638,16 +609,8 @@ class DownloadControllerTest extends TestCase
         $user = factory(User::class)->create();
         //create a project with a random number of forms and branches (min 1)
         $projectDefinition = ProjectDefinitionGenerator::createProject(rand(1, 5));
-        $forms = $projectDefinition['data']['project']['forms'];
-        $filesCountForm = sizeof($forms);
+        $filesCountForm = 0;
         $filesCountBranch = 0;
-        foreach ($forms as $form) {
-            foreach ($form['inputs'] as $input) {
-                if ($input['type'] === config('epicollect.strings.branch')) {
-                    $filesCountBranch++;
-                }
-            }
-        }
         //create a project with existing name, slug and ref
         $project = factory(Project::class)->create(
             [
@@ -1047,7 +1010,7 @@ class DownloadControllerTest extends TestCase
             return;
         }
 
-        $this->assertEquals($zip->numFiles, $expectedFilesCount);
+        $this->assertEquals($expectedFilesCount, $zip->numFiles);
         $filenamesForm = [];
         $filenamesBranch = [];
 

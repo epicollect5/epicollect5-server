@@ -282,7 +282,6 @@ class EditExistingBranchEntryTest extends TestCase
 
         //generate a branch entry for this owner
         $branchEntryPayloads = [];
-        $branchInputs = [];
         for ($i = 0; $i < 1; $i++) {
             $branchEntryPayloads[$i] = $this->entryGenerator->createBranchEntryPayload(
                 $formRef,
@@ -414,7 +413,6 @@ class EditExistingBranchEntryTest extends TestCase
 
         //generate a branch entry for this owner
         $branchEntryPayloads = [];
-        $branchInputs = [];
         for ($i = 0; $i < 1; $i++) {
             $branchEntryPayloads[$i] = $this->entryGenerator->createBranchEntryPayload(
                 $formRef,
@@ -546,7 +544,6 @@ class EditExistingBranchEntryTest extends TestCase
 
         //generate a branch entry for this owner
         $branchEntryPayloads = [];
-        $branchInputs = [];
         for ($i = 0; $i < 1; $i++) {
             $branchEntryPayloads[$i] = $this->entryGenerator->createBranchEntryPayload(
                 $formRef,
@@ -678,7 +675,6 @@ class EditExistingBranchEntryTest extends TestCase
 
         //generate a branch entry for this owner
         $branchEntryPayloads = [];
-        $branchInputs = [];
         for ($i = 0; $i < 1; $i++) {
             $branchEntryPayloads[$i] = $this->entryGenerator->createBranchEntryPayload(
                 $formRef,
@@ -810,7 +806,6 @@ class EditExistingBranchEntryTest extends TestCase
 
         //generate a branch entry for this owner
         $branchEntryPayloads = [];
-        $branchInputs = [];
         for ($i = 0; $i < 1; $i++) {
             $branchEntryPayloads[$i] = $this->entryGenerator->createBranchEntryPayload(
                 $formRef,
@@ -942,7 +937,6 @@ class EditExistingBranchEntryTest extends TestCase
 
         //generate a branch entry for this owner
         $branchEntryPayloads = [];
-        $branchInputs = [];
         for ($i = 0; $i < 1; $i++) {
             $branchEntryPayloads[$i] = $this->entryGenerator->createBranchEntryPayload(
                 $formRef,
@@ -1074,7 +1068,6 @@ class EditExistingBranchEntryTest extends TestCase
 
         //generate a branch entry for this owner
         $branchEntryPayloads = [];
-        $branchInputs = [];
         for ($i = 0; $i < 1; $i++) {
             $branchEntryPayloads[$i] = $this->entryGenerator->createBranchEntryPayload(
                 $formRef,
@@ -1206,7 +1199,6 @@ class EditExistingBranchEntryTest extends TestCase
 
         //generate a branch entry for this owner
         $branchEntryPayloads = [];
-        $branchInputs = [];
         for ($i = 0; $i < 1; $i++) {
             $branchEntryPayloads[$i] = $this->entryGenerator->createBranchEntryPayload(
                 $formRef,
@@ -1348,7 +1340,6 @@ class EditExistingBranchEntryTest extends TestCase
 
         //generate a branch entry for this owner
         $branchEntryPayloads = [];
-        $branchInputs = [];
         for ($i = 0; $i < 1; $i++) {
             $branchEntryPayloads[$i] = $this->entryGenerator->createBranchEntryPayload(
                 $formRef,
@@ -1490,7 +1481,6 @@ class EditExistingBranchEntryTest extends TestCase
 
         //generate a branch entry for this owner
         $branchEntryPayloads = [];
-        $branchInputs = [];
         for ($i = 0; $i < 1; $i++) {
             $branchEntryPayloads[$i] = $this->entryGenerator->createBranchEntryPayload(
                 $formRef,

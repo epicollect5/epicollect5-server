@@ -53,7 +53,9 @@ Route::group(['middleware' => ['throttle:600,1']], function () {
         //   Route::get('api/datasets/{project_slug}', 'Api\Project\DatasetController@download');
 
         // Entry uploads
-        Route::post('api/upload/{project_slug}', 'Api\Entries\Upload\UploadAppController@postUpload');
+        Route::group(['middleware' => ['throttle:300,1']], function () {
+            Route::post('api/upload/{project_slug}', 'Api\Entries\Upload\UploadAppController@postUpload');
+        });
 
         //route for debugging, only available in non-production environments
         Route::group(['middleware' => ['throttle:bulk-upload']], function () {
