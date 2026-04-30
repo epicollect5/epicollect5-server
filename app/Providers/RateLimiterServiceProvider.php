@@ -38,6 +38,7 @@ class RateLimiterServiceProvider extends ServiceProvider
         $this->configureAccountDeletionLimiter();
         $this->configurePasswordlessLimiter();
         $this->configureApiExportLimiters();
+        $this->configureApiMediaLimiter();
         $this->configureOauthTokenLimiter();
         $this->configureBulkUploadLimiter();
     }
@@ -126,7 +127,7 @@ class RateLimiterServiceProvider extends ServiceProvider
      */
     private function configureApiExportLimiter(string $name, string $configKey): void
     {
-        //to avoid rotating ips when exporting entries, we limit by project slug instead of IP or user ID
+        // To avoid rotating IPs bypassing throttles, limit project-scoped read endpoints by project slug.
         RateLimiter::for($name, function (Request $request) use ($name, $configKey) {
             $limits = [
                 Limit::perMinute(
@@ -141,6 +142,22 @@ class RateLimiterServiceProvider extends ServiceProvider
             }
 
             return $limits;
+        });
+    }
+
+    /**
+     * Configure rate limiter for public media endpoints.
+     */
+    private function configureApiMediaLimiter(): void
+    {
+        // To avoid rotating IPs bypassing throttles, limit project-scoped media reads by project slug.
+        RateLimiter::for('api-media', function (Request $request) {
+            return [
+                //per second to avoid bursts
+                Limit::perSecond(
+                    config('epicollect.limits.api_external.media')
+                )->by($request->route('project_slug'))
+            ];
         });
     }
 

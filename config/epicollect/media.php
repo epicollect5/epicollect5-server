@@ -77,6 +77,9 @@ return [
     ],
     'cache_control' => [
         'always' => 'public, max-age=31536000, immutable',
+        '24h' => 'public, max-age=86400, immutable',
+        '1h' => 'public, max-age=3600, immutable',
+        '48h' => 'public, max-age=172800, immutable',
         'never' => 'no-store'
     ]
 ];
