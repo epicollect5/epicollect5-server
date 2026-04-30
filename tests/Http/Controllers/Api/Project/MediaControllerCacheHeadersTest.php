@@ -100,7 +100,7 @@ class MediaControllerCacheHeadersTest extends TestCase
     }
 
     #[DataProvider('multipleRunProvider')]
-    public function test_entry_original_without_v_param_has_no_store_directive()
+    public function test_entry_original_without_v_param_has_24h_cache_directive()
     {
         $entry = factory(Entry::class)->create([
             'project_id' => $this->project->id,
@@ -117,7 +117,7 @@ class MediaControllerCacheHeadersTest extends TestCase
         $response->assertStatus(200);
         $response->assertHeader('Content-Type', config('epicollect.media.content_type.photo'));
         $cacheControl = $response->headers->get('Cache-Control');
-        $this->assertStringContainsString('no-store', $cacheControl);
+        $this->assertStringContainsString('max-age=86400', $cacheControl);
 
         Storage::disk('photo')->deleteDirectory($this->project->ref);
     }
@@ -147,7 +147,7 @@ class MediaControllerCacheHeadersTest extends TestCase
     }
 
     #[DataProvider('multipleRunProvider')]
-    public function test_entry_thumb_without_v_param_has_no_store_directive()
+    public function test_entry_thumb_without_v_param_has_24h_cache_directive()
     {
         $entry = factory(Entry::class)->create([
             'project_id' => $this->project->id,
@@ -164,7 +164,7 @@ class MediaControllerCacheHeadersTest extends TestCase
         $response->assertStatus(200);
         $response->assertHeader('Content-Type', config('epicollect.media.content_type.photo'));
         $cacheControl = $response->headers->get('Cache-Control');
-        $this->assertStringContainsString('no-store', $cacheControl);
+        $this->assertStringContainsString('max-age=86400', $cacheControl);
 
         Storage::disk('photo')->deleteDirectory($this->project->ref);
     }
@@ -194,7 +194,7 @@ class MediaControllerCacheHeadersTest extends TestCase
     }
 
     #[DataProvider('multipleRunProvider')]
-    public function test_project_thumb_without_v_param_has_no_store_directive()
+    public function test_project_thumb_without_v_param_has_24h_cache_directive()
     {
         $image = Image::create(config('epicollect.media.project_thumb')[0], config('epicollect.media.project_thumb')[1])->fill('#673C90');
         $imageData = $image->toJpeg(70);
@@ -205,7 +205,7 @@ class MediaControllerCacheHeadersTest extends TestCase
         $response->assertStatus(200);
         $response->assertHeader('Content-Type', config('epicollect.media.content_type.photo'));
         $cacheControl = $response->headers->get('Cache-Control');
-        $this->assertStringContainsString('no-store', $cacheControl);
+        $this->assertStringContainsString('max-age=86400', $cacheControl);
     }
 
     #[DataProvider('multipleRunProvider')]
@@ -225,7 +225,7 @@ class MediaControllerCacheHeadersTest extends TestCase
     }
 
     #[DataProvider('multipleRunProvider')]
-    public function test_project_mobile_logo_without_v_param_has_no_store_directive()
+    public function test_project_mobile_logo_without_v_param_has_24h_cache_directive()
     {
         $image = Image::create(config('epicollect.media.project_thumb')[0], config('epicollect.media.project_thumb')[1])->fill('#673C90');
         $imageData = $image->toJpeg(70);
@@ -236,7 +236,7 @@ class MediaControllerCacheHeadersTest extends TestCase
         $response->assertStatus(200);
         $response->assertHeader('Content-Type', config('epicollect.media.content_type.photo'));
         $cacheControl = $response->headers->get('Cache-Control');
-        $this->assertStringContainsString('no-store', $cacheControl);
+        $this->assertStringContainsString('max-age=86400', $cacheControl);
     }
 
     #[DataProvider('multipleRunProvider')]
@@ -255,4 +255,3 @@ class MediaControllerCacheHeadersTest extends TestCase
         $this->assertStringContainsString('max-age=31536000', $cacheControl);
     }
 }
-
