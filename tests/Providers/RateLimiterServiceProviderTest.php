@@ -37,6 +37,22 @@ class RateLimiterServiceProviderTest extends TestCase
         $this->assertSame(7, $limits[0]->maxAttempts);
     }
 
+    public function test_api_external_global_requests_use_ip_address(): void
+    {
+        Config::set('epicollect.limits.api_external.global', 600);
+
+        $limits = $this->resolveIpScopedLimits(
+            'api-external-global',
+            '/api/projects',
+            '10.10.10.10',
+            'curl/8.6.0'
+        );
+
+        $this->assertInstanceOf(Limit::class, $limits);
+        $this->assertSame('10.10.10.10', $limits->key);
+        $this->assertSame(600, $limits->maxAttempts);
+    }
+
     public function test_google_apps_script_requests_are_limited_by_shared_project_slug_key(): void
     {
         Config::set('epicollect.limits.api_export.entries', 100);
@@ -133,6 +149,26 @@ class RateLimiterServiceProviderTest extends TestCase
             $ipAddress,
             $userAgent
         );
+    }
+
+    private function resolveIpScopedLimits(
+        string $limiterName,
+        string $uri,
+        string $ipAddress,
+        string $userAgent
+    ): Limit {
+        $request = Request::create($uri, 'GET', [], [], [], [
+            'REMOTE_ADDR' => $ipAddress,
+            'HTTP_USER_AGENT' => $userAgent,
+        ]);
+
+        $limiter = RateLimiter::limiter($limiterName);
+        $this->assertNotNull($limiter);
+
+        $limit = $limiter($request);
+        $this->assertInstanceOf(Limit::class, $limit);
+
+        return $limit;
     }
 
     /**

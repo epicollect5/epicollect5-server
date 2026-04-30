@@ -50,7 +50,7 @@ class ToEntryThumbS3Macro extends ServiceProvider
 
                     $cacheControl = request('v')
                         ? config('epicollect.media.cache_control.always')
-                        : config('epicollect.media.cache_control.never');
+                        : config('epicollect.media.cache_control.24h');
 
                     return response($thumbnailData, 200, [
                         'Content-Type' => config('epicollect.media.content_type.photo'),

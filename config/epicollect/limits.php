@@ -95,6 +95,7 @@ return [
         'media' => (int) env('API_RATE_LIMIT_MEDIA', 30),
     ],
     'api_external' => [
+        'global' => (int) env('API_EXTERNAL_RATE_LIMIT_GLOBAL', 600),
         'media' => (int) env('API_EXTERNAL_RATE_LIMIT_MEDIA', 5),
     ]
 ];

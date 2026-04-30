@@ -18,7 +18,7 @@
                 <tr>
                     <td class="text-center">
                         <img class="project-logo" width="32" height="32"
-                             src=" {{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_mobile_logo') }}"
+                             src=" {{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_mobile_logo&v=' . strtotime($project->structure_last_updated)) }}"
                              alt="logo"/>
                     </td>
                     <td>

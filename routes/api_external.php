@@ -27,7 +27,7 @@ Route::post('api/login/verify-apple', 'Api\Auth\AppleController@verifyUserEmail'
     ->name('verify-apple');
 
 
-Route::group(['middleware' => ['throttle:600,1']], function () {
+Route::group(['middleware' => ['throttle:api-external-global']], function () {
     // Authentication routes
     Route::get('api/login', 'Api\Auth\AuthController@getLogin');
     Route::post('api/login/local', 'Api\Auth\LocalController@authenticate');

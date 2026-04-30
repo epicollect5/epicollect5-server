@@ -38,6 +38,7 @@ class RateLimiterServiceProvider extends ServiceProvider
         $this->configureAccountDeletionLimiter();
         $this->configurePasswordlessLimiter();
         $this->configureApiExportLimiters();
+        $this->configureApiExternalGlobalLimiter();
         $this->configureApiMediaLimiter();
         $this->configureOauthTokenLimiter();
         $this->configureBulkUploadLimiter();
@@ -142,6 +143,18 @@ class RateLimiterServiceProvider extends ServiceProvider
             }
 
             return $limits;
+        });
+    }
+
+    /**
+     * Configure a global rate limiter for external API routes.
+     */
+    private function configureApiExternalGlobalLimiter(): void
+    {
+        RateLimiter::for('api-external-global', function (Request $request) {
+            return Limit::perMinute(
+                config('epicollect.limits.api_external.global')
+            )->by($request->ip());
         });
     }
 
