@@ -25,6 +25,18 @@ class RateLimiterServiceProviderTest extends TestCase
         $this->assertSame(1, $limits[0]->maxAttempts);
     }
 
+    public function test_public_media_requests_use_project_slug(): void
+    {
+        Config::set('epicollect.limits.api_external.media', 7);
+
+        $projectSlug = 'media-project-' . uniqid();
+        $limits = $this->resolvePublicMediaLimits($projectSlug, '10.10.10.10', 'curl/8.6.0');
+
+        $this->assertCount(1, $limits);
+        $this->assertSame($projectSlug, $limits[0]->key);
+        $this->assertSame(7, $limits[0]->maxAttempts);
+    }
+
     public function test_google_apps_script_requests_are_limited_by_shared_project_slug_key(): void
     {
         Config::set('epicollect.limits.api_export.entries', 100);
@@ -100,7 +112,40 @@ class RateLimiterServiceProviderTest extends TestCase
      */
     private function resolveEntriesExportLimits(string $projectSlug, string $ipAddress, string $userAgent): array
     {
-        $request = Request::create('/api/export/entries/' . $projectSlug, 'GET', [], [], [], [
+        return $this->resolveProjectScopedLimits(
+            'api-export-entries',
+            '/api/export/entries/' . $projectSlug,
+            $projectSlug,
+            $ipAddress,
+            $userAgent
+        );
+    }
+
+    /**
+     * @return array<int, Limit>
+     */
+    private function resolvePublicMediaLimits(string $projectSlug, string $ipAddress, string $userAgent): array
+    {
+        return $this->resolveProjectScopedLimits(
+            'api-media',
+            '/api/media/' . $projectSlug,
+            $projectSlug,
+            $ipAddress,
+            $userAgent
+        );
+    }
+
+    /**
+     * @return array<int, Limit>
+     */
+    private function resolveProjectScopedLimits(
+        string $limiterName,
+        string $uri,
+        string $projectSlug,
+        string $ipAddress,
+        string $userAgent
+    ): array {
+        $request = Request::create($uri, 'GET', [], [], [], [
             'REMOTE_ADDR' => $ipAddress,
             'HTTP_USER_AGENT' => $userAgent,
         ]);
@@ -121,7 +166,7 @@ class RateLimiterServiceProviderTest extends TestCase
             };
         });
 
-        $limiter = RateLimiter::limiter('api-export-entries');
+        $limiter = RateLimiter::limiter($limiterName);
         $this->assertNotNull($limiter);
 
         $limits = $limiter($request);

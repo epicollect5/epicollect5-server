@@ -61,7 +61,10 @@ Route::group(['middleware' => ['throttle:600,1']], function () {
         });
 
         //Media Controller for access to media files (even via the browser, this is why we are not using the internal endpoint)
-        Route::get('api/media/{project_slug}/', 'Api\Project\MediaController@getMedia');
+        Route::group(['middleware' => ['throttle:api-media']], function () {
+            Route::get('api/media/{project_slug}/', 'Api\Project\MediaController@getMedia');
+            Route::get('api/json/media/{project_slug}', 'Api\Project\MediaController@getMedia');
+        });
 
         // Temp Media (used by PWA debug to get a temp file)
         Route::get('api/temp-media/{project_slug}/', 'Api\Project\MediaController@getTempMedia');
@@ -76,8 +79,6 @@ Route::group(['middleware' => ['throttle:600,1']], function () {
             'Api\Entries\Upload\UploadAppController@postUpload'
         );
 
-        // Media
-        Route::get('api/json/media/{project_slug}', 'Api\Project\MediaController@getMedia');
         /* LEGACY END POINTS */
 
 

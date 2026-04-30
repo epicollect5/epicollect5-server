@@ -42,10 +42,10 @@ class ToProjectMobileLogoLocalMacro extends ServiceProvider
                     );
                     $thumbnailData = $thumbnail->toJpeg(70);
 
-                    // Logo: immutable when URL carries ?v= version token, hourly otherwise
+                    // Logo: immutable when URL carries ?v= version token, 24 hours otherwise
                     $cacheControl = request('v')
                         ? config('epicollect.media.cache_control.always')
-                        : config('epicollect.media.cache_control.never');
+                        : config('epicollect.media.cache_control.24h');
 
                     return response($thumbnailData, 200, [
                         'Content-Type' => config('epicollect.media.content_type.photo'),

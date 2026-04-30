@@ -44,7 +44,7 @@
     Header add Access-Control-Allow-Origin "*"
     Header add Access-Control-Allow-Methods: "GET,POST,OPTIONS"
     Header add Access-Control-Allow-Headers: "Content-Type, Authorization, X-XSRF-TOKEN"
-    Header add Access-Control-Expose-Headers: "Authorization"
+    Header add Access-Control-Expose-Headers: "Authorization, Retry-After, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset"
 
     # All requests to https (optional, comment/uncomment the below statements if no SSL is installed)
     # RewriteCond %{HTTPS} !=on

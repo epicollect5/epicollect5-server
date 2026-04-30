@@ -163,7 +163,13 @@ class Handler extends ExceptionHandler
                 Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             }
 
-            return $this->middlewareErrorResponse($request, 'rate-limiter', 'ec5_255', 429);
+            $response = $this->middlewareErrorResponse($request, 'rate-limiter', 'ec5_255', 429);
+
+            foreach ($e->getHeaders() as $name => $value) {
+                $response->headers->set($name, $value);
+            }
+
+            return $response;
         }
 
         return parent::render($request, $e);
