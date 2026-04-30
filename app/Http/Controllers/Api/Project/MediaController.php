@@ -64,7 +64,15 @@ class MediaController
             return Response::apiErrorCode(400, $this->ruleMedia->errors());
         }
 
-        return $this->mediaService->serve(request()->all(), $this->requestedProject());
+        // Export media can optionally offload large S3 files via a presigned redirect.
+        // Keep the route knowledge here and pass the intent down to the service explicitly.
+        $isExportMediaRequest = request()->is('api/export/media/*');
+
+        return $this->mediaService->serve(
+            request()->all(),
+            $this->requestedProject(),
+            $isExportMediaRequest
+        );
     }
 
     /**

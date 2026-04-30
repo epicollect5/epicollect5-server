@@ -4,6 +4,7 @@ namespace ec5\Services\Media;
 
 use ec5\DTO\ProjectDTO;
 use ec5\Libraries\Utilities\Common;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Storage;
@@ -14,13 +15,13 @@ class MediaService
     /**
      * Serve media based on driver (local or s3)
      */
-    public function serve(array $params, ProjectDTO $project)
+    public function serve(array $params, ProjectDTO $project, bool $isExportMediaRequest = false)
     {
         $driver = config('filesystems.default');
 
         return match ($driver) {
             'local' => $this->serveLocal($params, $project),
-            's3'    => $this->serveS3($params, $project),
+            's3'    => $this->serveS3($params, $project, $isExportMediaRequest),
             default => Response::apiErrorCode(400, ['media-service' => ['ec5_103']]),
         };
     }
@@ -82,7 +83,7 @@ class MediaService
     /**
      * Serve S3 media
      */
-    private function serveS3(array $params, object $project)
+    private function serveS3(array $params, object $project, bool $isExportMediaRequest)
     {
         $format = $params['format'];
         $type   = $params['type'];
@@ -92,7 +93,7 @@ class MediaService
             return match ($format) {
                 // real files
                 'entry_original', 'audio', 'video', 'project_thumb'
-                => $this->serveS3File($type, $format, $project->ref, $name),
+                => $this->serveS3File($type, $format, $project->ref, $name, $isExportMediaRequest),
 
                 // generated
                 'entry_thumb'
@@ -112,17 +113,29 @@ class MediaService
     /**
      * Serve a S3 real file
      */
-    private function serveS3File(string $type, string $format, string $projectRef, ?string $name)
-    {
+    private function serveS3File(
+        string $type,
+        string $format,
+        string $projectRef,
+        ?string $name,
+        bool $isExportMediaRequest
+    ) {
         if (!$name) {
             return $this->placeholderOrFallback($type);
         }
 
         $path = $projectRef . '/' . $name;
-        $disk = Storage::disk(Common::resolveDisk($format));
+        $diskName = Common::resolveDisk($format);
+        $disk = Storage::disk($diskName);
 
         if (!$disk->exists($path)) {
             return $this->placeholderOrFallback($type, $name);
+        }
+
+        // For export media on S3, large original/audio/video files can be offloaded
+        // to a short-lived presigned URL after all app-level checks have passed.
+        if ($this->shouldRedirectS3ExportMedia($format, $isExportMediaRequest)) {
+            return $this->redirectToTemporaryS3Url($diskName, $path, $format);
         }
 
         switch ($format) {
@@ -220,5 +233,46 @@ class MediaService
 
         // Non-photo formats (audio/video) just return API 404
         return Response::apiErrorCode(404, ['media-service' => ['ec5_69']]);
+    }
+
+    private function shouldRedirectS3ExportMedia(string $format, bool $isExportMediaRequest): bool
+    {
+        if (!$isExportMediaRequest || !config('epicollect.setup.api.export_media_s3_redirect_enabled')) {
+            return false;
+        }
+
+        // Keep generated assets and non-export routes on the existing application response path.
+        return in_array($format, [
+            config('epicollect.strings.media_formats.entry_original'),
+            config('epicollect.strings.inputs_type.audio'),
+            config('epicollect.strings.inputs_type.video'),
+        ], true);
+    }
+
+    private function redirectToTemporaryS3Url(string $diskName, string $path, string $format): RedirectResponse
+    {
+        // Do not cache the redirect itself: the presigned destination is short-lived and
+        // should be resolved fresh when a client asks for the export media endpoint.
+        $temporaryUrl = Storage::disk($diskName)->temporaryUrl(
+            $path,
+            now()->addMinutes($this->resolveRedirectTTLMinutes($format))
+        );
+
+        return redirect()->away($temporaryUrl, 302, [
+            'Cache-Control' => config('epicollect.media.cache_control.never'),
+        ]);
+    }
+
+    private function resolveRedirectTTLMinutes(string $format): int
+    {
+        return match ($format) {
+            config('epicollect.strings.media_formats.entry_original')
+            => config('epicollect.setup.api.export_media_s3_redirect_ttl_entry_original'),
+            config('epicollect.strings.inputs_type.audio')
+            => config('epicollect.setup.api.export_media_s3_redirect_ttl_audio'),
+            config('epicollect.strings.inputs_type.video')
+            => config('epicollect.setup.api.export_media_s3_redirect_ttl_video'),
+            default => 10,
+        };
     }
 }

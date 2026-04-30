@@ -46,6 +46,10 @@ return [
     'api' => [
         'responseContentTypeHeaderKey' => 'Content-Type',
         'responseContentTypeHeaderValue' => 'application/vnd.api+json; charset=utf-8',
+        'export_media_s3_redirect_enabled' => (bool) env('API_EXPORT_MEDIA_S3_REDIRECT_ENABLED', false),
+        'export_media_s3_redirect_ttl_entry_original' => (int) env('API_EXPORT_MEDIA_S3_REDIRECT_TTL_ENTRY_ORIGINAL', 10),
+        'export_media_s3_redirect_ttl_audio' => (int) env('API_EXPORT_MEDIA_S3_REDIRECT_TTL_AUDIO', 30),
+        'export_media_s3_redirect_ttl_video' => (int) env('API_EXPORT_MEDIA_S3_REDIRECT_TTL_VIDEO', 30),
         'rate_limit_per_minute' => [
             'media' => (int) env('API_RATE_LIMIT_MEDIA', 30),
             'entries' => (int) env('API_RATE_LIMIT_ENTRIES', 60),
