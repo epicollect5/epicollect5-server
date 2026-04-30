@@ -50,7 +50,8 @@ return [
             'media' => (int) env('API_RATE_LIMIT_MEDIA', 30),
             'entries' => (int) env('API_RATE_LIMIT_ENTRIES', 60),
             'project' => (int) env('API_RATE_LIMIT_PROJECT', 60),
-            'bulk_upload' => (int) env('API_RATE_LIMIT_BULK_UPLOAD', 60)
+            'bulk_upload' => (int) env('API_RATE_LIMIT_BULK_UPLOAD', 60),
+            'mobile_upload' => (int) env('API_RATE_LIMIT_MOBILE_UPLOAD', 300)
         ],
         'import_project' => [
             'validation_key' => env('API_IMPORT_PROJECT_VALIDATION_KEY', '')

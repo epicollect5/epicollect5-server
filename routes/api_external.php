@@ -49,12 +49,16 @@ Route::group(['middleware' => ['throttle:600,1']], function () {
         // Project (this is used by the mobile apps to download a project)
         Route::get('api/project/{project_slug}', 'Api\Project\ProjectController@show');
 
-        //Datasets (used by mobile app to download datasets zip archive)
-        //   Route::get('api/datasets/{project_slug}', 'Api\Project\DatasetController@download');
-
         // Entry uploads
-        Route::group(['middleware' => ['throttle:300,1']], function () {
+        Route::group(['middleware' => ['throttle:mobile-upload']], function () {
             Route::post('api/upload/{project_slug}', 'Api\Entries\Upload\UploadAppController@postUpload');
+
+            /* LEGACY END POINTS */
+            Route::post(
+                'api/json/upload/{project_slug}',
+                'Api\Entries\Upload\UploadAppController@postUpload'
+            );
+            /* LEGACY END POINTS */
         });
 
         //route for debugging, only available in non-production environments
@@ -71,12 +75,6 @@ Route::group(['middleware' => ['throttle:600,1']], function () {
         /* LEGACY END POINTS */
         // Project
         Route::get('api/json/project/{project_slug}', 'Api\Project\ProjectController@show');
-
-        // Entry uploads
-        Route::post(
-            'api/json/upload/{project_slug}',
-            'Api\Entries\Upload\UploadAppController@postUpload'
-        );
 
         // Media
         Route::get('api/json/media/{project_slug}', 'Api\Project\MediaController@getMedia');

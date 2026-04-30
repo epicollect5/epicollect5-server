@@ -40,6 +40,7 @@ class RateLimiterServiceProvider extends ServiceProvider
         $this->configureApiExportLimiters();
         $this->configureOauthTokenLimiter();
         $this->configureBulkUploadLimiter();
+        $this->configureMobileUploadLimiter();
     }
 
     /**
@@ -81,6 +82,18 @@ class RateLimiterServiceProvider extends ServiceProvider
                 Limit::perMinute($limit)->by('debug'),
                 Limit::perMinute(2 * $limit)->by($request->ip())
             ];
+        });
+    }
+
+    /**
+     * Configure rate limiter for mobile uploads
+     */
+    private function configureMobileUploadLimiter(): void
+    {
+        RateLimiter::for('mobile-upload', function (Request $request) {
+            return Limit::perMinute(
+                config('epicollect.setup.api.rate_limit_per_minute.mobile_upload')
+            )->by($request->ip());
         });
     }
 
