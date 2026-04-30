@@ -26,3 +26,4 @@ resources/assets/data-admin/node_modules/
 plan-*.md
 *.log
 .aiassistant
+docs/QA-*
