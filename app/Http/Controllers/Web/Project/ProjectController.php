@@ -79,13 +79,11 @@ class ProjectController
             return view('errors.gen_error')->withErrors(['errors' => ['ec5_91']]);
         }
 
-        //Refresh stats
+        //Refresh stats (DB + DTOs)
         $this->refreshProjectStats($this->requestedProject());
         // Get total entries
-        $projectStats = ProjectStats::where('project_id', $this->requestedProject()->getId())->first();
-        $totalEntries = $projectStats->total_entries ?? 0;
-        $projectDefinitionVersion = (string) strtotime($projectStats->updated_at);
-
+        $totalEntries = $this->requestedProject()->getProjectStats()->total_entries ?? 0;
+        $projectDefinitionVersion = (string) strtotime($this->requestedProject()->getProjectStats()->structure_last_updated);
 
         return view('project.formbuilder', [
             'totalEntries' => $totalEntries,

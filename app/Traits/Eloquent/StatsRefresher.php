@@ -18,7 +18,7 @@ trait StatsRefresher
         $projectStats->updateProjectStats($requestedProject->getId());
         $project = Project::findBySlug($requestedProject->slug);
         if ($project) {
-            // Refresh the main Project model
+            // Refresh all DTOs
             $requestedProject->initAllDTOs($project);
         }
     }
