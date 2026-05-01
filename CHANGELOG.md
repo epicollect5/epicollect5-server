@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 12.5.25
+
+- Formbuilder 0.0.9 exposes project definition version for client-side access.
+
 # 12.5.24
 
 - Added configurable static asset serving with support for local and CDN drivers via environment variables.
