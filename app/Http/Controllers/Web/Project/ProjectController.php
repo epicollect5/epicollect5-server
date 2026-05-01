@@ -82,13 +82,15 @@ class ProjectController
         //Refresh stats
         $this->refreshProjectStats($this->requestedProject());
         // Get total entries
-        $totalEntries = ProjectStats::where(
-            'project_id',
-            $this->requestedProject()->getId()
-        )->value('total_entries') ?? 0;
+        $projectStats = ProjectStats::where('project_id', $this->requestedProject()->getId())->first();
+        $totalEntries = $projectStats->total_entries ?? 0;
+        $projectDefinitionVersion = (string) strtotime($projectStats->updated_at);
 
 
-        return view('project.formbuilder', ['totalEntries' => $totalEntries]);
+        return view('project.formbuilder', [
+            'totalEntries' => $totalEntries,
+            'projectDefinitionVersion' => $projectDefinitionVersion
+        ]);
     }
 
     /*
