@@ -58,11 +58,15 @@ class ProjectStatsDTO
 
     public function getMostRecentEntryTimestamp(): string
     {
-        if (!is_array($this->form_counts) || empty($this->form_counts)) {
+        $formCounts = is_array($this->form_counts)
+            ? $this->form_counts
+            : json_decode($this->form_counts, true);
+
+        if (empty($formCounts)) {
             return '';
         }
 
-        $timestamps = collect($this->form_counts)
+        $timestamps = collect($formCounts)
             ->pluck('last_entry_created')
             ->reject(function ($entry) {
                 return empty($entry);
@@ -73,6 +77,15 @@ class ProjectStatsDTO
 
         $mostRecentTimestamp = $timestamps->max();
 
-        return $mostRecentTimestamp > 0 ? $mostRecentTimestamp : '';
+        return $mostRecentTimestamp > 0 ? (string) $mostRecentTimestamp : '';
+    }
+
+    public function getBranchCounts(): array
+    {
+        $branchCounts = is_array($this->branch_counts)
+            ? $this->branch_counts
+            : json_decode($this->branch_counts, true);
+
+        return is_array($branchCounts) ? $branchCounts : [];
     }
 }

@@ -173,7 +173,7 @@ class ProjectController
     {
         $projectStats = $this->requestedProject()->getProjectStats();
         $totalBranches = 0;
-        $branchCounts = $projectStats->branch_counts;
+        $branchCounts = $projectStats->getBranchCounts();
         foreach ($branchCounts as $branchCount) {
             $totalBranches += $branchCount['count'];
         }
