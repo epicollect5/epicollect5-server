@@ -29,18 +29,21 @@ class ProjectStatsDTOTest extends TestCase
 
     public function test_get_most_recent_entry_timestamp_from_json_form_counts(): void
     {
+        $formCounts = [
+            'form_1' => [
+                'last_entry_created' => '2026-05-01 10:00:00',
+            ],
+            'form_2' => [
+                'last_entry_created' => '2026-05-01 12:00:00',
+            ],
+        ];
+
         $projectStats = new ProjectStatsDTO();
         $projectStats->init([
-            'form_counts' => json_encode([
-                'form_1' => [
-                    'last_entry_created' => '2026-05-01 10:00:00',
-                ],
-                'form_2' => [
-                    'last_entry_created' => '2026-05-01 12:00:00',
-                ],
-            ]),
+            'form_counts' => json_encode($formCounts),
         ]);
 
+        $this->assertSame($formCounts, $projectStats->getFormCounts());
         $this->assertSame(
             (string) strtotime('2026-05-01 12:00:00'),
             $projectStats->getMostRecentEntryTimestamp()
@@ -85,6 +88,7 @@ class ProjectStatsDTOTest extends TestCase
             'form_counts' => 'not-json',
         ]);
 
+        $this->assertSame([], $projectStats->getFormCounts());
         $this->assertSame('', $projectStats->getMostRecentEntryTimestamp());
     }
 
@@ -117,6 +121,7 @@ class ProjectStatsDTOTest extends TestCase
             'branch_counts' => json_encode($branchCounts),
         ]);
 
+        $this->assertSame($branchCounts, $projectStats->branch_counts);
         $this->assertSame($branchCounts, $projectStats->getBranchCounts());
     }
 
@@ -127,6 +132,7 @@ class ProjectStatsDTOTest extends TestCase
             'branch_counts' => 'not-json',
         ]);
 
+        $this->assertSame([], $projectStats->branch_counts);
         $this->assertSame([], $projectStats->getBranchCounts());
     }
 }

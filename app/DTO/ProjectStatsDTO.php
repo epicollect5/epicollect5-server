@@ -10,8 +10,8 @@ class ProjectStatsDTO
     public int $total_entries = 0;
     public int $total_files = 0;
     public int $total_bytes = 0;
-    public array|string $form_counts = [];
-    public array|string $branch_counts = [];
+    public array $form_counts = [];
+    public array $branch_counts = [];
 
     /**
      * Behaves differently to other DTOs
@@ -23,8 +23,8 @@ class ProjectStatsDTO
         $this->total_entries = $params['total_entries'] ?? 0;
         $this->total_files = $params['total_files'] ?? 0;
         $this->total_bytes = $params['total_bytes'] ?? 0;
-        $this->form_counts = $params['form_counts'] ?? [];
-        $this->branch_counts = $params['branch_counts'] ?? [];
+        $this->form_counts = $this->decodeCounts($params['form_counts'] ?? []);
+        $this->branch_counts = $this->decodeCounts($params['branch_counts'] ?? []);
         $this->structure_last_updated = $params['structure_last_updated'] ?? '';
     }
 
@@ -51,16 +51,19 @@ class ProjectStatsDTO
             'total_entries' => $this->total_entries,
             'total_files' => $this->total_files,
             'total_bytes' => $this->total_bytes,
-            'form_counts' => is_array($this->form_counts) ? json_encode($this->form_counts) : $this->form_counts,
-            'branch_counts' => is_array($this->branch_counts) ? json_encode($this->branch_counts) : $this->branch_counts,
+            'form_counts' => json_encode($this->form_counts),
+            'branch_counts' => json_encode($this->branch_counts),
         ];
+    }
+
+    public function getFormCounts(): array
+    {
+        return $this->form_counts;
     }
 
     public function getMostRecentEntryTimestamp(): string
     {
-        $formCounts = is_array($this->form_counts)
-            ? $this->form_counts
-            : json_decode($this->form_counts, true);
+        $formCounts = $this->getFormCounts();
 
         if (empty($formCounts)) {
             return '';
@@ -82,10 +85,17 @@ class ProjectStatsDTO
 
     public function getBranchCounts(): array
     {
-        $branchCounts = is_array($this->branch_counts)
-            ? $this->branch_counts
-            : json_decode($this->branch_counts, true);
+        return $this->branch_counts;
+    }
 
-        return is_array($branchCounts) ? $branchCounts : [];
+    private function decodeCounts(array|string|null $counts): array
+    {
+        if (is_array($counts)) {
+            return $counts;
+        }
+
+        $decoded = json_decode($counts ?? '', true);
+
+        return is_array($decoded) ? $decoded : [];
     }
 }
