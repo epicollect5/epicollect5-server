@@ -69,7 +69,7 @@ class ProjectDeleteController
         }
 
         $projectStats = $this->requestedProject()->getProjectStats();
-        if ($projectStats->total_entries === 0) {
+        if ($projectStats->total_entries === 0 && !$this->hasStoredEntries($projectId)) {
             if ($this->hardDelete($projectId, $projectSlug)) {
                 return redirect('myprojects')->with('message', 'ec5_114');
             } else {
@@ -108,6 +108,20 @@ class ProjectDeleteController
     public function softDelete($projectId, $projectSlug)
     {
         return $this->archiveProject($projectId, $projectSlug);
+    }
+
+    //safety check before hard deletion
+    private function hasStoredEntries($projectId): bool
+    {
+        $hasHierarchyEntries = DB::table(config('epicollect.tables.entries'))
+            ->where('project_id', $projectId)
+            ->exists();
+
+        $hasBranchEntries = DB::table(config('epicollect.tables.branch_entries'))
+            ->where('project_id', $projectId)
+            ->exists();
+
+        return $hasHierarchyEntries || $hasBranchEntries;
     }
 
     /**
