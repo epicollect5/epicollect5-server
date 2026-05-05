@@ -4,6 +4,8 @@ namespace ec5\Http\Controllers\Web\Project;
 
 use Aws\S3\Exception\S3Exception;
 use ec5\Libraries\Utilities\Common;
+use ec5\Models\Entries\BranchEntry;
+use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectFeatured;
 use ec5\Traits\Eloquent\Archiver;
@@ -113,12 +115,10 @@ class ProjectDeleteController
     //safety check before hard deletion
     private function hasStoredEntries($projectId): bool
     {
-        $hasHierarchyEntries = DB::table(config('epicollect.tables.entries'))
-            ->where('project_id', $projectId)
+        $hasHierarchyEntries = Entry::where('project_id', $projectId)
             ->exists();
 
-        $hasBranchEntries = DB::table(config('epicollect.tables.branch_entries'))
-            ->where('project_id', $projectId)
+        $hasBranchEntries = BranchEntry::where('project_id', $projectId)
             ->exists();
 
         return $hasHierarchyEntries || $hasBranchEntries;
