@@ -6,7 +6,6 @@ use Aws\S3\Exception\S3Exception;
 use ec5\Libraries\Utilities\Common;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectFeatured;
-use ec5\Models\Project\ProjectStats;
 use ec5\Traits\Eloquent\Archiver;
 use ec5\Traits\Eloquent\StatsRefresher;
 use ec5\Traits\Requests\RequestAttributes;
@@ -54,7 +53,7 @@ class ProjectDeleteController
             return redirect('myprojects/' . $this->requestedProject()->slug . '/delete')->withErrors(['ec5_103']);
         }
         $projectId = $this->requestedProject()->getId();
-        $projectName = Project::where('id', $projectId)->first()->name;
+        $projectName = $this->requestedProject()->name;
 
         //if the project name does not match, bail out
         if ($projectName !== $payload['project-name']) {
@@ -69,8 +68,8 @@ class ProjectDeleteController
             return redirect('myprojects/' . $this->requestedProject()->slug . '/delete')->withErrors(['ec5_221']);
         }
 
-        $projectStat = ProjectStats::where('project_id', $projectId)->first();
-        if ($projectStat->total_entries === 0) {
+        $projectStats = $this->requestedProject()->getProjectStats();
+        if ($projectStats->total_entries === 0) {
             if ($this->hardDelete($projectId, $projectSlug)) {
                 return redirect('myprojects')->with('message', 'ec5_114');
             } else {

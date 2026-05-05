@@ -171,11 +171,9 @@ class ProjectController
 
     public function countersEntries($slug)
     {
-        $projectStats = ProjectStats::where('project_id', $this->requestedProject()->getId())
-            ->select('*') // Select all columns
-            ->first();
+        $projectStats = $this->requestedProject()->getProjectStats();
         $totalBranches = 0;
-        $branchCounts = json_decode($projectStats->branch_counts, true);
+        $branchCounts = $projectStats->branch_counts;
         foreach ($branchCounts as $branchCount) {
             $totalBranches += $branchCount['count'];
         }

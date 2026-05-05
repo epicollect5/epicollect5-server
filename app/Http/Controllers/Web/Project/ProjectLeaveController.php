@@ -2,7 +2,6 @@
 
 namespace ec5\Http\Controllers\Web\Project;
 
-use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectRole;
 use ec5\Traits\Requests\RequestAttributes;
 use Illuminate\Http\Request;
@@ -28,7 +27,7 @@ class ProjectLeaveController
             return redirect('myprojects/' . $this->requestedProject()->slug . '/leave')->withErrors(['ec5_103']);
         }
         $projectId = $this->requestedProject()->getId();
-        $projectName = Project::where('id', $projectId)->first()->name;
+        $projectName = $this->requestedProject()->name;
 
         //if the project name does not match, bail out
         if ($projectName !== $payload['project-name']) {
