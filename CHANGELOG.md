@@ -1,5 +1,10 @@
 ## Release Notes
 
+# 12.5.27
+
+- Added Forms and Branches count columns to the admin projects table, displaying the total number of forms and branches
+  for each project.
+
 # 12.5.26
 
 - Streamlined data access by retrieving project statistics, mappings, and definitions directly from the requestedProject
