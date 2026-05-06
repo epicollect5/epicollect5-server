@@ -31,6 +31,8 @@
 - **Error Handling**: Uses custom error codes defined in `config/epicollect/codes.php`.
 - **Front-end**: Public assets and views are in `public/` and `resources/views/`. Uses Gulp for asset management (
   `gulpfile.js`).
+- **Conventions**: Use `camelCase` for variable names, `snake_case` for configuration keys, JSON keys, database columns.
+- **Code Style**: Use PSR-12 (and Laravel Pint)
 
 ## Integration & Communication
 

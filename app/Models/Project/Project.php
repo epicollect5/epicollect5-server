@@ -49,7 +49,7 @@ class Project extends Model
     ];
 
     //used to init ProjectDTO, returns a bundle with data from multiple tables
-    public static function findBySlug($slug)
+    public static function findBySlug($slug): ?object
     {
         $query = DB::table(config('epicollect.tables.projects'));
         $query = $query->where('projects.slug', $slug);
@@ -251,7 +251,7 @@ class Project extends Model
      */
     public function getTotalFormsAttribute(): int
     {
-        return $this->_countRefs($this->form_counts ?? []);
+        return $this->countRefs($this->form_counts ?? []);
     }
 
     /**
@@ -261,7 +261,7 @@ class Project extends Model
      */
     public function getTotalBranchesAttribute(): int
     {
-        return $this->_countRefs($this->branch_counts ?? []);
+        return $this->countRefs($this->branch_counts ?? []);
     }
 
     /**
@@ -271,7 +271,7 @@ class Project extends Model
      *
      * @return int
      */
-    private function _countRefs(array|string|null $counts): int
+    private function countRefs(array|string|null $counts): int
     {
         if (is_string($counts)) {
             $counts = json_decode($counts, true);
