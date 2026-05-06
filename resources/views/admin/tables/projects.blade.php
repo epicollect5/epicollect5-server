@@ -12,6 +12,8 @@
                 <th class="text-center">{{ trans('site.visibility') }}</th>
                 <th class="text-center">{{ trans('site.access') }}</th>
                 <th class="text-center">{{ trans('site.entries') }}</th>
+                <th class="text-center">Forms</th>
+                <th class="text-center">Branches</th>
                 <th class="text-center">Storage</th>
             </tr>
             @foreach ($projects as $project)
@@ -45,6 +47,8 @@
                         {{ trans('site.' . $project->access) }}
                     </td>
                     <td class="text-center">{{ $project->total_entries }}</td>
+                    <td class="text-center">{{ $project->total_forms }}</td>
+                    <td class="text-center">{{ $project->total_branches }}</td>
                     <td class="text-center"
                     >
                         {{ Common::formatBytes($project->total_bytes) }}
