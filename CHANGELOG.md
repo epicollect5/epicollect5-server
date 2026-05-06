@@ -1,5 +1,10 @@
 ## Release Notes
 
+# 12.5.26
+
+- Streamlined data access by retrieving project statistics, mappings, and definitions directly from the requestedProject
+  object, eliminating redundant database queries and manual JSON decoding.
+
 # 12.5.25
 
 - Formbuilder 0.0.9 exposes project definition version for client-side access.
