@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 12.5.28
+
+- Added cache control headers for media files (api/media/{project_slug})
+
 # 12.5.27
 
 - Added Forms and Branches count columns to the admin projects table, displaying the total number of forms and branches
