@@ -2,6 +2,7 @@
 
 namespace ec5\Providers\Macros\Response;
 
+use ec5\Libraries\Utilities\Common;
 use File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
@@ -42,10 +43,10 @@ class ToProjectMobileLogoLocalMacro extends ServiceProvider
                     );
                     $thumbnailData = $thumbnail->toJpeg(70);
 
-                    // Logo: immutable when URL carries ?v= version token, 24 hours otherwise
+                    // Logo: immutable when URL carries ?v= version token, configured hourly cache otherwise
                     $cacheControl = request('v')
                         ? config('epicollect.media.cache_control.always')
-                        : config('epicollect.media.cache_control.24h');
+                        : Common::mediaHourlyCacheControl();
 
                     return response($thumbnailData, 200, [
                         'Content-Type' => config('epicollect.media.content_type.photo'),

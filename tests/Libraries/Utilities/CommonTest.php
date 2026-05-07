@@ -99,4 +99,39 @@ class CommonTest extends TestCase
         $this->assertStringNotContainsString($existingRef, json_encode($result));
         $this->assertStringContainsString($newRef, json_encode($result));
     }
+
+    public function test_media_hourly_cache_control_uses_configured_hours(): void
+    {
+        config()->set('epicollect.media.cache_control.hours', 2);
+
+        $this->assertSame('public, max-age=7200, immutable', Common::mediaHourlyCacheControl());
+    }
+
+    public function test_media_hourly_cache_control_accepts_one_hour(): void
+    {
+        config()->set('epicollect.media.cache_control.hours', 1);
+
+        $this->assertSame('public, max-age=3600, immutable', Common::mediaHourlyCacheControl());
+    }
+
+    public function test_media_hourly_cache_control_defaults_to_24_hours_when_missing(): void
+    {
+        config()->set('epicollect.media.cache_control.hours', null);
+
+        $this->assertSame('public, max-age=86400, immutable', Common::mediaHourlyCacheControl());
+    }
+
+    public function test_media_hourly_cache_control_defaults_to_24_hours_when_invalid(): void
+    {
+        config()->set('epicollect.media.cache_control.hours', 0);
+
+        $this->assertSame('public, max-age=86400, immutable', Common::mediaHourlyCacheControl());
+    }
+
+    public function test_media_hourly_cache_control_defaults_to_24_hours_when_not_numeric(): void
+    {
+        config()->set('epicollect.media.cache_control.hours', 'wrong');
+
+        $this->assertSame('public, max-age=86400, immutable', Common::mediaHourlyCacheControl());
+    }
 }

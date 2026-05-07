@@ -151,13 +151,12 @@ class MediaService
                 $imageContent = stream_get_contents($stream);
                 fclose($stream);
 
-                // immutable when URL carries ?v= version token, 24 hours otherwise:
+                // immutable when URL carries ?v= version token, configured hourly cache otherwise:
                 // we want to leverage browser caching when possible,
-                // but we also want to make sure that user-submitted content (entry photos)
-                // is not server stale for more than 24 hours
+                // but we also want to limit how long user-submitted content can be stale
                 $cacheControl = request('v')
                     ? config('epicollect.media.cache_control.always')
-                    : config('epicollect.media.cache_control.24h');
+                    : Common::mediaHourlyCacheControl();
 
                 return response($imageContent, 200, [
                     'Content-Type' => $this->resolveContentType($type),
@@ -181,7 +180,7 @@ class MediaService
         $fileContent = file_get_contents($realFilepath);
         $cacheControl = request('v')
             ? config('epicollect.media.cache_control.always')
-            : config('epicollect.media.cache_control.24h');
+            : Common::mediaHourlyCacheControl();
 
         return response($fileContent, 200, [
             'Content-Type' => $contentType,

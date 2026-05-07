@@ -77,9 +77,7 @@ return [
     ],
     'cache_control' => [
         'always' => 'public, max-age=31536000, immutable',
-        '24h' => 'public, max-age=86400, immutable',
-        '1h' => 'public, max-age=3600, immutable',
-        '48h' => 'public, max-age=172800, immutable',
+        'hours' => (int) env('MEDIA_CACHE_CONTROL_HOURS', 24),
         'never' => 'no-store'
     ]
 ];

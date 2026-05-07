@@ -440,4 +440,18 @@ class Common
 
         return $map[$format];
     }
+
+    /**
+     * Build the Cache-Control header for unversioned photo media URLs.
+     */
+    public static function mediaHourlyCacheControl(): string
+    {
+        $hours = config('epicollect.media.cache_control.hours', 24);
+
+        if (!is_numeric($hours) || (int) $hours < 1) {
+            $hours = 24;
+        }
+
+        return 'public, max-age=' . ((int) $hours * 3600) . ', immutable';
+    }
 }
