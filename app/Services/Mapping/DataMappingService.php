@@ -682,19 +682,22 @@ class DataMappingService
     }
 
     private function getMediaUrl(
-        $type,
-        $format,
-        $fileName,
+        string $type,
+        string $format,
+        string $fileName,
         string $version
     ): string
     {
         // Public - provide url
         if (!empty($fileName) && $this->project->isPublic()) {
-            return url('api/media') . '/' . $this->project->slug
-                . '?type=' . $type
-                . '&format=' . $format
-                . '&name=' . $fileName
-                . '&v=' . $version;
+            $query = http_build_query([
+                'type' => $type,
+                'format' => $format,
+                'name' => $fileName,
+                'v' => $version,
+            ]);
+
+            return url('api/media') . '/' . $this->project->slug . '?' . $query;
         }
 
         // Private - filename
