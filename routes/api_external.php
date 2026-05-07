@@ -61,7 +61,7 @@ Route::group(['middleware' => ['throttle:api-external-global']], function () {
         });
 
         //Media Controller for access to media files (even via the browser, this is why we are not using the internal endpoint)
-        Route::group(['middleware' => ['throttle:api-media']], function () {
+        Route::group(['middleware' => ['throttle:api-external-media']], function () {
             Route::get('api/media/{project_slug}/', 'Api\Project\MediaController@getMedia');
             Route::get('api/json/media/{project_slug}', 'Api\Project\MediaController@getMedia');
         });

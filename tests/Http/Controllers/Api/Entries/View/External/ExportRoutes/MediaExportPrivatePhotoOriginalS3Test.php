@@ -274,6 +274,20 @@ class MediaExportPrivatePhotoOriginalS3Test extends TestCase
                 $this->assertArrayHasKey('Location', $headers);
                 $this->assertArrayHasKey('Cache-Control', $headers);
                 $this->assertStringContainsString('no-store', $response->getHeaderLine('Cache-Control'));
+
+                $location = $response->getHeaderLine('Location');
+                $bucket = config('filesystems.disks.photo.bucket') ?? '';
+                $endpointHost = parse_url(config('filesystems.disks.photo.endpoint') ?? '', PHP_URL_HOST) ?: '';
+                $this->assertTrue(
+                    ($bucket !== '' && str_contains($location, $bucket))
+                    || ($endpointHost !== '' && str_contains($location, $endpointHost)),
+                    "Location [$location] does not contain the configured S3 bucket or endpoint host."
+                );
+                $this->assertMatchesRegularExpression(
+                    '/(?:X-Amz-Signature|Signature)=/',
+                    $location
+                );
+
                 return true;
             }
 

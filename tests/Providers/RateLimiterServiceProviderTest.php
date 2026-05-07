@@ -27,14 +27,17 @@ class RateLimiterServiceProviderTest extends TestCase
 
     public function test_public_media_requests_use_project_slug(): void
     {
-        Config::set('epicollect.limits.api_external.media', 7);
+        Config::set('epicollect.limits.api_external.media_seconds', 7);
+        Config::set('epicollect.limits.api_external.media_minutes', 300);
 
         $projectSlug = 'media-project-' . uniqid();
         $limits = $this->resolvePublicMediaLimits($projectSlug, '10.10.10.10', 'curl/8.6.0');
 
-        $this->assertCount(1, $limits);
-        $this->assertSame($projectSlug, $limits[0]->key);
+        $this->assertCount(2, $limits);
+        $this->assertSame('seconds|' . $projectSlug, $limits[0]->key);
         $this->assertSame(7, $limits[0]->maxAttempts);
+        $this->assertSame('minutes|' . $projectSlug, $limits[1]->key);
+        $this->assertSame(300, $limits[1]->maxAttempts);
     }
 
     public function test_api_external_global_requests_use_ip_address(): void
@@ -143,7 +146,7 @@ class RateLimiterServiceProviderTest extends TestCase
     private function resolvePublicMediaLimits(string $projectSlug, string $ipAddress, string $userAgent): array
     {
         return $this->resolveProjectScopedLimits(
-            'api-media',
+            'api-external-media',
             '/api/media/' . $projectSlug,
             $projectSlug,
             $ipAddress,

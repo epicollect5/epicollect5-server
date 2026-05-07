@@ -33,6 +33,7 @@
   `gulpfile.js`).
 - **Conventions**: Use `camelCase` for variable names, `snake_case` for configuration keys, JSON keys, database columns.
 - **Code Style**: Use PSR-12 (and Laravel Pint)
+- **Naming**: Do NOT prefix private/protected methods or properties with `_`
 
 ## Integration & Communication
 

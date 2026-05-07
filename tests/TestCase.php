@@ -121,8 +121,8 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
         $clientId = $params['client_id'] ?? null;
 
         try {
-            $testProjectIds = $this->_testProjectIdsForCleanup($project);
-            $testUserIds = $this->_testUserIdsForCleanup($user);
+            $testProjectIds = $this->testProjectIdsForCleanup($project);
+            $testUserIds = $this->testUserIdsForCleanup($user);
 
             if (!empty($testProjectIds)) {
                 $testProjectClientIds = OAuthClientProject::whereIn(
@@ -150,7 +150,7 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
                 }
             }
 
-            $this->_clearUsersByIds($testUserIds);
+            $this->clearUsersByIds($testUserIds);
 
             if ($clientId) {
                 OAuthAccessToken::where('client_id', $clientId)->delete();
@@ -167,7 +167,7 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
      *
      * @return array
      */
-    private function _testProjectIdsForCleanup(?Project $project): array
+    private function testProjectIdsForCleanup(?Project $project): array
     {
         $projectIds = [];
 
@@ -175,7 +175,7 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
             $projectIds[] = $project->id;
         }
 
-        $testProjectSlugs = $this->_testProjectSlugs();
+        $testProjectSlugs = $this->testProjectSlugs();
 
         if (!empty($testProjectSlugs)) {
             $projectIds = array_merge(
@@ -194,11 +194,12 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
      *
      * @return array
      */
-    private function _testUserIdsForCleanup(?User $user): array
+    private function testUserIdsForCleanup(?User $user): array
     {
-        $userIds = User::where('email', 'like', '%@example.%')
-            ->orWhere('email', 'like', '%random@unit.tests%')
-            ->orWhere('email', 'like', '%@example.org%')
+        $userIds = User::where('email', 'like', '%@example.com')
+            ->orWhere('email', 'like', '%@example.net')
+            ->orWhere('email', 'like', '%@example.org')
+            ->orWhere('email', 'random@unit.tests')
             ->pluck('id')
             ->all();
 
@@ -216,7 +217,7 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
      *
      * @return void
      */
-    private function _clearUsersByIds(array $userIds): void
+    private function clearUsersByIds(array $userIds): void
     {
         if (empty($userIds)) {
             return;
@@ -239,10 +240,23 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
      *
      * @return array
      */
-    private function _testProjectSlugs(): array
+    private function testProjectSlugs(): array
     {
+        $cleanupProjectSlugs = config('testing.cleanup_project_slugs');
+
+        if (is_array($cleanupProjectSlugs)) {
+            return array_values(array_unique(array_filter(
+                $cleanupProjectSlugs,
+                fn ($slug) => is_string($slug)
+            )));
+        }
+
         $slugs = [];
         $testingConfig = config('testing');
+
+        if (!is_array($testingConfig)) {
+            return [];
+        }
 
         array_walk_recursive(
             $testingConfig,

@@ -164,12 +164,18 @@ class RateLimiterServiceProvider extends ServiceProvider
     private function configureApiMediaLimiter(): void
     {
         // To avoid rotating IPs bypassing throttles, limit project-scoped media reads by project slug.
-        RateLimiter::for('api-media', function (Request $request) {
+        RateLimiter::for('api-external-media', function (Request $request) {
+            $projectSlug = $request->route('project_slug');
+
             return [
                 //per second to avoid bursts
                 Limit::perSecond(
-                    config('epicollect.limits.api_external.media')
-                )->by($request->route('project_slug'))
+                    config('epicollect.limits.api_external.media_seconds')
+                )->by('seconds|' . $projectSlug),
+                //per minute to cap sustained traffic
+                Limit::perMinute(
+                    config('epicollect.limits.api_external.media_minutes')
+                )->by('minutes|' . $projectSlug)
             ];
         });
     }

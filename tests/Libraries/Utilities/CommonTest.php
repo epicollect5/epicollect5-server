@@ -134,4 +134,11 @@ class CommonTest extends TestCase
 
         $this->assertSame('public, max-age=86400, immutable', Common::mediaHourlyCacheControl());
     }
+
+    public function test_media_hourly_cache_control_defaults_to_24_hours_when_float_string(): void
+    {
+        config()->set('epicollect.media.cache_control.hours', '1.9');
+
+        $this->assertSame('public, max-age=86400, immutable', Common::mediaHourlyCacheControl());
+    }
 }

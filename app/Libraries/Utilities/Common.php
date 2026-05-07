@@ -447,11 +447,12 @@ class Common
     public static function mediaHourlyCacheControl(): string
     {
         $hours = config('epicollect.media.cache_control.hours', 24);
+        $validatedHours = filter_var($hours, FILTER_VALIDATE_INT);
 
-        if (!is_numeric($hours) || (int) $hours < 1) {
-            $hours = 24;
+        if ($validatedHours === false || $validatedHours < 1) {
+            $validatedHours = 24;
         }
 
-        return 'public, max-age=' . ((int) $hours * 3600) . ', immutable';
+        return 'public, max-age=' . ($validatedHours * 3600);
     }
 }
