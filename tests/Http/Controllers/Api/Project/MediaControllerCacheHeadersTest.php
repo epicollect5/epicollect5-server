@@ -147,6 +147,62 @@ class MediaControllerCacheHeadersTest extends TestCase
     }
 
     #[DataProvider('multipleRunProvider')]
+    public function test_public_entry_original_without_v_param_has_no_store_directive()
+    {
+        $entry = factory(Entry::class)->create([
+            'project_id' => $this->project->id,
+            'form_ref' => $this->project->ref . '_' . uniqid()
+        ]);
+
+        $filename = $entry->uuid . '_' . time() . '.jpg';
+        $image = Image::create(
+            config('epicollect.media.entry_original_landscape')[0],
+            config('epicollect.media.entry_original_landscape')[1]
+        );
+        $imageData = (string)$image->encode(new JpegEncoder(50));
+        Storage::disk('photo')->put($this->project->ref . '/' . $filename, $imageData);
+
+        $queryString = '?type=photo&name=' . $filename . '&format=entry_original';
+        $response = $this->get('api/media/' . $this->project->slug . $queryString);
+
+        $response->assertStatus(200);
+        $response->assertHeader('Content-Type', config('epicollect.media.content_type.photo'));
+        $cacheControl = $response->headers->get('Cache-Control');
+        $this->assertStringContainsString('no-store', $cacheControl);
+
+        Storage::disk('photo')->deleteDirectory($this->project->ref);
+    }
+
+    #[DataProvider('multipleRunProvider')]
+    public function test_public_entry_original_with_v_param_has_immutable_directive()
+    {
+        $entry = factory(Entry::class)->create([
+            'project_id' => $this->project->id,
+            'form_ref' => $this->project->ref . '_' . uniqid()
+        ]);
+
+        $filename = $entry->uuid . '_' . time() . '.jpg';
+        $image = Image::create(
+            config('epicollect.media.entry_original_landscape')[0],
+            config('epicollect.media.entry_original_landscape')[1]
+        );
+        $imageData = (string)$image->encode(new JpegEncoder(50));
+        Storage::disk('photo')->put($this->project->ref . '/' . $filename, $imageData);
+
+        $queryString = '?type=photo&name=' . $filename
+            . '&format=entry_original&v=1234567890';
+        $response = $this->get('api/media/' . $this->project->slug . $queryString);
+
+        $response->assertStatus(200);
+        $response->assertHeader('Content-Type', config('epicollect.media.content_type.photo'));
+        $cacheControl = $response->headers->get('Cache-Control');
+        $this->assertStringContainsString('immutable', $cacheControl);
+        $this->assertStringContainsString('max-age=31536000', $cacheControl);
+
+        Storage::disk('photo')->deleteDirectory($this->project->ref);
+    }
+
+    #[DataProvider('multipleRunProvider')]
     public function test_entry_thumb_without_v_param_has_no_store_directive()
     {
         $entry = factory(Entry::class)->create([
@@ -255,4 +311,3 @@ class MediaControllerCacheHeadersTest extends TestCase
         $this->assertStringContainsString('max-age=31536000', $cacheControl);
     }
 }
-

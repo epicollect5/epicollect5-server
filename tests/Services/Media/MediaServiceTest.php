@@ -10,6 +10,7 @@ use ec5\Libraries\Utilities\Generators;
 use ec5\Services\Mapping\ProjectMappingService;
 use ec5\Services\Media\MediaService;
 use ec5\DTO\ProjectDTO;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
 use Tests\TestCase;
@@ -61,5 +62,53 @@ class MediaServiceTest extends TestCase
             $this->project->ref,
             'file.jpg'
         );
+    }
+
+    public function test_it_serves_local_photo_with_no_store_cache_when_version_is_missing()
+    {
+        $this->app->instance('request', Request::create('/'));
+
+        $filename = 'test-photo.jpg';
+        Storage::disk('photo')->put(
+            $this->project->ref . '/' . $filename,
+            'image-bytes'
+        );
+
+        $response = $this->mediaService->serveLocalFile(
+            config('epicollect.strings.inputs_type.photo'),
+            'entry_original',
+            $this->project->ref,
+            $filename
+        );
+
+        $this->assertEquals(200, $response->status());
+        $cacheControl = $response->headers->get('Cache-Control');
+        $this->assertStringContainsString('no-store', $cacheControl);
+    }
+
+    public function test_it_serves_local_photo_with_immutable_cache_when_version_is_present()
+    {
+        $request = Request::create('/', 'GET', [
+            'v' => '1234567890',
+        ]);
+        $this->app->instance('request', $request);
+
+        $filename = 'test-photo.jpg';
+        Storage::disk('photo')->put(
+            $this->project->ref . '/' . $filename,
+            'image-bytes'
+        );
+
+        $response = $this->mediaService->serveLocalFile(
+            config('epicollect.strings.inputs_type.photo'),
+            'entry_original',
+            $this->project->ref,
+            $filename
+        );
+
+        $this->assertEquals(200, $response->status());
+        $cacheControl = $response->headers->get('Cache-Control');
+        $this->assertStringContainsString('immutable', $cacheControl);
+        $this->assertStringContainsString('max-age=31536000', $cacheControl);
     }
 }
