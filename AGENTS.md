@@ -69,6 +69,11 @@ When writing PHP strings:
 - If the string contains mixed dynamic parts and reads better, prefer **explicit concatenation**:
     - `"Expected an index on " . $entriesTable . " covering ... Available indexes: " . json_encode($indexes)`
 - Formatting using Laravel Pint - psr12
+- Do NOT prefix private/protected methods with `_`
+
+## Release candidate reviews
+
+- Follow docs/release-review.md
 
 ## Restrictions
 
