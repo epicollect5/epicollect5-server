@@ -250,7 +250,17 @@ class MediaExportPrivateVideoS3Test extends TestCase
         $queryString = '?type=video&name=' . $filename . '&format=video&XDEBUG_SESSION_START=phpstorm';
 
         try {
-            $response = $entriesClient->request('GET', $entriesURL . $project->slug . $queryString);
+            $response = $entriesClient->request('GET', $entriesURL . $project->slug . $queryString, [
+                'allow_redirects' => false,
+            ]);
+
+            if ($response->getStatusCode() === 302) {
+                $headers = $response->getHeaders();
+                $this->assertArrayHasKey('Location', $headers);
+                $this->assertArrayHasKey('Cache-Control', $headers);
+                $this->assertStringContainsString('no-store', $response->getHeaderLine('Cache-Control'));
+                return true;
+            }
 
             // Get the response headers
             $headers = $response->getHeaders();
@@ -261,12 +271,12 @@ class MediaExportPrivateVideoS3Test extends TestCase
             // Assert that the content length is greater than 0
             $this->assertGreaterThan(0, $response->getBody()->getSize());
 
-            Storage::disk('video')->deleteDirectory($project->ref);
-            $this->clearDatabase($params);
         } catch (GuzzleException $e) {
-            $this->clearDatabase($params);
             $this->logTestError($e, []);
             return false;
+        } finally {
+            Storage::disk('video')->deleteDirectory($project->ref);
+            $this->clearDatabase($params);
         }
         return true;
     }

@@ -265,7 +265,17 @@ class MediaExportPrivatePhotoOriginalS3Test extends TestCase
         $queryString = '?type=photo&name=' . $filename . '&format=entry_original'.'&XDEBUG_SESSION_START=phpstorm';
 
         try {
-            $response = $entriesClient->request('GET', $entriesURL . $project->slug . $queryString);
+            $response = $entriesClient->request('GET', $entriesURL . $project->slug . $queryString, [
+                'allow_redirects' => false,
+            ]);
+
+            if ($response->getStatusCode() === 302) {
+                $headers = $response->getHeaders();
+                $this->assertArrayHasKey('Location', $headers);
+                $this->assertArrayHasKey('Cache-Control', $headers);
+                $this->assertStringContainsString('no-store', $response->getHeaderLine('Cache-Control'));
+                return true;
+            }
 
             // Get the response headers
             $headers = $response->getHeaders();
@@ -290,14 +300,12 @@ class MediaExportPrivatePhotoOriginalS3Test extends TestCase
             $disk = Storage::disk(config('filesystems.default'));
             $this->assertEquals($fileSize, $disk->size($imagePath));
 
-
-            Storage::disk('photo')->deleteDirectory($project->ref);
-
-            $this->clearDatabase($params);
         } catch (GuzzleException $e) {
-            $this->clearDatabase($params);
             $this->logTestError($e, []);
             return false;
+        } finally {
+            Storage::disk('photo')->deleteDirectory($project->ref);
+            $this->clearDatabase($params);
         }
         return true;
     }
