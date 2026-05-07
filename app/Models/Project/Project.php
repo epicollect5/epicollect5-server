@@ -49,7 +49,7 @@ class Project extends Model
     ];
 
     //used to init ProjectDTO, returns a bundle with data from multiple tables
-    public static function findBySlug($slug)
+    public static function findBySlug($slug): ?object
     {
         $query = DB::table(config('epicollect.tables.projects'));
         $query = $query->where('projects.slug', $slug);
@@ -238,8 +238,50 @@ class Project extends Model
                 'users.last_name as user_last_name',
                 $this->projectStatsTable . '.total_entries', // Explicitly select total_entries
                 $this->projectStatsTable . '.total_bytes', // Explicitly select total_bytes
+                $this->projectStatsTable . '.form_counts',
+                $this->projectStatsTable . '.branch_counts',
             )
             ->simplePaginate($perPage);
+    }
+
+    /**
+     * Get the number of form refs recorded in project stats.
+     *
+     * @return int
+     */
+    public function getTotalFormsAttribute(): int
+    {
+        return $this->countRefs($this->form_counts ?? []);
+    }
+
+    /**
+     * Get the number of branch refs recorded in project stats.
+     *
+     * @return int
+     */
+    public function getTotalBranchesAttribute(): int
+    {
+        return $this->countRefs($this->branch_counts ?? []);
+    }
+
+    /**
+     * Count refs from a project stats JSON field.
+     *
+     * @param array|string|null $counts Stats counts from project_stats.
+     *
+     * @return int
+     */
+    private function countRefs(array|string|null $counts): int
+    {
+        if (is_string($counts)) {
+            $counts = json_decode($counts, true);
+        }
+
+        if (!is_array($counts)) {
+            return 0;
+        }
+
+        return count($counts);
     }
 
 

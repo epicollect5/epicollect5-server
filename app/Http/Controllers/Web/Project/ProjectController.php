@@ -3,7 +3,6 @@
 namespace ec5\Http\Controllers\Web\Project;
 
 use ec5\Models\Project\Project;
-use ec5\Models\Project\ProjectStats;
 use ec5\Traits\Eloquent\StatsRefresher;
 use ec5\Traits\Requests\RequestAttributes;
 use Response;
@@ -27,12 +26,9 @@ class ProjectController
             return view('errors.gen_error')->withErrors(['view' => 'ec5_11']);
         }
 
-        /**
-         * @var $projectStats ProjectStats
-         */
-        //get latest entry timestamp
-        $projectStats = ProjectStats::where('project_id', $this->requestedProject()->getId())->first();
-        $vars['mostRecentEntryTimestamp'] = $projectStats->getMostRecentEntryTimestamp();
+        $vars['mostRecentEntryTimestamp'] = $this->requestedProject()
+            ->getProjectStats()
+            ->getMostRecentEntryTimestamp();
 
         return view('project.project_home', $vars);
     }
@@ -79,16 +75,16 @@ class ProjectController
             return view('errors.gen_error')->withErrors(['errors' => ['ec5_91']]);
         }
 
-        //Refresh stats
+        //Refresh stats (DB + DTOs)
         $this->refreshProjectStats($this->requestedProject());
         // Get total entries
-        $totalEntries = ProjectStats::where(
-            'project_id',
-            $this->requestedProject()->getId()
-        )->value('total_entries') ?? 0;
+        $totalEntries = $this->requestedProject()->getProjectStats()->total_entries ?? 0;
+        $projectDefinitionVersion = (string) strtotime($this->requestedProject()->getProjectStats()->structure_last_updated);
 
-
-        return view('project.formbuilder', ['totalEntries' => $totalEntries]);
+        return view('project.formbuilder', [
+            'totalEntries' => $totalEntries,
+            'projectDefinitionVersion' => $projectDefinitionVersion
+        ]);
     }
 
     /*

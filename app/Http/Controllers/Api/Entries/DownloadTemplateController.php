@@ -6,7 +6,6 @@ use Cookie;
 use ec5\Http\Validation\Entries\Upload\RuleDownloadTemplate;
 use ec5\Http\Validation\Entries\Upload\RuleUploadHeaders;
 use ec5\Libraries\Utilities\Common;
-use ec5\Models\Project\ProjectStructure;
 use ec5\Traits\Requests\RequestAttributes;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Http\Request;
@@ -38,11 +37,9 @@ class DownloadTemplateController
      */
     public function sendTemplateFileCSV(Request $request, RuleDownloadTemplate $ruleUploadTemplate)
     {
-        $projectId = $this->requestedProject()->getId();
         $projectSlug = $this->requestedProject()->slug;
-        $projectStructure = ProjectStructure::where('project_id', $projectId)->first();
-        $projectMappings = json_decode($projectStructure->project_mapping, true);
-        $projectDefinition = json_decode($projectStructure->project_definition, true);
+        $projectMappings = $this->requestedProject()->getProjectMapping()->getData();
+        $projectDefinition = $this->requestedProject()->getProjectDefinition()->getData();
         $params = $request->all();
         $cookieName = config('epicollect.setup.cookies.download_entries');
 
@@ -129,10 +126,8 @@ class DownloadTemplateController
 
     public function sendTemplateResponseJSON(Request $request, RuleUploadHeaders $ruleUploadHeaders)
     {
-        $projectId = $this->requestedProject()->getId();
-        $projectStructure = ProjectStructure::where('project_id', $projectId)->first();
-        $projectMappings = json_decode($projectStructure->project_mapping, true);
-        $projectDefinition = json_decode($projectStructure->project_definition, true);
+        $projectMappings = $this->requestedProject()->getProjectMapping()->getData();
+        $projectDefinition = $this->requestedProject()->getProjectDefinition()->getData();
         $params = $request->all();
 
         //validate request

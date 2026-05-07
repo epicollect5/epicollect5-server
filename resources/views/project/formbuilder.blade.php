@@ -62,6 +62,8 @@
 </div>
 
 <div class="total-entries hidden" data-total-entries="{{ $totalEntries }}"></div>
+<div class="project-definition-version hidden" data-project-definition-version="{{ $projectDefinitionVersion }}"></div>
+
 
 <div class="container-fluid page-formbuilder hidden">
     <div class="row">
