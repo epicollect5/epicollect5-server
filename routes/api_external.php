@@ -53,7 +53,10 @@ Route::group(['middleware' => ['throttle:api-external-global']], function () {
         //   Route::get('api/datasets/{project_slug}', 'Api\Project\DatasetController@download');
 
         // Entry uploads
-        Route::post('api/upload/{project_slug}', 'Api\Entries\Upload\UploadAppController@postUpload');
+        Route::group(['middleware' => ['throttle:api-external-upload']], function () {
+            Route::post('api/upload/{project_slug}', 'Api\Entries\Upload\UploadAppController@postUpload');
+            Route::post('api/json/upload/{project_slug}', 'Api\Entries\Upload\UploadAppController@postUpload');
+        });
 
         //route for debugging, only available in non-production environments
         Route::group(['middleware' => ['throttle:bulk-upload']], function () {
@@ -72,15 +75,6 @@ Route::group(['middleware' => ['throttle:api-external-global']], function () {
         /* LEGACY END POINTS */
         // Project
         Route::get('api/json/project/{project_slug}', 'Api\Project\ProjectController@show');
-
-        // Entry uploads
-        Route::post(
-            'api/json/upload/{project_slug}',
-            'Api\Entries\Upload\UploadAppController@postUpload'
-        );
-
-        /* LEGACY END POINTS */
-
 
         // Entries for mobile app download
         Route::get('api/entries/{project_slug}', 'Api\Entries\View\ViewEntriesDataController@show');

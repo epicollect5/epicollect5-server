@@ -12,6 +12,8 @@
   services (e.g., `CreateEntryService`, `ProjectExtraService`).
 - **Data Transfer Objects (DTOs)**: Used extensively in `app/DTO/` to pass structured project and entry data between
   layers.
+- Use docs/architecture.md as the source of truth for server architecture
+- Use docs/database-schema.md as the source of truth for database structure
 
 ## Critical Developer Workflows
 

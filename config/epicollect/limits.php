@@ -98,5 +98,7 @@ return [
         'global' => (int) env('API_EXTERNAL_RATE_LIMIT_GLOBAL', 600),
         'media_seconds' => (int) env('API_EXTERNAL_RATE_LIMIT_MEDIA_SECONDS', 5),
         'media_minutes' => (int) env('API_EXTERNAL_RATE_LIMIT_MEDIA_MINUTES', 300),
+        'upload_seconds' => (int) env('API_EXTERNAL_RATE_LIMIT_UPLOAD_SECONDS', 10),
+        'upload_minutes' => (int) env('API_EXTERNAL_RATE_LIMIT_UPLOAD_MINUTES', 300),
     ]
 ];

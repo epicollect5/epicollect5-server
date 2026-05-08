@@ -8,6 +8,7 @@ use ec5\Http\Validation\Project\RuleName;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectStats;
 use ec5\Services\Media\MediaCounterService;
+use ec5\Traits\Eloquent\StatsRefresher;
 use ec5\Traits\Requests\RequestAttributes;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
@@ -16,15 +17,18 @@ use Throwable;
 
 class ProjectController
 {
+    use StatsRefresher;
     use RequestAttributes;
 
     /**
-     * @param ProjectStats $projectStats
      * @return JsonResponse
      * @throws Throwable
      */
-    public function show(ProjectStats $projectStats)
+    public function show()
     {
+        // Project metadata responses include project_stats, so refresh and reload the DTO first.
+        $this->refreshProjectStats($this->requestedProject());
+
         $data = $this->requestedProject()->getProjectDefinition()->getData();
 
         //HACK:, we needed to expose the creation date of a project at a later stage, and this was the laziest way ;)
@@ -37,11 +41,7 @@ class ProjectController
         $homepage = config('app.url') . '/project/' . $this->requestedProject()->slug;
         $data['project']['homepage'] = $homepage;
 
-
         $projectExtra = $this->requestedProject()->getProjectExtra()->getData();
-
-        // Update the project stats counts
-        $projectStats->updateProjectStats($this->requestedProject()->getId());
 
         try {
             $userName = Auth::user()->name;
@@ -74,12 +74,14 @@ class ProjectController
     }
 
     /**
-     * @param ProjectStats $projectStats
      * @return JsonResponse
      * @throws Throwable
      */
-    public function export(ProjectStats $projectStats)
+    public function export()
     {
+        // Project export is not paginated and includes project_stats metadata.
+        $this->refreshProjectStats($this->requestedProject());
+
         $data = $this->requestedProject()->getProjectDefinition()->getData();
         //todo HACK!!!, we needed to expose the creation date of a project at a later stage and this was the laziest way ;)
         $data['project']['created_at'] = $this->requestedProject()->getCreatedAt();
@@ -87,10 +89,6 @@ class ProjectController
         //todo HACK!!!, we needed to expose the project homepage property of a project at a later stage and this was the laziest way ;)
         $homepage = config('app.url') . '/project/' . $this->requestedProject()->slug;
         $data['project']['homepage'] = $homepage;
-
-        //todo: update project stats (a try catch need in case it does not work?)
-        // Update the project stats counts
-        $projectStats->updateProjectStats($this->requestedProject()->getId());
 
         $meta = [
             'project_mapping' => $this->requestedProject()->getProjectMapping()->getData(),
@@ -169,8 +167,15 @@ class ProjectController
         return Response::apiData($data);
     }
 
+    /**
+     * @throws Throwable
+     */
     public function countersEntries($slug)
     {
+        // Entry totals are cached in project_stats and are not updated on each upload.
+        // Refresh here because this endpoint explicitly returns those totals.
+        $this->refreshProjectStats($this->requestedProject());
+
         $projectStats = $this->requestedProject()->getProjectStats();
         $totalBranches = 0;
         $branchCounts = $projectStats->getBranchCounts();

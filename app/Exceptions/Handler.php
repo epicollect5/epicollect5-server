@@ -158,9 +158,9 @@ class Handler extends ExceptionHandler
                     //redirect users to login page with error notification
                     return redirect()->route('login')->withErrors(['ec5_255']);
                 }
-            } catch (Throwable $e) {
+            } catch (Throwable $routeException) {
                 //if route is not found, ignore and just log
-                Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
+                Log::error(__METHOD__ . ' failed.', ['exception' => $routeException->getMessage()]);
             }
 
             $response = $this->middlewareErrorResponse($request, 'rate-limiter', 'ec5_255', 429);

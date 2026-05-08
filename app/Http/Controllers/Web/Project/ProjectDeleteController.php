@@ -4,11 +4,10 @@ namespace ec5\Http\Controllers\Web\Project;
 
 use Aws\S3\Exception\S3Exception;
 use ec5\Libraries\Utilities\Common;
-use ec5\Models\Entries\BranchEntry;
-use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectFeatured;
 use ec5\Traits\Eloquent\Archiver;
+use ec5\Traits\Eloquent\Entries;
 use ec5\Traits\Eloquent\StatsRefresher;
 use ec5\Traits\Requests\RequestAttributes;
 use Exception;
@@ -22,6 +21,7 @@ class ProjectDeleteController
 {
     use RequestAttributes;
     use Archiver;
+    use Entries;
     use StatsRefresher;
 
     /**
@@ -110,18 +110,6 @@ class ProjectDeleteController
     public function softDelete($projectId, $projectSlug)
     {
         return $this->archiveProject($projectId, $projectSlug);
-    }
-
-    //safety check before hard deletion
-    private function hasStoredEntries($projectId): bool
-    {
-        $hasHierarchyEntries = Entry::where('project_id', $projectId)
-            ->exists();
-
-        $hasBranchEntries = BranchEntry::where('project_id', $projectId)
-            ->exists();
-
-        return $hasHierarchyEntries || $hasBranchEntries;
     }
 
     /**

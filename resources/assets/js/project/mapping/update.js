@@ -30,6 +30,12 @@ window.EC5.mapping = window.EC5.mapping || {};
         mapping[mapIndex].forms = {};
         mapping[mapIndex].map_index = mapIndex;
 
+        //check if this is the default mapping, only needed for server side validation
+        //but updating a mapping never changes the default mapping
+        mapping[mapIndex].is_default = !$('.map-data__tabs li[data-map-index="' + mapIndex + '"]')
+            .find('.map-data__default-pin')
+            .hasClass('invisible');
+
         tables.each(function (index, table) {
 
             var currentMapping = mapping[mapIndex];
@@ -360,7 +366,9 @@ window.EC5.mapping = window.EC5.mapping || {};
             } else {
                 window.EC5.toast.showError(mapName + ' has got invalid identifier(s)');
             }
-            window.EC5.overlay.fadeOut();
+            window.setTimeout(function () {
+                window.EC5.overlay.fadeOut();
+            }, 1000)
         }
     };
 

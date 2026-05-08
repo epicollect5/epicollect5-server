@@ -2,12 +2,12 @@
 
 namespace ec5\Http\Validation;
 
+use Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Log;
 use Throwable;
 use Validator;
-use Auth;
-use Log;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\DB;
 
 abstract class ValidationBase
 {
@@ -213,16 +213,16 @@ abstract class ValidationBase
             return preg_match('/^-?[0-9]+$/', $value);
         });
 
-        //check slug is unique in projects table but skipping archived projects
-        //todo: actually there is a constraint in the db! unique(slug)!!!
+        //check slug is unique in projects table
+        // but skipping archived projects (not crucial since archived project slugs are overriden anyway)
         Validator::extend('unique_except_archived', function ($attribute, $value, $parameters) {
             $table = $parameters[0];
             $column = $attribute;
 
-            return DB::table($table)
-                    ->where($column, $value)
-                    ->where('status', '<>', 'archived')
-                    ->count() === 0;
+            return !DB::table($table)
+                ->where($column, $value)
+                ->where('status', '<>', config('epicollect.strings.project_status.archived'))
+                ->exists();
         });
     }
 }

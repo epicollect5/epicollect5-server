@@ -3,6 +3,7 @@
 namespace Tests\Services\Media;
 
 use DateTimeInterface;
+use Illuminate\Support\Carbon;
 use ec5\DTO\ProjectDefinitionDTO;
 use ec5\DTO\ProjectDTO;
 use ec5\DTO\ProjectExtraDTO;
@@ -82,7 +83,10 @@ class MediaServiceTest extends TestCase
             ->once()
             ->withArgs(function ($path, $expiresAt) {
                 return $path === $this->project->ref . '/file.jpg'
-                    && $expiresAt instanceof DateTimeInterface;
+                    && $expiresAt instanceof DateTimeInterface
+                    && abs(
+                        $expiresAt->getTimestamp() - Carbon::now()->addMinutes(10)->getTimestamp()
+                    ) <= 5;
             })
             ->andReturn('https://example.com/signed-url');
 

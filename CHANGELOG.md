@@ -1,5 +1,19 @@
 ## Release Notes
 
+# 12.5.29
+
+- Added optional S3 presigned redirects for export media downloads.
+- Added configurable TTLs for S3 export media redirect URLs.
+- Added named external API rate limiters, including project-scoped throttling for public media endpoints.
+- Rate limit error responses now preserve `Retry-After` and `X-RateLimit-*` headers.
+- Public media URLs generated in entry exports (CSV, JSON) now include a version query parameter to improve cache
+  correctness.
+- Added a safety check to avoid hard-deleting projects when cached stats report zero entries but stored entries still
+  exist.
+- Added deployment/config documentation for static assets, external API rate limits, media cache duration, and S3 export
+  media redirects.
+- Added and updated architecture, database schema, and release-review documentation.
+
 # 12.5.28
 
 - Added cache control headers for media files (api/media/{project_slug})

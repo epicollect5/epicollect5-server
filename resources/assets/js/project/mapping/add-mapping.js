@@ -34,7 +34,7 @@ window.EC5.mapping = window.EC5.mapping || {};
                 var html = '<li role="presentation" data-map-index="' + newMapIndex + '" data-map-name="' + name + '">';
                 html += ' <a href="#map-data-tabcontent-' + newMapIndex + '" role="tab" data-toggle="tab">';
                 html += '<span class="map-data__map-name">' + name + '&nbsp;</span>';
-                html += '<i class="fa fa-thumb-tack invisible" aria-hidden="true"></i>';
+                html += '<i class="fa fa-thumb-tack map-data__default-pin invisible" aria-hidden="true"></i>';
                 html += '</a>';
                 html += '</li>';
 

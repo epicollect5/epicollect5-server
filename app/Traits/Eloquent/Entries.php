@@ -5,12 +5,29 @@ namespace ec5\Traits\Eloquent;
 use Carbon\Carbon;
 use DB;
 use ec5\DTO\EntryStructureDTO;
+use ec5\Models\Entries\BranchEntry;
+use ec5\Models\Entries\Entry;
 use Illuminate\Database\Query\Builder;
 use Log;
 use Throwable;
 
 trait Entries
 {
+    /**
+     * Check whether the project has any hierarchy or branch entries stored.
+     *
+     * @param int $projectId
+     * @return bool
+     */
+    protected function hasStoredEntries(int $projectId): bool
+    {
+        if (Entry::where('project_id', $projectId)->exists()) {
+            return true;
+        }
+
+        return BranchEntry::where('project_id', $projectId)->exists();
+    }
+
     /**
      * Retrieves GeoJSON data for entries associated with a specific project.
      *
