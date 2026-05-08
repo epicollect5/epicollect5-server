@@ -215,6 +215,12 @@ class Project extends Model
         return $this
             ->join($this->projectStatsTable, $this->getTable() . '.id', '=', $this->projectStatsTable . '.project_id')
             ->leftJoin('users', $this->getTable() . '.created_by', '=', 'users.id')  // Join users table
+            ->leftJoin(
+                config('epicollect.tables.project_structures'),
+                $this->getTable() . '.id',
+                '=',
+                config('epicollect.tables.project_structures') . '.project_id'
+            )
             ->where(function ($query) use ($params) {
                 if (!empty($params['name'])) {
                     $query->where($this->getTable() . '.name', 'LIKE', '%' . $params['name'] . '%'); // Restore search by name
@@ -240,6 +246,10 @@ class Project extends Model
                 $this->projectStatsTable . '.total_bytes', // Explicitly select total_bytes
                 $this->projectStatsTable . '.form_counts',
                 $this->projectStatsTable . '.branch_counts',
+                DB::raw(
+                    'DATE_FORMAT(project_structures.updated_at, "%Y-%m-%d %H:%i:%s") ' .
+                    'as structure_last_updated'
+                )
             )
             ->simplePaginate($perPage);
     }

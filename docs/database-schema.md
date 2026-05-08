@@ -4,8 +4,8 @@ This document describes the current application schema derived from the migratio
 
 Scope:
 - It reflects the latest migrated structure, not historical intermediate states.
-- It is based on the migrations in this repository as of 2026-04-16.
-- JSON shape migrations are mentioned only where they clarify persisted columns.
+- It is based on the migrations in this repository as of 2026-05-08.
+- JSON shape migrations and read-time JSON contracts are mentioned only where they clarify persisted columns.
 
 ## Current Tables
 
@@ -156,6 +156,9 @@ Foreign keys:
 Notes:
 - `project_forms_extra` existed temporarily and was dropped in 2017.
 - The original migration sets compressed row format for this table.
+- `project_mapping` stores mapping definitions. Current application code normalizes the effective default mapping on
+  read through `ProjectMappingDTO`; legacy rows may contain more than one `is_default: true` value even though consumers
+  should see only one effective default.
 
 ### `project_stats`
 
@@ -189,6 +192,9 @@ Foreign keys:
 Notes:
 - `total_users` was dropped in 2025.
 - Storage counters were added in 2025 and later changed from unsigned to signed `BIGINT`.
+- `form_counts` and `branch_counts` are cached JSON counters keyed by form refs and branch owner input refs.
+- System aggregate totals and admin project views read these cached counters instead of counting `entries` and
+  `branch_entries` directly on every request.
 
 ### `projects_featured`
 

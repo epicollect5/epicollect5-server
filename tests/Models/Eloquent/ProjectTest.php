@@ -4,6 +4,8 @@ namespace Tests\Models\Eloquent;
 
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectRole;
+use ec5\Models\Project\ProjectStats;
+use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
@@ -115,5 +117,30 @@ class ProjectTest extends TestCase
         User::where('email', $email)->delete();
         $email = Project::creatorEmail($project->id);
         $this->assertEquals('n/a', $email);
+    }
+
+    public function test_admin_projects_include_structure_last_updated()
+    {
+        $updatedAt = '2026-05-08 10:11:12';
+        $creator = User::where('email', config('testing.SUPER_ADMIN_EMAIL'))->first();
+        $project = factory(Project::class)->create([
+            'created_by' => $creator->id,
+            'name' => 'Admin Structure Version Test'
+        ]);
+
+        factory(ProjectStats::class)->create([
+            'project_id' => $project->id,
+            'total_entries' => 1
+        ]);
+
+        factory(ProjectStructure::class)->create([
+            'project_id' => $project->id,
+            'updated_at' => $updatedAt
+        ]);
+
+        $projects = (new Project())->admin(['name' => $project->name]);
+        $adminProject = $projects->items()[0];
+
+        $this->assertSame($updatedAt, $adminProject->structure_last_updated);
     }
 }

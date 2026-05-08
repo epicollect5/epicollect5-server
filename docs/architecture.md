@@ -64,6 +64,10 @@ Purpose:
 Guard and middleware:
 - loaded with middleware group `api_external`
 - uses the `api_external` guard
+- protected by named external API rate limiters from `RateLimiterServiceProvider`
+
+Public media routes have an additional media limiter. The global external API limiter is IP-scoped, while project-scoped
+read/media limiters are keyed by project slug so rotating client IPs do not bypass project-level throttles.
 
 ## Architectural Layers
 
@@ -163,6 +167,10 @@ Responsibilities:
 - normalize JSON stored in the database
 - support create, import, clone, and hydrate workflows
 - provide a stable interface to services and validators
+
+Examples of read-time normalization:
+- `ProjectMappingDTO` exposes one effective default mapping even if legacy JSON contains multiple defaults
+- `ProjectStatsDTO` decodes JSON count payloads into arrays for consumers that work from requested-project context
 
 The project stack is especially DTO-driven:
 - project rows and structure rows are loaded
@@ -535,6 +543,11 @@ Media handling responsibilities are split across dedicated services:
 - photo/audio/video processing
 - media counting
 - stream/download responses
+- cache-control headers for versioned and unversioned media URLs
+- optional S3 presigned redirects for export media after app-level authorization succeeds
+
+Static application assets are resolved through `static_asset()`. The helper can serve local `asset()` URLs or CDN URLs
+depending on `config('epicollect.setup.static_assets.*')`.
 
 ## Response Architecture
 
@@ -560,6 +573,9 @@ These configs centralize:
 - permissions
 - mapping defaults
 - media-related behavior
+- static asset delivery settings
+- S3 export media redirect settings
+- named API rate limiter values
 
 Important implication:
 - domain constants should come from config, not hardcoded strings
@@ -608,6 +624,9 @@ The application includes built-in admin capabilities:
 - maintenance utilities
 
 System-wide aggregation is handled by services under `app/Services/System`.
+For total entry and branch-entry counts, those services use cached `project_stats` JSON/counter values rather than full
+table counts. Admin project views also read cached `project_stats` counts and join `project_structures` for cache-busting
+structure timestamps used in logo URLs.
 
 ## Extending the System
 
