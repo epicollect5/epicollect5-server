@@ -4,14 +4,15 @@ namespace Tests\Http\Validation\Project\Mapping;
 
 use ec5\Http\Validation\Project\Mapping\RuleMappingInput;
 use ec5\Http\Validation\Project\Mapping\RuleMappingPossibleAnswer;
-use Faker\Factory as Faker;
-use Tests\TestCase;
 use ec5\Http\Validation\Project\Mapping\RuleMappingStructure;
+use Faker\Factory as Faker;
+use Faker\Generator;
+use Tests\TestCase;
 
 class RuleMappingStructureTest extends TestCase
 {
-    protected $ruleMappingStructure;
-    private $faker;
+    protected RuleMappingStructure $ruleMappingStructure;
+    private Generator $faker;
 
     public function setUp(): void
     {
@@ -39,5 +40,29 @@ class RuleMappingStructureTest extends TestCase
             $this->assertFalse($this->ruleMappingStructure->hasErrors());
             $this->ruleMappingStructure->resetErrors();
         }
+    }
+
+    /**
+     * Missing is_default must map to required field error.
+     *
+     * @return void
+     */
+    public function testMissingIsDefaultFailsValidation()
+    {
+        $data = [
+            'name' => 'Map test',
+            'forms' => [
+                ['fakeRef']
+            ],
+            'map_index' => rand(1, 100)
+        ];
+
+        $this->ruleMappingStructure->validate($data);
+
+        $this->assertTrue($this->ruleMappingStructure->hasErrors());
+        $expectedErrors = [
+            'is_default' => ['ec5_21']
+        ];
+        $this->assertSame($expectedErrors, $this->ruleMappingStructure->errors());
     }
 }
