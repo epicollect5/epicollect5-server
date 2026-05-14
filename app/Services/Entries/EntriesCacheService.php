@@ -8,9 +8,9 @@ use Symfony\Component\HttpFoundation\Response;
 
 class EntriesCacheService
 {
-    private const CACHE_HEADER = 'X-Epicollect-Cache';
-    private const CACHE_TTL_HEADER = 'X-Epicollect-Cache-Ttl';
-    private const CACHEABLE_STATUS_CODE = 200;
+    private const string CACHE_HEADER = 'X-Epicollect-Cache';
+    private const string CACHE_TTL_HEADER = 'X-Epicollect-Cache-Ttl';
+    private const int CACHEABLE_STATUS_CODE = 200;
 
     public function isExportEntriesCacheEnabled(): bool
     {
@@ -65,19 +65,23 @@ class EntriesCacheService
 
     private function getResponseCachePayload(Response $response): ?array
     {
+        //if the response is not 200, do not cache
         if ($response->getStatusCode() !== self::CACHEABLE_STATUS_CODE) {
             return null;
         }
 
         $content = $response->getContent();
-
         if ($content === false) {
             return null;
         }
 
+        //return the cache payload. Content-Type is needed to preserve the content type of the response
+        //so that the response is sent with the correct content type
+        // JSON: 'application/vnd.api+json; charset=utf-8
+        // CSV: text/csv; charset=utf-8
         return [
             'content' => $content,
-            'status' => $response->getStatusCode(),
+            'status' => self::CACHEABLE_STATUS_CODE,
             'content_type' => $response->headers->get('Content-Type'),
         ];
     }
