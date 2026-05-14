@@ -10,6 +10,7 @@ class EntriesCacheService
 {
     private const CACHE_HEADER = 'X-Epicollect-Cache';
     private const CACHE_TTL_HEADER = 'X-Epicollect-Cache-Ttl';
+    private const CACHEABLE_STATUS_CODE = 200;
 
     public function isExportEntriesCacheEnabled(): bool
     {
@@ -43,7 +44,15 @@ class EntriesCacheService
         }
 
         $response = $callback();
-        Cache::put($cacheKey, $this->getResponseCachePayload($response), $cacheTTL);
+        $cachePayload = $this->getResponseCachePayload($response);
+
+        if (!$cachePayload) {
+            $this->setCacheHeaders($response, 'bypass', $cacheTTL);
+
+            return $response;
+        }
+
+        Cache::put($cacheKey, $cachePayload, $cacheTTL);
         $this->setCacheHeaders($response, 'miss', $cacheTTL);
 
         return $response;
@@ -54,12 +63,21 @@ class EntriesCacheService
         return 'export_entries:' . hash('sha256', $projectSlug . '|' . $fullUrl);
     }
 
-    private function getResponseCachePayload(Response $response): array
+    private function getResponseCachePayload(Response $response): ?array
     {
+        if ($response->getStatusCode() !== self::CACHEABLE_STATUS_CODE) {
+            return null;
+        }
+
+        $content = $response->getContent();
+
+        if ($content === false) {
+            return null;
+        }
+
         return [
-            'content' => $response->getContent(),
+            'content' => $content,
             'status' => $response->getStatusCode(),
-            'headers' => $response->headers->all(),
         ];
     }
 
@@ -68,20 +86,13 @@ class EntriesCacheService
         if (
             !isset(
                 $cachedResponse['content'],
-                $cachedResponse['status'],
-                $cachedResponse['headers']
+                $cachedResponse['status']
             )
         ) {
             return null;
         }
 
-        $response = response($cachedResponse['content'], $cachedResponse['status']);
-
-        foreach ($cachedResponse['headers'] as $key => $value) {
-            $response->headers->set($key, $value);
-        }
-
-        return $response;
+        return response($cachedResponse['content'], $cachedResponse['status']);
     }
 
     private function setCacheHeaders(Response $response, string $status, int $cacheTTL): void

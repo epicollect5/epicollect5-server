@@ -188,6 +188,7 @@ class EntriesExportCacheTest extends ViewEntriesBaseControllerTest
 
         $this->assertIsArray($cachedResponse);
         $this->assertArrayNotHasKey('compressed', $cachedResponse);
+        $this->assertArrayNotHasKey('headers', $cachedResponse);
         $this->assertSame($expectedContent, $cachedResponse['content']);
         $this->assertSame(200, $cachedResponse['status']);
     }

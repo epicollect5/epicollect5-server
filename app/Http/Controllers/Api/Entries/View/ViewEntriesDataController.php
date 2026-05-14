@@ -39,7 +39,7 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
      */
     public function export(Request $request)
     {
-        //set limit to avoid massive pyalod exports
+        //set limit to avoid massive payload exports
         $jsonPerPageLimit = config('epicollect.limits.entries_export_per_page_json');
         $csvPerPageLimit = config('epicollect.limits.entries_export_per_page_csv');
 
@@ -54,13 +54,6 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
         // Validate the options and query string
         if (!$this->entriesViewService->areValidQueryParams($params)) {
             return Response::apiErrorCode(400, $this->entriesViewService->validationErrors);
-        }
-
-        //check if this is the first page of the dataset
-        if ((int)$params['page'] === 1) {
-            // Entry exports are paginated; refresh project_stats once at the start
-            // so exported metadata reflects current totals without changing mid-export.
-            $this->refreshProjectStats($this->requestedProject());
         }
 
         // If the map_index value passed does not exist, error out
@@ -105,7 +98,7 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
         $cacheTTL = $this->entriesCacheService->getExportEntriesCacheTTL();
 
         if (!$this->entriesCacheService->isExportEntriesCacheEnabled() || $cacheTTL <= 0) {
-            return $this->sendExportEntriesResponse($params);
+            return $this->sendExportEntriesResponseWithFreshStats($params);
         }
 
         return $this->entriesCacheService->rememberExportEntriesResponse(
@@ -113,7 +106,7 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
             $request->fullUrl(),
             $cacheTTL,
             function () use ($params) {
-                return $this->sendExportEntriesResponse($params);
+                return $this->sendExportEntriesResponseWithFreshStats($params);
             }
         );
     }
@@ -141,7 +134,20 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
 
     /**
      * Send the mapped export response for the requested format.
+     * @throws Throwable
      */
+    private function sendExportEntriesResponseWithFreshStats(array $params)
+    {
+        //check if this is the first page of the dataset
+        if ((int)$params['page'] === 1) {
+            // Entry exports are paginated; refresh project_stats once at the start
+            // so exported metadata reflects current totals without changing mid-export.
+            $this->refreshProjectStats($this->requestedProject());
+        }
+
+        return $this->sendExportEntriesResponse($params);
+    }
+
     private function sendExportEntriesResponse(array $params)
     {
         // Switch on the format
