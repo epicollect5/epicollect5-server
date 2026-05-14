@@ -9,6 +9,8 @@ use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Response;
 use Log;
 use Throwable;
@@ -21,7 +23,7 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
     /**
      * @throws Throwable
      */
-    public function export()
+    public function export(Request $request)
     {
         //Slow down api responses to avoid overloading the server
         $jsonPerPageLimit = config('epicollect.limits.entries_export_per_page_json');
@@ -84,25 +86,21 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
             $params['map_index']
         );
 
-        // Switch on the format
-        switch ($params['format']) {
-            case 'csv':
-                // Branch
-                if ($params['branch_ref'] != '') {
-                    return $this->sendBranchEntriesCSV($params);
-                } else {
-                    // Form
-                    return $this->sendEntriesCSV($params);
-                }
-                // no break
-            default:
-                // Branch
-                if ($params['branch_ref'] != '') {
-                    return $this->sendBranchEntriesJSON($params, true);
-                }
-                // Form
-                return $this->sendEntriesJSON($params, true);
+        $cacheKey = $this->getExportEntriesCacheKey($request);
+        $cacheEnabled = config('cache.export_entries_cache_enabled');
+        $cacheTTL = config('cache.export_entries_cache_ttl');
+
+        if (!$cacheEnabled || $cacheTTL <= 0) {
+            return $this->sendExportEntriesResponse($params);
         }
+
+        return Cache::remember(
+            $cacheKey,
+            $cacheTTL,
+            function () use ($params) {
+                return $this->sendExportEntriesResponse($params);
+            }
+        );
     }
 
     /**
@@ -124,6 +122,32 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
         }
         // Form
         return $this->sendEntriesJSON($params, false);
+    }
+
+    /**
+     * Send the mapped export response for the requested format.
+     */
+    private function sendExportEntriesResponse(array $params)
+    {
+        // Switch on the format
+        switch ($params['format']) {
+            case 'csv':
+                // Branch
+                if ($params['branch_ref'] != '') {
+                    return $this->sendBranchEntriesCSV($params);
+                } else {
+                    // Form
+                    return $this->sendEntriesCSV($params);
+                }
+                // no break
+            default:
+                // Branch
+                if ($params['branch_ref'] != '') {
+                    return $this->sendBranchEntriesJSON($params, true);
+                }
+                // Form
+                return $this->sendEntriesJSON($params, true);
+        }
     }
 
     /**
@@ -346,5 +370,18 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
             return Response::apiErrorCode(400, ['entries-export-csv' => ['ec5_232']]);
         }
         return Response::toCSVStream();
+    }
+
+    /**
+     * Build the file-cache key for a project entries export request.
+     */
+    private function getExportEntriesCacheKey(Request $request): string
+    {
+        $projectSlug = $this->requestedProject()->slug;
+
+        return 'export_entries:' . hash(
+            'sha256',
+            $projectSlug . '|' . $request->fullUrl()
+        );
     }
 }
