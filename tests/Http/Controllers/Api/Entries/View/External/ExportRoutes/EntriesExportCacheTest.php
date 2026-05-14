@@ -3,6 +3,7 @@
 namespace Tests\Http\Controllers\Api\Entries\View\External\ExportRoutes;
 
 use ec5\Models\Entries\Entry;
+use ec5\Services\Entries\EntriesCacheService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Cache;
 use Tests\Http\Controllers\Api\Entries\View\ViewEntriesBaseControllerTest;
@@ -42,6 +43,7 @@ class EntriesExportCacheTest extends ViewEntriesBaseControllerTest
         $firstResponse = $this->actingAs($this->user)->get($url);
         $firstResponse->assertStatus(200);
         $this->assertEntryCount($firstResponse->getContent(), 1);
+        $this->assertCompressedCachePayload($url, $firstResponse->getContent());
 
         $this->createParentEntry($formRef);
         $this->assertCount(2, Entry::where('project_id', $this->project->id)->get());
@@ -169,5 +171,20 @@ class EntriesExportCacheTest extends ViewEntriesBaseControllerTest
         $json = json_decode($content, true);
 
         $this->assertCount($count, $json['data']['entries']);
+    }
+
+    private function assertCompressedCachePayload(string $url, string $expectedContent): void
+    {
+        $fullUrl = 'http://localhost/' . $url;
+        $cacheKey = app(EntriesCacheService::class)->getExportEntriesCacheKey(
+            $this->project->slug,
+            $fullUrl
+        );
+        $cachedResponse = Cache::get($cacheKey);
+
+        $this->assertIsArray($cachedResponse);
+        $this->assertTrue($cachedResponse['compressed']);
+        $this->assertSame($expectedContent, gzdecode($cachedResponse['content']));
+        $this->assertSame(200, $cachedResponse['status']);
     }
 }

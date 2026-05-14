@@ -3,6 +3,9 @@
 namespace ec5\Http\Controllers\Api\Entries\View;
 
 use ec5\Libraries\Utilities\DateFormatConverter;
+use ec5\Services\Entries\EntriesCacheService;
+use ec5\Services\Entries\EntriesViewService;
+use ec5\Services\Mapping\DataMappingService;
 use ec5\Traits\Eloquent\StatsRefresher;
 use Exception;
 use Illuminate\Contracts\Foundation\Application;
@@ -10,7 +13,6 @@ use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Response;
 use Log;
 use Throwable;
@@ -19,13 +21,25 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
 {
     use StatsRefresher;
 
+    private EntriesCacheService $entriesCacheService;
+
+    public function __construct(
+        DataMappingService $dataMappingService,
+        EntriesViewService $entriesViewService,
+        EntriesCacheService $entriesCacheService
+    ) {
+        parent::__construct($dataMappingService, $entriesViewService);
+
+        $this->entriesCacheService = $entriesCacheService;
+    }
+
     //Export entries using the API
     /**
      * @throws Throwable
      */
     public function export(Request $request)
     {
-        //Slow down api responses to avoid overloading the server
+        //set limit to avoid massive pyalod exports
         $jsonPerPageLimit = config('epicollect.limits.entries_export_per_page_json');
         $csvPerPageLimit = config('epicollect.limits.entries_export_per_page_csv');
 
@@ -33,6 +47,7 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
         $projectMapping = $this->requestedProject()->getProjectMapping();
 
         $allowedKeys = array_keys(config('epicollect.strings.search_data_entries'));
+        //set a default per_page in case it is missing from the request
         $perPage = config('epicollect.limits.entries_table.per_page');
         $params = $this->entriesViewService->getSanitizedQueryParams($allowedKeys, $perPage);
 
@@ -41,6 +56,7 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
             return Response::apiErrorCode(400, $this->entriesViewService->validationErrors);
         }
 
+        //check if this is the first page of the dataset
         if ((int)$params['page'] === 1) {
             // Entry exports are paginated; refresh project_stats once at the start
             // so exported metadata reflects current totals without changing mid-export.
@@ -86,16 +102,15 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
             $params['map_index']
         );
 
-        $cacheKey = $this->getExportEntriesCacheKey($request);
-        $cacheEnabled = config('cache.export_entries_cache_enabled');
-        $cacheTTL = config('cache.export_entries_cache_ttl');
+        $cacheTTL = $this->entriesCacheService->getExportEntriesCacheTTL();
 
-        if (!$cacheEnabled || $cacheTTL <= 0) {
+        if (!$this->entriesCacheService->isExportEntriesCacheEnabled() || $cacheTTL <= 0) {
             return $this->sendExportEntriesResponse($params);
         }
 
-        return Cache::remember(
-            $cacheKey,
+        return $this->entriesCacheService->rememberExportEntriesResponse(
+            $this->requestedProject()->slug,
+            $request->fullUrl(),
             $cacheTTL,
             function () use ($params) {
                 return $this->sendExportEntriesResponse($params);
@@ -372,16 +387,4 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
         return Response::toCSVStream();
     }
 
-    /**
-     * Build the file-cache key for a project entries export request.
-     */
-    private function getExportEntriesCacheKey(Request $request): string
-    {
-        $projectSlug = $this->requestedProject()->slug;
-
-        return 'export_entries:' . hash(
-            'sha256',
-            $projectSlug . '|' . $request->fullUrl()
-        );
-    }
 }
