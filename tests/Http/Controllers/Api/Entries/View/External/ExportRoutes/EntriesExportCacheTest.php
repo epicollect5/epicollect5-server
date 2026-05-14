@@ -45,7 +45,7 @@ class EntriesExportCacheTest extends ViewEntriesBaseControllerTest
         $firstResponse->assertHeader('X-Epicollect-Cache', 'miss');
         $firstResponse->assertHeader('X-Epicollect-Cache-Ttl', '123');
         $this->assertEntryCount($firstResponse->getContent(), 1);
-        $this->assertCompressedCachePayload($url, $firstResponse->getContent());
+        $this->assertCachePayload($url, $firstResponse->getContent());
 
         $this->createParentEntry($formRef);
         $this->assertCount(2, Entry::where('project_id', $this->project->id)->get());
@@ -177,7 +177,7 @@ class EntriesExportCacheTest extends ViewEntriesBaseControllerTest
         $this->assertCount($count, $json['data']['entries']);
     }
 
-    private function assertCompressedCachePayload(string $url, string $expectedContent): void
+    private function assertCachePayload(string $url, string $expectedContent): void
     {
         $fullUrl = 'http://localhost/' . $url;
         $cacheKey = app(EntriesCacheService::class)->getExportEntriesCacheKey(
@@ -187,8 +187,8 @@ class EntriesExportCacheTest extends ViewEntriesBaseControllerTest
         $cachedResponse = Cache::get($cacheKey);
 
         $this->assertIsArray($cachedResponse);
-        $this->assertTrue($cachedResponse['compressed']);
-        $this->assertSame($expectedContent, gzdecode($cachedResponse['content']));
+        $this->assertArrayNotHasKey('compressed', $cachedResponse);
+        $this->assertSame($expectedContent, $cachedResponse['content']);
         $this->assertSame(200, $cachedResponse['status']);
     }
 }

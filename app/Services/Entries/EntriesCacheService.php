@@ -43,7 +43,7 @@ class EntriesCacheService
         }
 
         $response = $callback();
-        Cache::put($cacheKey, $this->getCompressedResponseCachePayload($response), $cacheTTL);
+        Cache::put($cacheKey, $this->getResponseCachePayload($response), $cacheTTL);
         $this->setCacheHeaders($response, 'miss', $cacheTTL);
 
         return $response;
@@ -54,11 +54,10 @@ class EntriesCacheService
         return 'export_entries:' . hash('sha256', $projectSlug . '|' . $fullUrl);
     }
 
-    private function getCompressedResponseCachePayload(Response $response): array
+    private function getResponseCachePayload(Response $response): array
     {
         return [
-            'compressed' => true,
-            'content' => gzencode($response->getContent(), 3),
+            'content' => $response->getContent(),
             'status' => $response->getStatusCode(),
             'headers' => $response->headers->all(),
         ];
@@ -68,23 +67,15 @@ class EntriesCacheService
     {
         if (
             !isset(
-                $cachedResponse['compressed'],
                 $cachedResponse['content'],
                 $cachedResponse['status'],
                 $cachedResponse['headers']
-            ) ||
-            $cachedResponse['compressed'] !== true
+            )
         ) {
             return null;
         }
 
-        $content = gzdecode($cachedResponse['content']);
-
-        if ($content === false) {
-            return null;
-        }
-
-        $response = response($content, $cachedResponse['status']);
+        $response = response($cachedResponse['content'], $cachedResponse['status']);
 
         foreach ($cachedResponse['headers'] as $key => $value) {
             $response->headers->set($key, $value);
