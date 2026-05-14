@@ -78,6 +78,7 @@ class EntriesCacheService
         return [
             'content' => $content,
             'status' => $response->getStatusCode(),
+            'content_type' => $response->headers->get('Content-Type'),
         ];
     }
 
@@ -86,13 +87,15 @@ class EntriesCacheService
         if (
             !isset(
                 $cachedResponse['content'],
-                $cachedResponse['status']
+                $cachedResponse['status'],
+                $cachedResponse['content_type']
             )
         ) {
             return null;
         }
 
-        return response($cachedResponse['content'], $cachedResponse['status']);
+        return response($cachedResponse['content'], $cachedResponse['status'])
+            ->header('Content-Type', $cachedResponse['content_type']);
     }
 
     private function setCacheHeaders(Response $response, string $status, int $cacheTTL): void

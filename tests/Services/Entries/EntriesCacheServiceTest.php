@@ -70,4 +70,48 @@ class EntriesCacheServiceTest extends TestCase
         $this->assertSame('bypass', $response->headers->get('X-Epicollect-Cache'));
         $this->assertSame('123', $response->headers->get('X-Epicollect-Cache-Ttl'));
     }
+
+    public function test_cached_response_preserves_content_type(): void
+    {
+        $service = app(EntriesCacheService::class);
+        $projectSlug = 'test-project';
+        $fullUrl = 'http://localhost/api/export/entries/test-project?format=json';
+        $cacheTTL = 123;
+        $cacheKey = $service->getExportEntriesCacheKey($projectSlug, $fullUrl);
+
+        $firstResponse = $service->rememberExportEntriesResponse(
+            $projectSlug,
+            $fullUrl,
+            $cacheTTL,
+            function () {
+                return response()->json(['ok' => true], 200, [
+                    'Content-Type' => 'application/vnd.api+json; charset=utf-8',
+                ]);
+            }
+        );
+
+        $secondResponse = $service->rememberExportEntriesResponse(
+            $projectSlug,
+            $fullUrl,
+            $cacheTTL,
+            function () {
+                return response()->json(['ok' => false]);
+            }
+        );
+
+        $this->assertSame(
+            'application/vnd.api+json; charset=utf-8',
+            $firstResponse->headers->get('Content-Type')
+        );
+        $this->assertSame(
+            'application/vnd.api+json; charset=utf-8',
+            $secondResponse->headers->get('Content-Type')
+        );
+        $this->assertSame($firstResponse->getContent(), $secondResponse->getContent());
+        $this->assertSame(200, Cache::get($cacheKey)['status']);
+        $this->assertSame(
+            'application/vnd.api+json; charset=utf-8',
+            Cache::get($cacheKey)['content_type']
+        );
+    }
 }

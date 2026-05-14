@@ -85,16 +85,6 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
                 }
             }
         }
-        // Set the mapping
-        $this->dataMappingService->init(
-            $this->requestedProject(),
-            $params['format'],
-            $params['branch_ref'] !== '' ? 'branch' : 'form',
-            $params['form_ref'],
-            $params['branch_ref'],
-            $params['map_index']
-        );
-
         $cacheTTL = $this->entriesCacheService->getExportEntriesCacheTTL();
 
         if (!$this->entriesCacheService->isExportEntriesCacheEnabled() || $cacheTTL <= 0) {
@@ -150,6 +140,15 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
 
     private function sendExportEntriesResponse(array $params)
     {
+        $this->dataMappingService->init(
+            $this->requestedProject(),
+            $params['format'],
+            $params['branch_ref'] !== '' ? 'branch' : 'form',
+            $params['form_ref'],
+            $params['branch_ref'],
+            $params['map_index']
+        );
+
         // Switch on the format
         switch ($params['format']) {
             case 'csv':
