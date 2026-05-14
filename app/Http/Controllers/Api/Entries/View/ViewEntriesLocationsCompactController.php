@@ -55,14 +55,15 @@ class ViewEntriesLocationsCompactController extends ViewEntriesControllerBase
         $entries = $entryModel->getGeoJsonData($this->requestedProject()->getId(), $params);
         $entriesPaginated = $entries->paginate($params['per_page']);
         $dates = $entryModel->getNewestOldestCreatedAt($this->requestedProject()->getId(), $params['form_ref']);
+        $possibleAnswerMap = $this->getPossibleAnswerMap($params);
+        $possibleAnswerIndexByRef = array_flip($possibleAnswerMap);
 
         $data = [
             'input_ref' => $params['input_ref'],
-            'pa_map' => [],
+            'pa_map' => $possibleAnswerMap,
             'points' => []
         ];
 
-        $possibleAnswerIndexByRef = [];
         $inputRef = $params['input_ref'];
         foreach ($entriesPaginated as $entry) {
             if (!isset($entry->geo_json_data)) {
@@ -76,7 +77,6 @@ class ViewEntriesLocationsCompactController extends ViewEntriesControllerBase
 
             $point = $this->compactGeoJsonFeature(
                 $geoJSON[$inputRef],
-                $data['pa_map'],
                 $possibleAnswerIndexByRef
             );
 
@@ -102,8 +102,7 @@ class ViewEntriesLocationsCompactController extends ViewEntriesControllerBase
 
     private function compactGeoJsonFeature(
         array $feature,
-        array &$possibleAnswerMap,
-        array &$possibleAnswerIndexByRef
+        array $possibleAnswerIndexByRef
     ): ?array {
         if (!$this->hasRequiredLocationFields($feature)) {
             return null;
@@ -116,8 +115,7 @@ class ViewEntriesLocationsCompactController extends ViewEntriesControllerBase
             }
 
             if (!isset($possibleAnswerIndexByRef[$possibleAnswerRef])) {
-                $possibleAnswerIndexByRef[$possibleAnswerRef] = count($possibleAnswerMap);
-                $possibleAnswerMap[] = $possibleAnswerRef;
+                continue;
             }
 
             $possibleAnswerIndexes[] = $possibleAnswerIndexByRef[$possibleAnswerRef];
@@ -130,6 +128,13 @@ class ViewEntriesLocationsCompactController extends ViewEntriesControllerBase
             'd' => (int) date('Ymd', strtotime($feature['properties']['created_at'])),
             'pa' => $possibleAnswerIndexes,
         ];
+    }
+
+    private function getPossibleAnswerMap(array $params): array
+    {
+        return $this->requestedProject()
+            ->getProjectExtra()
+            ->getPossibleAnswerRefs($params['form_ref'], $params['branch_ref'] ?? null);
     }
 
     private function hasRequiredLocationFields(array $feature): bool

@@ -67,6 +67,74 @@ class ViewEntriesLocationsCompactControllerTest extends ViewEntriesBaseControlle
         }
     }
 
+    /**
+     * @throws Throwable
+     */
+    public function test_entries_locations_compact_endpoint_uses_stable_possible_answer_map_across_chunks()
+    {
+        config()->set('epicollect.limits.entries_map.per_page', 2);
+        config()->set('epicollect.limits.entries_map.per_chunk', 1);
+
+        $formRef = array_get($this->projectDefinition, 'data.project.forms.0.ref');
+        $locationInputRefs = Common::getLocationInputRefs($this->projectDefinition, 0);
+        $possibleAnswerMap = $this->getFormPossibleAnswerRefs($formRef);
+
+        $this->assertGreaterThanOrEqual(2, count($possibleAnswerMap));
+
+        $firstEntryPayload = $this->entryGenerator->createParentEntryPayload($formRef);
+        $this->entryGenerator->createParentEntryRow(
+            $this->user,
+            $this->project,
+            $this->role,
+            $this->projectDefinition,
+            $firstEntryPayload
+        );
+
+        $secondEntryPayload = $this->entryGenerator->createParentEntryPayload($formRef);
+        $this->entryGenerator->createParentEntryRow(
+            $this->user,
+            $this->project,
+            $this->role,
+            $this->projectDefinition,
+            $secondEntryPayload
+        );
+
+        $this->setEntryGeoJsonPossibleAnswers(
+            $firstEntryPayload['data']['id'],
+            $locationInputRefs[0],
+            [$possibleAnswerMap[0] => 1]
+        );
+        $this->setEntryGeoJsonPossibleAnswers(
+            $secondEntryPayload['data']['id'],
+            $locationInputRefs[0],
+            [$possibleAnswerMap[1] => 1]
+        );
+
+        $queryString = '?form_ref=' . $formRef . '&input_ref=' . $locationInputRefs[0];
+        $response = [];
+        try {
+            $response[] = $this->actingAs($this->user)
+                ->get('api/internal/entries-locations-compact/' . $this->project->slug . $queryString . '&page=1');
+            $response[0]->assertStatus(200);
+            $this->assertEntriesLocationsCompactResponse($response[0]);
+
+            $response[] = $this->actingAs($this->user)
+                ->get('api/internal/entries-locations-compact/' . $this->project->slug . $queryString . '&page=2');
+            $response[1]->assertStatus(200);
+            $this->assertEntriesLocationsCompactResponse($response[1]);
+
+            $firstPageData = json_decode($response[0]->getContent(), true)['data'];
+            $secondPageData = json_decode($response[1]->getContent(), true)['data'];
+
+            $this->assertEquals($possibleAnswerMap, $firstPageData['pa_map']);
+            $this->assertEquals($possibleAnswerMap, $secondPageData['pa_map']);
+            $this->assertContains(0, $firstPageData['points'][0]['pa']);
+            $this->assertContains(1, $secondPageData['points'][0]['pa']);
+        } catch (Exception $e) {
+            $this->logTestError($e, $response);
+        }
+    }
+
     private function assertEntriesLocationsCompactResponse($response): void
     {
         $response->assertJsonStructure([
@@ -119,5 +187,33 @@ class ViewEntriesLocationsCompactControllerTest extends ViewEntriesBaseControlle
 
         $expectedPossibleAnswerRefs = array_keys(array_filter($feature['properties']['possible_answers']));
         $this->assertEquals($expectedPossibleAnswerRefs, $possibleAnswerRefs);
+    }
+
+    private function getFormPossibleAnswerRefs(string $formRef): array
+    {
+        $multipleChoiceInputs = array_get(
+            $this->projectExtra,
+            'forms.' . $formRef . '.lists.multiple_choice_inputs.form',
+            []
+        );
+        $possibleAnswerRefs = [];
+        $inputRefs = $multipleChoiceInputs['order'] ?? [];
+
+        foreach ($inputRefs as $inputRef) {
+            foreach (array_keys($multipleChoiceInputs[$inputRef]['possible_answers'] ?? []) as $possibleAnswerRef) {
+                $possibleAnswerRefs[] = $possibleAnswerRef;
+            }
+        }
+
+        return array_values(array_unique($possibleAnswerRefs));
+    }
+
+    private function setEntryGeoJsonPossibleAnswers(string $entryUuid, string $inputRef, array $possibleAnswers): void
+    {
+        $entry = Entry::where('uuid', $entryUuid)->first();
+        $geoJson = json_decode($entry->geo_json_data, true);
+        $geoJson[$inputRef]['properties']['possible_answers'] = $possibleAnswers;
+        $entry->geo_json_data = json_encode($geoJson);
+        $entry->save();
     }
 }
