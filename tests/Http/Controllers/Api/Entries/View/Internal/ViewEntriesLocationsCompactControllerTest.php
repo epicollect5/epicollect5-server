@@ -101,7 +101,7 @@ class ViewEntriesLocationsCompactControllerTest extends ViewEntriesBaseControlle
         $this->assertEquals($feature['id'], $point['u']);
         $this->assertEquals($feature['geometry']['coordinates'][0], $point['x']);
         $this->assertEquals($feature['geometry']['coordinates'][1], $point['y']);
-        $this->assertEquals((int) date('Ymd', strtotime($feature['properties']['created_at'])), $point['d']);
+        $this->assertEquals((int) gmdate('Ymd', strtotime($feature['properties']['created_at'])), $point['d']);
 
         $possibleAnswerRefs = [];
         foreach ($point['pa'] as $possibleAnswerIndex) {
