@@ -46,6 +46,7 @@ class ViewEntriesLocationsCompactControllerTest extends ViewEntriesBaseControlle
 
             $json = json_decode($response[0]->getContent(), true);
             $data = $json['data'];
+            $meta = $json['meta'];
 
             $entry = Entry::where('uuid', $entryPayload['data']['id'])->first();
             $geoJSON = json_decode($entry->geo_json_data, true);
@@ -54,6 +55,12 @@ class ViewEntriesLocationsCompactControllerTest extends ViewEntriesBaseControlle
             $this->assertArrayNotHasKey('geojson', $data);
             $this->assertEquals($locationInputRefs[0], $data['input_ref']);
             $this->assertEquals(1, sizeof($data['points']));
+            $this->assertEquals(config('epicollect.limits.entries_map.per_page'), $meta['per_page']);
+            $this->assertEquals(config('epicollect.limits.entries_map.per_chunk'), $meta['per_chunk']);
+            $this->assertEquals(1, $meta['current_page']);
+            $this->assertEquals(1, $meta['last_page']);
+            $this->assertEquals(1, $meta['chunk_page']);
+            $this->assertEquals(1, $meta['chunk_last_page']);
             $this->assertCompactPointMatchesFeature($data['points'][0], $feature, $data['pa_map']);
         } catch (Exception $e) {
             $this->logTestError($e, $response);
@@ -84,14 +91,15 @@ class ViewEntriesLocationsCompactControllerTest extends ViewEntriesBaseControlle
                 'from',
                 'to',
                 'newest',
-                'oldest'
+                'oldest',
+                'per_chunk',
+                'chunk_page',
+                'chunk_last_page'
             ],
             'links' => [
                 'self',
-                'first',
                 'prev',
-                'next',
-                'last'
+                'next'
             ]
         ]);
     }

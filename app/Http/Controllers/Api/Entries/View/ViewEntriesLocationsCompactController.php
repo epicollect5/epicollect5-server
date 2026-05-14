@@ -28,8 +28,10 @@ class ViewEntriesLocationsCompactController extends ViewEntriesControllerBase
     public function show(RuleQueryStringLocations $ruleQueryStringLocations)
     {
         $allowedKeys = array_keys(config('epicollect.strings.search_data_entries'));
-        $perPage = config('epicollect.limits.entries_map.per_page');
-        $params = $this->entriesViewService->getSanitizedQueryParams($allowedKeys, $perPage);
+        $uiPerPage = (int) config('epicollect.limits.entries_map.per_page');
+        $chunkPerPage = (int) config('epicollect.limits.entries_map.per_chunk');
+        $params = $this->entriesViewService->getSanitizedQueryParams($allowedKeys, $uiPerPage);
+        $params['per_page'] = $chunkPerPage;
 
         // Validate the payload params values
         $ruleQueryStringLocations->validate($params);
@@ -85,9 +87,15 @@ class ViewEntriesLocationsCompactController extends ViewEntriesControllerBase
         // Append the required options to the LengthAwarePaginator
         $this->appendOptions($entriesPaginated, $params);
         // Get Meta and Links
-        $meta = $this->getMeta($entriesPaginated, $dates['newest'], $dates['oldest']);
+        $meta = $this->getCompactMeta(
+            $entriesPaginated,
+            $dates['newest'],
+            $dates['oldest'],
+            $uiPerPage,
+            $chunkPerPage
+        );
 
-        $links = $this->getLinks($entriesPaginated);
+        $links = $this->getCompactLinks($entriesPaginated);
 
         return Response::apiData($data, $meta, $links);
     }
@@ -132,5 +140,38 @@ class ViewEntriesLocationsCompactController extends ViewEntriesControllerBase
             $feature['geometry']['coordinates'][1],
             $feature['properties']['created_at']
         );
+    }
+
+    private function getCompactMeta(
+        $entriesPaginated,
+        ?string $newest,
+        ?string $oldest,
+        int $uiPerPage,
+        int $chunkPerPage
+    ): array {
+        $meta = $this->getMeta($entriesPaginated, $newest, $oldest);
+        $chunkCount = max(1, (int) ceil($uiPerPage / $chunkPerPage));
+        $currentPage = max(1, (int) ceil($entriesPaginated->currentPage() / $chunkCount));
+        $lastPage = max(1, (int) ceil($entriesPaginated->total() / $uiPerPage));
+
+        $meta['per_page'] = $uiPerPage;
+        $meta['current_page'] = $currentPage;
+        $meta['last_page'] = $lastPage;
+        $meta['from'] = $currentPage;
+        $meta['to'] = $lastPage;
+        $meta['per_chunk'] = $chunkPerPage;
+        $meta['chunk_page'] = $entriesPaginated->currentPage();
+        $meta['chunk_last_page'] = $entriesPaginated->lastPage();
+
+        return $meta;
+    }
+
+    private function getCompactLinks($entriesPaginated): array
+    {
+        return [
+            'self' => $entriesPaginated->url($entriesPaginated->currentPage()),
+            'prev' => $entriesPaginated->previousPageUrl(),
+            'next' => $entriesPaginated->nextPageUrl(),
+        ];
     }
 }
