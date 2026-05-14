@@ -82,7 +82,7 @@ class EntriesCacheService
         return [
             'content' => $content,
             'status' => self::CACHEABLE_STATUS_CODE,
-            'content_type' => $response->headers->get('Content-Type'),
+            'headers' => $response->headers->allPreserveCase(),
         ];
     }
 
@@ -92,14 +92,19 @@ class EntriesCacheService
             !isset(
                 $cachedResponse['content'],
                 $cachedResponse['status'],
-                $cachedResponse['content_type']
+                $cachedResponse['headers']
             )
         ) {
             return null;
         }
 
-        return response($cachedResponse['content'], $cachedResponse['status'])
-            ->header('Content-Type', $cachedResponse['content_type']);
+        $response = response($cachedResponse['content'], $cachedResponse['status']);
+
+        foreach ($cachedResponse['headers'] as $name => $values) {
+            $response->headers->set($name, $values);
+        }
+
+        return $response;
     }
 
     private function setCacheHeaders(Response $response, string $status, int $cacheTTL): void

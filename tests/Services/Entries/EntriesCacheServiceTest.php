@@ -111,7 +111,8 @@ class EntriesCacheServiceTest extends TestCase
         $this->assertSame(200, Cache::get($cacheKey)['status']);
         $this->assertSame(
             'application/vnd.api+json; charset=utf-8',
-            Cache::get($cacheKey)['content_type']
+            Cache::get($cacheKey)['headers']['Content-Type'][0]
         );
+        $this->assertArrayNotHasKey('content_type', Cache::get($cacheKey));
     }
 }
