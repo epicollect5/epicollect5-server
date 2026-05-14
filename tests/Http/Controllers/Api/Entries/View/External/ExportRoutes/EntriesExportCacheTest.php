@@ -35,13 +35,15 @@ class EntriesExportCacheTest extends ViewEntriesBaseControllerTest
     public function test_entries_export_cache_hit_returns_same_response_for_same_url()
     {
         config()->set('cache.export_entries_cache_enabled', true);
-        config()->set('cache.export_entries_cache_ttl', 3600);
+        config()->set('cache.export_entries_cache_ttl', 123);
 
         $formRef = $this->makeProjectPublicAndCreateParentEntry();
         $url = $this->endpoint . $this->project->slug . '?form_ref=' . $formRef;
 
         $firstResponse = $this->actingAs($this->user)->get($url);
         $firstResponse->assertStatus(200);
+        $firstResponse->assertHeader('X-Epicollect-Cache', 'miss');
+        $firstResponse->assertHeader('X-Epicollect-Cache-Ttl', '123');
         $this->assertEntryCount($firstResponse->getContent(), 1);
         $this->assertCompressedCachePayload($url, $firstResponse->getContent());
 
@@ -50,6 +52,8 @@ class EntriesExportCacheTest extends ViewEntriesBaseControllerTest
 
         $secondResponse = $this->actingAs($this->user)->get($url);
         $secondResponse->assertStatus(200);
+        $secondResponse->assertHeader('X-Epicollect-Cache', 'hit');
+        $secondResponse->assertHeader('X-Epicollect-Cache-Ttl', '123');
 
         $this->assertSame($firstResponse->getContent(), $secondResponse->getContent());
         $this->assertEntryCount($secondResponse->getContent(), 1);

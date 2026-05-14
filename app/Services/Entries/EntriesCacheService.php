@@ -8,6 +8,9 @@ use Symfony\Component\HttpFoundation\Response;
 
 class EntriesCacheService
 {
+    private const CACHE_HEADER = 'X-Epicollect-Cache';
+    private const CACHE_TTL_HEADER = 'X-Epicollect-Cache-Ttl';
+
     public function isExportEntriesCacheEnabled(): bool
     {
         return (bool) config('cache.export_entries_cache_enabled');
@@ -31,6 +34,8 @@ class EntriesCacheService
             $response = $this->getCachedExportEntriesResponse($cachedResponse);
 
             if ($response) {
+                $this->setCacheHeaders($response, 'hit', $cacheTTL);
+
                 return $response;
             }
 
@@ -39,6 +44,7 @@ class EntriesCacheService
 
         $response = $callback();
         Cache::put($cacheKey, $this->getCompressedResponseCachePayload($response), $cacheTTL);
+        $this->setCacheHeaders($response, 'miss', $cacheTTL);
 
         return $response;
     }
@@ -85,5 +91,11 @@ class EntriesCacheService
         }
 
         return $response;
+    }
+
+    private function setCacheHeaders(Response $response, string $status, int $cacheTTL): void
+    {
+        $response->headers->set(self::CACHE_HEADER, $status);
+        $response->headers->set(self::CACHE_TTL_HEADER, (string) $cacheTTL);
     }
 }
