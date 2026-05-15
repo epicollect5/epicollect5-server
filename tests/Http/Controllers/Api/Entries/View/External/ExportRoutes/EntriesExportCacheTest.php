@@ -72,6 +72,8 @@ class EntriesExportCacheTest extends ViewEntriesBaseControllerTest
 
         $firstResponse = $this->actingAs($this->user)->get($url);
         $firstResponse->assertStatus(200);
+        $firstResponse->assertHeaderMissing('X-Epicollect-Cache');
+
         $this->assertEntryCount($firstResponse->getContent(), 1);
 
         $this->createParentEntry($formRef);
