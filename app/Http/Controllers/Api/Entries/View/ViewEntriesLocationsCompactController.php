@@ -125,7 +125,7 @@ class ViewEntriesLocationsCompactController extends ViewEntriesControllerBase
             'u' => $feature['id'],
             'x' => $feature['geometry']['coordinates'][0],
             'y' => $feature['geometry']['coordinates'][1],
-            'd' => (int) date('Ymd', strtotime($feature['properties']['created_at'])),
+            'd' => (int) gmdate('Ymd', strtotime($feature['properties']['created_at'])),
             'pa' => $possibleAnswerIndexes,
         ];
     }
