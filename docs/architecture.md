@@ -357,7 +357,8 @@ rather than `project_stats`.
 
 `project_stats` entry counters are refreshed on demand when callers ask for project-level totals or metadata that
 includes those totals. Examples include the dataviewer shell, formbuilder, project show/export metadata, and the
-internal entry counters endpoint. Delete paths also refresh project stats after entries are removed so deletion decisions
+internal entry counters endpoint. Delete paths also refresh project stats after entries are removed so deletion
+decisions
 and follow-up UI state do not rely on stale totals.
 
 The documented entries export endpoint, `api/export/entries`, is paginated. Refresh the cached counters at the first
@@ -370,6 +371,122 @@ The internal dataviewer data endpoints, `api/internal/entries` and `api/internal
 `project_stats` themselves. They are called by the dataviewer after the surrounding project/dataviewer page has already
 refreshed stats, and adding aggregate refreshes to every internal page/map request would create avoidable counter
 rebuilds.
+
+### Compact Entry Locations
+
+The internal dataviewer map can request compact location payloads from:
+
+```text
+GET /api/internal/entries-locations-compact/{project_slug}
+```
+
+This endpoint is served by `ViewEntriesLocationsCompactController` and uses the same project-permission middleware and
+location query validation as `api/internal/entries-locations`.
+
+Required query parameters:
+
+- `form_ref`: the hierarchy form reference
+- `input_ref`: the location input reference to render
+
+Optional query parameters:
+
+- `branch_ref`: when the requested location belongs to branch entries
+- `page`: the chunk page to fetch
+- the standard dataviewer entry search/filter parameters supported by `EntriesViewService`
+
+The compact endpoint returns only the fields the map renderer needs. It does not return GeoJSON feature objects.
+
+Response data fields:
+
+- `input_ref`: the requested location input ref
+- `pa_map`: an ordered array of possible-answer refs
+- `points`: compact point rows
+
+Each point uses short keys:
+
+- `u`: entry UUID / GeoJSON feature id
+- `x`: longitude
+- `y`: latitude
+- `d`: creation date as `YYYYMMDD` integer in UTC
+- `pa`: selected possible-answer indexes into `pa_map`
+
+`pa_map` is canonical and stable across chunk pages. It is built from
+`project_extra.forms[form_ref].lists.multiple_choice_inputs`, not from the possible answers encountered in the current
+chunk's entries. For hierarchy entries the source is `multiple_choice_inputs.form`; for branch entries the source is
+scoped by `branch_ref`. This means a client can aggregate multiple chunk pages and decode `points[*].pa` consistently:
+the same integer index always maps to the same possible-answer ref for the requested form or branch.
+
+Unknown possible-answer refs found in stored `geo_json_data` are ignored when compacting points. This prevents stale or
+malformed entry data from mutating the response map.
+
+Chunking behavior:
+
+- `meta.per_page` is the UI page size from `config('epicollect.limits.entries_map.per_page')`
+- `meta.per_chunk` is the backend chunk size from `config('epicollect.limits.entries_map.per_chunk')`
+- `meta.chunk_page` and `meta.chunk_last_page` describe the actual paginator page being fetched
+- `meta.current_page` and `meta.last_page` describe the UI-level page derived from `per_page`
+
+Example request:
+
+```text
+GET /api/internal/entries-locations-compact/tree-survey?form_ref=form_a&input_ref=location_a&page=2
+```
+
+Example response:
+
+```json
+{
+  "data": {
+    "input_ref": "location_a",
+    "pa_map": [
+      "5953aa1bf3915",
+      "5953aa23f3916",
+      "5953aa8bf391a",
+      "5953aaa6f391b"
+    ],
+    "points": [
+      {
+        "u": "941c3f6d-025c-49b5-b1e9-dd727d38ec98",
+        "x": -0.118092,
+        "y": 51.509865,
+        "d": 20260515,
+        "pa": [
+          0,
+          2
+        ]
+      },
+      {
+        "u": "63c10209-6487-4d4e-b1ff-c131b8d3d4d4",
+        "x": -0.1425,
+        "y": 51.501,
+        "d": 20260514,
+        "pa": [
+          1,
+          3
+        ]
+      }
+    ]
+  },
+  "meta": {
+    "total": 12000,
+    "per_page": 50000,
+    "current_page": 1,
+    "last_page": 1,
+    "from": 1,
+    "to": 1,
+    "newest": "2026-05-15T09:21:44.000Z",
+    "oldest": "2026-04-01T12:03:10.000Z",
+    "per_chunk": 5000,
+    "chunk_page": 2,
+    "chunk_last_page": 3
+  },
+  "links": {
+    "self": "http://localhost/api/internal/entries-locations-compact/tree-survey?page=2",
+    "prev": "http://localhost/api/internal/entries-locations-compact/tree-survey?page=1",
+    "next": "http://localhost/api/internal/entries-locations-compact/tree-survey?page=3"
+  }
+}
+```
 
 Code that decides whether a project can be hard-deleted must not rely only on cached `project_stats.total_entries`.
 Because uploads intentionally defer aggregate refreshes, deletion safety checks must verify the live `entries` and

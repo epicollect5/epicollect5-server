@@ -503,8 +503,7 @@ class DataMappingService
         mixed $answer,
         array $input,
         string $mediaUrlVersion
-    ): mixed
-    {
+    ): mixed {
         $parsedAnswer = '';
 
         switch ($type) {
@@ -686,8 +685,7 @@ class DataMappingService
         string $format,
         string $fileName,
         string $version
-    ): string
-    {
+    ): string {
         // Public - provide url
         if (!empty($fileName) && $this->project->isPublic()) {
             $query = http_build_query([
