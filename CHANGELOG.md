@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 12.5.30
+
+- Added config flag to enable FFmpeg compression for audio and video files.
+
 # 12.5.29
 
 - Added optional S3 presigned redirects for export media downloads.
