@@ -7,10 +7,12 @@ use Aws\S3\Exception\S3Exception;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectStats;
+use ec5\Services\Media\AudioVideoCompressionService;
 use ec5\Services\Media\AudioVideoSaverService;
 use Exception;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Mockery;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Ramsey\Uuid\Uuid;
 use Storage;
@@ -212,6 +214,61 @@ class AudioVideoSaverServiceS3Test extends TestCase
     /**
      * @throws Exception
      */
+    public function test_compression_is_not_called_when_flag_is_false_s3()
+    {
+        config(['epicollect.media.audio_video_ffmpeg_compression_enabled' => false]);
+
+        $project = factory(Project::class)->create();
+        factory(ProjectStats::class)->create([
+            'project_id' => $project->id,
+        ]);
+
+        $fileName = Uuid::uuid4()->toString() . '_' . time() . '.mp4';
+        $disk = 'audio';
+        $filePath = 'temp/' . $fileName;
+        $fileBytes = 21;
+
+        $compressionMock = Mockery::mock(AudioVideoCompressionService::class);
+        $compressionMock->shouldNotReceive('compress');
+        $this->app->instance(AudioVideoCompressionService::class, $compressionMock);
+
+        Storage::shouldReceive('disk')
+            ->andReturnSelf();
+
+        Storage::shouldReceive('exists')
+            ->andReturn(true);
+
+        Storage::shouldReceive('size')
+            ->andReturn($fileBytes);
+
+        Storage::shouldReceive('move')
+            ->andReturn(true);
+
+        Storage::shouldReceive('delete')
+            ->andReturn(true);
+
+        Storage::shouldReceive('put')
+            ->andReturn(true);
+
+        $stream = fopen('php://temp', 'r+');
+        fwrite($stream, 'fake audio content');
+        rewind($stream);
+
+        Storage::shouldReceive('readStream')
+            ->andReturn($stream);
+
+        $result = AudioVideoSaverService::saveFile(
+            $project->ref,
+            $project->id,
+            ['path' => $filePath],
+            $fileName,
+            $disk,
+            true
+        );
+
+        $this->assertTrue($result);
+    }
+
     public function test_service_handles_s3_put_returns_false()
     {
         $projectRef = Generators::projectRef();

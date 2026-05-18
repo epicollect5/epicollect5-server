@@ -79,5 +79,6 @@ return [
         'always' => 'public, max-age=31536000, immutable',
         'hours' => (int) env('MEDIA_CACHE_CONTROL_HOURS', 24),
         'never' => 'no-store'
-    ]
+    ],
+    'audio_video_ffmpeg_compression_enabled' => (bool) env('AUDIO_VIDEO_FFMPEG_COMPRESSION_ENABLED', false)
 ];
