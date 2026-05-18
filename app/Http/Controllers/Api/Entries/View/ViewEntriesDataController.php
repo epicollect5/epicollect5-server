@@ -3,12 +3,16 @@
 namespace ec5\Http\Controllers\Api\Entries\View;
 
 use ec5\Libraries\Utilities\DateFormatConverter;
+use ec5\Services\Entries\EntriesCacheService;
+use ec5\Services\Entries\EntriesViewService;
+use ec5\Services\Mapping\DataMappingService;
 use ec5\Traits\Eloquent\StatsRefresher;
 use Exception;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use Log;
 use Throwable;
@@ -17,13 +21,25 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
 {
     use StatsRefresher;
 
+    private EntriesCacheService $entriesCacheService;
+
+    public function __construct(
+        DataMappingService $dataMappingService,
+        EntriesViewService $entriesViewService,
+        EntriesCacheService $entriesCacheService
+    ) {
+        parent::__construct($dataMappingService, $entriesViewService);
+
+        $this->entriesCacheService = $entriesCacheService;
+    }
+
     //Export entries using the API
     /**
      * @throws Throwable
      */
-    public function export()
+    public function export(Request $request)
     {
-        //Slow down api responses to avoid overloading the server
+        //set limit to avoid massive payload exports
         $jsonPerPageLimit = config('epicollect.limits.entries_export_per_page_json');
         $csvPerPageLimit = config('epicollect.limits.entries_export_per_page_csv');
 
@@ -31,18 +47,13 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
         $projectMapping = $this->requestedProject()->getProjectMapping();
 
         $allowedKeys = array_keys(config('epicollect.strings.search_data_entries'));
+        //set a default per_page in case it is missing from the request
         $perPage = config('epicollect.limits.entries_table.per_page');
         $params = $this->entriesViewService->getSanitizedQueryParams($allowedKeys, $perPage);
 
         // Validate the options and query string
         if (!$this->entriesViewService->areValidQueryParams($params)) {
             return Response::apiErrorCode(400, $this->entriesViewService->validationErrors);
-        }
-
-        if ((int)$params['page'] === 1) {
-            // Entry exports are paginated; refresh project_stats once at the start
-            // so exported metadata reflects current totals without changing mid-export.
-            $this->refreshProjectStats($this->requestedProject());
         }
 
         // If the map_index value passed does not exist, error out
@@ -74,7 +85,61 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
                 }
             }
         }
-        // Set the mapping
+        $cacheTTL = $this->entriesCacheService->getExportEntriesCacheTTL();
+
+        if (!$this->entriesCacheService->isExportEntriesCacheEnabled() || $cacheTTL <= 0) {
+            return $this->sendExportEntriesResponseWithFreshStats($params);
+        }
+
+        return $this->entriesCacheService->rememberExportEntriesResponse(
+            $this->requestedProject()->slug,
+            $request->fullUrl(),
+            $cacheTTL,
+            function () use ($params) {
+                return $this->sendExportEntriesResponseWithFreshStats($params);
+            }
+        );
+    }
+
+    /**
+     * @throws Throwable
+     */
+    public function show(): JsonResponse
+    {
+        $allowedKeys = array_keys(config('epicollect.strings.search_data_entries'));
+        $perPage = config('epicollect.limits.entries_table.per_page');
+        $params = $this->entriesViewService->getSanitizedQueryParams($allowedKeys, $perPage);
+
+        // Validate the params and query string
+        if (!$this->entriesViewService->areValidQueryParams($params)) {
+            return Response::apiErrorCode(400, $this->entriesViewService->validationErrors);
+        }
+        // Branch
+        if ($params['branch_ref'] != '') {
+            return $this->sendBranchEntriesJSON($params, false);
+        }
+        // Form
+        return $this->sendEntriesJSON($params, false);
+    }
+
+    /**
+     * Send the mapped export response for the requested format.
+     * @throws Throwable
+     */
+    private function sendExportEntriesResponseWithFreshStats(array $params)
+    {
+        //check if this is the first page of the dataset
+        if ((int)$params['page'] === 1) {
+            // Entry exports are paginated; refresh project_stats once at the start
+            // so exported metadata reflects current totals without changing mid-export.
+            $this->refreshProjectStats($this->requestedProject());
+        }
+
+        return $this->sendExportEntriesResponse($params);
+    }
+
+    private function sendExportEntriesResponse(array $params)
+    {
         $this->dataMappingService->init(
             $this->requestedProject(),
             $params['format'],
@@ -103,27 +168,6 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
                 // Form
                 return $this->sendEntriesJSON($params, true);
         }
-    }
-
-    /**
-     * @throws Throwable
-     */
-    public function show(): JsonResponse
-    {
-        $allowedKeys = array_keys(config('epicollect.strings.search_data_entries'));
-        $perPage = config('epicollect.limits.entries_table.per_page');
-        $params = $this->entriesViewService->getSanitizedQueryParams($allowedKeys, $perPage);
-
-        // Validate the params and query string
-        if (!$this->entriesViewService->areValidQueryParams($params)) {
-            return Response::apiErrorCode(400, $this->entriesViewService->validationErrors);
-        }
-        // Branch
-        if ($params['branch_ref'] != '') {
-            return $this->sendBranchEntriesJSON($params, false);
-        }
-        // Form
-        return $this->sendEntriesJSON($params, false);
     }
 
     /**
@@ -347,4 +391,5 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
         }
         return Response::toCSVStream();
     }
+
 }
