@@ -167,4 +167,69 @@ class AudioVideoSaverServiceLocalTest extends TestCase
         );
         $this->assertTrue($result);
     }
+
+    /**
+     * @throws Exception
+     */
+    public function test_compression_is_called_when_flag_is_true_local()
+    {
+        config(['epicollect.media.audio_video_ffmpeg_compression_enabled' => true]);
+
+        $project = factory(Project::class)->create();
+        factory(ProjectStats::class)->create([
+            'project_id' => $project->id,
+        ]);
+
+        $fileName = Uuid::uuid4()->toString() . '_' . time() . '.mp4';
+        $disk = 'audio';
+        $fileSizeKB = 2048;
+        $fileBytes = $fileSizeKB * 1024;
+        $targetPath = $project->ref . '/' . $fileName;
+
+        $file = UploadedFile::fake()
+            ->create($fileName, $fileSizeKB, 'audio/mp4');
+
+        $compressionMock = Mockery::mock(AudioVideoCompressionService::class);
+        $compressionMock->shouldReceive('compress')
+            ->once()
+            ->with($disk, $targetPath, $disk)
+            ->andReturn(true);
+        app()->instance(AudioVideoCompressionService::class, $compressionMock);
+
+        Storage::shouldReceive('disk')
+            ->with($disk)
+            ->zeroOrMoreTimes()
+            ->andReturnSelf();
+
+        Storage::shouldReceive('exists')
+            ->with($project->ref)
+            ->once()
+            ->andReturn(false);
+
+        Storage::shouldReceive('makeDirectory')
+            ->with($project->ref)
+            ->once()
+            ->andReturn(true);
+
+        Storage::shouldReceive('put')
+            ->once()
+            ->withArgs(function ($path, $stream) use ($targetPath) {
+                return $path === $targetPath && is_resource($stream);
+            })
+            ->andReturn(true);
+
+        Storage::shouldReceive('size')
+            ->with($targetPath)
+            ->andReturn($fileBytes);
+
+        $result = AudioVideoSaverService::saveFile(
+            $project->ref,
+            $project->id,
+            $file,
+            $fileName,
+            $disk,
+            false
+        );
+        $this->assertTrue($result);
+    }
 }

@@ -241,11 +241,58 @@ class AudioVideoSaverServiceS3Test extends TestCase
         Storage::shouldReceive('size')
             ->andReturn($fileBytes);
 
-        Storage::shouldReceive('move')
+        Storage::shouldReceive('put')
             ->andReturn(true);
 
-        Storage::shouldReceive('delete')
+        $stream = fopen('php://temp', 'r+');
+        fwrite($stream, 'fake audio content');
+        rewind($stream);
+
+        Storage::shouldReceive('readStream')
+            ->andReturn($stream);
+
+        $result = AudioVideoSaverService::saveFile(
+            $project->ref,
+            $project->id,
+            ['path' => $filePath],
+            $fileName,
+            $disk,
+            true
+        );
+
+        $this->assertTrue($result);
+    }
+
+    public function test_compression_is_called_when_flag_is_true_s3()
+    {
+        config(['epicollect.media.audio_video_ffmpeg_compression_enabled' => true]);
+
+        $project = factory(Project::class)->create();
+        factory(ProjectStats::class)->create([
+            'project_id' => $project->id,
+        ]);
+
+        $fileName = Uuid::uuid4()->toString() . '_' . time() . '.mp4';
+        $disk = 'audio';
+        $filePath = 'temp/' . $fileName;
+        $fileBytes = 21;
+        $targetPath = $project->ref . '/' . $fileName;
+
+        $compressionMock = Mockery::mock(AudioVideoCompressionService::class);
+        $compressionMock->shouldReceive('compress')
+            ->once()
+            ->with($disk, $targetPath, $disk)
             ->andReturn(true);
+        $this->app->instance(AudioVideoCompressionService::class, $compressionMock);
+
+        Storage::shouldReceive('disk')
+            ->andReturnSelf();
+
+        Storage::shouldReceive('exists')
+            ->andReturn(true);
+
+        Storage::shouldReceive('size')
+            ->andReturn($fileBytes);
 
         Storage::shouldReceive('put')
             ->andReturn(true);
