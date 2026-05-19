@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 12.5.31
+
+- Data Editor 0.0.6 - Reduced maximum file size limits for audio, video, and image uploads.
+
 # 12.5.30
 
 - Added config flag to enable FFmpeg compression for audio and video files.
