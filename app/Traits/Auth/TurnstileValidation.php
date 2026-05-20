@@ -17,13 +17,19 @@ trait TurnstileValidation
         $ruleTurnstile = new RuleTurnstile();
         $verifyEndpoint = config('epicollect.setup.cloudflare_turnstile.verify_endpoint');
         $response = $client->post($verifyEndpoint, [
+            'timeout' => 5.0,
+            'connect_timeout' => 2.0,
             'form_params' => [
                 'secret' => config('epicollect.setup.cloudflare_turnstile.secret_key'),
-                'response' => $turnstileResponse
+                'response' => $turnstileResponse,
+                'remoteip' => request()->ip()
             ]
         ]);
 
         $arrayResponse = json_decode($response->getBody()->getContents(), true);
+        if (!is_array($arrayResponse)) {
+            return ['captcha' => ['ec5_380']];
+        }
 
         $ruleTurnstile->validate($arrayResponse);
         if ($ruleTurnstile->hasErrors()) {

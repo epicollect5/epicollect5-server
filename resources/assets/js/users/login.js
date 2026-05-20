@@ -21,9 +21,14 @@ $(document).ready(function () {
         var siteKey = turnstileContainer.getAttribute('data-sitekey');
 
         // Wait for Turnstile script to load, then render
+        var checkTurnstileTimeout = setTimeout(function () {
+            clearInterval(checkTurnstile);
+            window.EC5.toast.showError('Cloudflare Turnstile failed to load. Please refresh the page.');
+        }, 10000);
         var checkTurnstile = setInterval(function () {
             if (typeof window.turnstile !== 'undefined') {
                 clearInterval(checkTurnstile);
+                clearTimeout(checkTurnstileTimeout);
                 window.turnstile.render(turnstileContainer, {
                     sitekey: siteKey,
                     size: isMobile ? 'compact' : 'normal',
@@ -60,7 +65,9 @@ $(document).ready(function () {
 
         $('#passwordless').on('click', function (e) {
             window.clearTimeout(timeout);
-            timeout = window.setTimeout(attemptSubmission(e), 1000);
+            timeout = window.setTimeout(function () {
+                attemptSubmission(e);
+            }, 1000);
         });
     }
 
