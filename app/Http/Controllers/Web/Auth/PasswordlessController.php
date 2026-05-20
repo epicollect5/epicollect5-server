@@ -9,7 +9,7 @@ use ec5\Models\User\User;
 use ec5\Models\User\UserPasswordlessWeb;
 use ec5\Services\User\UserService;
 use ec5\Traits\Auth\PasswordlessProviderHandler;
-use ec5\Traits\Auth\ReCaptchaValidation;
+use ec5\Traits\Auth\TurnstileValidation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Log;
@@ -17,7 +17,7 @@ use Throwable;
 
 class PasswordlessController extends AuthController
 {
-    use ReCaptchaValidation;
+    use TurnstileValidation;
     use PasswordlessProviderHandler;
 
     public function __construct()
@@ -45,23 +45,23 @@ class PasswordlessController extends AuthController
         }
 
         //imp: skip captcha validation only when testing OR when disabled in the .env
-        $isGoogleRecaptchaEnabled = config('epicollect.setup.google_recaptcha.use_google_recaptcha');
-        if (!(App::environment() === 'testing')  && $isGoogleRecaptchaEnabled) {
-            //parse recaptcha response for any errors
-            if (isset($params['g-recaptcha-response'])) {
-                $recaptchaResponse = $params['g-recaptcha-response'];
+        $isTurnstileEnabled = config('epicollect.setup.cloudflare_turnstile.use_cloudflare_turnstile');
+        if (!(App::environment() === 'testing') && $isTurnstileEnabled) {
+            //parse turnstile response for any errors
+            if (isset($params['cf-turnstile-response'])) {
+                $turnstileResponse = $params['cf-turnstile-response'];
                 try {
-                    $recaptchaErrors = $this->getAnyRecaptchaErrors($recaptchaResponse);
-                    if (!empty($recaptchaErrors)) {
-                        return redirect()->back()->withErrors($recaptchaErrors);
+                    $turnstileErrors = $this->getAnyTurnstileErrors($turnstileResponse);
+                    if (!empty($turnstileErrors)) {
+                        return redirect()->back()->withErrors($turnstileErrors);
                     }
                 } catch (Throwable $e) {
                     Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
-                    return redirect()->back()->withErrors(['recaptcha' => ['ec5_103']]);
+                    return redirect()->back()->withErrors(['turnstile' => ['ec5_103']]);
 
                 }
             } else {
-                return redirect()->back()->withErrors(['recaptcha' => ['ec5_103']]);
+                return redirect()->back()->withErrors(['turnstile' => ['ec5_103']]);
             }
         }
 

@@ -36,7 +36,7 @@ class PasswordlessControllerWebTest extends TestCase
 
         $response = $this->post(Route('passwordless-token-web'), [
             'email' => $email,
-            'g-recaptcha-response' => 'abc'
+            'cf-turnstile-response' => 'abc'
         ]);
 
         $response->assertStatus(200);
@@ -52,7 +52,7 @@ class PasswordlessControllerWebTest extends TestCase
         });
     }
 
-    public function test_missing_recaptcha()
+    public function test_missing_captcha()
     {
         $email = config('testing.MANAGER_EMAIL');
 
@@ -82,7 +82,7 @@ class PasswordlessControllerWebTest extends TestCase
         $this->serverVariables['HTTP_REFERER'] = $referer;
 
         $response = $this->post(Route('passwordless-token-web'), [
-            'g-recaptcha-response' => 'abc'
+            'cf-turnstile-response' => 'abc'
         ]);
 
         $response->assertStatus(302);

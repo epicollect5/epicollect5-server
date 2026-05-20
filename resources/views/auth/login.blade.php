@@ -1,5 +1,5 @@
 @php
-    $isGoogleRecaptchaEnabled = config('epicollect.setup.google_recaptcha.use_google_recaptcha');
+    $isTurnstileEnabled = config('epicollect.setup.cloudflare_turnstile.use_cloudflare_turnstile');
 @endphp
 
 @extends('app')
@@ -37,11 +37,6 @@
                                 @endif
 
                                 <div class="col-xs-12 col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
-                                    @if ($isGoogleRecaptchaEnabled)
-                                        <span class="hidden gcaptcha">
-                                                {{ $gcaptcha }}
-                                        </span>
-                                    @endif
 
                                     <form id="page-login__passwordless" method="POST"
                                           action="{{ route('passwordless-token-web') }}" accept-charset="UTF-8">
@@ -58,10 +53,13 @@
                                                     We will send a code to your inbox
                                                 </small>
                                             </div>
+                                            @if ($isTurnstileEnabled)
+                                                <div id="cf-turnstile" data-sitekey="{{ $captcha }}"></div>
+                                            @endif
                                         </div>
-                                        {{--Need this to pass validation when recaptcha is disabled--}}
-                                        @if (!$isGoogleRecaptchaEnabled)
-                                            <input type="hidden" name="g-recaptcha-response" value="fake_value">
+                                        {{--Need this to pass validation when turnstile is disabled--}}
+                                        @if (!$isTurnstileEnabled)
+                                            <input type="hidden" name="cf-turnstile-response" value="fake_value">
                                         @endif
 
                                         <div class="form-group">
@@ -110,8 +108,12 @@
 @stop
 
 @section('scripts')
-    @if ($isGoogleRecaptchaEnabled)
-        <script src="https://www.google.com/recaptcha/api.js?render={{ config('auth.google.recaptcha_site_key') }}"></script>
+    @if ($isTurnstileEnabled)
+        <script
+                src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+                async
+                defer
+        ></script>
     @endif
     <script type="text/javascript" src="{{ asset('js/users/users.js') . '?' . config('app.release') }}"></script>
 @stop

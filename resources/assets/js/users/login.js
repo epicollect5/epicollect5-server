@@ -5,6 +5,7 @@ $(document).ready(function () {
 
     var pageLogin = $('.page-login');
 
+
     //do not do anything if not on the mapping page
     if (pageLogin.length === 0) {
         return false;
@@ -12,74 +13,70 @@ $(document).ready(function () {
 
     var appleLoginBtn = pageLogin.find('.btn-login-apple');
 
-    //check if Google Recaptcha is enabled
-    var captchaContainer = $('.gcaptcha');
-    if (captchaContainer.length > 0) {
-        //get client site ID
-        var siteId = captchaContainer.text().trim();
+//check if Turnstile is enabled
+    var turnstileContainer = document.getElementById('cf-turnstile');
+    var isMobile = window.innerWidth < 600;
+    var turnstileToken = null;
+    if (turnstileContainer) {
+        var siteKey = turnstileContainer.getAttribute('data-sitekey');
 
-        captchaContainer.remove();
-
-
-        window.grecaptcha.ready(function () {
-
-            var timeout;
-            // create debounced function
-            var attemptSubmission = function (e) {
-                var form = pageLogin.find('form#page-login__passwordless');
-
-                e.preventDefault();
-
-                function _execute() {
-                    //show overlay
-
-                    window.EC5.overlay.fadeIn();
-                    //get grecaptcha token
-                    try {
-                        window.grecaptcha.execute(siteId, {action: 'passwordless'}).then(function (token) {
-                                //embed token and send it to server for verification
-                                form.prepend('<input type="hidden" name="g-recaptcha-response" value="' + token + '">')
-                                    .submit();
-                                //hide overlay
-                                window.setTimeout(window.EC5.overlay.fadeOut(), 10000);
-                            }
-                        );
-                    } catch (e) {
-                        window.setTimeout(window.EC5.overlay.fadeOut(), 500);
-                        window.EC5.toast.showError('Google ReCaptcha ' + e);
+        // Wait for Turnstile script to load, then render
+        var checkTurnstile = setInterval(function () {
+            if (typeof window.turnstile !== 'undefined') {
+                clearInterval(checkTurnstile);
+                window.turnstile.render(turnstileContainer, {
+                    sitekey: siteKey,
+                    size: isMobile ? 'compact' : 'normal',
+                    callback: function (token) {
+                        turnstileToken = token;
+                        var form = pageLogin.find('form#page-login__passwordless');
+                        form.find('input[name="cf-turnstile-response"]').remove();
+                        form.prepend('<input type="hidden" name="cf-turnstile-response" value="' + token + '">');
+                    },
+                    'error-callback': function () {
+                        window.EC5.toast.showError('Cloudflare Turnstile error');
                     }
-                }
-
-                //use html5 validation first (if supported)
-                if (typeof form.get(0).reportValidity === "function") {
-                    if (form.get(0).reportValidity()) {
-                        _execute();
-                    }
-                } else {
-                    _execute();
-                }
-            };
-
-            $('#passwordless').on('click', function (e) {
-                window.clearTimeout(timeout);
-                timeout = window.setTimeout(attemptSubmission(e), 1000);
-            });
-        });
-
-        //handle show password checkbox
-        pageLogin.find('.show-password-control').on('click', function () {
-
-            if ($(this).prop('checked')) {
-                pageLogin.find('input.password-input').each(function () {
-                    $(this).attr('type', 'text');
-                });
-            } else {
-                pageLogin.find('input.password-input').each(function (iput) {
-                    $(this).attr('type', 'password');
                 });
             }
+        }, 100);
+
+        var timeout;
+        var attemptSubmission = function (e) {
+            var form = pageLogin.find('form#page-login__passwordless');
+
+            if (typeof form.get(0).reportValidity === "function") {
+                if (!form.get(0).reportValidity()) {
+                    return;
+                }
+            }
+
+            if (!turnstileToken) {
+                window.EC5.toast.showError('Please complete the Turnstile challenge');
+                return;
+            }
+
+            form.submit();
+        };
+
+        $('#passwordless').on('click', function (e) {
+            window.clearTimeout(timeout);
+            timeout = window.setTimeout(attemptSubmission(e), 1000);
         });
     }
+
+    //handle show password checkbox
+    pageLogin.find('.show-password-control').on('click', function () {
+
+        if ($(this).prop('checked')) {
+            pageLogin.find('input.password-input').each(function () {
+                $(this).attr('type', 'text');
+            });
+        } else {
+            pageLogin.find('input.password-input').each(function (iput) {
+                $(this).attr('type', 'password');
+            });
+        }
+    });
 
     appleLoginBtn.on('click', function (e) {
 
