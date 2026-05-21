@@ -351,6 +351,100 @@ class UserServiceTest extends TestCase
         ]);
     }
 
+    public function test_should_update_google_user_details()
+    {
+        $user = factory(User::class)->create(
+            [
+                'email' => $this->googleUser->email,
+                'state' => config('epicollect.strings.user_state.active'),
+            ]
+        );
+
+        $this->googleUser->user['given_name'] = 'UpdatedName';
+        $this->googleUser->user['family_name'] = 'UpdatedLastName';
+        $this->googleUser->avatar = 'https://new-avatar.com/photo.jpg';
+
+        $result = UserService::updateGoogleUserDetails($this->googleUser);
+
+        $this->assertTrue($result);
+        $this->assertDatabaseHas('users', [
+            'email' => $this->googleUser->email,
+            'name' => 'UpdatedName',
+            'last_name' => 'UpdatedLastName',
+            'avatar' => 'https://new-avatar.com/photo.jpg',
+        ]);
+    }
+
+    public function test_should_update_apple_user_without_provider()
+    {
+        $user = factory(User::class)->create();
+        $name = 'Updated Apple';
+        $lastName = 'Updated Last';
+
+        $result = UserService::updateAppleUser($name, $lastName, $user->email, false);
+
+        $this->assertTrue($result);
+        $this->assertDatabaseHas('users', [
+            'email' => $user->email,
+            'name' => $name,
+            'last_name' => $lastName,
+            'state' => config('epicollect.strings.user_state.active'),
+        ]);
+
+        $this->assertDatabaseMissing('users_providers', [
+            'user_id' => $user->id,
+            'provider' => config('epicollect.strings.providers.apple'),
+        ]);
+    }
+
+    public function test_create_duplicate_passwordless_user_returns_null()
+    {
+        $email = $this->faker->safeEmail;
+        UserService::createPasswordlessUser($email);
+
+        $this->assertDatabaseHas('users', [
+            'email' => $email,
+        ]);
+
+        $duplicate = UserService::createPasswordlessUser($email);
+        $this->assertNull($duplicate);
+    }
+
+    public function test_create_google_user_with_partial_data()
+    {
+        $googleUser = (object)[
+            'token' => 'ya29.xxx',
+            'refreshToken' => null,
+            'expiresIn' => 3599,
+            'id' => $this->getRandomGoogleUserId(),
+            'nickname' => null,
+            'name' => null,
+            'email' => 'partial.google@gmail.com',
+            'avatar' => null,
+            'user' => [
+                'id' => '999999999999999999',
+                'email' => 'partial.google@gmail.com',
+                'verified_email' => true,
+                'name' => 'Partial',
+                'given_name' => null,
+                'family_name' => null,
+                'picture' => null,
+                'locale' => 'en',
+            ],
+            'avatar_original' => null,
+        ];
+
+        $user = UserService::createGoogleUser($googleUser);
+
+        $this->assertNotNull($user);
+        $this->assertDatabaseHas('users', [
+            'email' => 'partial.google@gmail.com',
+            'name' => '',
+            'last_name' => '',
+            'avatar' => '',
+        ]);
+    }
+
     public function test_authentication_domain_allowed()
     {
         // Test with no allowed domains configured (all domains should be allowed)

@@ -2,7 +2,6 @@
 
 namespace ec5\Http\Controllers\Web\Admin\Tools;
 
-use Auth;
 use Carbon\Carbon;
 use ec5\DTO\ProjectDTO;
 use ec5\Libraries\Utilities\Generators;
@@ -12,7 +11,6 @@ use ec5\Models\Project\Project;
 use ec5\Services\Project\ProjectAvatarService;
 use ec5\Traits\Eloquent\System\ProjectsStats;
 use Illuminate\Support\Facades\Mail;
-use Random\RandomException;
 use Storage;
 use Throwable;
 
@@ -25,15 +23,6 @@ class PHPToolsController
     public function __construct(ProjectDTO $project)
     {
         $this->project = $project;
-    }
-
-    //bust opcache on command
-    public function resetOpcache()
-    {
-        if (opcache_reset()) {
-            return 'Opcache cleared';
-        }
-        return 'Could not clear Opcache';
     }
 
     public function showProjectsStats()
@@ -127,40 +116,6 @@ class PHPToolsController
         } catch (Throwable $e) {
             return 'Failed -> ' . $e->getMessage();
         }
-    }
-
-    /**
-     * @throws RandomException
-     */
-    public function previewEmail()
-    {
-        $userName = Auth::user()->name;
-        $code = random_int(100000, 999999);
-        $token = 'xxxxxxxxxxxxxxxxxxxxxxxx';
-        $url = route('login-reset', $token);
-
-        $expireAt = Carbon::now()
-            ->subSeconds(config('auth.jwt-forgot.expire'))
-            ->diffForHumans(Carbon::now(), true);
-
-        //        return view('emails.user_registration', [
-        //            'name' => $userName,
-        //            'code' => $code,
-        //            'url' => $url
-        //        ]);
-
-        return view('emails.user_passwordless_web', [
-            'name' => $userName,
-            'code' => $code,
-            'url' => $url,
-            'expireAt' => $expireAt
-        ]);
-    }
-
-    #[NoReturn] public function hash()
-    {
-        dd(bcrypt('my-password', ['rounds' => 12]));
-        // dd('test', bcrypt('test', ['rounds' => 12]), bcrypt('test', ['rounds' => 12]), bcrypt('test', ['rounds' => 12]));
     }
 
     public function codes($howMany = 1)

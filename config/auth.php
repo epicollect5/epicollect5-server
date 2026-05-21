@@ -88,10 +88,6 @@ return [
         'secret_key' => env('APP_KEY'),
         'expire' => env('JWT_EXPIRE', 7776000)
     ],
-    'jwt-forgot' => [
-        'secret_key' => env('APP_KEY'),
-        'expire' => env('JWT_FORGOT_EXPIRE', 3600)
-    ],
     'jwt-passwordless' => [
         'secret_key' => env('APP_KEY'),
         'expire' => env('JWT_PASSWORDLESS_EXPIRE', 86400)
@@ -110,15 +106,12 @@ return [
     'account_code' => [
         'expire' => env('ACCOUNT_CODE_EXPIRES_IN', 7200)
     ],
-    'account_unverified' => [
-        'expire' => env(' ACCOUNT_UNVERIFIED_EXPIRES_IN', 3)
-    ],
     /*
     |--------------------------------------------------------------------------
     | Auth Methods
     |--------------------------------------------------------------------------
-    | The authentication methods available for users
-    | Supported: "local", "google", "ldap", "apple", "passwordless"
+    | The authentication methods available for public users
+    | Supported: "google", "apple", "passwordless"
     */
 
     'auth_methods' => array_filter(
@@ -137,12 +130,6 @@ return [
         fn ($domain) => trim($domain) !== ''
     ),
 
-
-    /**
-     * Whether the mobile app clients can use the local auth api routes
-     * Useful when building custom apk with only local users
-     */
-    'auth_api_local_enabled' => env('AUTH_API_LOCAL_ENABLED', false),
 
     /**
      * Whether authentication is enabled on the web server

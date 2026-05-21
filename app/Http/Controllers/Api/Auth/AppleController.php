@@ -150,14 +150,6 @@ class AppleController extends AuthController
                      * for verification
                      */
 
-                    //if the user is local and local auth is enabled, user must provide password
-                    if ($this->isAuthApiLocalEnabled) {
-                        if (in_array($this->localProviderLabel, $userProviders)) {
-                            $error['api-login-apple'] = ['ec5_390'];
-                            return Response::apiErrorCode(400, $error);
-                        }
-                    }
-
                     $error['api-login-apple'] = ['ec5_384'];
                     return Response::apiErrorCode(400, $error);
                 }
@@ -219,8 +211,7 @@ class AppleController extends AuthController
      * If the code is valid, the apple provider is added
      * This is performed only the first time the user logs in with a new provider
      *
-     * IMP:Local users are asked to enter the password when they login using a different provider
-     * IMP:they are not verified here, local auth has its own verification controller
+     * IMP:Local users (admins) are asked to enter the password when they login using a different provider
      * @noinspection PhpPossiblePolymorphicInvocationInspection
      */
     public function verifyUserEmail(Request $request, RulePasswordlessApiLogin $validator)

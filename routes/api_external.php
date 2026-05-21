@@ -30,7 +30,6 @@ Route::post('api/login/verify-apple', 'Api\Auth\AppleController@verifyUserEmail'
 Route::group(['middleware' => ['throttle:api-external-global']], function () {
     // Authentication routes
     Route::get('api/login', 'Api\Auth\AuthController@getLogin');
-    Route::post('api/login/local', 'Api\Auth\LocalController@authenticate');
     //  Route::post('api/login/ldap', 'Api\Auth\AuthController@postLdapLogin');
     Route::post('api/handle/google', 'Api\Auth\GoogleController@authGoogleUser');
 

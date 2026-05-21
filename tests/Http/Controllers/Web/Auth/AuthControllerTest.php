@@ -13,8 +13,56 @@ class AuthControllerTest extends TestCase
 
     public function test_login_page_renders_correctly()
     {
-        $response = $this->get(route('login')); // Replace with the actual route or URL to your view
-        $response->assertStatus(200); // Ensure the response is successful
+        $response = $this->get(route('login'));
+        $response->assertStatus(200);
+    }
+
+    public function test_login_page_renders_with_google()
+    {
+        config(['auth.auth_methods' => ['google']]);
+        $response = $this->get(route('login'));
+        $response->assertStatus(200);
+        $response->assertSee('Sign in with Google');
+        $response->assertDontSee('Sign in with Apple');
+        $response->assertDontSee('page-login__passwordless');
+    }
+
+    public function test_login_page_renders_with_apple()
+    {
+        config(['auth.auth_methods' => ['apple']]);
+        $response = $this->get(route('login'));
+        $response->assertStatus(200);
+        $response->assertSee('Sign in with Apple');
+        $response->assertDontSee('Sign in with Google');
+        $response->assertDontSee('page-login__passwordless');
+    }
+
+    public function test_login_page_renders_with_passwordless()
+    {
+        config(['auth.auth_methods' => ['passwordless']]);
+        $response = $this->get(route('login'));
+        $response->assertStatus(200);
+        $response->assertSee('page-login__passwordless');
+        $response->assertDontSee('Sign in with Google');
+        $response->assertDontSee('Sign in with Apple');
+    }
+
+    public function test_login_page_renders_with_all_methods()
+    {
+        config(['auth.auth_methods' => ['google', 'apple', 'passwordless']]);
+        $response = $this->get(route('login'));
+        $response->assertStatus(200);
+        $response->assertSee('Sign in with Google');
+        $response->assertSee('Sign in with Apple');
+        $response->assertSee('page-login__passwordless');
+    }
+
+    public function test_login_page_redirects_when_web_auth_disabled()
+    {
+        config(['auth.auth_web_enabled' => false]);
+        $response = $this->get(route('login'));
+        $response->assertStatus(302);
+        $response->assertRedirect(route('home'));
     }
 
     public function test_logout()

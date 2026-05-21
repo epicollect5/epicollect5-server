@@ -9,25 +9,6 @@ window.EC5.admin.projects = window.EC5.admin.projects || {};
 (function projects(module) {
 
     /**
-     * Update the user's project role
-     *
-     * @param role
-     * @param projectId
-     */
-    module.updateRole = function (role, projectId) {
-
-        // Make ajax request to load users
-        $.ajax({
-            url: window.EC5.SITE_URL + '/admin/update-user-project-role',
-            type: 'POST',
-            dataType: 'json',
-            data: {role: role, project_id: projectId}
-        }).done(function (data) {
-            window.EC5.toast.showSuccess(data.data.title);
-        }).fail(window.EC5.showError);
-    };
-
-    /**
      * Function for asynchronously retrieving the
      * list of projects, based on any search/filter
      * criteria, with pagination

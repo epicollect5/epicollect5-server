@@ -22,10 +22,7 @@ class AuthController extends Controller
     protected array $authMethods;
     protected string $appleProviderLabel;
     protected string $googleProviderLabel;
-    protected string $localProviderLabel;
-    protected string $ldapProviderlabel;
     protected string $passwordlessProviderLabel;
-    protected bool $isAuthApiLocalEnabled;
 
     public function __construct(JwtUserProvider $provider)
     {
@@ -33,13 +30,10 @@ class AuthController extends Controller
         //set providers values
         $this->appleProviderLabel = config('epicollect.strings.providers.apple');
         $this->googleProviderLabel = config('epicollect.strings.providers.google');
-        $this->localProviderLabel = config('epicollect.strings.providers.local');
-        $this->ldapProviderlabel = config('epicollect.strings.providers.ldap');
         $this->passwordlessProviderLabel = config('epicollect.strings.providers.passwordless');
 
         // Determine which authentication methods are available
         $this->authMethods = config('auth.auth_methods');
-        $this->isAuthApiLocalEnabled = config('auth.auth_api_local_enabled');
     }
 
     public function getLogin()

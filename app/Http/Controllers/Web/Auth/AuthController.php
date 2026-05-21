@@ -27,11 +27,8 @@ class AuthController extends Controller
     protected mixed $authMethods = [];
     protected string $appleProviderLabel;
     protected string $googleProviderLabel;
-    protected string $localProviderLabel;
-    protected string $ldapProviderlabel;
     protected string $passwordlessProviderLabel;
     protected bool $isAuthWebEnabled;
-    protected bool $isAuthApiLocalEnabled;
 
     public function __construct()
     {
@@ -41,8 +38,6 @@ class AuthController extends Controller
         //set providers values
         $this->appleProviderLabel = config('epicollect.strings.providers.apple');
         $this->googleProviderLabel = config('epicollect.strings.providers.google');
-        $this->localProviderLabel = config('epicollect.strings.providers.local');
-        $this->ldapProviderlabel = config('epicollect.strings.providers.ldap');
         $this->passwordlessProviderLabel = config('epicollect.strings.providers.passwordless');
 
         // Always pass the authentication method variables to the login view
@@ -54,7 +49,6 @@ class AuthController extends Controller
             $view->with('colSize', $colSize);
         });
 
-        $this->isAuthApiLocalEnabled = config('auth.auth_api_local_enabled');
         $this->isAuthWebEnabled = config('auth.auth_web_enabled');
     }
 

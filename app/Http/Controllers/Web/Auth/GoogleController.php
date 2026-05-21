@@ -60,8 +60,6 @@ class GoogleController extends AuthController
     {
         //check if local logins are enabled
         $provider = $this->googleProviderLabel;
-        $providerLocal = $this->localProviderLabel;
-        $isLocalAuthEnabled = in_array($this->localProviderLabel, $this->authMethods, true);
 
         try {
             // Find the Google user
@@ -122,27 +120,6 @@ class GoogleController extends AuthController
                     $userProviders = UserProvider::where('email', $googleUser->email)
                         ->pluck('provider')->toArray();
 
-                    //if the user has a local provider, redirect to admin or staff login
-                    //based on user server role
-                    //imp: local provider means they have a password
-                    if (in_array($providerLocal, $userProviders)) {
-
-                        switch ($user->server_role) {
-
-                            case config('epicollect.strings.server_roles.superadmin'):
-                            case config('epicollect.strings.server_roles.admin'):
-                                return redirect()->route('login-admin')->withErrors(['ec5_390']);
-                            default:
-                                if ($isLocalAuthEnabled) {
-                                    //staff login page
-                                    return redirect()->route('login-staff')->withErrors(['ec5_390']);
-                                } else {
-                                    //public login where Local users can only use the email to login
-                                    return redirect()->route('login')->withErrors(['ec5_391']);
-                                }
-                        }
-                    }
-
                     if (!in_array($provider, $userProviders)) {
 
                         /**
@@ -190,8 +167,7 @@ class GoogleController extends AuthController
      * If the code is valid, the Google provider is added and the user is authenticated
      * This is performed only the first time the user logs in with a new provider
      *
-     * IMP:Local users are asked to enter the password when they login using a different provider
-     * IMP:they are not verified here, local auth has its own verification controller
+     * IMP:Local users (admins) are asked to enter the password when they login using a different provider
      */
     public function verify(Request $request, RulePasswordlessApiLogin $validator)
     {
