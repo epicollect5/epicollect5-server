@@ -36,7 +36,11 @@ $(document).ready(function () {
                         turnstileToken = token;
                         var form = pageLogin.find('form#page-login__passwordless');
                         form.find('input[name="cf-turnstile-response"]').remove();
-                        form.prepend('<input type="hidden" name="cf-turnstile-response" value="' + token + '">');
+                        $('<input>', {
+                            type: 'hidden',
+                            name: 'cf-turnstile-response',
+                            value: token
+                        }).prependTo(form);
                     },
                     'error-callback': function () {
                         window.EC5.toast.showError('Cloudflare Turnstile error');
@@ -64,6 +68,7 @@ $(document).ready(function () {
         };
 
         $('#passwordless').on('click', function (e) {
+            e.preventDefault();
             window.clearTimeout(timeout);
             timeout = window.setTimeout(function () {
                 attemptSubmission(e);
