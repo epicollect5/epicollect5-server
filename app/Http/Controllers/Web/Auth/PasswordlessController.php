@@ -57,11 +57,11 @@ class PasswordlessController extends AuthController
                     }
                 } catch (Throwable $e) {
                     Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
-                    return redirect()->back()->withErrors(['turnstile' => ['ec5_103']]);
+                    return redirect()->back()->withErrors(['captcha' => ['ec5_103']]);
 
                 }
             } else {
-                return redirect()->back()->withErrors(['turnstile' => ['ec5_103']]);
+                return redirect()->back()->withErrors(['captcha' => ['ec5_103']]);
             }
         }
 

@@ -110,7 +110,7 @@
 @section('scripts')
     @if ($isTurnstileEnabled)
         <script
-                src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+                src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onTurnstileLoad"
                 async
                 defer
         ></script>

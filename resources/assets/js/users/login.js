@@ -1,80 +1,100 @@
 'use strict';
 window.EC5 = window.EC5 || {};
 
+// Global Turnstile state
+window.EC5.turnstileToken = null;
+window.EC5.turnstileReady = false;
+
+/**
+ * Global callback invoked by Cloudflare Turnstile when the script finishes loading.
+ * Cloudflare will call this automatically based on the onload parameter in the script URL.
+ */
+window.onTurnstileLoad = function () {
+    window.EC5.turnstileReady = true;
+    // Render widget immediately if DOM is ready, otherwise wait for DOMContentLoaded
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', renderTurnstileWidget);
+    } else {
+        renderTurnstileWidget();
+    }
+};
+
+/**
+ * Render the Turnstile widget on the page if the container exists.
+ */
+function renderTurnstileWidget() {
+    var turnstileContainer = document.getElementById('cf-turnstile');
+    if (!turnstileContainer) {
+        return;
+    }
+
+    var siteKey = turnstileContainer.getAttribute('data-sitekey');
+    var isMobile = window.innerWidth < 600;
+
+    window.turnstile.render(turnstileContainer, {
+        sitekey: siteKey,
+        size: isMobile ? 'compact' : 'normal',
+        callback: function (token) {
+            window.EC5.turnstileToken = token;
+            var form = $('form#page-login__passwordless');
+            form.find('input[name="cf-turnstile-response"]').remove();
+            $('<input>', {
+                type: 'hidden',
+                name: 'cf-turnstile-response',
+                value: token
+            }).prependTo(form);
+        },
+        'error-callback': function () {
+            window.EC5.toast.showError('Cloudflare Turnstile error');
+        }
+    });
+}
+
 $(document).ready(function () {
 
     var pageLogin = $('.page-login');
 
-
-    //do not do anything if not on the mapping page
+    //do not do anything if not on the login page
     if (pageLogin.length === 0) {
         return false;
     }
 
     var appleLoginBtn = pageLogin.find('.btn-login-apple');
-
-//check if Turnstile is enabled
     var turnstileContainer = document.getElementById('cf-turnstile');
-    var isMobile = window.innerWidth < 600;
-    var turnstileToken = null;
-    if (turnstileContainer) {
-        var siteKey = turnstileContainer.getAttribute('data-sitekey');
 
-        // Wait for Turnstile script to load, then render
-        var checkTurnstileTimeout = setTimeout(function () {
-            clearInterval(checkTurnstile);
-            window.EC5.toast.showError('Cloudflare Turnstile failed to load. Please refresh the page.');
-        }, 10000);
-        var checkTurnstile = setInterval(function () {
-            if (typeof window.turnstile !== 'undefined') {
-                clearInterval(checkTurnstile);
-                clearTimeout(checkTurnstileTimeout);
-                window.turnstile.render(turnstileContainer, {
-                    sitekey: siteKey,
-                    size: isMobile ? 'compact' : 'normal',
-                    callback: function (token) {
-                        turnstileToken = token;
-                        var form = pageLogin.find('form#page-login__passwordless');
-                        form.find('input[name="cf-turnstile-response"]').remove();
-                        $('<input>', {
-                            type: 'hidden',
-                            name: 'cf-turnstile-response',
-                            value: token
-                        }).prependTo(form);
-                    },
-                    'error-callback': function () {
-                        window.EC5.toast.showError('Cloudflare Turnstile error');
-                    }
-                });
-            }
-        }, 100);
+    // If Turnstile container exists but onload callback hasn't fired yet (edge case),
+    // render it now. Normally onTurnstileLoad will fire first.
+    if (turnstileContainer && window.EC5.turnstileReady) {
+        renderTurnstileWidget();
+    }
 
-        var timeout;
-        var attemptSubmission = function (e) {
-            var form = pageLogin.find('form#page-login__passwordless');
+    // Handle passwordless form submission
+    var timeout;
+    var attemptSubmission = function (e) {
+        var form = pageLogin.find('form#page-login__passwordless');
 
-            if (typeof form.get(0).reportValidity === "function") {
-                if (!form.get(0).reportValidity()) {
-                    return;
-                }
-            }
-
-            if (!turnstileToken) {
-                window.EC5.toast.showError('Please complete the Turnstile challenge');
+        if (typeof form.get(0).reportValidity === "function") {
+            if (!form.get(0).reportValidity()) {
                 return;
             }
+        }
 
-            form.submit();
-        };
+        // Only check for Turnstile token if Turnstile container exists
+        if (turnstileContainer && !window.EC5.turnstileToken) {
+            window.EC5.toast.showError('Please complete the Turnstile challenge');
+            return;
+        }
 
-        $('#passwordless').on('click', function (e) {
-            e.preventDefault();
-            window.clearTimeout(timeout);
-            timeout = window.setTimeout(function () {
-                attemptSubmission(e);
-            }, 1000);
-        });
-    }
+        form.submit();
+    };
+
+    $('#passwordless').on('click', function (e) {
+        e.preventDefault();
+        window.clearTimeout(timeout);
+        timeout = window.setTimeout(function () {
+            attemptSubmission(e);
+        }, 1000);
+    });
 
     //handle show password checkbox
     pageLogin.find('.show-password-control').on('click', function () {
