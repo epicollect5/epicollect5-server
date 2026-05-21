@@ -8,7 +8,7 @@ class RulePasswordlessWeb extends ValidationBase
 {
     protected array $rules = [
         'email' => 'required|email',
-        'g-recaptcha-response' => 'required'
+        'cf-turnstile-response' => 'required'
     ];
 
     public function __construct()

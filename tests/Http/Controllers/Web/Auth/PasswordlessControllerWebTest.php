@@ -8,6 +8,7 @@ use ec5\Mail\UserPasswordlessApiMail;
 use ec5\Models\User\UserPasswordlessWeb;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
@@ -36,7 +37,7 @@ class PasswordlessControllerWebTest extends TestCase
 
         $response = $this->post(Route('passwordless-token-web'), [
             'email' => $email,
-            'g-recaptcha-response' => 'abc'
+            'cf-turnstile-response' => 'abc'
         ]);
 
         $response->assertStatus(200);
@@ -52,7 +53,7 @@ class PasswordlessControllerWebTest extends TestCase
         });
     }
 
-    public function test_missing_recaptcha()
+    public function test_missing_captcha()
     {
         $email = config('testing.MANAGER_EMAIL');
 
@@ -82,7 +83,7 @@ class PasswordlessControllerWebTest extends TestCase
         $this->serverVariables['HTTP_REFERER'] = $referer;
 
         $response = $this->post(Route('passwordless-token-web'), [
-            'g-recaptcha-response' => 'abc'
+            'cf-turnstile-response' => 'abc'
         ]);
 
         $response->assertStatus(302);
@@ -384,6 +385,161 @@ class PasswordlessControllerWebTest extends TestCase
         //user should be logged in
         $this->assertTrue(Auth::check());
         $this->assertEquals(Auth::user()->email, $email);
+    }
+
+    /**
+     * Test sending passwordless code with successful Turnstile verification (enabled).
+     * This test is only run if Turnstile is enabled in the environment.
+     */
+    public function test_send_code_with_turnstile_enabled_success()
+    {
+        // Enable Turnstile for this test
+        config()->set('epicollect.setup.cloudflare_turnstile.use_cloudflare_turnstile', true);
+
+        $email = config('testing.MANAGER_EMAIL');
+        Mail::fake();
+
+        // Mock a successful Turnstile verification response
+        Http::fake([
+            config('epicollect.setup.cloudflare_turnstile.verify_endpoint') => Http::response([
+                'success' => true,
+                'challenge_ts' => '2021-01-01T00:00:00Z',
+                'hostname' => 'example.com',
+                'error-codes' => []
+            ], 200)
+        ]);
+
+        $response = $this->post(Route('passwordless-token-web'), [
+            'email' => $email,
+            'cf-turnstile-response' => 'valid-turnstile-token'
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertEquals('auth.verification_passwordless', $response->original->getName());
+        $this->assertEquals([
+            'email' => $email
+        ], $response->original->getData());
+
+        Mail::assertSent(UserPasswordlessApiMail::class, function ($mail) use ($email) {
+            return $mail->hasTo($email);
+        });
+
+        // Verify Http request was made to Cloudflare
+        Http::assertSent(function ($request) {
+            return $request['response'] === 'valid-turnstile-token';
+        });
+    }
+
+    /**
+     * Test sending passwordless code with failed Turnstile verification (success = false).
+     */
+    public function test_send_code_with_turnstile_enabled_failure_success_false()
+    {
+        config()->set('epicollect.setup.cloudflare_turnstile.use_cloudflare_turnstile', true);
+
+        $email = config('testing.MANAGER_EMAIL');
+        Mail::fake();
+
+        // Mock a failed Turnstile verification response
+        Http::fake([
+            config('epicollect.setup.cloudflare_turnstile.verify_endpoint') => Http::response([
+                'success' => false,
+                'challenge_ts' => '2021-01-01T00:00:00Z',
+                'hostname' => 'example.com',
+                'error-codes' => ['challenge-failed']
+            ], 200)
+        ]);
+
+        $response = $this->post(Route('passwordless-token-web'), [
+            'email' => $email,
+            'cf-turnstile-response' => 'invalid-turnstile-token'
+        ]);
+
+        $response->assertStatus(302);
+        $response->assertRedirect(route('login'));
+        $this->assertEquals('ec5_380', session('errors')->getBag('default')->first());
+
+        Mail::assertNotSent(UserPasswordlessApiMail::class);
+    }
+
+    /**
+     * Test sending passwordless code with Turnstile enabled but missing turnstile response.
+     */
+    public function test_send_code_with_turnstile_enabled_missing_response()
+    {
+        config()->set('epicollect.setup.cloudflare_turnstile.use_cloudflare_turnstile', true);
+
+        $email = config('testing.MANAGER_EMAIL');
+        Mail::fake();
+
+        $response = $this->post(Route('passwordless-token-web'), [
+            'email' => $email
+            // Missing cf-turnstile-response
+        ]);
+
+        $response->assertStatus(302);
+        $response->assertRedirect(route('login'));
+        $this->assertEquals('ec5_103', session('errors')->getBag('default')->first());
+
+        Mail::assertNotSent(UserPasswordlessApiMail::class);
+    }
+
+    /**
+     * Test sending passwordless code with Turnstile disabled.
+     * When Turnstile is disabled, no HTTP request to Cloudflare should be made.
+     */
+    public function test_send_code_with_turnstile_disabled()
+    {
+        config()->set('epicollect.setup.cloudflare_turnstile.use_cloudflare_turnstile', false);
+
+        $email = config('testing.MANAGER_EMAIL');
+        Mail::fake();
+
+        // Don't mock HTTP responses since no HTTP requests should be made
+        Http::fake();
+
+        $response = $this->post(Route('passwordless-token-web'), [
+            'email' => $email,
+            'cf-turnstile-response' => 'any-token'
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertEquals('auth.verification_passwordless', $response->original->getName());
+
+        Mail::assertSent(UserPasswordlessApiMail::class);
+
+        // Verify no HTTP requests were made to Cloudflare
+        Http::assertNothingSent();
+    }
+
+    /**
+     * Test sending passwordless code with Turnstile verification returning invalid JSON.
+     */
+    public function test_send_code_with_turnstile_invalid_json_response()
+    {
+        config()->set('epicollect.setup.cloudflare_turnstile.use_cloudflare_turnstile', true);
+
+        $email = config('testing.MANAGER_EMAIL');
+        Mail::fake();
+
+        // Mock an invalid JSON response from Cloudflare
+        Http::fake([
+            config('epicollect.setup.cloudflare_turnstile.verify_endpoint') => Http::response(
+                'Invalid JSON',
+                200
+            )
+        ]);
+
+        $response = $this->post(Route('passwordless-token-web'), [
+            'email' => $email,
+            'cf-turnstile-response' => 'token'
+        ]);
+
+        $response->assertStatus(302);
+        $response->assertRedirect(route('login'));
+        $this->assertEquals('ec5_380', session('errors')->getBag('default')->first());
+
+        Mail::assertNotSent(UserPasswordlessApiMail::class);
     }
 
 }

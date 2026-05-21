@@ -157,8 +157,7 @@ return [
     'bcrypt_rounds' => env('BCRYPT_ROUNDS', 12),
 
     'google' => [
-        'connect_redirect_uri' => env('APP_URL').'/profile/connect-google-callback',
-        'recaptcha_site_key' => env('GOOGLE_RECAPTCHA_SITE_KEY')
+        'connect_redirect_uri' => env('APP_URL').'/profile/connect-google-callback'
     ],
     //Apple redirect does not work with ip or localhost, and must be secure https://
     //They are defined at https://developer.apple.com/account/resources/identifiers

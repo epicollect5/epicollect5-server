@@ -13,8 +13,7 @@ class RuleSignup extends ValidationBase
     protected array $rules = [
         'name' => 'required|string|min:3|max:25',
         'email' => 'required|string|email|max:255|unique:users',
-        'password' => 'required|string|min:10|confirmed|regex:/^[ A-Za-z0-9_@.\/#!?£&+$%^*-]*$/',
-        'g-recaptcha-response' => 'required'
+        'password' => 'required|string|min:10|confirmed|regex:/^[ A-Za-z0-9_@.\/#!?£&+$%^*-]*$/'
     ];
 
     public function __construct()

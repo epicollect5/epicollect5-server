@@ -34,11 +34,11 @@ return [
         'endpoint' => env('OPENCAGE_ENDPOINT'),
         'key' => env('OPENCAGE_KEY')
     ],
-    'google_recaptcha' => [
-        'use_google_recaptcha' => env('USE_GOOGLE_RECAPTCHA', false),
-        'verify_endpoint' => env('GOOGLE_RECAPTCHA_API_VERIFY_ENDPOINT'),
-        'site_key' => env('GOOGLE_RECAPTCHA_SITE_KEY'),
-        'secret_key' => env('GOOGLE_RECAPTCHA_SECRET_KEY')
+    'cloudflare_turnstile' => [
+        'use_cloudflare_turnstile' => env('USE_CLOUDFLARE_TURNSTILE', false),
+        'verify_endpoint' => env('CLOUDFLARE_TURNSTILE_API_VERIFY_ENDPOINT'),
+        'site_key' => env('CLOUDFLARE_TURNSTILE_SITE_KEY'),
+        'secret_key' => env('CLOUDFLARE_TURNSTILE_SECRET_KEY')
     ],
     'ip_filtering_enabled' => env('IP_FILTERING_ENABLED'),
     'cost_x_gb' => env('COST_X_GB'),

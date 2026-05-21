@@ -9,6 +9,7 @@ use Firebase\JWT\Key;
 use Hash;
 use Illuminate\Database\Eloquent\Model;
 use Log;
+use Throwable;
 
 class UserPasswordlessWeb extends Model
 {
@@ -36,7 +37,7 @@ class UserPasswordlessWeb extends Model
                 $this->attributes['token'],
                 new Key($secretKey, 'HS256')
             );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error('Error decoding jwt-passwordless', ['exception' => $e->getMessage()]);
             return false;
         }
