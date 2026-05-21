@@ -2,9 +2,9 @@
 
 namespace ec5\Http\Middleware;
 
-use Illuminate\Support\Facades\Auth;
 use Closure;
 use ec5\Traits\Middleware\MiddlewareTools;
+use Illuminate\Support\Facades\Auth;
 use Response;
 
 class Authenticate
@@ -41,20 +41,12 @@ class Authenticate
         //api_external uses JwTGuard.php user() method to validate the bearer token from the request
         $user = Auth::guard($guard)->user();
 
-        // Check if user is local and unverified
-        if ($user->isLocalAndUnverified()) {
-            //ok, send the user to verification page
-            return redirect('signup/verification');
-        }
-
         // Check if user is active
         if (!$user->isActive()) {
             // If not, log out and redirect to login page with error
             Auth::guard($guard)->logout();
             return redirect()->guest('login')->withErrors(['ec5_212']);
         }
-
-
 
         return $next($request);
     }

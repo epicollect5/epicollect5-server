@@ -9,8 +9,6 @@
 |
 */
 
-
-
 Route::get('/', 'Web\HomeController@index')->name('home');
 //Tell me more routes
 Route::get('more-create', 'Web\MorePages\MoreCreateController@index');
@@ -20,14 +18,10 @@ Route::get('more-view', 'Web\MorePages\MoreViewController@index');
 // Authentication routes
 Route::group(['middleware' => ['guest']], function () {
     Route::get('login', 'Web\Auth\LoginController@show')->name('login');
-    Route::post('login', 'Web\Auth\LocalController@authenticate');
-    //  Route::post('login/ldap', 'Web\Auth\LdapController@authenticate');
     Route::get('login/admin', 'Web\Auth\AdminController@show')->name('login-admin');
     Route::post('login/admin', 'Web\Auth\AdminController@authenticate');
 
-
     // Google Authentication routes
-    //Route::get('handle/connect-google', 'Web\Auth\ProfileController@handle');
     Route::get('redirect/google', 'Web\Auth\GoogleController@redirect');
     Route::get('handle/google', 'Web\Auth\GoogleController@handleCallback');
     //Apple auth
@@ -59,11 +53,7 @@ Route::group(['middleware' => 'auth.admin'], function () {
     Route::get('admin/settings', 'Web\Admin\AdminController@showSettings')->name('admin-settings-show');
     Route::get('admin/phpinfo', 'Web\Admin\AdminController@showPHPInfo')->name('admin-phpinfo-show');
 
-
-    Route::post('admin/add-user', 'Web\Admin\AdminUsersController@addUser');
-
-    Route::post('admin/update-user-project-role', 'Web\Admin\AdminUserRolesController@update');
-
+    //Admin tools
     Route::get('admin/tools/opcache', 'Web\Admin\Tools\PHPToolsController@resetOpcache');
     Route::get('admin/tools/projects-stats', 'Web\Admin\Tools\PHPToolsController@showProjectsStats');
 
@@ -73,7 +63,6 @@ Route::group(['middleware' => 'auth.admin'], function () {
 
 
     Route::get('admin/tools/storage/{threshold}', 'Web\Admin\Tools\SearchToolsController@findProjectsStorageUsed');
-
 
     Route::get('admin/tools/project-structures/1', 'Web\Admin\Tools\SearchToolsController@findQuestionsWithTooManyJumps');
 
@@ -141,9 +130,6 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('profile/connect-apple-callback', 'Web\Auth\ProfileController@handleAppleConnectCallback')->name('profile-connect-apple-callback');
 
     Route::post('profile/disconnect-apple', 'Web\Auth\ProfileController@disconnectApple')->name('profile-disconnect-apple');
-
-    Route::get('login/staff/reset', 'Web\Auth\ResetPasswordController@show')->name('password-reset');
-    Route::post('login/staff/reset', 'Web\Auth\ResetPasswordController@reset')->name('password-reset-post');
 
     Route::get('myprojects', 'Web\Projects\MyProjectsController@show')->name('my-projects');
     Route::get('myprojects/create', 'Web\Project\ProjectCreateController@show')->name('my-projects-create');

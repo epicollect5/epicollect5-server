@@ -88,7 +88,7 @@ class ProfileControllerTest extends TestCase
         //create mock user
         $user = factory(User::class)->create();
 
-        //add google provider
+        //add apple provider
         factory(UserProvider::class)->create(
             [
                 'user_id' => $user->id,
@@ -114,5 +114,42 @@ class ProfileControllerTest extends TestCase
         ]);
 
 
+    }
+
+    public function test_disconnect_apple_when_not_connected()
+    {
+        $user = factory(User::class)->create();
+
+        $response = $this->actingAs($user)->post(Route('profile-disconnect-apple'))->assertStatus(302);
+        $response->assertRedirect(Route('profile'));
+    }
+
+    public function test_disconnect_google_when_not_connected()
+    {
+        $user = factory(User::class)->create();
+
+        $response = $this->actingAs($user)->post(Route('profile-disconnect-google'))->assertStatus(302);
+        $response->assertRedirect(Route('profile'));
+    }
+
+    public function test_disconnect_apple_redirect_when_not_logged_in()
+    {
+        $response = $this->post(Route('profile-disconnect-apple'));
+        $response->assertStatus(302);
+        $response->assertRedirect(Route('login'));
+    }
+
+    public function test_disconnect_google_redirect_when_not_logged_in()
+    {
+        $response = $this->post(Route('profile-disconnect-google'));
+        $response->assertStatus(302);
+        $response->assertRedirect(Route('login'));
+    }
+
+    public function test_connect_google_redirect_when_not_logged_in()
+    {
+        $response = $this->get(Route('profile-connect-google'));
+        $response->assertStatus(302);
+        $response->assertRedirect(Route('login'));
     }
 }

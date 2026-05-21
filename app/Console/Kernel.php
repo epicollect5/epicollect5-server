@@ -3,7 +3,6 @@
 namespace ec5\Console;
 
 use ec5\Console\Commands\GenerateHomePageCacheCommand;
-use ec5\Console\Commands\RemoveUnverifiedUsersCommand;
 use ec5\Console\Commands\SeedEntriesCommand;
 use ec5\Console\Commands\SeedMediaCommand;
 use ec5\Console\Commands\SeedSuperadminCommand;
@@ -28,7 +27,6 @@ class Kernel extends ConsoleKernel
         SystemStatsCommand::class,
         SystemStatsUploadCommand::class,
         GenerateHomePageCacheCommand::class,
-        RemoveUnverifiedUsersCommand::class,
         SystemCheckStorageCommand::class,
         SystemClearOpcache::class,
         SystemProjectStorageCommand::class,

@@ -177,7 +177,7 @@ class PasswordlessController extends AuthController
              * matching the email, that will give the user access to those projects.
              * Apple and Google verify the email on their side so we are safe
              *
-             * Same goes for local users
+             * Same goes for local users (admins)
              */
 
             //User was found, does this user need a passwordless provider?

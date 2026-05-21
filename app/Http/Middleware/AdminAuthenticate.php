@@ -2,9 +2,9 @@
 
 namespace ec5\Http\Middleware;
 
-use Illuminate\Support\Facades\Auth;
 use Closure;
 use ec5\Traits\Middleware\MiddlewareTools;
+use Illuminate\Support\Facades\Auth;
 use Response;
 
 class AdminAuthenticate
@@ -25,9 +25,6 @@ class AdminAuthenticate
      */
     public function handle($request, Closure $next, $guard = null)
     {
-        //todo: in development ignore middleware for json requests (system stats dashboard)
-        // ...
-
         if (Auth::guard($guard)->guest()) {
             if ($this->isJsonRequest($request)) {
                 $errors = ['auth' => ['ec5_219']];
@@ -38,12 +35,6 @@ class AdminAuthenticate
         }
 
         $user = Auth::guard($guard)->user();
-
-        // Check if user is local and unverified
-        if ($user->isLocalAndUnverified()) {
-            //ok, send the user to verification page
-            return redirect('signup/verification');
-        }
 
         // Check if user is active
         if (!$user->isActive()) {

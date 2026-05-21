@@ -570,11 +570,11 @@ Authentication data is split between:
 
 This supports:
 
-- local login
-- passwordless login
+- passwordless login (web and API)
 - Google login
 - Apple login
 - OAuth client integrations
+- local login for admin/superadmin users only (added manually to the DB by the app owner)
 
 ## Request Lifecycle
 
@@ -625,7 +625,15 @@ Supported flows include:
 - Apple
 - passwordless web
 - passwordless API
-- local auth for staff/admin scenarios
+
+Public users may only authenticate via Google, Apple, or passwordless. Local credential login (email + password) is
+only available for admin/superadmin users on the dedicated `/login/admin` route and is not exposed to public users.
+
+The following auth features were removed:
+- public local login (email + password)
+- user self-signup
+- forgot/reset password flows
+- admin add-user UI (admins are added to the database manually by the app owner)
 
 Authorization is heavily project-role-based. The effective role on a project determines whether a user can:
 

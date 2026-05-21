@@ -11,7 +11,7 @@ class RuleRecaptcha extends ValidationBase
         'challenge_ts' => 'present',
         'hostname' => 'present',
         'score' => 'numeric|min:0.5',
-        'action' => 'in:signup,forgot,passwordless'
+        'action' => 'in:passwordless'
     ];
 
     public function __construct()

@@ -195,8 +195,7 @@ class GoogleController extends AuthController
      * If the code is valid, the Google provider is added
      * This is performed only the first time the user logs in with a new provider
      *
-     * IMP:Local users are asked to enter the password when they login using a different provider
-     * IMP:they are not verified here, local auth has its own verification controller
+     * IMP:Local users (admins) are asked to enter the password when they login using a different provider
      */
     public function verifyUserEmail(Request $request, RulePasswordlessApiLogin $validator)
     {

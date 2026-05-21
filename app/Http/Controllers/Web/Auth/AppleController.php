@@ -42,9 +42,6 @@ class AppleController extends AuthController
         $nonce = session('nonce');
         $appleUser = null;
 
-        //check if local logins are enabled
-        $isLocalAuthEnabled = in_array($this->localProviderLabel, $this->authMethods, true);
-
         //request parameters originally sent by Apple and posted here by ec5 front end
         $params = $request->all();
         try {
@@ -133,28 +130,10 @@ class AppleController extends AuthController
                 $userProviders = UserProvider::where('email', $email)
                     ->pluck('provider')->toArray();
 
-                //if the user is local redirect to admin/staff login
-                if (in_array($this->localProviderLabel, $userProviders)) {
-                    switch ($user->server_role) {
-
-                        case config('epicollect.strings.server_roles.superadmin'):
-                        case config('epicollect.strings.server_roles.admin'):
-                            return redirect()->route('login-admin')->withErrors(['ec5_384']);
-                        default:
-                            if ($isLocalAuthEnabled) {
-                                //redirect to staff login
-                                return redirect()->route('login-staff')->withErrors(['ec5_384']);
-                            } else {
-                                //redirect to public login asking login via email
-                                return redirect()->route('login')->withErrors(['ec5_391']);
-                            }
-                    }
-                }
-
                 if (!in_array($this->appleProviderLabel, $userProviders)) {
                     /**
                      * if the user is active but the Apple provider is not found,
-                     * this user created an account with another provider (apple or passwordless)
+                     * this user created an account with another provider (google or passwordless)
                      *
                      * Ask the user to connect the Apple account from the profile page
                      * for verification

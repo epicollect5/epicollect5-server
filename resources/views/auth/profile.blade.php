@@ -21,91 +21,81 @@
                             </p>
                         </div>
 
-                        @if (in_array('local', $providers))
-                            <a href="{{ route('password-reset') }}">
-                                <strong>Reset Password</strong>
-                            </a>
-                        @endif
+                        @if (in_array('passwordless', $auth_methods))
 
-                        {{-- Show account connection when email login is enabled --}}
-                        {{-- IMP: do not show it to Local users --}}
-                        @if (!in_array('local', $providers))
-                            @if (in_array('passwordless', $auth_methods))
-
-                                @if (in_array('google', $auth_methods))
-                                    @if (in_array('google', $providers))
-                                        <hr/>
-                                        {{-- Google Account already connected --}}
-                                        <div class="row">
-                                            <form method="POST" action="{{ route('profile-disconnect-google') }}"
-                                                  class="">
-                                                {{ csrf_field() }}
-                                                <button type="submit" class="btn btn-default">
-                                                    <span class="material-icons">link_off</span>
-                                                    <span class="hidden-xs"> Disconnect </span>
-                                                    Google
-                                                </button>
-                                                <div class="hidden-xs">
-                                                    <small>Connected account is <strong>{{ $email }}</strong></small>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    @else
-                                        <div class="row">
-                                            <div class="">
-                                                <a href="{{ route('profile-connect-google') }}" class="btn btn-action ">
-                                                    <span class="material-icons">
-                                                        add_link
-                                                    </span>
-                                                    <span class="hidden-xs"> Connect </span>
-                                                    Google
-                                                </a>
-                                                <div class="hidden-xs">
-                                                    <small>You can connect your Google Account only when its email is
-                                                        <br/>
-                                                        <strong>{{ $email }}</strong>
-                                                    </small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    @endif
-                                @endif
-
-
-
-                                @if (in_array('apple', $auth_methods))
+                            @if (in_array('google', $auth_methods))
+                                @if (in_array('google', $providers))
                                     <hr/>
-                                    @if (in_array('apple', $providers))
-                                        {{-- Apple Account already connected --}}
-                                        <form method="POST" action="{{ route('profile-disconnect-apple') }}"
+                                    {{-- Google Account already connected --}}
+                                    <div class="row">
+                                        <form method="POST" action="{{ route('profile-disconnect-google') }}"
                                               class="">
                                             {{ csrf_field() }}
                                             <button type="submit" class="btn btn-default">
                                                 <span class="material-icons">link_off</span>
-                                                <span class="hidden-xs">Disconnect</span> Apple
+                                                <span class="hidden-xs"> Disconnect </span>
+                                                Google
                                             </button>
                                             <div class="hidden-xs">
                                                 <small>Connected account is <strong>{{ $email }}</strong></small>
                                             </div>
                                         </form>
-                                    @else
-                                        <div class="row">
-                                            <div class="">
-                                                <button class="btn btn-action btn-connect-apple">
-                                                    <span class="material-icons">
-                                                        add_link
-                                                    </span>
-                                                    <span class="hidden-xs">Connect</span> Apple
-                                                </button>
-                                                <div class="hidden-xs">
-                                                    <small>You can connect your Apple Account only when its email is
-                                                        <br/>
-                                                        <strong>{{ $email }}</strong>
-                                                    </small>
-                                                </div>
+                                    </div>
+                                @else
+                                    <div class="row">
+                                        <div class="">
+                                            <a href="{{ route('profile-connect-google') }}" class="btn btn-action ">
+                                                <span class="material-icons">
+                                                    add_link
+                                                </span>
+                                                <span class="hidden-xs"> Connect </span>
+                                                Google
+                                            </a>
+                                            <div class="hidden-xs">
+                                                <small>You can connect your Google Account only when its email is
+                                                    <br/>
+                                                    <strong>{{ $email }}</strong>
+                                                </small>
                                             </div>
                                         </div>
-                                    @endif
+                                    </div>
+                                @endif
+                            @endif
+
+
+
+                            @if (in_array('apple', $auth_methods))
+                                <hr/>
+                                @if (in_array('apple', $providers))
+                                    {{-- Apple Account already connected --}}
+                                    <form method="POST" action="{{ route('profile-disconnect-apple') }}"
+                                          class="">
+                                        {{ csrf_field() }}
+                                        <button type="submit" class="btn btn-default">
+                                            <span class="material-icons">link_off</span>
+                                            <span class="hidden-xs">Disconnect</span> Apple
+                                        </button>
+                                        <div class="hidden-xs">
+                                            <small>Connected account is <strong>{{ $email }}</strong></small>
+                                        </div>
+                                    </form>
+                                @else
+                                    <div class="row">
+                                        <div class="">
+                                            <button class="btn btn-action btn-connect-apple">
+                                                <span class="material-icons">
+                                                    add_link
+                                                </span>
+                                                <span class="hidden-xs">Connect</span> Apple
+                                            </button>
+                                            <div class="hidden-xs">
+                                                <small>You can connect your Apple Account only when its email is
+                                                    <br/>
+                                                    <strong>{{ $email }}</strong>
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
                                 @endif
                             @endif
                         @endif

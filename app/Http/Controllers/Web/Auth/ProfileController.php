@@ -44,7 +44,7 @@ class ProfileController extends Controller
      * Show the application login form.
      *
      */
-    public function show(Request $request)
+    public function show()
     {
         $nonce = csrf_token();
         session(['nonce' => $nonce]);
@@ -58,27 +58,8 @@ class ProfileController extends Controller
         ]);
     }
 
-    /**
-     *
-     * Log out users so they can reset their password
-     */
-    public function reset(Request $request)
-    {
-        //logout
-        Auth::logout();
-        $request->session()->flush();
-        $request->session()->regenerate();
-
-        return redirect()->route('forgot-show');
-    }
-
     public function connectGoogle()
     {
-        //local users cannot connect Google
-        if ($this->isLocal($this->user)) {
-            return redirect()->back();
-        }
-
         return Socialite::with('google')
             ->with(['prompt' => 'select_account']) //todo not sure we might remove this
             ->redirectUrl(config('auth.google.connect_redirect_uri'))
@@ -163,15 +144,7 @@ class ProfileController extends Controller
     {
         $appleUser = null;
 
-        //local users cannot connect Apple
-        if ($this->isLocal($this->user)) {
-            return view('auth.profile', [
-                'name' => $this->user->name,
-                'email' => $this->user->email,
-                'providers' => $this->providers,
-                'auth_methods' => config('auth.auth_methods')
-            ]);
-        }
+
 
         try {
             $nonce = session('nonce');
@@ -256,11 +229,6 @@ class ProfileController extends Controller
             ]);
         }
         return redirect()->route('profile')->withErrors(['ec5_386']);
-    }
-
-    private function isLocal($user)
-    {
-        return $user->provider === config('epicollect.strings.providers.local');
     }
 
     private function updateUserDetailsWithGoogle($googleUser)

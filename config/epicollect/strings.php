@@ -92,8 +92,6 @@ return [
     'providers' => [
         'local' => 'local',
         'google' => 'google',
-        'ldap' => 'ldap',
-        'localgoogle' => 'localgoogle',//local and google accounts merged
         'passwordless' => 'passwordless',
         'apple' => 'apple'
     ],

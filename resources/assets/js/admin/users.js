@@ -94,36 +94,6 @@ window.EC5.users = window.EC5.users || {};
 
     };
 
-    /**
-     * Function to add a user given the url and formData
-     *
-     * @param url
-     * @param formData
-     * @param callBack
-     */
-    module.addUser = function (url, formData, callBack) {
-
-        // Make ajax request to load users
-        $.ajax({
-            url: url,
-            type: 'POST',
-            dataType: 'json',
-            data: formData
-        }).done(function () {
-
-            window.EC5.toast.showSuccess('New User added.');
-            // Get users based on page and any existing search or filter and filter option
-            module.getUsers();
-
-            // If passed a callback, call
-            if (callBack) {
-                callBack();
-            }
-
-        }).fail(module.showError);
-
-    };
-
 })(window.EC5.users);
 
 $(document).ready(function () {
@@ -226,20 +196,6 @@ $(document).ready(function () {
         window.EC5.users.getUsers();
     });
 
-
-    // Bind on click to activate/disable (state) buttons
-    userAdministration.on('submit', '.user-administration__table__state-form', function (e) {
-
-        e.preventDefault();
-        // Retrieve form data
-        var formData = $(this).serialize();
-        // Get action url
-        var url = $(this).attr('action');
-
-        window.EC5.users.updateUser(url, formData);
-    });
-
-
     // Bind on click to access (server_role) buttons
     userAdministration.on('submit', '.user-administration__table__server-role-form', function (e) {
 
@@ -251,34 +207,4 @@ $(document).ready(function () {
 
         window.EC5.users.updateUser(url, formData);
     });
-
-    // Bind on click to add new user (via modal)
-    $('.manage-users__user-add-form').on('submit', function (e) {
-
-        e.preventDefault();
-
-        // Retrieve form data
-        var formData = $(this).serialize();
-
-        // Get action url
-        var url = $(this).attr('action');
-
-        // Add user and close modal on success
-        window.EC5.users.addUser(url, formData, function () {
-            $('#ec5ModalAddUser').modal('hide');
-        });
-    });
-
-    //handle show password checkbox
-    modalAddUser.find('.show-password-control').on('click', function () {
-        if ($(this).prop('checked')) {
-            modalAddUser.find('input.password-input').each(function () {
-                $(this).attr('type', 'text');
-            });
-        } else {
-            modalAddUser.find('input.password-input').each(function () {
-                $(this).attr('type', 'password');
-            });
-        }
-    })
 });

@@ -95,12 +95,7 @@ class ProjectManageUsersController
                 ->render());
         }
 
-        // Return only valid 'provider' auth methods i.e., not 'local'
         $authMethods = config('auth.auth_methods');
-        $invalidAuthMethod = array_search('local', config('auth.auth_methods'));
-        if ($invalidAuthMethod !== false) {
-            unset($authMethods[$invalidAuthMethod]);
-        }
 
         $projectRole = new ProjectRole();
         $countByRole = $projectRole->getCountByRole($this->requestedProject()->getId());
@@ -129,6 +124,7 @@ class ProjectManageUsersController
      * @param RuleProjectRole $ruleProjectRole
      * @param ProjectService $projectService
      * @return JsonResponse|RedirectResponse
+     * @throws Throwable
      */
     public function addUserRole(RuleProjectRole $ruleProjectRole, ProjectService $projectService)
     {

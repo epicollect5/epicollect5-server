@@ -5,10 +5,8 @@ namespace ec5\Models\User;
 use Carbon\Carbon;
 use ec5\Traits\Models\SerializeDates;
 use Illuminate\Auth\Authenticatable;
-use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
-use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Notifications\Notifiable;
@@ -16,7 +14,6 @@ use Laravel\Passport\HasApiTokens;
 
 class User extends Model implements
     AuthorizableContract,
-    CanResetPasswordContract,
     AuthenticatableContract
 {
     /**
@@ -36,7 +33,6 @@ class User extends Model implements
 
     use Authenticatable;
     use Authorizable;
-    use CanResetPassword;
     use HasApiTokens;
     use Notifiable;
     use SerializeDates;
@@ -65,16 +61,4 @@ class User extends Model implements
         return $this->state === config('epicollect.strings.user_state.unverified');
     }
 
-    public function isLocalAndUnverified(): bool
-    {
-        $localProvider = config('epicollect.strings.providers.local');
-        $userProvider = UserProvider::where('email', $this->email)->where('provider', $localProvider)->first();
-
-        if ($userProvider) {
-            if ($this->state === config('epicollect.strings.user_state.unverified')) {
-                return true;
-            }
-        }
-        return false;
-    }
 }
