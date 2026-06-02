@@ -174,9 +174,6 @@ class AppleController extends AuthController
      * This verifies an Apple User who already has an account (Google)
      * If the code is valid, the Apple provider is added
      * This is performed only the first time the user logs in with a new provider
-     *
-     * IMP:Local users are asked to enter the password when they login using a different provider
-     * IMP:they are not verified here, local auth has its own verification controller
      */
     public function verify(Request $request, RulePasswordlessApiLogin $validator)
     {

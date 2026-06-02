@@ -109,29 +109,6 @@ class GoogleController extends AuthController
                     $userProviders = UserProvider::where('email', $googleUser->email)
                         ->pluck('provider')->toArray();
 
-                    //if the user has a local provider, redirect to admin or staff login
-                    //based on user server role
-                    if (in_array($providerLocal, $userProviders)) {
-
-                        switch ($user->server_role) {
-
-                            //admins must enter password on the mobile app
-                            case config('epicollect.strings.server_roles.superadmin'):
-                            case config('epicollect.strings.server_roles.admin'):
-                                $error['api-login-google'] = ['ec5_390'];
-                                return Response::apiErrorCode(400, $error);
-                            default:
-                                if ($this->isAuthApiLocalEnabled) {
-                                    //staff must enter password on the app
-                                    $error['api-login-google'] = ['ec5_390'];
-                                } else {
-                                    //public login where Local users can only use the email to login
-                                    $error['api-login-google'] = ['ec5_383'];
-                                }
-                                return Response::apiErrorCode(400, $error);
-                        }
-                    }
-
                     if (!in_array($provider, $userProviders)) {
                         /**
                          * if the user is active but the Google provider is not found,

@@ -367,6 +367,12 @@ class UserServiceTest extends TestCase
         $result = UserService::updateGoogleUserDetails($this->googleUser);
 
         $this->assertTrue($result);
+
+        $refreshed = $user->fresh();
+        $this->assertSame('UpdatedName', $refreshed->name);
+        $this->assertSame('UpdatedLastName', $refreshed->last_name);
+        $this->assertSame('https://new-avatar.com/photo.jpg', $refreshed->avatar);
+
         $this->assertDatabaseHas('users', [
             'email' => $this->googleUser->email,
             'name' => 'UpdatedName',

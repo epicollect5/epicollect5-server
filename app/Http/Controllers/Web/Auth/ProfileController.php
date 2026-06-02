@@ -144,8 +144,6 @@ class ProfileController extends Controller
     {
         $appleUser = null;
 
-
-
         try {
             $nonce = session('nonce');
             $params = $request->all();

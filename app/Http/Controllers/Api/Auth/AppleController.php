@@ -211,7 +211,6 @@ class AppleController extends AuthController
      * If the code is valid, the apple provider is added
      * This is performed only the first time the user logs in with a new provider
      *
-     * IMP:Local users (admins) are asked to enter the password when they login using a different provider
      * @noinspection PhpPossiblePolymorphicInvocationInspection
      */
     public function verifyUserEmail(Request $request, RulePasswordlessApiLogin $validator)

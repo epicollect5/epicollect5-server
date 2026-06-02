@@ -49,6 +49,8 @@ class AdminControllerTest extends TestCase
 
     public function test_admin_authenticate_with_invalid_password()
     {
+        Mail::fake();
+
         $user = factory(User::class)->create([
             'password' => bcrypt('secret'),
             'server_role' => config('epicollect.strings.server_roles.admin'),
@@ -66,6 +68,7 @@ class AdminControllerTest extends TestCase
 
         $response->assertStatus(302);
         $response->assertSessionHasErrors();
+        Mail::assertNothingSent();
     }
 
     public function test_admin_authenticate_with_basic_role()

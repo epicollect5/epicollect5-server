@@ -54,7 +54,6 @@ Route::group(['middleware' => 'auth.admin'], function () {
     Route::get('admin/phpinfo', 'Web\Admin\AdminController@showPHPInfo')->name('admin-phpinfo-show');
 
     //Admin tools
-    Route::get('admin/tools/opcache', 'Web\Admin\Tools\PHPToolsController@resetOpcache');
     Route::get('admin/tools/projects-stats', 'Web\Admin\Tools\PHPToolsController@showProjectsStats');
 
     Route::get('admin/tools/storage', 'Web\Admin\Tools\SearchToolsController@findProjectsStorageUsedDefault');
@@ -91,9 +90,6 @@ Route::group(['middleware' => 'auth.admin'], function () {
     Route::get('admin/tools/send-superadmin-email', 'Web\Admin\Tools\PHPToolsController@sendSuperAdminEmail');
 
     Route::get('admin/tools/send-system-email', 'Web\Admin\Tools\PHPToolsController@sendSystemEmail');
-
-
-    Route::get('admin/tools/email-preview', 'Web\Admin\Tools\PHPToolsController@previewEmail');
 
     Route::get('admin/tools/codes/{howMany?}', 'Web\Admin\Tools\PHPToolsController@codes');
 

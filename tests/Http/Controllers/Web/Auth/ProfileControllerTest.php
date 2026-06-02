@@ -122,6 +122,13 @@ class ProfileControllerTest extends TestCase
 
         $response = $this->actingAs($user)->post(Route('profile-disconnect-apple'))->assertStatus(302);
         $response->assertRedirect(Route('profile'));
+        $response->assertSessionHas('message', 'ec5_385');
+
+        $this->assertDatabaseMissing('users_providers', [
+            'user_id' => $user->id,
+            'email' => $user->email,
+            'provider' => config('epicollect.strings.providers.apple')
+        ]);
     }
 
     public function test_disconnect_google_when_not_connected()
@@ -130,6 +137,13 @@ class ProfileControllerTest extends TestCase
 
         $response = $this->actingAs($user)->post(Route('profile-disconnect-google'))->assertStatus(302);
         $response->assertRedirect(Route('profile'));
+        $response->assertSessionHas('message', 'ec5_385');
+
+        $this->assertDatabaseMissing('users_providers', [
+            'user_id' => $user->id,
+            'email' => $user->email,
+            'provider' => config('epicollect.strings.providers.google')
+        ]);
     }
 
     public function test_disconnect_apple_redirect_when_not_logged_in()

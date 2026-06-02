@@ -72,14 +72,6 @@ $(document).ready(function () {
     var projectsList = $(' .page-admin .projects-list');
     var loader = $('.page-admin .projects-loader');
 
-    projectsList.on('change', '.project-roles', function () {
-
-        var projectId = $(this).data('projectId');
-        var role = $(this).val();
-        // Update role
-        window.EC5.admin.projects.updateRole(role, projectId);
-    });
-
     //filter projects based on search text
     searchBar.keyup(function () {
 
