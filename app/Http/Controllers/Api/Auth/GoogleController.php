@@ -34,7 +34,6 @@ class GoogleController extends AuthController
         // Check this auth method is allowed
         if (in_array('google', $this->authMethods)) {
             $provider = $this->googleProviderLabel;
-            $providerLocal = $this->localProviderLabel;
             // Attempt to find the Google user
             try {
                 $providerKey = config('services.google_api');
