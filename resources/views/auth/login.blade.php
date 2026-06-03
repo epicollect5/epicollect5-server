@@ -59,10 +59,7 @@
                                                 </small>
                                             </div>
                                         </div>
-                                        {{--Need this to pass validation when recaptcha is disabled--}}
-                                        @if (!$isGoogleRecaptchaEnabled)
-                                            <input type="hidden" name="g-recaptcha-response" value="fake_value">
-                                        @endif
+                                        <input type="hidden" name="g-recaptcha-response" value="fake_value">
 
                                         <div class="form-group">
                                             <input id="passwordless" class="btn btn-default btn-action pull-right"

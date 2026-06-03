@@ -11,6 +11,7 @@ $(document).ready(function () {
     }
 
     var appleLoginBtn = pageLogin.find('.btn-login-apple');
+    var passwordlessBtn = $('#passwordless');
 
     //check if Google Recaptcha is enabled
     var captchaContainer = $('.gcaptcha');
@@ -23,30 +24,24 @@ $(document).ready(function () {
 
         window.grecaptcha.ready(function () {
 
-            var timeout;
-            // create debounced function
             var attemptSubmission = function (e) {
+                window.EC5.overlay.fadeIn();
                 var form = pageLogin.find('form#page-login__passwordless');
 
-                e.preventDefault();
-
                 function _execute() {
-                    //show overlay
 
-                    window.EC5.overlay.fadeIn();
-                    //get grecaptcha token
+                    //get g-recaptcha token
                     try {
                         window.grecaptcha.execute(siteId, {action: 'passwordless'}).then(function (token) {
                                 //embed token and send it to server for verification
-                                form.prepend('<input type="hidden" name="g-recaptcha-response" value="' + token + '">')
-                                    .submit();
-                                //hide overlay
-                                window.setTimeout(window.EC5.overlay.fadeOut(), 10000);
+                                $('input[name="g-recaptcha-response"]').val(token);
+                                form.submit();
                             }
                         );
+                        window.setTimeout(window.EC5.overlay.fadeOut(), 10000);
                     } catch (e) {
-                        window.setTimeout(window.EC5.overlay.fadeOut(), 500);
                         window.EC5.toast.showError('Google ReCaptcha ' + e);
+                        window.setTimeout(window.EC5.overlay.fadeOut(), 500);
                     }
                 }
 
@@ -60,9 +55,9 @@ $(document).ready(function () {
                 }
             };
 
-            $('#passwordless').on('click', function (e) {
-                window.clearTimeout(timeout);
-                timeout = window.setTimeout(attemptSubmission(e), 1000);
+            passwordlessBtn.on('click', function (e) {
+                e.preventDefault();
+                attemptSubmission();
             });
         });
 

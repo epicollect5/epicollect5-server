@@ -83,54 +83,8 @@ $(document).ready(function () {
             nonce: nonce,
             usePopup: false
         });
-
+        
+        //start authentication process
         AppleID.auth.signIn();
-
-        try {
-            window.EC5.overlay.fadeIn();
-
-            AppleID.auth.signIn().then(function (appleResponse) {
-                //check if response is legit (csrf token)
-                if (appleResponse.authorization.state === state) {
-
-                    //post data to apple endpoint (x-csrf is included in header)
-                    $.ajax({
-                        url: redirectURI,
-                        type: 'POST',
-                        // contentType: 'application/json',
-                        dataType: 'json',
-                        data: appleResponse,
-                        success: function (ec5Response) {
-                            //hide any overlay or redirect?
-                            if (ec5Response.data.authorized) {
-                                window.location.href = window.EC5.SITE_URL + '/myprojects';
-                            } else {
-                                window.EC5.toast.showError('User not authorized');
-                                window.EC5.overlay.fadeOut();
-                            }
-                        },
-                        error: function (error) {
-                            window.EC5.overlay.fadeOut();
-                            window.EC5.toast.showError(error.errors[0].title);
-                        }
-                    });
-                } else {
-                    //state does not match, bail out!
-                    window.EC5.overlay.fadeOut();
-                    window.EC5.toast.showError('Invalid state');
-                }
-            }, function (error) {
-                //it gets here when the Apple modal is dismissed, do not show error if not sent
-                window.EC5.overlay.fadeOut();
-                if (error.error) {
-                    window.EC5.toast.showError(error.error);
-                }
-            })
-        } catch (error) {
-            window.EC5.overlay.fadeOut();
-            if (error.error) {
-                window.EC5.toast.showError(error.error);
-            }
-        }
     });
 });
