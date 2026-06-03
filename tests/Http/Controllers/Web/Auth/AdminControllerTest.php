@@ -111,4 +111,108 @@ class AdminControllerTest extends TestCase
         $response->assertStatus(302);
         $response->assertSessionHasErrors();
     }
+
+    public function test_admin_login_sends_verification_email_with_code()
+    {
+        Mail::fake();
+
+        $user = factory(User::class)->create([
+            'password' => bcrypt('secret'),
+            'server_role' => config('epicollect.strings.server_roles.admin'),
+        ]);
+        factory(UserProvider::class)->create([
+            'user_id' => $user->id,
+            'email' => $user->email,
+            'provider' => config('epicollect.strings.providers.local'),
+        ]);
+
+        $response = $this->post('login/admin', [
+            'email' => $user->email,
+            'password' => 'secret',
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertViewIs('auth.verification_passwordless');
+
+        Mail::assertSent(UserPasswordlessApiMail::class, function ($mail) use ($user) {
+            return $mail->hasTo($user->email) && isset($mail->code);
+        });
+    }
+
+    public function test_admin_login_stores_verification_token_in_database()
+    {
+        Mail::fake();
+
+        $user = factory(User::class)->create([
+            'password' => bcrypt('secret'),
+            'server_role' => config('epicollect.strings.server_roles.admin'),
+        ]);
+        factory(UserProvider::class)->create([
+            'user_id' => $user->id,
+            'email' => $user->email,
+            'provider' => config('epicollect.strings.providers.local'),
+        ]);
+
+        $this->post('login/admin', [
+            'email' => $user->email,
+            'password' => 'secret',
+        ]);
+
+        $this->assertDatabaseHas('users_passwordless_web', [
+            'email' => $user->email,
+        ]);
+    }
+
+    public function test_admin_login_with_superadmin_role_sends_verification_email()
+    {
+        Mail::fake();
+
+        $user = factory(User::class)->create([
+            'password' => bcrypt('secret'),
+            'server_role' => config('epicollect.strings.server_roles.superadmin'),
+        ]);
+        factory(UserProvider::class)->create([
+            'user_id' => $user->id,
+            'email' => $user->email,
+            'provider' => config('epicollect.strings.providers.local'),
+        ]);
+
+        $response = $this->post('login/admin', [
+            'email' => $user->email,
+            'password' => 'secret',
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertViewIs('auth.verification_passwordless');
+
+        Mail::assertSent(UserPasswordlessApiMail::class, function ($mail) use ($user) {
+            return $mail->hasTo($user->email);
+        });
+    }
+
+    public function test_admin_login_invalid_credentials_does_not_send_verification_email()
+    {
+        Mail::fake();
+
+        $user = factory(User::class)->create([
+            'password' => bcrypt('secret'),
+            'server_role' => config('epicollect.strings.server_roles.admin'),
+        ]);
+        factory(UserProvider::class)->create([
+            'user_id' => $user->id,
+            'email' => $user->email,
+            'provider' => config('epicollect.strings.providers.local'),
+        ]);
+
+        $this->post('login/admin', [
+            'email' => $user->email,
+            'password' => 'wrong-password',
+        ]);
+
+        $this->assertDatabaseMissing('users_passwordless_web', [
+            'email' => $user->email,
+        ]);
+
+        Mail::assertNothingSent();
+    }
 }

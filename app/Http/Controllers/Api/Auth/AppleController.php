@@ -93,6 +93,7 @@ class AppleController extends AuthController
             } catch (Throwable $e) {
                 Log::error('Apple user object exception', ['exception' => $e->getMessage()]);
                 //if no user name found, default to Apple User
+                $appleUser = null;
                 $appleUserFirstName = config('epicollect.mappings.user_placeholder.apple_first_name');
                 $appleUserLastName = config('epicollect.mappings.user_placeholder.apple_last_name');
             }
