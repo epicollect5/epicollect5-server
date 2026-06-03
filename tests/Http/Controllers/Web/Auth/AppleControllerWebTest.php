@@ -34,7 +34,7 @@ class AppleControllerWebTest extends TestCase
         parent::tearDown();
     }
 
-    private function mockAppleControllerWeb(array $tokenPayload): void
+    private function mockAppleControllerWeb(?array $tokenPayload = null): void
     {
         $mock = Mockery::mock(AppleController::class)
             ->shouldAllowMockingProtectedMethods()
@@ -72,18 +72,7 @@ class AppleControllerWebTest extends TestCase
 
     public function test_handle_callback_returns_ec5_382_when_parse_identity_token_fails()
     {
-        $mock = Mockery::mock(AppleController::class)
-            ->shouldAllowMockingProtectedMethods()
-            ->makePartial();
-        $mock->shouldReceive('parseIdentityToken')->andReturnNull();
-        Closure::bind(function () use ($mock) {
-            $mock->authMethods = config('auth.auth_methods');
-            $mock->appleProviderLabel = config('epicollect.strings.providers.apple');
-            $mock->googleProviderLabel = config('epicollect.strings.providers.google');
-            $mock->passwordlessProviderLabel = config('epicollect.strings.providers.passwordless');
-            $mock->isAuthWebEnabled = config('auth.auth_web_enabled');
-        }, null, AppleController::class)();
-        $this->app->instance(AppleController::class, $mock);
+        $this->mockAppleControllerWeb(null);
 
         $response = $this->post('handle/apple', ['id_token' => 'invalid.token.here']);
 

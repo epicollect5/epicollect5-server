@@ -38,10 +38,14 @@ $(document).ready(function () {
                                 form.submit();
                             }
                         );
-                        window.setTimeout(window.EC5.overlay.fadeOut(), 10000);
+                        window.setTimeout(function () {
+                            window.EC5.overlay.fadeOut()
+                        }, 10000);
                     } catch (e) {
                         window.EC5.toast.showError('Google ReCaptcha ' + e);
-                        window.setTimeout(window.EC5.overlay.fadeOut(), 500);
+                        window.setTimeout(function () {
+                            window.EC5.overlay.fadeOut()
+                        }, 500);
                     }
                 }
 
