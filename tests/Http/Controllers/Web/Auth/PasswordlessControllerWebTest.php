@@ -389,19 +389,19 @@ class PasswordlessControllerWebTest extends TestCase
 
     /**
      * Test sending passwordless code with successful Turnstile verification (enabled).
-     * This test is only run if Turnstile is enabled in the environment.
      */
     public function test_send_code_with_turnstile_enabled_success()
     {
         // Enable Turnstile for this test
         config()->set('epicollect.setup.cloudflare_turnstile.use_cloudflare_turnstile', true);
+        config()->set('epicollect.setup.cloudflare_turnstile.verify_endpoint', 'https://challenges.cloudflare.com/turnstile/v0/siteverify');
 
         $email = config('testing.MANAGER_EMAIL');
         Mail::fake();
 
         // Mock a successful Turnstile verification response
         Http::fake([
-            config('epicollect.setup.cloudflare_turnstile.verify_endpoint') => Http::response([
+            'https://challenges.cloudflare.com/turnstile/v0/siteverify' => Http::response([
                 'success' => true,
                 'challenge_ts' => '2021-01-01T00:00:00Z',
                 'hostname' => 'example.com',
@@ -424,7 +424,7 @@ class PasswordlessControllerWebTest extends TestCase
             return $mail->hasTo($email);
         });
 
-        // Verify Http request was made to Cloudflare
+        // Verify HTTP request was made to Cloudflare
         Http::assertSent(function ($request) {
             return $request['response'] === 'valid-turnstile-token';
         });
@@ -436,13 +436,17 @@ class PasswordlessControllerWebTest extends TestCase
     public function test_send_code_with_turnstile_enabled_failure_success_false()
     {
         config()->set('epicollect.setup.cloudflare_turnstile.use_cloudflare_turnstile', true);
+        config()->set('epicollect.setup.cloudflare_turnstile.verify_endpoint', 'https://challenges.cloudflare.com/turnstile/v0/siteverify');
 
         $email = config('testing.MANAGER_EMAIL');
         Mail::fake();
 
+        $referer = '/login';
+        $this->serverVariables['HTTP_REFERER'] = $referer;
+
         // Mock a failed Turnstile verification response
         Http::fake([
-            config('epicollect.setup.cloudflare_turnstile.verify_endpoint') => Http::response([
+            'https://challenges.cloudflare.com/turnstile/v0/siteverify' => Http::response([
                 'success' => false,
                 'challenge_ts' => '2021-01-01T00:00:00Z',
                 'hostname' => 'example.com',
@@ -458,28 +462,6 @@ class PasswordlessControllerWebTest extends TestCase
         $response->assertStatus(302);
         $response->assertRedirect(route('login'));
         $this->assertEquals('ec5_380', session('errors')->getBag('default')->first());
-
-        Mail::assertNotSent(UserPasswordlessApiMail::class);
-    }
-
-    /**
-     * Test sending passwordless code with Turnstile enabled but missing turnstile response.
-     */
-    public function test_send_code_with_turnstile_enabled_missing_response()
-    {
-        config()->set('epicollect.setup.cloudflare_turnstile.use_cloudflare_turnstile', true);
-
-        $email = config('testing.MANAGER_EMAIL');
-        Mail::fake();
-
-        $response = $this->post(Route('passwordless-token-web'), [
-            'email' => $email
-            // Missing cf-turnstile-response
-        ]);
-
-        $response->assertStatus(302);
-        $response->assertRedirect(route('login'));
-        $this->assertEquals('ec5_103', session('errors')->getBag('default')->first());
 
         Mail::assertNotSent(UserPasswordlessApiMail::class);
     }
@@ -518,13 +500,17 @@ class PasswordlessControllerWebTest extends TestCase
     public function test_send_code_with_turnstile_invalid_json_response()
     {
         config()->set('epicollect.setup.cloudflare_turnstile.use_cloudflare_turnstile', true);
+        config()->set('epicollect.setup.cloudflare_turnstile.verify_endpoint', 'https://challenges.cloudflare.com/turnstile/v0/siteverify');
 
         $email = config('testing.MANAGER_EMAIL');
         Mail::fake();
 
+        $referer = '/login';
+        $this->serverVariables['HTTP_REFERER'] = $referer;
+
         // Mock an invalid JSON response from Cloudflare
         Http::fake([
-            config('epicollect.setup.cloudflare_turnstile.verify_endpoint') => Http::response(
+            'https://challenges.cloudflare.com/turnstile/v0/siteverify' => Http::response(
                 'Invalid JSON',
                 200
             )

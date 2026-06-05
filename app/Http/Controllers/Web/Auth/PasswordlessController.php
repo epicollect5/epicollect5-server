@@ -46,7 +46,7 @@ class PasswordlessController extends AuthController
 
         //imp: skip captcha validation only when testing OR when disabled in the .env
         $isTurnstileEnabled = config('epicollect.setup.cloudflare_turnstile.use_cloudflare_turnstile');
-        if (!(App::environment() === 'testing') && $isTurnstileEnabled) {
+        if ($isTurnstileEnabled) {
             //parse turnstile response for any errors
             if (isset($params['cf-turnstile-response'])) {
                 $turnstileResponse = $params['cf-turnstile-response'];
