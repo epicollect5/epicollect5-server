@@ -129,6 +129,28 @@ Audio and video cache behavior is different.
   clients
   should not store or reuse the signed URL after its TTL.
 
+### Placeholder caching (photo)
+
+When a requested media file does not exist (not yet uploaded, or deleted), the server serves a placeholder image.
+
+Historically, placeholders were served with the same `Cache-Control: public, max-age=31536000, immutable` header as real
+photos. This caused a problem: if a project was browsed before a photo finished uploading, the placeholder was cached
+permanently by the browser. When the real photo was uploaded later, the URL (same `name` + same `v`) was unchanged, so
+the browser served the cached placeholder indefinitely.
+
+The fix: placeholder responses now use `Cache-Control: no-store` (config key `cache_control.never` in
+`config/epicollect/media.php`). This ensures the browser never caches a placeholder — it must re-fetch every time. Once
+the real file exists, the server returns the photo with the standard `immutable` cache header, and the browser caches
+that from that point forward.
+
+The `v` parameter in media URLs is derived from the entry's `uploaded_at` column. When a photo is replaced through an
+entry edit, `CreateEntryService::create()` always sets `uploaded_at` to the current timestamp, so `v` changes and the
+cache is naturally busted. No additional mechanism (e.g. file `lastModified()` or a `media_version` column) is needed
+for the replacement case.
+
+This means the placeholder `no-store` fix alone covers the real gap: the period between entry creation (which sets
+`uploaded_at`) and a deferred photo upload (which does not change `uploaded_at`).
+
 ### Rate Limiters
 
 Defined in `app/Providers/RateLimiterServiceProvider.php`.
@@ -357,7 +379,8 @@ rather than `project_stats`.
 
 `project_stats` entry counters are refreshed on demand when callers ask for project-level totals or metadata that
 includes those totals. Examples include the dataviewer shell, formbuilder, project show/export metadata, and the
-internal entry counters endpoint. Delete paths also refresh project stats after entries are removed so deletion decisions
+internal entry counters endpoint. Delete paths also refresh project stats after entries are removed so deletion
+decisions
 and follow-up UI state do not rely on stale totals.
 
 The documented entries export endpoint, `api/export/entries`, is paginated. Refresh the cached counters at the first

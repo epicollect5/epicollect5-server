@@ -226,7 +226,7 @@ class MediaService
 
             return Response::make($file, 200, [
                 'Content-Type' => $contentType,
-                'Cache-Control' => config('epicollect.media.cache_control.always')
+                'Cache-Control' => config('epicollect.media.cache_control.never')
             ]);
         }
 
