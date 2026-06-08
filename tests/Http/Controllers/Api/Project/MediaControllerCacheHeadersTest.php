@@ -310,4 +310,40 @@ class MediaControllerCacheHeadersTest extends TestCase
         $this->assertStringContainsString('immutable', $cacheControl);
         $this->assertStringContainsString('max-age=31536000', $cacheControl);
     }
+
+    #[DataProvider('multipleRunProvider')]
+    public function test_entry_original_placeholder_has_no_cache()
+    {
+        $response = $this->get('api/internal/media/' . $this->project->slug . '?type=photo&name=non-existent.jpg&format=entry_original');
+
+        $response->assertStatus(200);
+        $response->assertHeader('Content-Type', config('epicollect.media.content_type.photo'));
+        $cacheControl = $response->headers->get('Cache-Control');
+        $this->assertStringContainsString('no-store', $cacheControl);
+        $this->assertStringNotContainsString('max-age', $cacheControl);
+    }
+
+    #[DataProvider('multipleRunProvider')]
+    public function test_entry_thumb_placeholder_has_no_cache()
+    {
+        $response = $this->get('api/internal/media/' . $this->project->slug . '?type=photo&name=non-existent.jpg&format=entry_thumb');
+
+        $response->assertStatus(200);
+        $response->assertHeader('Content-Type', config('epicollect.media.content_type.photo'));
+        $cacheControl = $response->headers->get('Cache-Control');
+        $this->assertStringContainsString('no-store', $cacheControl);
+        $this->assertStringNotContainsString('max-age', $cacheControl);
+    }
+
+    #[DataProvider('multipleRunProvider')]
+    public function test_project_mobile_logo_placeholder_has_no_cache()
+    {
+        $response = $this->get('api/internal/media/' . $this->project->slug . '?type=photo&name=non-existent.jpg&format=project_mobile_logo');
+
+        $response->assertStatus(200);
+        $response->assertHeader('Content-Type', config('epicollect.media.content_type.photo'));
+        $cacheControl = $response->headers->get('Cache-Control');
+        $this->assertStringContainsString('no-store', $cacheControl);
+        $this->assertStringNotContainsString('max-age', $cacheControl);
+    }
 }

@@ -67,7 +67,7 @@ class ToEntryThumbS3Macro extends ServiceProvider
                     }
                     $response = Response::make($file);
                     $response->header('Content-Type', config('epicollect.media.content_type.photo'));
-                    $response->header('Cache-Control', config('epicollect.media.cache_control.always'));
+                    $response->header('Cache-Control', config('epicollect.media.cache_control.never'));
                     return $response;
                 } catch (Throwable $e) {
                     Log::error('Cannot generate S3 thumbnail', ['exception' => $e]);
@@ -78,7 +78,7 @@ class ToEntryThumbS3Macro extends ServiceProvider
             $file = Storage::disk('public')->get($photoPlaceholderFilename);
             $response = Response::make($file);
             $response->header('Content-Type', config('epicollect.media.content_type.photo'));
-            $response->header('Cache-Control', config('epicollect.media.cache_control.always'));
+            $response->header('Cache-Control', config('epicollect.media.cache_control.never'));
             return $response;
         });
     }
