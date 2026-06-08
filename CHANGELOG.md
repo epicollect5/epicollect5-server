@@ -1,5 +1,10 @@
 ## Release Notes
 
+# 12.5.32
+
+- Placeholder images (photos, thumbnails, and mobile logos) for missing media are served with no-store so they can be
+  refreshed when media is added or replaced.
+
 # 12.5.31
 
 - Data Editor 0.0.6 - Reduced maximum file size limits for audio, video, and image uploads.
