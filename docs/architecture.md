@@ -151,6 +151,14 @@ for the replacement case.
 This means the placeholder `no-store` fix alone covers the real gap: the period between entry creation (which sets
 `uploaded_at`) and a deferred photo upload (which does not change `uploaded_at`).
 
+**Note on the `private` directive:** Placeholder responses served through the internal API
+(`api/internal/media/*`) may show `Cache-Control: no-store, private` in the browser. The `private`
+directive is automatically appended by Symfony's `Response` class when the
+`AddQueuedCookiesToResponse` middleware attaches session or XSRF-TOKEN cookies to the response.
+It does not affect caching behaviour — `no-store` already prevents the browser from storing the
+response. The external API (`api/media/*`) has no cookie middleware, so the `private` directive
+does not appear on those responses.
+
 ### Rate Limiters
 
 Defined in `app/Providers/RateLimiterServiceProvider.php`.
