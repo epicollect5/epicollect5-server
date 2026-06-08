@@ -54,6 +54,42 @@ class MediaServiceTest extends TestCase
 
         $this->assertEquals(200, $response->status());
         $this->assertTrue($response->headers->has('Content-Type'));
+        $cacheControl = $response->headers->get('Cache-Control');
+        $this->assertStringContainsString('no-store', $cacheControl);
+        $this->assertStringNotContainsString('max-age', $cacheControl);
+        $this->assertStringNotContainsString('immutable', $cacheControl);
+    }
+
+    public function test_it_serves_generic_placeholder_with_no_cache()
+    {
+        $response = $this->mediaService->serveLocalFile(
+            config('epicollect.strings.inputs_type.photo'),
+            'entry_original',
+            $this->project->ref,
+            null,
+        );
+
+        $this->assertEquals(200, $response->status());
+        $cacheControl = $response->headers->get('Cache-Control');
+        $this->assertStringContainsString('no-store', $cacheControl);
+        $this->assertStringNotContainsString('max-age', $cacheControl);
+        $this->assertStringNotContainsString('immutable', $cacheControl);
+    }
+
+    public function test_it_serves_photo_not_synced_placeholder_with_no_cache()
+    {
+        $response = $this->mediaService->serveLocalFile(
+            config('epicollect.strings.inputs_type.photo'),
+            'entry_original',
+            $this->project->ref,
+            'non-existent-file.jpg'
+        );
+
+        $this->assertEquals(200, $response->status());
+        $cacheControl = $response->headers->get('Cache-Control');
+        $this->assertStringContainsString('no-store', $cacheControl);
+        $this->assertStringNotContainsString('max-age', $cacheControl);
+        $this->assertStringNotContainsString('immutable', $cacheControl);
     }
 
     public function test_it_returns_error_for_invalid_format()
