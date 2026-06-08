@@ -126,6 +126,82 @@ class MediaServiceTest extends TestCase
         $this->assertStringContainsString('no-store', $response->headers->get('Cache-Control'));
     }
 
+    public function test_it_redirects_s3_export_audio_to_temporary_url_when_enabled()
+    {
+        config()->set('filesystems.default', 's3');
+        config()->set('epicollect.setup.api.export_media_s3_redirect_enabled', true);
+        config()->set('epicollect.setup.api.export_media_s3_redirect_ttl_audio', 30);
+
+        $disk = Mockery::mock();
+        $disk->shouldReceive('exists')
+            ->once()
+            ->with($this->project->ref . '/file.mp3')
+            ->andReturn(true);
+        $disk->shouldReceive('temporaryUrl')
+            ->once()
+            ->withArgs(function ($path, $expiresAt) {
+                return $path === $this->project->ref . '/file.mp3'
+                    && $expiresAt instanceof DateTimeInterface
+                    && abs(
+                        $expiresAt->getTimestamp() - Carbon::now()->addMinutes(30)->getTimestamp()
+                    ) <= 5;
+            })
+            ->andReturn('https://example.com/signed-audio-url');
+
+        Storage::shouldReceive('disk')
+            ->twice()
+            ->with('audio')
+            ->andReturn($disk);
+
+        $response = $this->mediaService->serve([
+            'type' => config('epicollect.strings.inputs_type.audio'),
+            'format' => config('epicollect.strings.inputs_type.audio'),
+            'name' => 'file.mp3',
+        ], $this->project, true);
+
+        $this->assertInstanceOf(RedirectResponse::class, $response);
+        $this->assertSame('https://example.com/signed-audio-url', $response->getTargetUrl());
+        $this->assertStringContainsString('no-store', $response->headers->get('Cache-Control'));
+    }
+
+    public function test_it_redirects_s3_export_video_to_temporary_url_when_enabled()
+    {
+        config()->set('filesystems.default', 's3');
+        config()->set('epicollect.setup.api.export_media_s3_redirect_enabled', true);
+        config()->set('epicollect.setup.api.export_media_s3_redirect_ttl_video', 30);
+
+        $disk = Mockery::mock();
+        $disk->shouldReceive('exists')
+            ->once()
+            ->with($this->project->ref . '/file.mp4')
+            ->andReturn(true);
+        $disk->shouldReceive('temporaryUrl')
+            ->once()
+            ->withArgs(function ($path, $expiresAt) {
+                return $path === $this->project->ref . '/file.mp4'
+                    && $expiresAt instanceof DateTimeInterface
+                    && abs(
+                        $expiresAt->getTimestamp() - Carbon::now()->addMinutes(30)->getTimestamp()
+                    ) <= 5;
+            })
+            ->andReturn('https://example.com/signed-video-url');
+
+        Storage::shouldReceive('disk')
+            ->twice()
+            ->with('video')
+            ->andReturn($disk);
+
+        $response = $this->mediaService->serve([
+            'type' => config('epicollect.strings.inputs_type.video'),
+            'format' => config('epicollect.strings.inputs_type.video'),
+            'name' => 'file.mp4',
+        ], $this->project, true);
+
+        $this->assertInstanceOf(RedirectResponse::class, $response);
+        $this->assertSame('https://example.com/signed-video-url', $response->getTargetUrl());
+        $this->assertStringContainsString('no-store', $response->headers->get('Cache-Control'));
+    }
+
     public function test_it_serves_local_photo_with_24h_cache_when_version_is_missing()
     {
         $this->app->instance('request', Request::create('/'));
