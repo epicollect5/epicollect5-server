@@ -1,4 +1,6 @@
-<?php /** @noinspection DuplicatedCode */
+<?php
+
+/** @noinspection DuplicatedCode */
 
 namespace ec5\Http\Controllers\Web\Project;
 
@@ -21,16 +23,8 @@ class ProjectAppsController
 {
     use RequestAttributes;
 
-    /**
-     * @var ClientRepository
-     */
-    protected $clients;
+    protected ClientRepository $clients;
 
-    /**
-     * ProjectAppsController constructor
-     *
-     * @param ClientRepository $clients
-     */
     public function __construct(ClientRepository $clients)
     {
         $this->clients = $clients;
@@ -87,14 +81,14 @@ class ProjectAppsController
         }
 
         // Make the client
-        $client = $this->clients->create(
-            request()->user()->getKey(), $payload['application_name'], ''
-        )->makeVisible('secret');
+        $client = $this->clients->createClientCredentialsGrantClient($payload['application_name']);
+        $plainSecret = $client->plainSecret;
 
         // Add to the client_projects table
         $clientProject = new OAuthClientProject();
         $clientProject->client_id = $client->id;
         $clientProject->project_id = $this->requestedProject()->getId();
+        $clientProject->client_secret_plain = $plainSecret;
         if (!$clientProject->save()) {
             if (request()->ajax()) {
                 return Response::apiErrorCode(400, ['errors' => ['ec5_91']]);
@@ -113,6 +107,7 @@ class ProjectAppsController
      * Delete a client app
      *
      * @return Factory|Application|JsonResponse|RedirectResponse|View
+     * @throws Throwable
      */
     public function delete()
     {

@@ -1004,8 +1004,10 @@ class ViewEntriesDataControllerTest extends ViewEntriesBaseControllerTest
             // dd($response[0]);
             $this->assertEntriesResponse($response[0], true);
             $json = json_decode($response[0]->getContent(), true);
-            $entryFromResponse = $json['data']['entries'][0];
+            $entryFromResponse = collect($json['data']['entries'])
+                ->firstWhere('id', $branchEntryFromDB->uuid);
 
+            $this->assertNotNull($entryFromResponse, 'Expected branch entry not found in response');
             $this->assertEquals($branchEntryFromDB->uuid, $entryFromResponse['id']);
             $this->assertEquals($branchEntryFromDB->uuid, $entryFromResponse['branch_entry']['entry_uuid']);
             $this->assertEquals($branchEntryFromDB->title, $entryFromResponse['branch_entry']['title']);

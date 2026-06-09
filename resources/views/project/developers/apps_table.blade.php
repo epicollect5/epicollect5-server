@@ -19,7 +19,7 @@
                     <span class="project-name">&nbsp;{{ $app->id }}</span>
                 </td>
                 <td>
-                    <span class="project-name">&nbsp;{{ $app->secret }}</span>
+                    <span class="project-name">&nbsp;{{ $app->client_secret_plain }}</span>
                 </td>
                 <td>
                     {{ \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $app->created_at)->format('d/m/Y H:i') }}

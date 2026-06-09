@@ -24,6 +24,9 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
 
+        // Keep using integer IDs for OAuth clients (existing schema)
+        Passport::$clientUuids = false;
+
         // Set the expiry time for Passport access tokens
         Passport::tokensExpireIn(Carbon::now()->addSeconds(config('auth.passport.expire')));
     }

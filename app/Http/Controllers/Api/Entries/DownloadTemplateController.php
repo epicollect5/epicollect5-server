@@ -118,7 +118,7 @@ class DownloadTemplateController
         $content = implode(',', $csvHeaders);
         //return a csv file with the proper column headers
         $headers = [
-            'Content-type' => 'text/csv',
+            'Content-type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ];
         return response()->make($content, 200, $headers);

@@ -12,12 +12,14 @@ use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Passport\Contracts\OAuthenticatable;
 use Laravel\Passport\HasApiTokens;
 
 class User extends Model implements
     AuthorizableContract,
     CanResetPasswordContract,
-    AuthenticatableContract
+    AuthenticatableContract,
+    OAuthenticatable
 {
     /**
      * @property int $id
@@ -76,5 +78,10 @@ class User extends Model implements
             }
         }
         return false;
+    }
+
+    public function getProviderName(): string
+    {
+        return config('auth.guards.api_external.provider', 'users');
     }
 }

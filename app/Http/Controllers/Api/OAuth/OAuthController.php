@@ -6,7 +6,6 @@ use ec5\Models\OAuth\OAuthAccessToken;
 use Illuminate\Http\JsonResponse;
 use Laravel\Passport\Http\Controllers\HandlesOAuthErrors;
 use Laravel\Passport\TokenRepository;
-use Lcobucci\JWT\Parser as JwtParser;
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Log;
@@ -23,21 +22,11 @@ class OAuthController
 
     protected AuthorizationServer $server;
     protected TokenRepository $tokens;
-    protected JwtParser $jwt;
 
-    /**
-     * OAuthController constructor
-     *
-     * @param AuthorizationServer $server
-     * @param TokenRepository $tokens
-     * @param JwtParser $jwt
-     */
     public function __construct(
         AuthorizationServer $server,
-        TokenRepository     $tokens,
-        JwtParser           $jwt
+        TokenRepository     $tokens
     ) {
-        $this->jwt = $jwt;
         $this->server = $server;
         $this->tokens = $tokens;
     }

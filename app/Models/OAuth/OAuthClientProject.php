@@ -34,7 +34,7 @@ class OAuthClientProject extends Model
             ->select([
                 'oauth_clients.name',
                 'oauth_clients.id',
-                'oauth_clients.secret',
+                'oauth_client_projects.client_secret_plain',
                 'oauth_clients.created_at'
             ])->get();
     }

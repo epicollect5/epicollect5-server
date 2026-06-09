@@ -423,6 +423,15 @@ task('artisan:migrate', function () {
 
 })->once();
 
+desc('Hash existing Passport client secrets (Laravel 13 upgrade)');
+task('artisan:passport:hash', function () {
+    $output = run('{{bin/php}} {{release_path}}/artisan passport:hash --force', [
+        'timeout' => 2000,
+        'real_time_output' => false
+    ]);
+    writeln("<info>$output</info>");
+})->once();
+
 desc('Execute artisan migrate:rollback');
 task('artisan:migrate:rollback', function () {
     $output = run('{{bin/php}} {{release_path}}/artisan migrate:rollback --force', [
@@ -464,6 +473,7 @@ task('update', [
     'deploy:prepare',
     'deploy:vendors',
     'artisan:migrate',
+    'artisan:passport:hash',
     'artisan:config:cache',
     'artisan:route:cache',
     'artisan:view:cache',

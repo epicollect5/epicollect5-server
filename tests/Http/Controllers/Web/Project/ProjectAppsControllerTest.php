@@ -146,11 +146,7 @@ class ProjectAppsControllerTest extends TestCase
         $response = [];
         try {
             $clientRepository = new ClientRepository();
-            $client = $clientRepository->create(
-                $this->user->id,
-                'Test App',
-                ''
-            )->makeVisible('secret');
+            $client = $clientRepository->createClientCredentialsGrantClient('Test App');
 
             factory(OAuthClientProject::class)->create([
                 'project_id' => $this->project->id,
@@ -165,8 +161,7 @@ class ProjectAppsControllerTest extends TestCase
             );
             $this->assertCount(
                 1,
-                OAuthClient::where('user_id', $this->user->id)
-                    ->where('id', $client->id)
+                OAuthClient::where('id', $client->id)
                     ->get()
             );
 
@@ -180,7 +175,7 @@ class ProjectAppsControllerTest extends TestCase
                     [
                         'grant_type' => 'client_credentials',
                         'client_id' => $client->id,
-                        'client_secret' => $client->secret
+                        'client_secret' => $client->plainSecret
                     ],
                     [
                         'Content-Type' => 'application/x-www-form-urlencoded'
@@ -207,11 +202,7 @@ class ProjectAppsControllerTest extends TestCase
         $response = [];
         try {
             $clientRepository = new ClientRepository();
-            $client = $clientRepository->create(
-                $this->user->id,
-                'Test App',
-                ''
-            )->makeVisible('secret');
+            $client = $clientRepository->createClientCredentialsGrantClient('Test App');
 
             factory(OAuthClientProject::class)->create([
                 'project_id' => $this->project->id,
@@ -231,8 +222,7 @@ class ProjectAppsControllerTest extends TestCase
             );
             $this->assertCount(
                 1,
-                OAuthClient::where('user_id', $this->user->id)
-                    ->where('id', $client->id)
+                OAuthClient::where('id', $client->id)
                     ->get()
             );
 

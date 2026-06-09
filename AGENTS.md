@@ -88,3 +88,66 @@ Always use these flags when running CLI tools:
 
 - Tests: `vendor/bin/phpunit --no-progress`
 - phpcs: `vendor/bin/phpcs --report=emacs -q`
+
+## Test Suite
+
+- The full test suite takes over 1 hour to complete.
+- NEVER run `php artisan test` or `./vendor/bin/pest` with no filter — it runs the full suite, UNLESS specified.
+- NEVER run tests as a baseline check or between upgrade steps.
+- ALWAYS run targeted tests after modifying a file, using the file path as filter:
+  php artisan test tests/Unit/SomeTest.php
+  ./vendor/bin/pest tests/Unit/SomeTest.php
+- If you need to verify the app boots without running tests, use `php artisan about`.
+- Only run the full suite if the user explicitly types "run the full test suite" in the chat.
+
+## Commands That Are Never Run Autonomously
+
+- `php artisan test` (no filter) — suite takes 1+ hour
+- `./vendor/bin/pest` (no filter) — suite takes 1+ hour
+- `php artisan migrate:fresh` — destroys local data
+- `php artisan migrate:reset` — destroys local data
+- `php artisan db:wipe` — destroys local data
+- `php artisan vendor:publish --tag=*-migrations` — creates duplicate migrations
+- `composer update` without showing a diff first
+
+## /qa
+
+**Purpose:** Generate QA documentation from a codebase change or QA spec file.
+
+**Triggers:** `/qa` · "generate qa docs" · "qa checklist" · "qa summary" · "create qa report"
+
+**Inputs (optional):**
+
+- `path` — QA spec file (default: `docs/QA-{version}.md`)
+- `diff` — git diff (if available; takes priority over spec)
+
+---
+
+### Pipeline
+
+**1. Load Context**
+Read QA spec from path and/or git diff. If both exist, lead with diff and reconcile against spec.
+
+**2. Analyze Changes**
+Identify: modified features, new endpoints/controllers, migrations, auth/permissions, frontend changes, API contract
+changes.
+
+**3. Generate QA Checks**
+For each change produce:
+
+- **Test Description** — what is being tested
+- **Expected Result** — what success looks like
+- **Manual Action** — concrete step-by-step staging instructions
+
+Rules: every change needs at least one check; steps must be manually executable in staging; no abstract descriptions.
+
+**4. Generate CSV**
+Columns: `Test Description` | `Expected` | `Manual Action` — one row per check.
+
+**5. Validate**
+No uncovered changes · no duplicates · all steps reproducible in staging.
+
+**6. Output**
+
+1. QA Markdown report
+2. CSV content block (copy/download ready)

@@ -105,11 +105,7 @@ class RateLimitsEntriesExportTest extends TestCase
 
         //add the project and client
         $clientRepository = new ClientRepository();
-        $client = $clientRepository->create(
-            $this->user->id,
-            'Test App',
-            ''
-        )->makeVisible('secret');
+        $client = $clientRepository->createClientCredentialsGrantClient('Test App');
 
         factory(OAuthClientProject::class)->create([
             'project_id' => $this->project->id,

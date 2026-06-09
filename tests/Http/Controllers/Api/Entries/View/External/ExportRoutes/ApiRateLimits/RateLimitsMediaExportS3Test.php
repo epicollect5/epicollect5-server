@@ -109,11 +109,7 @@ class RateLimitsMediaExportS3Test extends TestCase
 
         //add the project and client
         $clientRepository = new ClientRepository();
-        $this->passportClient = $clientRepository->create(
-            $this->user->id,
-            'Test App',
-            ''
-        )->makeVisible('secret');
+        $this->passportClient = $clientRepository->createClientCredentialsGrantClient('Test App');
 
         factory(OAuthClientProject::class)->create([
             'project_id' => $this->project->id,
