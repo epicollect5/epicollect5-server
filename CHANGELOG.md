@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 12.5.33
+
+- Removed Community column from homepage.
+
 # 12.5.32
 
 - Placeholder images (photos, thumbnails, and mobile logos) for missing media are served with no-store so they can be
