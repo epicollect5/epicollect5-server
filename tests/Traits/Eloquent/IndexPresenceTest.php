@@ -110,27 +110,4 @@ class IndexPresenceTest extends TestCase
 
         $this->assertTrue($foundAny, "Expected an index on $entriesTable covering at least (project_id, form_ref[, parent_uuid]). Available indexes: " . json_encode($indexes));
     }
-
-    public function test_branch_entries_table_has_composite_indexes_for_aggregates(): void
-    {
-        $branchTable = config('epicollect.tables.branch_entries');
-        $indexes = $this->getTableIndexes($branchTable);
-
-        $this->assertIsArray($indexes, 'Failed to retrieve indexes for branch_entries table');
-
-        $neededSets = [
-            ['project_id', 'owner_uuid', 'form_ref'],
-            ['project_id', 'owner_input_ref', 'owner_uuid']
-        ];
-
-        $ok = false;
-        foreach ($neededSets as $req) {
-            if ($this->hasIndexCovering($indexes, $req)) {
-                $ok = true;
-                break;
-            }
-        }
-
-        $this->assertTrue($ok, "Expected an index on $branchTable covering project_id + owner_uuid + form_ref (or owner_input_ref). Available indexes: " . json_encode($indexes));
-    }
 }

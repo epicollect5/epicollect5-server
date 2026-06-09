@@ -93,6 +93,7 @@
   },
   "config": {
     "allow-plugins": {
+      "php-http/discovery": true
     },
     "preferred-install": "dist",
     "process-timeout": 0

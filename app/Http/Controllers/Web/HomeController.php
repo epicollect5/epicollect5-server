@@ -43,16 +43,9 @@ class HomeController extends Controller
         try {
             //get all featured projects (ordered by updated timestamp)
             $allFeaturedProjects = $this->projectModel->featured();
-
-            //legacy: show community column only if the total of featured projects is 7
-            if ($allFeaturedProjects->count() > 7) {
-                //since release 11.0.0 we only show projects if 8 featured projects, hiding the community column
-                $projectsFirstRow = $allFeaturedProjects->splice(0, 4);
-            } else {
-                //first row with 3 projects, as we have the community column
-                $projectsFirstRow = $allFeaturedProjects->splice(0, 3);
-            }
-            //second row always with 4 projects
+            //since release 11.0.0 we only show projects if 8 featured projects, hiding the community column
+            $projectsFirstRow = $allFeaturedProjects->splice(0, 4);
+            //second row always with 4 projects (no matter how many we have in total)
             $projectsSecondRow = $allFeaturedProjects->splice(0, 4);
         } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
