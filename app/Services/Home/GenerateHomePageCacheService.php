@@ -32,11 +32,7 @@ class GenerateHomePageCacheService
             $allFeaturedProjects = (new Project())->featured();
 
             // Calculate rows layout
-            if ($allFeaturedProjects->count() > 7) {
-                $projectsFirstRow = $allFeaturedProjects->splice(0, 4);
-            } else {
-                $projectsFirstRow = $allFeaturedProjects->splice(0, 3);
-            }
+            $projectsFirstRow = $allFeaturedProjects->splice(0, 4);
             $projectsSecondRow = $allFeaturedProjects->splice(0, 4);
 
             // Fetch stats
