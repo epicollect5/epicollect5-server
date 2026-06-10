@@ -5,8 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class () extends Migration {
     public function up(): void
     {
         Schema::table('oauth_client_projects', function (Blueprint $table) {
@@ -24,6 +23,15 @@ return new class extends Migration
 
     public function down(): void
     {
+        // Restore plain-text secrets from oauth_client_projects back to oauth_clients
+        // This is needed because passport:hash may have already hashed oauth_clients.secret.
+        DB::table('oauth_client_projects')
+            ->join('oauth_clients', 'oauth_client_projects.client_id', '=', 'oauth_clients.id')
+            ->whereNotNull('oauth_client_projects.client_secret_plain')
+            ->update([
+                'oauth_clients.secret' => DB::raw('oauth_client_projects.client_secret_plain')
+            ]);
+
         Schema::table('oauth_client_projects', function (Blueprint $table) {
             $table->dropColumn('client_secret_plain');
         });

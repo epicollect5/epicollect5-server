@@ -648,6 +648,18 @@ Used for:
 
 `AuthServiceProvider` configures token expiry through Passport.
 
+## OAuth Client Credentials
+
+OAuth client secrets are recoverable from the dashboard at any time, following
+the same approach as Google Cloud Console or similar.
+Secrets grant read-only access to project data via the API.
+
+The database should be treated as a sensitive asset and access restricted
+accordingly. Standard operational security applies: restrict database access,
+use encrypted connections, and audit access logs regularly.
+
+Clients can be deleted at any time, immediately invalidating their credentials.
+
 ### Social and passwordless auth
 
 Supported flows include:

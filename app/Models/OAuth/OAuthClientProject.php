@@ -13,6 +13,7 @@ use Throwable;
  * @property int $id
  * @property int $project_id
  * @property int $client_id
+ * @property string $client_secret_plain
  * @property string $created_at
  * @property string $updated_at
  */
@@ -76,6 +77,4 @@ class OAuthClientProject extends Model
             ->where('client_id', $clientId)
             ->exists();
     }
-
-
 }
