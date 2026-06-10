@@ -153,7 +153,8 @@ class ProjectControllerTest extends TestCase
                             'name' => $this->project->name,
                             'slug' => $this->project->slug,
                             'access' => $this->project->access,
-                            'ref' => $this->project->ref
+                            'ref' => $this->project->ref,
+                            'logo_base64' => null
                         ]
                     ]
                 ]
@@ -166,7 +167,8 @@ class ProjectControllerTest extends TestCase
                         'name',
                         'slug',
                         'access',
-                        'ref'
+                        'ref',
+                        'logo_base64'
                     ]
                 ]
             ]]);
@@ -197,14 +199,14 @@ class ProjectControllerTest extends TestCase
                         'name',
                         'slug',
                         'access',
-                        'ref'
+                        'ref',
+                        'logo_base64'
                     ]
                 ]
             ]]);
 
         $responseData = ($response->json())['data']; // Convert the JSON data response to an array.
         $this->assertCount($numOfProjects, $responseData);
-        $this->assertKeysNotEmpty($responseData);
     }
 
     public function test_search_should_skip_archived_projects()
@@ -487,6 +489,7 @@ class ProjectControllerTest extends TestCase
                             'slug',
                             'access',
                             'ref',
+                            'logo_base64',
                         ],
                     ],
                 ],
@@ -494,7 +497,6 @@ class ProjectControllerTest extends TestCase
         $responseData = ($response->json())['data']; // Convert the JSON data response to an array.
 
 
-        $this->assertKeysNotEmpty($responseData);
         //closest match is always first
         $this->assertEquals($this->project->name, $responseData[0]['project']['name']);
         $this->assertEquals($this->project->slug, $responseData[0]['project']['slug']);
@@ -554,6 +556,7 @@ class ProjectControllerTest extends TestCase
                             'slug',
                             'access',
                             'ref',
+                            'logo_base64',
                         ],
                     ],
                 ],
@@ -568,12 +571,12 @@ class ProjectControllerTest extends TestCase
                         'slug' => $this->project->slug,
                         'access' => $this->project->access,
                         'ref' => $this->project->ref,
+                        'logo_base64' => null
                     ],
                     ]
                 ]
             ]);
         $responseData = ($response->json())['data']; // Convert the JSON data response to an array.
-        $this->assertKeysNotEmpty($responseData);
         //Only one match
         $this->assertEquals(1, count($responseData));
     }

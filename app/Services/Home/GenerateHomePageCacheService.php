@@ -5,10 +5,9 @@ namespace ec5\Services\Home;
 use ec5\Libraries\Utilities\Common;
 use ec5\Models\Project\Project;
 use ec5\Models\System\SystemStats;
+use ec5\Services\Project\ProjectLogoService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Laravel\Facades\Image;
 use Throwable;
 
 class GenerateHomePageCacheService
@@ -88,76 +87,25 @@ class GenerateHomePageCacheService
     }
 
     /**
-     * Retrieve project logo as base64 WebP data URI
-     * Reads directly from storage (local or S3), resizes to project_thumb dimensions, converts to WebP
-     * Falls back to placeholder URL if fetch fails
+     * Retrieve project logo as base64 WebP data URI.
+     *
+     * Delegates to ProjectLogoService; falls back to a placeholder URL
+     * when no logo is available or processing fails.
      */
     private function getProjectLogoBase64(object $project): string
     {
-        try {
-            // Skip private projects - use placeholder
-            if ($project->access === config('epicollect.strings.project_access.private')) {
-                return url('/images/ec5-placeholder-256x256.jpg');
-            }
-
-            // If no logo URL, use placeholder
-            if (empty($project->logo_url)) {
-                return url('/images/ec5-placeholder-256x256.jpg');
-            }
-
-            // Get project thumb dimensions from config
-            $dimensions = config('epicollect.media.project_thumb_small');
-            $width = $dimensions[0];
-            $height = $dimensions[1];
-
-            // Check if logo exists in project disk
-            $disk = Storage::disk(Common::resolveDisk('project_thumb'));
-            $logoPath = $project->ref . '/logo.jpg';
-
-            if (!$disk->exists($logoPath)) {
-                Log::warning('Project logo file not found', [
-                    'project_slug' => $project->slug,
-                    'logo_path' => $logoPath,
-                ]);
-                return url('/images/ec5-placeholder-256x256.jpg');
-            }
-
-            // Read image from storage (works for both local and S3)
-            $stream = $disk->readStream($logoPath);
-            if (!$stream) {
-                return url('/images/ec5-placeholder-256x256.jpg');
-            }
-
-            // Read image from stream
-            try {
-                $image = Image::read($stream);
-                fclose($stream);
-
-                // Resize to project_thumb dimensions and convert to WebP with quality 70
-                $image->cover($width, $height);
-                $webpData = $image->toWebp(50);
-            } catch (Throwable $e) {
-                Log::warning('Failed to process project logo image', [
-                    'project_slug' => $project->slug,
-                    'exception' => $e->getMessage(),
-                ]);
-                return url('/images/ec5-placeholder-256x256.jpg');
-            } finally {
-                // Ensure stream is closed if it wasn't already
-                if (is_resource($stream)) {
-                    fclose($stream);
-                }
-            }
-
-            // Convert to base64 data URI
-            $base64 = base64_encode((string)$webpData);
-            return 'data:image/webp;base64,' . $base64;
-        } catch (Throwable $e) {
-            Log::warning('Exception while processing project logo for base64 encoding', [
-                'project_slug' => $project->slug ?? 'unknown',
-                'exception' => $e->getMessage(),
-            ]);
+        if ($project->access === config('epicollect.strings.project_access.private')) {
             return url('/images/ec5-placeholder-256x256.jpg');
         }
+
+        if (empty($project->logo_url)) {
+            return url('/images/ec5-placeholder-256x256.jpg');
+        }
+
+        $dimensions = config('epicollect.media.project_thumb_small');
+        $service = new ProjectLogoService();
+        $logoBase64 = $service->generate($project->ref, $dimensions[0], $dimensions[1]);
+
+        return $logoBase64 ?? url('/images/ec5-placeholder-256x256.jpg');
     }
 }

@@ -8,9 +8,11 @@ use ec5\Http\Validation\Project\RuleName;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectStats;
 use ec5\Services\Media\MediaCounterService;
+use ec5\Services\Project\ProjectLogoService;
 use ec5\Traits\Eloquent\StatsRefresher;
 use ec5\Traits\Requests\RequestAttributes;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Response;
 use Throwable;
@@ -105,21 +107,36 @@ class ProjectController
         $hits = [];
         $projects = [];
 
-        // Check if the 'exact' query parameter is present and true
         $exactMatch = request()->query('exact', false);
+        $privateAccess = config('epicollect.strings.project_access.private');
+        $ttlDays = (int) config('epicollect.setup.system.cache.project_mobile_logo_cache_ttl_days', 365);
 
         if (!empty($name)) {
             if ($exactMatch) {
-                // Perform exact match search
                 $hits = Project::matches($name, ['name', 'slug', 'access', 'ref']);
             } else {
-                // Perform starts-with search
                 $hits = Project::startsWith($name, ['name', 'slug', 'access', 'ref']);
             }
         }
 
-        // Build the JSON API response
+        $logoService = new ProjectLogoService();
+
         foreach ($hits as $hit) {
+            if ($hit->access === $privateAccess) {
+                $hit->logo_base64 = null;
+            } elseif (!empty($hit->structure_last_updated)) {
+                $cacheKey = 'project_mobile_logo_base64:' . $hit->ref . ':version:' . strtotime($hit->structure_last_updated);
+                $hit->logo_base64 = Cache::remember(
+                    $cacheKey,
+                    now()->addDays($ttlDays),
+                    fn () => $logoService->generate($hit->ref)
+                );
+            } else {
+                $hit->logo_base64 = null;
+            }
+
+            unset($hit->structure_last_updated);
+
             $data['type'] = 'project';
             $data['id'] = $hit->ref;
             $data['project'] = $hit;

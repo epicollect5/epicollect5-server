@@ -346,26 +346,32 @@ class Project extends Model
     {
         $trashedStatus = config('epicollect.strings.project_status.trashed');
         $archivedStatus = config('epicollect.strings.project_status.archived');
+        $structuresTable = config('epicollect.tables.project_structures');
 
         return static::select($columns)
-        ->where('name', 'like', $name . '%')
-        ->where('status', '<>', $trashedStatus)
-        ->where('status', '<>', $archivedStatus)
-        ->orderByRaw('LOWER(name) = ? DESC', [strtolower($name)]) // Exact match first
-        ->orderBy('updated_at', 'desc') // Optional: sort the rest by updated_at
-        ->take(50)
-        ->get();
+            ->leftJoin($structuresTable, 'projects.id', '=', $structuresTable . '.project_id')
+            ->where('name', 'like', $name . '%')
+            ->where('status', '<>', $trashedStatus)
+            ->where('status', '<>', $archivedStatus)
+            ->orderByRaw('LOWER(name) = ? DESC', [strtolower($name)])
+            ->orderBy('projects.updated_at', 'desc')
+            ->addSelect(DB::raw("DATE_FORMAT($structuresTable.updated_at, '%Y-%m-%d %H:%i:%s') as structure_last_updated"))
+            ->take(20)
+            ->get();
     }
 
     public static function matches($name, $columns = ['*']): Collection|array
     {
         $trashedStatus = config('epicollect.strings.project_status.trashed');
         $archivedStatus = config('epicollect.strings.project_status.archived');
+        $structuresTable = config('epicollect.tables.project_structures');
 
         return static::select($columns)
+            ->leftJoin($structuresTable, 'projects.id', '=', $structuresTable . '.project_id')
             ->where('name', '=', $name)
             ->where('status', '<>', $trashedStatus)
             ->where('status', '<>', $archivedStatus)
+            ->addSelect(DB::raw("DATE_FORMAT($structuresTable.updated_at, '%Y-%m-%d %H:%i:%s') as structure_last_updated"))
             ->take(1)
             ->get();
     }

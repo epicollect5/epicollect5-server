@@ -24,6 +24,7 @@ return [
         'cache' => [
             'homepage_cache_key' => 'homepage_cached_content',
             'homepage_cache_ttl_hours' => 24, // in hours
+            'project_mobile_logo_cache_ttl_days' => (int) env('PROJECT_MOBILE_LOGO_CACHE_TTL_DAYS', 365),
         ]
     ],
     'static_assets' => [
