@@ -22,7 +22,7 @@ class PreventRequestForgery extends BaseVerifier
      *
      *  imp: to make it work like pre Laravel 7
      *   without this, X-CSRF token from Ajax post requests
-     *   stop working
+     *   stops working
      */
     public static function serialized(): bool
     {

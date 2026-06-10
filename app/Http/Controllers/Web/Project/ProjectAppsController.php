@@ -10,6 +10,7 @@ use ec5\Models\OAuth\OAuthClientProject;
 use ec5\Traits\Requests\RequestAttributes;
 use Exception;
 use Illuminate\Contracts\View\Factory;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -80,16 +81,24 @@ class ProjectAppsController
             return Redirect::back()->withErrors($ruleProjectApp->errors());
         }
 
-        // Make the client
-        $client = $this->clients->createClientCredentialsGrantClient($payload['application_name']);
-        $plainSecret = $client->plainSecret;
+        try {
+            DB::beginTransaction();
 
-        // Add to the client_projects table
-        $clientProject = new OAuthClientProject();
-        $clientProject->client_id = $client->id;
-        $clientProject->project_id = $this->requestedProject()->getId();
-        $clientProject->client_secret_plain = $plainSecret;
-        if (!$clientProject->save()) {
+            $client = $this->clients->createClientCredentialsGrantClient($payload['application_name']);
+            $plainSecret = $client->plainSecret;
+
+            $clientProject = new OAuthClientProject();
+            $clientProject->client_id = $client->id;
+            $clientProject->project_id = $this->requestedProject()->getId();
+            $clientProject->client_secret_plain = $plainSecret;
+
+            if (!$clientProject->save()) {
+                throw new Exception('Failed to save OAuthClientProject');
+            }
+
+            DB::commit();
+        } catch (Throwable) {
+            DB::rollBack();
             if (request()->ajax()) {
                 return Response::apiErrorCode(400, ['errors' => ['ec5_91']]);
             }
