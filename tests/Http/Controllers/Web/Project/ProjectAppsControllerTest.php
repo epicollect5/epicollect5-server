@@ -147,10 +147,12 @@ class ProjectAppsControllerTest extends TestCase
         try {
             $clientRepository = new ClientRepository();
             $client = $clientRepository->createClientCredentialsGrantClient('Test App');
+            $plainSecret = $client->plainSecret;
 
             factory(OAuthClientProject::class)->create([
                 'project_id' => $this->project->id,
-                'client_id' => $client->id
+                'client_id' => $client->id,
+                'client_secret_plain' => $plainSecret
             ]);
 
             $this->assertCount(
@@ -189,6 +191,12 @@ class ProjectAppsControllerTest extends TestCase
             ]);
             //check access token entry is created
             $this->assertCount(1, OAuthAccessToken::where('client_id', $client->id)->get());
+
+            //assert client_secret_plain is persisted
+            $clientProject = OAuthClientProject::where('project_id', $this->project->id)
+                ->where('client_id', $client->id)
+                ->first();
+            $this->assertEquals($plainSecret, $clientProject->client_secret_plain);
         } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
@@ -203,10 +211,12 @@ class ProjectAppsControllerTest extends TestCase
         try {
             $clientRepository = new ClientRepository();
             $client = $clientRepository->createClientCredentialsGrantClient('Test App');
+            $plainSecret = $client->plainSecret;
 
             factory(OAuthClientProject::class)->create([
                 'project_id' => $this->project->id,
-                'client_id' => $client->id
+                'client_id' => $client->id,
+                'client_secret_plain' => $plainSecret
             ]);
 
             factory(OAuthAccessToken::class)->create([
@@ -229,9 +239,16 @@ class ProjectAppsControllerTest extends TestCase
 
             $this->assertCount(
                 1,
-                OAuthAccessToken::where('client_id', $client->id)
+                OAuthClient::where('id', $client->id)
                     ->get()
             );
+
+            //assert client_secret_plain is persisted
+            $clientProject = OAuthClientProject::where('project_id', $this->project->id)
+                ->where('client_id', $client->id)
+                ->first();
+            $this->assertEquals($plainSecret, $clientProject->client_secret_plain);
+
 
             //revoke the token
             $payload = [

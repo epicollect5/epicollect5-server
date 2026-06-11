@@ -423,8 +423,21 @@ task('artisan:migrate', function () {
 
 })->once();
 
-desc('Hash existing Passport client secrets (Laravel 13 upgrade)');
+desc('Hash existing Passport client secrets (Laravel 13 upgrade, only when passport < 13)');
 task('artisan:passport:hash', function () {
+    $php = get('bin/php');
+
+    $version = trim(run(
+        "cd {{release_path}} && $php -r \"require 'vendor/autoload.php'; echo \\Composer\\InstalledVersions::getVersion('laravel/passport') ?? '0';\" 2>/dev/null"
+    ));
+    $major = (int) (explode('.', $version)[0] ?? 0);
+
+    if ($major >= 13) {
+        writeln("<info>laravel/passport v{$version} detected - skipping passport:hash (secrets hashed natively in v13+).</info>");
+        return;
+    }
+
+    writeln("<info>laravel/passport v{$version} detected - running passport:hash.</info>");
     $output = run('{{bin/php}} {{release_path}}/artisan passport:hash --force', [
         'timeout' => 2000,
         'real_time_output' => false

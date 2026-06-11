@@ -2,6 +2,7 @@
 
 namespace ec5\Http\Middleware;
 
+use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery as BaseVerifier;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Response;
@@ -35,19 +36,21 @@ class PreventRequestForgery extends BaseVerifier
      */
     protected function addCookieToResponse($request, $response): Response
     {
+        if ($response instanceof Responsable) {
+            $response = $response->toResponse($request);
+        }
+
         $config = config('session');
 
         $response->headers->setCookie(
-            new Cookie(
-                // Set cookie expiry as 'lifetime' from session config file
-                'XSRF-TOKEN',
-                $request->session()->token(),
-                time() + 60 * config('session.lifetime'),
-                $config['path'],
-                $config['domain'],
-                $config['secure'],
-                false
-            )
+            Cookie::create('XSRF-TOKEN')
+                ->withValue($request->session()->token())
+                ->withExpires(time() + 60 * $config['lifetime'])
+                ->withPath($config['path'])
+                ->withDomain($config['domain'])
+                ->withSecure($config['secure'])
+                ->withHttpOnly(false)        // Must be false — JS needs to read it
+                ->withSameSite('lax')        // Explicit, readable, not positional
         );
 
         return $response;

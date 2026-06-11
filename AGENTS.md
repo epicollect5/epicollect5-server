@@ -92,18 +92,18 @@ Always use these flags when running CLI tools:
 ## Test Suite
 
 - The full test suite takes over 1 hour to complete.
-- NEVER run `php artisan test` or `./vendor/bin/pest` with no filter — it runs the full suite, UNLESS specified.
+- NEVER run `php artisan test` or `vendor/bin/phpunit` with no filter — it runs the full suite, UNLESS specified.
 - NEVER run tests as a baseline check or between upgrade steps.
 - ALWAYS run targeted tests after modifying a file, using the file path as filter:
   php artisan test tests/Unit/SomeTest.php
-  ./vendor/bin/pest tests/Unit/SomeTest.php
+  vendor/bin/phpunit tests/Unit/SomeTest.php
 - If you need to verify the app boots without running tests, use `php artisan about`.
 - Only run the full suite if the user explicitly types "run the full test suite" in the chat.
 
 ## Commands That Are Never Run Autonomously
 
 - `php artisan test` (no filter) — suite takes 1+ hour
-- `./vendor/bin/pest` (no filter) — suite takes 1+ hour
+- `vendor/bin/phpunit` (no filter) — suite takes 1+ hour
 - `php artisan migrate:fresh` — destroys local data
 - `php artisan migrate:reset` — destroys local data
 - `php artisan db:wipe` — destroys local data
