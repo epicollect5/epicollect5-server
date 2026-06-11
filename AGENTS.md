@@ -142,7 +142,12 @@ For each change produce:
 Rules: every change needs at least one check; steps must be manually executable in staging; no abstract descriptions.
 
 **4. Generate CSV**
-Columns: `Test Description` | `Expected` | `Manual Action` — one row per check.
+Columns: `Action Description` | `Expected` — one row per check.
+
+`Action Description` -> the human action the user should perform on the staging version of the app
+`Expected` -> the expected result of the action
+
+DO NOT ask users to run unit/integration tests, this is human work
 
 **5. Validate**
 No uncovered changes · no duplicates · all steps reproducible in staging.
@@ -150,4 +155,4 @@ No uncovered changes · no duplicates · all steps reproducible in staging.
 **6. Output**
 
 1. QA Markdown report
-2. CSV content block (copy/download ready)
+2. CSV report (file with same name as QA-*.md but with .csv extension)
