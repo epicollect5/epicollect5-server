@@ -47,8 +47,8 @@ class ProjectLogoServiceTest extends TestCase
 
         $decoded = base64_decode(substr($result, 23));
         $decodedImg = Image::read($decoded);
-        $this->assertEquals(64, $decodedImg->width());
-        $this->assertEquals(64, $decodedImg->height());
+        $this->assertEquals(128, $decodedImg->width());
+        $this->assertEquals(128, $decodedImg->height());
     }
 
     public function test_respects_custom_dimensions()

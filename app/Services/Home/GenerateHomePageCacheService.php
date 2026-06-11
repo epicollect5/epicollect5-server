@@ -49,14 +49,16 @@ class GenerateHomePageCacheService
             $totalBranchEntries = $branchEntriesStats->public + $branchEntriesStats->private;
             $totalAllEntries = Common::roundNumber($totalEntries + $totalBranchEntries, 0);
 
+            $logoService = new ProjectLogoService();
+
             // Process logos for first row
             foreach ($projectsFirstRow as $project) {
-                $project->logo_base64 = $this->getProjectLogoBase64($project);
+                $project->logo_base64 = $this->getProjectLogoBase64($project, $logoService);
             }
 
             // Process logos for second row
             foreach ($projectsSecondRow as $project) {
-                $project->logo_base64 = $this->getProjectLogoBase64($project);
+                $project->logo_base64 = $this->getProjectLogoBase64($project, $logoService);
             }
 
             // Render the HTML
@@ -92,7 +94,7 @@ class GenerateHomePageCacheService
      * Delegates to ProjectLogoService; falls back to a placeholder URL
      * when no logo is available or processing fails.
      */
-    private function getProjectLogoBase64(object $project): string
+    private function getProjectLogoBase64(object $project, ProjectLogoService $logoService): string
     {
         if ($project->access === config('epicollect.strings.project_access.private')) {
             return url('/images/ec5-placeholder-256x256.jpg');
@@ -103,8 +105,7 @@ class GenerateHomePageCacheService
         }
 
         $dimensions = config('epicollect.media.project_thumb_small');
-        $service = new ProjectLogoService();
-        $logoBase64 = $service->generate($project->ref, $dimensions[0], $dimensions[1]);
+        $logoBase64 = $logoService->generate($project->ref, $dimensions[0], $dimensions[1], 50);
 
         return $logoBase64 ?? url('/images/ec5-placeholder-256x256.jpg');
     }

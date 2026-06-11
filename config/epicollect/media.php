@@ -11,7 +11,6 @@ return [
     'project_thumb' => [512, 512],
     'project_thumb_small' => [256, 256],
     'project_mobile_logo' => [128, 128],
-    'project_mobile_search_logo' => [64, 64],
     'project_avatar' => [
         'filename' => 'logo.jpg',
         'disk' => 'project',

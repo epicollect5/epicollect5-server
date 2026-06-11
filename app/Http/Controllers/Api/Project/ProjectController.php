@@ -129,7 +129,7 @@ class ProjectController
                 $hit->logo_base64 = Cache::remember(
                     $cacheKey,
                     now()->addDays($ttlDays),
-                    fn () => $logoService->generate($hit->ref)
+                    fn () => $logoService->generate($hit->ref, quality: 75)
                 );
             } else {
                 $hit->logo_base64 = null;

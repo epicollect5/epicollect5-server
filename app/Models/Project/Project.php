@@ -336,7 +336,7 @@ class Project extends Model
     /**
      * Return all the projects which starts the string passed in the name
      * it is used by the mobile app project search
-     * limit to 50 to keep it responsive on the mobile app
+     * limit to 20 to keep it responsive on the mobile app
      * Order by updated_at to list the latest and most active projects first
      * Remember: project names are unique!
      *

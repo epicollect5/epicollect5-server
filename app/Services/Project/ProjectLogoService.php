@@ -22,8 +22,9 @@ class ProjectLogoService
      */
     public function generate(
         string $projectRef,
-        int $width = 64,
-        int $height = 64
+        int $width = 128,
+        int $height = 128,
+        int $quality = 75
     ): ?string {
         if (empty($projectRef)) {
             return null;
@@ -45,7 +46,7 @@ class ProjectLogoService
             try {
                 $image = Image::read($stream);
                 $image->cover($width, $height);
-                $webp = $image->toWebp(50);
+                $webp = $image->toWebp($quality);
             } catch (Throwable $e) {
                 Log::warning(
                     'ProjectLogoService: failed to process logo',
