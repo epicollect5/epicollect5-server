@@ -113,29 +113,39 @@ class ProjectController
 
         if (!empty($name)) {
             if ($exactMatch) {
-                $hits = Project::matches($name, ['name', 'slug', 'access', 'ref']);
+                $hits = Project::matches($name, ['name', 'slug', 'access', 'ref', 'logo_url']);
             } else {
-                $hits = Project::startsWith($name, ['name', 'slug', 'access', 'ref']);
+                $hits = Project::startsWith($name, ['name', 'slug', 'access', 'ref', 'logo_url']);
             }
         }
 
         $logoService = new ProjectLogoService();
+        $dimensions = config('epicollect.media.project_mobile_logo');
+
 
         foreach ($hits as $hit) {
             if ($hit->access === $privateAccess) {
+                $hit->logo_base64 = null;
+            } elseif (empty($hit->logo_url)) {
                 $hit->logo_base64 = null;
             } elseif (!empty($hit->structure_last_updated)) {
                 $cacheKey = 'project_mobile_logo_base64:' . $hit->ref . ':version:' . strtotime($hit->structure_last_updated);
                 $hit->logo_base64 = Cache::remember(
                     $cacheKey,
                     now()->addDays($ttlDays),
-                    fn () => $logoService->generate($hit->ref, quality: 75)
+                    fn () => $logoService->generate(
+                        $hit->ref,
+                        $dimensions[0],
+                        $dimensions[1],
+                        quality: 75
+                    )
                 );
             } else {
                 $hit->logo_base64 = null;
             }
 
             unset($hit->structure_last_updated);
+            unset($hit->logo_url);
 
             $data['type'] = 'project';
             $data['id'] = $hit->ref;

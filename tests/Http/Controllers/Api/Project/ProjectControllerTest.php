@@ -207,6 +207,10 @@ class ProjectControllerTest extends TestCase
 
         $responseData = ($response->json())['data']; // Convert the JSON data response to an array.
         $this->assertCount($numOfProjects, $responseData);
+
+        foreach ($responseData as $item) {
+            $this->assertArrayHasKey('logo_base64', $item['project']);
+        }
     }
 
     public function test_search_should_skip_archived_projects()
@@ -502,6 +506,10 @@ class ProjectControllerTest extends TestCase
         $this->assertEquals($this->project->slug, $responseData[0]['project']['slug']);
         //we always have more than one project
         $this->assertGreaterThan($numOfProjects, count($responseData));
+
+        foreach ($responseData as $item) {
+            $this->assertArrayHasKey('logo_base64', $item['project']);
+        }
     }
 
     public function test_project_search_multiple_no_matches()
