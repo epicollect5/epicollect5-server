@@ -631,6 +631,41 @@ Used by:
 - browser pages
 - internal API consumed by the web frontend
 
+#### Session cookie `SameSite` and `Secure`
+
+The `epicollect5` session cookie attributes are driven by `config/session.php`
+and the `SESSION_SECURE_COOKIE` / `SESSION_SAME_SITE` env vars. These two
+values **must** be configured correctly per environment, otherwise
+cross-origin browser flows (notably Apple login) silently break:
+
+```env
+# In production, set to true. For localhost, null|false
+# true: session cookies works only on a HTTPS connection
+SESSION_SECURE_COOKIE=true
+# In production, set to "none" (required for Apple login cross-site POST).
+# For localhost HTTP development, set to "lax".
+# none: session cookie sent on cross-site requests (requires SESSION_SECURE_COOKIE=true)
+# lax: session cookie sent only on same-site navigations, not cross-site POST
+SESSION_SAME_SITE=none
+```
+
+Why this matters:
+
+- `StartSession` middleware passes `config('session.same_site')` straight
+  through to Symfony's `Cookie` constructor. If the value is `null` or
+  missing, **no `SameSite` attribute is emitted** and browsers fall back to
+  `Lax` — which is **not sent on cross-site POSTs**, breaking the Apple
+  callback at `POST /handle/apple` and `POST /profile/connect-apple-callback`.
+- `SameSite=None` requires `Secure=true`; modern browsers reject
+  `None` cookies sent over plain HTTP.
+- The XSRF-TOKEN cookie is intentionally `SameSite=Lax`
+  (set explicitly in `PreventRequestForgery::addCookieToResponse`); the
+  session cookie is the one that must be `None` to keep Apple login working.
+
+Default in `config/session.php` is `'none'`; the `.env.example` ships with
+the production-correct values. Localhost HTTP development must override
+both to `null|false` and `lax` respectively.
+
 ### Custom JWT auth
 
 Implemented via `JwtAuthServiceProvider` and custom classes under `app/Libraries/Auth/Jwt`.

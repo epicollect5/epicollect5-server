@@ -54,6 +54,20 @@ class PreventRequestForgeryTest extends TestCase
         $this->assertEqualsWithDelta($expectedExpiry, $cookie->getExpiresTime(), 2);
     }
 
+    public function test_xsrf_token_cookie_is_not_secure_when_session_secure_is_null(): void
+    {
+        $originalSecure = config('session.secure');
+        config(['session.secure' => null]);
+
+        try {
+            $cookie = $this->getXsrfCookieFromMiddleware();
+
+            $this->assertFalse($cookie->isSecure());
+        } finally {
+            config(['session.secure' => $originalSecure]);
+        }
+    }
+
     public function test_apple_callback_path_bypasses_csrf_verification(): void
     {
         $response = $this->post('handle/apple');

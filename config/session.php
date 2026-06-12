@@ -164,5 +164,7 @@ return [
 
     'http_only' => true,
     //need relaxed cookies for cross site requests (POST from Apple)
+    //imp: leaving SESSION_SAME_SITE empty in .env falls back to browser default (Lax),
+    //which breaks Apple login. Always set this explicitly to "none" in production.
     'same_site' =>  env('SESSION_SAME_SITE', 'none'),
 ];

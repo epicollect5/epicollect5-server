@@ -48,7 +48,7 @@ class PreventRequestForgery extends BaseVerifier
                 ->withExpires(time() + 60 * $config['lifetime'])
                 ->withPath($config['path'])
                 ->withDomain($config['domain'])
-                ->withSecure($config['secure'])
+                ->withSecure((bool) $config['secure'])
                 ->withHttpOnly(false)        // Must be false — JS needs to read it
                 ->withSameSite('lax')        // Explicit, readable, not positional
         );
