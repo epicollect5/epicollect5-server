@@ -88,3 +88,26 @@ Always use these flags when running CLI tools:
 
 - Tests: `vendor/bin/phpunit --no-progress`
 - phpcs: `vendor/bin/phpcs --report=emacs -q`
+
+## Testing rules
+
+The full test suite (~1 hour) is forbidden by default.
+This rule takes precedence over all other testing guidance.
+The full suite may only be run under the following enumerated conditions, each requiring explicit authorization:
+
+- Explicitly requested by the user
+- Touching shared infrastructure
+- Changing global config/bootstrap/database migrations
+
+Default workflow:
+
+- Run only tests directly related to modified files
+- Prefer single-file or single-suite execution
+- Prefer targeted integration tests
+- Avoid e2e unless touched
+
+Examples:
+
+- Changed validator -> run validator tests only
+- Changed DTO -> run DTO tests only
+- Changed controller -> run matching feature test only

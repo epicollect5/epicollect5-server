@@ -26,8 +26,16 @@ class LoginController extends AuthController
 
             $nonce = csrf_token();
             session(['nonce' => $nonce]);
+
+            //is Cloudflare Turnstile enabled
+            $captchaSiteKey = '';
+            $isTurnstileEnabled = config('epicollect.setup.cloudflare_turnstile.use_cloudflare_turnstile');
+            if ($isTurnstileEnabled) {
+                $captchaSiteKey = config('epicollect.setup.cloudflare_turnstile.site_key');
+            }
+
             return view('auth.login', [
-                'gcaptcha' => config('epicollect.setup.google_recaptcha.site_key'),
+                'captcha' => $captchaSiteKey,
                 'nonce' => $nonce,
             ]);
         }

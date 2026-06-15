@@ -4,14 +4,13 @@ namespace ec5\Http\Validation\Auth;
 
 use ec5\Http\Validation\ValidationBase;
 
-class RuleRecaptcha extends ValidationBase
+class RuleTurnstile extends ValidationBase
 {
     protected array $rules = [
         'success' => 'boolean',
         'challenge_ts' => 'present',
         'hostname' => 'present',
-        'score' => 'numeric|min:0.5',
-        'action' => 'in:signup,forgot,passwordless'
+        'error-codes' => 'array'
     ];
 
     public function __construct()
