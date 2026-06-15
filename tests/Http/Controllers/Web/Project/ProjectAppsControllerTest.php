@@ -239,7 +239,7 @@ class ProjectAppsControllerTest extends TestCase
 
             $this->assertCount(
                 1,
-                OAuthClient::where('id', $client->id)
+                OAuthAccessToken::where('client_id', $client->id)
                     ->get()
             );
 
