@@ -20,7 +20,7 @@
 - **Testing**: PHPUnit tests are located in `tests/`. Most database tests use the `DatabaseTransactions`
   trait. Integration and controller tests may use `clearDatabase()` from `tests/TestCase.php` instead.
   See existing tests for the current pattern.
-    - Command: `php artisan test` or `./vendor/bin/phpunit`
+    - Command: `vendor/bin/phpunit --no-progress`
 - **Generators**: Use `ec5\Libraries\Generators\` (e.g., `ProjectDefinitionGenerator`, `EntryGenerator`) to create mock
   data for tests.
 - **Deployment**: `deploy.php` manages full production deployments via Deployer (including migrations).
@@ -89,9 +89,9 @@
 
 1. Extend `Tests\TestCase` (defined in `tests/TestCase.php`).
 2. Use `DatabaseTransactions` trait for database tests (the dominant pattern).
-3. Use `clearDatabase()` in `setUp()` only for integration tests that need explicit cleanup control.
+3. Use `clearDatabase()` with specific params for tests that need explicit cleanup (e.g. sequence tests without transactions, or to clear pre-existing artifacts in setUp).
 4. Use model factories from `ec5\Libraries\Generators\` for test data.
-5. Run with: `vendor/bin/phpunit tests/Path/To/YourTest.php`
+5. Run with: `vendor/bin/phpunit --no-progress tests/Path/To/YourTest.php`
 
 ## PHP style: string interpolation
 
@@ -115,6 +115,31 @@ When writing PHP strings:
 
 - Follow docs/release-review.md
 
+## Diff-First Intelligence (MANDATORY)
+
+When analyzing code, generating reviews, or producing QA, always prioritize context in this order:
+
+1. **git diff** vs base branch (primary source of truth)
+2. **Modified file sections** (diff hunks)
+3. **Minimal surrounding code context** (±20–50 lines if needed for clarity)
+4. **Full file or repository analysis** (last resort only, if the diff is insufficient to understand behavior)
+
+Strict rules:
+
+- Never analyze unchanged parts of the repository unless required to resolve ambiguity in the diff.
+- Never infer features, bugs, or changes not explicitly present in the diff.
+- Avoid full-repository scanning unless absolutely necessary.
+- Always anchor conclusions to observable changes in the diff.
+
+## AI Workflows
+
+This section routes agents to the canonical workflow definitions.
+
+- **Code Review** → `docs/workflows/review.md`
+- **QA Generation** → `docs/workflows/qa.md`
+
+Agents must follow these workflow definitions when executing tasks.
+
 ## Restrictions
 
 - **Tinker is strictly prohibited:** No AI agent must use, invoke, or interact with Tinker in any form during
@@ -135,7 +160,7 @@ Always use these flags when running CLI tools:
 - **Commit messages**: Use Conventional Commits format: `feat: add entry export filters`,
   `fix: handle null project mapping`, `test: cover edge case in upload validation`.
 - **Environments**: `dev` → `staging` → `production` (promotion order). `master` is the canonical branch.
-- **PRs**: Keep PRs focused on a single change. Run `vendor/bin/phpunit` (targeted) before submitting.
+- **PRs**: Keep PRs focused on a single change. Run `vendor/bin/phpunit --no-progress` (targeted) before submitting.
 
 ## Test Suite
 
@@ -143,8 +168,7 @@ Always use these flags when running CLI tools:
 - NEVER run `php artisan test` or `vendor/bin/phpunit` with no filter — it runs the full suite, UNLESS specified.
 - NEVER run tests as a baseline check or between upgrade steps.
 - ALWAYS run targeted tests after modifying a file, using the file path as filter:
-  php artisan test tests/Services/Project/ProjectExtraServiceTest.php
-  vendor/bin/phpunit tests/Services/Project/ProjectExtraServiceTest.php
+  vendor/bin/phpunit --no-progress tests/Services/Project/ProjectExtraServiceTest.php
 - If you need to verify the app boots without running tests, use `php artisan about`.
 - Only run the full suite if the user explicitly types "run the full test suite" in the chat.
 
@@ -158,49 +182,4 @@ Always use these flags when running CLI tools:
 - `php artisan vendor:publish --tag=*-migrations` — creates duplicate migrations
 - `composer update` without showing a diff first
 
-## /qa
 
-**Purpose:** Generate QA documentation from a codebase change or QA spec file.
-
-**Triggers:** `/qa` · "generate qa docs" · "qa checklist" · "qa summary" · "create qa report"
-
-**Inputs (optional):**
-
-- `path` — QA spec file (default: `docs/QA-{version}.md`)
-- `diff` — git diff (if available; takes priority over spec)
-
----
-
-### Pipeline
-
-**1. Load Context**
-Read QA spec from path and/or git diff. If both exist, lead with diff and reconcile against spec.
-
-**2. Analyze Changes**
-Identify: modified features, new endpoints/controllers, migrations, auth/permissions, frontend changes, API contract
-changes.
-
-**3. Generate QA Checks**
-For each change produce:
-
-- **Test Description** — what is being tested
-- **Expected Result** — what success looks like
-- **Manual Action** — concrete step-by-step staging instructions
-
-Rules: every change needs at least one check; steps must be manually executable in staging; no abstract descriptions.
-
-**4. Generate CSV**
-Columns: `Action Description` | `Expected` — one row per check.
-
-`Action Description` -> the human action the user should perform on the staging version of the app
-`Expected` -> the expected result of the action
-
-DO NOT ask users to run unit/integration tests, this is human work
-
-**5. Validate**
-No uncovered changes · no duplicates · all steps reproducible in staging.
-
-**6. Output**
-
-1. QA Markdown report
-2. CSV report (file with same name as QA-*.md but with .csv extension)

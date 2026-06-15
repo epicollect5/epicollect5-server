@@ -72,14 +72,14 @@ class PreventRequestForgeryTest extends TestCase
     {
         $response = $this->post('handle/apple');
 
-        $this->assertNotEquals(419, $response->getStatusCode());
+        $this->assertTrue($response->isRedirect());
     }
 
     public function test_connect_apple_callback_path_bypasses_csrf_verification(): void
     {
         $response = $this->post('profile/connect-apple-callback');
 
-        $this->assertNotEquals(419, $response->getStatusCode());
+        $this->assertTrue($response->isRedirect());
     }
 
     private function getXsrfCookieFromMiddleware(): Cookie

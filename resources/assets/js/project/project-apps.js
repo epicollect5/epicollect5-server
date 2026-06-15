@@ -52,7 +52,10 @@ window.EC5.projectApps = window.EC5.projectApps || {};
             }
 
             module.getApps();
-        }).fail(window.EC5.showError);
+        }).fail(function (jqXHR) {
+            window.EC5.overlay.fadeOut();
+            window.EC5.showError(jqXHR);
+        });
 
     };
 
@@ -78,7 +81,11 @@ $(document).ready(function () {
 
         e.preventDefault();
 
-        // Retrieve form data
+        // Retrieve form data, trimming whitespace-only values
+        var $applicationName = $(this).find('#project-application_name');
+        if ($applicationName.length) {
+            $applicationName.val($applicationName.val().trim());
+        }
         var formData = $(this).serialize();
 
         // Get action url

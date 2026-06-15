@@ -22,17 +22,17 @@ class ProjectLogoServiceTest extends TestCase
         Storage::fake('project');
     }
 
-    public function test_returns_null_for_empty_ref()
+    public function test_returns_null_for_empty_ref(): void
     {
         $this->assertNull($this->service->generate(''));
     }
 
-    public function test_returns_null_when_file_missing()
+    public function test_returns_null_when_file_missing(): void
     {
         $this->assertNull($this->service->generate('non-existent-ref'));
     }
 
-    public function test_returns_data_uri_when_file_exists()
+    public function test_returns_data_uri_when_file_exists(): void
     {
         $ref = Generators::projectRef();
 
@@ -51,7 +51,7 @@ class ProjectLogoServiceTest extends TestCase
         $this->assertEquals(128, $decodedImg->height());
     }
 
-    public function test_respects_custom_dimensions()
+    public function test_respects_custom_dimensions(): void
     {
         $ref = Generators::projectRef();
 
@@ -68,7 +68,7 @@ class ProjectLogoServiceTest extends TestCase
         $this->assertEquals(32, $decodedImg->height());
     }
 
-    public function test_returns_null_when_stream_unreadable()
+    public function test_returns_null_when_stream_unreadable(): void
     {
         $ref = Generators::projectRef();
 
