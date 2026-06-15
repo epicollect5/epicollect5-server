@@ -15,11 +15,11 @@ class PreventRequestForgeryTest extends TestCase
         $this->assertTrue(PreventRequestForgery::serialized());
     }
 
-    public function test_xsrf_token_cookie_has_same_site_lax(): void
+    public function test_xsrf_token_cookie_same_site_matches_session_config(): void
     {
         $cookie = $this->getXsrfCookieFromMiddleware();
 
-        $this->assertSame('lax', $cookie->getSameSite());
+        $this->assertSame(config('session.same_site'), $cookie->getSameSite());
     }
 
     public function test_xsrf_token_cookie_is_not_http_only(): void

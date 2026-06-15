@@ -159,6 +159,25 @@ It does not affect caching behaviour — `no-store` already prevents the browser
 response. The external API (`api/media/*`) has no cookie middleware, so the `private` directive
 does not appear on those responses.
 
+### Server-side project mobile logo cache
+
+In addition to HTTP response caching, the project **mobile logo** is
+server-side cached via `Cache::remember` in `ProjectController::search()`.
+The cache key is project-specific and uses a configurable TTL.
+
+The TTL is controlled by:
+
+```env
+# Cache TTL in days for project mobile logos. Defaults to 365.
+PROJECT_MOBILE_LOGO_CACHE_TTL_DAYS=365
+```
+
+This is read in `config/epicollect/setup.php` and consumed as
+`config('epicollect.setup.system.cache.project_mobile_logo_cache_ttl_days')`.
+A short-circuit guard (`empty(logo_url)`) prevents the cache from
+ever storing a `null` value (which `Cache::remember` does not cache,
+causing the callback to re-run every request).
+
 ### Rate Limiters
 
 Defined in `app/Providers/RateLimiterServiceProvider.php`.

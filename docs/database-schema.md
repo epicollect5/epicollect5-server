@@ -4,7 +4,7 @@ This document describes the current application schema derived from the migratio
 
 Scope:
 - It reflects the latest migrated structure, not historical intermediate states.
-- It is based on the migrations in this repository as of 2026-05-08.
+- It is based on the migrations in this repository as of 2026-06-09.
 - JSON shape migrations and read-time JSON contracts are mentioned only where they clarify persisted columns.
 
 ## Current Tables
@@ -472,6 +472,7 @@ Columns:
 - `id`: `INT`, primary key, auto increment
 - `project_id`: `INT`, indexed
 - `client_id`: `INT`, not null
+- `client_secret_plain`: `VARCHAR(255)`, nullable
 - `created_at`: `TIMESTAMP`, default current timestamp
 - `updated_at`: `TIMESTAMP`, default current timestamp
 
@@ -484,6 +485,7 @@ Foreign keys:
 
 Notes:
 - There is no migration-defined foreign key from `client_id` to `oauth_clients.id`.
+- `client_secret_plain` was added by migration `2026_06_09_000001` to preserve the pre-hash secret before Passport 13's `passport:hash` command permanently hashes `oauth_clients.secret`. The `down()` migration restores it back to `oauth_clients.secret` if rolled back.
 
 ## Removed Tables
 

@@ -49,8 +49,8 @@ class PreventRequestForgery extends BaseVerifier
                 ->withPath($config['path'])
                 ->withDomain($config['domain'])
                 ->withSecure((bool) $config['secure'])
-                ->withHttpOnly(false)        // Must be false — JS needs to read it
-                ->withSameSite('lax')        // Explicit, readable, not positional
+                ->withHttpOnly(false)         // Must be false — JS needs to read it
+                ->withSameSite($config['same_site'] ?? 'lax')  // Match session SameSite policy
         );
 
         return $response;
