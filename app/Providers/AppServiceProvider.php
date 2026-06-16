@@ -6,6 +6,7 @@ use Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\DB;
 use Log;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
@@ -39,6 +40,20 @@ class AppServiceProvider extends ServiceProvider
             if ($host !== 'five.epicollect.net' && $bucket === self::EPICOLLECT_MEDIA_BUCKET_PRODUCTION) {
                 Log::error(__METHOD__ . ' failed.', ['exception' => self::EXCEPTION_MESSAGE]);
                 throw new HttpException(500, self::EXCEPTION_MESSAGE);
+            }
+        }
+
+        // Passport 13+: ensure all client secrets are hashed
+        if (interface_exists('Laravel\Passport\Contracts\OAuthenticatable')) {
+            $unhashed = DB::table(config('epicollect.tables.oauth_clients'))
+                ->whereNotNull('secret')
+                ->get()
+                ->filter(fn ($c) => ! preg_match('/^\$2[ayb]/', $c->secret));
+
+            if ($unhashed->isNotEmpty()) {
+                $message = 'Unhashed Passport client secrets detected. Run: php artisan passport:hash --force';
+                Log::error(__METHOD__ . ' failed.', ['exception' => $message]);
+                throw new HttpException(500, $message);
             }
         }
 
