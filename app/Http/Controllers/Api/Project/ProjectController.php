@@ -3,6 +3,7 @@
 namespace ec5\Http\Controllers\Api\Project;
 
 use Auth;
+use Carbon\Carbon;
 use ec5\Http\Validation\Entries\Upload\RuleCanBulkUpload;
 use ec5\Http\Validation\Project\RuleName;
 use ec5\Models\Project\Project;
@@ -110,6 +111,7 @@ class ProjectController
         $exactMatch = request()->query('exact', false);
         $privateAccess = config('epicollect.strings.project_access.private');
         $ttlDays = (int) config('epicollect.setup.system.cache.project_mobile_logo_cache_ttl_days', 365);
+        $negativeTtlMinutes = (int) config('epicollect.setup.system.cache.project_mobile_logo_missing_ttl_minutes', 60);
 
         if (!empty($name)) {
             if ($exactMatch) {
@@ -129,17 +131,28 @@ class ProjectController
             } elseif (empty($hit->logo_url)) {
                 $hit->logo_base64 = null;
             } elseif (!empty($hit->structure_last_updated)) {
-                $cacheKey = 'project_mobile_logo_base64:' . $hit->ref . ':version:' . strtotime($hit->structure_last_updated);
-                $hit->logo_base64 = Cache::remember(
-                    $cacheKey,
-                    now()->addDays($ttlDays),
-                    fn () => $logoService->generate(
-                        $hit->ref,
-                        $dimensions[0],
-                        $dimensions[1],
-                        quality: 75
-                    )
-                );
+                $version = Carbon::parse($hit->structure_last_updated)->getTimestamp();
+                $positiveKey = 'project_mobile_logo_base64:' . $hit->ref . ':version:' . $version;
+                $negativeKey = 'project_mobile_logo_missing:' . $hit->ref . ':version:' . $version;
+
+                if (Cache::has($negativeKey)) {
+                    $hit->logo_base64 = null;
+                } else {
+                    $hit->logo_base64 = Cache::remember(
+                        $positiveKey,
+                        now()->addDays($ttlDays),
+                        fn () => $logoService->generate(
+                            $hit->ref,
+                            $dimensions[0],
+                            $dimensions[1],
+                            quality: 75
+                        )
+                    );
+
+                    if ($hit->logo_base64 === null) {
+                        Cache::put($negativeKey, true, now()->addMinutes($negativeTtlMinutes));
+                    }
+                }
             } else {
                 $hit->logo_base64 = null;
             }

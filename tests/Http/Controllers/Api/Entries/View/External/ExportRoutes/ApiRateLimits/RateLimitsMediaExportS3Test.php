@@ -115,7 +115,7 @@ class RateLimitsMediaExportS3Test extends TestCase
         factory(OAuthClientProject::class)->create([
             'project_id' => $this->project->id,
             'client_id' => $this->passportClient->id,
-            'client_secret_plain' => $plainSecret
+            'client_secret_recoverable' => $plainSecret
         ]);
 
         $this->overrideStorageDriver('s3');

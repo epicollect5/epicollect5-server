@@ -13,7 +13,7 @@ use Throwable;
  * @property int $id
  * @property int $project_id
  * @property int $client_id
- * @property string $client_secret_plain
+ * @property string|null $client_secret_recoverable
  * @property string $created_at
  * @property string $updated_at
  */
@@ -22,6 +22,10 @@ class OAuthClientProject extends Model
     use SerializeDates;
 
     protected $table = 'oauth_client_projects';
+
+    protected $casts = [
+        'client_secret_recoverable' => 'encrypted',
+    ];
 
     public static function getApps($projectId): Collection|array
     {
@@ -35,7 +39,7 @@ class OAuthClientProject extends Model
             ->select([
                 'oauth_clients.name',
                 'oauth_clients.id',
-                'oauth_client_projects.client_secret_plain',
+                'oauth_client_projects.client_secret_recoverable',
                 'oauth_clients.created_at'
             ])->get();
     }

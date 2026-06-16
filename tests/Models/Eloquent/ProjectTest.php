@@ -2,6 +2,7 @@
 
 namespace Tests\Models\Eloquent;
 
+use Carbon\Carbon;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
@@ -142,5 +143,74 @@ class ProjectTest extends TestCase
         $adminProject = $projects->items()[0];
 
         $this->assertSame($updatedAt, $adminProject->structure_last_updated);
+    }
+
+    public function test_starts_with_caps_results_at_20_and_exposes_structure_last_updated()
+    {
+        $creator = User::where('email', config('testing.SUPER_ADMIN_EMAIL'))->first();
+        $updatedAt = '2026-05-08 10:11:12';
+        $baseName = 'Search Cap Test';
+
+        // Create 25 projects whose name starts with the search term
+        for ($i = 0; $i < 25; $i++) {
+            $project = factory(Project::class)->create([
+                'created_by' => $creator->id,
+                'name' => $baseName . ' ' . $i,
+            ]);
+            factory(ProjectStructure::class)->create([
+                'project_id' => $project->id,
+                'updated_at' => $updatedAt,
+            ]);
+        }
+
+        $hits = Project::startsWith($baseName, ['name', 'slug', 'access', 'ref', 'logo_url']);
+
+        $this->assertCount(20, $hits);
+        $this->assertIsString($hits->first()->structure_last_updated);
+        $this->assertSame(
+            $updatedAt,
+            Carbon::parse($hits->first()->structure_last_updated)->format('Y-m-d H:i:s')
+        );
+    }
+
+    public function test_matches_returns_one_row_with_structure_last_updated()
+    {
+        $creator = User::where('email', config('testing.SUPER_ADMIN_EMAIL'))->first();
+        $updatedAt = '2026-05-08 13:14:15';
+        $name = 'Match Scope Test';
+
+        $project = factory(Project::class)->create([
+            'created_by' => $creator->id,
+            'name' => $name,
+        ]);
+        factory(ProjectStructure::class)->create([
+            'project_id' => $project->id,
+            'updated_at' => $updatedAt,
+        ]);
+
+        $hits = Project::matches($name, ['name', 'slug', 'access', 'ref', 'logo_url']);
+
+        $this->assertCount(1, $hits);
+        $this->assertSame($project->ref, $hits->first()->ref);
+        $this->assertSame(
+            $updatedAt,
+            Carbon::parse($hits->first()->structure_last_updated)->format('Y-m-d H:i:s')
+        );
+    }
+
+    public function test_starts_with_returns_null_structure_last_updated_when_no_structure_row_exists()
+    {
+        $creator = User::where('email', config('testing.SUPER_ADMIN_EMAIL'))->first();
+        $name = 'Orphan Search Test';
+
+        factory(Project::class)->create([
+            'created_by' => $creator->id,
+            'name' => $name,
+        ]);
+
+        $hits = Project::startsWith($name, ['name', 'slug', 'access', 'ref', 'logo_url']);
+
+        $this->assertCount(1, $hits);
+        $this->assertNull($hits->first()->structure_last_updated);
     }
 }

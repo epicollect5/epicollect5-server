@@ -103,7 +103,7 @@ class MediaExportPrivateAudioS3Test extends TestCase
         factory(OAuthClientProject::class)->create([
             'project_id' => $project->id,
             'client_id' => $client->id,
-            'client_secret_plain' => $plainSecret
+            'client_secret_recoverable' => $plainSecret
         ]);
 
         $tokenClient = new Client();

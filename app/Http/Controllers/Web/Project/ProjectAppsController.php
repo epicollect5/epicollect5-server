@@ -90,7 +90,7 @@ class ProjectAppsController
             $clientProject = new OAuthClientProject();
             $clientProject->client_id = $client->id;
             $clientProject->project_id = $this->requestedProject()->getId();
-            $clientProject->client_secret_plain = $plainSecret;
+            $clientProject->client_secret_recoverable = $plainSecret;
 
             if (!$clientProject->save()) {
                 throw new Exception('Failed to save OAuthClientProject');

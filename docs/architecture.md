@@ -163,20 +163,29 @@ does not appear on those responses.
 
 In addition to HTTP response caching, the project **mobile logo** is
 server-side cached via `Cache::remember` in `ProjectController::search()`.
-The cache key is project-specific and uses a configurable TTL.
+The cache key is project-specific and uses a configurable TTL. Both
+positive and negative results are cached: a missing logo (file absent or
+unreadable) is remembered for a short window so repeated searches against
+the same project do not re-hit storage on every request.
 
-The TTL is controlled by:
+The TTLs are controlled by:
 
 ```env
 # Cache TTL in days for project mobile logos. Defaults to 365.
 PROJECT_MOBILE_LOGO_CACHE_TTL_DAYS=365
+# Cache TTL in minutes for the "no logo" negative cache. Defaults to 60.
+PROJECT_MOBILE_LOGO_MISSING_TTL_MINUTES=60
 ```
 
-This is read in `config/epicollect/setup.php` and consumed as
-`config('epicollect.setup.system.cache.project_mobile_logo_cache_ttl_days')`.
-A short-circuit guard (`empty(logo_url)`) prevents the cache from
-ever storing a `null` value (which `Cache::remember` does not cache,
-causing the callback to re-run every request).
+These are read in `config/epicollect/setup.php` and consumed as
+`config('epicollect.setup.system.cache.project_mobile_logo_cache_ttl_days')`
+and
+`config('epicollect.setup.system.cache.project_mobile_logo_missing_ttl_minutes')`.
+
+The cache key embeds `strtotime($project_structures.updated_at)` for the
+project, so any change that touches the structures table (including logo
+upload, see `ProjectEditController::updateDetails()`) invalidates the
+cached logo automatically.
 
 ### Rate Limiters
 
@@ -708,9 +717,16 @@ OAuth client secrets are recoverable from the dashboard at any time, following
 the same approach as Google Cloud Console or similar.
 Secrets grant read-only access to project data via the API.
 
-The database should be treated as a sensitive asset and access restricted
+To allow recovery, a copy of the pre-hash secret is stored in
+`oauth_client_projects.client_secret_recoverable`. The value is **encrypted at
+rest** via Laravel's `encrypted` Eloquent cast (powered by `APP_KEY`); a raw
+DB dump or backup therefore cannot be used to mint tokens. Rotation requires
+creating a new client.
+
+The database should still be treated as a sensitive asset and access restricted
 accordingly. Standard operational security applies: restrict database access,
-use encrypted connections, and audit access logs regularly.
+use encrypted connections, and audit access logs regularly. Rotating `APP_KEY`
+invalidates every stored recoverable secret.
 
 Clients can be deleted at any time, immediately invalidating their credentials.
 

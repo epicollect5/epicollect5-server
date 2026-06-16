@@ -152,7 +152,7 @@ class ProjectAppsControllerTest extends TestCase
             factory(OAuthClientProject::class)->create([
                 'project_id' => $this->project->id,
                 'client_id' => $client->id,
-                'client_secret_plain' => $plainSecret
+                'client_secret_recoverable' => $plainSecret
             ]);
 
             $this->assertCount(
@@ -192,11 +192,11 @@ class ProjectAppsControllerTest extends TestCase
             //check access token entry is created
             $this->assertCount(1, OAuthAccessToken::where('client_id', $client->id)->get());
 
-            //assert client_secret_plain is persisted
+            //assert client_secret_recoverable is persisted
             $clientProject = OAuthClientProject::where('project_id', $this->project->id)
                 ->where('client_id', $client->id)
                 ->first();
-            $this->assertEquals($plainSecret, $clientProject->client_secret_plain);
+            $this->assertEquals($plainSecret, $clientProject->client_secret_recoverable);
         } catch (\Throwable $e) {
             $this->logTestError($e, $response);
         }
@@ -216,7 +216,7 @@ class ProjectAppsControllerTest extends TestCase
             factory(OAuthClientProject::class)->create([
                 'project_id' => $this->project->id,
                 'client_id' => $client->id,
-                'client_secret_plain' => $plainSecret
+                'client_secret_recoverable' => $plainSecret
             ]);
 
             factory(OAuthAccessToken::class)->create([
@@ -243,11 +243,11 @@ class ProjectAppsControllerTest extends TestCase
                     ->get()
             );
 
-            //assert client_secret_plain is persisted
+            //assert client_secret_recoverable is persisted
             $clientProject = OAuthClientProject::where('project_id', $this->project->id)
                 ->where('client_id', $client->id)
                 ->first();
-            $this->assertEquals($plainSecret, $clientProject->client_secret_plain);
+            $this->assertEquals($plainSecret, $clientProject->client_secret_recoverable);
 
 
             //revoke the token

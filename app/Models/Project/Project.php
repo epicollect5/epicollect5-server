@@ -355,7 +355,7 @@ class Project extends Model
             ->where('status', '<>', $archivedStatus)
             ->orderByRaw('LOWER(name) = ? DESC', [strtolower($name)])
             ->orderBy('projects.updated_at', 'desc')
-            ->addSelect(DB::raw("DATE_FORMAT($structuresTable.updated_at, '%Y-%m-%d %H:%i:%s') as structure_last_updated"))
+            ->addSelect($structuresTable . '.updated_at as structure_last_updated')
             ->take(20)
             ->get();
     }
@@ -371,7 +371,7 @@ class Project extends Model
             ->where('name', '=', $name)
             ->where('status', '<>', $trashedStatus)
             ->where('status', '<>', $archivedStatus)
-            ->addSelect(DB::raw("DATE_FORMAT($structuresTable.updated_at, '%Y-%m-%d %H:%i:%s') as structure_last_updated"))
+            ->addSelect($structuresTable . '.updated_at as structure_last_updated')
             ->take(1)
             ->get();
     }

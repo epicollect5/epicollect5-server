@@ -472,7 +472,7 @@ Columns:
 - `id`: `INT`, primary key, auto increment
 - `project_id`: `INT`, indexed
 - `client_id`: `INT`, not null
-- `client_secret_plain`: `VARCHAR(255)`, nullable
+- `client_secret_recoverable`: `TEXT`, nullable, encrypted at rest via Laravel's `encrypted` cast (APP_KEY)
 - `created_at`: `TIMESTAMP`, default current timestamp
 - `updated_at`: `TIMESTAMP`, default current timestamp
 
@@ -485,7 +485,7 @@ Foreign keys:
 
 Notes:
 - There is no migration-defined foreign key from `client_id` to `oauth_clients.id`.
-- `client_secret_plain` was added by migration `2026_06_09_000001` to preserve the pre-hash secret before Passport 13's `passport:hash` command permanently hashes `oauth_clients.secret`. The `down()` migration restores it back to `oauth_clients.secret` if rolled back.
+- `client_secret_recoverable` was added by migration `2026_06_09_000001` to preserve the pre-hash secret before Passport 13's `passport:hash` command permanently hashes `oauth_clients.secret`. The value is encrypted at rest with `Crypt::encryptString()` and read via the `encrypted` Eloquent cast on `OAuthClientProject`. Migration `2026_06_16_000001` renamed the column from `client_secret_plain` to `client_secret_recoverable` to remove the misleading "plain" name (the value is encrypted, not stored in clear text). The `down()` migration of the original migration decrypts the value back into `oauth_clients.secret` if rolled back.
 
 ## Removed Tables
 
