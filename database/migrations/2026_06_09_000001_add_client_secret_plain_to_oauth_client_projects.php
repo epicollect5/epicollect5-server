@@ -26,7 +26,7 @@ return new class () extends Migration {
             ->join('oauth_client_projects', 'oauth_client_projects.client_id', '=', 'oauth_clients.id')
             ->whereNotNull('oauth_client_projects.client_secret_recoverable')
             ->select('oauth_client_projects.id as row_id', 'oauth_client_projects.client_secret_recoverable')
-            ->get();
+            ->cursor();
 
         foreach ($rows as $row) {
             $value = $this->decryptIfEncrypted($row->client_secret_recoverable);
@@ -41,7 +41,7 @@ return new class () extends Migration {
             ->join('oauth_client_projects', 'oauth_client_projects.client_id', '=', 'oauth_clients.id')
             ->whereNull('oauth_client_projects.client_secret_recoverable')
             ->select('oauth_client_projects.id as row_id', 'oauth_clients.secret')
-            ->get();
+            ->cursor();
 
         foreach ($missingRows as $row) {
             DB::table('oauth_client_projects')
@@ -60,7 +60,7 @@ return new class () extends Migration {
             ->join('oauth_clients', 'oauth_client_projects.client_id', '=', 'oauth_clients.id')
             ->whereNotNull('oauth_client_projects.client_secret_recoverable')
             ->select('oauth_client_projects.client_id', 'oauth_client_projects.client_secret_recoverable')
-            ->get();
+            ->cursor();
 
         foreach ($rows as $row) {
             $plain = $this->decryptIfEncrypted($row->client_secret_recoverable);

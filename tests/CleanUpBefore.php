@@ -41,7 +41,7 @@ class CleanUpBefore extends TestCase
         $unhashed = OAuthClient::query()
             ->whereNotNull('secret')
             ->get()
-            ->filter(fn ($c) => ! preg_match('/^\$(2[ayb]|argon2)/', $c->secret))
+            ->filter(fn ($c) => ! preg_match('/^\$2[ayb]/', $c->secret))
             ->map(fn ($c) => "client_id={$c->id} name={$c->name}")
             ->all();
 

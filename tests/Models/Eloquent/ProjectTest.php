@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUndefinedFieldInspection */
+
 namespace Tests\Models\Eloquent;
 
 use Carbon\Carbon;
@@ -10,6 +12,7 @@ use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
+use Throwable;
 
 class ProjectTest extends TestCase
 {
@@ -21,6 +24,9 @@ class ProjectTest extends TestCase
         $this->clearDatabase([]);
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_transfer_ownership()
     {
         $creatorRole = config('epicollect.permissions.projects.creator_role');

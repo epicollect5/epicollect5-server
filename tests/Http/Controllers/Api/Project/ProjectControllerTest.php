@@ -13,6 +13,7 @@ use ec5\Traits\Assertions;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Str;
 use Tests\TestCase;
+use Throwable;
 
 class ProjectControllerTest extends TestCase
 {
@@ -142,7 +143,7 @@ class ProjectControllerTest extends TestCase
 
     public function test_search_should_find_single_project()
     {
-        $response = $this->json('GET', 'api/projects/' . $this->project->name)
+        $this->json('GET', 'api/projects/' . $this->project->name)
             ->assertStatus(200)
             ->assertExactJson([
                 'data' => [
@@ -180,7 +181,7 @@ class ProjectControllerTest extends TestCase
         $needle = 'EC5 Unit';
         //create fake projects (use 'EC5 Unit' to avoid uniqueness issues)
         for ($i = 0; $i < $numOfProjects; $i++) {
-            $project = factory(Project::class)->create([
+            factory(Project::class)->create([
                 'name' => 'EC5 Unit Tests ' . $i,
                 'slug' => 'ec5-unit-tests' . $i,
                 'access' => 'public',
@@ -219,7 +220,7 @@ class ProjectControllerTest extends TestCase
         $needle = 'EC5 Unit';
         //create fake projects (use 'EC5 Unit' to avoid uniqueness issues)
         for ($i = 0; $i < $numOfProjects; $i++) {
-            $project = factory(Project::class)->create([
+            factory(Project::class)->create([
                 'name' => 'EC5 Unit Tests ' . $i,
                 'slug' => 'ec5-unit-tests' . $i,
                 'access' => 'public',
@@ -243,7 +244,7 @@ class ProjectControllerTest extends TestCase
         $needle = 'EC5 Unit';
         //create fake projects (use 'EC5 Unit' to avoid uniqueness issues)
         for ($i = 0; $i < $numOfProjects; $i++) {
-            $project = factory(Project::class)->create([
+            factory(Project::class)->create([
                 'name' => 'EC5 Unit Tests ' . $i,
                 'slug' => 'ec5-unit-tests' . $i,
                 'access' => 'public',
@@ -403,7 +404,7 @@ class ProjectControllerTest extends TestCase
                 ]);
             $jsonResponse = json_decode($response[0]->getContent(), true);
             $this->assertProjectResponse($jsonResponse);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
