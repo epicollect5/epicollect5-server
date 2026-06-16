@@ -15,7 +15,7 @@ class ProjectTransferOwnershipControllerTest extends TestCase
 {
     use DatabaseTransactions;
 
-    const DRIVER = 'web';
+    public const string DRIVER = 'web';
 
     public function test_transfer_ownership_page_renders_correctly()
     {
@@ -32,7 +32,7 @@ class ProjectTransferOwnershipControllerTest extends TestCase
 
         //assign the user to that project with the CREATOR role
         $role = config('epicollect.strings.project_roles.creator');
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
             'role' => $role
@@ -50,7 +50,7 @@ class ProjectTransferOwnershipControllerTest extends TestCase
             ['project_id' => $project->id]
         );
 
-        $response = $this
+        $this
             ->actingAs($user, self::DRIVER)
             ->get('myprojects/' . $project->slug . '/transfer-ownership')
             ->assertStatus(200);

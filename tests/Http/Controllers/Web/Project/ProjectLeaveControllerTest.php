@@ -18,7 +18,7 @@ class ProjectLeaveControllerTest extends TestCase
 {
     use DatabaseTransactions;
 
-    const DRIVER = 'web';
+    public const string DRIVER = 'web';
 
     public function setUp(): void
     {
@@ -750,4 +750,3 @@ class ProjectLeaveControllerTest extends TestCase
         );
     }
 }
-

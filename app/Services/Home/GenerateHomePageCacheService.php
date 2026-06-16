@@ -12,6 +12,13 @@ use Throwable;
 
 class GenerateHomePageCacheService
 {
+    private ProjectLogoService $logoService;
+
+    public function __construct(ProjectLogoService $logoService)
+    {
+        $this->logoService = $logoService;
+    }
+
     /**
      * Generate and cache the featured projects content with base64-encoded logos
      */
@@ -49,7 +56,7 @@ class GenerateHomePageCacheService
             $totalBranchEntries = $branchEntriesStats->public + $branchEntriesStats->private;
             $totalAllEntries = Common::roundNumber($totalEntries + $totalBranchEntries, 0);
 
-            $logoService = new ProjectLogoService();
+            $logoService = $this->logoService;
 
             // Process logos for first row
             foreach ($projectsFirstRow as $project) {

@@ -8,6 +8,7 @@ use ec5\Models\Project\ProjectFeatured;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\System\SystemStats;
 use ec5\Services\Home\GenerateHomePageCacheService;
+use ec5\Services\Project\ProjectLogoService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
@@ -36,7 +37,7 @@ class GenerateHomePageCacheServiceTest extends TestCase
         $this->createFeaturedProjects(8);
         $this->createSystemStats();
 
-        $service = new GenerateHomePageCacheService();
+        $service = new GenerateHomePageCacheService(new ProjectLogoService());
         $result = $service->generate();
 
         $this->assertTrue($result);
@@ -51,7 +52,7 @@ class GenerateHomePageCacheServiceTest extends TestCase
     {
         $this->createSystemStats();
 
-        $service = new GenerateHomePageCacheService();
+        $service = new GenerateHomePageCacheService(new ProjectLogoService());
         $result = $service->generate();
 
         $this->assertTrue($result);
@@ -65,7 +66,7 @@ class GenerateHomePageCacheServiceTest extends TestCase
     {
         $this->createFeaturedProjects(4);
 
-        $service = new GenerateHomePageCacheService();
+        $service = new GenerateHomePageCacheService(new ProjectLogoService());
         $result = $service->generate();
 
         $this->assertTrue($result);
@@ -80,7 +81,7 @@ class GenerateHomePageCacheServiceTest extends TestCase
         $this->createFeaturedProjects(10);
         $this->createSystemStats();
 
-        $service = new GenerateHomePageCacheService();
+        $service = new GenerateHomePageCacheService(new ProjectLogoService());
         $result = $service->generate();
 
         $this->assertTrue($result);
@@ -111,7 +112,7 @@ class GenerateHomePageCacheServiceTest extends TestCase
             totalPrivateBranchEntries: 200,
         );
 
-        $service = new GenerateHomePageCacheService();
+        $service = new GenerateHomePageCacheService(new ProjectLogoService());
         $result = $service->generate();
 
         $this->assertTrue($result);

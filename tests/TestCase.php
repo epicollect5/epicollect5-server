@@ -80,10 +80,10 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
         }
 
         if (is_array($response) || is_object($response)) {
-            if (isset($response->baseResponse)) {
-                $jsonResponse = $response->baseResponse->exception === null
+            if (isset($response->exception)) {
+                $jsonResponse = $response->exception === null
                     ? json_encode(['response' => $response])
-                    : json_encode(['exception' => $response->baseResponse->exception->getMessage()]);
+                    : json_encode(['exception' => $response->exception->getMessage()]);
 
                 echo "\e[1;34m" . $jsonResponse . "\e[0m" . PHP_EOL;
             } else {
@@ -272,15 +272,6 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
 
     protected function tearDown(): void
     {
-        //        // Remove properties defined during the test
-        //        $refl = new \ReflectionObject($this);
-        //        foreach ($refl->getProperties() as $prop) {
-        //            if (!$prop->isStatic() && 0 !== strpos($prop->getDeclaringClass()->getName(), 'PHPUnit_')) {
-        //                $prop->setAccessible(true);
-        //                $prop->setValue($this, null);
-        //            }
-        //        }
-
         // Clean up your resources here
         parent::tearDown();
         gc_collect_cycles(); // Invoke garbage collection

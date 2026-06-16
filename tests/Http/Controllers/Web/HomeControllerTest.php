@@ -10,6 +10,7 @@ use ec5\Models\User\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
+use Throwable;
 
 class HomeControllerTest extends TestCase
 {
@@ -243,6 +244,9 @@ class HomeControllerTest extends TestCase
         );
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_cached_home_page_shows_featured_projects_in_two_rows_of_four_when_eight_featured()
     {
         $this->createFeaturedProjects(8);

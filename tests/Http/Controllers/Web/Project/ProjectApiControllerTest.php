@@ -14,7 +14,7 @@ class ProjectApiControllerTest extends TestCase
 {
     use DatabaseTransactions;
 
-    const DRIVER = 'web';
+    public const string DRIVER = 'web';
 
     public function test_api_page_renders_correctly()
     {
@@ -26,7 +26,7 @@ class ProjectApiControllerTest extends TestCase
 
         //assign the user to that project with the CREATOR role
         $role = config('epicollect.strings.project_roles.creator');
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
             'role' => $role
@@ -44,7 +44,7 @@ class ProjectApiControllerTest extends TestCase
             ['project_id' => $project->id]
         );
 
-        $response = $this
+        $this
             ->actingAs($user, self::DRIVER)
             ->get('myprojects/' . $project->slug . '/api')
             ->assertStatus(200);
@@ -60,7 +60,7 @@ class ProjectApiControllerTest extends TestCase
 
         //assign the user to that project with the CREATOR role
         $role = config('epicollect.strings.project_roles.creator');
-        $projectRole = factory(ProjectRole::class)->create([
+        factory(ProjectRole::class)->create([
             'user_id' => $user->id,
             'project_id' => $project->id,
             'role' => $role
@@ -78,7 +78,7 @@ class ProjectApiControllerTest extends TestCase
             ['project_id' => $project->id]
         );
 
-        $response = $this
+        $this
             ->get('myprojects/' . $project->slug . '/api')
             ->assertStatus(302)
             ->assertRedirect(Route('login'));

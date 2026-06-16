@@ -2,7 +2,9 @@
 
 namespace Tests\Http\Controllers\Web;
 
+use Illuminate\Support\MessageBag;
 use Tests\TestCase;
+use Throwable;
 
 /**
  * Regression test for resources/views/header.blade.php.
@@ -16,6 +18,9 @@ use Tests\TestCase;
  */
 class HeaderViewTest extends TestCase
 {
+    /**
+     * @throws Throwable
+     */
     public function test_header_view_compiles_and_contains_json_ld_payload()
     {
         $output = view('header', [
@@ -31,10 +36,13 @@ class HeaderViewTest extends TestCase
         $this->assertStringContainsString('schema.org', $output);
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_errors_gen_error_view_renders_with_header()
     {
         $output = view('errors.gen_error', [
-            'errors' => new \Illuminate\Support\MessageBag(['errors' => ['ec5_91']]),
+            'errors' => new MessageBag(['errors' => ['ec5_91']]),
         ])->render();
 
         $this->assertNotEmpty($output);

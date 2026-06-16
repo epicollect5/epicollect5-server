@@ -11,20 +11,22 @@ use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
+use Faker\Generator;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Laravel\Passport\ClientRepository;
 use Laravel\Passport\Passport;
 use Tests\TestCase;
+use Throwable;
 
 class ProjectAppsControllerTest extends TestCase
 {
     use DatabaseTransactions;
 
     public const string DRIVER = 'web';
-    private $faker;
-    private $user;
-    private $project;
-    private $projectDefinition;
+    private Generator $faker;
+    private User $user;
+    private Project $project;
+    private array $projectDefinition;
 
     public function setUp(): void
     {
@@ -106,7 +108,7 @@ class ProjectAppsControllerTest extends TestCase
             //assert rows are created
             $this->assertCount(1, OAuthClientProject::where('project_id', $this->project->id)->get());
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -136,7 +138,7 @@ class ProjectAppsControllerTest extends TestCase
                 ->assertSessionHas('message', 'ec5_399');
             //assert rows are removed
             $this->assertCount(0, OAuthClientProject::where('project_id', $this->project->id)->get());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -197,7 +199,7 @@ class ProjectAppsControllerTest extends TestCase
                 ->where('client_id', $client->id)
                 ->first();
             $this->assertEquals($plainSecret, $clientProject->client_secret_recoverable);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -260,7 +262,7 @@ class ProjectAppsControllerTest extends TestCase
                 ->assertSessionHas('message', 'ec5_398');
             //check access token is deleted
             $this->assertCount(0, OAuthAccessToken::where('client_id', $client->id)->get());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

@@ -11,6 +11,7 @@ use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use Faker\Factory as Faker;
+use Faker\Generator;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
@@ -20,12 +21,12 @@ class ProjectImportControllerTest extends TestCase
 {
     use DatabaseTransactions;
 
-    public const DRIVER = 'web';
-    protected $faker;
-    protected $request;
-    protected $validator;
-    protected $access;
-    protected $projectNameMaxLength;
+    public const string DRIVER = 'web';
+    protected Generator $faker;
+    protected array $request;
+    protected RuleImportRequest $validator;
+    protected array $access;
+    protected int $projectNameMaxLength;
 
     public function setUp(): void
     {
@@ -56,7 +57,6 @@ class ProjectImportControllerTest extends TestCase
 
     public function test_name()
     {
-
         $this->validator->validate($this->request);
         $this->assertFalse($this->validator->hasErrors());
         $this->validator->resetErrors();
@@ -264,7 +264,7 @@ class ProjectImportControllerTest extends TestCase
         $user = factory(User::class)->create();
         //create a mock project with that user and use ref as name to avoid conflicts
         $ref = Generators::projectRef();
-        $project = factory(Project::class)->create([
+        factory(Project::class)->create([
             'created_by' => $user->id,
             'name' => $ref,
             'slug' => $ref

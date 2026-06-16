@@ -115,9 +115,9 @@ class ProjectController
 
         if (!empty($name)) {
             if ($exactMatch) {
-                $hits = Project::matches($name, ['name', 'slug', 'access', 'ref', 'logo_url']);
+                $hits = Project::matches($name, ['projects.name', 'projects.slug', 'projects.access', 'projects.ref', 'projects.logo_url']);
             } else {
-                $hits = Project::startsWith($name, ['name', 'slug', 'access', 'ref', 'logo_url']);
+                $hits = Project::startsWith($name, ['projects.name', 'projects.slug', 'projects.access', 'projects.ref', 'projects.logo_url']);
             }
         }
 
