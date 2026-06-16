@@ -799,6 +799,19 @@ Media handling responsibilities are split across dedicated services:
 Static application assets are resolved through `static_asset()`. The helper can serve local `asset()` URLs or CDN URLs
 depending on `config('epicollect.setup.static_assets.*')`.
 
+### Why `public/storage` is NOT LINKED
+
+Laravel's `php artisan storage:link` creates a symlink from `public/storage` to `storage/app/public`, allowing direct web
+server access to stored files. This project does not use that symlink because media is never served through direct file
+access.
+
+Instead, all user media (photos, audio, video) is served through `MediaService` using `Storage::disk()`, which streams
+files as HTTP responses with access control. The `public` filesystem disk is configured to point at `public/images/`
+(static brand assets and placeholders), not `storage/app/public`.
+
+Since nothing in the application reads from or writes to `storage/app/public`, the symlink is irrelevant.
+`php artisan about` will correctly report `public/storage ... NOT LINKED`.
+
 ## Response Architecture
 
 API responses are standardized through response macros under `app/Providers/Macros/Response`.

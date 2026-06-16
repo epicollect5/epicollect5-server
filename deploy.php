@@ -423,14 +423,7 @@ task('artisan:migrate', function () {
 
 })->once();
 
-desc('Hash existing Passport client secrets (idempotent — skips already-hashed secrets)');
-task('artisan:passport:hash', function () {
-    $output = run('{{bin/php}} {{release_path}}/artisan passport:hash --force', [
-        'timeout' => 2000,
-        'real_time_output' => false
-    ]);
-    writeln("<info>$output</info>");
-})->once();
+
 
 desc('Execute artisan migrate:rollback');
 task('artisan:migrate:rollback', function () {
@@ -473,7 +466,6 @@ task('update', [
     'deploy:prepare',
     'deploy:vendors',
     'artisan:migrate',
-    'artisan:passport:hash',
     'artisan:config:cache',
     'artisan:route:cache',
     'artisan:view:cache',
@@ -537,9 +529,21 @@ try {
     Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
 }
 
-// Hook the custom task to run after the deployment
-after('deploy', 'reminder:update_release');
+try {
+    task('reminder:passport:hash', function () {
+        $output = run('{{bin/php}} {{release_path}}/artisan list --raw 2>/dev/null | grep passport:hash || true');
+        if (!empty(trim($output))) {
+            writeln('<warning>Passport 13+ detected. If upgrading from Passport 12, run: php artisan passport:hash --force</warning>');
+        }
+    });
+} catch (Throwable $e) {
+    Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
+}
+
 // If deploy fails automatically unlock.
 after('deploy:failed', 'deploy:unlock');
 //show message if success
 after('deploy', 'deploy:success');
+// Reminders (after deploy:success so output is visible)
+after('deploy:success', 'reminder:update_release');
+after('deploy:success', 'reminder:passport:hash');
