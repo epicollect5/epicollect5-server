@@ -28,4 +28,6 @@ php artisan system:clear-opcache;
 
 php artisan config:cache;
 
+php artisan passport:hash --force
+
 php artisan system:cache-homepage
