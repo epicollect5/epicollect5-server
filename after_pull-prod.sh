@@ -28,6 +28,7 @@ php artisan system:clear-opcache;
 
 php artisan config:cache;
 
+echo -e "${YELLOW}Running passport:hash if needed...${RESET}"
 php artisan passport:hash --force
 
 php artisan system:cache-homepage

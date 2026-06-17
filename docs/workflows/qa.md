@@ -4,13 +4,23 @@ Generate QA documentation from a codebase change or QA spec file.
 
 ## Inputs
 
-- **git diff master** (preferred if available).
-- **QA spec file** (optional): `docs/QA-{version}.md`.
+- base_ref (default: master)
+  Branch, tag, or commit SHA
 
-If both exist:
+- qa_spec_file (optional)
+  docs/QA-{version}.md
 
-- Prioritize git diff master.
-- Reconcile against QA spec.
+## Diff scope
+
+git diff {{base_ref}}..HEAD
+
+## Reconciliation logic
+
+If QA spec exists:
+
+- Use it as reference documentation
+- Compare against git diff results
+- Ensure all new changes are covered in QA output
 
 ## Responsibilities
 
@@ -23,6 +33,7 @@ Identify all user-impacting changes across:
 - Frontend/UI changes
 - API contract changes
 - Business logic changes
+- Configuration changes, listing all new or modified .env variables
 
 ## QA Generation Rules
 
