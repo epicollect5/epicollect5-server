@@ -9,9 +9,13 @@ use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
+use Carbon\Carbon;
 use ec5\Traits\Assertions;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Intervention\Image\Laravel\Facades\Image;
 use Tests\TestCase;
 use Throwable;
 
@@ -652,6 +656,79 @@ class ProjectControllerTest extends TestCase
         $responseData = ($response->json())['data']; // Convert the JSON data response to an array.
         //No match
         $this->assertEquals(0, count($responseData));
+    }
+
+    public function test_search_caches_generated_logo_with_positive_ttl(): void
+    {
+        $this->project->access = config('epicollect.strings.project_access.public');
+        $this->project->logo_url = 'logo.jpg';
+        $this->project->save();
+
+        Storage::fake('project');
+        $image = Image::create(100, 100)->fill('#ff0000');
+        Storage::disk('project')->put($this->project->ref . '/logo.jpg', $image->toJpeg());
+
+        $version = $this->projectStructure->updated_at->timestamp;
+        $positiveKey = 'project_mobile_logo_base64:' . $this->project->ref . ':version:' . $version;
+        $negativeKey = 'project_mobile_logo_missing:' . $this->project->ref . ':version:' . $version;
+
+        Cache::partialMock();
+        Cache::shouldReceive('has')->with($negativeKey)->andReturnFalse();
+        Cache::shouldReceive('get')->with($positiveKey)->andReturnNull();
+        Cache::shouldReceive('put')->once()->withArgs(function ($key, $value, $ttl) use ($positiveKey) {
+            $this->assertSame($positiveKey, $key);
+            $this->assertStringStartsWith('data:image/webp;base64,', $value);
+            $this->assertInstanceOf(Carbon::class, $ttl);
+            $this->assertTrue(
+                $ttl->greaterThanOrEqualTo(Carbon::now()->addDays(364))
+                && $ttl->lessThanOrEqualTo(Carbon::now()->addDays(366)),
+                'Positive logo cache TTL should be approximately 365 days'
+            );
+
+            return true;
+        });
+
+        $response = $this->json('GET', 'api/projects/' . $this->project->name . '?exact=true')
+            ->assertStatus(200);
+
+        $this->assertStringStartsWith(
+            'data:image/webp;base64,',
+            $response->json('data.0.project.logo_base64')
+        );
+    }
+
+    public function test_search_negative_caches_missing_logo_with_short_ttl(): void
+    {
+        $this->project->access = config('epicollect.strings.project_access.public');
+        $this->project->logo_url = 'logo.jpg';
+        $this->project->save();
+
+        Storage::fake('project');
+
+        $version = $this->projectStructure->updated_at->timestamp;
+        $positiveKey = 'project_mobile_logo_base64:' . $this->project->ref . ':version:' . $version;
+        $negativeKey = 'project_mobile_logo_missing:' . $this->project->ref . ':version:' . $version;
+
+        Cache::partialMock();
+        Cache::shouldReceive('has')->with($negativeKey)->andReturnFalse();
+        Cache::shouldReceive('get')->with($positiveKey)->andReturnNull();
+        Cache::shouldReceive('put')->once()->withArgs(function ($key, $value, $ttl) use ($negativeKey) {
+            $this->assertSame($negativeKey, $key);
+            $this->assertTrue($value);
+            $this->assertInstanceOf(Carbon::class, $ttl);
+            $this->assertTrue(
+                $ttl->greaterThanOrEqualTo(Carbon::now()->addMinutes(59))
+                && $ttl->lessThanOrEqualTo(Carbon::now()->addMinutes(61)),
+                'Negative logo cache TTL should be approximately 60 minutes'
+            );
+
+            return true;
+        });
+
+        $response = $this->json('GET', 'api/projects/' . $this->project->name . '?exact=true')
+            ->assertStatus(200);
+
+        $this->assertNull($response->json('data.0.project.logo_base64'));
     }
 
 }

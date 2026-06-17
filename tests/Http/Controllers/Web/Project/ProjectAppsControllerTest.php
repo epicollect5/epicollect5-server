@@ -143,6 +143,25 @@ class ProjectAppsControllerTest extends TestCase
         }
     }
 
+    public function test_apps_page_shows_recoverable_client_secret(): void
+    {
+        $clientRepository = new ClientRepository();
+        $client = $clientRepository->createClientCredentialsGrantClient('UI Test App');
+        $plainSecret = $client->plainSecret;
+
+        factory(OAuthClientProject::class)->create([
+            'project_id' => $this->project->id,
+            'client_id' => $client->id,
+            'client_secret_recoverable' => $plainSecret
+        ]);
+
+        $this->actingAs($this->user, self::DRIVER)
+            ->get('myprojects/' . $this->project->slug . '/apps')
+            ->assertStatus(200)
+            ->assertSee((string) $client->id)
+            ->assertSee($plainSecret);
+    }
+
     public function test_token_response_works()
     {
         $response = [];

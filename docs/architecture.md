@@ -686,9 +686,9 @@ Why this matters:
   callback at `POST /handle/apple` and `POST /profile/connect-apple-callback`.
 - `SameSite=None` requires `Secure=true`; modern browsers reject
   `None` cookies sent over plain HTTP.
-- The XSRF-TOKEN cookie is intentionally `SameSite=Lax`
-  (set explicitly in `PreventRequestForgery::addCookieToResponse`); the
-  session cookie is the one that must be `None` to keep Apple login working.
+- The XSRF-TOKEN cookie follows `config('session.same_site')` (falling back
+  to `Lax` when the value is empty) via `PreventRequestForgery::addCookieToResponse`;
+  the session cookie is the one that must be `None` to keep Apple login working.
 
 Default in `config/session.php` is `'none'`; the `.env.example` ships with
 the production-correct values. Localhost HTTP development must override
@@ -900,6 +900,19 @@ For total entry and branch-entry counts, those services use cached `project_stat
 table counts. Admin project views also read cached `project_stats` counts and join `project_structures` for
 cache-busting
 structure timestamps used in logo URLs.
+
+### Deployment
+
+Production deployments use Deployer 7.x (`deploy.php`) with two main tasks:
+
+- `dep install` — brand-new install: DB creation, env setup, Passport keys, superadmin provisioning, migrations
+- `dep update` — update existing: pulls code, runs migrations, caches config/routes/views, sets permissions
+
+All three environments (`production`, `dev`, `staging`) deploy to `/var/www/html_prod` on their respective branch.
+
+Post-deploy, `.env` must be updated manually (new keys, `RELEASE` number) before running the cache-clearing script (`after_pull-prod.sh` or `after_pull-dev.sh`). These scripts cannot be automated because they depend on the `.env` changes.
+
+See `README.md` → **Deployment** for the full deployment workflow.
 
 ## Extending the System
 

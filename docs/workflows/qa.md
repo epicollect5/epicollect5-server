@@ -44,11 +44,11 @@ Rules:
 
 ## Output Format
 
-### 1. QA Report (Markdown)
+### 1. QA Report (Markdown file)
 
 Grouped by feature or area.
 
-### 2. CSV Output
+### 2. QA CSV file (.csv)
 
 Columns: `Action Description` | `Expected`
 

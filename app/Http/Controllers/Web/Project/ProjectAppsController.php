@@ -16,6 +16,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use Laravel\Passport\ClientRepository;
+use Log;
 use Redirect;
 use Response;
 use Throwable;
@@ -97,8 +98,12 @@ class ProjectAppsController
             }
 
             DB::commit();
-        } catch (Throwable) {
+        } catch (Throwable $e) {
             DB::rollBack();
+            Log::error('Failed to create project OAuth client', [
+                'project_id' => $this->requestedProject()->getId(),
+                'exception' => $e->getMessage(),
+            ]);
             if (request()->ajax()) {
                 return Response::apiErrorCode(400, ['errors' => ['ec5_91']]);
             }

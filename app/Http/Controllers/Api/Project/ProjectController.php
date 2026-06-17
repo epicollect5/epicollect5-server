@@ -135,24 +135,24 @@ class ProjectController
                 $positiveKey = 'project_mobile_logo_base64:' . $hit->ref . ':version:' . $version;
                 $negativeKey = 'project_mobile_logo_missing:' . $hit->ref . ':version:' . $version;
 
-                if (Cache::has($negativeKey)) {
-                    $hit->logo_base64 = null;
-                } else {
-                    $hit->logo_base64 = Cache::remember(
-                        $positiveKey,
-                        now()->addDays($ttlDays),
-                        fn () => $logoService->generate(
-                            $hit->ref,
-                            $dimensions[0],
-                            $dimensions[1],
-                            quality: 75
-                        )
+                $logoBase64 = Cache::get($positiveKey);
+
+                if ($logoBase64 === null && !Cache::has($negativeKey)) {
+                    $logoBase64 = $logoService->generate(
+                        $hit->ref,
+                        $dimensions[0],
+                        $dimensions[1],
+                        quality: 75
                     );
 
-                    if ($hit->logo_base64 === null) {
+                    if ($logoBase64 === null) {
                         Cache::put($negativeKey, true, now()->addMinutes($negativeTtlMinutes));
+                    } else {
+                        Cache::put($positiveKey, $logoBase64, now()->addDays($ttlDays));
                     }
                 }
+
+                $hit->logo_base64 = $logoBase64;
             } else {
                 $hit->logo_base64 = null;
             }
