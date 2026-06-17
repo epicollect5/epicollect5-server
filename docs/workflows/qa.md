@@ -4,12 +4,12 @@ Generate QA documentation from a codebase change or QA spec file.
 
 ## Inputs
 
-- **git diff** (preferred if available).
+- **git diff master** (preferred if available).
 - **QA spec file** (optional): `docs/QA-{version}.md`.
 
 If both exist:
 
-- Prioritize git diff.
+- Prioritize git diff master.
 - Reconcile against QA spec.
 
 ## Responsibilities
