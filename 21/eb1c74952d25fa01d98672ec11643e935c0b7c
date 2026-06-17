@@ -1,0 +1,19 @@
+app/Providers/AuthServiceProvider.php
+  s_91469b0f576ce8::t_24f0ebf2690bc2 32-36
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "21eb1c74952d25fa01d98672ec11643e935c0b7c",
+  "prompts": {},
+  "sessions": {
+    "s_91469b0f576ce8": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_12ad0d9daffem1DMwakX1pA74Y",
+        "model": "minimax-m3"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
