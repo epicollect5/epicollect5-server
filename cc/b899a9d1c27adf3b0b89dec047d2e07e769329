@@ -1,0 +1,20 @@
+docs/workflows/qa.md
+  s_8e5f45c25bdccb::t_42a0431d19d6aa 7-8,10-11,13-23
+  s_8e5f45c25bdccb::t_630c600e4ae90e 36
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "ccb899a9d1c27adf3b0b89dec047d2e07e769329",
+  "prompts": {},
+  "sessions": {
+    "s_8e5f45c25bdccb": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_12a47fdc2ffeIh23J3Uc695LuH",
+        "model": "minimax-m3"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
