@@ -59,10 +59,7 @@
                                                 </small>
                                             </div>
                                         </div>
-                                        {{--Need this to pass validation when recaptcha is disabled--}}
-                                        @if (!$isGoogleRecaptchaEnabled)
-                                            <input type="hidden" name="g-recaptcha-response" value="fake_value">
-                                        @endif
+                                        <input type="hidden" name="g-recaptcha-response" value="fake_value">
 
                                         <div class="form-group">
                                             <input id="passwordless" class="btn btn-default btn-action pull-right"
@@ -72,36 +69,6 @@
                                 </div>
                             </div>
                         @endif
-
-                        @if (in_array('ldap', $authMethods))
-                            <div class="row">
-                                <div class="panel panel-default">
-                                    <div class="panel-body">
-
-                                        <form method="POST" action="{{ url('login/ldap') }}" accept-charset="UTF-8">
-                                            {{ csrf_field() }}
-                                            <div class="form-group">
-                                                <label for="email">{{ trans('site.ldap_username') }}</label>
-                                                <input class="form-control" required="required"
-                                                       placeholder="{{ trans('site.ldap_username') }}" name="username"
-                                                       type="text">
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="password">{{ trans('site.ldap_password') }}</label>
-                                                <input class="form-control" required="required"
-                                                       placeholder="{{ trans('site.ldap_password') }}" name="password"
-                                                       type="password" value="">
-                                            </div>
-                                            <div class="form-group">
-                                                <input class="btn btn-default btn-action pull-right" type="submit"
-                                                       value="{{ trans('site.ldap_login') }}">
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
-
                     </div>
                 </div>
             </div>

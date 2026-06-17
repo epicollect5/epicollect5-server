@@ -93,6 +93,7 @@ class AppleController extends AuthController
             } catch (Throwable $e) {
                 Log::error('Apple user object exception', ['exception' => $e->getMessage()]);
                 //if no user name found, default to Apple User
+                $appleUser = null;
                 $appleUserFirstName = config('epicollect.mappings.user_placeholder.apple_first_name');
                 $appleUserLastName = config('epicollect.mappings.user_placeholder.apple_last_name');
             }
@@ -149,14 +150,6 @@ class AppleController extends AuthController
                      * Ask the user to connect the Apple account from the profile page
                      * for verification
                      */
-
-                    //if the user is local and local auth is enabled, user must provide password
-                    if ($this->isAuthApiLocalEnabled) {
-                        if (in_array($this->localProviderLabel, $userProviders)) {
-                            $error['api-login-apple'] = ['ec5_390'];
-                            return Response::apiErrorCode(400, $error);
-                        }
-                    }
 
                     $error['api-login-apple'] = ['ec5_384'];
                     return Response::apiErrorCode(400, $error);
@@ -219,8 +212,6 @@ class AppleController extends AuthController
      * If the code is valid, the apple provider is added
      * This is performed only the first time the user logs in with a new provider
      *
-     * IMP:Local users are asked to enter the password when they login using a different provider
-     * IMP:they are not verified here, local auth has its own verification controller
      * @noinspection PhpPossiblePolymorphicInvocationInspection
      */
     public function verifyUserEmail(Request $request, RulePasswordlessApiLogin $validator)

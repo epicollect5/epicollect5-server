@@ -30,10 +30,6 @@
     <meta name="robots" content="noindex">
 @endif
 
-@if(Route::currentRouteName() === 'forgot-show')
-    <meta name="robots" content="noindex">
-@endif
-
 {{--Add og: metatag on single project home page--}}
 @if(isset($requestAttributes->requestedProject))
     @if(Route::currentRouteName() === 'project-home')

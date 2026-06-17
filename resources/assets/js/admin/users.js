@@ -94,36 +94,6 @@ window.EC5.users = window.EC5.users || {};
 
     };
 
-    /**
-     * Function to add a user given the url and formData
-     *
-     * @param url
-     * @param formData
-     * @param callBack
-     */
-    module.addUser = function (url, formData, callBack) {
-
-        // Make ajax request to load users
-        $.ajax({
-            url: url,
-            type: 'POST',
-            dataType: 'json',
-            data: formData
-        }).done(function () {
-
-            window.EC5.toast.showSuccess('New User added.');
-            // Get users based on page and any existing search or filter and filter option
-            module.getUsers();
-
-            // If passed a callback, call
-            if (callBack) {
-                callBack();
-            }
-
-        }).fail(module.showError);
-
-    };
-
 })(window.EC5.users);
 
 $(document).ready(function () {
@@ -139,13 +109,14 @@ $(document).ready(function () {
         // Get user-administration container
         var container = $(this).closest('.user-administration');
 
-        // Retrieve search and filter/filter option values from page elements
+        // Retrieve search and filter values from page elements
         // so pagination works within the current results set
         var search = container.find('.user-administration__user-search').val();
-        var filterOption = container.find('.user-administration__user-filter-option').val();
+        var server_role = container.find('.user-administration__user-filter__server-role').val();
+        var state = container.find('.user-administration__user-filter__state').val();
 
-        // Get users based on page and any existing search or filter and filter option
-        window.EC5.users.getUsers($(this).attr('href').split('page=')[1], search, 'server_role', filterOption);
+        // Get users based on page and any existing search or filter
+        window.EC5.users.getUsers($(this).attr('href').split('page=')[1], search, server_role, state);
 
         window.scrollTo(0, 0);
 
@@ -167,7 +138,7 @@ $(document).ready(function () {
 
             // Retrieve filter/filter option values from page elements
             // so pagination works within the current results set
-            var server_role = container.find('.user-administration__user-filter__server_role').val();
+            var server_role = container.find('.user-administration__user-filter__server-role').val();
             var state = container.find('.user-administration__user-filter__state').val();
 
             // Set delay amount
@@ -226,20 +197,6 @@ $(document).ready(function () {
         window.EC5.users.getUsers();
     });
 
-
-    // Bind on click to activate/disable (state) buttons
-    userAdministration.on('submit', '.user-administration__table__state-form', function (e) {
-
-        e.preventDefault();
-        // Retrieve form data
-        var formData = $(this).serialize();
-        // Get action url
-        var url = $(this).attr('action');
-
-        window.EC5.users.updateUser(url, formData);
-    });
-
-
     // Bind on click to access (server_role) buttons
     userAdministration.on('submit', '.user-administration__table__server-role-form', function (e) {
 
@@ -251,34 +208,4 @@ $(document).ready(function () {
 
         window.EC5.users.updateUser(url, formData);
     });
-
-    // Bind on click to add new user (via modal)
-    $('.manage-users__user-add-form').on('submit', function (e) {
-
-        e.preventDefault();
-
-        // Retrieve form data
-        var formData = $(this).serialize();
-
-        // Get action url
-        var url = $(this).attr('action');
-
-        // Add user and close modal on success
-        window.EC5.users.addUser(url, formData, function () {
-            $('#ec5ModalAddUser').modal('hide');
-        });
-    });
-
-    //handle show password checkbox
-    modalAddUser.find('.show-password-control').on('click', function () {
-        if ($(this).prop('checked')) {
-            modalAddUser.find('input.password-input').each(function () {
-                $(this).attr('type', 'text');
-            });
-        } else {
-            modalAddUser.find('input.password-input').each(function () {
-                $(this).attr('type', 'password');
-            });
-        }
-    })
 });

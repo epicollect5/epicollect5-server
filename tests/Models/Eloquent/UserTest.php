@@ -3,7 +3,6 @@
 namespace Tests\Models\Eloquent;
 
 use ec5\Models\User\User;
-use ec5\Models\User\UserProvider;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
@@ -15,7 +14,7 @@ class UserTest extends TestCase
     protected $googleUser;
     protected $appleUser;
 
-    public function setUp():void
+    public function setUp(): void
     {
         parent::setUp();
     }
@@ -46,19 +45,5 @@ class UserTest extends TestCase
         $unverified = factory(User::class)->create(['state' => config('epicollect.strings.user_state.unverified')]);
         $user = User::where('id', $unverified->id)->first();
         $this->assertTrue($user->isUnverified());
-    }
-
-    public function test_should_check_for_local_and_unverified_state()
-    {
-        $unverified = factory(User::class)->create(['state' => config('epicollect.strings.user_state.unverified')]);
-        factory(UserProvider::class)->create([
-            'user_id' => $unverified->id,
-            'email' => $unverified->email,
-            'provider' => config('epicollect.strings.providers.local')
-        ]);
-
-        $user = User::where('id', $unverified->id)->first();
-
-        $this->assertTrue($user->isLocalAndUnverified());
     }
 }

@@ -34,7 +34,6 @@ class GoogleController extends AuthController
         // Check this auth method is allowed
         if (in_array('google', $this->authMethods)) {
             $provider = $this->googleProviderLabel;
-            $providerLocal = $this->localProviderLabel;
             // Attempt to find the Google user
             try {
                 $providerKey = config('services.google_api');
@@ -109,29 +108,6 @@ class GoogleController extends AuthController
                     $userProviders = UserProvider::where('email', $googleUser->email)
                         ->pluck('provider')->toArray();
 
-                    //if the user has a local provider, redirect to admin or staff login
-                    //based on user server role
-                    if (in_array($providerLocal, $userProviders)) {
-
-                        switch ($user->server_role) {
-
-                            //admins must enter password on the mobile app
-                            case config('epicollect.strings.server_roles.superadmin'):
-                            case config('epicollect.strings.server_roles.admin'):
-                                $error['api-login-google'] = ['ec5_390'];
-                                return Response::apiErrorCode(400, $error);
-                            default:
-                                if ($this->isAuthApiLocalEnabled) {
-                                    //staff must enter password on the app
-                                    $error['api-login-google'] = ['ec5_390'];
-                                } else {
-                                    //public login where Local users can only use the email to login
-                                    $error['api-login-google'] = ['ec5_383'];
-                                }
-                                return Response::apiErrorCode(400, $error);
-                        }
-                    }
-
                     if (!in_array($provider, $userProviders)) {
                         /**
                          * if the user is active but the Google provider is not found,
@@ -195,8 +171,7 @@ class GoogleController extends AuthController
      * If the code is valid, the Google provider is added
      * This is performed only the first time the user logs in with a new provider
      *
-     * IMP:Local users are asked to enter the password when they login using a different provider
-     * IMP:they are not verified here, local auth has its own verification controller
+     * IMP:Local users (admins) are asked to enter the password when they login using a different provider
      */
     public function verifyUserEmail(Request $request, RulePasswordlessApiLogin $validator)
     {

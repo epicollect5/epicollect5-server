@@ -13,11 +13,6 @@ class UserPasswordlessApi extends Model
 
     public const null UPDATED_AT = null;
 
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
     protected $table = 'users_passwordless_api';
     protected $fillable = [];
 
