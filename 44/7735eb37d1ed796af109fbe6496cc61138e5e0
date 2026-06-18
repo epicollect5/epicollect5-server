@@ -1,0 +1,21 @@
+deploy.php
+  s_4ef6c75a4a6475::t_837df381a46e1b 68,70
+AGENTS.md
+  s_4ef6c75a4a6475::t_f53fe922f938a0 148-189
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "447735eb37d1ed796af109fbe6496cc61138e5e0",
+  "prompts": {},
+  "sessions": {
+    "s_4ef6c75a4a6475": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_123ca8ddcffefxvKBL6KF2ymYt",
+        "model": "minimax-m3"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
