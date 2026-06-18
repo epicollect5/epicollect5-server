@@ -65,8 +65,9 @@ function updatePermissionsApiKeys(): void
     run("sudo chown $httpUser:$httpUser $keysPath/oauth-public.key");
 
     // Set appropriate permissions for the keys
+    // Passport 13 (league/oauth2-server ^9.0) requires 0660 on the public key — 0644 throws ErrorException
     run("sudo chmod 600 $keysPath/oauth-private.key");
-    run("sudo chmod 644 $keysPath/oauth-public.key");
+    run("sudo chmod 660 $keysPath/oauth-public.key");
 
     writeln('<info>Passport keys permissions updated.<info>');
 }

@@ -145,6 +145,48 @@ Agents must follow these workflow definitions when executing tasks.
 - **Tinker is strictly prohibited:** No AI agent must use, invoke, or interact with Tinker in any form during
   autonomous actions, suggestions, or when generating code within this repository.
 
+## Laravel Upgrades
+
+When reviewing or executing any change that touches a Laravel core or
+first-party package — directly required **or pulled in transitively** —
+(laravel/framework, laravel/passport, laravel/sanctum, laravel/horizon,
+laravel/telescope, league/oauth2-server, etc.):
+
+1. Establish the installed version first:
+    - `composer.lock` is the **only** authoritative source for what is
+      actually running. `composer.json` declares intent; the lockfile
+      declares reality.
+    - Read `vendor/<package>/UPGRADE.md` **for the installed version only**
+      — not the latest, not the next major. The same package has one
+      UPGRADE.md per major version in its history; reading the wrong one
+      introduces noise.
+    - `docs/release-review.md` defines this repo's upgrade workflow, not
+      upstream breaking changes. Use it for process, not for facts.
+
+2. Flag breaking changes that affect **infrastructure or environment**, not
+   just application code — specifically:
+    - Filesystem permissions (e.g. OAuth key files under Passport 13's
+      `league/oauth2-server ^9.0` strict check)
+    - New required environment variables or config keys
+    - Changed artisan commands needed during deploy
+    - Database migration requirements
+    - Minimum PHP/extension version bumps
+
+3. **Transitive dependencies count.** A breaking change introduced by a
+   package you don't directly require (e.g. `league/oauth2-server` bumped
+   via `laravel/passport`) is still in scope. When a direct dependency is
+   upgraded, follow the chain in `composer.lock` and review breaking
+   changes for anything whose major version moved.
+
+4. When reviewing changes that touch auth, permissions, deploy scripts,
+   or config files — even if no upgrade is in the same PR — verify the
+   change is consistent with the **currently installed** versions of
+   relevant packages and their transitive deps.
+
+5. Output a checklist of required actions before the upgrade is considered
+   complete, distinguishing between **code changes** and
+   **deploy/server changes**. Cross-reference `docs/release-review.md`.
+
 ## Running Tools
 
 Always use these flags when running CLI tools:
