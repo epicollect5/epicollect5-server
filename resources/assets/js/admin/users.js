@@ -27,7 +27,18 @@ window.EC5.users = window.EC5.users || {};
      */
     module.getUsers = function (page, search, server_role, state) {
 
-        window.setTimeout(function () {
+        // Clear any pending fadeIn from a previous fast-completing request so
+        // it can't fire after fadeOut and re-show the overlay.
+        if (module._fadeInTimer) {
+            window.clearTimeout(module._fadeInTimer);
+            module._fadeInTimer = null;
+        }
+
+        // Only show the overlay if the request takes more than 500ms; the
+        // cancellation above ensures the queued fadeIn can't fire after we
+        // fade out below.
+        module._fadeInTimer = window.setTimeout(function () {
+            module._fadeInTimer = null;
             window.EC5.overlay.fadeIn();
         }, 500);
 
@@ -56,6 +67,12 @@ window.EC5.users = window.EC5.users || {};
             $('.user-administration__users').html(data) // Update the content
                 .animate({opacity: 1}, 500); // Animate opacity to 1 over 500 milliseconds
         }).fail(module.showError).always(function () {
+            // Cancel any pending fadeIn that hasn't fired yet (the AJAX was
+            // fast enough that the 500ms threshold wasn't reached).
+            if (module._fadeInTimer) {
+                window.clearTimeout(module._fadeInTimer);
+                module._fadeInTimer = null;
+            }
             window.EC5.overlay.fadeOut();
         });
     };
@@ -160,8 +177,9 @@ $(document).ready(function () {
         // Get value of input
         var needle = this.value;
 
-        // If the length is 3 or more characters, or the user pressed ENTER, search
-        if (needle.length >= 3 || e.keyCode === 13) {
+        // If the length is 3 or more characters, the user pressed ENTER, or the
+        // input was cleared (empty = "show me the unfiltered list again"), search
+        if (needle.length >= 3 || e.keyCode === 13 || needle.length === 0) {
 
             // Get user-administration container
             var container = $(this).closest('.user-administration');
@@ -173,7 +191,7 @@ $(document).ready(function () {
 
             // Set delay amount
             // for user to stop typing
-            var requestDelay = 200;
+            var requestDelay = 500;
 
             /**
              * Throttle user requests so that we can wait until the user
