@@ -165,4 +165,51 @@ class AdminControllerTest extends TestCase
         $this->assertIsString($decoded);
         $this->assertStringContainsString($needle . '@example.com', $decoded);
     }
+
+    public function test_users_page_search_supports_multi_word_query()
+    {
+        $admin = User::where('email', config('epicollect.setup.super_admin_user.email'))->first();
+
+        // Seed a user whose first and last name are separate words and would
+        // never match a naive prefix search on `name`.
+        $first = 'David' . uniqid();
+        $last = 'Aanensen' . uniqid();
+        factory(User::class)->create([
+            'name' => $first,
+            'last_name' => $last,
+            'email' => $first . '@example.com',
+        ]);
+        // A second user sharing only the first name, to make sure the search
+        // narrows down to the right one when both tokens are present.
+        factory(User::class)->create([
+            'name' => $first,
+            'last_name' => 'SomeoneElse' . uniqid(),
+            'email' => $first . '-other@example.com',
+        ]);
+
+        $response = $this->actingAs($admin)
+            ->get(route('admin-users') . '?search=' . urlencode($first . ' ' . $last));
+
+        $response->assertStatus(200);
+        $this->assertStringContainsString($first . '@example.com', $response->getContent());
+        $this->assertStringNotContainsString($first . '-other@example.com', $response->getContent());
+    }
+
+    public function test_users_page_search_matches_last_name_only()
+    {
+        $admin = User::where('email', config('epicollect.setup.super_admin_user.email'))->first();
+
+        $last = 'Aanensen' . uniqid();
+        factory(User::class)->create([
+            'name' => 'David' . uniqid(),
+            'last_name' => $last,
+            'email' => 'someone' . uniqid() . '@example.com',
+        ]);
+
+        $response = $this->actingAs($admin)
+            ->get(route('admin-users') . '?search=' . $last);
+
+        $response->assertStatus(200);
+        $this->assertStringContainsString($last, $response->getContent());
+    }
 }
