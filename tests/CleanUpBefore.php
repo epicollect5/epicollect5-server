@@ -12,6 +12,15 @@ class CleanUpBefore extends TestCase
         parent::setUp();
 
         $this->clearDatabase([]);
+
+        // The dev .env's APP_URL gets baked into bootstrap/cache/config.php by
+        // `php artisan config:cache` in after_pull-dev.sh. That cache poisons
+        // route resolution in tests because Laravel loads the cache as a
+        // static array and ignores .env.testing. Clear it so the test env
+        // reads from .env.testing's APP_URL=http://localhost.
+        if (file_exists(base_path('bootstrap/cache/config.php'))) {
+            @unlink(base_path('bootstrap/cache/config.php'));
+        }
     }
 
     public function test_database_is_cleared()
