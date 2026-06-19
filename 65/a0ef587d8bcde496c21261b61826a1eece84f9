@@ -1,0 +1,28 @@
+tests/Http/Controllers/Web/Admin/AdminControllerTest.php
+  s_2598d9da8ce099::t_00dc7919b08cfa 74,78-158,160-167
+  s_2598d9da8ce099::t_6315c4c94dbfe4 168
+  s_2598d9da8ce099::t_2ff7a7fa3c43fe 159
+resources/assets/js/admin/projects.js
+  s_2598d9da8ce099::t_402cf12ec9bc60 193-194
+  s_2598d9da8ce099::t_413823700a18fb 105
+  s_2598d9da8ce099::t_0152882902215d 163-165,174
+resources/assets/js/admin/users.js
+  s_2598d9da8ce099::t_4a7e8213d65e46 142-143,145-146,148-149
+  s_2598d9da8ce099::t_0da3e92a71e145 171
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.9",
+  "base_commit_sha": "65a0ef587d8bcde496c21261b61826a1eece84f9",
+  "prompts": {},
+  "sessions": {
+    "s_2598d9da8ce099": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_11efd14b7ffeMDI0ogJdh2AiF1",
+        "model": "minimax-m3"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
