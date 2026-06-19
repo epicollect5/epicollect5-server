@@ -1,0 +1,36 @@
+docs/database-schema.md
+  s_4ef6c75a4a6475::t_0869e1e47142fd 7
+  s_4ef6c75a4a6475::t_a00d13f2c0edf7 397-398,407-408
+  s_4ef6c75a4a6475::t_ad7107f31eb676 463-465
+tests/Database/Migrations/AddGrantTypesToOauthClientsTest.php
+  s_4ef6c75a4a6475::t_c2fc0ef834b4ff 1-32,40-48,56-117,129-173
+  s_4ef6c75a4a6475::t_91b0335fe0835b 49-55
+  s_4ef6c75a4a6475::t_3094046d8eb23e 118-128
+  s_4ef6c75a4a6475::t_6fed69f6bd04ef 33-39
+AGENTS.md
+  s_4ef6c75a4a6475::t_e97c3f7368fca4 190-202
+app/Models/OAuth/OAuthClient.php
+  s_4ef6c75a4a6475::t_0aa152c8be651c 16-17,24-31
+database/migrations/2026_06_19_000001_add_grant_types_to_oauth_clients.php
+  s_4ef6c75a4a6475::t_9e2da96cafe819 1-55
+tests/Database/Migrations/DropUnusedOauthTablesTest.php
+  s_4ef6c75a4a6475::t_f40b2ded06bbd9 1-169
+database/migrations/2026_06_19_000002_drop_unused_oauth_tables.php
+  s_4ef6c75a4a6475::t_500fa51e3bdd8f 1-47
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "75d91a592ed1f4e8d96244d6d87b0a8f3d9efc13",
+  "prompts": {},
+  "sessions": {
+    "s_4ef6c75a4a6475": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_123ca8ddcffefxvKBL6KF2ymYt",
+        "model": "minimax-m3"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
