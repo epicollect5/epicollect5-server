@@ -1,0 +1,19 @@
+tests/CleanUpBefore.php
+  s_4ef6c75a4a6475::t_26e178b7abc490 15-23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "59dfaca293322b921060a9627f54a857f8f8dc29",
+  "prompts": {},
+  "sessions": {
+    "s_4ef6c75a4a6475": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_123ca8ddcffefxvKBL6KF2ymYt",
+        "model": "minimax-m3"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
