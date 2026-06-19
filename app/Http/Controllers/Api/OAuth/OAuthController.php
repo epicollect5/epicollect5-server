@@ -65,7 +65,7 @@ class OAuthController
                 default:
                     // Use default error code
             }
-            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
+            Log::warning(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
         } catch (Throwable $e) {
             // Use default error code
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
