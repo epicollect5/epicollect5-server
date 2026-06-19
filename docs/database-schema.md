@@ -4,7 +4,7 @@ This document describes the current application schema derived from the migratio
 
 Scope:
 - It reflects the latest migrated structure, not historical intermediate states.
-- It is based on the migrations in this repository as of 2026-06-09.
+- It is based on the migrations in this repository as of 2026-06-19.
 - JSON shape migrations and read-time JSON contracts are mentioned only where they clarify persisted columns.
 
 ## Current Tables
@@ -394,6 +394,8 @@ Columns:
 - `redirect`: `TEXT`, not null
 - `personal_access_client`: `BOOLEAN`, not null
 - `password_client`: `BOOLEAN`, not null
+- `grant_types`: `TEXT`, not null (JSON array of OAuth grant types, e.g. `["client_credentials"]`)
+- `redirect_uris`: `TEXT`, not null (JSON array of redirect URIs)
 - `revoked`: `BOOLEAN`, not null
 - `created_at`: `TIMESTAMP`, nullable Laravel timestamp
 - `updated_at`: `TIMESTAMP`, nullable Laravel timestamp
@@ -401,6 +403,9 @@ Columns:
 Indexes:
 - Primary key on `id`
 - Index on `user_id`
+
+Notes:
+- `grant_types` and `redirect_uris` were added by migration `2026_06_19_000001` to satisfy Passport 13's read path (`Bridge\ClientRepository::fromClientModel` reads both unconditionally). The old `personal_access_client` / `password_client` booleans are retained for backward compatibility but are no longer consulted by Passport 13. `redirect_uris` is stored as a JSON array; the old `redirect` column stores a single URI as a string and remains in place.
 
 ### `oauth_access_tokens`
 
@@ -420,49 +425,6 @@ Columns:
 Indexes:
 - Primary key on `id`
 - Index on `user_id`
-
-### `oauth_auth_codes`
-
-Purpose: Passport authorization codes.
-
-Columns:
-- `id`: `VARCHAR(100)`, primary key
-- `user_id`: `BIGINT UNSIGNED`, indexed
-- `client_id`: `BIGINT UNSIGNED`, not null
-- `scopes`: `TEXT`, nullable
-- `revoked`: `BOOLEAN`, not null
-- `expires_at`: `DATETIME`, nullable
-
-Indexes:
-- Primary key on `id`
-- Index on `user_id`
-
-### `oauth_refresh_tokens`
-
-Purpose: Passport refresh tokens.
-
-Columns:
-- `id`: `VARCHAR(100)`, primary key
-- `access_token_id`: `VARCHAR(100)`, indexed
-- `revoked`: `BOOLEAN`, not null
-- `expires_at`: `DATETIME`, nullable
-
-Indexes:
-- Primary key on `id`
-- Index on `access_token_id`
-
-### `oauth_personal_access_clients`
-
-Purpose: Passport personal access client registry.
-
-Columns:
-- `id`: `BIGINT UNSIGNED`, primary key, auto increment
-- `client_id`: `BIGINT UNSIGNED`, not null
-- `created_at`: `TIMESTAMP`, nullable Laravel timestamp
-- `updated_at`: `TIMESTAMP`, nullable Laravel timestamp
-
-Indexes:
-- Primary key on `id`
 
 ### `oauth_client_projects`
 
@@ -498,6 +460,9 @@ These tables existed historically but are not part of the current schema after l
 - `storage_stats`
 - `users_verify`
 - `users_reset_password`
+- `oauth_personal_access_clients` — dropped by migration `2026_06_19_000002` (Passport 13 no longer uses this table; see `vendor/laravel/passport/UPGRADE.md:116-124`). Contained 1 row referencing `oauth_clients.id=1` from 2017-06-21, intentionally dropped — the row was functionally dead in Passport 13.
+- `oauth_auth_codes` — dropped by migration `2026_06_19_000002` (this app never enabled the `authorization_code` grant)
+- `oauth_refresh_tokens` — dropped by migration `2026_06_19_000002` (this app never enabled the `refresh_token` grant; `OAuthController::issueToken` only handles access tokens)
 
 ## Current Relationship Summary
 

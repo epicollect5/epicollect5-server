@@ -187,6 +187,19 @@ laravel/telescope, league/oauth2-server, etc.):
    complete, distinguishing between **code changes** and
    **deploy/server changes**. Cross-reference `docs/release-review.md`.
 
+6. **Verify backward-compatibility claims against the actual read path, not
+   just the write path.** "Backward compatible, no action required" in an
+   UPGRADE.md can be conditionally false depending on whether optional
+   migrations were skipped. Real case: Passport 13's
+   `Bridge\ClientRepository::fromClientModel()`
+   (`vendor/laravel/passport/src/Bridge/ClientRepository.php:55-65`) reads
+   `$model->grant_types` unconditionally, but pre-13 `oauth_clients` has
+   no `grant_types` column — existing clients fail at `/oauth/token` with
+   "unsupported_grant_type" because `Client::hasGrantType()` returns false
+   on `null`. The write path was backward compatible; the read path was
+   not. "No action required" was wrong for any project that skipped the
+   optional schema migration.
+
 ## Running Tools
 
 Always use these flags when running CLI tools:

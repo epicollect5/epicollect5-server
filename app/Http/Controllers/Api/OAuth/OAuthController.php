@@ -9,12 +9,13 @@ use Laravel\Passport\TokenRepository;
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Log;
+use Nyholm\Psr7\Response as Psr7Response;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Response;
-//use Zend\Diactoros\Response as Psr7Response;
-use Nyholm\Psr7\Response as Psr7Response;
 use Throwable;
+
+//use Zend\Diactoros\Response as Psr7Response;
 
 class OAuthController
 {
@@ -64,7 +65,7 @@ class OAuthController
                 default:
                     // Use default error code
             }
-
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
         } catch (Throwable $e) {
             // Use default error code
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
