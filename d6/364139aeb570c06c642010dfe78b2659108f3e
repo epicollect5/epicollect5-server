@@ -1,0 +1,21 @@
+app/Services/User/UserService.php
+  s_2598d9da8ce099::t_d23c2004dbfaad 295-299,302-313
+tests/Http/Controllers/Web/Admin/AdminControllerTest.php
+  s_2598d9da8ce099::t_abc5bab324e105 168-214
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.9",
+  "base_commit_sha": "d6364139aeb570c06c642010dfe78b2659108f3e",
+  "prompts": {},
+  "sessions": {
+    "s_2598d9da8ce099": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_11efd14b7ffeMDI0ogJdh2AiF1",
+        "model": "minimax-m3"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
