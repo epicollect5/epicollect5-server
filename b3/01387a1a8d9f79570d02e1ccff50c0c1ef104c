@@ -1,0 +1,21 @@
+resources/assets/js/admin/users.js
+  s_2598d9da8ce099::t_7c8ebfb85f6c74 30-41,70-75
+  s_2598d9da8ce099::t_b801a268f139b3 180-182
+  s_2598d9da8ce099::t_49f87a7b946805 194
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.9",
+  "base_commit_sha": "b301387a1a8d9f79570d02e1ccff50c0c1ef104c",
+  "prompts": {},
+  "sessions": {
+    "s_2598d9da8ce099": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_11efd14b7ffeMDI0ogJdh2AiF1",
+        "model": "minimax-m3"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
