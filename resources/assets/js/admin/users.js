@@ -139,13 +139,14 @@ $(document).ready(function () {
         // Get user-administration container
         var container = $(this).closest('.user-administration');
 
-        // Retrieve search and filter/filter option values from page elements
-        // so pagination works within the current results set
+        // Retrieve search and filter values from page elements so prev/next preserves
+        // the current filtered set (simplePaginate strips appends() from the URL).
         var search = container.find('.user-administration__user-search').val();
-        var filterOption = container.find('.user-administration__user-filter-option').val();
+        var server_role = container.find('.user-administration__user-filter__server-role').val();
+        var state = container.find('.user-administration__user-filter__state').val();
 
-        // Get users based on page and any existing search or filter and filter option
-        window.EC5.users.getUsers($(this).attr('href').split('page=')[1], search, 'server_role', filterOption);
+        // Get users based on page and any existing search or filter
+        window.EC5.users.getUsers($(this).attr('href').split('page=')[1], search, server_role, state);
 
         window.scrollTo(0, 0);
 
@@ -167,7 +168,7 @@ $(document).ready(function () {
 
             // Retrieve filter/filter option values from page elements
             // so pagination works within the current results set
-            var server_role = container.find('.user-administration__user-filter__server_role').val();
+            var server_role = container.find('.user-administration__user-filter__server-role').val();
             var state = container.find('.user-administration__user-filter__state').val();
 
             // Set delay amount
