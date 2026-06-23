@@ -1,0 +1,32 @@
+resources/views/admin/tabs/users.blade.php
+  s_2598d9da8ce099::t_c9dc999cbba5a9 56-58
+  s_2598d9da8ce099::t_f7aee948724d43 55
+resources/assets/sass/site.scss
+  h_2231ff2aa93473 13
+resources/assets/js/admin/users.js
+  s_2598d9da8ce099::t_2651c64b7f4114 38
+  s_2598d9da8ce099::t_8e60aa74ef03ef 40-41,44,64-68,70
+  s_2598d9da8ce099::t_9fd2d22febfac7 30-36
+  s_2598d9da8ce099::t_dbf95dc76ab636 39,42-43,69,72
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.10",
+  "base_commit_sha": "e9507eee6fc2d66e85149b3b4f96e139f640d24a",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_2598d9da8ce099": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_11efd14b7ffeMDI0ogJdh2AiF1",
+        "model": "minimax-m3"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
