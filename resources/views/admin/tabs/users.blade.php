@@ -52,7 +52,10 @@
             <div class="panel-body">
                 {{-- Include Users view --}}
                 <div class="user-administration__users table-responsive">
-                    @include('admin.tables.users')
+                    <div class="loader user-administration__users-loader hidden">Loading...</div>
+                    <div class="user-administration__users__table-wrapper">
+                        @include('admin.tables.users')
+                    </div>
                 </div>
             </div>
         </div>

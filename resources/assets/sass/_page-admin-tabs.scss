@@ -68,6 +68,25 @@
     }
   }
 
+  // Mirror the projects-list wrapper for the admin users tab: a relative
+  // container with a min-height so the page doesn't collapse when the table
+  // is hidden, and an absolutely-positioned loader text node that JS toggles
+  // via the .hidden class. The "spinner" itself is the existing global
+  // .wait-overlay (used by every other page in the app), which JS shows
+  // immediately on every getUsers() call.
+  .user-administration__users {
+    position: relative;
+    min-height: calc(100vh - 320px);
+    .user-administration__users-loader {
+      position: absolute;
+    }
+    .user-administration__users__table-wrapper {
+      // Wrapper for the table partial. JS empties this and appends the new
+      // partial here, leaving the loader and the parent's min-height intact
+      // across re-renders. Mirrors the projects tab's .projects__table__wrapper.
+    }
+  }
+
   .project-logo {
     border-radius: 50%;
     border: 1px solid $deep-purple;

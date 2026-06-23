@@ -27,24 +27,21 @@ window.EC5.users = window.EC5.users || {};
      */
     module.getUsers = function (page, search, server_role, state) {
 
-        // Clear any pending fadeIn from a previous fast-completing request so
-        // it can't fire after fadeOut and re-show the overlay.
-        if (module._fadeInTimer) {
-            window.clearTimeout(module._fadeInTimer);
-            module._fadeInTimer = null;
-        }
+        // Select the loader from a stable parent (the tab container, not the
+        // inner table wrapper) so the reference survives every AJAX call —
+        // $.html() on the inner wrapper would otherwise remove the loader
+        // element from the DOM and the second call would show no spinner.
+        // This mirrors the projects tab pattern in projects.js.
+        var $loader = $('.user-administration__users-loader');
+        var $tableWrapper = $('.user-administration__users__table-wrapper');
 
-        // Only show the overlay if the request takes more than 500ms; the
-        // cancellation above ensures the queued fadeIn can't fire after we
-        // fade out below.
-        module._fadeInTimer = window.setTimeout(function () {
-            module._fadeInTimer = null;
-            window.EC5.overlay.fadeIn();
-        }, 500);
-
-        $('.user-administration__users')
-            .find('.user-administration__table')
-            .animate({opacity: 0}, 500);
+        // Show the global overlay (the same .wait-overlay used by every other
+        // page in the app) and the tab-local loader text so the user has
+        // feedback while the new page loads. The outer wrapper's min-height
+        // keeps the page from collapsing while the inner content is gone.
+        window.EC5.overlay.fadeIn();
+        $loader.removeClass('hidden');
+        $tableWrapper.empty();
 
         // Set defaults
         page = typeof page !== 'undefined' ? page : 1;
@@ -64,15 +61,15 @@ window.EC5.users = window.EC5.users || {};
                 state: state
             }
         }).done(function (data) {
-            $('.user-administration__users').html(data) // Update the content
-                .animate({opacity: 1}, 500); // Animate opacity to 1 over 500 milliseconds
+            // Append the new partial into the inner wrapper and fade it in.
+            // Mirrors the projects tab pattern (hide/append/fadeIn) so the
+            // new content always fades in cleanly with no flash of stale
+            // data, and the loader + outer wrapper keep their state across
+            // every subsequent call.
+            $loader.addClass('hidden');
+            $tableWrapper.hide().append(data).fadeIn(500);
         }).fail(module.showError).always(function () {
-            // Cancel any pending fadeIn that hasn't fired yet (the AJAX was
-            // fast enough that the 500ms threshold wasn't reached).
-            if (module._fadeInTimer) {
-                window.clearTimeout(module._fadeInTimer);
-                module._fadeInTimer = null;
-            }
+            $loader.addClass('hidden');
             window.EC5.overlay.fadeOut();
         });
     };
