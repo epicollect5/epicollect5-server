@@ -109,21 +109,46 @@ class ProjectController
         $projects = [];
 
         $exactMatch = request()->query('exact', false);
-        $privateAccess = config('epicollect.strings.project_access.private');
-        $ttlDays = (int) config('epicollect.setup.system.cache.project_mobile_logo_cache_ttl_days', 365);
-        $negativeTtlMinutes = (int) config('epicollect.setup.system.cache.project_mobile_logo_missing_ttl_minutes', 60);
+        $logoBase64Enabled = (bool) config(
+            'epicollect.setup.api.project_search_mobile_logo_base64_enabled',
+            false
+        );
 
         if (!empty($name)) {
+            $columns = $logoBase64Enabled
+                ? ['projects.name', 'projects.slug', 'projects.access', 'projects.ref', 'projects.logo_url']
+                : ['name', 'slug', 'access', 'ref'];
+
             if ($exactMatch) {
-                $hits = Project::matches($name, ['projects.name', 'projects.slug', 'projects.access', 'projects.ref', 'projects.logo_url']);
+                $hits = Project::matches($name, $columns);
             } else {
-                $hits = Project::startsWith($name, ['projects.name', 'projects.slug', 'projects.access', 'projects.ref', 'projects.logo_url']);
+                $hits = Project::startsWith($name, $columns);
             }
         }
 
+        if ($logoBase64Enabled) {
+            $this->buildProjectsWithLogoBase64($hits, $projects);
+        } else {
+            foreach ($hits as $hit) {
+                unset($hit->structure_last_updated);
+
+                $data['type'] = 'project';
+                $data['id'] = $hit->ref;
+                $data['project'] = $hit;
+                $projects[] = $data;
+            }
+        }
+
+        return Response::apiData($projects);
+    }
+
+    private function buildProjectsWithLogoBase64(iterable $hits, array &$projects): void
+    {
         $logoService = new ProjectLogoService();
         $dimensions = config('epicollect.media.project_mobile_logo');
-
+        $privateAccess = config('epicollect.strings.project_access.private');
+        $ttlDays = (int) config('epicollect.setup.system.cache.project_mobile_logo_cache_ttl_days', 365);
+        $negativeTtlMinutes = (int) config('epicollect.setup.system.cache.project_mobile_logo_missing_ttl_minutes', 60);
 
         foreach ($hits as $hit) {
             if ($hit->access === $privateAccess) {
@@ -165,8 +190,6 @@ class ProjectController
             $data['project'] = $hit;
             $projects[] = $data;
         }
-
-        return Response::apiData($projects);
     }
 
     public function exists(RuleName $ruleName, $name)

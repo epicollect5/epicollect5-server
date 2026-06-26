@@ -70,6 +70,10 @@ class ProjectControllerTest extends TestCase
         $this->user = $user;
         $this->project = $project;
         $this->projectStructure = $projectStructure;
+
+        // Project search logo_base64 is gated by a feature flag (default off).
+        // Enable it here so the existing search tests continue to assert the new payload.
+        config(['epicollect.setup.api.project_search_mobile_logo_base64_enabled' => true]);
     }
 
     public function test_project_exists()
@@ -729,6 +733,20 @@ class ProjectControllerTest extends TestCase
             ->assertStatus(200);
 
         $this->assertNull($response->json('data.0.project.logo_base64'));
+    }
+
+    public function test_search_with_logo_base64_flag_off_returns_pre_change_payload(): void
+    {
+        config(['epicollect.setup.api.project_search_mobile_logo_base64_enabled' => false]);
+
+        $response = $this->json('GET', 'api/projects/' . $this->project->name . '?exact=true')
+            ->assertStatus(200);
+
+        $project = $response->json('data.0.project');
+        $this->assertSame(
+            ['name', 'slug', 'access', 'ref'],
+            array_keys($project)
+        );
     }
 
 }
