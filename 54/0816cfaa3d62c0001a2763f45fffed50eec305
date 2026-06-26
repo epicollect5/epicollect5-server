@@ -1,0 +1,34 @@
+app/Http/Controllers/Api/Project/ProjectController.php
+  s_9b58ef5f676d58::t_1ee95a24f6ba71 112-115,118-121,123,125,129-132,135-146,149-151
+  s_9b58ef5f676d58::t_5658fcbe43c79a 133-134
+config/epicollect/setup.php
+  s_9b58ef5f676d58::t_088972fe82c172 52
+.env.example
+  s_9b58ef5f676d58::t_7b7fc35054dc17 40-42
+tests/Http/Controllers/Api/Project/ProjectControllerTest.php
+  s_9b58ef5f676d58::t_a73daf228a4716 738-741,750-751
+  s_9b58ef5f676d58::t_fc8b899f0a0a93 73-76
+  s_9b58ef5f676d58::t_702ede30da9e82 742,744,746,749
+  s_9b58ef5f676d58::t_61c753be5c0454 743,745,747-748
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "540816cfaa3d62c0001a2763f45fffed50eec305",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_9b58ef5f676d58": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_10c5d4862ffe7xexmXTVIIcLuP",
+        "model": "minimax-m3"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
