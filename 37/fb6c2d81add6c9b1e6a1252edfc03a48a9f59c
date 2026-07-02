@@ -1,0 +1,16 @@
+app/Models/Project/ProjectRole.php
+  h_2231ff2aa93473 89
+app/Http/Controllers/Web/Project/ProjectManageUsersController.php
+  h_2231ff2aa93473 115
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.9",
+  "base_commit_sha": "37fb6c2d81add6c9b1e6a1252edfc03a48a9f59c",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
