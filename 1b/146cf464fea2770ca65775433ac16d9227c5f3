@@ -1,0 +1,27 @@
+app/Models/Project/ProjectRole.php
+  s_31a7855e706898::t_437e4c0022a544 93-96,98-103
+  s_31a7855e706898::t_9566a68ac1bd3f 97
+tests/Models/Eloquent/ProjectRoleGetAllProjectMembersTest.php
+  s_31a7855e706898::t_a1088a47f08f7c 1-140
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.9",
+  "base_commit_sha": "1b146cf464fea2770ca65775433ac16d9227c5f3",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_31a7855e706898": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0ddf7919cffe1YCy0rFeBRDu57",
+        "model": "minimax-m3"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
