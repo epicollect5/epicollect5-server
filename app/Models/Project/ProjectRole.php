@@ -79,7 +79,7 @@ class ProjectRole extends Model
             ->toArray();
     }
 
-    public function getCountOverall($projectId)
+    public function getCountOverall($projectId): int
     {
         return DB::table($this->table)
             ->selectRaw('count(*) as total')
@@ -91,15 +91,17 @@ class ProjectRole extends Model
 
     public static function getAllProjectMembers($projectId): array
     {
-        return DB::table(config('epicollect.tables.users'))
-            ->join('project_roles', 'users.id', '=', 'project_roles.user_id')
-            ->where('project_roles.project_id', $projectId)
-            ->get(['users.name', 'users.last_name', 'users.email', 'project_roles.role'])
-            ->map(fn ($row) => (object) [
-                'name'      => $row->name,
-                'last_name' => $row->last_name,
-                'email'     => $row->email,
-                'role'      => $row->role,
+        $usersTable = config('epicollect.tables.users');
+        $projectRolesTable = config('epicollect.tables.project_roles');
+
+        return DB::table($usersTable)
+            ->join($projectRolesTable, "$usersTable.id", '=', "$projectRolesTable.user_id")
+            ->where("$projectRolesTable.project_id", $projectId)
+            ->get([
+                "$usersTable.name",
+                "$usersTable.last_name",
+                "$usersTable.email",
+                "$projectRolesTable.role"
             ])
             ->all();
     }
