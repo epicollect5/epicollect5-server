@@ -85,7 +85,8 @@ class ProjectRole extends Model
             ->selectRaw('count(*) as total')
             ->where('project_id', '=', $projectId)
             ->get()
-            ->first();
+            ->first()
+            ->total;
     }
 
     public static function getAllProjectMembers($projectId): array
