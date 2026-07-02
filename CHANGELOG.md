@@ -1,5 +1,17 @@
 ## Release Notes
 
+# 13.0.0
+
+- Laravel 12 → 13 framework upgrade with required dependency bumps
+- Passport 12 → 13 with bcrypt client secret hashing by default, passport:hash wired into deploy hooks,
+  and new grant_types / redirect_uris / client_secret_recoverable columns (plus dropped unused OAuth tables).
+- Breaking deploy changes — oauth-public.key chmod tightened to 0660; VerifyCsrfToken middleware replaced
+  with custom PreventRequestForgery on web and api_internal groups.
+- New ProjectLogoService extracted with constructor DI, plus server-side mobile logo caching
+  and feature flag for base64 logo in API responses.
+- User & project admin overhaul — optimized getAllProjectMembers query, multi-word/last-name user search with debounce,
+  server role/state filters, loading indicators, and improved pagination.
+
 # 12.5.33
 
 - Removed Community column from homepage.
