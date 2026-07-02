@@ -1,0 +1,26 @@
+CHANGELOG.md
+  s_b2971c65514bd6::t_cd97326f7e8bb7 6-7,9,11,13
+  h_2231ff2aa93473 5,8,10,12
+  s_b2971c65514bd6::t_10478b65f4d2fc 14
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.9",
+  "base_commit_sha": "41a09d3b08490f79ebcd5ae590b77f479eca6a58",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_b2971c65514bd6": {
+      "agent_id": {
+        "tool": "github-copilot-jetbrains",
+        "id": "1782210756078",
+        "model": "unknown"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
