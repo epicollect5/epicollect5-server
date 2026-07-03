@@ -1,0 +1,35 @@
+tests/Support/TestUserIdSequence.php
+  s_f1ed91c2bd3a65::t_e28fd323991f8c 1-4,7-36
+  s_f1ed91c2bd3a65::t_15f4498e7da706 5-6
+public/css/site.css
+  s_f1ed91c2bd3a65::t_e3f8b082a9a1a6 5
+public/formbuilder/js/formbuilder.js
+  s_f1ed91c2bd3a65::t_22d70f301ddf0d 1,6-10
+public/js/project/project.js
+  s_f1ed91c2bd3a65::t_1de41d855366e7 1-2
+tests/Libraries/Utilities/CommonTest.php
+  s_f1ed91c2bd3a65::t_15bb304ca9b433 125,162-203
+tests/TestCase.php
+  s_f1ed91c2bd3a65::t_92b8dc2ae3a00e 83-84,86,124-138,140-146,148-150,153-154,163-197,199-202,205-210,213-220,222-224,226,228-235,238-243,245-258,261-270
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "aa341d1df73238bcafce79bd78baa7c4a0e5063a",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_f1ed91c2bd3a65": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0d917d0ebffef9MwiT3OJvsSKq",
+        "model": "minimax-m3"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
