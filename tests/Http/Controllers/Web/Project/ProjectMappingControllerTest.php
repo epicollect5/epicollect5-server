@@ -335,7 +335,7 @@ class ProjectMappingControllerTest extends TestCase
         }
     }
 
-    public function test_existing_mapping_is_updated_without_is_default_and_map_index_in_mapping_payload()
+    public function test_existing_mapping_is_updated_with_full_mapping_payload()
     {
         $projectStructures = ProjectStructure::where('project_id', $this->project->id)
             ->first();
@@ -360,8 +360,10 @@ class ProjectMappingControllerTest extends TestCase
         $projectMappings = json_decode($projectStructures->project_mapping, true);
         $this->assertCount(2, $projectMappings);
 
+        // Mapping payload must include is_default and map_index (required by RuleMappingStructure).
+        // The server still preserves the existing is_default via ProjectMappingDTO::updateMap
+        // when the client echoes the current value, which the web UI does.
         $modifiedMapping = $this->getModifiedMapping($projectMappings[1]);
-        unset($modifiedMapping['is_default'], $modifiedMapping['map_index']);
 
         $params = [
             'action' => 'update',
