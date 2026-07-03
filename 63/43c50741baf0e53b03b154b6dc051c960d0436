@@ -1,0 +1,19 @@
+tests/Http/Controllers/Web/Project/ProjectMappingControllerTest.php
+  s_f1ed91c2bd3a65::t_7758eb51480e04 338,363-365
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "6343c50741baf0e53b03b154b6dc051c960d0436",
+  "prompts": {},
+  "sessions": {
+    "s_f1ed91c2bd3a65": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0d917d0ebffef9MwiT3OJvsSKq",
+        "model": "minimax-m3"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
