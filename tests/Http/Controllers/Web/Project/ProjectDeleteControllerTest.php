@@ -598,6 +598,57 @@ class ProjectDeleteControllerTest extends TestCase
         $this->assertEquals($branchEntriesCount, BranchEntry::count());
     }
 
+    public function test_delete_soft_deletes_when_stats_are_missing_but_entries_exist()
+    {
+        $role = config('epicollect.strings.project_roles.creator');
+        $trashedStatus = config('epicollect.strings.project_status.trashed');
+        $archivedStatus = config('epicollect.strings.project_status.archived');
+
+        $user = factory(User::class)->create();
+        factory(UserProvider::class)->create([
+            'user_id' => $user->id,
+            'email' => $user->email
+        ]);
+
+        $project = factory(Project::class)->create([
+            'created_by' => $user->id,
+            'status' => $trashedStatus
+        ]);
+
+        factory(ProjectRole::class)->create([
+            'user_id' => $user->id,
+            'project_id' => $project->id,
+            'role' => $role
+        ]);
+
+        factory(ProjectStructure::class)->create([
+            'project_id' => $project->id
+        ]);
+
+        factory(Entry::class)->create([
+            'project_id' => $project->id,
+            'form_ref' => $project->ref . '_' . uniqid(),
+            'user_id' => $project->created_by,
+        ]);
+
+        $this->assertEquals(0, ProjectStats::where('project_id', $project->id)->count());
+
+        $response = $this->actingAs($user, self::DRIVER)
+            ->post('/myprojects/' . $project->slug . '/delete', [
+                '_token' => csrf_token(),
+                'project-name' => $project->name
+            ]);
+
+        $response->assertRedirect('/myprojects');
+        $response->assertSessionHas('message', 'ec5_114');
+
+        $this->assertEquals(1, Project::where('id', $project->id)
+            ->where('status', $archivedStatus)
+            ->count());
+        $this->assertEquals(1, Entry::where('project_id', $project->id)->count());
+        $this->assertEquals(0, ProjectStats::where('project_id', $project->id)->count());
+    }
+
     public function test_delete_missing_permission_as_manager()
     {
         //manager

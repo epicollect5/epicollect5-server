@@ -25,6 +25,110 @@ class RateLimiterServiceProviderTest extends TestCase
         $this->assertSame(1, $limits[0]->maxAttempts);
     }
 
+    public function test_public_media_requests_use_project_slug(): void
+    {
+        Config::set('epicollect.limits.api_external.media_seconds', 7);
+        Config::set('epicollect.limits.api_external.media_minutes', 300);
+
+        $projectSlug = 'media-project-' . uniqid();
+        $limits = $this->resolvePublicMediaLimits($projectSlug);
+
+        $this->assertCount(2, $limits);
+        $this->assertSame('seconds|' . $projectSlug, $limits[0]->key);
+        $this->assertSame(7, $limits[0]->maxAttempts);
+        $this->assertSame('minutes|' . $projectSlug, $limits[1]->key);
+        $this->assertSame(300, $limits[1]->maxAttempts);
+    }
+
+    public function test_external_upload_requests_use_project_slug(): void
+    {
+        Config::set('epicollect.limits.api_external.upload_seconds', 10);
+        Config::set('epicollect.limits.api_external.upload_minutes', 300);
+
+        $projectSlug = 'upload-project-' . uniqid();
+        $limits = $this->resolvePublicUploadLimits(
+            $projectSlug,
+            '10.10.10.10'
+        );
+
+        $this->assertCount(2, $limits);
+        $this->assertSame('seconds|' . $projectSlug, $limits[0]->key);
+        $this->assertSame(10, $limits[0]->maxAttempts);
+        $this->assertSame('minutes|' . $projectSlug, $limits[1]->key);
+        $this->assertSame(300, $limits[1]->maxAttempts);
+    }
+
+    public function test_external_upload_limit_is_shared_across_ips_for_same_project_slug(): void
+    {
+        Config::set('epicollect.limits.api_external.upload_seconds', 10);
+        Config::set('epicollect.limits.api_external.upload_minutes', 300);
+
+        $projectSlug = 'shared-upload-project-' . uniqid();
+
+        $limitsFromFirstIp = $this->resolvePublicUploadLimits(
+            $projectSlug,
+            '10.10.10.10'
+        );
+        $limitsFromSecondIp = $this->resolvePublicUploadLimits(
+            $projectSlug,
+            '20.20.20.20'
+        );
+
+        $this->assertSame(
+            $limitsFromFirstIp[0]->key,
+            $limitsFromSecondIp[0]->key
+        );
+        $this->assertSame(
+            $limitsFromFirstIp[1]->key,
+            $limitsFromSecondIp[1]->key
+        );
+    }
+
+    public function test_external_upload_limit_is_partitioned_by_project_slug(): void
+    {
+        Config::set('epicollect.limits.api_external.upload_seconds', 10);
+        Config::set('epicollect.limits.api_external.upload_minutes', 300);
+
+        $projectSlugA = 'upload-project-a-' . uniqid();
+        $projectSlugB = 'upload-project-b-' . uniqid();
+
+        $limitsForProjectA = $this->resolvePublicUploadLimits(
+            $projectSlugA,
+            '10.10.10.10'
+        );
+        $limitsForProjectB = $this->resolvePublicUploadLimits(
+            $projectSlugB,
+            '10.10.10.10'
+        );
+
+        $this->assertSame(
+            'seconds|' . $projectSlugA,
+            $limitsForProjectA[0]->key
+        );
+        $this->assertSame(
+            'minutes|' . $projectSlugA,
+            $limitsForProjectA[1]->key
+        );
+        $this->assertSame(
+            'seconds|' . $projectSlugB,
+            $limitsForProjectB[0]->key
+        );
+        $this->assertSame(
+            'minutes|' . $projectSlugB,
+            $limitsForProjectB[1]->key
+        );
+    }
+
+    public function test_api_external_global_requests_use_ip_address(): void
+    {
+        Config::set('epicollect.limits.api_external.global', 600);
+
+        $limits = $this->resolveApiExternalGlobalLimits();
+
+        $this->assertSame('10.10.10.10', $limits->key);
+        $this->assertSame(600, $limits->maxAttempts);
+    }
+
     public function test_google_apps_script_requests_are_limited_by_shared_project_slug_key(): void
     {
         Config::set('epicollect.limits.api_export.entries', 100);
@@ -100,7 +204,74 @@ class RateLimiterServiceProviderTest extends TestCase
      */
     private function resolveEntriesExportLimits(string $projectSlug, string $ipAddress, string $userAgent): array
     {
-        $request = Request::create('/api/export/entries/' . $projectSlug, 'GET', [], [], [], [
+        return $this->resolveProjectScopedLimits(
+            'api-export-entries',
+            '/api/export/entries/' . $projectSlug,
+            $projectSlug,
+            $ipAddress,
+            $userAgent
+        );
+    }
+
+    /**
+     * @return array<int, Limit>
+     */
+    private function resolvePublicUploadLimits(
+        string $projectSlug,
+        string $ipAddress
+    ): array {
+        return $this->resolveProjectScopedLimits(
+            'api-external-upload',
+            '/api/upload/' . $projectSlug,
+            $projectSlug,
+            $ipAddress,
+            'curl/8.6.0',
+            'POST'
+        );
+    }
+
+    /**
+     * @return array<int, Limit>
+     */
+    private function resolvePublicMediaLimits(string $projectSlug): array
+    {
+        return $this->resolveProjectScopedLimits(
+            'api-external-media',
+            '/api/media/' . $projectSlug,
+            $projectSlug,
+            '10.10.10.10',
+            'curl/8.6.0'
+        );
+    }
+
+    private function resolveApiExternalGlobalLimits(): Limit
+    {
+        $request = Request::create('/api/projects', 'GET', [], [], [], [
+            'REMOTE_ADDR' => '10.10.10.10',
+            'HTTP_USER_AGENT' => 'curl/8.6.0',
+        ]);
+
+        $limiter = RateLimiter::limiter('api-external-global');
+        $this->assertNotNull($limiter);
+
+        $limit = $limiter($request);
+        $this->assertInstanceOf(Limit::class, $limit);
+
+        return $limit;
+    }
+
+    /**
+     * @return array<int, Limit>
+     */
+    private function resolveProjectScopedLimits(
+        string $limiterName,
+        string $uri,
+        string $projectSlug,
+        string $ipAddress,
+        string $userAgent,
+        string $method = 'GET'
+    ): array {
+        $request = Request::create($uri, $method, [], [], [], [
             'REMOTE_ADDR' => $ipAddress,
             'HTTP_USER_AGENT' => $userAgent,
         ]);
@@ -121,7 +292,7 @@ class RateLimiterServiceProviderTest extends TestCase
             };
         });
 
-        $limiter = RateLimiter::limiter('api-export-entries');
+        $limiter = RateLimiter::limiter($limiterName);
         $this->assertNotNull($limiter);
 
         $limits = $limiter($request);

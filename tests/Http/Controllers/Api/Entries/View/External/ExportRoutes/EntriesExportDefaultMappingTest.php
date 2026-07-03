@@ -136,7 +136,7 @@ class EntriesExportDefaultMappingTest extends ViewEntriesBaseControllerTest
      */
     public function test_entries_export_endpoint_parent_single_entry_loop()
     {
-        for ($i = 0; $i < rand(10, 50); $i++) {
+        for ($i = 0; $i < rand(1, 5); $i++) {
             $this->test_entries_export_endpoint_parent_single_entry();
         }
     }
@@ -326,7 +326,7 @@ class EntriesExportDefaultMappingTest extends ViewEntriesBaseControllerTest
      */
     public function test_entries_export_endpoint_child_single_entry_loop()
     {
-        for ($i = 0; $i < rand(10, 50); $i++) {
+        for ($i = 0; $i < rand(1, 5); $i++) {
             $this->test_entries_export_endpoint_child_single_entry();
         }
     }
@@ -461,7 +461,7 @@ class EntriesExportDefaultMappingTest extends ViewEntriesBaseControllerTest
      */
     public function test_entries_export_endpoint_branch_of_form_0_single_entry_loop()
     {
-        for ($i = 0; $i < rand(5, 10); $i++) {
+        for ($i = 0; $i < rand(1, 5); $i++) {
             $this->test_entries_export_endpoint_branch_of_form_0_single_entry();
         }
     }

@@ -95,15 +95,13 @@ class EntriesExportPrivateUsersEmailsTest extends TestCase
 
         //add the project and client
         $clientRepository = new ClientRepository();
-        $client = $clientRepository->create(
-            $user->id,
-            'Test App',
-            ''
-        )->makeVisible('secret');
+        $client = $clientRepository->createClientCredentialsGrantClient('Test App');
+        $plainSecret = $client->plainSecret;
 
         factory(OAuthClientProject::class)->create([
             'project_id' => $project->id,
-            'client_id' => $client->id
+            'client_id' => $client->id,
+            'client_secret_recoverable' => $plainSecret
         ]);
 
         $tokenClient = new Client();
@@ -116,7 +114,7 @@ class EntriesExportPrivateUsersEmailsTest extends TestCase
                 'body' => json_encode([
                     'grant_type' => 'client_credentials',
                     'client_id' => $client->id,
-                    'client_secret' => $client->secret
+                    'client_secret' => $client->plainSecret
                 ])
             ]);
 

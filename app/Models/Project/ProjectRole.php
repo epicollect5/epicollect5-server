@@ -3,7 +3,6 @@
 namespace ec5\Models\Project;
 
 use DB;
-use ec5\Models\User\User;
 use ec5\Traits\Models\SerializeDates;
 use Illuminate\Database\Eloquent\Model;
 use Log;
@@ -80,25 +79,30 @@ class ProjectRole extends Model
             ->toArray();
     }
 
-    public function getCountOverall($projectId)
+    public function getCountOverall($projectId): int
     {
         return DB::table($this->table)
             ->selectRaw('count(*) as total')
             ->where('project_id', '=', $projectId)
             ->get()
-            ->first();
+            ->first()
+            ->total;
     }
 
     public static function getAllProjectMembers($projectId): array
     {
-        // Get all users belonging to this project
-        $projectRoles = DB::table(config('epicollect.tables.project_roles'))
-            ->where('project_id', $projectId)->get();
-        $users = [];
-        foreach ($projectRoles as $index => $projectRole) {
-            $users[$index] = User::where('id', $projectRole->user_id)->first();
-            $users[$index]['role'] = $projectRole->role;
-        }
-        return $users;
+        $usersTable = config('epicollect.tables.users');
+        $projectRolesTable = config('epicollect.tables.project_roles');
+
+        return DB::table($usersTable)
+            ->join($projectRolesTable, "$usersTable.id", '=', "$projectRolesTable.user_id")
+            ->where("$projectRolesTable.project_id", $projectId)
+            ->get([
+                "$usersTable.name",
+                "$usersTable.last_name",
+                "$usersTable.email",
+                "$projectRolesTable.role"
+            ])
+            ->all();
     }
 }

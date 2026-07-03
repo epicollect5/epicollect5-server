@@ -11,20 +11,22 @@ use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
+use Faker\Generator;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Laravel\Passport\ClientRepository;
 use Laravel\Passport\Passport;
 use Tests\TestCase;
+use Throwable;
 
 class ProjectAppsControllerTest extends TestCase
 {
     use DatabaseTransactions;
 
     public const string DRIVER = 'web';
-    private $faker;
-    private $user;
-    private $project;
-    private $projectDefinition;
+    private Generator $faker;
+    private User $user;
+    private Project $project;
+    private array $projectDefinition;
 
     public function setUp(): void
     {
@@ -106,7 +108,7 @@ class ProjectAppsControllerTest extends TestCase
             //assert rows are created
             $this->assertCount(1, OAuthClientProject::where('project_id', $this->project->id)->get());
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -136,9 +138,28 @@ class ProjectAppsControllerTest extends TestCase
                 ->assertSessionHas('message', 'ec5_399');
             //assert rows are removed
             $this->assertCount(0, OAuthClientProject::where('project_id', $this->project->id)->get());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
+    }
+
+    public function test_apps_page_shows_recoverable_client_secret(): void
+    {
+        $clientRepository = new ClientRepository();
+        $client = $clientRepository->createClientCredentialsGrantClient('UI Test App');
+        $plainSecret = $client->plainSecret;
+
+        factory(OAuthClientProject::class)->create([
+            'project_id' => $this->project->id,
+            'client_id' => $client->id,
+            'client_secret_recoverable' => $plainSecret
+        ]);
+
+        $this->actingAs($this->user, self::DRIVER)
+            ->get('myprojects/' . $this->project->slug . '/apps')
+            ->assertStatus(200)
+            ->assertSee((string) $client->id)
+            ->assertSee($plainSecret);
     }
 
     public function test_token_response_works()
@@ -146,15 +167,13 @@ class ProjectAppsControllerTest extends TestCase
         $response = [];
         try {
             $clientRepository = new ClientRepository();
-            $client = $clientRepository->create(
-                $this->user->id,
-                'Test App',
-                ''
-            )->makeVisible('secret');
+            $client = $clientRepository->createClientCredentialsGrantClient('Test App');
+            $plainSecret = $client->plainSecret;
 
             factory(OAuthClientProject::class)->create([
                 'project_id' => $this->project->id,
-                'client_id' => $client->id
+                'client_id' => $client->id,
+                'client_secret_recoverable' => $plainSecret
             ]);
 
             $this->assertCount(
@@ -165,8 +184,7 @@ class ProjectAppsControllerTest extends TestCase
             );
             $this->assertCount(
                 1,
-                OAuthClient::where('user_id', $this->user->id)
-                    ->where('id', $client->id)
+                OAuthClient::where('id', $client->id)
                     ->get()
             );
 
@@ -180,7 +198,7 @@ class ProjectAppsControllerTest extends TestCase
                     [
                         'grant_type' => 'client_credentials',
                         'client_id' => $client->id,
-                        'client_secret' => $client->secret
+                        'client_secret' => $client->plainSecret
                     ],
                     [
                         'Content-Type' => 'application/x-www-form-urlencoded'
@@ -194,7 +212,13 @@ class ProjectAppsControllerTest extends TestCase
             ]);
             //check access token entry is created
             $this->assertCount(1, OAuthAccessToken::where('client_id', $client->id)->get());
-        } catch (\Throwable $e) {
+
+            //assert client_secret_recoverable is persisted
+            $clientProject = OAuthClientProject::where('project_id', $this->project->id)
+                ->where('client_id', $client->id)
+                ->first();
+            $this->assertEquals($plainSecret, $clientProject->client_secret_recoverable);
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -207,15 +231,13 @@ class ProjectAppsControllerTest extends TestCase
         $response = [];
         try {
             $clientRepository = new ClientRepository();
-            $client = $clientRepository->create(
-                $this->user->id,
-                'Test App',
-                ''
-            )->makeVisible('secret');
+            $client = $clientRepository->createClientCredentialsGrantClient('Test App');
+            $plainSecret = $client->plainSecret;
 
             factory(OAuthClientProject::class)->create([
                 'project_id' => $this->project->id,
-                'client_id' => $client->id
+                'client_id' => $client->id,
+                'client_secret_recoverable' => $plainSecret
             ]);
 
             factory(OAuthAccessToken::class)->create([
@@ -231,8 +253,7 @@ class ProjectAppsControllerTest extends TestCase
             );
             $this->assertCount(
                 1,
-                OAuthClient::where('user_id', $this->user->id)
-                    ->where('id', $client->id)
+                OAuthClient::where('id', $client->id)
                     ->get()
             );
 
@@ -242,6 +263,13 @@ class ProjectAppsControllerTest extends TestCase
                 OAuthAccessToken::where('client_id', $client->id)
                     ->get()
             );
+
+            //assert client_secret_recoverable is persisted
+            $clientProject = OAuthClientProject::where('project_id', $this->project->id)
+                ->where('client_id', $client->id)
+                ->first();
+            $this->assertEquals($plainSecret, $clientProject->client_secret_recoverable);
+
 
             //revoke the token
             $payload = [
@@ -253,7 +281,7 @@ class ProjectAppsControllerTest extends TestCase
                 ->assertSessionHas('message', 'ec5_398');
             //check access token is deleted
             $this->assertCount(0, OAuthAccessToken::where('client_id', $client->id)->get());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

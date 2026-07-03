@@ -65,8 +65,9 @@ function updatePermissionsApiKeys(): void
     run("sudo chown $httpUser:$httpUser $keysPath/oauth-public.key");
 
     // Set appropriate permissions for the keys
+    // Passport 13 (league/oauth2-server ^9.0) requires 0660 on the public key — 0644 throws ErrorException
     run("sudo chmod 600 $keysPath/oauth-private.key");
-    run("sudo chmod 644 $keysPath/oauth-public.key");
+    run("sudo chmod 660 $keysPath/oauth-public.key");
 
     writeln('<info>Passport keys permissions updated.<info>');
 }
@@ -423,6 +424,8 @@ task('artisan:migrate', function () {
 
 })->once();
 
+
+
 desc('Execute artisan migrate:rollback');
 task('artisan:migrate:rollback', function () {
     $output = run('{{bin/php}} {{release_path}}/artisan migrate:rollback --force', [
@@ -527,9 +530,8 @@ try {
     Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
 }
 
-// Hook the custom task to run after the deployment
-after('deploy', 'reminder:update_release');
 // If deploy fails automatically unlock.
 after('deploy:failed', 'deploy:unlock');
 //show message if success
 after('deploy', 'deploy:success');
+after('deploy', 'reminder:update_release');

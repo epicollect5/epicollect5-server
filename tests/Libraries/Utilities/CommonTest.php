@@ -122,8 +122,7 @@ class CommonTest extends TestCase
         array $inputs,
         array $integerConstraints,
         array $decimalConstraints
-    ): void
-    {
+    ): void {
         foreach ($inputs as $input) {
             if ($input['type'] === 'integer') {
                 $this->assertIsInt($input['min']);
@@ -159,5 +158,47 @@ class CommonTest extends TestCase
                 );
             }
         }
+    }
+
+    public function test_media_hourly_cache_control_uses_configured_hours(): void
+    {
+        config()->set('epicollect.media.cache_control.hours', 2);
+
+        $this->assertSame('public, max-age=7200', Common::mediaHourlyCacheControl());
+    }
+
+    public function test_media_hourly_cache_control_accepts_one_hour(): void
+    {
+        config()->set('epicollect.media.cache_control.hours', 1);
+
+        $this->assertSame('public, max-age=3600', Common::mediaHourlyCacheControl());
+    }
+
+    public function test_media_hourly_cache_control_defaults_to_24_hours_when_missing(): void
+    {
+        config()->set('epicollect.media.cache_control.hours', null);
+
+        $this->assertSame('public, max-age=86400', Common::mediaHourlyCacheControl());
+    }
+
+    public function test_media_hourly_cache_control_defaults_to_24_hours_when_invalid(): void
+    {
+        config()->set('epicollect.media.cache_control.hours', 0);
+
+        $this->assertSame('public, max-age=86400', Common::mediaHourlyCacheControl());
+    }
+
+    public function test_media_hourly_cache_control_defaults_to_24_hours_when_not_numeric(): void
+    {
+        config()->set('epicollect.media.cache_control.hours', 'wrong');
+
+        $this->assertSame('public, max-age=86400', Common::mediaHourlyCacheControl());
+    }
+
+    public function test_media_hourly_cache_control_defaults_to_24_hours_when_float_string(): void
+    {
+        config()->set('epicollect.media.cache_control.hours', '1.9');
+
+        $this->assertSame('public, max-age=86400', Common::mediaHourlyCacheControl());
     }
 }

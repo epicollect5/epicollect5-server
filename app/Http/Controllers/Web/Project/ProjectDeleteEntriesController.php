@@ -3,7 +3,6 @@
 namespace ec5\Http\Controllers\Web\Project;
 
 use Cache;
-use ec5\Models\Project\ProjectStats;
 use ec5\Traits\Eloquent\Archiver;
 use ec5\Traits\Eloquent\StatsRefresher;
 use ec5\Traits\Requests\RequestAttributes;
@@ -41,10 +40,9 @@ class ProjectDeleteEntriesController
         //refresh stats to get the latest entries and branch entries counts
         $this->refreshProjectStats($this->requestedProject());
 
-        $projectStats = ProjectStats::where('project_id', $this->requestedProject()->getId())->first();
         return view('project.project_delete_entries', [
             'project' => $this->requestedProject(),
-            'totalEntries' => $projectStats->total_entries
+            'totalEntries' => $this->requestedProject()->getProjectStats()->total_entries
         ]);
     }
 }

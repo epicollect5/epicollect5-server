@@ -741,31 +741,28 @@ trait Assertions
         );
 
         $this->assertEquals(0, $entryStored->child_counts);
-        $this->assertBranchCountsAreEmpty($entryStored->branch_counts);
+        $this->assertEmptyCountPayload($entryStored->branch_counts);
     }
 
-    private function assertBranchCountsAreEmpty($branchCounts): void
+    private function assertEmptyCountPayload(mixed $countPayload): void
     {
-        if ($branchCounts === 0 || $branchCounts === '0' || $branchCounts === null) {
-            $this->assertEquals(0, $branchCounts);
+        if ($countPayload === null) {
+            $this->assertNull($countPayload);
             return;
         }
 
-        if (is_string($branchCounts)) {
-            $decodedBranchCounts = json_decode($branchCounts, true);
-            if (is_array($decodedBranchCounts)) {
-                foreach ($decodedBranchCounts as $branchCount) {
-                    if (is_array($branchCount)) {
-                        $this->assertEquals(0, $branchCount['count'] ?? null);
-                        continue;
-                    }
-                    $this->assertEquals(0, $branchCount);
-                }
-                return;
-            }
+        if (is_numeric($countPayload) && (int)$countPayload === 0) {
+            $this->assertEquals(0, $countPayload);
+            return;
         }
 
-        $this->assertEquals(0, $branchCounts);
+        $counts = is_array($countPayload) ? $countPayload : json_decode($countPayload, true);
+
+        $this->assertIsArray($counts);
+        $this->assertEmpty(
+            array_filter($counts, fn ($count) => (int)$count !== 0),
+            'Expected count payload to be empty or contain zero counts only.'
+        );
     }
 
     public function assertEntryStoredAgainstEntryPayload($entryFromDB, $entryFromPayload, $projectDefinition, $formIndex = 0): void

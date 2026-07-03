@@ -53,12 +53,96 @@ mobile clients and the web interface.
 - `post-update-cmd`: runs Laravel’s post update hooks plus IDE helper generators.
 - `test`: runs `vendor/bin/phpunit`.
 
-## Storage and deploy helpers
+## Deployment
 
-- Shared deployment scripts (`after_pull-dev.sh`, `after_pull-prod.sh`, `laravel_storage_folders.sh`) ensure migrations,
-  cache clearing, and storage permissions after deployments.
-- `deploy.php` encapsulates Deployer configuration (set up `dep` separately if required).
-- Storage uploads should go through configured disks (local or S3). Check `config/filesystems.php` for disk aliases.
+Production deployments use [Deployer](https://deployer.org/) via `deploy.php`. Three environments are defined:
+
+- **production** — branch `master`, deploy path `/var/www/html_prod`
+- **dev** — branch `dev`, deploy path `/var/www/html_prod`
+- **staging** — branch `staging`, deploy path `/var/www/html_prod`
+
+### Prerequisites
+
+- Install `dep` (Deployer 7.x): `composer global require deployer/deployer`
+- The deploy user must not be root (enforced by `deploy.php`)
+
+### Fresh install
+
+```bash
+dep install production
+```
+
+This runs the full setup pipeline:
+
+1. Checks for a clean install (aborts if `/current` symlink exists)
+2. Pulls code and installs Composer dependencies
+3. Creates the MySQL database and user
+4. Copies `.env.example` → `.env` and fills in DB credentials
+5. Generates the app key
+6. Creates the `public/storage` symlink
+7. Generates Passport OAuth keys
+8. Prompts for superadmin credentials (email, name, password)
+9. Prompts for a system alert email
+10. Runs database migrations
+11. Sets file permissions on `.env`, API keys, and bash scripts
+12. Runs `artisan system:stats --deployer`
+
+### Updates
+
+```bash
+dep update production
+```
+
+This runs the update pipeline:
+
+1. Puts the app in maintenance mode (`artisan down`)
+2. Pulls code and installs Composer dependencies
+3. Runs database migrations
+4. Caches config, routes, and views
+5. Sets file permissions on `.env`, API keys, and bash scripts
+6. Dumps Composer autoload
+7. Runs `artisan about`
+
+**Important:** After `dep update`, the app remains in maintenance mode. You must verify the release works, then bring it back online manually:
+
+```bash
+php artisan up
+```
+
+If the deploy fails, the lock is automatically released but the app stays down until you investigate.
+
+### Post-pull scripts
+
+After every deploy (including `dep update`), run the appropriate cache-clearing script **manually** after updating `.env` with new keys and the updated `RELEASE` number:
+
+```bash
+# Production
+./after_pull-prod.sh
+
+# Dev
+./after_pull-dev.sh
+```
+
+These scripts cannot be automated as part of the Deployer pipeline because they require `.env` changes first. The scripts clear config, route, view, and OPcache, then re-cache config. The prod script also refreshes the homepage cache; the dev script additionally cleans `bootstrap/cache/*.php`.
+
+### Storage setup (deprecated)
+
+`laravel_storage_folders.sh` creates the full storage directory tree (`app/entries/{audio,photo,video}`, `app/projects/project_thumb`, etc.) with correct permissions. This was used when `storage/` lived on a separate volume — after cloning a droplet, the script could rebuild the folder structure on the clone without copying the large media volume.
+
+The architecture has since moved to a single droplet with S3 for media storage. The script is kept for reference but is no longer part of the standard deployment workflow.
+
+### Deployment helpers
+
+| File | Purpose |
+|---|---|
+| `deploy.php` | Deployer configuration: `install` and `update` tasks, environment definitions, permissions, DB setup |
+| `after_pull-prod.sh` | Post-pull cache clearing for production |
+| `after_pull-dev.sh` | Post-pull cache clearing for dev |
+| `laravel_storage_folders.sh` | Storage directory structure builder (deprecated) |
+
+### Media storage
+
+Storage uploads should go through configured disks (local or S3). Check `config/filesystems.php` for disk aliases.
 
 ## Notes
 

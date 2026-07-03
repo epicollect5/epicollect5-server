@@ -6,16 +6,16 @@ use ec5\Models\OAuth\OAuthAccessToken;
 use Illuminate\Http\JsonResponse;
 use Laravel\Passport\Http\Controllers\HandlesOAuthErrors;
 use Laravel\Passport\TokenRepository;
-use Lcobucci\JWT\Parser as JwtParser;
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Log;
+use Nyholm\Psr7\Response as Psr7Response;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Response;
-//use Zend\Diactoros\Response as Psr7Response;
-use Nyholm\Psr7\Response as Psr7Response;
 use Throwable;
+
+//use Zend\Diactoros\Response as Psr7Response;
 
 class OAuthController
 {
@@ -23,21 +23,11 @@ class OAuthController
 
     protected AuthorizationServer $server;
     protected TokenRepository $tokens;
-    protected JwtParser $jwt;
 
-    /**
-     * OAuthController constructor
-     *
-     * @param AuthorizationServer $server
-     * @param TokenRepository $tokens
-     * @param JwtParser $jwt
-     */
     public function __construct(
         AuthorizationServer $server,
-        TokenRepository     $tokens,
-        JwtParser           $jwt
+        TokenRepository     $tokens
     ) {
-        $this->jwt = $jwt;
         $this->server = $server;
         $this->tokens = $tokens;
     }
@@ -75,7 +65,7 @@ class OAuthController
                 default:
                     // Use default error code
             }
-
+            Log::warning(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
         } catch (Throwable $e) {
             // Use default error code
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);

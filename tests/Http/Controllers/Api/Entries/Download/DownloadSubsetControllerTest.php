@@ -10,6 +10,7 @@ use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use ec5\Traits\Assertions;
+use Exception;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Str;
 use Storage;
@@ -392,7 +393,7 @@ class DownloadSubsetControllerTest extends TestCase
             );
         try {
             $response->assertStatus(200);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->logTestError($exception, $response);
         }
 
@@ -481,7 +482,7 @@ class DownloadSubsetControllerTest extends TestCase
             );
         try {
             $response->assertStatus(200);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->logTestError($exception, $response);
         }
 

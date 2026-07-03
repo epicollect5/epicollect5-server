@@ -269,7 +269,7 @@ return [
     "ec5_332" => "Max image resolution must be 4096 x 4096 px!",
     "ec5_333" => "Too many search questions!",
     "ec5_334" => "UUID format invalid",
-    "ec5_335" => "Max allowed entries limit exceeded!",
+    "ec5_335" => "Max allowed entries limit exceeded! Use a lower `per_page` value.",
     "ec5_336" => "Missing possible answers for CHECKBOX question!",
     "ec5_337" => "Missing possible answers for RADIO question!",
     "ec5_338" => "Missing possible answers for DROPDOWN question!",

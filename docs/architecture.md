@@ -73,6 +73,123 @@ Guard and middleware:
 
 - loaded with middleware group `api_external`
 - uses the `api_external` guard
+- protected by named external API rate limiters from `RateLimiterServiceProvider`
+
+Public media routes have an additional media limiter. The global external API limiter is IP-scoped, while project-scoped
+read/media limiters are keyed by project slug so rotating client IPs do not bypass project-level throttles.
+
+## Media Caching
+
+**Photo** URLs support cache versioning via the `v` parameter.
+
+*It does not currently control cache headers for **audio|video** streaming responses.*
+
+This applies to photo responses served by:
+
+- `/api/media/*`
+- `/api/internal/media/*`
+- `/api/export/media/*` when the response is served directly by Epicollect5
+
+Affected formats include:
+
+- `entry_original` for photos
+- `entry_thumb`
+- `project_thumb`
+- `project_mobile_logo`
+
+When `v` is present, photo responses are served with long-lived immutable caching. Clients can treat the full URL,
+including
+`v`, as the cache key. When the photo changes, callers should change `v` so clients request a fresh URL.
+
+When `v` is not present, photo responses use a shorter configurable TTL, defaulting to 24 hours. This reduces repeated
+requests but means updated photos may not appear immediately in all clients.
+
+Clients that rely on aggressive caching, such as spreadsheet image imports, should use versioned image URLs for
+consistent cache invalidation.
+
+When S3 signed redirects are enabled for `/api/export/media/*`, original photo, audio, and video export requests may
+return `302 Found` with `Cache-Control: no-store`. The redirected signed URL is temporary and must be downloaded before
+its TTL expires. Clients should not store or reuse the signed URL; they should request the Epicollect5 API URL again
+when
+a fresh download URL is needed.
+
+**Audio and video streaming responses do not currently use `v` for immutable cache headers.**
+
+Audio and video cache behavior is different.
+
+- For `/api/media/*` and `/api/internal/media/*`, audio and video files are streamed with byte-range support and may
+  return `206 Partial Content`. Epicollect5 does not apply immutable `v`-based caching to these streamed audio/video
+  responses.
+  Caching for these responses should be treated as disabled or client/proxy dependent.
+
+- For `/api/export/media/*` with S3 signed redirects enabled, original photo, audio, and video export requests may
+  return `302 Found` with `Cache-Control: no-store`. Epicollect5 disables caching on the redirect response because the
+  signed
+  URL is short-lived. Any caching behavior after the redirect is controlled by the storage provider response, but
+  clients
+  should not store or reuse the signed URL after its TTL.
+
+### Placeholder caching (photo)
+
+When a requested media file does not exist (not yet uploaded, or deleted), the server serves a placeholder image.
+
+Historically, placeholders were served with the same `Cache-Control: public, max-age=31536000, immutable` header as real
+photos. This caused a problem: if a project was browsed before a photo finished uploading, the placeholder was cached
+permanently by the browser. When the real photo was uploaded later, the URL (same `name` + same `v`) was unchanged, so
+the browser served the cached placeholder indefinitely.
+
+The fix: placeholder responses now use `Cache-Control: no-store` (config key `cache_control.never` in
+`config/epicollect/media.php`). This ensures the browser never caches a placeholder — it must re-fetch every time. Once
+the real file exists, the server returns the photo with the standard `immutable` cache header, and the browser caches
+that from that point forward.
+
+The `v` parameter in media URLs is derived from the entry's `uploaded_at` column. When a photo is replaced through an
+entry edit, `CreateEntryService::create()` always sets `uploaded_at` to the current timestamp, so `v` changes and the
+cache is naturally busted. No additional mechanism (e.g. file `lastModified()` or a `media_version` column) is needed
+for the replacement case.
+
+This means the placeholder `no-store` fix alone covers the real gap: the period between entry creation (which sets
+`uploaded_at`) and a deferred photo upload (which does not change `uploaded_at`).
+
+**Note on the `private` directive:** Placeholder responses served through the internal API
+(`api/internal/media/*`) may show `Cache-Control: no-store, private` in the browser. The `private`
+directive is automatically appended by Symfony's `Response` class when the
+`AddQueuedCookiesToResponse` middleware attaches session or XSRF-TOKEN cookies to the response.
+It does not affect caching behaviour — `no-store` already prevents the browser from storing the
+response. The external API (`api/media/*`) has no cookie middleware, so the `private` directive
+does not appear on those responses.
+
+### Server-side project mobile logo cache
+
+In addition to HTTP response caching, the project **mobile logo** is
+server-side cached via `Cache::remember` in `ProjectController::search()`.
+The cache key is project-specific and uses a configurable TTL. Both
+positive and negative results are cached: a missing logo (file absent or
+unreadable) is remembered for a short window so repeated searches against
+the same project do not re-hit storage on every request.
+
+The TTLs are controlled by:
+
+```env
+# Cache TTL in days for project mobile logos. Defaults to 365.
+PROJECT_MOBILE_LOGO_CACHE_TTL_DAYS=365
+# Cache TTL in minutes for the "no logo" negative cache. Defaults to 60.
+PROJECT_MOBILE_LOGO_MISSING_TTL_MINUTES=60
+```
+
+These are read in `config/epicollect/setup.php` and consumed as
+`config('epicollect.setup.system.cache.project_mobile_logo_cache_ttl_days')`
+and
+`config('epicollect.setup.system.cache.project_mobile_logo_missing_ttl_minutes')`.
+
+The cache key embeds `strtotime($project_structures.updated_at)` for the
+project, so any change that touches the structures table (including logo
+upload, see `ProjectEditController::updateDetails()`) invalidates the
+cached logo automatically.
+
+### Rate Limiters
+
+Defined in `app/Providers/RateLimiterServiceProvider.php`.
 
 ## Architectural Layers
 
@@ -187,6 +304,11 @@ Responsibilities:
 - support create, import, clone, and hydrate workflows
 - provide a stable interface to services and validators
 
+Examples of read-time normalization:
+
+- `ProjectMappingDTO` exposes one effective default mapping even if legacy JSON contains multiple defaults
+- `ProjectStatsDTO` decodes JSON count payloads into arrays for consumers that work from requested-project context
+
 The project stack is especially DTO-driven:
 
 - project rows and structure rows are loaded
@@ -194,6 +316,9 @@ The project stack is especially DTO-driven:
 - `ProjectDTO::initAllDTOs()` hydrates project details, definition, extra, mapping, and stats into one domain object
 
 This lets higher layers work with a rich in-memory project object instead of raw JSON blobs and loosely typed arrays.
+When code refreshes `project_stats` during a request and then returns stats from the requested project DTO, it must also
+reload the DTO state. `StatsRefresher` handles both steps: it rebuilds the aggregate counters and reinitializes the
+project DTO from the current database row.
 
 ### 6. Service layer
 
@@ -598,8 +723,34 @@ The architecture treats entry writes as a coordinated workflow:
 - validate payload against the project definition
 - hydrate `EntryStructureDTO`
 - insert or update entry data
-- update counters
+- update entry-row counters such as child and branch counts
 - move media files when needed
+
+Entry uploads do not rebuild `project_stats` aggregate entry counters. That table is a cached aggregate used for
+project-level totals, form counts, and branch counts, and rebuilding it on every upload would repeatedly update the same
+project counter under high upload volume. Upload-time validation that needs entry limits uses live entry-counter queries
+rather than `project_stats`.
+
+`project_stats` entry counters are refreshed on demand when callers ask for project-level totals or metadata that
+includes those totals. Examples include the dataviewer shell, formbuilder, project show/export metadata, and the
+internal entry counters endpoint. Delete paths also refresh project stats after entries are removed so deletion
+decisions
+and follow-up UI state do not rely on stale totals.
+
+The documented entries export endpoint, `api/export/entries`, is paginated. Refresh the cached counters at the first
+page of that export sequence only. If entries are uploaded while a client is paging through a dataset, later pages would
+already be inconsistent with the first page, so repeatedly refreshing the aggregate during the same sequence does not
+make the export snapshot coherent. Refreshing once at the beginning keeps the request sequence stable while avoiding
+unnecessary aggregate writes.
+
+The internal dataviewer data endpoints, `api/internal/entries` and `api/internal/entries-locations`, do not refresh
+`project_stats` themselves. They are called by the dataviewer after the surrounding project/dataviewer page has already
+refreshed stats, and adding aggregate refreshes to every internal page/map request would create avoidable counter
+rebuilds.
+
+Code that decides whether a project can be hard-deleted must not rely only on cached `project_stats.total_entries`.
+Because uploads intentionally defer aggregate refreshes, deletion safety checks must verify the live `entries` and
+`branch_entries` tables before treating a project as empty.
 
 Active API payload types handled in this codebase are:
 
@@ -953,6 +1104,41 @@ Used by:
 - browser pages
 - internal API consumed by the web frontend
 
+#### Session cookie `SameSite` and `Secure`
+
+The `epicollect5` session cookie attributes are driven by `config/session.php`
+and the `SESSION_SECURE_COOKIE` / `SESSION_SAME_SITE` env vars. These two
+values **must** be configured correctly per environment, otherwise
+cross-origin browser flows (notably Apple login) silently break:
+
+```env
+# In production, set to true. For localhost, null|false
+# true: session cookies works only on a HTTPS connection
+SESSION_SECURE_COOKIE=true
+# In production, set to "none" (required for Apple login cross-site POST).
+# For localhost HTTP development, set to "lax".
+# none: session cookie sent on cross-site requests (requires SESSION_SECURE_COOKIE=true)
+# lax: session cookie sent only on same-site navigations, not cross-site POST
+SESSION_SAME_SITE=none
+```
+
+Why this matters:
+
+- `StartSession` middleware passes `config('session.same_site')` straight
+  through to Symfony's `Cookie` constructor. If the value is `null` or
+  missing, **no `SameSite` attribute is emitted** and browsers fall back to
+  `Lax` — which is **not sent on cross-site POSTs**, breaking the Apple
+  callback at `POST /handle/apple` and `POST /profile/connect-apple-callback`.
+- `SameSite=None` requires `Secure=true`; modern browsers reject
+  `None` cookies sent over plain HTTP.
+- The XSRF-TOKEN cookie follows `config('session.same_site')` (falling back
+  to `Lax` when the value is empty) via `PreventRequestForgery::addCookieToResponse`;
+  the session cookie is the one that must be `None` to keep Apple login working.
+
+Default in `config/session.php` is `'none'`; the `.env.example` ships with
+the production-correct values. Localhost HTTP development must override
+both to `null|false` and `lax` respectively.
+
 ### Custom JWT auth
 
 Implemented via `JwtAuthServiceProvider` and custom classes under `app/Libraries/Auth/Jwt`.
@@ -969,6 +1155,25 @@ Used for:
 - project-linked API applications
 
 `AuthServiceProvider` configures token expiry through Passport.
+
+## OAuth Client Credentials
+
+OAuth client secrets are recoverable from the dashboard at any time, following
+the same approach as Google Cloud Console or similar.
+Secrets grant read-only access to project data via the API.
+
+To allow recovery, a copy of the pre-hash secret is stored in
+`oauth_client_projects.client_secret_recoverable`. The value is **encrypted at
+rest** via Laravel's `encrypted` Eloquent cast (powered by `APP_KEY`); a raw
+DB dump or backup therefore cannot be used to mint tokens. Rotation requires
+creating a new client.
+
+The database should still be treated as a sensitive asset and access restricted
+accordingly. Standard operational security applies: restrict database access,
+use encrypted connections, and audit access logs regularly. Rotating `APP_KEY`
+invalidates every stored recoverable secret.
+
+Clients can be deleted at any time, immediately invalidating their credentials.
 
 ### Social and passwordless auth
 
@@ -1033,6 +1238,24 @@ Media handling responsibilities are split across dedicated services:
 - photo/audio/video processing
 - media counting
 - stream/download responses
+- cache-control headers for versioned and unversioned media URLs
+- optional S3 presigned redirects for export media after app-level authorization succeeds
+
+Static application assets are resolved through `static_asset()`. The helper can serve local `asset()` URLs or CDN URLs
+depending on `config('epicollect.setup.static_assets.*')`.
+
+### Why `public/storage` is NOT LINKED
+
+Laravel's `php artisan storage:link` creates a symlink from `public/storage` to `storage/app/public`, allowing direct web
+server access to stored files. This project does not use that symlink because media is never served through direct file
+access.
+
+Instead, all user media (photos, audio, video) is served through `MediaService` using `Storage::disk()`, which streams
+files as HTTP responses with access control. The `public` filesystem disk is configured to point at `public/images/`
+(static brand assets and placeholders), not `storage/app/public`.
+
+Since nothing in the application reads from or writes to `storage/app/public`, the symlink is irrelevant.
+`php artisan about` will correctly report `public/storage ... NOT LINKED`.
 
 ## Response Architecture
 
@@ -1061,6 +1284,9 @@ These configs centralize:
 - permissions
 - mapping defaults
 - media-related behavior
+- static asset delivery settings
+- S3 export media redirect settings
+- named API rate limiter values
 
 Important implication:
 
@@ -1115,6 +1341,23 @@ The application includes built-in admin capabilities:
 - maintenance utilities
 
 System-wide aggregation is handled by services under `app/Services/System`.
+For total entry and branch-entry counts, those services use cached `project_stats` JSON/counter values rather than full
+table counts. Admin project views also read cached `project_stats` counts and join `project_structures` for
+cache-busting
+structure timestamps used in logo URLs.
+
+### Deployment
+
+Production deployments use Deployer 7.x (`deploy.php`) with two main tasks:
+
+- `dep install` — brand-new install: DB creation, env setup, Passport keys, superadmin provisioning, migrations
+- `dep update` — update existing: pulls code, runs migrations, caches config/routes/views, sets permissions
+
+All three environments (`production`, `dev`, `staging`) deploy to `/var/www/html_prod` on their respective branch.
+
+Post-deploy, `.env` must be updated manually (new keys, `RELEASE` number) before running the cache-clearing script (`after_pull-prod.sh` or `after_pull-dev.sh`). These scripts cannot be automated because they depend on the `.env` changes.
+
+See `README.md` → **Deployment** for the full deployment workflow.
 
 ## Extending the System
 

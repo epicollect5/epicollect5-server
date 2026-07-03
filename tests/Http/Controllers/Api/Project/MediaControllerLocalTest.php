@@ -375,6 +375,9 @@ class MediaControllerLocalTest extends TestCase
         $this->assertEquals($imageSizeInBytes, config('epicollect.media.photo_not_synced_placeholder.size_in_bytes'));
 
         $response->assertHeader('Content-Type', config('epicollect.media.content_type.photo'));
+        $cacheControl = $response->headers->get('Cache-Control');
+        $this->assertStringContainsString('no-store', $cacheControl);
+        $this->assertStringNotContainsString('max-age', $cacheControl);
     }
 
     #[DataProvider('multipleRunProvider')] public function test_project_thumb_logo_is_returned()

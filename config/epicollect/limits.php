@@ -103,5 +103,14 @@ return [
         'entries' => (int) env('API_RATE_LIMIT_ENTRIES', 60),
         'entries_google_apps_scripts' => (int) env('API_RATE_LIMIT_ENTRIES_GOOGLE_APPS_SCRIPTS', 10),
         'media' => (int) env('API_RATE_LIMIT_MEDIA', 30),
+    ],
+    'api_external' => [
+        'global' => (int) env('API_EXTERNAL_RATE_LIMIT_GLOBAL', 600),
+        // endpoint /api/media/{project_slug}
+        'media_seconds' => (int) env('API_EXTERNAL_RATE_LIMIT_MEDIA_SECONDS', 20),
+        'media_minutes' => (int) env('API_EXTERNAL_RATE_LIMIT_MEDIA_MINUTES', 300),
+        // endpoint /api/upload/{project_slug}
+        'upload_seconds' => (int) env('API_EXTERNAL_RATE_LIMIT_UPLOAD_SECONDS', 10),
+        'upload_minutes' => (int) env('API_EXTERNAL_RATE_LIMIT_UPLOAD_MINUTES', 300),
     ]
 ];

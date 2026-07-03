@@ -3,10 +3,14 @@
 namespace Tests\Http\Controllers\Web;
 
 use Auth;
+use ec5\Models\Project\Project;
+use ec5\Models\Project\ProjectFeatured;
+use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
+use Throwable;
 
 class HomeControllerTest extends TestCase
 {
@@ -218,5 +222,100 @@ class HomeControllerTest extends TestCase
            ->assertStatus(200)
            // Should render dynamically
            ->assertSee('page-home');
+    }
+
+    public function test_home_page_shows_featured_projects_in_two_rows_of_four_when_eight_featured()
+    {
+        $this->createFeaturedProjects(8);
+
+        $response = $this->get(route('home'))->assertStatus(200);
+        $this->assertEquals('home', $response->original->getName());
+
+        $content = $response->getContent();
+        $this->assertSame(
+            2,
+            substr_count($content, 'class="row page-home-featured-projects-small"'),
+            'Expected exactly 2 featured-project rows on the dynamic home page'
+        );
+        $this->assertSame(
+            8,
+            substr_count($content, 'class="col-xs-12 col-sm-6 col-md-6 col-lg-3"'),
+            'Expected exactly 8 featured-project cards (4 per row x 2 rows)'
+        );
+    }
+
+    /**
+     * @throws Throwable
+     */
+    public function test_cached_home_page_shows_featured_projects_in_two_rows_of_four_when_eight_featured()
+    {
+        $this->createFeaturedProjects(8);
+
+        $allFeaturedProjects = (new Project())->featured();
+        $projectsFirstRow = $allFeaturedProjects->splice(0, 4);
+        $projectsSecondRow = $allFeaturedProjects->splice(0, 4);
+
+        foreach ($projectsFirstRow as $project) {
+            $project->logo_base64 = url('/images/ec5-placeholder-256x256.jpg');
+        }
+        foreach ($projectsSecondRow as $project) {
+            $project->logo_base64 = url('/images/ec5-placeholder-256x256.jpg');
+        }
+
+        $cachedHtml = view('partials.home-featured-cached', [
+            'projectsFirstRow' => $projectsFirstRow,
+            'projectsSecondRow' => $projectsSecondRow,
+            'users' => 0,
+            'projects' => 0,
+            'entries' => 0,
+        ])->render();
+
+        Cache::put($this->cacheKey, $cachedHtml, now()->addHours(24));
+
+        $response = $this->get(route('home'))->assertStatus(200);
+        $this->assertEquals('home_cached', $response->original->getName());
+
+        $content = $response->getContent();
+        $this->assertSame(
+            2,
+            substr_count($content, 'class="row page-home-featured-projects-small"'),
+            'Expected exactly 2 featured-project rows in the cached home page'
+        );
+        $this->assertSame(
+            8,
+            substr_count($content, 'class="col-xs-12 col-sm-6 col-md-6 col-lg-3"'),
+            'Expected exactly 8 featured-project cards in the cached home page (4 per row x 2 rows)'
+        );
+    }
+
+    public function test_home_page_caps_featured_projects_at_two_rows_when_more_than_eight_featured()
+    {
+        $this->createFeaturedProjects(10);
+
+        $response = $this->get(route('home'))->assertStatus(200);
+
+        $content = $response->getContent();
+        $this->assertSame(
+            2,
+            substr_count($content, 'class="row page-home-featured-projects-small"'),
+            'Featured projects must be capped at 2 rows even when more than 8 are featured'
+        );
+        $this->assertSame(
+            8,
+            substr_count($content, 'class="col-xs-12 col-sm-6 col-md-6 col-lg-3"'),
+            'Featured projects must show exactly 8 cards (max 2 rows of 4)'
+        );
+    }
+
+    private function createFeaturedProjects(int $count): array
+    {
+        $projects = [];
+        for ($i = 0; $i < $count; $i++) {
+            $project = factory(Project::class)->create();
+            factory(ProjectStructure::class)->create(['project_id' => $project->id]);
+            factory(ProjectFeatured::class)->create(['project_id' => $project->id]);
+            $projects[] = $project;
+        }
+        return $projects;
     }
 }

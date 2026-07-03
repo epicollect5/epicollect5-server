@@ -575,12 +575,7 @@ class UsersControllerTest extends TestCase
                     ->value('role')
             );
         } catch (Throwable $e) {
-            echo $e->getMessage() . PHP_EOL;
-            if ($response[0]->baseResponse->exception === null) {
-                echo json_encode(['response' => $response[0]]) . PHP_EOL;
-            } else {
-                echo json_encode(['exception' => $response[0]->baseResponse->exception->getMessage()]) . PHP_EOL;
-            }
+            $this->logTestError($e, $response);
         }
     }
 

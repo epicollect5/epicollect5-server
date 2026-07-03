@@ -12,6 +12,7 @@ use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
 use ec5\Models\User\User;
 use ec5\Traits\Eloquent\Archiver;
+use ec5\Traits\Eloquent\Entries;
 use ec5\Traits\Eloquent\Remover;
 use Exception;
 use Illuminate\Support\Facades\Auth;
@@ -24,6 +25,7 @@ use Throwable;
 class AccountController extends Controller
 {
     use Archiver;
+    use Entries;
     use Remover;
 
     /**
@@ -145,7 +147,9 @@ class AccountController extends Controller
                 }
 
                 $projectStat = ProjectStats::where('project_id', $projectId)->first();
-                if ($projectStat->total_entries === 0) {
+                // project_stats can be stale because upload paths avoid aggregate counter updates.
+                // Use it as a fast path only when live entry tables also confirm the project is empty.
+                if (($projectStat->total_entries ?? 0) === 0 && !$this->hasStoredEntries($projectId)) {
                     //if the project has no entries, it can be removed
                     if (!$this->removeProject($projectId, $projectSlug)) {
                         throw new Exception('Project created by user removal failed');

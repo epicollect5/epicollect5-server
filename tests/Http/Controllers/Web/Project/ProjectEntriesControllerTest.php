@@ -15,6 +15,7 @@ use Exception;
 use Faker\Factory as Faker;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
+use Throwable;
 
 class ProjectEntriesControllerTest extends TestCase
 {
@@ -22,12 +23,12 @@ class ProjectEntriesControllerTest extends TestCase
 
     public const string DRIVER = 'web';
 
-    private $user;
-    private $project;
-    private $projectDefinition;
-    private $entryGenerator;
-    private $entriesLimits;
-    private $limitTo;
+    private User $user;
+    private Project $project;
+    private array $projectDefinition;
+    private EntryGenerator $entryGenerator;
+    private array $entriesLimits;
+    private int $limitTo;
 
     public function setUp(): void
     {
@@ -125,7 +126,7 @@ class ProjectEntriesControllerTest extends TestCase
             //assert entries limits are empty
             $initialProjectStructure = ProjectStructure::where('project_id', $project->id)->first();
             $initialProjectDefinition = json_decode($initialProjectStructure->project_definition, true);
-            $this->assertEquals($initialProjectDefinition['project']['entries_limits'], []);
+            $this->assertEquals([], $initialProjectDefinition['project']['entries_limits']);
 
             $this->user = $user;
             $this->project = $project;
@@ -141,7 +142,7 @@ class ProjectEntriesControllerTest extends TestCase
 
     public function test_manage_entries_page_renders_correctly()
     {
-        $response = $this
+        $this
             ->actingAs($this->user, self::DRIVER)
             ->get('myprojects/' . $this->project->slug . '/manage-entries')
             ->assertStatus(200);
@@ -150,7 +151,7 @@ class ProjectEntriesControllerTest extends TestCase
     public function test_update_all_entries_limits()
     {
         //fake a request to manage-entries page, so we can get the back() url
-        $response = $this
+        $this
             ->actingAs($this->user, self::DRIVER)
             ->get('myprojects/' . $this->project->slug . '/manage-entries')
             ->assertStatus(200);
@@ -198,7 +199,7 @@ class ProjectEntriesControllerTest extends TestCase
             $projectStructure = ProjectStructure::where('project_id', $this->project->id)->first();
             $projectDefinition = json_decode($projectStructure->project_definition, true);
             $this->assertEquals($projectDefinition['project']['entries_limits'], $this->entriesLimits);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -206,7 +207,7 @@ class ProjectEntriesControllerTest extends TestCase
     public function test_update_form_entries_limits()
     {
         //fake a request to manage-entries page, so we can get the back() url
-        $response = $this
+        $this
             ->actingAs($this->user, self::DRIVER)
             ->get('myprojects/' . $this->project->slug . '/manage-entries')
             ->assertStatus(200);
@@ -249,7 +250,7 @@ class ProjectEntriesControllerTest extends TestCase
             $projectStructure = ProjectStructure::where('project_id', $this->project->id)->first();
             $projectDefinition = json_decode($projectStructure->project_definition, true);
             $this->assertEquals($projectDefinition['project']['entries_limits'], $this->entriesLimits);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -257,7 +258,7 @@ class ProjectEntriesControllerTest extends TestCase
     public function test_update_branch_entries_limits()
     {
         //fake a request to manage-entries page, so we can get the back() url
-        $response = $this
+        $this
             ->actingAs($this->user, self::DRIVER)
             ->get('myprojects/' . $this->project->slug . '/manage-entries')
             ->assertStatus(200);
@@ -301,7 +302,7 @@ class ProjectEntriesControllerTest extends TestCase
             $projectStructure = ProjectStructure::where('project_id', $this->project->id)->first();
             $projectDefinition = json_decode($projectStructure->project_definition, true);
             $this->assertEquals($projectDefinition['project']['entries_limits'], $this->entriesLimits);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -309,7 +310,7 @@ class ProjectEntriesControllerTest extends TestCase
     public function test_remove_limits()
     {
         //fake a request to manage-entries page, so we can get the back() url
-        $response = $this
+        $this
             ->actingAs($this->user, self::DRIVER)
             ->get('myprojects/' . $this->project->slug . '/manage-entries')
             ->assertStatus(200);
@@ -333,8 +334,8 @@ class ProjectEntriesControllerTest extends TestCase
             //assert entries limits have been updated
             $projectStructure = ProjectStructure::where('project_id', $this->project->id)->first();
             $projectDefinition = json_decode($projectStructure->project_definition, true);
-            $this->assertEquals($projectDefinition['project']['entries_limits'], []);
-        } catch (\Throwable $e) {
+            $this->assertEquals([], $projectDefinition['project']['entries_limits']);
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }

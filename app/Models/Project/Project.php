@@ -239,6 +239,12 @@ class Project extends Model
         return $this
             ->join($this->projectStatsTable, $this->getTable() . '.id', '=', $this->projectStatsTable . '.project_id')
             ->leftJoin('users', $this->getTable() . '.created_by', '=', 'users.id')  // Join users table
+            ->leftJoin(
+                config('epicollect.tables.project_structures'),
+                $this->getTable() . '.id',
+                '=',
+                config('epicollect.tables.project_structures') . '.project_id'
+            )
             ->where(function ($query) use ($params) {
                 if (!empty($params['name'])) {
                     $query->where($this->getTable() . '.name', 'LIKE', '%' . $params['name'] . '%'); // Restore search by name
@@ -262,8 +268,54 @@ class Project extends Model
                 'users.last_name as user_last_name',
                 $this->projectStatsTable . '.total_entries', // Explicitly select total_entries
                 $this->projectStatsTable . '.total_bytes', // Explicitly select total_bytes
+                $this->projectStatsTable . '.form_counts',
+                $this->projectStatsTable . '.branch_counts',
+                DB::raw(
+                    'DATE_FORMAT(project_structures.updated_at, "%Y-%m-%d %H:%i:%s") ' .
+                    'as structure_last_updated'
+                )
             )
             ->simplePaginate($perPage);
+    }
+
+    /**
+     * Get the number of form refs recorded in project stats.
+     *
+     * @return int
+     */
+    public function getTotalFormsAttribute(): int
+    {
+        return $this->countRefs($this->form_counts ?? []);
+    }
+
+    /**
+     * Get the number of branch refs recorded in project stats.
+     *
+     * @return int
+     */
+    public function getTotalBranchesAttribute(): int
+    {
+        return $this->countRefs($this->branch_counts ?? []);
+    }
+
+    /**
+     * Count refs from a project stats JSON field.
+     *
+     * @param array|string|null $counts Stats counts from project_stats.
+     *
+     * @return int
+     */
+    private function countRefs(array|string|null $counts): int
+    {
+        if (is_string($counts)) {
+            $counts = json_decode($counts, true);
+        }
+
+        if (!is_array($counts)) {
+            return 0;
+        }
+
+        return count($counts);
     }
 
 
@@ -308,7 +360,7 @@ class Project extends Model
     /**
      * Return all the projects which starts the string passed in the name
      * it is used by the mobile app project search
-     * limit to 50 to keep it responsive on the mobile app
+     * limit to 20 to keep it responsive on the mobile app
      * Order by updated_at to list the latest and most active projects first
      * Remember: project names are unique!
      *
@@ -318,26 +370,32 @@ class Project extends Model
     {
         $trashedStatus = config('epicollect.strings.project_status.trashed');
         $archivedStatus = config('epicollect.strings.project_status.archived');
+        $structuresTable = config('epicollect.tables.project_structures');
 
         return static::select($columns)
-        ->where('name', 'like', $name . '%')
-        ->where('status', '<>', $trashedStatus)
-        ->where('status', '<>', $archivedStatus)
-        ->orderByRaw('LOWER(name) = ? DESC', [strtolower($name)]) // Exact match first
-        ->orderBy('updated_at', 'desc') // Optional: sort the rest by updated_at
-        ->take(50)
-        ->get();
+            ->leftJoin($structuresTable, 'projects.id', '=', $structuresTable . '.project_id')
+            ->where('name', 'like', $name . '%')
+            ->where('status', '<>', $trashedStatus)
+            ->where('status', '<>', $archivedStatus)
+            ->orderByRaw('LOWER(name) = ? DESC', [strtolower($name)])
+            ->orderBy('projects.updated_at', 'desc')
+            ->addSelect($structuresTable . '.updated_at as structure_last_updated')
+            ->take(20)
+            ->get();
     }
 
     public static function matches($name, $columns = ['*']): Collection|array
     {
         $trashedStatus = config('epicollect.strings.project_status.trashed');
         $archivedStatus = config('epicollect.strings.project_status.archived');
+        $structuresTable = config('epicollect.tables.project_structures');
 
         return static::select($columns)
+            ->leftJoin($structuresTable, 'projects.id', '=', $structuresTable . '.project_id')
             ->where('name', '=', $name)
             ->where('status', '<>', $trashedStatus)
             ->where('status', '<>', $archivedStatus)
+            ->addSelect($structuresTable . '.updated_at as structure_last_updated')
             ->take(1)
             ->get();
     }

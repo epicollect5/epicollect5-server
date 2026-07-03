@@ -79,4 +79,6 @@ return [
 
     'prefix' => 'laravel',
 
+    'serializable_classes' => false,
+
 ];

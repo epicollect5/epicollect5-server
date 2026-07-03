@@ -292,13 +292,25 @@ class UserService
     public static function getAllUsers($search = '', $filters = array()): Paginator
     {
         $perPage = config('epicollect.limits.users_per_page');
-        // retrieve paginated users relative to the search (on name and email)
-        // and filter (if applicable), ordered by name
+        // retrieve paginated users relative to the search (on name, last_name, email
+        // and the full "name last_name" concatenation) and filter (if applicable),
+        // ordered by name. The search is split on whitespace so multi-word queries
+        // like "David Doe" match when each token appears somewhere across those
+        // fields (in any order).
         $users = User::where(function ($query) use ($search) {
-            // if you have search criteria, add to where clause
             if (!empty($search)) {
-                $query->where('name', 'LIKE', $search . '%')
-                    ->orWhere('email', 'LIKE', $search . '%');
+                $tokens = preg_split('/\s+/', trim($search), -1, PREG_SPLIT_NO_EMPTY);
+                if (!empty($tokens)) {
+                    foreach ($tokens as $token) {
+                        $like = '%' . $token . '%';
+                        $query->where(function ($q) use ($like) {
+                            $q->where('name', 'LIKE', $like)
+                                ->orWhere('last_name', 'LIKE', $like)
+                                ->orWhere('email', 'LIKE', $like)
+                                ->orWhereRaw("CONCAT(name, ' ', last_name) LIKE ?", [$like]);
+                        });
+                    }
+                }
             }
         })->where(function ($query) use ($filters) {
             // if you have filter criteria, add to where clause

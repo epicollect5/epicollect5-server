@@ -24,7 +24,15 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
 
+        // Keep using integer IDs for OAuth clients (existing schema)
+        Passport::$clientUuids = false;
+
         // Set the expiry time for Passport access tokens
         Passport::tokensExpireIn(Carbon::now()->addSeconds(config('auth.passport.expire')));
+
+        // Passport 13 hashes client secrets by default (see vendor/laravel/passport/UPGRADE.md).
+        // The `passport:hash` artisan command is a one-time migration run in after_pull-*.sh
+        // to bcrypt-hash pre-existing plain-text rows in oauth_clients.secret; no opt-in
+        // call (Passport::hashClientSecrets()) is required or available in Passport 13.
     }
 }

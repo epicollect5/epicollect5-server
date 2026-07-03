@@ -204,6 +204,9 @@ class Entry extends Model
     /**
      * Get the parent given a parent entry uuid and form ref
      *
+     * only the id is needed to check if the parent entry exists,
+     * so we can save some time and resources by only selecting the id column
+     *
      * @param $parentEntryUuid
      * @param $parentFormRef
      * @return mixed
@@ -211,6 +214,7 @@ class Entry extends Model
     public function getParentEntry($parentEntryUuid, $parentFormRef): mixed
     {
         return DB::table($this->table)
+            ->select('id')
             ->where('uuid', '=', $parentEntryUuid)
             ->where('form_ref', '=', $parentFormRef)
             ->first();

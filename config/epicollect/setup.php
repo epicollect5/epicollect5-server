@@ -24,6 +24,8 @@ return [
         'cache' => [
             'homepage_cache_key' => 'homepage_cached_content',
             'homepage_cache_ttl_hours' => 24, // in hours
+            'project_mobile_logo_cache_ttl_days' => (int) env('PROJECT_MOBILE_LOGO_CACHE_TTL_DAYS', 365),
+            'project_mobile_logo_missing_ttl_minutes' => (int) env('PROJECT_MOBILE_LOGO_MISSING_TTL_MINUTES', 60),
         ]
     ],
     'static_assets' => [
@@ -46,12 +48,16 @@ return [
     'api' => [
         'responseContentTypeHeaderKey' => 'Content-Type',
         'responseContentTypeHeaderValue' => 'application/vnd.api+json; charset=utf-8',
+        'export_media_s3_redirect_enabled' => (bool) env('API_EXPORT_MEDIA_S3_REDIRECT_ENABLED', false),
+        'project_search_mobile_logo_base64_enabled' => (bool) env('API_PROJECT_SEARCH_MOBILE_LOGO_BASE64_ENABLED', false),
+        'export_media_s3_redirect_ttl_entry_original' => (int) env('API_EXPORT_MEDIA_S3_REDIRECT_TTL_ENTRY_ORIGINAL', 10),
+        'export_media_s3_redirect_ttl_audio' => (int) env('API_EXPORT_MEDIA_S3_REDIRECT_TTL_AUDIO', 30),
+        'export_media_s3_redirect_ttl_video' => (int) env('API_EXPORT_MEDIA_S3_REDIRECT_TTL_VIDEO', 30),
         'rate_limit_per_minute' => [
             'media' => (int) env('API_RATE_LIMIT_MEDIA', 30),
             'entries' => (int) env('API_RATE_LIMIT_ENTRIES', 60),
             'project' => (int) env('API_RATE_LIMIT_PROJECT', 60),
-            'bulk_upload' => (int) env('API_RATE_LIMIT_BULK_UPLOAD', 60),
-            'mobile_upload' => (int) env('API_RATE_LIMIT_MOBILE_UPLOAD', 300)
+            'bulk_upload' => (int) env('API_RATE_LIMIT_BULK_UPLOAD', 60)
         ],
         'import_project' => [
             'validation_key' => env('API_IMPORT_PROJECT_VALIDATION_KEY', '')

@@ -104,15 +104,13 @@ class MediaExportPrivatePhotoOriginalS3Test extends TestCase
 
         //add the project and client
         $clientRepository = new ClientRepository();
-        $client = $clientRepository->create(
-            $user->id,
-            'Test App',
-            ''
-        )->makeVisible('secret');
+        $client = $clientRepository->createClientCredentialsGrantClient('Test App');
+        $plainSecret = $client->plainSecret;
 
         factory(OAuthClientProject::class)->create([
             'project_id' => $project->id,
-            'client_id' => $client->id
+            'client_id' => $client->id,
+            'client_secret_recoverable' => $plainSecret
         ]);
 
         $tokenClient = new Client();
@@ -125,7 +123,7 @@ class MediaExportPrivatePhotoOriginalS3Test extends TestCase
                 'body' => json_encode([
                     'grant_type' => 'client_credentials',
                     'client_id' => $client->id,
-                    'client_secret' => $client->secret
+                    'client_secret' => $client->plainSecret
                 ])
             ]);
 
@@ -265,7 +263,31 @@ class MediaExportPrivatePhotoOriginalS3Test extends TestCase
         $queryString = '?type=photo&name=' . $filename . '&format=entry_original'.'&XDEBUG_SESSION_START=phpstorm';
 
         try {
-            $response = $entriesClient->request('GET', $entriesURL . $project->slug . $queryString);
+            $response = $entriesClient->request('GET', $entriesURL . $project->slug . $queryString, [
+                'allow_redirects' => false,
+            ]);
+
+            if ($response->getStatusCode() === 302) {
+                $headers = $response->getHeaders();
+                $this->assertArrayHasKey('Location', $headers);
+                $this->assertArrayHasKey('Cache-Control', $headers);
+                $this->assertStringContainsString('no-store', $response->getHeaderLine('Cache-Control'));
+
+                $location = $response->getHeaderLine('Location');
+                $bucket = config('filesystems.disks.photo.bucket') ?? '';
+                $endpointHost = parse_url(config('filesystems.disks.photo.endpoint') ?? '', PHP_URL_HOST) ?: '';
+                $this->assertTrue(
+                    ($bucket !== '' && str_contains($location, $bucket))
+                    || ($endpointHost !== '' && str_contains($location, $endpointHost)),
+                    "Location [$location] does not contain the configured S3 bucket or endpoint host."
+                );
+                $this->assertMatchesRegularExpression(
+                    '/(?:X-Amz-Signature|Signature)=/',
+                    $location
+                );
+
+                return true;
+            }
 
             // Get the response headers
             $headers = $response->getHeaders();
@@ -290,14 +312,12 @@ class MediaExportPrivatePhotoOriginalS3Test extends TestCase
             $disk = Storage::disk(config('filesystems.default'));
             $this->assertEquals($fileSize, $disk->size($imagePath));
 
-
-            Storage::disk('photo')->deleteDirectory($project->ref);
-
-            $this->clearDatabase($params);
         } catch (GuzzleException $e) {
-            $this->clearDatabase($params);
             $this->logTestError($e, []);
             return false;
+        } finally {
+            Storage::disk('photo')->deleteDirectory($project->ref);
+            $this->clearDatabase($params);
         }
         return true;
     }

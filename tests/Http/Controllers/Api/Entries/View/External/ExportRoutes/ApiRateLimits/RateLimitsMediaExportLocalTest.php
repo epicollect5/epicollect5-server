@@ -109,15 +109,13 @@ class RateLimitsMediaExportLocalTest extends TestCase
 
         //add the project and client
         $clientRepository = new ClientRepository();
-        $this->passportClient = $clientRepository->create(
-            $this->user->id,
-            'Test App',
-            ''
-        )->makeVisible('secret');
+        $this->passportClient = $clientRepository->createClientCredentialsGrantClient('Test App');
+        $plainSecret = $this->passportClient->plainSecret;
 
         factory(OAuthClientProject::class)->create([
             'project_id' => $this->project->id,
-            'client_id' => $this->passportClient->id
+            'client_id' => $this->passportClient->id,
+            'client_secret_recoverable' => $plainSecret
         ]);
 
         $this->overrideStorageDriver('local');

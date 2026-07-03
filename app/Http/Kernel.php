@@ -19,7 +19,7 @@ use ec5\Http\Middleware\RedirectIfAuthenticated;
 use ec5\Http\Middleware\SuperAdminAuthenticate;
 use ec5\Http\Middleware\Unverified;
 use ec5\Http\Middleware\UserVerification;
-use ec5\Http\Middleware\VerifyCsrfToken;
+use ec5\Http\Middleware\PreventRequestForgery;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 use Illuminate\Routing\Middleware\ThrottleRequests;
@@ -51,14 +51,14 @@ class Kernel extends HttpKernel
             AddQueuedCookiesToResponse::class,
             StartSession::class,
             ShareErrorsFromSession::class,
-            VerifyCsrfToken::class
+            PreventRequestForgery::class
         ],
         'api_internal' => [
             EncryptCookies::class,
             AddQueuedCookiesToResponse::class,
             StartSession::class,
             ShareErrorsFromSession::class,
-            VerifyCsrfToken::class
+            PreventRequestForgery::class
         ],
         'api_external' => []
     ];

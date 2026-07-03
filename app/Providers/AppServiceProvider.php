@@ -3,9 +3,9 @@
 namespace ec5\Providers;
 
 use Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider;
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\ServiceProvider;
 use Log;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;

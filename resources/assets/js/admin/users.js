@@ -27,13 +27,21 @@ window.EC5.users = window.EC5.users || {};
      */
     module.getUsers = function (page, search, server_role, state) {
 
-        window.setTimeout(function () {
-            window.EC5.overlay.fadeIn();
-        }, 500);
+        // Select the loader from a stable parent (the tab container, not the
+        // inner table wrapper) so the reference survives every AJAX call —
+        // $.html() on the inner wrapper would otherwise remove the loader
+        // element from the DOM and the second call would show no spinner.
+        // This mirrors the projects tab pattern in projects.js.
+        var $loader = $('.user-administration__users-loader');
+        var $tableWrapper = $('.user-administration__users__table-wrapper');
 
-        $('.user-administration__users')
-            .find('.user-administration__table')
-            .animate({opacity: 0}, 500);
+        // Show the global overlay (the same .wait-overlay used by every other
+        // page in the app) and the tab-local loader text so the user has
+        // feedback while the new page loads. The outer wrapper's min-height
+        // keeps the page from collapsing while the inner content is gone.
+        window.EC5.overlay.fadeIn();
+        $loader.removeClass('hidden');
+        $tableWrapper.empty();
 
         // Set defaults
         page = typeof page !== 'undefined' ? page : 1;
@@ -53,9 +61,15 @@ window.EC5.users = window.EC5.users || {};
                 state: state
             }
         }).done(function (data) {
-            $('.user-administration__users').html(data) // Update the content
-                .animate({opacity: 1}, 500); // Animate opacity to 1 over 500 milliseconds
+            // Append the new partial into the inner wrapper and fade it in.
+            // Mirrors the projects tab pattern (hide/append/fadeIn) so the
+            // new content always fades in cleanly with no flash of stale
+            // data, and the loader + outer wrapper keep their state across
+            // every subsequent call.
+            $loader.addClass('hidden');
+            $tableWrapper.hide().append(data).fadeIn(500);
         }).fail(module.showError).always(function () {
+            $loader.addClass('hidden');
             window.EC5.overlay.fadeOut();
         });
     };
@@ -139,13 +153,14 @@ $(document).ready(function () {
         // Get user-administration container
         var container = $(this).closest('.user-administration');
 
-        // Retrieve search and filter/filter option values from page elements
-        // so pagination works within the current results set
+        // Retrieve search and filter values from page elements so prev/next preserves
+        // the current filtered set (simplePaginate strips appends() from the URL).
         var search = container.find('.user-administration__user-search').val();
-        var filterOption = container.find('.user-administration__user-filter-option').val();
+        var server_role = container.find('.user-administration__user-filter__server-role').val();
+        var state = container.find('.user-administration__user-filter__state').val();
 
-        // Get users based on page and any existing search or filter and filter option
-        window.EC5.users.getUsers($(this).attr('href').split('page=')[1], search, 'server_role', filterOption);
+        // Get users based on page and any existing search or filter
+        window.EC5.users.getUsers($(this).attr('href').split('page=')[1], search, server_role, state);
 
         window.scrollTo(0, 0);
 
@@ -159,20 +174,21 @@ $(document).ready(function () {
         // Get value of input
         var needle = this.value;
 
-        // If the length is 3 or more characters, or the user pressed ENTER, search
-        if (needle.length >= 3 || e.keyCode === 13) {
+        // If the length is 3 or more characters, the user pressed ENTER, or the
+        // input was cleared (empty = "show me the unfiltered list again"), search
+        if (needle.length >= 3 || e.keyCode === 13 || needle.length === 0) {
 
             // Get user-administration container
             var container = $(this).closest('.user-administration');
 
             // Retrieve filter/filter option values from page elements
             // so pagination works within the current results set
-            var server_role = container.find('.user-administration__user-filter__server_role').val();
+            var server_role = container.find('.user-administration__user-filter__server-role').val();
             var state = container.find('.user-administration__user-filter__state').val();
 
             // Set delay amount
             // for user to stop typing
-            var requestDelay = 200;
+            var requestDelay = 500;
 
             /**
              * Throttle user requests so that we can wait until the user

@@ -21,10 +21,13 @@ use ec5\Models\User\User;
 use ec5\Services\Mapping\ProjectMappingService;
 use ec5\Services\Project\ProjectExtraService;
 use Faker\Factory as Faker;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class RuleQueryStringLocationsTest extends TestCase
 {
+    use DatabaseTransactions;
+
     public function setUp(): void
     {
         parent::setUp();

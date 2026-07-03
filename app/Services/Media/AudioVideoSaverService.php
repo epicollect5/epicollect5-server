@@ -109,14 +109,17 @@ class AudioVideoSaverService
             }
 
             if ($fileSaved) {
-                //compress the file if it is a video or audio (.wav currently skipped for legacy reasons)
-                if ($disk === 'video' || $disk === 'audio') {
-                    $compressionService = app(AudioVideoCompressionService::class);
-                    $compressionSuccess = $compressionService->compress($disk, $targetPath, $disk);
+                //Check if ffmpeg compression is enabled
+                if (config('epicollect.media.audio_video_ffmpeg_compression_enabled')) {
+                    //compress the file if it is a video or audio (.wav currently skipped for legacy reasons)
+                    if ($disk === 'video' || $disk === 'audio') {
+                        $compressionService = app(AudioVideoCompressionService::class);
+                        $compressionSuccess = $compressionService->compress($disk, $targetPath, $disk);
 
-                    if (!$compressionSuccess) {
-                        Log::warning("Compression failed for $targetPath");
-                        // Optionally return false to force user re-upload
+                        if (!$compressionSuccess) {
+                            Log::warning("Compression failed for $targetPath");
+                            // Optionally return false to force user re-upload
+                        }
                     }
                 }
 

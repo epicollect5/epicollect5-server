@@ -3,6 +3,7 @@
 namespace ec5\Http\Controllers\Api\Project;
 
 use Auth;
+use Carbon\Carbon;
 use ec5\DTO\ProjectDTO;
 use ec5\Http\Validation\Entries\Upload\RuleCanBulkUpload;
 use ec5\Http\Validation\Project\Mapping\RuleImportProjectMapping as ImportProjectMappingValidator;
@@ -14,9 +15,12 @@ use ec5\Libraries\Utilities\Generators;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectStats;
 use ec5\Services\Media\MediaCounterService;
+use ec5\Services\Project\ProjectLogoService;
+use ec5\Traits\Eloquent\StatsRefresher;
 use ec5\Traits\Requests\RequestAttributes;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Log;
 use Response;
@@ -24,17 +28,18 @@ use Throwable;
 
 class ProjectController
 {
+    use StatsRefresher;
     use RequestAttributes;
 
     /**
-     * @param ProjectStats $projectStats
      * @return JsonResponse
      * @throws Throwable
      */
-    public function show(ProjectStats $projectStats)
+    public function show()
     {
+        // Project metadata responses include project_stats, so refresh and reload the DTO first.
+        $this->refreshProjectStats($this->requestedProject());
         $data = $this->getProjectResponseData(true);
-        $projectStats->updateProjectStats($this->requestedProject()->getId());
 
         try {
             $userName = Auth::user()->name;
@@ -65,14 +70,14 @@ class ProjectController
     }
 
     /**
-     * @param ProjectStats $projectStats
      * @return JsonResponse
      * @throws Throwable
      */
-    public function export(ProjectStats $projectStats)
+    public function export()
     {
+        // Project export is not paginated and includes project_stats metadata.
+        $this->refreshProjectStats($this->requestedProject());
         $data = $this->getProjectResponseData();
-        $projectStats->updateProjectStats($this->requestedProject()->getId());
 
         $meta = [
             'project_mapping' => $this->requestedProject()->getProjectMapping()->getData(),
@@ -114,28 +119,88 @@ class ProjectController
         $hits = [];
         $projects = [];
 
-        // Check if the 'exact' query parameter is present and true
         $exactMatch = request()->query('exact', false);
+        $logoBase64Enabled = (bool) config(
+            'epicollect.setup.api.project_search_mobile_logo_base64_enabled',
+            false
+        );
 
         if (!empty($name)) {
+            $columns = $logoBase64Enabled
+                ? ['projects.name', 'projects.slug', 'projects.access', 'projects.ref', 'projects.logo_url']
+                : ['name', 'slug', 'access', 'ref'];
+
             if ($exactMatch) {
-                // Perform exact match search
-                $hits = Project::matches($name, ['name', 'slug', 'access', 'ref']);
+                $hits = Project::matches($name, $columns);
             } else {
-                // Perform starts-with search
-                $hits = Project::startsWith($name, ['name', 'slug', 'access', 'ref']);
+                $hits = Project::startsWith($name, $columns);
             }
         }
 
-        // Build the JSON API response
+        if ($logoBase64Enabled) {
+            $this->buildProjectsWithLogoBase64($hits, $projects);
+        } else {
+            foreach ($hits as $hit) {
+                unset($hit->structure_last_updated);
+
+                $data['type'] = 'project';
+                $data['id'] = $hit->ref;
+                $data['project'] = $hit;
+                $projects[] = $data;
+            }
+        }
+
+        return Response::apiData($projects);
+    }
+
+    private function buildProjectsWithLogoBase64(iterable $hits, array &$projects): void
+    {
+        $logoService = new ProjectLogoService();
+        $dimensions = config('epicollect.media.project_mobile_logo');
+        $privateAccess = config('epicollect.strings.project_access.private');
+        $ttlDays = (int) config('epicollect.setup.system.cache.project_mobile_logo_cache_ttl_days', 365);
+        $negativeTtlMinutes = (int) config('epicollect.setup.system.cache.project_mobile_logo_missing_ttl_minutes', 60);
+
         foreach ($hits as $hit) {
+            if ($hit->access === $privateAccess) {
+                $hit->logo_base64 = null;
+            } elseif (empty($hit->logo_url)) {
+                $hit->logo_base64 = null;
+            } elseif (!empty($hit->structure_last_updated)) {
+                $version = Carbon::parse($hit->structure_last_updated)->getTimestamp();
+                $positiveKey = 'project_mobile_logo_base64:' . $hit->ref . ':version:' . $version;
+                $negativeKey = 'project_mobile_logo_missing:' . $hit->ref . ':version:' . $version;
+
+                $logoBase64 = Cache::get($positiveKey);
+
+                if ($logoBase64 === null && !Cache::has($negativeKey)) {
+                    $logoBase64 = $logoService->generate(
+                        $hit->ref,
+                        $dimensions[0],
+                        $dimensions[1],
+                        quality: 75
+                    );
+
+                    if ($logoBase64 === null) {
+                        Cache::put($negativeKey, true, now()->addMinutes($negativeTtlMinutes));
+                    } else {
+                        Cache::put($positiveKey, $logoBase64, now()->addDays($ttlDays));
+                    }
+                }
+
+                $hit->logo_base64 = $logoBase64;
+            } else {
+                $hit->logo_base64 = null;
+            }
+
+            unset($hit->structure_last_updated);
+            unset($hit->logo_url);
+
             $data['type'] = 'project';
             $data['id'] = $hit->ref;
             $data['project'] = $hit;
             $projects[] = $data;
         }
-
-        return Response::apiData($projects);
     }
 
     public function exists(RuleName $ruleName, $name)
@@ -177,13 +242,18 @@ class ProjectController
         return Response::apiData($data);
     }
 
+    /**
+     * @throws Throwable
+     */
     public function countersEntries($slug)
     {
-        $projectStats = ProjectStats::where('project_id', $this->requestedProject()->getId())
-            ->select('*') // Select all columns
-            ->first();
+        // Entry totals are cached in project_stats and are not updated on each upload.
+        // Refresh here because this endpoint explicitly returns those totals.
+        $this->refreshProjectStats($this->requestedProject());
+
+        $projectStats = $this->requestedProject()->getProjectStats();
         $totalBranches = 0;
-        $branchCounts = json_decode($projectStats->branch_counts, true);
+        $branchCounts = $projectStats->getBranchCounts();
         foreach ($branchCounts as $branchCount) {
             $totalBranches += $branchCount['count'];
         }

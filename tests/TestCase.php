@@ -9,7 +9,6 @@ use ec5\Models\OAuth\OAuthAccessToken;
 use ec5\Models\OAuth\OAuthClient;
 use ec5\Models\OAuth\OAuthClientProject;
 use ec5\Models\Project\Project;
-use ec5\Models\Project\ProjectFeatured;
 use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
@@ -81,10 +80,10 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
         }
 
         if (is_array($response) || is_object($response)) {
-            if (isset($response->baseResponse)) {
-                $jsonResponse = $response->baseResponse->exception === null
+            if (isset($response->exception)) {
+                $jsonResponse = $response->exception === null
                     ? json_encode(['response' => $response])
-                    : json_encode(['exception' => $response->baseResponse->exception->getMessage()]);
+                    : json_encode(['exception' => $response->exception->getMessage()]);
 
                 echo "\e[1;34m" . $jsonResponse . "\e[0m" . PHP_EOL;
             } else {
@@ -122,93 +121,157 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
         $clientId = $params['client_id'] ?? null;
 
         try {
-            $testUserIds = $this->getTestUserIds();
-            $projectIds = $this->getTestProjectIds($testUserIds, $user);
+            $testProjectIds = $this->testProjectIdsForCleanup($project);
+            $testUserIds = $this->testUserIdsForCleanup($user);
 
-            if ($project) {
-                $projectIds[] = $project->id;
+            if (!empty($testProjectIds)) {
+                $testProjectClientIds = OAuthClientProject::whereIn(
+                    'project_id',
+                    $testProjectIds
+                )->pluck('client_id')->filter()->all();
+
+                if (!empty($testProjectClientIds)) {
+                    OAuthAccessToken::whereIn(
+                        'client_id',
+                        $testProjectClientIds
+                    )->delete();
+                }
+
+                ProjectRole::whereIn('project_id', $testProjectIds)->delete();
+                ProjectStructure::whereIn('project_id', $testProjectIds)->delete();
+                ProjectStats::whereIn('project_id', $testProjectIds)->delete();
+                Entry::whereIn('project_id', $testProjectIds)->delete();
+                BranchEntry::whereIn('project_id', $testProjectIds)->delete();
+                OAuthClientProject::whereIn('project_id', $testProjectIds)->delete();
+                Project::whereIn('id', $testProjectIds)->delete();
+
+                if (!empty($testProjectClientIds)) {
+                    OAuthClient::whereIn('id', $testProjectClientIds)->delete();
+                }
             }
 
-            $projectIds = array_values(array_unique(array_filter($projectIds)));
-            $this->deleteProjectsByIds($projectIds);
-
-            OAuthClient::whereIn('user_id', $testUserIds)->delete();
-            UserProvider::whereIn('user_id', $testUserIds)->delete();
-            User::where('id', '>=', config('testing.TEST_USER_ID_BASE'))->delete();
-
-            // Delete users with testing email domains
-            User::where('email', 'like', '%@example.%')->delete();
-            User::where('email', 'like', '%random@unit.tests%')->delete();
-            if ($user) {
-                User::where('id', $user->id)->delete();
-                UserProvider::where('user_id', $user->id)->delete();
-                OAuthClient::where('user_id', $user->id)->delete();
-            }
+            $this->clearUsersByIds($testUserIds);
 
             if ($clientId) {
                 OAuthAccessToken::where('client_id', $clientId)->delete();
             }
-
-            // Also remove leftover users from other tests or failures.
-            User::where('email', 'LIKE', '%@example.org%')->delete();
         } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
         }
     }
 
-    private function getTestUserIds(): array
+    /**
+     * Gets known test project IDs that should be removed during cleanup.
+     *
+     * @param Project|null $project Explicit project passed by a test.
+     *
+     * @return array
+     */
+    private function testProjectIdsForCleanup(?Project $project): array
     {
-        return User::query()
-            ->where('id', '>=', config('testing.TEST_USER_ID_BASE'))
-            ->pluck('id')
-            ->all();
+        $projectIds = [];
+
+        if ($project) {
+            $projectIds[] = $project->id;
+        }
+
+        $testProjectSlugs = $this->testProjectSlugs();
+
+        if (!empty($testProjectSlugs)) {
+            $projectIds = array_merge(
+                $projectIds,
+                Project::whereIn('slug', $testProjectSlugs)->pluck('id')->all()
+            );
+        }
+
+        return array_values(array_unique(array_filter($projectIds)));
     }
 
-    private function getTestProjectIds(array $testUserIds, ?User $user = null): array
+    /**
+     * Gets known test user IDs that should be removed during cleanup.
+     *
+     * @param User|null $user Explicit user passed by a test.
+     *
+     * @return array
+     */
+    private function testUserIdsForCleanup(?User $user): array
     {
-        return Project::query()
-            ->where(function ($query) use ($testUserIds, $user) {
-                $query->where('created_by', '>=', config('testing.TEST_USER_ID_BASE'));
-
-                if (!empty($testUserIds)) {
-                    $query->orWhereIn('created_by', $testUserIds);
-                }
-
-                if ($user) {
-                    $query->orWhere('created_by', $user->id);
-                }
-            })
+        $userIds = User::where('email', 'like', '%@example.com')
+            ->orWhere('email', 'like', '%@example.net')
+            ->orWhere('email', 'like', '%@example.org')
+            ->orWhere('email', 'random@unit.tests')
             ->pluck('id')
             ->all();
+
+        if ($user) {
+            $userIds[] = $user->id;
+        }
+
+        return array_values(array_unique(array_filter($userIds)));
     }
 
-    private function deleteProjectsByIds(array $projectIds): void
+    /**
+     * Clears users and their OAuth artifacts in dependency order.
+     *
+     * @param array $userIds User IDs to remove.
+     *
+     * @return void
+     */
+    private function clearUsersByIds(array $userIds): void
     {
-        if (empty($projectIds)) {
+        if (empty($userIds)) {
             return;
         }
 
-        ProjectFeatured::whereIn('project_id', $projectIds)->delete();
-        OAuthClientProject::whereIn('project_id', $projectIds)->delete();
-        ProjectRole::whereIn('project_id', $projectIds)->delete();
-        ProjectStructure::whereIn('project_id', $projectIds)->delete();
-        ProjectStats::whereIn('project_id', $projectIds)->delete();
-        Entry::whereIn('project_id', $projectIds)->delete();
-        BranchEntry::whereIn('project_id', $projectIds)->delete();
-        Project::whereIn('id', $projectIds)->delete();
+        $clientIds = OAuthClient::whereIn('user_id', $userIds)->pluck('id')->all();
+
+        if (!empty($clientIds)) {
+            OAuthAccessToken::whereIn('client_id', $clientIds)->delete();
+            OAuthClientProject::whereIn('client_id', $clientIds)->delete();
+            OAuthClient::whereIn('id', $clientIds)->delete();
+        }
+
+        UserProvider::whereIn('user_id', $userIds)->delete();
+        User::whereIn('id', $userIds)->delete();
+    }
+
+    /**
+     * Gets configured test project slugs.
+     *
+     * @return array
+     */
+    private function testProjectSlugs(): array
+    {
+        $cleanupProjectSlugs = config('testing.cleanup_project_slugs');
+
+        if (is_array($cleanupProjectSlugs)) {
+            return array_values(array_unique(array_filter(
+                $cleanupProjectSlugs,
+                fn ($slug) => is_string($slug)
+            )));
+        }
+
+        $slugs = [];
+        $testingConfig = config('testing');
+
+        if (!is_array($testingConfig)) {
+            return [];
+        }
+
+        array_walk_recursive(
+            $testingConfig,
+            function ($value, $key) use (&$slugs) {
+                if ($key === 'slug' && is_string($value)) {
+                    $slugs[] = $value;
+                }
+            }
+        );
+
+        return array_values(array_unique($slugs));
     }
 
     protected function tearDown(): void
     {
-        //        // Remove properties defined during the test
-        //        $refl = new \ReflectionObject($this);
-        //        foreach ($refl->getProperties() as $prop) {
-        //            if (!$prop->isStatic() && 0 !== strpos($prop->getDeclaringClass()->getName(), 'PHPUnit_')) {
-        //                $prop->setAccessible(true);
-        //                $prop->setValue($this, null);
-        //            }
-        //        }
-
         // Clean up your resources here
         parent::tearDown();
         gc_collect_cycles(); // Invoke garbage collection

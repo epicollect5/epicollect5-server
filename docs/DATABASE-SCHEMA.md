@@ -4,8 +4,8 @@ This document describes the current application schema derived from the migratio
 
 Scope:
 - It reflects the latest migrated structure, not historical intermediate states.
-- It is based on the migrations in this repository as of 2026-04-16.
-- JSON shape migrations are mentioned only where they clarify persisted columns.
+- It is based on the migrations in this repository as of 2026-06-19.
+- JSON shape migrations and read-time JSON contracts are mentioned only where they clarify persisted columns.
 
 ## Current Tables
 
@@ -156,6 +156,9 @@ Foreign keys:
 Notes:
 - `project_forms_extra` existed temporarily and was dropped in 2017.
 - The original migration sets compressed row format for this table.
+- `project_mapping` stores mapping definitions. Current application code normalizes the effective default mapping on
+  read through `ProjectMappingDTO`; legacy rows may contain more than one `is_default: true` value even though consumers
+  should see only one effective default.
 
 ### `project_stats`
 
@@ -189,6 +192,9 @@ Foreign keys:
 Notes:
 - `total_users` was dropped in 2025.
 - Storage counters were added in 2025 and later changed from unsigned to signed `BIGINT`.
+- `form_counts` and `branch_counts` are cached JSON counters keyed by form refs and branch owner input refs.
+- System aggregate totals and admin project views read these cached counters instead of counting `entries` and
+  `branch_entries` directly on every request.
 
 ### `projects_featured`
 
@@ -388,6 +394,8 @@ Columns:
 - `redirect`: `TEXT`, not null
 - `personal_access_client`: `BOOLEAN`, not null
 - `password_client`: `BOOLEAN`, not null
+- `grant_types`: `TEXT`, not null (JSON array of OAuth grant types, e.g. `["client_credentials"]`)
+- `redirect_uris`: `TEXT`, not null (JSON array of redirect URIs)
 - `revoked`: `BOOLEAN`, not null
 - `created_at`: `TIMESTAMP`, nullable Laravel timestamp
 - `updated_at`: `TIMESTAMP`, nullable Laravel timestamp
@@ -395,6 +403,9 @@ Columns:
 Indexes:
 - Primary key on `id`
 - Index on `user_id`
+
+Notes:
+- `grant_types` and `redirect_uris` were added by migration `2026_06_19_000001` to satisfy Passport 13's read path (`Bridge\ClientRepository::fromClientModel` reads both unconditionally). The old `personal_access_client` / `password_client` booleans are retained for backward compatibility but are no longer consulted by Passport 13. `redirect_uris` is stored as a JSON array; the old `redirect` column stores a single URI as a string and remains in place.
 
 ### `oauth_access_tokens`
 
@@ -415,49 +426,6 @@ Indexes:
 - Primary key on `id`
 - Index on `user_id`
 
-### `oauth_auth_codes`
-
-Purpose: Passport authorization codes.
-
-Columns:
-- `id`: `VARCHAR(100)`, primary key
-- `user_id`: `BIGINT UNSIGNED`, indexed
-- `client_id`: `BIGINT UNSIGNED`, not null
-- `scopes`: `TEXT`, nullable
-- `revoked`: `BOOLEAN`, not null
-- `expires_at`: `DATETIME`, nullable
-
-Indexes:
-- Primary key on `id`
-- Index on `user_id`
-
-### `oauth_refresh_tokens`
-
-Purpose: Passport refresh tokens.
-
-Columns:
-- `id`: `VARCHAR(100)`, primary key
-- `access_token_id`: `VARCHAR(100)`, indexed
-- `revoked`: `BOOLEAN`, not null
-- `expires_at`: `DATETIME`, nullable
-
-Indexes:
-- Primary key on `id`
-- Index on `access_token_id`
-
-### `oauth_personal_access_clients`
-
-Purpose: Passport personal access client registry.
-
-Columns:
-- `id`: `BIGINT UNSIGNED`, primary key, auto increment
-- `client_id`: `BIGINT UNSIGNED`, not null
-- `created_at`: `TIMESTAMP`, nullable Laravel timestamp
-- `updated_at`: `TIMESTAMP`, nullable Laravel timestamp
-
-Indexes:
-- Primary key on `id`
-
 ### `oauth_client_projects`
 
 Purpose: links OAuth clients to projects.
@@ -466,6 +434,7 @@ Columns:
 - `id`: `INT`, primary key, auto increment
 - `project_id`: `INT`, indexed
 - `client_id`: `INT`, not null
+- `client_secret_recoverable`: `TEXT`, nullable, encrypted at rest via Laravel's `encrypted` cast (APP_KEY)
 - `created_at`: `TIMESTAMP`, default current timestamp
 - `updated_at`: `TIMESTAMP`, default current timestamp
 
@@ -478,6 +447,7 @@ Foreign keys:
 
 Notes:
 - There is no migration-defined foreign key from `client_id` to `oauth_clients.id`.
+- `client_secret_recoverable` was added by migration `2026_06_09_000001` to preserve the pre-hash secret before Passport 13's `passport:hash` command permanently hashes `oauth_clients.secret`. The value is encrypted at rest with `Crypt::encryptString()` and read via the `encrypted` Eloquent cast on `OAuthClientProject`. Migration `2026_06_16_000001` renamed the column from `client_secret_plain` to `client_secret_recoverable` to remove the misleading "plain" name (the value is encrypted, not stored in clear text). The `down()` migration of the original migration decrypts the value back into `oauth_clients.secret` if rolled back.
 
 ## Removed Tables
 
@@ -490,6 +460,9 @@ These tables existed historically but are not part of the current schema after l
 - `storage_stats`
 - `users_verify`
 - `users_reset_password`
+- `oauth_personal_access_clients` — dropped by migration `2026_06_19_000002` (Passport 13 no longer uses this table; see `vendor/laravel/passport/UPGRADE.md:116-124`). Contained 1 row referencing `oauth_clients.id=1` from 2017-06-21, intentionally dropped — the row was functionally dead in Passport 13.
+- `oauth_auth_codes` — dropped by migration `2026_06_19_000002` (this app never enabled the `authorization_code` grant)
+- `oauth_refresh_tokens` — dropped by migration `2026_06_19_000002` (this app never enabled the `refresh_token` grant; `OAuthController::issueToken` only handles access tokens)
 
 ## Current Relationship Summary
 

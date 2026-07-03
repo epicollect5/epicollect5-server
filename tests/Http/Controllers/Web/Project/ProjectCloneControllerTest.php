@@ -13,6 +13,7 @@ use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use ec5\Traits\Assertions;
 use Faker\Factory as Faker;
+use Faker\Generator;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
@@ -21,13 +22,13 @@ class ProjectCloneControllerTest extends TestCase
     use DatabaseTransactions;
     use Assertions;
 
-    public const DRIVER = 'web';
-    private $faker;
-    private $user;
-    private $project;
-    private $projectDefinition;
-    private $projectExtra;
-    private $projectMapping;
+    public const string DRIVER = 'web';
+    private Generator $faker;
+    private User $user;
+    private Project $project;
+    private array $projectDefinition;
+    private array $projectExtra;
+    private array $projectMapping;
 
     public function setUp(): void
     {

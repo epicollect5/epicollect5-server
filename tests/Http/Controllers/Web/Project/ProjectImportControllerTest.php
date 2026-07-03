@@ -26,7 +26,7 @@ class ProjectImportControllerTest extends TestCase
     protected array $request;
     protected RuleImportRequest $validator;
     protected array $access;
-    protected mixed $projectNameMaxLength;
+    protected int $projectNameMaxLength;
 
     public function setUp(): void
     {
@@ -57,7 +57,6 @@ class ProjectImportControllerTest extends TestCase
 
     public function test_name()
     {
-
         $this->validator->validate($this->request);
         $this->assertFalse($this->validator->hasErrors());
         $this->validator->resetErrors();

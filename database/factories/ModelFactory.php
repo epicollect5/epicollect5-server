@@ -29,27 +29,20 @@ use ec5\Models\User\UserPasswordlessWeb;
 use ec5\Models\User\UserProvider;
 use Illuminate\Database\Eloquent\Factory;
 use Illuminate\Support\Str;
+use Tests\Support\TestUserIdSequence;
 
 /** @var Factory $factory */
 
 $factory->define(User::class, function (Faker\Generator $faker) {
 
     static $password;
-    static $testUserId = null;
-
-    if ($testUserId === null) {
-        $testUserIdBase = config('testing.TEST_USER_ID_BASE');
-        $latestTestUserId = User::query()
-            ->where('id', '>=', $testUserIdBase)
-            ->max('id');
-        $testUserId = $latestTestUserId === null ? $testUserIdBase : $latestTestUserId + 1;
-    }
+    $testUserId = TestUserIdSequence::next();
 
     return [
-        'id' => $testUserId++,
+        'id' => $testUserId,
         'name' => $faker->name,
         'last_name' => $faker->lastName,
-        'email' => $faker->safeEmail,
+        'email' => $faker->unique()->safeEmail,
         'password' => $password ?: $password = bcrypt('secret'),
         'remember_token' => Str::random(10),
         'state' => 'active',

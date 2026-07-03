@@ -1,5 +1,66 @@
 ## Release Notes
 
+# 13.0.0
+
+- Laravel 12 → 13 framework upgrade with required dependency bumps
+- Passport 12 → 13 with bcrypt client secret hashing by default, passport:hash wired into deploy hooks,
+  and new grant_types / redirect_uris / client_secret_recoverable columns (plus dropped unused OAuth tables).
+- Breaking deploy changes — oauth-public.key chmod tightened to 0660; VerifyCsrfToken middleware replaced
+  with custom PreventRequestForgery on web and api_internal groups.
+- New ProjectLogoService extracted with constructor DI, plus server-side mobile logo caching
+  and feature flag for base64 logo in API responses.
+- User & project admin overhaul — optimized getAllProjectMembers query, multi-word/last-name user search with debounce,
+  server role/state filters, loading indicators, and improved pagination.
+
+# 12.5.33
+
+- Removed Community column from homepage.
+
+# 12.5.32
+
+- Placeholder images (photos, thumbnails, and mobile logos) for missing media are served with no-store so they can be
+  refreshed when media is added or replaced.
+
+# 12.5.31
+
+- Data Editor 0.0.6 - Reduced maximum file size limits for audio, video, and image uploads.
+
+# 12.5.30
+
+- Added config flag to enable FFmpeg compression for audio and video files.
+
+# 12.5.29
+
+- Added optional S3 presigned redirects for export media downloads.
+- Added configurable TTLs for S3 export media redirect URLs.
+- Added named external API rate limiters, including project-scoped throttling for public media endpoints.
+- Rate limit error responses now preserve `Retry-After` and `X-RateLimit-*` headers.
+- Public media URLs generated in entry exports (CSV, JSON) now include a version query parameter to improve cache
+  correctness.
+- Added a safety check to avoid hard-deleting projects when cached stats report zero entries but stored entries still
+  exist.
+- Added deployment/config documentation for static assets, external API rate limits, media cache duration, and S3 export
+  media redirects.
+- Added and updated architecture, database schema, and release-review documentation.
+
+# 12.5.28
+
+- Added cache control headers for media files (api/media/{project_slug})
+
+# 12.5.27
+
+- Added Forms and Branches count columns to the admin projects table, displaying the total number of forms and branches
+  for each project.
+
+# 12.5.26
+
+- Streamlined data access by retrieving project statistics, mappings, and definitions directly from the requestedProject
+  object, eliminating redundant database queries and manual JSON decoding.
+
+# 12.5.25
+
+- Formbuilder 0.0.9 exposes project definition version for client-side access.
+
 # 12.5.24
 
 - Added configurable static asset serving with support for local and CDN drivers via environment variables.

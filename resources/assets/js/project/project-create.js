@@ -57,9 +57,8 @@ $(document).ready(function () {
     var spinner = $('#project-loader');
 
     //check if a project name exists, on keyup with throttling
+    var task;
     $('.page-create-project #project-name-create').keyup(function (e) {
-
-        var task;
         var form_group = $('.page-create-project #project-name-form-group-create');
         var input = $(this);
         var value = input.val();

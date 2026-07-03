@@ -180,6 +180,7 @@ class DataMappingService
                 break;
         }
 
+        $uploadedAtTimestamp = (string)strtotime($uploaded_at);
         $output[] = $entry['created_at'];
         $output[] = $this->convertMYSQLDateToISO($uploaded_at);
 
@@ -202,7 +203,12 @@ class DataMappingService
                 switch ($input['type']) {
                     case 'location':
 
-                        $locationAnswer = $this->parseAnswer('csv-location', $answer, $input);
+                        $locationAnswer = $this->parseAnswer(
+                            'csv-location',
+                            $answer,
+                            $input,
+                            $uploadedAtTimestamp
+                        );
                         $output[] = $locationAnswer[0] ?? '';
                         $output[] = $locationAnswer[1] ?? '';
                         $output[] = $locationAnswer[2] ?? '';
@@ -214,11 +220,17 @@ class DataMappingService
                         $output[] = $this->parseAnswer(
                             $input['type'],
                             $JSONBranchCounts[$inputRef] ?? 0,
-                            $input
+                            $input,
+                            $uploadedAtTimestamp
                         );
                         break;
                     default:
-                        $output[] = $this->parseAnswer($input['type'], $answer, $input);
+                        $output[] = $this->parseAnswer(
+                            $input['type'],
+                            $answer,
+                            $input,
+                            $uploadedAtTimestamp
+                        );
                         break;
                 }
             }
@@ -308,6 +320,7 @@ class DataMappingService
                 break;
         }
         unset($relationships);
+        $uploadedAtTimestamp = (string)strtotime($uploaded_at);
         //add timestamps (ISO)
         $output['created_at'] = $entry['created_at'];
         $output['uploaded_at'] = $this->convertMYSQLDateToISO($uploaded_at);
@@ -338,23 +351,49 @@ class DataMappingService
                         $output[$inputMapping['mapTo']] = $this->parseAnswer(
                             $input['type'],
                             $JSONBranchCounts[$inputRef] ?? 0,
-                            $input
+                            $input,
+                            $uploadedAtTimestamp
                         );
                         break;
                     case 'location':
-                        $output[$inputMapping['mapTo']] = $this->parseAnswer('json-location', $answer, $input);
+                        $output[$inputMapping['mapTo']] = $this->parseAnswer(
+                            'json-location',
+                            $answer,
+                            $input,
+                            $uploadedAtTimestamp
+                        );
                         break;
                     case 'checkbox':
-                        $output[$inputMapping['mapTo']] = $this->parseAnswer('json-checkbox', $answer, $input);
+                        $output[$inputMapping['mapTo']] = $this->parseAnswer(
+                            'json-checkbox',
+                            $answer,
+                            $input,
+                            $uploadedAtTimestamp
+                        );
                         break;
                     case 'searchsingle':
-                        $output[$inputMapping['mapTo']] = $this->parseAnswer('json-searchsingle', $answer, $input);
+                        $output[$inputMapping['mapTo']] = $this->parseAnswer(
+                            'json-searchsingle',
+                            $answer,
+                            $input,
+                            $uploadedAtTimestamp
+                        );
                         break;
                     case 'searchmultiple':
-                        $output[$inputMapping['mapTo']] = $this->parseAnswer('json-searchmultiple', $answer, $input);
+                        $output[$inputMapping['mapTo']] = $this->parseAnswer(
+                            'json-searchmultiple',
+                            $answer,
+                            $input,
+                            $uploadedAtTimestamp
+                        );
                         break;
                     default:
-                        $output[$inputMapping['mapTo']] = $this->parseAnswer($input['type'], $answer, $input);
+                        $output[$inputMapping['mapTo']] = $this->parseAnswer(
+                            $input['type'],
+                            $answer,
+                            $input,
+                            $uploadedAtTimestamp
+                        );
                         break;
                 }
             }
@@ -455,10 +494,16 @@ class DataMappingService
      * @param mixed $type   The type identifier of the input (e.g., 'radio', 'csv-location', 'date', etc.).
      * @param mixed $answer The raw answer to convert; can be a string, array, or associative array with specific keys.
      * @param array $input  Metadata and configuration for the input, used for mapping and formatting.
+     * @param string $mediaUrlVersion Timestamp query parameter for public media URLs.
      *
      * @return mixed The parsed answer, which may vary in type (string, array, integer, or float) depending on the input type.
      */
-    private function parseAnswer(string $type, mixed $answer, array $input): mixed
+    private function parseAnswer(
+        string $type,
+        mixed $answer,
+        array $input,
+        string $mediaUrlVersion
+    ): mixed
     {
         $parsedAnswer = '';
 
@@ -596,15 +641,30 @@ class DataMappingService
             case 'photo':
                 //entry_original is the default format
                 $format = config('epicollect.strings.media_formats.entry_original');
-                $parsedAnswer = $this->getMediaUrl($type, $format, $answer);
+                $parsedAnswer = $this->getMediaUrl(
+                    $type,
+                    $format,
+                    $answer,
+                    $mediaUrlVersion
+                );
                 break;
             case 'video':
                 $format = config('epicollect.strings.media_formats.video');
-                $parsedAnswer = $this->getMediaUrl($type, $format, $answer);
+                $parsedAnswer = $this->getMediaUrl(
+                    $type,
+                    $format,
+                    $answer,
+                    $mediaUrlVersion
+                );
                 break;
             case 'audio':
                 $format = config('epicollect.strings.media_formats.audio');
-                $parsedAnswer = $this->getMediaUrl($type, $format, $answer);
+                $parsedAnswer = $this->getMediaUrl(
+                    $type,
+                    $format,
+                    $answer,
+                    $mediaUrlVersion
+                );
                 break;
             case 'integer':
                 //force cast to int
@@ -621,11 +681,23 @@ class DataMappingService
         return $parsedAnswer;
     }
 
-    private function getMediaUrl($type, $format, $fileName): string
+    private function getMediaUrl(
+        string $type,
+        string $format,
+        string $fileName,
+        string $version
+    ): string
     {
         // Public - provide url
         if (!empty($fileName) && $this->project->isPublic()) {
-            return url('api/media') . '/' . $this->project->slug . '?type=' . $type . '&format=' . $format . '&name=' . $fileName;
+            $query = http_build_query([
+                'type' => $type,
+                'format' => $format,
+                'name' => $fileName,
+                'v' => $version,
+            ]);
+
+            return url('api/media') . '/' . $this->project->slug . '?' . $query;
         }
 
         // Private - filename

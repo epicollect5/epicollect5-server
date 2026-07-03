@@ -102,7 +102,7 @@ $(document).ready(function () {
     //filter projects based on search text
     searchBar.keyup(function () {
 
-        params.name = $(this).val().trim();
+        params.name = ($(this).val() || '').trim();
 
         //get current selection for visibility and access
         var access = accessDropdownToggle.data('selected-value');
@@ -160,7 +160,9 @@ $(document).ready(function () {
 
     //intercept click on pagination links to send ajax request
     //important: re-bind event as empty() removes it!!!!
-    $('.pagination').on('click', 'a', onPaginationClick);
+    //scoped to projectsList so the projects handler never fires on the Users tab
+    //(the Users tab has its own delegated pagination handler on .user-administration)
+    projectsList.on('click', '.pagination a', onPaginationClick);
 
     function onPaginationClick(e) {
         e.preventDefault();
@@ -169,7 +171,7 @@ $(document).ready(function () {
         var access = accessDropdownToggle.data('selected-value');
 
         params.page = $(e.target).attr('href').split('page=')[1];
-        params.name = searchBar.val().trim();
+        params.name = (searchBar.val() || '').trim();
         params.access = access === 'any' ? '' : access;
         params.visibility = visibility === 'any' ? '' : visibility;
 
@@ -188,7 +190,8 @@ $(document).ready(function () {
                 loader.addClass('hidden');
                 projectsList.hide().append(response).fadeIn(500);
                 //important: re-bind event as empty() removes it!!!!
-                $('.pagination').on('click', 'a', onPaginationClick);
+                //scoped to projectsList so the projects handler never fires on the Users tab
+                projectsList.on('click', '.pagination a', onPaginationClick);
             }, function (error) {
                 console.log(error);
             });

@@ -184,7 +184,7 @@ class ProjectDeleteEntriesControllerTest extends TestCase
 
         //set up project stats and project structures (to make R&A middleware work, to be removed)
         //because they are using a repository with joins
-        $projectStats = factory(ProjectStats::class)->create(
+        factory(ProjectStats::class)->create(
             [
                 'project_id' => $project->id,
                 'total_entries' => 0

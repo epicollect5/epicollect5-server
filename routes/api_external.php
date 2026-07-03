@@ -27,7 +27,7 @@ Route::post('api/login/verify-apple', 'Api\Auth\AppleController@verifyUserEmail'
     ->name('verify-apple');
 
 
-Route::group(['middleware' => ['throttle:600,1']], function () {
+Route::group(['middleware' => ['throttle:api-external-global']], function () {
     // Authentication routes
     Route::get('api/login', 'Api\Auth\AuthController@getLogin');
     Route::post('api/login/local', 'Api\Auth\LocalController@authenticate');
@@ -50,15 +50,9 @@ Route::group(['middleware' => ['throttle:600,1']], function () {
         Route::get('api/project/{project_slug}', 'Api\Project\ProjectController@show');
 
         // Entry uploads
-        Route::group(['middleware' => ['throttle:mobile-upload']], function () {
+        Route::group(['middleware' => ['throttle:api-external-upload']], function () {
             Route::post('api/upload/{project_slug}', 'Api\Entries\Upload\UploadAppController@postUpload');
-
-            /* LEGACY END POINTS */
-            Route::post(
-                'api/json/upload/{project_slug}',
-                'Api\Entries\Upload\UploadAppController@postUpload'
-            );
-            /* LEGACY END POINTS */
+            Route::post('api/json/upload/{project_slug}', 'Api\Entries\Upload\UploadAppController@postUpload');
         });
 
         //route for debugging, only available in non-production environments
@@ -67,7 +61,10 @@ Route::group(['middleware' => ['throttle:600,1']], function () {
         });
 
         //Media Controller for access to media files (even via the browser, this is why we are not using the internal endpoint)
-        Route::get('api/media/{project_slug}/', 'Api\Project\MediaController@getMedia');
+        Route::group(['middleware' => ['throttle:api-external-media']], function () {
+            Route::get('api/media/{project_slug}/', 'Api\Project\MediaController@getMedia');
+            Route::get('api/json/media/{project_slug}', 'Api\Project\MediaController@getMedia');
+        });
 
         // Temp Media (used by PWA debug to get a temp file)
         Route::get('api/temp-media/{project_slug}/', 'Api\Project\MediaController@getTempMedia');
@@ -75,11 +72,6 @@ Route::group(['middleware' => ['throttle:600,1']], function () {
         /* LEGACY END POINTS */
         // Project
         Route::get('api/json/project/{project_slug}', 'Api\Project\ProjectController@show');
-
-        // Media
-        Route::get('api/json/media/{project_slug}', 'Api\Project\MediaController@getMedia');
-        /* LEGACY END POINTS */
-
 
         // Entries for mobile app download
         Route::get('api/entries/{project_slug}', 'Api\Entries\View\ViewEntriesDataController@show');

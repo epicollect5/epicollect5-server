@@ -9,9 +9,13 @@ use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
+use Carbon\Carbon;
 use ec5\Traits\Assertions;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Intervention\Image\Laravel\Facades\Image;
 use Tests\TestCase;
 use Throwable;
 
@@ -66,6 +70,10 @@ class ProjectControllerTest extends TestCase
         $this->user = $user;
         $this->project = $project;
         $this->projectStructure = $projectStructure;
+
+        // Project search logo_base64 is gated by a feature flag (default off).
+        // Enable it here so the existing search tests continue to assert the new payload.
+        config(['epicollect.setup.api.project_search_mobile_logo_base64_enabled' => true]);
     }
 
     public function test_project_exists()
@@ -154,7 +162,8 @@ class ProjectControllerTest extends TestCase
                             'name' => $this->project->name,
                             'slug' => $this->project->slug,
                             'access' => $this->project->access,
-                            'ref' => $this->project->ref
+                            'ref' => $this->project->ref,
+                            'logo_base64' => null
                         ]
                     ]
                 ]
@@ -167,7 +176,8 @@ class ProjectControllerTest extends TestCase
                         'name',
                         'slug',
                         'access',
-                        'ref'
+                        'ref',
+                        'logo_base64'
                     ]
                 ]
             ]]);
@@ -198,14 +208,18 @@ class ProjectControllerTest extends TestCase
                         'name',
                         'slug',
                         'access',
-                        'ref'
+                        'ref',
+                        'logo_base64'
                     ]
                 ]
             ]]);
 
         $responseData = ($response->json())['data']; // Convert the JSON data response to an array.
         $this->assertCount($numOfProjects, $responseData);
-        $this->assertKeysNotEmpty($responseData);
+
+        foreach ($responseData as $item) {
+            $this->assertArrayHasKey('logo_base64', $item['project']);
+        }
     }
 
     public function test_search_should_skip_archived_projects()
@@ -490,6 +504,7 @@ class ProjectControllerTest extends TestCase
                             'slug',
                             'access',
                             'ref',
+                            'logo_base64',
                         ],
                     ],
                 ],
@@ -497,12 +512,15 @@ class ProjectControllerTest extends TestCase
         $responseData = ($response->json())['data']; // Convert the JSON data response to an array.
 
 
-        $this->assertKeysNotEmpty($responseData);
         //closest match is always first
         $this->assertEquals($this->project->name, $responseData[0]['project']['name']);
         $this->assertEquals($this->project->slug, $responseData[0]['project']['slug']);
         //we always have more than one project
         $this->assertGreaterThan($numOfProjects, count($responseData));
+
+        foreach ($responseData as $item) {
+            $this->assertArrayHasKey('logo_base64', $item['project']);
+        }
     }
 
     public function test_project_search_multiple_no_matches()
@@ -557,6 +575,7 @@ class ProjectControllerTest extends TestCase
                             'slug',
                             'access',
                             'ref',
+                            'logo_base64',
                         ],
                     ],
                 ],
@@ -571,12 +590,12 @@ class ProjectControllerTest extends TestCase
                         'slug' => $this->project->slug,
                         'access' => $this->project->access,
                         'ref' => $this->project->ref,
+                        'logo_base64' => null
                     ],
                     ]
                 ]
             ]);
         $responseData = ($response->json())['data']; // Convert the JSON data response to an array.
-        $this->assertKeysNotEmpty($responseData);
         //Only one match
         $this->assertEquals(1, count($responseData));
     }
@@ -643,6 +662,93 @@ class ProjectControllerTest extends TestCase
         $responseData = ($response->json())['data']; // Convert the JSON data response to an array.
         //No match
         $this->assertEquals(0, count($responseData));
+    }
+
+    public function test_search_caches_generated_logo_with_positive_ttl(): void
+    {
+        $this->project->access = config('epicollect.strings.project_access.public');
+        $this->project->logo_url = 'logo.jpg';
+        $this->project->save();
+
+        Storage::fake('project');
+        $image = Image::create(100, 100)->fill('#ff0000');
+        Storage::disk('project')->put($this->project->ref . '/logo.jpg', $image->toJpeg());
+
+        $version = $this->projectStructure->updated_at->timestamp;
+        $positiveKey = 'project_mobile_logo_base64:' . $this->project->ref . ':version:' . $version;
+        $negativeKey = 'project_mobile_logo_missing:' . $this->project->ref . ':version:' . $version;
+
+        Cache::partialMock();
+        Cache::shouldReceive('has')->with($negativeKey)->andReturnFalse();
+        Cache::shouldReceive('get')->with($positiveKey)->andReturnNull();
+        Cache::shouldReceive('put')->once()->withArgs(function ($key, $value, $ttl) use ($positiveKey) {
+            $this->assertSame($positiveKey, $key);
+            $this->assertStringStartsWith('data:image/webp;base64,', $value);
+            $this->assertInstanceOf(Carbon::class, $ttl);
+            $this->assertTrue(
+                $ttl->greaterThanOrEqualTo(Carbon::now()->addDays(364))
+                && $ttl->lessThanOrEqualTo(Carbon::now()->addDays(366)),
+                'Positive logo cache TTL should be approximately 365 days'
+            );
+
+            return true;
+        });
+
+        $response = $this->json('GET', 'api/projects/' . $this->project->name . '?exact=true')
+            ->assertStatus(200);
+
+        $this->assertStringStartsWith(
+            'data:image/webp;base64,',
+            $response->json('data.0.project.logo_base64')
+        );
+    }
+
+    public function test_search_negative_caches_missing_logo_with_short_ttl(): void
+    {
+        $this->project->access = config('epicollect.strings.project_access.public');
+        $this->project->logo_url = 'logo.jpg';
+        $this->project->save();
+
+        Storage::fake('project');
+
+        $version = $this->projectStructure->updated_at->timestamp;
+        $positiveKey = 'project_mobile_logo_base64:' . $this->project->ref . ':version:' . $version;
+        $negativeKey = 'project_mobile_logo_missing:' . $this->project->ref . ':version:' . $version;
+
+        Cache::partialMock();
+        Cache::shouldReceive('has')->with($negativeKey)->andReturnFalse();
+        Cache::shouldReceive('get')->with($positiveKey)->andReturnNull();
+        Cache::shouldReceive('put')->once()->withArgs(function ($key, $value, $ttl) use ($negativeKey) {
+            $this->assertSame($negativeKey, $key);
+            $this->assertTrue($value);
+            $this->assertInstanceOf(Carbon::class, $ttl);
+            $this->assertTrue(
+                $ttl->greaterThanOrEqualTo(Carbon::now()->addMinutes(59))
+                && $ttl->lessThanOrEqualTo(Carbon::now()->addMinutes(61)),
+                'Negative logo cache TTL should be approximately 60 minutes'
+            );
+
+            return true;
+        });
+
+        $response = $this->json('GET', 'api/projects/' . $this->project->name . '?exact=true')
+            ->assertStatus(200);
+
+        $this->assertNull($response->json('data.0.project.logo_base64'));
+    }
+
+    public function test_search_with_logo_base64_flag_off_returns_pre_change_payload(): void
+    {
+        config(['epicollect.setup.api.project_search_mobile_logo_base64_enabled' => false]);
+
+        $response = $this->json('GET', 'api/projects/' . $this->project->name . '?exact=true')
+            ->assertStatus(200);
+
+        $project = $response->json('data.0.project');
+        $this->assertSame(
+            ['name', 'slug', 'access', 'ref'],
+            array_keys($project)
+        );
     }
 
 }

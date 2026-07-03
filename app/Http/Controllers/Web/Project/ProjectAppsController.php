@@ -1,4 +1,6 @@
-<?php /** @noinspection DuplicatedCode */
+<?php
+
+/** @noinspection DuplicatedCode */
 
 namespace ec5\Http\Controllers\Web\Project;
 
@@ -8,11 +10,13 @@ use ec5\Models\OAuth\OAuthClientProject;
 use ec5\Traits\Requests\RequestAttributes;
 use Exception;
 use Illuminate\Contracts\View\Factory;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use Laravel\Passport\ClientRepository;
+use Log;
 use Redirect;
 use Response;
 use Throwable;
@@ -21,16 +25,8 @@ class ProjectAppsController
 {
     use RequestAttributes;
 
-    /**
-     * @var ClientRepository
-     */
-    protected $clients;
+    protected ClientRepository $clients;
 
-    /**
-     * ProjectAppsController constructor
-     *
-     * @param ClientRepository $clients
-     */
     public function __construct(ClientRepository $clients)
     {
         $this->clients = $clients;
@@ -86,16 +82,28 @@ class ProjectAppsController
             return Redirect::back()->withErrors($ruleProjectApp->errors());
         }
 
-        // Make the client
-        $client = $this->clients->create(
-            request()->user()->getKey(), $payload['application_name'], ''
-        )->makeVisible('secret');
+        try {
+            DB::beginTransaction();
 
-        // Add to the client_projects table
-        $clientProject = new OAuthClientProject();
-        $clientProject->client_id = $client->id;
-        $clientProject->project_id = $this->requestedProject()->getId();
-        if (!$clientProject->save()) {
+            $client = $this->clients->createClientCredentialsGrantClient($payload['application_name']);
+            $plainSecret = $client->plainSecret;
+
+            $clientProject = new OAuthClientProject();
+            $clientProject->client_id = $client->id;
+            $clientProject->project_id = $this->requestedProject()->getId();
+            $clientProject->client_secret_recoverable = $plainSecret;
+
+            if (!$clientProject->save()) {
+                throw new Exception('Failed to save OAuthClientProject');
+            }
+
+            DB::commit();
+        } catch (Throwable $e) {
+            DB::rollBack();
+            Log::error('Failed to create project OAuth client', [
+                'project_id' => $this->requestedProject()->getId(),
+                'exception' => $e->getMessage(),
+            ]);
             if (request()->ajax()) {
                 return Response::apiErrorCode(400, ['errors' => ['ec5_91']]);
             }
@@ -113,6 +121,7 @@ class ProjectAppsController
      * Delete a client app
      *
      * @return Factory|Application|JsonResponse|RedirectResponse|View
+     * @throws Throwable
      */
     public function delete()
     {

@@ -112,7 +112,7 @@ class ProjectManageUsersController
                 'includeTemplate' => 'manage-users',
                 'project' => $this->requestedProject(),
                 'users' => $projectMembers,
-                'countOverall' => $countOverall->total,
+                'countOverall' => $countOverall,
                 'countByRole' => $countByRole,
                 'requestedProjectRole' => $this->requestedProjectRole(),
                 'canTransferOwnership' => $canTransferOwnership,

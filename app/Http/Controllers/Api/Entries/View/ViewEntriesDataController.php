@@ -3,6 +3,7 @@
 namespace ec5\Http\Controllers\Api\Entries\View;
 
 use ec5\Libraries\Utilities\DateFormatConverter;
+use ec5\Traits\Eloquent\StatsRefresher;
 use Exception;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Routing\ResponseFactory;
@@ -14,6 +15,8 @@ use Throwable;
 
 class ViewEntriesDataController extends ViewEntriesControllerBase
 {
+    use StatsRefresher;
+
     //Export entries using the API
     /**
      * @throws Throwable
@@ -34,6 +37,12 @@ class ViewEntriesDataController extends ViewEntriesControllerBase
         // Validate the options and query string
         if (!$this->entriesViewService->areValidQueryParams($params)) {
             return Response::apiErrorCode(400, $this->entriesViewService->validationErrors);
+        }
+
+        if ((int)$params['page'] === 1) {
+            // Entry exports are paginated; refresh project_stats once at the start
+            // so exported metadata reflects current totals without changing mid-export.
+            $this->refreshProjectStats($this->requestedProject());
         }
 
         // If the map_index value passed does not exist, error out

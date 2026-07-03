@@ -5,12 +5,29 @@ namespace ec5\Traits\Eloquent;
 use Carbon\Carbon;
 use DB;
 use ec5\DTO\EntryStructureDTO;
+use ec5\Models\Entries\BranchEntry;
+use ec5\Models\Entries\Entry;
 use Illuminate\Database\Query\Builder;
 use Log;
 use Throwable;
 
 trait Entries
 {
+    /**
+     * Check whether the project has any hierarchy or branch entries stored.
+     *
+     * @param int $projectId
+     * @return bool
+     */
+    protected function hasStoredEntries(int $projectId): bool
+    {
+        if (Entry::where('project_id', $projectId)->exists()) {
+            return true;
+        }
+
+        return BranchEntry::where('project_id', $projectId)->exists();
+    }
+
     /**
      * Retrieves GeoJSON data for entries associated with a specific project.
      *
@@ -50,7 +67,7 @@ trait Entries
          * }
          */
 
-        $index = 'idx_'.$this->table.'_project_form_ref_id';
+        $index = 'idx_' . $this->table . '_project_form_ref_id';
         return DB::table($this->table)
             ->select('id', 'geo_json_data')
             ->from(DB::raw("`$this->table` USE INDEX ($index)"))
@@ -77,27 +94,16 @@ trait Entries
             ? str_replace(' ', 'T', Carbon::parse($date)->format('Y-m-d H:i:s')) . '.000Z'
             : null;
 
-        //get oldest date
-        $oldest = DB::table('entries')
+        $result = DB::table($this->table)
             ->where('project_id', $projectId)
             ->where('form_ref', $formRef)
             ->whereNotNull('geo_json_data')
-            ->orderBy('created_at', 'asc')
-            ->limit(1)
-            ->value('created_at');
-
-        //get newest date
-        $newest = DB::table('entries')
-            ->where('project_id', $projectId)
-            ->where('form_ref', $formRef)
-            ->whereNotNull('geo_json_data')
-            ->orderBy('created_at', 'desc')
-            ->limit(1)
-            ->value('created_at');
+            ->selectRaw('MIN(created_at) as oldest, MAX(created_at) as newest')
+            ->first();
 
         return [
-            'oldest' => $formatDate($oldest),
-            'newest' => $formatDate($newest),
+            'oldest' => $formatDate($result->oldest ?? null),
+            'newest' => $formatDate($result->newest ?? null),
         ];
     }
 

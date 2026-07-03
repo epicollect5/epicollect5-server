@@ -2,6 +2,7 @@
 
 namespace ec5\Providers\Macros\Response;
 
+use ec5\Libraries\Utilities\Common;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Storage;
@@ -50,7 +51,7 @@ class ToEntryThumbS3Macro extends ServiceProvider
 
                     $cacheControl = request('v')
                         ? config('epicollect.media.cache_control.always')
-                        : config('epicollect.media.cache_control.never');
+                        : Common::mediaHourlyCacheControl();
 
                     return response($thumbnailData, 200, [
                         'Content-Type' => config('epicollect.media.content_type.photo'),
@@ -66,7 +67,7 @@ class ToEntryThumbS3Macro extends ServiceProvider
                     }
                     $response = Response::make($file);
                     $response->header('Content-Type', config('epicollect.media.content_type.photo'));
-                    $response->header('Cache-Control', config('epicollect.media.cache_control.always'));
+                    $response->header('Cache-Control', config('epicollect.media.cache_control.never'));
                     return $response;
                 } catch (Throwable $e) {
                     Log::error('Cannot generate S3 thumbnail', ['exception' => $e]);
@@ -77,7 +78,7 @@ class ToEntryThumbS3Macro extends ServiceProvider
             $file = Storage::disk('public')->get($photoPlaceholderFilename);
             $response = Response::make($file);
             $response->header('Content-Type', config('epicollect.media.content_type.photo'));
-            $response->header('Cache-Control', config('epicollect.media.cache_control.always'));
+            $response->header('Cache-Control', config('epicollect.media.cache_control.never'));
             return $response;
         });
     }
