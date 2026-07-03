@@ -1,0 +1,62 @@
+public/css/site.css
+  s_f1ed91c2bd3a65::t_798b30ceeaa0dd 5
+tests/Http/Validation/Project/Mapping/RuleMappingStructureTest.php
+  s_f1ed91c2bd3a65::t_5f2d2cfc19cbd0 45,47-49,51-56,58,60,62-63,65-161
+  s_f1ed91c2bd3a65::t_4c4b71debafaf6 44
+  s_f1ed91c2bd3a65::t_6e22d8a7f4e2db 46
+  s_f1ed91c2bd3a65::t_18d6569f361bf7 50
+  s_f1ed91c2bd3a65::t_66bcef31acd70e 57
+  s_f1ed91c2bd3a65::t_3b8ec41b046289 59
+  s_f1ed91c2bd3a65::t_a6e61320294406 61
+  s_f1ed91c2bd3a65::t_acdd536d271a83 64
+  s_f1ed91c2bd3a65::t_52dffaab819695 162
+config/epicollect/setup.php
+  s_f1ed91c2bd3a65::t_9fcbb88cba103f 60
+public/js/project/project.js
+  s_f1ed91c2bd3a65::t_798b30ceeaa0dd 2
+  s_f1ed91c2bd3a65::t_fdd2c59de6a6ae 1
+app/Http/Validation/Project/Mapping/RuleMappingStructure.php
+  s_f1ed91c2bd3a65::t_451d0ea5cd65b1 14-15
+app/DTO/ProjectStatsDTO.php
+  s_f1ed91c2bd3a65::t_70360e278891cb 65,87,92-93,124
+  s_f1ed91c2bd3a65::t_eb5dc726914b6e 62-64
+  s_f1ed91c2bd3a65::t_530cd85481d564 66-68,84-86
+  s_f1ed91c2bd3a65::t_bc88126d4c0f07 88-91
+  s_f1ed91c2bd3a65::t_b9ff30e326cd86 121-123
+tests/Libraries/Utilities/CommonTest.php
+  s_f1ed91c2bd3a65::t_185160c30f5a68 125
+  s_f1ed91c2bd3a65::t_3a343fbe6cb9d8 162
+  s_f1ed91c2bd3a65::t_551f01a6c8ea92 163-203
+tests/Http/Controllers/Api/Entries/Download/DownloadSubsetControllerTest.php
+  h_2231ff2aa93473 13,396,485
+database/factories/ModelFactory.php
+  s_f1ed91c2bd3a65::t_d98efdeba8a680 45
+  s_f1ed91c2bd3a65::t_8ee04453317353 32
+  s_f1ed91c2bd3a65::t_fab42f64c0d4e2 39,42
+public/formbuilder/js/formbuilder.js
+  s_f1ed91c2bd3a65::t_798b30ceeaa0dd 10
+  s_f1ed91c2bd3a65::t_f43e6b4d61bb1f 1,6-9
+tests/TestCase.php
+  s_f1ed91c2bd3a65::t_a158517df66103 83-84,86,124-138,140-146,148-150,153-154,163-197,199-202,205-210,213-220,222-224,226,228-235,238-243,245-258,261-270
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "547a9b8f1dc8a4932e1a6db72dc426336119b736",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_f1ed91c2bd3a65": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0d917d0ebffef9MwiT3OJvsSKq",
+        "model": "minimax-m3"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
