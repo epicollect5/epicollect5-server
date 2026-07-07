@@ -384,7 +384,7 @@ class ProjectMappingControllerTest extends TestCase
                 $modifiedMapping['forms'],
                 $jsonResponse['data']['mapping'][1]['forms']
             );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
@@ -873,6 +873,47 @@ class ProjectMappingControllerTest extends TestCase
                         ]
                     ]
                 ]
+            );
+        } catch (Throwable $e) {
+            $this->logTestError($e, $response);
+        }
+    }
+
+    /**
+     * Regression: form-encoded POSTs deliver map_index as a string.
+     * Renaming the default EC5_AUTO mapping (map_index 0) must return ec5_91
+     * regardless of whether map_index arrives as the string "0" or the int 0.
+     */
+    public function test_rename_default_mapping_is_rejected_when_map_index_is_string_zero()
+    {
+        $response = [];
+        try {
+            $response[] = $this->actingAs($this->user)
+                ->post('myprojects/' . $this->project->slug . '/mapping-data/update', [
+                    'action' => 'rename',
+                    'map_index' => '0',
+                    'name' => 'Renamed'
+                ]);
+            $response[0]->assertStatus(422);
+            $response[0]->assertExactJson(
+                [
+                    "errors" => [
+                        [
+                            "code" => "ec5_91",
+                            "title" => "Sorry, you cannot perform this operation.",
+                            "source" => "mapping"
+                        ]
+                    ]
+                ]
+            );
+
+            //assert the default mapping is unchanged in the db
+            $projectStructures = ProjectStructure::where('project_id', $this->project->id)
+                ->first();
+            $projectMappings = json_decode($projectStructures->project_mapping, true);
+            $this->assertEquals(
+                config('epicollect.mappings.default_mapping_name'),
+                $projectMappings[0]['name']
             );
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
