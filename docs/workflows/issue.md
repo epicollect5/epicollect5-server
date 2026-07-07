@@ -25,11 +25,11 @@ The issue must preserve the technical intent and decisions from the original pla
 
 ## Output format
 
-Output exactly one fenced code block (no syntax highlighting) containing the entire issue body.
+Output the issue body as plain Markdown.
 
-Do not add any explanation before or after the code block.
+Do not add any explanation before or after the issue body.
 
-Inside the block, use this structure in order:
+Inside the issue body, use this structure in order:
 
 # <Title>
 
@@ -133,4 +133,4 @@ If requirements are ambiguous:
 - Do NOT call `gh`.
 - Do NOT write files.
 - Do NOT scan the repository.
-- Do NOT add text outside the single fenced code block.
+- Do NOT add text outside the issue body.
