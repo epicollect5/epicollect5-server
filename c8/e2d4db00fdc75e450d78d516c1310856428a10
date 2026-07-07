@@ -1,0 +1,36 @@
+app/Http/Validation/Project/Mapping/RuleMappingUpdate.php
+  s_dd6c3be7e7afda::t_88f4061213f338 21
+  s_dd6c3be7e7afda::t_6c2f6a1fbec588 31
+tests/Http/Validation/Project/Mapping/RuleMappingUpdateTest.php
+  s_dd6c3be7e7afda::t_08fb4f5e4981e1 167-191,193-210,212-227,229-249
+  s_dd6c3be7e7afda::t_5f33ae69621191 192,211,228
+  s_dd6c3be7e7afda::t_954830baf7887b 250
+  h_2231ff2aa93473 8,13-14,43,74,101,131,161
+  s_dd6c3be7e7afda::t_cb73f812dc8953 5
+  s_dd6c3be7e7afda::t_8c8a7f943fdee9 6
+tests/Http/Controllers/Web/Project/ProjectMappingControllerTest.php
+  h_2231ff2aa93473 387
+  s_dd6c3be7e7afda::t_4cbb8fb214a2b8 881-894,896-921
+  s_dd6c3be7e7afda::t_eb65ceb8f738df 895
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "c8e2d4db00fdc75e450d78d516c1310856428a10",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_dd6c3be7e7afda": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0c3d1a8baffehWSRxT36aGJ80Y",
+        "model": "minimax-m3"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
