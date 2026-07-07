@@ -1,0 +1,53 @@
+database/migrations/2026_07_07_134313_convert_logo_url_to_has_logo_on_projects_table.php
+  s_5cbe7d5df1c6ee::t_c70c48a709501b 8
+  s_5cbe7d5df1c6ee::t_bd244dc827ff6a 1-7,9-39
+app/Services/Home/GenerateHomePageCacheService.php
+  s_5cbe7d5df1c6ee::t_4022e6c903913a 110
+tests/Models/Eloquent/ProjectTest.php
+  s_5cbe7d5df1c6ee::t_dc5cf9a5505363 197
+  s_5cbe7d5df1c6ee::t_0ad6fc1d8895a8 217
+  s_5cbe7d5df1c6ee::t_f7a063e26f23e2 172
+app/Http/Controllers/Api/Project/ProjectController.php
+  s_5cbe7d5df1c6ee::t_9a075d939debe5 130
+  s_5cbe7d5df1c6ee::t_c911d5c4f266c8 167
+  s_5cbe7d5df1c6ee::t_dc3d74e886a57c 197
+tests/Http/Controllers/Api/Project/ProjectControllerTest.php
+  s_5cbe7d5df1c6ee::t_8b6cd80ec7b2b1 670
+  s_5cbe7d5df1c6ee::t_5a01767b2073f4 709
+docs/DATABASE-SCHEMA.md
+  s_5cbe7d5df1c6ee::t_4c8490e9b6119b 99
+  s_5cbe7d5df1c6ee::t_515976bf99cf27 116
+tests/Http/Controllers/Api/Entries/Delete/DeleteControllerMediaS3Test.php
+  h_2231ff2aa93473 35
+  s_6c010b765c1e31::t_b1a134387de360 432,434,436,442-457
+  s_6c010b765c1e31::t_04ee9e68d2a185 458
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "46d4cce96de11dbc1f234722eb053793e9a6d679",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_5cbe7d5df1c6ee": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0c77ce2bbffeG7x58zbufvzfKV",
+        "model": "minimax-m3"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    },
+    "s_6c010b765c1e31": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0c32be90dffeDVx3O8O2mdEe2f",
+        "model": "minimax-m3"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
