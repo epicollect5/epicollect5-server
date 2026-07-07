@@ -1,0 +1,38 @@
+app/Libraries/Utilities/DateFormatConverter.php
+  s_b400e21ee4644f::t_dd71d25a75fd1c 88-99
+app/Models/Project/Project.php
+  s_b400e21ee4644f::t_f9ad1ed7a39b0a 54
+  s_b400e21ee4644f::t_483b18e15314c4 8
+app/DTO/ProjectStatsDTO.php
+  s_b400e21ee4644f::t_07caecf26c8955 5-6
+  s_b400e21ee4644f::t_9264f47eee0035 33
+app/Http/Controllers/Api/Project/ProjectController.php
+  s_b400e21ee4644f::t_3bccc77669127a 238-239
+  s_b400e21ee4644f::t_480604481f4742 14
+tests/Http/Validation/Project/RuleFormTest.php
+  s_5a7a4486eb362e::t_fc942f94bff3cc 231,242,296
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "736f64ce32d13797c135795b48828bd773cf192c",
+  "prompts": {},
+  "sessions": {
+    "s_5a7a4486eb362e": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0c3d09fb6ffesBI1SC4rlEvPwC",
+        "model": "minimax-m3"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    },
+    "s_b400e21ee4644f": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0c2b30888ffeAjgnGjm0KdGjCj",
+        "model": "minimax-m3"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
