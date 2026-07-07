@@ -32,7 +32,7 @@ class DeleteControllerMediaS3Test extends TestCase
         parent::setUp();
 
         $this->clearDatabase([]);
-        $this->baseTimestamp = now(); // Get a Carbon instance
+        $this->baseTimestamp = Carbon::now();
 
         $user = factory(User::class)->create();
         $projectDefinition = ProjectDefinitionGenerator::createProject(5);
@@ -429,15 +429,32 @@ class DeleteControllerMediaS3Test extends TestCase
                 // Simulate files created 1 second apart
                 $timestamp = $this->baseTimestamp->copy()->addSeconds($i)->timestamp;
                 //photo
-                Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . $timestamp . '.jpg', '');
+                Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . $timestamp . '.jpg', str_repeat('A', 1024));
                 //audio
-                Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . $timestamp. '.mp4', '');
+                Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . $timestamp. '.mp4', str_repeat('A', 2048));
                 //video
-                Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '_' . $timestamp . '.mp4', '');
+                Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '_' . $timestamp . '.mp4', str_repeat('A', 4096));
 
             }
         }
         $this->assertCount($numOfEntries, Entry::where('project_id', $this->project->id)->get());
+
+        //Wait for the S3 listing to be consistent before calling the deletion endpoint.
+        //S3 listObjectsV2 can briefly under-report newly PUT-ed objects (eventual
+        //consistency of object metadata). Without this wait, the deletion batch and
+        //the post-deletion assertion can see different file counts, producing flakes.
+        $expectedPerDisk = $chunkSize + 100;
+        $deadline = microtime(true) + 10;
+        do {
+            $ready = count(Storage::disk('photo')->files($this->project->ref)) === $expectedPerDisk
+                && count(Storage::disk('audio')->files($this->project->ref)) === $expectedPerDisk
+                && count(Storage::disk('video')->files($this->project->ref)) === $expectedPerDisk;
+            if ($ready) {
+                break;
+            }
+            usleep(250_000);
+        } while (microtime(true) < $deadline);
+        $this->assertTrue($ready, 'S3 fixtures not fully visible before deletion');
 
         //hit the delete media endpoint
         $payload = [

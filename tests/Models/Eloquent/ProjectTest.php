@@ -169,7 +169,7 @@ class ProjectTest extends TestCase
             ]);
         }
 
-        $hits = Project::startsWith($baseName, ['name', 'slug', 'access', 'ref', 'logo_url']);
+        $hits = Project::startsWith($baseName, ['name', 'slug', 'access', 'ref', 'has_logo']);
 
         $this->assertCount(20, $hits);
         $this->assertIsString($hits->first()->structure_last_updated);
@@ -194,7 +194,7 @@ class ProjectTest extends TestCase
             'updated_at' => $updatedAt,
         ]);
 
-        $hits = Project::matches($name, ['name', 'slug', 'access', 'ref', 'logo_url']);
+        $hits = Project::matches($name, ['name', 'slug', 'access', 'ref', 'has_logo']);
 
         $this->assertCount(1, $hits);
         $this->assertSame($project->ref, $hits->first()->ref);
@@ -214,7 +214,7 @@ class ProjectTest extends TestCase
             'name' => $name,
         ]);
 
-        $hits = Project::startsWith($name, ['name', 'slug', 'access', 'ref', 'logo_url']);
+        $hits = Project::startsWith($name, ['name', 'slug', 'access', 'ref', 'has_logo']);
 
         $this->assertCount(1, $hits);
         $this->assertNull($hits->first()->structure_last_updated);

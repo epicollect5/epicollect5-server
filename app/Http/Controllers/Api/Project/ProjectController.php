@@ -127,7 +127,7 @@ class ProjectController
 
         if (!empty($name)) {
             $columns = $logoBase64Enabled
-                ? ['projects.name', 'projects.slug', 'projects.access', 'projects.ref', 'projects.logo_url']
+                ? ['projects.name', 'projects.slug', 'projects.access', 'projects.ref', 'projects.has_logo']
                 : ['name', 'slug', 'access', 'ref'];
 
             if ($exactMatch) {
@@ -164,7 +164,7 @@ class ProjectController
         foreach ($hits as $hit) {
             if ($hit->access === $privateAccess) {
                 $hit->logo_base64 = null;
-            } elseif (empty($hit->logo_url)) {
+            } elseif (empty($hit->has_logo)) {
                 $hit->logo_base64 = null;
             } elseif (!empty($hit->structure_last_updated)) {
                 $version = Carbon::parse($hit->structure_last_updated)->getTimestamp();
@@ -194,7 +194,7 @@ class ProjectController
             }
 
             unset($hit->structure_last_updated);
-            unset($hit->logo_url);
+            unset($hit->has_logo);
 
             $data['type'] = 'project';
             $data['id'] = $hit->ref;

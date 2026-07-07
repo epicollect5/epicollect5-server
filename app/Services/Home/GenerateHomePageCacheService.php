@@ -107,7 +107,7 @@ class GenerateHomePageCacheService
             return url('/images/ec5-placeholder-256x256.jpg');
         }
 
-        if (empty($project->logo_url)) {
+        if (empty($project->has_logo)) {
             return url('/images/ec5-placeholder-256x256.jpg');
         }
 

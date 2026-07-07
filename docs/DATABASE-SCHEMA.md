@@ -96,6 +96,7 @@ Columns:
 - `ref`: `VARCHAR(100)`, not null
 - `description`: `TEXT`, not null
 - `small_description`: `TEXT`, not null
+- `has_logo`: `BOOLEAN`, default `TRUE`, indicates whether the project has a logo file in object storage
 - `access`: `ENUM('public','private')`, default `public`
 - `visibility`: `ENUM('listed','hidden')`, default `listed`
 - `category`: `VARCHAR(100)`, default `general`
@@ -112,7 +113,7 @@ Indexes:
 - Non-unique index `fk_projects_user_id` on `created_by`
 
 Notes:
-- `logo_url` was dropped in 2026.
+- `logo_url` (legacy `VARCHAR`) was replaced by `has_logo` (boolean) in 2026 to reflect that the value was only ever a sentinel for "logo file exists in object storage".
 - The original foreign key from `created_by` to `users.id` was removed in 2023 and not restored.
 
 ### `project_roles`

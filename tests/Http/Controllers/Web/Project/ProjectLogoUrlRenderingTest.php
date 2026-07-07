@@ -44,7 +44,6 @@ class ProjectLogoUrlRenderingTest extends TestCase
                 'access' => config('epicollect.strings.project_access.public'),
                 'visibility' => config('epicollect.strings.project_visibility.listed'),
                 'status' => config('epicollect.strings.project_status.active'),
-                'logo_url' => 'logo.jpg' // Set logo_url to trigger media endpoint URL in templates
             ], $projectOverrides)
         );
 
@@ -147,7 +146,6 @@ class ProjectLogoUrlRenderingTest extends TestCase
             'name' => array_get($projectDefinition, 'data.project.name'),
             'slug' => array_get($projectDefinition, 'data.project.slug'),
             'ref' => array_get($projectDefinition, 'data.project.ref'),
-            'logo_url' => 'logo.jpg'
         ]);
 
         factory(ProjectRole::class)->create([
@@ -197,7 +195,6 @@ class ProjectLogoUrlRenderingTest extends TestCase
             'slug' => array_get($projectDefinition, 'data.project.slug'),
             'ref' => array_get($projectDefinition, 'data.project.ref'),
             'status' => config('epicollect.strings.project_status.trashed'),
-            'logo_url' => 'logo.jpg'
         ]);
 
         factory(ProjectRole::class)->create([
@@ -247,7 +244,6 @@ class ProjectLogoUrlRenderingTest extends TestCase
             'slug' => array_get($projectDefinition, 'data.project.slug'),
             'ref' => array_get($projectDefinition, 'data.project.ref'),
             'status' => config('epicollect.strings.project_status.locked'),
-            'logo_url' => 'logo.jpg'
         ]);
 
         factory(ProjectRole::class)->create([
@@ -290,7 +286,6 @@ class ProjectLogoUrlRenderingTest extends TestCase
 
         $project = factory(Project::class)->create([
             'created_by' => $creator->id,
-            'logo_url' => 'logo.jpg' // Set logo_url to trigger media endpoint URL
         ]);
 
         factory(ProjectRole::class)->create([
