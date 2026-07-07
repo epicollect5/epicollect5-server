@@ -1,0 +1,21 @@
+docs/workflows/issue.md
+  s_54d265c9d1cfdc::t_55047431f663e8 28,30
+  s_54d265c9d1cfdc::t_5e4d9a14c9479f 32
+  s_54d265c9d1cfdc::t_d696bdf934c0dd 136
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "759809b632743b8683ec6b9d62a8d9c884c0f64e",
+  "prompts": {},
+  "sessions": {
+    "s_54d265c9d1cfdc": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0c25955d0ffeNb1D5RqO88oqLy",
+        "model": "minimax-m3"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
