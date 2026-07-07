@@ -2,6 +2,8 @@
 
 namespace ec5\DTO;
 
+use ec5\Libraries\Utilities\DateFormatConverter;
+
 class ProjectStatsDTO
 {
     // Coming from project_structures table (updated_at)
@@ -28,7 +30,7 @@ class ProjectStatsDTO
         $this->branch_counts = $this->decodeCounts($params['branch_counts'] ?? []);
         $this->structure_last_updated = $params['structure_last_updated'] ?? '';
         $projectDefinitionVersion = $params['project_definition_version'] ?? $this->structure_last_updated;
-        $this->project_definition_version = (string)strtotime($projectDefinitionVersion);
+        $this->project_definition_version = DateFormatConverter::isoToUnixTimestamp($projectDefinitionVersion);
     }
 
     /**

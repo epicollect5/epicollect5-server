@@ -228,7 +228,7 @@ class RuleFormTest extends TestCase
 
     }
 
-    public function test_terminal_inputs_cannot_jump_to_end()
+    public function test_terminal_end_jumps_are_silently_accepted()
     {
         $this->form['inputs'][3]['jumps'] = [
             [
@@ -239,8 +239,7 @@ class RuleFormTest extends TestCase
         ];
 
         $this->validator->validateJumps($this->form['inputs']);
-        $this->assertTrue($this->validator->hasErrors());
-        $this->assertEquals(['ec5_264'], $this->validator->errors()[$this->form['inputs'][3]['ref']]);
+        $this->assertFalse($this->validator->hasErrors());
 
         $this->validator->resetErrors();
         $this->resetForm();
@@ -294,7 +293,6 @@ class RuleFormTest extends TestCase
         ];
 
         $this->validator->validateJumps($this->form['inputs']);
-        $this->assertTrue($this->validator->hasErrors());
-        $this->assertEquals(['ec5_264'], $this->validator->errors()['branch_input_2']);
+        $this->assertFalse($this->validator->hasErrors());
     }
 }

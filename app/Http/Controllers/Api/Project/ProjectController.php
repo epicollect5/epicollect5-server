@@ -11,6 +11,7 @@ use ec5\Http\Validation\Project\RuleImportJson as ImportJsonValidator;
 use ec5\Http\Validation\Project\RuleName;
 use ec5\Http\Validation\Project\RuleProjectDefinition as ProjectDefinitionValidator;
 use ec5\Http\Validation\Schemas\ProjectSchemaValidator;
+use ec5\Libraries\Utilities\DateFormatConverter;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectStats;
@@ -234,8 +235,8 @@ class ProjectController
             'id' => $slug,
             'attributes' => [
                 'structure_last_updated' => $version, // legacy
-                'project_definition_version' => (string)strtotime($version),
-                'version' => (string)strtotime($version)
+                'project_definition_version' => DateFormatConverter::isoToUnixTimestamp($version),
+                'version' => DateFormatConverter::isoToUnixTimestamp($version)
             ]
 
         ];

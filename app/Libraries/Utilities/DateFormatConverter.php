@@ -85,4 +85,16 @@ class DateFormatConverter
     {
         return self::getSanitisedCreateAt($rawUpdatedAt);
     }
+
+    /**
+     * Normalise a formatted datetime string (e.g. 'Y-m-d H:i:s') to a Unix timestamp string.
+     *
+     * Single source of truth for the project_definition_version cast, shared by
+     * the DTO, the model listing queries, and the version controller.
+     * Returns '' for null/empty input to preserve legacy fallback behaviour.
+     */
+    public static function isoToUnixTimestamp(?string $raw): string
+    {
+        return (string)strtotime($raw ?? '');
+    }
 }

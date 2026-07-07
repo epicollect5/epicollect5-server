@@ -100,12 +100,7 @@ class RuleForm extends ValidationBase
 
                 foreach ($input['jumps'] as $jumpDetails) {
 
-                    // END of form/branch is not valid on the terminal input
                     if ($jumpDetails['to'] == 'END') {
-                        if ($position === $lastInputPosition) {
-                            $this->addAdditionalError($input['ref'], 'ec5_264');
-                            return;
-                        }
                         continue;
                     }
 

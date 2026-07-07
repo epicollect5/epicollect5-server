@@ -5,6 +5,7 @@ namespace ec5\Models\Project;
 use Carbon\Carbon;
 use DB;
 use ec5\DTO\ProjectDTO;
+use ec5\Libraries\Utilities\DateFormatConverter;
 use ec5\Traits\Models\SerializeDates;
 use Exception;
 use Illuminate\Contracts\Pagination\Paginator;
@@ -50,7 +51,7 @@ class Project extends Model
     private function normalizeProjectDefinitionVersion(object $project): object
     {
         $projectDefinitionVersion = $project->project_definition_version ?? $project->structure_last_updated ?? '';
-        $project->project_definition_version = (string)strtotime($projectDefinitionVersion);
+        $project->project_definition_version = DateFormatConverter::isoToUnixTimestamp($projectDefinitionVersion);
 
         return $project;
     }
