@@ -1,0 +1,136 @@
+# Issue Draft Workflow
+
+Convert the current session's approved plan into a GitHub-issue-ready Markdown document.
+
+## Inputs
+
+- The implementation plan produced in the current conversation (plan-mode output or recent assistant turns).
+- `$ARGUMENTS` (optional): additional context, constraints, or a `title: <text>` override.
+
+## Source of truth
+
+- The plan produced in this conversation is the only source of truth.
+- Do NOT scan the repository.
+- Do NOT read files unless explicitly required to resolve an ambiguity in the plan.
+- Do NOT introduce new requirements, solutions, refactors, or scope.
+
+## Responsibilities
+
+Produce ONE Markdown document optimized for:
+
+- human review as a GitHub issue
+- later AI implementation from the issue alone
+
+The issue must preserve the technical intent and decisions from the original plan.
+
+## Output format
+
+Output exactly one fenced code block (no syntax highlighting) containing the entire issue body.
+
+Do not add any explanation before or after the code block.
+
+Inside the block, use this structure in order:
+
+# <Title>
+
+Concise imperative title, <= 70 characters.
+
+## Summary
+
+2-4 sentences describing what changes and why.
+
+## Context
+
+Relevant background from the plan.
+
+Include:
+- existing behaviour
+- problem being solved
+- affected components
+- file paths or references mentioned in the plan
+
+Do not invent file paths or line numbers.
+
+## Goal
+
+Single sentence describing the intended outcome.
+
+## Proposed Plan
+
+Convert the plan into numbered implementation steps.
+
+Requirements:
+
+- Each step must be small enough for an AI coding agent to execute.
+- Preserve implementation order.
+- Include exact file paths, classes, functions, commands, or configuration details only when present in the plan.
+- Preserve test, lint, migration, or build commands verbatim when provided.
+
+Example:
+
+1. Update `app/Services/UserService.php` to validate the new workflow.
+2. Add coverage in `tests/Feature/UserTest.php`.
+3. Run `vendor/bin/phpunit --no-progress tests/Feature/UserTest.php`.
+
+## Acceptance Criteria
+
+Convert requirements into a checkbox list.
+
+Rules:
+
+- Each item must be objectively verifiable.
+- Criteria must describe the final expected behaviour.
+- Do not add criteria not present in the plan.
+
+Format:
+
+- [ ] ...
+
+## Out of Scope
+
+Explicitly list excluded work.
+
+If the plan does not define exclusions, write:
+
+> None specified.
+
+## References
+
+Include only references present in the plan:
+
+- file paths
+- file:line references
+- documentation links
+- related issues or PRs
+
+## AI Implementation Context
+
+This issue is intended to be used as an implementation specification.
+
+Implementation MUST:
+
+- follow `AGENTS.md`
+- follow repository workflow documentation
+- satisfy every acceptance criterion
+- complete every proposed implementation step
+- avoid unrelated refactoring or scope expansion
+
+If requirements are ambiguous:
+
+> TODO: clarify missing requirement before implementation
+
+## Style rules
+
+- No emojis.
+- No conversational tone.
+- Use imperative voice for implementation steps.
+- Preserve technical terminology from the plan.
+- Preserve commands verbatim.
+- Do not hallucinate missing details.
+
+## What NOT to do
+
+- Do NOT call `gh`.
+- Do NOT write files.
+- Do NOT scan the repository.
+- Do NOT add text outside the single fenced code block.
