@@ -49,6 +49,9 @@
   only to explain purpose, not to restate types.
 - **Blade Templates**: Indent with 4 spaces. No space after Blade control structures: `@if($condition)`,
   not `@if ($condition)`.
+- **Avoid N+1 queries**: When building new queries or refactoring, be alert to the N+1 query problem (lazy-loading
+  relations inside loops). Eager load relationships with `with()`/`load()`, use `withCount`, or select only needed
+  columns. Watch for it in services and controllers that iterate over collections of models.
 
 ## Integration & Communication
 

@@ -324,7 +324,7 @@ class ProjectController
         ImportJsonValidator        $importJsonValidator,
         ProjectSchemaValidator     $projectSchemaValidator,
         ProjectDTO                 $projectDTO
-    ) {
+    ): JsonResponse {
         // 1. Check Authorization Header
         $token = $request->bearerToken();
         $expectedToken = config('epicollect.setup.api.import_project.validation_key');
