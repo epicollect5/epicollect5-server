@@ -6,7 +6,6 @@ use Faker\Factory as Faker;
 
 class Strings
 {
-
     /**
      * Check if a string contains emoji
      *
@@ -119,5 +118,29 @@ class Strings
         $randomString = preg_replace('/[^A-Za-z0-9]/', '', $randomString);
         // Ensure the string is exactly the specified length
         return str_pad($randomString, $length, '0', STR_PAD_RIGHT);
+    }
+
+    /**
+     * Collapse runs of whitespace (spaces, tabs, newlines, non-breaking space, etc.)
+     * into a single ASCII space.
+     *
+     * Throws \InvalidArgumentException if the PCRE engine rejects the input
+     * (e.g. malformed UTF-8 under the `u` modifier). Callers — particularly
+     * the project import path — treat this as a validation failure rather
+     * than silently writing a null into a persisted field.
+     *
+     * @param string $value
+     * @return string
+     * @throws \InvalidArgumentException
+     */
+    public static function collapseWhitespace(string $value): string
+    {
+        $result = @preg_replace('/\s+/u', ' ', $value);
+        if ($result === null) {
+            throw new \InvalidArgumentException(
+                'collapseWhitespace: preg_replace failed (' . preg_last_error_msg() . ')'
+            );
+        }
+        return $result;
     }
 }

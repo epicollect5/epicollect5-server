@@ -8,6 +8,7 @@ use ec5\Http\Validation\Project\RuleImportJson as ImportJsonValidator;
 use ec5\Http\Validation\Project\RuleImportRequest as ImportRequestValidator;
 use ec5\Http\Validation\Project\RuleProjectDefinition as ProjectDefinitionValidator;
 use ec5\Libraries\Utilities\Generators;
+use ec5\Libraries\Utilities\Strings;
 use ec5\Services\Project\ProjectService;
 use ec5\Traits\Project\ProjectTools;
 use File;
@@ -60,7 +61,7 @@ class ProjectImportController
         $importRequestValidator->validate($payload, true);
         //trim project name and remove extra spaces if any
         $payload['name'] = trim($payload['name']);
-        $payload['name'] = preg_replace('/\s+/', ' ', $payload['name']);
+        $payload['name'] = Strings::collapseWhitespace($payload['name']);
         // If errors, return
         if ($importRequestValidator->hasErrors()) {
             $request->flash();

@@ -1,6 +1,6 @@
 # Issue Draft Workflow
 
-Convert the current session's approved plan into a GitHub-issue-ready Markdown document.
+Convert the current session's approved plan into a GitHub-issue-ready Markdown document, and save it as a draft to `docs/issues/draft/<slug>.md` so the second-step `/publish-issue` command can pick it up.
 
 ## Inputs
 
@@ -44,6 +44,7 @@ Concise imperative title, <= 70 characters.
 Relevant background from the plan.
 
 Include:
+
 - existing behaviour
 - problem being solved
 - affected components
@@ -119,6 +120,17 @@ If requirements are ambiguous:
 
 > TODO: clarify missing requirement before implementation
 
+## Save draft (mandatory)
+
+After outputting the body, also save it to a draft file:
+
+1. Take the title (the text after `# ` in the first H1 of the body).
+2. Compute a slug: lowercase, replace any run of non-alphanumeric characters with `-`, strip leading/trailing `-`, cap at 80 characters.
+3. Write the full body (including the H1) to `docs/issues/draft/<slug>.md` using the Write tool, creating `docs/issues/draft/` if it does not exist.
+4. If a draft with the same slug already exists, overwrite it. Do not create numbered variants.
+
+Do not mention the saved file path in the body output — the body is strict. The path is the agent's implementation detail and is read by `/publish-issue` automatically.
+
 ## Style rules
 
 - No emojis.
@@ -131,6 +143,6 @@ If requirements are ambiguous:
 ## What NOT to do
 
 - Do NOT call `gh`.
-- Do NOT write files.
 - Do NOT scan the repository.
 - Do NOT add text outside the issue body.
+- Do NOT mention the saved draft path in the user-facing output.

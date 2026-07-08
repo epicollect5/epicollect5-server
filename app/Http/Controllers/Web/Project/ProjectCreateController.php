@@ -5,6 +5,7 @@ namespace ec5\Http\Controllers\Web\Project;
 use ec5\DTO\ProjectDTO;
 use ec5\Http\Validation\Project\RuleCreateRequest;
 use ec5\Libraries\Utilities\Generators;
+use ec5\Libraries\Utilities\Strings;
 use ec5\Services\Project\ProjectService;
 use ec5\Traits\Project\ProjectTools;
 use Illuminate\Contracts\View\Factory;
@@ -72,9 +73,9 @@ class ProjectCreateController
         $payload['small_description'] = trim($payload['small_description']);
 
         //remove extra spaces between words (if any)
-        $payload['name'] = preg_replace('/\s+/', ' ', $payload['name']);
-        $payload['form_name'] = preg_replace('/\s+/', ' ', $payload['form_name']);
-        $payload['small_description'] = preg_replace('/\s+/', ' ', $payload['small_description']);
+        $payload['name'] = Strings::collapseWhitespace($payload['name']);
+        $payload['form_name'] = Strings::collapseWhitespace($payload['form_name']);
+        $payload['small_description'] = Strings::collapseWhitespace($payload['small_description']);
 
         // Run validation (after trimming)
         $ruleCreateRequest->validate($payload, true);

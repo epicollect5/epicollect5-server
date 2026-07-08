@@ -5,6 +5,7 @@ namespace ec5\DTO;
 use ec5\Http\Validation\Project\Mapping\RuleImportProjectMapping;
 use ec5\Http\Validation\Project\RuleProjectDefinition;
 use ec5\Libraries\Utilities\Common;
+use ec5\Libraries\Utilities\Strings;
 use ec5\Services\Mapping\ProjectMappingService;
 use Exception;
 use Illuminate\Support\Facades\Log;
@@ -556,14 +557,10 @@ class ProjectDTO
         );
 
         // [BUG] where some descriptions have invisible/whitespace characters, these must be replaced with a normal space
-        $projectDefinition['project']['small_description'] = preg_replace(
-            '/\s+/u',
-            ' ',
+        $projectDefinition['project']['small_description'] = Strings::collapseWhitespace(
             $projectDefinition['project']['small_description']
         );
-        $projectDefinition['project']['description'] = preg_replace(
-            '/\s+/u',
-            ' ',
+        $projectDefinition['project']['description'] = Strings::collapseWhitespace(
             $projectDefinition['project']['description']
         );
 
@@ -574,7 +571,7 @@ class ProjectDTO
         foreach ($projectDefinition['project']['forms'] as $formIndex => $form) {
             // [BUG] sanitise form name to remove any invisible/whitespace characters
             if (isset($form['name'])) {
-                $projectDefinition['project']['forms'][$formIndex]['name'] = preg_replace('/\s+/u', ' ', $form['name']);
+                $projectDefinition['project']['forms'][$formIndex]['name'] = Strings::collapseWhitespace($form['name']);
             }
 
             if (!isset($form['inputs']) || !is_array($form['inputs'])) {
