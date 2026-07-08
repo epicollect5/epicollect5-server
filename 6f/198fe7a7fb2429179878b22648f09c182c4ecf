@@ -1,0 +1,29 @@
+app/Http/Controllers/Api/Project/ProjectController.php
+  s_2634d84cb99541::t_770ed1eb204c7f 327
+AGENTS.md
+  s_8c78a6d32696aa::t_1bef41f954c44c 52-54
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "6f198fe7a7fb2429179878b22648f09c182c4ecf",
+  "prompts": {},
+  "sessions": {
+    "s_2634d84cb99541": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0c1ab26a8ffeGgdbgjtm3i8jzp",
+        "model": "minimax-m3"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    },
+    "s_8c78a6d32696aa": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0bf03cdbeffe2lxSWebX1bDVp7",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
