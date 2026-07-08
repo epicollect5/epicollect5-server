@@ -1,0 +1,23 @@
+docs/architecture.md
+  s_32e104bf8bc45c::t_75d95e695ba2eb 1334-1345
+database/migrations/2026_07_07_134313_convert_logo_url_to_has_logo_on_projects_table.php
+  s_32e104bf8bc45c::t_6472aaa19d91e8 34-47
+docs/workflows/review.md
+  s_32e104bf8bc45c::t_f8070633d15292 9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "1d33061836aa2780f7663c27eadf78c0a692d303",
+  "prompts": {},
+  "sessions": {
+    "s_32e104bf8bc45c": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0bddeb114ffeKJ0hWNB6bjG9Au",
+        "model": "minimax-m3"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
