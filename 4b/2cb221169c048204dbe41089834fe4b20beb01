@@ -1,0 +1,44 @@
+app/Libraries/Utilities/Strings.php
+  s_d428b647470b6c::t_965a13aa672316 122-145
+app/DTO/ProjectDTO.php
+  s_d428b647470b6c::t_61313aa17e80cd 8
+  s_d428b647470b6c::t_5bd212419807f1 560,563
+  s_d428b647470b6c::t_dab3f19d15c84b 574
+.opencode/commands/publish-issue.md
+  s_d428b647470b6c::t_751bfafbee8d30 1,3-6,8-10,23-24,26,34
+  s_d428b647470b6c::t_237252cd424483 11-14,19-20,22
+  s_d428b647470b6c::t_7c3f0eb27f52af 2,7,15-18,21,25,27-33,35
+docs/workflows/publish-issue.md
+  s_d428b647470b6c::t_e999fdc3ea4b5a 6,14,18,29,48-49,59,76,79,86,98,103-104,131-133,135,137,148-149
+  s_d428b647470b6c::t_ef1b6332ca3e7d 3,5,9,13,22,25,47,54-57,60,63-65,77-78,80-85,87-88,90-95,97,99-102,107,111,114,118,121,129-130,134,136,138-143,151-154,157
+  s_d428b647470b6c::t_a0c58ae37b8057 31-45
+  s_d428b647470b6c::t_0cb5279869480b 1-2,4,7-8,10-12,15-17,19-21,23-24,26-28,30,46,50-53,58,61-62,66-75,89,96,105-106,108-110,112-113,115-117,119-120,122-128,144-147,150,155-156
+app/Http/Controllers/Web/Project/ProjectImportController.php
+  s_d428b647470b6c::t_d00373f78ea32c 11
+  s_d428b647470b6c::t_9d06d0fb15b654 64
+tests/Libraries/Utilities/StringsTest.php
+  s_d428b647470b6c::t_7da5d2ffdf179c 68-85
+app/Http/Controllers/Web/Project/ProjectCreateController.php
+  s_d428b647470b6c::t_feb664c64e25c6 76-78
+  s_d428b647470b6c::t_f64a7961376a4d 8
+docs/workflows/issue.md
+  s_d428b647470b6c::t_2c2ffcf09efe3e 3,47,123-133,148
+.opencode/commands/issue.md
+  s_d428b647470b6c::t_05761d7bcff38b 2,13-14
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "4b2cb221169c048204dbe41089834fe4b20beb01",
+  "prompts": {},
+  "sessions": {
+    "s_d428b647470b6c": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0c1ac4937ffeef9UJaJG7EFsdr",
+        "model": "minimax-m3"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
