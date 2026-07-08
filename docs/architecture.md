@@ -1331,6 +1331,18 @@ This means changes should preserve behavior for existing clients, especially:
 - documented export endpoints
 - dataviewer internal API contracts
 
+### Known review false positives
+
+The following look like defects during a code review but are by design. Do not re-raise them; verify by reading the linked code first.
+
+- **Templates that call `/api/internal/media/{slug}?type=photo&name=logo.jpg&format=project_thumb` for projects with no logo are not broken.** `MediaService::placeholderOrFallback` (`app/Services/Media/MediaService.php:206-235`) returns the generic placeholder image for a missing `logo.jpg` (it matches `config('epicollect.media.project_avatar.filename')`). Adding a `has_logo` fallback in views is redundant and was deliberately removed.
+- **`ProjectDTO` does not expose `has_logo`.** `addProjectDetails` only assigns properties that are typed public properties on the DTO. Templates that need `has_logo` use raw Eloquent rows (from `Project::featured()`, `publicAndListed()`, `myProjects()` — all of which select `projects.*`). Templates that receive a `ProjectDTO` consume `getSanitisedProjectDefinition()` plus the media URL, both of which are already safe.
+- **`ProjectMappingDTO::addImportedMapping` does not enforce mapping-name uniqueness against the project.** This is intentional. `ProjectDTO::import` short-circuits and skips insertion when the imported default mapping is named `EC5_AUTO`, preserving the system-derived `EC5_AUTO` at index 0. The reserved-name invariant is maintained in the import path, not in the DTO.
+- **The web `downloadProjectDefinition` endpoint returns `{meta: {project_mapping: [...]}, data: ...}`** — the new `meta` key is additive. The `data` envelope is preserved, so this is a content/extension change, not a wire-protocol break. Clients that match by filename must update to `*.project.epicollect.json`.
+- **`public/schemas/project.schema.json` `meta` block is already strict** — it has `unevaluatedProperties: false` on the `meta` object (line 54) and on the root object (line 57). Extra keys in `meta` are rejected with a 400, not silently dropped.
+- **`MediaService::placeholderOrFallback` returns `Cache-Control: never` for missing avatars.** The `?v=<project_definition_version>` cache buster already invalidates on logo upload. The uncached path is intentional; do not propose a longer TTL without coordinating with the front-end cache-bust strategy.
+- **`RuleForm::validateJumps` does not validate terminal end-jumps** — the previous behaviour of erroring on a `to: END` jump on the last input was removed in commit `736f64ce`. The current behaviour is "silently accept" by design. The variable `$lastInputPosition` is no longer used.
+
 ## Operational and Admin Concerns
 
 The application includes built-in admin capabilities:

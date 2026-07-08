@@ -64,7 +64,6 @@ class RuleForm extends ValidationBase
      */
     public function validateJumps(array $inputs): void
     {
-        $lastInputPosition = count($inputs) - 1;
         $inputRefs = [];
 
         // Loop all inputs and create map of input refs
