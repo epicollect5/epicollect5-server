@@ -1,0 +1,74 @@
+tests/Traits/Eloquent/IndexPresenceTest.php
+  s_36909b7a0adc51::t_590bcd531ed596 6
+  s_36909b7a0adc51::t_a2f2b876ea9e89 114-141
+database/migrations/2026_07_14_120100_drop_redundant_index_uuid.php
+  s_36909b7a0adc51::t_2a3b8bceeefdd5 1-6,8-37
+  s_36909b7a0adc51::t_d356549d419211 7
+tests/Http/Controllers/Api/Entries/Upload/Internal/EditExistingEntries/RemoveLeftoverBranchEntriesTest.php
+  s_36909b7a0adc51::t_4b913f7dc8c74e 399-400
+  s_36909b7a0adc51::t_0e6d07c0e58af4 1-5,7-19,21-179,412
+  h_2231ff2aa93473 20,204-206,221-223,256-258,295-297,325-327,360-362,369,374
+  s_36909b7a0adc51::t_4405433485c8a4 6
+  s_36909b7a0adc51::t_eaf7ecc59f5a8c 180-202
+  s_36909b7a0adc51::t_cb209a294fdd5f 203,207-220,224-255,259-294,298-324,328-359,363-368,370-373,375-398,401-411
+docs/DATABASE-SCHEMA.md
+  s_36909b7a0adc51::t_79f74c2444e873 245-246
+  s_36909b7a0adc51::t_3fc394f5592d7b 251
+  s_36909b7a0adc51::t_e65bcfeb79c827 370
+  s_36909b7a0adc51::t_4334ffaaf98046 371
+app/Http/Controllers/Api/Entries/Upload/UploadWebController.php
+  s_36909b7a0adc51::t_784dee6d574900 12
+  s_36909b7a0adc51::t_d251fac4497466 260-261
+  s_36909b7a0adc51::t_cf8edd6edbdcfe 255-256,263-265
+  s_9521f8c408975d::t_02bedcc69e1327 203
+  s_36909b7a0adc51::t_c19c5856deebf6 257-259
+  s_36909b7a0adc51::t_0944716e644d74 254
+  s_9521f8c408975d::t_5d64190bf3bd83 202
+app/Models/Entries/Entry.php
+  s_36909b7a0adc51::t_64d11daac97966 188-193
+database/migrations/2026_07_14_120000_add_entries_parent_and_uploaded_at_indexes.php
+  s_36909b7a0adc51::t_fc70ce4c71e64c 1-6,8-26
+  s_36909b7a0adc51::t_d356549d419211 7
+tests/Http/Controllers/Api/Entries/Delete/DeleteControllerMediaS3Test.php
+  s_8dad87ce65507b::t_cba2520f4d0045 173-175
+  s_8dad87ce65507b::t_b29681f7d52fd5 444-445
+  s_8dad87ce65507b::t_3c3cc0e31b482c 176-200
+  s_8dad87ce65507b::t_f042fbec47ce45 472
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "22dd584eca13f82518c6c64658fb18993ae6787c",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_36909b7a0adc51": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0a35439deffeoKn6QOoi4YHWAo",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    },
+    "s_8dad87ce65507b": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_09e99407bffeI6e4aQFKQ0neYL",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    },
+    "s_9521f8c408975d": {
+      "agent_id": {
+        "tool": "github-copilot-jetbrains",
+        "id": "1783968145229",
+        "model": "unknown"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
