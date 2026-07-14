@@ -170,6 +170,34 @@ class DeleteControllerMediaS3Test extends TestCase
         $this->assertCount($expectedVideos, $lastVideos, 'Unexpected number of video files remaining');
     }
 
+    //Sanity guard: confirm the full media fixture set is present on every disk
+    //before calling the deletion endpoint, failing fast with the actual per-disk
+    //counts if it is not. Polls briefly to absorb any listing latency.
+    private function waitForMediaFixturesVisible(
+        int $expectedPerDisk,
+        int $timeoutSeconds = 60,
+        int $pollMilliseconds = 250
+    ): void {
+        $deadline = microtime(true) + $timeoutSeconds;
+
+        do {
+            $photos = count(Storage::disk('photo')->files($this->project->ref));
+            $audios = count(Storage::disk('audio')->files($this->project->ref));
+            $videos = count(Storage::disk('video')->files($this->project->ref));
+
+            if ($photos === $expectedPerDisk && $audios === $expectedPerDisk && $videos === $expectedPerDisk) {
+                return;
+            }
+
+            usleep($pollMilliseconds * 1000);
+        } while (microtime(true) < $deadline);
+
+        $this->fail(
+            "S3 fixtures not fully visible before deletion after $timeoutSeconds s. " .
+            "Expected $expectedPerDisk per disk, saw photo=$photos audio=$audios video=$videos."
+        );
+    }
+
     public function test_it_should_catch_wrong_project_name()
     {
         //hit the delete endpoint
@@ -413,7 +441,8 @@ class DeleteControllerMediaS3Test extends TestCase
         $expectedAudiosRemaining = $chunkSize + 100;
         $expectedVideosRemaining = $chunkSize + 100;
 
-        $numOfEntries = rand(1000, 1500);
+        //imp: need at least ($chunkSize + 100) entries so the full 1100-file fixture set is created below
+        $numOfEntries = rand($chunkSize + 100, 1500);
         for ($i = 0; $i < $numOfEntries; $i++) {
             $entry = factory(Entry::class)->create(
                 [
@@ -440,21 +469,7 @@ class DeleteControllerMediaS3Test extends TestCase
         $this->assertCount($numOfEntries, Entry::where('project_id', $this->project->id)->get());
 
         //Wait for the S3 listing to be consistent before calling the deletion endpoint.
-        //S3 listObjectsV2 can briefly under-report newly PUT-ed objects (eventual
-        //consistency of object metadata). Without this wait, the deletion batch and
-        //the post-deletion assertion can see different file counts, producing flakes.
-        $expectedPerDisk = $chunkSize + 100;
-        $deadline = microtime(true) + 10;
-        do {
-            $ready = count(Storage::disk('photo')->files($this->project->ref)) === $expectedPerDisk
-                && count(Storage::disk('audio')->files($this->project->ref)) === $expectedPerDisk
-                && count(Storage::disk('video')->files($this->project->ref)) === $expectedPerDisk;
-            if ($ready) {
-                break;
-            }
-            usleep(250_000);
-        } while (microtime(true) < $deadline);
-        $this->assertTrue($ready, 'S3 fixtures not fully visible before deletion');
+        $this->waitForMediaFixturesVisible($chunkSize + 100);
 
         //hit the delete media endpoint
         $payload = [
