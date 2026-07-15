@@ -12,7 +12,6 @@ use ec5\Http\Validation\Project\RuleName;
 use ec5\Http\Validation\Project\RuleProjectDefinition as ProjectDefinitionValidator;
 use ec5\Http\Validation\Schemas\ProjectSchemaValidator;
 use ec5\Libraries\Utilities\DateFormatConverter;
-use ec5\Libraries\Utilities\Generators;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectStats;
 use ec5\Services\Media\MediaCounterService;
@@ -328,7 +327,6 @@ class ProjectController
         // 1. Check Authorization Header
         $token = $request->bearerToken();
         $expectedToken = config('epicollect.setup.api.import_project.validation_key');
-
         if (!$token || !hash_equals($expectedToken, $token)) {
             return Response::apiErrorCode('400', ['error' => ['ec5_257']]);
         }
@@ -352,20 +350,14 @@ class ProjectController
         }
 
         $name = data_get($data, 'data.project.name', 'Imported Project');
-        $payload = [
-            'name'       => $name,
-            'created_by' => 0,
-        ];
-
-        // 4. Generate new project ref
-        $newProjectRef = Generators::projectRef();
         $projectDefinitionData = $data['data'];
 
+        // We are validating, not importing: keep the payload's own project ref
+        // intact and echo it back, rather than generating and assigning a new one.
+        $projectRef = data_get($projectDefinitionData, 'project.ref', '');
+
         try {
-            $projectDTO->import(
-                $newProjectRef,
-                $payload['name'],
-                $payload['created_by'],
+            $projectDTO->validateProjectDefinitionAndMappings(
                 $projectDefinitionData,
                 $projectDefinitionValidator,
                 data_get($data, 'meta.project_mapping'),
@@ -386,8 +378,8 @@ class ProjectController
         }
 
         return Response::apiSchemaSuccess(
-            $newProjectRef,
-            $payload['name'],
+            $projectRef,
+            $name,
             $projectSchemaValidator->schemaId()
         );
     }

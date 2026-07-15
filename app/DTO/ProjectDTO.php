@@ -243,6 +243,52 @@ class ProjectDTO
         // No need to initialise the Project Stats, as they will be empty
     }
 
+    /**
+     * Validate an imported project definition and optional mappings without
+     * tampering with the project ref. Used by the import-validation endpoint,
+     * which only needs to confirm the payload is valid, not persist it.
+     *
+     * Unlike import(), this does not assign a new project ref, rewrite refs in
+     * the definition or mappings, or add the imported mapping — the payload's
+     * own ref is preserved and echoed back to the caller.
+     *
+     * @param $projectDefinitionData
+     * @param RuleProjectDefinition $projectDefinitionValidator
+     * @param mixed|null $projectMappings
+     * @param RuleImportProjectMapping|null $importProjectMappingValidator
+     * @throws Exception
+     */
+    public function validateProjectDefinitionAndMappings(
+        $projectDefinitionData,
+        RuleProjectDefinition $projectDefinitionValidator,
+        mixed $projectMappings = null,
+        ?RuleImportProjectMapping $importProjectMappingValidator = null
+    ): void {
+        // Build the DTO from the payload, keeping the original project ref intact.
+        $projectDefinitionData = self::sanitiseProjectDefinitionForExport($projectDefinitionData);
+        $this->addProjectDetails($projectDefinitionData['project']);
+        $this->addProjectDefinition($projectDefinitionData);
+
+        // Validate the Project Definition.
+        $projectDefinitionValidator->validate($this);
+        if ($projectDefinitionValidator->hasErrors()) {
+            Log::error(__METHOD__ . ' failed.', ['errors' => $projectDefinitionValidator->errors()]);
+            throw new Exception(config('epicollect.codes.ec5_39'));
+        }
+
+        // The EC5 AUTO mapping is required by mapping validation and must be built
+        // AFTER definition validation, which resets and rebuilds the project extra.
+        $mapping = $this->projectMappingService->createEC5AUTOMapping($this->getProjectExtra()->getData());
+        $this->projectMapping->setEC5AUTOMapping($mapping);
+
+        if ($projectMappings !== null) {
+            if ($importProjectMappingValidator === null || !$importProjectMappingValidator->validate($this, $projectMappings)) {
+                Log::error(__METHOD__ . ' failed.', ['errors' => $importProjectMappingValidator?->errors() ?? []]);
+                throw new Exception(config('epicollect.codes.ec5_39'));
+            }
+        }
+    }
+
     private function replaceProjectRefInProjectMappings(
         mixed $projectMappings,
         string $existingProjectRef,
