@@ -18,7 +18,7 @@ class RuleForm extends ValidationBase
      */
     public function __construct()
     {
-        $this->rules['name'] = 'required|max:' . config('epicollect.limits.form_name_maxlength');
+        $this->rules['name'] = 'required|min:' . config('epicollect.limits.project.form.name.min') . '|max:' . config('epicollect.limits.form_name_maxlength');
     }
 
     /**

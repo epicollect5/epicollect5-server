@@ -11,6 +11,7 @@ return [
         ],
         'form' => [
             'name' => [
+                'min' => 1,
                 'max' => 50
             ],
         ],

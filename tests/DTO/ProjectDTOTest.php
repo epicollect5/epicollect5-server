@@ -58,6 +58,53 @@ class ProjectDTOTest extends TestCase
         $this->assertSame('0.5', $sanitised['project']['forms'][0]['inputs'][0]['min']);
     }
 
+    public function test_sanitise_project_definition_for_export_pads_and_cleans_without_double_padding()
+    {
+        $definition = [
+            'project' => [
+                'small_description' => "  A<\n",
+                'description' => "Desc\n",
+                'forms' => [
+                    [
+                        'name' => "Form\tName",
+                        'inputs' => [
+                            [
+                                'type' => config('epicollect.strings.inputs_type.decimal'),
+                                'min' => '.5',
+                            ],
+                            [
+                                'type' => config('epicollect.strings.inputs_type.branch'),
+                                'group' => [['ref' => 'g1']],
+                                'branch' => [],
+                                'jumps' => [],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $sanitised = ProjectDTO::sanitiseProjectDefinitionForExport($definition);
+
+        // logo_url is always stripped from the returned definition
+        $this->assertArrayNotHasKey('logo_url', $sanitised['project']);
+
+        // small_description: trimmed, '<' replaced with '_', whitespace collapsed,
+        // and padded to small_desc.min ONLY (the form.name.min block must not re-pad)
+        $minSmallDesc = (int)config('epicollect.limits.project.small_desc.min');
+        $this->assertSame($minSmallDesc, mb_strlen($sanitised['project']['small_description']));
+        $this->assertSame('A_' . str_repeat('_', $minSmallDesc - 2), $sanitised['project']['small_description']);
+
+        // form name whitespace is collapsed
+        $this->assertSame('Form Name', $sanitised['project']['forms'][0]['name']);
+
+        // decimal leading zero is fixed
+        $this->assertSame('0.5', $sanitised['project']['forms'][0]['inputs'][0]['min']);
+
+        // a branch input's group is forced to an empty array
+        $this->assertSame([], $sanitised['project']['forms'][0]['inputs'][1]['group']);
+    }
+
     public function test_add_project_definition_sanitises_terminal_end_jumps_in_forms_and_branches()
     {
         $project = new ProjectDTO(

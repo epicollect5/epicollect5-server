@@ -219,4 +219,32 @@ class ProjectTest extends TestCase
         $this->assertCount(1, $hits);
         $this->assertNull($hits->first()->structure_last_updated);
     }
+
+    public function test_find_by_slug_normalises_project_definition_version_to_unix_timestamp()
+    {
+        $creator = User::where('email', config('testing.SUPER_ADMIN_EMAIL'))->first();
+        $updatedAt = '2026-05-08 10:11:12';
+        $slug = 'find-by-slug-version-test';
+
+        $project = factory(Project::class)->create([
+            'created_by' => $creator->id,
+            'name' => 'Find By Slug Version Test',
+            'slug' => $slug,
+        ]);
+        factory(ProjectStats::class)->create([
+            'project_id' => $project->id,
+        ]);
+        factory(ProjectStructure::class)->create([
+            'project_id' => $project->id,
+            'updated_at' => $updatedAt,
+        ]);
+
+        $found = Project::findBySlug($slug);
+
+        $this->assertNotNull($found);
+        // Must match the unix-timestamp normalisation applied by the list endpoints
+        $expected = (string)strtotime($updatedAt);
+        $this->assertSame($expected, $found->project_definition_version);
+        $this->assertIsNumeric($found->project_definition_version);
+    }
 }

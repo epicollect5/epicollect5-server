@@ -228,6 +228,21 @@ class RuleFormTest extends TestCase
 
     }
 
+    public function test_form_name_min_length_allows_short_names()
+    {
+        // A single-character form name ("A", "1", ...) is valid: min length is 1
+        $this->form['name'] = 'A';
+        $this->validator->validate($this->form, true);
+        $this->assertFalse($this->validator->hasErrors(), 'A single-character form name should be valid');
+
+        $this->validator->resetErrors();
+
+        // An empty form name fails the required|min rule
+        $this->form['name'] = '';
+        $this->validator->validate($this->form, true);
+        $this->assertTrue($this->validator->hasErrors());
+    }
+
     public function test_terminal_end_jumps_are_silently_accepted()
     {
         $this->form['inputs'][3]['jumps'] = [

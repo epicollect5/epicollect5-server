@@ -48,7 +48,7 @@ class Project extends Model
         'updated_at' => 'datetime:Y-m-d H:i:s',
     ];
 
-    private function normalizeProjectDefinitionVersion(object $project): object
+    private static function normalizeProjectDefinitionVersion(object $project): object
     {
         $projectDefinitionVersion = $project->project_definition_version ?? $project->structure_last_updated ?? '';
         $project->project_definition_version = DateFormatConverter::isoToUnixTimestamp($projectDefinitionVersion);
@@ -90,7 +90,9 @@ class Project extends Model
             'project_structures.id as structure_id'
         );
 
-        return $query->first();
+        $project = $query->first();
+
+        return $project !== null ? self::normalizeProjectDefinitionVersion($project) : null;
     }
 
     public function myProjects($perPage, $userId, $params): Paginator
@@ -120,7 +122,7 @@ class Project extends Model
             ->simplePaginate($perPage);
 
         $projects->setCollection(
-            $projects->getCollection()->map(fn ($project) => $this->normalizeProjectDefinitionVersion($project))
+            $projects->getCollection()->map(fn ($project) => self::normalizeProjectDefinitionVersion($project))
         );
 
         return $projects;
@@ -180,7 +182,7 @@ class Project extends Model
         $projects = $query->simplePaginate($projectsPerPage);
 
         $projects->setCollection(
-            $projects->getCollection()->map(fn ($project) => $this->normalizeProjectDefinitionVersion($project))
+            $projects->getCollection()->map(fn ($project) => self::normalizeProjectDefinitionVersion($project))
         );
 
         return $projects;
@@ -197,7 +199,7 @@ class Project extends Model
                 DB::raw('DATE_FORMAT(project_structures.updated_at, "%Y-%m-%d %H:%i:%s") as structure_last_updated')
             )
             ->get()
-            ->map(fn ($project) => $this->normalizeProjectDefinitionVersion($project));
+            ->map(fn ($project) => self::normalizeProjectDefinitionVersion($project));
     }
 
     public static function creatorEmail($projectId)

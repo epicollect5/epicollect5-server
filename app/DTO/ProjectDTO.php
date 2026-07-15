@@ -586,15 +586,6 @@ class ProjectDTO
             $projectDefinition['project']['small_description'] = $smallDesc . str_repeat('_', $needed);
         }
 
-        $smallDescriptionMinLength = config('epicollect.limits.project.form.name.min');
-        // Use multibyte-safe length check and padding to support UTF-8 languages
-        $smallDesc = $projectDefinition['project']['small_description'];
-        if (mb_strlen($smallDesc, 'UTF-8') < $smallDescriptionMinLength) {
-            $needed = $smallDescriptionMinLength - mb_strlen($smallDesc, 'UTF-8');
-            // Pad with ASCII underscores (single-byte) to reach the required character count
-            $projectDefinition['project']['small_description'] = $smallDesc . str_repeat('_', $needed);
-        }
-
         //[BUG] where small description has invalid characters, replace with '_'
         $projectDefinition['project']['small_description'] = str_replace(
             ['<', '>'],
