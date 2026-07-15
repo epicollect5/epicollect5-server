@@ -1,0 +1,39 @@
+tests/DTO/ProjectDTOTest.php
+  s_f2c52cb74a230b::t_7e6a86443a5904 61-107
+tests/Models/Eloquent/ProjectTest.php
+  s_f2c52cb74a230b::t_9106afa00b8df5 222-249
+tests/Http/Validation/Project/RuleFormTest.php
+  s_f2c52cb74a230b::t_0bcea36e012906 231-245
+config/epicollect/limits.php
+  s_8ec1f680110dac::t_582f5835c19220 14
+app/Http/Validation/Project/RuleForm.php
+  s_f2c52cb74a230b::t_79f0ee59b5c281 21
+app/Models/Project/Project.php
+  s_f2c52cb74a230b::t_371f191a74b87c 125,185,202
+  s_f2c52cb74a230b::t_c749b66351cb6e 51
+  s_f2c52cb74a230b::t_09c833c69f95e2 93-95
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "8f2583d2b8062127112ccc28ec19fd6ade52ea14",
+  "prompts": {},
+  "sessions": {
+    "s_8ec1f680110dac": {
+      "agent_id": {
+        "tool": "github-copilot-jetbrains",
+        "id": "1784104675401",
+        "model": "unknown"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    },
+    "s_f2c52cb74a230b": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_099ae2a29ffeAHj9U5BrIvn5y1",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
