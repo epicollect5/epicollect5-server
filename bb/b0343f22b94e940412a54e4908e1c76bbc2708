@@ -1,0 +1,19 @@
+tests/Http/Validation/Project/Mapping/RuleMappingStructureTest.php
+  s_8ec1f680110dac::t_9228c86938875f 29
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "bbb0343f22b94e940412a54e4908e1c76bbc2708",
+  "prompts": {},
+  "sessions": {
+    "s_8ec1f680110dac": {
+      "agent_id": {
+        "tool": "github-copilot-jetbrains",
+        "id": "1784104675401",
+        "model": "unknown"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
