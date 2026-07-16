@@ -90,9 +90,7 @@ class Project extends Model
             'project_structures.id as structure_id'
         );
 
-        $project = $query->first();
-
-        return $project !== null ? self::normalizeProjectDefinitionVersion($project) : null;
+        return $query->first();
     }
 
     public function myProjects($perPage, $userId, $params): Paginator

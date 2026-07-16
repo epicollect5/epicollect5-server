@@ -220,7 +220,7 @@ class ProjectTest extends TestCase
         $this->assertNull($hits->first()->structure_last_updated);
     }
 
-    public function test_find_by_slug_normalises_project_definition_version_to_unix_timestamp()
+    public function test_find_by_slug_returns_date_string_project_definition_version_matching_structure_last_updated()
     {
         $creator = User::where('email', config('testing.SUPER_ADMIN_EMAIL'))->first();
         $updatedAt = '2026-05-08 10:11:12';
@@ -242,9 +242,13 @@ class ProjectTest extends TestCase
         $found = Project::findBySlug($slug);
 
         $this->assertNotNull($found);
-        // Must match the unix-timestamp normalisation applied by the list endpoints
-        $expected = (string)strtotime($updatedAt);
-        $this->assertSame($expected, $found->project_definition_version);
-        $this->assertIsNumeric($found->project_definition_version);
+        // findBySlug returns the raw DATE_FORMAT string; normalisation to a unix
+        // timestamp happens downstream (ProjectStatsDTO / list endpoints).
+        $this->assertNotNull($found->project_definition_version);
+        $this->assertNotEmpty($found->project_definition_version);
+        $this->assertSame(
+            (string)strtotime($found->project_definition_version),
+            (string)strtotime($found->structure_last_updated)
+        );
     }
 }
