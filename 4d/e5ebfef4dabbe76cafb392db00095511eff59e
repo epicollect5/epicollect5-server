@@ -1,0 +1,67 @@
+app/Services/Project/ProjectValidationService.php
+  s_3845a2d8bb35b6::t_503405d9332937 181,185,188-189,220,224,233,237-241
+  s_3845a2d8bb35b6::t_e9d832123abcb0 78
+  s_3845a2d8bb35b6::t_59395080b40be2 200,213
+  s_3845a2d8bb35b6::t_ad75cdf2d64ed8 21
+  s_3845a2d8bb35b6::t_aebf595bf8adb1 81-85,89-94
+  s_3845a2d8bb35b6::t_f48a3909f3d778 206
+  s_3845a2d8bb35b6::t_39cb57a749e034 262-279
+  s_3845a2d8bb35b6::t_671588c4a7f41a 169
+  s_3845a2d8bb35b6::t_c390839a65887c 242-261
+  s_3845a2d8bb35b6::t_811b013c9d7d5c 56-61,68,71,73,79,86-88,96,110,115,119-130,132,146,150-152
+  s_3845a2d8bb35b6::t_5d6e5e415a4ff6 1-20,22-55,62-67,69,95,97,99-109,111-114,116-118,131,133-145,147-149,153-168,170-180,182-184,186-187,190-199,201-205,207-212,214-219,221-223,225-232,234-236,280
+  s_3845a2d8bb35b6::t_5639ecbdfd1cc4 98
+  s_3845a2d8bb35b6::t_e109969cbda542 70,72,74-77,80
+app/Console/Commands/ProjectsValidateCommand.php
+  s_3845a2d8bb35b6::t_544461cf87fddc 40-41
+  s_3845a2d8bb35b6::t_9033c9cdc8b6f0 118
+  s_3845a2d8bb35b6::t_c61fbce5ec90d0 132
+  s_3845a2d8bb35b6::t_7c8160048f17a0 90,92,97-100,117,119-121
+  s_3845a2d8bb35b6::t_3442b69a0dc01e 116
+  s_3845a2d8bb35b6::t_0896e52417d0ba 137-154
+  s_3845a2d8bb35b6::t_03cd26a3d82685 8,12-13
+  s_3845a2d8bb35b6::t_65ca15ad3374c0 1-7,9-11,14-39,42-50,56-88,91,93-96,103-110,112-115,122-131,133-136,155
+  s_3845a2d8bb35b6::t_0b30b0bf004afe 51-55
+  s_3845a2d8bb35b6::t_b8917e20b6fa9d 89,101-102,111
+tests/Services/Project/ProjectValidationServiceTest.php
+  s_3845a2d8bb35b6::t_8e874b73a501f2 9-10
+  s_3845a2d8bb35b6::t_f9eb52112798e7 66-89
+  s_3845a2d8bb35b6::t_50db08ebdec628 1-8,11-65,110
+  s_3845a2d8bb35b6::t_6ea4d1b2e94952 90-109
+database/factories/ModelFactory.php
+  s_3845a2d8bb35b6::t_1e5b848267a732 193
+  s_3845a2d8bb35b6::t_7b84bb1a08c8e6 93-95
+  s_3845a2d8bb35b6::t_b34223f4dd09d2 190
+tests/Console/Commands/ProjectsValidateCommandTest.php
+  s_3845a2d8bb35b6::t_1bde97c7d282b9 55-69,71-76
+  s_3845a2d8bb35b6::t_a5c68f63b34e2a 70
+  s_3845a2d8bb35b6::t_f2b24f0dd0e501 92-95
+  s_3845a2d8bb35b6::t_4f869d66369362 1-6,8,10-14,23-54,77-91,96-97
+  s_3845a2d8bb35b6::t_36647edaa71d0f 7,9,15-22
+tests/CleanUpAfter.php
+  s_3845a2d8bb35b6::t_6c1b61b4efb6ac 28-32
+tests/CleanUpBefore.php
+  s_3845a2d8bb35b6::t_9a3110e3f6ac48 38-42
+app/Console/Kernel.php
+  s_3845a2d8bb35b6::t_0d5b85c7fe8e76 14
+  s_3845a2d8bb35b6::t_73a0c6ab0749e2 36
+tests/TestCase.php
+  s_3845a2d8bb35b6::t_a4be8d171a60e8 127-132,134-136,138,150-181
+  s_3845a2d8bb35b6::t_05963103b87f74 182-183
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "4de5ebfef4dabbe76cafb392db00095511eff59e",
+  "prompts": {},
+  "sessions": {
+    "s_3845a2d8bb35b6": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_094b9b137ffetsVFEu28fCuSgm",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
