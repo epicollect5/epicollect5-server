@@ -26,7 +26,7 @@ class RuleMappingStructureTest extends TestCase
 
     public function test_valid_structure()
     {
-        $count = rand(1, 50);
+        $count = rand(2, 50);
         for ($i = 1; $i < $count; $i++) {
             $data = [
                 'name' => 'Map ' . $this->faker->unique()->regexify('^[A-Za-z0-9 \-\_]{3,10}$'),
