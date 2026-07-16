@@ -35,6 +35,11 @@ class CleanUpBefore extends TestCase
             0,
             Project::where('created_by', '>=', config('testing.TEST_USER_ID_BASE'))->count()
         );
+
+        $this->assertEquals(
+            0,
+            Project::where('name', 'like', 'PHPUNIT%')->count()
+        );
     }
 
     /**

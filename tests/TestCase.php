@@ -124,31 +124,18 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
             $testProjectIds = $this->testProjectIdsForCleanup($project);
             $testUserIds = $this->testUserIdsForCleanup($user);
 
-            if (!empty($testProjectIds)) {
-                $testProjectClientIds = OAuthClientProject::whereIn(
-                    'project_id',
-                    $testProjectIds
-                )->pluck('client_id')->filter()->all();
+            // Also clear any leftover test projects created by the factory, which are
+            // identifiable by the PHPUNIT name prefix. This keeps test data from
+            // polluting validation, counts, and other parts of the application.
+            $phpunitProjectIds = Project::where('name', 'like', 'PHPUNIT%')
+                ->pluck('id')
+                ->all();
 
-                if (!empty($testProjectClientIds)) {
-                    OAuthAccessToken::whereIn(
-                        'client_id',
-                        $testProjectClientIds
-                    )->delete();
-                }
+            $projectIds = array_values(array_unique(array_filter(
+                array_merge($testProjectIds, $phpunitProjectIds)
+            )));
 
-                ProjectRole::whereIn('project_id', $testProjectIds)->delete();
-                ProjectStructure::whereIn('project_id', $testProjectIds)->delete();
-                ProjectStats::whereIn('project_id', $testProjectIds)->delete();
-                Entry::whereIn('project_id', $testProjectIds)->delete();
-                BranchEntry::whereIn('project_id', $testProjectIds)->delete();
-                OAuthClientProject::whereIn('project_id', $testProjectIds)->delete();
-                Project::whereIn('id', $testProjectIds)->delete();
-
-                if (!empty($testProjectClientIds)) {
-                    OAuthClient::whereIn('id', $testProjectClientIds)->delete();
-                }
-            }
+            $this->deleteProjectsByIds($projectIds);
 
             $this->clearUsersByIds($testUserIds);
 
@@ -157,6 +144,40 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
             }
         } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Delete the given projects and all their related rows (roles, structures,
+     * stats, entries, oauth clients/grants).
+     *
+     * @param array $projectIds
+     */
+    private function deleteProjectsByIds(array $projectIds): void
+    {
+        if (empty($projectIds)) {
+            return;
+        }
+
+        $testProjectClientIds = OAuthClientProject::whereIn('project_id', $projectIds)
+            ->pluck('client_id')
+            ->filter()
+            ->all();
+
+        if (!empty($testProjectClientIds)) {
+            OAuthAccessToken::whereIn('client_id', $testProjectClientIds)->delete();
+        }
+
+        ProjectRole::whereIn('project_id', $projectIds)->delete();
+        ProjectStructure::whereIn('project_id', $projectIds)->delete();
+        ProjectStats::whereIn('project_id', $projectIds)->delete();
+        Entry::whereIn('project_id', $projectIds)->delete();
+        BranchEntry::whereIn('project_id', $projectIds)->delete();
+        OAuthClientProject::whereIn('project_id', $projectIds)->delete();
+        Project::whereIn('id', $projectIds)->delete();
+
+        if (!empty($testProjectClientIds)) {
+            OAuthClient::whereIn('id', $testProjectClientIds)->delete();
         }
     }
 

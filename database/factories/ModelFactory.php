@@ -90,7 +90,9 @@ $factory->define(Project::class, function (Faker\Generator $faker) {
     $smallDescMin = (int)$ec5Limits['project']['small_desc']['min'];
     $smallDescMax = (int)$ec5Limits['project']['small_desc']['max'];
     //$name = Generators::projectRef();//to be unique
-    $name = $faker->unique()->regexify('[A-Za-z0-9]{10}');
+    // Prefix with PHPUNIT so test projects can be reliably identified and cleared
+    // by the test suite cleanup (see Tests\TestCase::clearDatabase).
+    $name = 'PHPUNIT' . $faker->unique()->regexify('[A-Za-z0-9]{5}');
 
     return [
         'name' => $name,
@@ -185,10 +187,10 @@ $factory->define(ProjectStructure::class, function (Faker\Generator $faker, $par
                 'access' => $project->access,
                 'entries_limits' => [],
                 'slug' => $project->slug,
-                'visibility' => $project->listed,
+                'visibility' => $project->visibility,
                 'ref' => $projectRef,
                 'name' => $project->name,
-                'status' => $project->active
+                'status' => $project->status
             ]
         ]),
         'project_extra' => json_encode([
