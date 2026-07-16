@@ -1,0 +1,26 @@
+app/Models/Project/Project.php
+  s_f2c52cb74a230b::t_92e52c25c3c043 93
+tests/Models/Eloquent/ProjectTest.php
+  s_f2c52cb74a230b::t_7f09965c0485cc 223,245-252
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "7b90e1dbe8e5417b60a4082134a08cd53e7fd8a0",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_f2c52cb74a230b": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_099ae2a29ffeAHj9U5BrIvn5y1",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
