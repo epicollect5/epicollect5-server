@@ -1,0 +1,30 @@
+.opencode/skills/migration-safety/SKILL.md
+  s_c35ef5171f022c::t_169bcd625c0f65 1-59
+.opencode/skills/ec5-code-style/SKILL.md
+  s_c35ef5171f022c::t_c613477cd104bd 1-44
+.opencode/skills/ec5-testing/SKILL.md
+  s_c35ef5171f022c::t_52800a27ad32c0 1-36
+.opencode/skills/ec5-api-endpoint/SKILL.md
+  s_c35ef5171f022c::t_63201d38725ce4 1-38
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "56c89331b6374c9d782e2a4b8aad46ba9e6141ca",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_c35ef5171f022c": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0908e4765ffeR4SFWb9M3my86g",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
