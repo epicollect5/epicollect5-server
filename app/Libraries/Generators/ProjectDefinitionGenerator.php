@@ -21,7 +21,12 @@ class ProjectDefinitionGenerator
     private static function generateSmallDescription(): string
     {
         $faker = Faker::create();
-        return Str::limit($faker->sentence(3), 100); // Generate a sentence
+        $minLength = config('epicollect.limits.project.small_desc.min', 15);
+        $description = $faker->sentence(3);
+        if (mb_strlen($description) < $minLength) {
+            $description = str_pad($description, $minLength, '_');
+        }
+        return Str::limit($description, 100);
     }
 
     private static function generateQuestion(): string
