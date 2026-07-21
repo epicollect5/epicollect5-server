@@ -2,6 +2,7 @@
 
 namespace Tests\Http\Controllers\Api\Project;
 
+use ec5\DTO\ProjectDTO;
 use ec5\Libraries\Utilities\Generators;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
@@ -853,6 +854,128 @@ class ProjectValidateImportControllerTest extends TestCase
 
         $response = $this->postValidateImport($this->payloadWithInputs([$group, $branch], [], $projectPayload));
         $this->assertEquals('passed', $response->json('data.validation'));
+    }
+
+    // -------------------------------------------------------------------------
+    // Legacy auto-fix warning (ec5_409)
+    // -------------------------------------------------------------------------
+
+    public function test_warns_on_legacy_autofixable_small_description(): void
+    {
+        // A too-short small_description fails the JSON Schema (minLength: 15) but is
+        // automatically padded to the minimum during import, so the endpoint must
+        // still reject the raw payload AND attach the legacy-auto-fix warning inside
+        // each error object (resolved to its human-readable message).
+        $projectPayload = $this->minimalValidPayload();
+        $projectPayload['project']['small_description'] = 'a';
+
+        $response = $this->postValidateImport(['data' => $projectPayload]);
+
+        $response->assertStatus(400);
+        $errors = $response->json('errors');
+        // The schema violation must actually be surfaced (regression guard against
+        // the shared schema-validator state being clobbered by the warning check).
+        $this->assertNotEmpty($errors, 'Expected at least one schema error, got empty errors');
+        $warning = config('epicollect.codes.ec5_409');
+        foreach ($errors as $error) {
+            $this->assertArrayHasKey('warning', $error);
+            $this->assertEquals($warning, $error['warning']);
+        }
+        // Control: the sanitised copy would actually pass validation.
+        $sanitised = ['data' => ProjectDTO::sanitiseProjectDefinitionForExport($projectPayload)];
+        $sanitisedResponse = $this->postValidateImport($sanitised);
+        $this->assertEquals('passed', $sanitisedResponse->json('data.validation'));
+    }
+
+    public function test_warns_on_legacy_autofixable_angle_bracket_in_small_description(): void
+    {
+        // The exact production case: a small_description containing '>' is rejected
+        // by the JSON Schema pattern ^[^<>]*$ but sanitisation strips the angle
+        // bracket, so it is auto-fixable -> reject WITH a warning inside the error.
+        $projectPayload = $this->minimalValidPayload();
+        $projectPayload['project']['small_description'] = 'Shigella flexneri exercise>';
+
+        $response = $this->postValidateImport(['data' => $projectPayload]);
+
+        $response->assertStatus(400);
+        $errors = $response->json('errors');
+        $this->assertNotEmpty($errors);
+        $warning = config('epicollect.codes.ec5_409');
+        foreach ($errors as $error) {
+            $this->assertArrayHasKey('warning', $error);
+            $this->assertEquals($warning, $error['warning']);
+        }
+        // Control: sanitisation strips '>' and the copy passes.
+        $sanitised = ['data' => ProjectDTO::sanitiseProjectDefinitionForExport($projectPayload)];
+        $sanitisedResponse = $this->postValidateImport($sanitised);
+        $this->assertEquals('passed', $sanitisedResponse->json('data.validation'));
+    }
+
+    public function test_warns_on_legacy_autofixable_whitespace_only_description(): void
+    {
+        // A "\r\n" description is rejected by the JSON Schema (neither empty nor
+        // 3-3000 chars) but sanitisation collapses it to '', so it is auto-fixable
+        // -> reject WITH the ec5_409 warning inside each error object.
+        $projectPayload = $this->minimalValidPayload();
+        $projectPayload['project']['description'] = "\r\n";
+
+        $response = $this->postValidateImport(['data' => $projectPayload]);
+
+        $response->assertStatus(400);
+        $errors = $response->json('errors');
+        $this->assertNotEmpty($errors, 'Expected schema errors to be surfaced');
+        $warning = config('epicollect.codes.ec5_409');
+        foreach ($errors as $error) {
+            $this->assertArrayHasKey('warning', $error);
+            $this->assertEquals($warning, $error['warning']);
+        }
+        // Control: sanitisation turns "\r\n" into '' and the copy passes.
+        $sanitised = ['data' => ProjectDTO::sanitiseProjectDefinitionForExport($projectPayload)];
+        $sanitisedResponse = $this->postValidateImport($sanitised);
+        $this->assertEquals('passed', $sanitisedResponse->json('data.validation'));
+    }
+
+    public function test_no_warning_on_genuine_short_description(): void
+    {
+        // A non-whitespace too-short description ("ab") is a real error sanitisation
+        // cannot fix -> reject WITHOUT a warning.
+        $projectPayload = $this->minimalValidPayload();
+        $projectPayload['project']['description'] = 'ab';
+
+        $response = $this->postValidateImport(['data' => $projectPayload]);
+
+        $response->assertStatus(400);
+        $errors = $response->json('errors');
+        $this->assertNotEmpty($errors);
+        foreach ($errors as $error) {
+            $this->assertArrayNotHasKey('warning', $error);
+        }
+    }
+
+    public function test_no_warning_on_genuine_schema_error(): void
+    {
+        // An invalid category is a real error sanitisation cannot fix, so no warning.
+        $projectPayload = $this->minimalValidPayload();
+        $projectPayload['project']['category'] = 'invalid-category-xyz';
+
+        $response = $this->postValidateImport(['data' => $projectPayload]);
+
+        $response->assertStatus(400);
+        $errors = $response->json('errors');
+        $this->assertNotEmpty($errors, 'Expected genuine schema errors to be surfaced');
+        foreach ($errors as $error) {
+            $this->assertArrayNotHasKey('warning', $error);
+        }
+    }
+
+    public function test_no_warning_on_success(): void
+    {
+        // A valid payload succeeds and must not carry a warning key.
+        $projectPayload = $this->minimalValidPayload();
+        $response = $this->postValidateImport(['data' => $projectPayload]);
+
+        $response->assertStatus(200);
+        $this->assertArrayNotHasKey('warning', $response->json());
     }
 }
 

@@ -343,4 +343,5 @@ return [
     "ec5_406" => "Only one project download is allowed per user to prevent system overload.",
     "ec5_407" => "Chunk media deleted successfully.",
     "ec5_408" => "Invalid project category.",
+    "ec5_409" => "Legacy issue(s) detected; will be automatically fixed on import.",
 ];

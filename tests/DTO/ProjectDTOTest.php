@@ -105,6 +105,39 @@ class ProjectDTOTest extends TestCase
         $this->assertSame([], $sanitised['project']['forms'][0]['inputs'][1]['group']);
     }
 
+    public function test_sanitise_collapses_whitespace_only_description_to_empty(): void
+    {
+        $base = ['project' => [
+            'small_description' => 'Valid small description here',
+            'description' => '',
+            'forms' => [],
+        ]];
+
+        // whitespace-only description normalises to the schema-legal empty string
+        $crlf = $base;
+        $crlf['project']['description'] = "\r\n";
+        $this->assertSame('', ProjectDTO::sanitiseProjectDefinitionForExport($crlf)['project']['description']);
+
+        // a single collapsed space (collapseWhitespace output) also normalises to empty
+        $space = $base;
+        $space['project']['description'] = ' ';
+        $this->assertSame('', ProjectDTO::sanitiseProjectDefinitionForExport($space)['project']['description']);
+
+        // genuine inner newlines are preserved (and valid), NOT emptied
+        $inner = $base;
+        $inner['project']['description'] = "Line A\r\nLine B";
+        $this->assertSame('Line A Line B', ProjectDTO::sanitiseProjectDefinitionForExport($inner)['project']['description']);
+
+        // small_description padding behaviour is untouched
+        $short = ['project' => [
+            'small_description' => 'short',
+            'description' => 'ok',
+            'forms' => [],
+        ]];
+        $min = (int) config('epicollect.limits.project.small_desc.min');
+        $this->assertSame($min, mb_strlen(ProjectDTO::sanitiseProjectDefinitionForExport($short)['project']['small_description']));
+    }
+
     public function test_add_project_definition_sanitises_terminal_end_jumps_in_forms_and_branches()
     {
         $project = new ProjectDTO(

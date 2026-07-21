@@ -5,7 +5,12 @@ namespace ec5\Http\Controllers\Api\Project;
 use Auth;
 use Carbon\Carbon;
 use ec5\DTO\ProjectDTO;
+use ec5\DTO\ProjectDefinitionDTO;
+use ec5\DTO\ProjectExtraDTO;
+use ec5\DTO\ProjectMappingDTO;
+use ec5\DTO\ProjectStatsDTO;
 use ec5\Http\Validation\Entries\Upload\RuleCanBulkUpload;
+use ec5\Services\Mapping\ProjectMappingService;
 use ec5\Http\Validation\Project\Mapping\RuleImportProjectMapping as ImportProjectMappingValidator;
 use ec5\Http\Validation\Project\RuleImportJson as ImportJsonValidator;
 use ec5\Http\Validation\Project\RuleName;
@@ -338,7 +343,9 @@ class ProjectController
         $importJsonValidator->validate($data);
 
         if ($importJsonValidator->hasErrors()) {
-            return Response::apiErrorCode('400', $importJsonValidator->errors());
+            $warning = $this->legacyAutoFixWarning($data, $projectSchemaValidator, $projectDefinitionValidator, $importProjectMappingValidator);
+
+            return $this->warningErrorResponse('400', $this->parseKeyedErrors($importJsonValidator->errors()), $warning);
         }
 
         // 3. JSON Schema validation — full structural gate
@@ -346,7 +353,21 @@ class ProjectController
         //    Checks: ref patterns, input keys, possible_answers limits,
         //    enums, string lengths, emoji/< > restrictions etc.
         if (!$projectSchemaValidator->validate($data)) {
-            return Response::apiSchemaError('400', $projectSchemaValidator->schemaId(), $projectSchemaValidator->violations());
+            // Capture the raw violations BEFORE the warning check: legacyAutoFixWarning
+            // re-runs the shared schema validator on the sanitised copy and would
+            // otherwise clobber these.
+            $schemaId = $projectSchemaValidator->schemaId();
+            $violations = $projectSchemaValidator->violations();
+            $warning = $this->legacyAutoFixWarning($data, $projectSchemaValidator, $projectDefinitionValidator, $importProjectMappingValidator);
+            $errors = array_map(function (string $message) use ($schemaId) {
+                return [
+                    'schema' => $schemaId,
+                    'title' => $message,
+                    'source' => 'project-json-validator',
+                ];
+            }, $violations);
+
+            return $this->warningErrorResponse('400', $errors, $warning);
         }
 
         $name = data_get($data, 'data.project.name', 'Imported Project');
@@ -374,13 +395,125 @@ class ProjectController
                     'validation' => ['ec5_39']
                 ];
             }
-            return Response::apiErrorCode('400', $errors);
+            $warning = $this->legacyAutoFixWarning($data, $projectSchemaValidator, $projectDefinitionValidator, $importProjectMappingValidator);
+
+            return $this->warningErrorResponse('400', $this->parseKeyedErrors($errors), $warning);
         }
 
         return Response::apiSchemaSuccess(
             $projectRef,
             $name,
             $projectSchemaValidator->schemaId()
+        );
+    }
+
+    /**
+     * If the raw payload fails validation solely because of legacy issues that
+     * are automatically fixed during import (see ProjectDTO::sanitiseProjectDefinitionForExport),
+     * return a warning so clients know the payload would import successfully.
+     * Returns null when the failure is not fully auto-fixable.
+     */
+    private function legacyAutoFixWarning(
+        array $data,
+        ProjectSchemaValidator $projectSchemaValidator,
+        ProjectDefinitionValidator $projectDefinitionValidator,
+        ImportProjectMappingValidator $importProjectMappingValidator
+    ): ?string {
+        // Auto-fixable issues only ever live inside data.project; if the basic
+        // structure is missing, this is a genuine error with nothing to fix.
+        $project = data_get($data, 'data.project');
+        if (!is_array($project)) {
+            return null;
+        }
+
+        // Build a sanitised copy of the definition — mirrors what the import path applies.
+        $sanitised = $data;
+        if (isset($sanitised['data'])) {
+            $sanitised['data'] = ProjectDTO::sanitiseProjectDefinitionForExport($sanitised['data']);
+        }
+
+        // Schema gate on the sanitised copy.
+        $schemaValid = $projectSchemaValidator->validate($sanitised);
+        if (!$schemaValid) {
+            return null;
+        }
+
+        // Definition + mapping gate on the sanitised copy, using a fresh DTO so we do not
+        // mutate the validated one passed in by the container.
+        $sanitisedDTO = new ProjectDTO(
+            new ProjectDefinitionDTO(),
+            new ProjectExtraDTO(),
+            new ProjectMappingDTO(),
+            new ProjectStatsDTO(),
+            new ProjectMappingService()
+        );
+
+        try {
+            $sanitisedDTO->validateProjectDefinitionAndMappings(
+                $sanitised['data'],
+                $projectDefinitionValidator,
+                data_get($sanitised, 'meta.project_mapping'),
+                $importProjectMappingValidator
+            );
+        } catch (Throwable) {
+            return null;
+        }
+
+        // If the sanitised copy passes, every raw failure was auto-fixable.
+        return config('epicollect.codes.ec5_409');
+    }
+
+    /**
+     * Parse a keyed error structure (['source' => ['ec5_xxx', ...]]) into the
+     * flat error objects used by the response, mirroring Response::apiErrorCode.
+     */
+    private function parseKeyedErrors(array $errors): array
+    {
+        $parsed = [];
+        foreach ($errors as $key => $error) {
+            if (!is_array($error)) {
+                continue;
+            }
+            foreach ($error as $errorValue) {
+                if ($key === 'question') {
+                    $parsed[] = [
+                        'code' => 'question',
+                        'title' => $errorValue,
+                        'source' => 'question',
+                    ];
+                } else {
+                    $parsed[] = [
+                        'code' => $errorValue,
+                        'title' => str_contains($errorValue, 'ec5_')
+                            ? config('epicollect.codes.' . $errorValue)
+                            : $errorValue,
+                        'source' => $key,
+                    ];
+                }
+            }
+        }
+        return $parsed;
+    }
+
+    /**
+     * Build a 400 error response, embedding the legacy-auto-fix warning (if any)
+     * inside each error object. No macro is used so the warning travels through the
+     * data argument rather than a dedicated macro parameter.
+     */
+    private function warningErrorResponse(string $httpStatusCode, array $errors, ?string $warning): JsonResponse
+    {
+        if ($warning !== null) {
+            foreach ($errors as &$error) {
+                $error['warning'] = $warning;
+            }
+            unset($error);
+        }
+
+        return new JsonResponse(
+            ['errors' => $errors],
+            (int) $httpStatusCode,
+            ['Content-Type' => 'application/vnd.api+json; charset=utf-8'],
+            0
         );
     }
 }

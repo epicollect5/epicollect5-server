@@ -600,6 +600,13 @@ class ProjectDTO
         $projectDefinition['project']['description'] = Strings::collapseWhitespace(
             $projectDefinition['project']['description']
         );
+        // [BUG] where the description is whitespace-only (e.g. "\r\n" introduced by a
+        // legacy / Windows-CRLF import), collapseWhitespace leaves a single space which
+        // fails the JSON Schema (anyOf: empty OR 3-3000 chars). Normalise it to the
+        // schema-legal empty string instead.
+        if (trim($projectDefinition['project']['description']) === '') {
+            $projectDefinition['project']['description'] = '';
+        }
 
         if (!isset($projectDefinition['project']['forms']) || !is_array($projectDefinition['project']['forms'])) {
             return $projectDefinition;
