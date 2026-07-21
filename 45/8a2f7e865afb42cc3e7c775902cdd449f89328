@@ -1,0 +1,19 @@
+app/Libraries/Generators/ProjectDefinitionGenerator.php
+  s_ba29c95bfc032e::t_a7bac36311101b 24-29
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "458a2f7e865afb42cc3e7c775902cdd449f89328",
+  "prompts": {},
+  "sessions": {
+    "s_ba29c95bfc032e": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_07b14a112ffe6AoRonz23Da76m",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
