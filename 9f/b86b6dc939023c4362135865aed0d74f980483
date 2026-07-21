@@ -1,0 +1,56 @@
+docs/release-review.md
+  s_3845a2d8bb35b6::t_75d06f8b85e965 75-77,79,87-94,97-99
+  s_3845a2d8bb35b6::t_91474ba298a80e 78,80-86,95-96
+  s_3845a2d8bb35b6::t_2656892598b90d 100-122
+app/DTO/ProjectDTO.php
+  s_3845a2d8bb35b6::t_c0b6728396634a 603-609
+app/Http/Controllers/Api/Project/ProjectController.php
+  s_3845a2d8bb35b6::t_a0f885be815936 464-518
+  s_3845a2d8bb35b6::t_e711a9543db0a2 8-11
+  s_3845a2d8bb35b6::t_969004f57b25c1 416-420,435-436,454,456
+  s_3845a2d8bb35b6::t_d927ec063df51e 398-399
+  s_3845a2d8bb35b6::t_62c29cbf9c14f4 13
+  s_3845a2d8bb35b6::t_85dd61d90c2944 409-415,429-434,437-453,455,457-462
+  s_3845a2d8bb35b6::t_4da5260c9b5f10 356-358,360-361,368
+  s_3845a2d8bb35b6::t_6b7de99e191998 421,463
+  s_3845a2d8bb35b6::t_cd02b5875bab7f 422-428
+  s_3845a2d8bb35b6::t_7c05678509ab48 400
+  s_3845a2d8bb35b6::t_99d192e0d72b43 346-347,359,362-367,369-370
+  s_3845a2d8bb35b6::t_eb8d775e458b44 348
+tests/DTO/ProjectDTOTest.php
+  s_3845a2d8bb35b6::t_d03e1ab73eda1c 108-140
+tests/Http/Controllers/Api/Project/ProjectValidateImportControllerTest.php
+  s_3845a2d8bb35b6::t_b731ae872a491d 5
+  s_3845a2d8bb35b6::t_55699547d87f4f 890-913
+  s_3845a2d8bb35b6::t_bc0df41208d32a 914-954
+  s_3845a2d8bb35b6::t_3d5d88dca0318c 858-866,869-874,884-889,955-963,969-979
+  s_3845a2d8bb35b6::t_26237a5eecd2a1 875-878,880
+  s_3845a2d8bb35b6::t_194e64a6bc2084 964-966
+  s_3845a2d8bb35b6::t_8a2d2968861011 867-868,879,881-883,967-968
+config/epicollect/codes.php
+  s_4cbdbee3edfacf::t_b8a41096c7d521 346
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "9fb86b6dc939023c4362135865aed0d74f980483",
+  "prompts": {},
+  "sessions": {
+    "s_3845a2d8bb35b6": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_094b9b137ffetsVFEu28fCuSgm",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    },
+    "s_4cbdbee3edfacf": {
+      "agent_id": {
+        "tool": "github-copilot-jetbrains",
+        "id": "1784307053785",
+        "model": "unknown"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
