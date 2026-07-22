@@ -1,0 +1,22 @@
+app/Http/Controllers/Web/Project/ProjectAppsController.php
+  s_bd789e835223dd::t_8c287ce7550230 8
+  s_bd789e835223dd::t_c2eace07d483d9 75-80
+tests/Http/Controllers/Web/Project/ProjectAppsControllerTest.php
+  s_bd789e835223dd::t_a15330a3ef5380 116-211
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "63c76964217cd36664b9467c0cd78279b9b01d01",
+  "prompts": {},
+  "sessions": {
+    "s_bd789e835223dd": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_075b3bebdffepG5dxIHc1i1XE5",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
