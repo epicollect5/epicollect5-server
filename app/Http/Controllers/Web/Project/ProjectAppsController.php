@@ -5,6 +5,7 @@
 namespace ec5\Http\Controllers\Web\Project;
 
 use ec5\Http\Validation\Project\RuleProjectApp;
+use ec5\Libraries\Utilities\Strings;
 use ec5\Models\OAuth\OAuthAccessToken;
 use ec5\Models\OAuth\OAuthClientProject;
 use ec5\Traits\Requests\RequestAttributes;
@@ -70,6 +71,12 @@ class ProjectAppsController
         $payload = request()->all();
         // unset the csrf token
         unset($payload['_token']);
+
+        //trim metadata strings
+        $payload['application_name'] = trim($payload['application_name']);
+
+        //remove extra spaces between words (if any)
+        $payload['application_name'] = Strings::collapseWhitespace($payload['application_name']);
 
         // Add the project id to validate
         $payload['project_id'] = $this->requestedProject()->getId();
