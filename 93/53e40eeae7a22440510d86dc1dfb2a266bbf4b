@@ -1,0 +1,19 @@
+resources/assets/js/project/mapping/add-mapping.js
+  s_d86f4e1dceda40::t_4f0a1a9c5cb06b 83-87
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "9353e40eeae7a22440510d86dc1dfb2a266bbf4b",
+  "prompts": {},
+  "sessions": {
+    "s_d86f4e1dceda40": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_071a14e8effevU7v2djxq0uUtX",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
