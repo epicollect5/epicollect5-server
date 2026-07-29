@@ -1,0 +1,22 @@
+app/Console/Commands/ProjectsValidateCommand.php
+  s_1524ed0c1a8f26::t_c63d02f2b6c5ea 15
+  s_1524ed0c1a8f26::t_5c693f2886e7bc 79-81
+  s_1524ed0c1a8f26::t_25ed11d3cacbf9 64
+  s_1524ed0c1a8f26::t_6b3465afff42d0 82-93,95
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "b3199dd79d4ac0813b3e08e9fbfea8bb41e5597c",
+  "prompts": {},
+  "sessions": {
+    "s_1524ed0c1a8f26": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0525f24e1ffeYIjkSONBvP6co2",
+        "model": "mimo-v2.5-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
