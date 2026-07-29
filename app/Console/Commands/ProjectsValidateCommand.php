@@ -12,9 +12,7 @@ class ProjectsValidateCommand extends Command
     private const string DISK = 'temp';
 
     protected $signature = 'projects:validate
-        {--slug= : Validate only the project with this slug}
-        {--limit= : Cap the number of projects processed (debugging)}
-        {--offset= : Skip the first N projects (resumability)}';
+        {--slug= : Validate only the project with this slug}';
 
     protected $description = 'Validate every project\'s default mapping and definition against the import-validation rules';
 
@@ -63,18 +61,7 @@ class ProjectsValidateCommand extends Command
     {
         $this->service->resetFailures();
 
-        $offset = (int) $this->option('offset');
-        $limit = $this->option('limit') !== null ? (int) $this->option('limit') : null;
-
-        $query = Project::where('status', '<>', 'archived')->orderBy('id');
-        if ($offset > 0) {
-            $query->skip($offset);
-        }
-        if ($limit !== null) {
-            $query->take($limit);
-        }
-
-        $total = $query->count();
+        $total = Project::where('status', '<>', 'archived')->count();
 
         if ($total === 0) {
             $this->info('No projects to validate.');
@@ -89,21 +76,23 @@ class ProjectsValidateCommand extends Command
         $skipped = 0;
         $failureRows = [];
 
-        $query->chunk(200, function ($projects) use ($bar, &$failures, &$skipped, &$failureRows): void {
-            foreach ($projects as $project) {
-                $result = $this->service->validateProject($project->slug);
-                if ($result['status'] === 'fail') {
-                    $failures++;
-                    $failureRows[] = [
-                        $result['name'],
-                        implode(' | ', $this->flattenErrors($result['errors']))
-                    ];
-                } elseif ($result['status'] === 'skipped') {
-                    $skipped++;
+        Project::where('status', '<>', 'archived')
+            ->orderBy('id')
+            ->chunk(200, function ($projects) use ($bar, &$failures, &$skipped, &$failureRows): void {
+                foreach ($projects as $project) {
+                    $result = $this->service->validateProject($project->slug);
+                    if ($result['status'] === 'fail') {
+                        $failures++;
+                        $failureRows[] = [
+                            $result['name'],
+                            implode(' | ', $this->flattenErrors($result['errors']))
+                        ];
+                    } elseif ($result['status'] === 'skipped') {
+                        $skipped++;
+                    }
+                    $bar->advance();
                 }
-                $bar->advance();
-            }
-        });
+            });
 
         $bar->finish();
         $this->newLine();
