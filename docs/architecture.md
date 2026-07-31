@@ -1147,6 +1147,23 @@ Used for:
 
 - external API flows that need JWT-style auth behavior
 
+The JWT is a signed, expiring wrapper around a credential stored server-side — it is **not** purely stateless:
+
+- Each successful login generates a fresh random `api_token` (`uniqid($id . '-')`) via
+  `Jwt::generateApiToken()` and persists it to `users.api_token` (`JwtGuard::saveToken()`).
+- That token becomes the JWT `sub` claim, signed HS256 with `auth.jwt.secret_key` and an
+  `exp` derived from `auth.jwt.expire` (`Jwt::buildJWTToken()`).
+- On every request, `JwtGuard::user()` decodes/verifies the token (signature + expiry), extracts
+  `sub`, and re-resolves the user by `users.api_token` — a per-request DB lookup.
+- Consequences: logging in again (token rotation) or deleting the user invalidates old JWTs
+  immediately, and the raw `api_token` is never sent over the wire (only the signed JWT is, so a
+  DB leak alone cannot mint valid tokens).
+- Token transport: external API reads the `jwt` input or `Authorization: Bearer` header; internal
+  requests use the `jwt` cookie.
+
+Note: `users.api_token` has no index (see `2016_08_11_133541_create_users_table`), so the
+per-request lookup is a full scan on that column — worth an index if the users table grows large.
+
 ### Passport OAuth
 
 Used for:
