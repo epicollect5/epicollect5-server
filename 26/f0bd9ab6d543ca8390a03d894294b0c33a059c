@@ -1,0 +1,19 @@
+docs/architecture.md
+  s_53234f6d56e8ed::t_535ad9fc70ebb9 1150-1166
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "26f0bd9ab6d543ca8390a03d894294b0c33a059c",
+  "prompts": {},
+  "sessions": {
+    "s_53234f6d56e8ed": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_046d165eeffeKA5FHS1AVHwbkz",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
