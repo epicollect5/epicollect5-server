@@ -1,0 +1,28 @@
+tests/Models/Eloquent/ProjectStatsStructureSyncTest.php
+  s_e1a0ab7d9054e8::t_0208108bbdd494 58-59,61,67,70,76,80-81,83-89,94
+  s_e1a0ab7d9054e8::t_6ccb50d8adddbb 207
+  s_e1a0ab7d9054e8::t_4a28566aea2662 166-169,171-180,183-189,191
+  s_e1a0ab7d9054e8::t_a5cab3c4b8c4dc 1-7,9-20,22-31,33,36-40,42-52,54-57,60,63-66,68-69,72-75,77-79,90,92-93,95-101,103-130,132-134,136-145,147-159,161,163-165,190,192,194-195,197-204,206
+  s_e1a0ab7d9054e8::t_aacc9c48440d4a 8,21,32,34-35,41,53,62,71,82,91,102,131,135,146,160,162,170,181-182,193,196,205
+app/Models/Project/ProjectStats.php
+  s_e1a0ab7d9054e8::t_76f238fd8208f0 141-146,149-152
+  s_e1a0ab7d9054e8::t_11dfadec19b6d1 325-363
+  s_e1a0ab7d9054e8::t_a2b88a4277cae3 90-94,101-104
+  s_e1a0ab7d9054e8::t_2c6d81108d9cd1 105,153
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "f17b23ba1a6ab31e9338b04d8887165a7a14b633",
+  "prompts": {},
+  "sessions": {
+    "s_e1a0ab7d9054e8": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_02331b327ffevXnOGCBtO8u9JX",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
