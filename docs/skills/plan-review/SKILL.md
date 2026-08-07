@@ -1,8 +1,8 @@
-# Architecture Review
+# Plan Review
 
-*Canonical skill definition. Agent wrappers: `.opencode/skills/architecture-review/` and `.codex/skills/architecture-review/`.*
+*Canonical skill definition. Agent wrappers: `.opencode/skills/plan-review/` and `.codex/skills/plan-review/`.*
 
-Perform an architecture review before planning or implementing any non-trivial change. The
+Perform a plan review before planning or implementing any non-trivial change. The
 goal is to prevent blindly executing the user's proposed implementation and to ensure the
 change reaches the real objective in the simplest way that satisfies it.
 
