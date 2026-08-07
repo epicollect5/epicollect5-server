@@ -1,0 +1,26 @@
+.codex/skills/plan-review/SKILL.md
+  s_9ca2b74eef0709::t_0a9ad6fcebb8c2 2-10
+docs/skills/plan-review/SKILL.md
+  s_9ca2b74eef0709::t_c948e91a9a62f9 1-5
+.opencode/skills/plan-review/SKILL.md
+  s_9ca2b74eef0709::t_a1fb331ee77977 1-12
+AGENTS.md
+  s_9ca2b74eef0709::t_0512f067140302 161
+  s_9ca2b74eef0709::t_15e5fc77eea31e 173-174
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "efc95078c6b2bfcf1794e7ab0948faf8cacce47b",
+  "prompts": {},
+  "sessions": {
+    "s_9ca2b74eef0709": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_024376b54ffeqsRmxdTFp4rxM1",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
