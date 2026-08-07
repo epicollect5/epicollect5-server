@@ -1,0 +1,58 @@
+.opencode/skills/ec5-code-style/SKILL.md
+  s_9ca2b74eef0709::t_c69312d0665c14 1-12
+.codex/skills/architecture-review/SKILL.md
+  s_9ca2b74eef0709::t_c69312d0665c14 1-12
+docs/skills/architecture-review/SKILL.md
+  s_9ca2b74eef0709::t_c69312d0665c14 1-69
+docs/skills/ec5-testing/SKILL.md
+  s_9ca2b74eef0709::t_c69312d0665c14 1-33
+docs/workflows/publish-issue.md
+  s_9ca2b74eef0709::t_c69312d0665c14 1-157
+docs/skills/ec5-api-endpoint/SKILL.md
+  s_9ca2b74eef0709::t_c69312d0665c14 1-35
+docs/workflows/review.md
+  s_9ca2b74eef0709::t_c69312d0665c14 9
+.codex/skills/ec5-code-style/SKILL.md
+  s_9ca2b74eef0709::t_c69312d0665c14 1-12
+.codex/skills/ec5-testing/SKILL.md
+  s_9ca2b74eef0709::t_c69312d0665c14 1-12
+.codex/skills/ec5-api-endpoint/SKILL.md
+  s_9ca2b74eef0709::t_c69312d0665c14 1-12
+.opencode/skills/migration-safety/SKILL.md
+  s_9ca2b74eef0709::t_c69312d0665c14 1-12
+.opencode/skills/ec5-api-endpoint/SKILL.md
+  s_9ca2b74eef0709::t_c69312d0665c14 1-12
+docs/skills/ec5-code-style/SKILL.md
+  s_9ca2b74eef0709::t_c69312d0665c14 1-41
+docs/skills/migration-safety/SKILL.md
+  s_9ca2b74eef0709::t_c69312d0665c14 1-56
+AGENTS.md
+  s_9ca2b74eef0709::t_c69312d0665c14 52-54,146-178
+  s_9ca2b74eef0709::t_2282bf608d4f1f 179
+.opencode/skills/ec5-testing/SKILL.md
+  s_9ca2b74eef0709::t_c69312d0665c14 1-12
+.codex/skills/migration-safety/SKILL.md
+  s_9ca2b74eef0709::t_c69312d0665c14 1-12
+docs/workflows/issue.md
+  s_9ca2b74eef0709::t_c69312d0665c14 1-148
+.opencode/commands/issue.md
+  s_9ca2b74eef0709::t_c69312d0665c14 1-14
+.opencode/commands/publish-issue.md
+  s_9ca2b74eef0709::t_c69312d0665c14 1-35
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "9478ccf7fa963af303c8415ce8424a30a1db19a1",
+  "prompts": {},
+  "sessions": {
+    "s_9ca2b74eef0709": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_024376b54ffeqsRmxdTFp4rxM1",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
