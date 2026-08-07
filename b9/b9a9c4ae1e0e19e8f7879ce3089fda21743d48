@@ -1,0 +1,52 @@
+docs/skills/ec5-testing/SKILL.md
+  s_9ca2b74eef0709::t_a4aac46a937126 1-33
+docs/skills/architecture-review/SKILL.md
+  s_9ca2b74eef0709::t_489c5f18b03632 1-69
+.opencode/skills/ec5-code-style/SKILL.md
+  s_9ca2b74eef0709::t_612c9fad441bbc 6,8,10,12
+.codex/skills/ec5-api-endpoint/SKILL.md
+  s_9ca2b74eef0709::t_b84fe920891fca 1-12
+.codex/skills/ec5-testing/SKILL.md
+  s_9ca2b74eef0709::t_45aedafe567e87 1-12
+docs/skills/migration-safety/SKILL.md
+  s_9ca2b74eef0709::t_602fddb34e5b8b 1-56
+.opencode/skills/ec5-testing/SKILL.md
+  s_9ca2b74eef0709::t_e4da2648d194ad 6,8,10,12
+docs/skills/ec5-api-endpoint/SKILL.md
+  s_9ca2b74eef0709::t_e7cb2213ac6f65 1-35
+.codex/skills/architecture-review/SKILL.md
+  s_9ca2b74eef0709::t_989f84804a8255 1-12
+.codex/skills/migration-safety/SKILL.md
+  s_9ca2b74eef0709::t_3bb0fb5a507e2f 1-12
+AGENTS.md
+  s_9ca2b74eef0709::t_033f14e717823b 146-179
+.opencode/skills/migration-safety/SKILL.md
+  s_9ca2b74eef0709::t_846565b57f1a8f 6,8,10,12
+.opencode/skills/ec5-api-endpoint/SKILL.md
+  s_9ca2b74eef0709::t_a968ea51d8a309 6,8,10,12
+.codex/skills/ec5-code-style/SKILL.md
+  s_9ca2b74eef0709::t_4c90a30540c79c 1-12
+docs/skills/ec5-code-style/SKILL.md
+  s_9ca2b74eef0709::t_fe7857a26fac41 1-41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "b9b9a9c4ae1e0e19e8f7879ce3089fda21743d48",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_9ca2b74eef0709": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_024376b54ffeqsRmxdTFp4rxM1",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
