@@ -6,6 +6,7 @@ This is a review-only task.
 
 - **git diff** against base branch (primary source of truth).
 - **Full file context** when needed to understand surrounding code.
+- **`docs/architecture.md`** — read the whole file before raising any candidate finding. It is the source of truth for system design, including the "Known review false positives" subsection (findings that look like defects but are by design). Cross-check any candidate against the whole document, not just that subsection, before raising it; if it matches, drop it.
 
 ## Responsibilities
 
