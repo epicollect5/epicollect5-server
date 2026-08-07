@@ -158,7 +158,7 @@ this repo. They are shared across every coding agent (OpenCode and Codex).
 
 ### Available skills
 
-- `architecture-review` — before any non-trivial plan or implementation: identify the real
+- `plan-review` — before any non-trivial plan or implementation: identify the real
   goal, avoid blindly following the proposed implementation, find existing patterns, evaluate
   simpler alternatives, recommend the simplest solution, then plan.
 - `ec5-api-endpoint` — adding or modifying API endpoints (routes, controllers, validation,
@@ -170,8 +170,8 @@ this repo. They are shared across every coding agent (OpenCode and Codex).
 ### Requirements
 
 - Consult the relevant skill(s) when planning or implementing changes.
-- **Architecture review is required before creating any implementation plan.** For any
-  non-trivial change, load `docs/skills/architecture-review/SKILL.md` and follow its output
+- **Plan review is required before creating any implementation plan.** For any
+  non-trivial change, load `docs/skills/plan-review/SKILL.md` and follow its output
   structure first. Trivial changes (typos, formatting, one-line fixes) may skip it.
 - To add a new skill: author the canonical `docs/skills/<name>/SKILL.md`, then add a matching
   thin wrapper to `.opencode/skills/<name>/SKILL.md` and `.codex/skills/<name>/SKILL.md`
