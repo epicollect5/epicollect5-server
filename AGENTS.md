@@ -143,6 +143,40 @@ This section routes agents to the canonical workflow definitions.
 
 Agents must follow these workflow definitions when executing tasks.
 
+## Repository Skills
+
+Repository skills are the operational instructions for how agents plan and implement work in
+this repo. They are shared across every coding agent (OpenCode and Codex).
+
+### Where skills live
+
+- **Canonical skills**: `docs/skills/<skill-name>/SKILL.md` — the single source of truth.
+  Always author and edit skill content here, never anywhere else.
+- **Agent integration**: `.opencode/skills/<skill-name>/SKILL.md` and
+  `.codex/skills/<skill-name>/SKILL.md` are thin wrappers (auto-trigger frontmatter plus a
+  pointer to the canonical file). Never duplicate skill content in wrappers.
+
+### Available skills
+
+- `architecture-review` — before any non-trivial plan or implementation: identify the real
+  goal, avoid blindly following the proposed implementation, find existing patterns, evaluate
+  simpler alternatives, recommend the simplest solution, then plan.
+- `ec5-api-endpoint` — adding or modifying API endpoints (routes, controllers, validation,
+  services, DTOs, error codes, tests).
+- `ec5-code-style` — Epicollect5 PHP/Laravel code style on every PHP change.
+- `ec5-testing` — PHPUnit testing conventions and the mandatory targeted-run command.
+- `migration-safety` — safe Laravel/first-party package upgrades and migration changes.
+
+### Requirements
+
+- Consult the relevant skill(s) when planning or implementing changes.
+- **Architecture review is required before creating any implementation plan.** For any
+  non-trivial change, load `docs/skills/architecture-review/SKILL.md` and follow its output
+  structure first. Trivial changes (typos, formatting, one-line fixes) may skip it.
+- To add a new skill: author the canonical `docs/skills/<name>/SKILL.md`, then add a matching
+  thin wrapper to `.opencode/skills/<name>/SKILL.md` and `.codex/skills/<name>/SKILL.md`
+  (same `name`/`description` frontmatter).
+
 ## Restrictions
 
 - **Tinker is strictly prohibited:** No AI agent must use, invoke, or interact with Tinker in any form during
