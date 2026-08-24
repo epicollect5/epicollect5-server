@@ -1,0 +1,14 @@
+.nvmrc
+  h_2231ff2aa93473 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "087b393b92aee7c9e79d28db723be1421d2cb614",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
