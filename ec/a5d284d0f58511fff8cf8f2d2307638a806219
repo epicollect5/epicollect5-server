@@ -1,0 +1,28 @@
+app/Services/Entries/CreateEntryService.php
+  s_a3d14670f09808::t_99e5fe37a312d9 137-140
+  s_a3d14670f09808::t_a36f68afe3fc0f 147-151
+app/Services/Entries/EntriesUploadService.php
+  s_a3d14670f09808::t_a36f68afe3fc0f 109-114
+app/Traits/Eloquent/Entries.php
+  s_a3d14670f09808::t_99e5fe37a312d9 11,17-18,179-180,198-208,215-223
+  s_a3d14670f09808::t_6c3507d63af14b 190-191
+  s_a3d14670f09808::t_4e782b196d6ec7 224
+tests/Services/Entries/CreateEntryServiceLoggingTest.php
+  s_a3d14670f09808::t_c33f7c097b8b95 1-95
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "eca5d284d0f58511fff8cf8f2d2307638a806219",
+  "prompts": {},
+  "sessions": {
+    "s_a3d14670f09808": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a034ca-be80-7d20-8366-3eee54082774",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": null
+    }
+  }
+}
