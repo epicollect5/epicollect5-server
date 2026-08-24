@@ -1,0 +1,23 @@
+app/Http/Validation/Entries/Upload/InputRules/RuleDateInput.php
+  s_b98becd1ddb563::t_b1c79bd92721cf 38-40,44,50,59-62,67-69,73-83
+  s_b98becd1ddb563::t_ef110a8ed7e21f 84-85
+app/Http/Validation/Entries/Upload/InputRules/RuleTimeInput.php
+  s_b98becd1ddb563::t_b32919818f1f2f 38-40,44,50,54,60-63,68-70,74-85
+  s_b98becd1ddb563::t_3f9981385642a6 86-87
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "1820e738216bf87fac462092abe221a07b30bae6",
+  "prompts": {},
+  "sessions": {
+    "s_b98becd1ddb563": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fcbbfc845ffejy0L12ZRApHHKO",
+        "model": "muse-spark-1.2-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
