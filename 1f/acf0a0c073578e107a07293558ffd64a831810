@@ -1,0 +1,20 @@
+app/Traits/Auth/AppleUserUpdater.php
+  h_2231ff2aa93473 14-17
+app/Traits/Auth/GoogleUserUpdater.php
+  h_2231ff2aa93473 13-16
+tests/Routes/Api/external/VerifyAppleUserExternalTest.php
+  h_2231ff2aa93473 9,171-213
+tests/Routes/Api/external/VerifyGoogleUserExternalTest.php
+  h_2231ff2aa93473 9,170-212
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "1facf0a0c073578e107a07293558ffd64a831810",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
