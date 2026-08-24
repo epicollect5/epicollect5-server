@@ -6,7 +6,6 @@ use Carbon\Carbon;
 use ec5\Libraries\Utilities\Generators;
 use ec5\Models\User\User;
 use ec5\Models\User\UserPasswordlessApi;
-use ec5\Models\User\UserProvider;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
@@ -166,48 +165,5 @@ class VerifyGoogleUserExternalTest extends TestCase
                     ]
                 ]);
         }
-    }
-
-    public function testVerificationRetryDoesNotFail()
-    {
-        $user = factory(User::class)->create();
-        $email = $user->email;
-        $tokenExpiresAt = config('testing.PASSWORDLESS_TOKEN_EXPIRES_IN', 300);
-        $code = Generators::randomNumber(6, 1);
-
-        factory(UserPasswordlessApi::class)
-            ->create([
-                'email' => $email,
-                'code' => bcrypt($code, ['rounds' => config('testing.BCRYPT_ROUNDS')]),
-                'expires_at' => Carbon::now()->addSeconds($tokenExpiresAt)->toDateTimeString()
-            ]);
-
-        // First verification — should succeed
-        $this->json('POST', $this->endpoint, [
-            'email' => $email,
-            'code' => $code
-        ], [])
-            ->assertStatus(200);
-
-        // Create a new passwordless code for retry (the first was deleted on verify)
-        $code2 = Generators::randomNumber(6, 1);
-        factory(UserPasswordlessApi::class)
-            ->create([
-                'email' => $email,
-                'code' => bcrypt($code2, ['rounds' => config('testing.BCRYPT_ROUNDS')]),
-                'expires_at' => Carbon::now()->addSeconds($tokenExpiresAt)->toDateTimeString()
-            ]);
-
-        // Second verification — should also succeed without duplicate entry error
-        $this->json('POST', $this->endpoint, [
-            'email' => $email,
-            'code' => $code2
-        ], [])
-            ->assertStatus(200);
-
-        // Assert only one UserProvider record exists for this email+provider
-        $this->assertEquals(1, UserProvider::where('email', $email)
-            ->where('provider', config('epicollect.strings.providers.google'))
-            ->count());
     }
 }

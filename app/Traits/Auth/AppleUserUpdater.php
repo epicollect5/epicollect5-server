@@ -11,10 +11,11 @@ trait AppleUserUpdater
     protected function updateAppleUserDetails($user, $payload): void
     {
         //add the apple provider so next time no verification is needed
-        UserProvider::firstOrCreate(
-            ['email' => $user->email, 'provider' => config('epicollect.strings.providers.apple')],
-            ['user_id' => $user->id]
-        );
+        $userProvider = new UserProvider();
+        $userProvider->email = $user->email;
+        $userProvider->user_id = $user->id;
+        $userProvider->provider = config('epicollect.strings.providers.apple');
+        $userProvider->save();
 
         //update user details (if a user object is available)
         try {

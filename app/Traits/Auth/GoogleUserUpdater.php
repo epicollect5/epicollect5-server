@@ -10,10 +10,11 @@ trait GoogleUserUpdater
     public function updateGoogleUserDetails($params, $user): void
     {
         //add the Google provider so next time no verification is needed
-        UserProvider::firstOrCreate(
-            ['email' => $user->email, 'provider' => $this->googleProviderLabel],
-            ['user_id' => $user->id]
-        );
+        $userProvider = new UserProvider();
+        $userProvider->email = $user->email;
+        $userProvider->user_id = $user->id;
+        $userProvider->provider = $this->googleProviderLabel;
+        $userProvider->save();
 
         $googleUser = $params['user']; //decode to array by passing "true"
         $googleUserFirstName = $googleUser['given_name'];

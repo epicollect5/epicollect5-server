@@ -236,6 +236,13 @@ class GoogleController extends AuthController
             return Response::apiErrorCode(400, ['api-login-google' => ['ec5_34']]);
         }
 
+        //add the Google provider so next time no verification is needed
+        $userProvider = new UserProvider();
+        $userProvider->email = $user->email;
+        $userProvider->user_id = $user->id;
+        $userProvider->provider = $this->googleProviderLabel;
+        $userProvider->save();
+
         //try to update user details
         try {
             $this->updateGoogleUserDetails($params, $user);
