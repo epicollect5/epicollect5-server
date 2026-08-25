@@ -1,0 +1,27 @@
+tests/Libraries/Utilities/CommonTest.php
+  s_5a5c49c030d693::t_7145f86f565c0b 204-229
+app/Libraries/Utilities/Common.php
+  s_5a5c49c030d693::t_c0143519902b87 447-464
+app/Services/Project/ProjectValidationService.php
+  s_5a5c49c030d693::t_ae8d74d7d090e5 16
+  s_5a5c49c030d693::t_2fc15bfee644fc 207
+app/Console/Commands/ProjectsValidateCommand.php
+  s_5a5c49c030d693::t_8f0996b951edda 7
+  s_5a5c49c030d693::t_acc6a94891fbee 122
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "51d8335619cf4bcdf116b39237b55872180c41fd",
+  "prompts": {},
+  "sessions": {
+    "s_5a5c49c030d693": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fc7cbc55effebCwidsB8SIr7DL",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
