@@ -1,0 +1,26 @@
+app/Http/Controllers/Api/Project/ProjectController.php
+  s_8a46dd14cfd6be::t_698c5ba2c4ac0f 331
+app/Providers/Macros/Response/ApiWarningCodeMacro.php
+  s_8a46dd14cfd6be::t_259e60317b4de7 1-43
+app/Services/Project/ProjectValidationService.php
+  s_8a46dd14cfd6be::t_c0187b5a790c2e 17
+  s_8a46dd14cfd6be::t_d0a15ea8b314c3 149-150
+config/app.php
+  s_8a46dd14cfd6be::t_8a80b47e4b6935 196
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "ff2c4d34d0844a95980233c091cdc48d168c4f34",
+  "prompts": {},
+  "sessions": {
+    "s_8a46dd14cfd6be": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fc7eb3d02ffeI2R08PrzwgM5tL",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
