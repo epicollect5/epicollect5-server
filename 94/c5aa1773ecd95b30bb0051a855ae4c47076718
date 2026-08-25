@@ -1,0 +1,14 @@
+.commandcode/settings.json
+  h_2231ff2aa93473 13-14
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "94c5aa1773ecd95b30bb0051a855ae4c47076718",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
