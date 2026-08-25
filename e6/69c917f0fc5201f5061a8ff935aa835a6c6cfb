@@ -1,0 +1,16 @@
+tests/Http/Controllers/Web/Project/AppLinkViewTest.php
+  h_2231ff2aa93473 1-56
+resources/views/project/deeplinks/app_link.blade.php
+  h_2231ff2aa93473 18
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "e669c917f0fc5201f5061a8ff935aa835a6c6cfb",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
