@@ -15,7 +15,7 @@
                     project automatically. </p>
 
                 <span class="deeplink-copy-btn"
-                      data-url="{{ url('/open/project') . 'app_link.blade.php/' . $requestAttributes->requestedProject->slug }}">
+                      data-url="{{ url('/open/project/' . $requestAttributes->requestedProject->slug) }}">
                             <button class="btn btn-sm btn-action">
                                 <i class="material-icons" data-toggle="tooltip" data-placement="top"
                                    title="Copied!"
