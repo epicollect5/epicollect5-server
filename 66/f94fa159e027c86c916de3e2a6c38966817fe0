@@ -1,0 +1,15 @@
+docs/workflows/publish-issue.md
+  h_2231ff2aa93473 8-9,50-51,62-63,74-103,105-107,113,115,133,139,141,186-187
+  h_2231ff2aa93473 3-5,7,17-18,35-36,53-54,64-66,68-69,71-73,104,114,119-121,132
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "66f94fa159e027c86c916de3e2a6c38966817fe0",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
