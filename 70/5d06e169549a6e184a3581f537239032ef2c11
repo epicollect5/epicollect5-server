@@ -1,0 +1,40 @@
+app/Http/Controllers/Api/Project/ProjectController.php
+  s_e507c601c5ab1f::t_8db3de4943a9ed 23
+  s_e507c601c5ab1f::t_a4c527588e3ea1 413
+  s_e507c601c5ab1f::t_d6061bb5ecc5cc 433
+app/DTO/ProjectDTO.php
+  s_e507c601c5ab1f::t_c22b29919fc50b 9
+  s_e507c601c5ab1f::t_f3cd113aad46f6 394
+  s_e507c601c5ab1f::t_9a26ed1a95af80 268
+  s_e507c601c5ab1f::t_24a8e1da7ce617 467
+  s_e507c601c5ab1f::t_d10c728ec2a667 215
+tests/Http/Controllers/Api/Project/ProjectValidateImportControllerTest.php
+  s_e507c601c5ab1f::t_da2d627cb26ac6 885,909,933
+  s_e507c601c5ab1f::t_1ca58abaa68e1c 6
+app/Services/Project/ProjectService.php
+  s_e507c601c5ab1f::t_cc6c40dac95c26 248
+tests/Http/Controllers/Api/Project/ProjectControllerExportTest.php
+  s_e507c601c5ab1f::t_1193d0be12eb90 52
+  s_e507c601c5ab1f::t_97b38c098df875 6
+tests/DTO/ProjectDTOTest.php
+  s_e507c601c5ab1f::t_0f9213a3540de4 11
+  s_e507c601c5ab1f::t_9a9184fb34e218 88,120,125,130,139
+app/Services/Project/ProjectDefinitionSanitiserService.php
+  s_e507c601c5ab1f::t_834920dd5b5438 1-201
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "705d06e169549a6e184a3581f537239032ef2c11",
+  "prompts": {},
+  "sessions": {
+    "s_e507c601c5ab1f": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fc7c89844ffeD5GxNXZ8rMu3e8",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
