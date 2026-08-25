@@ -1,0 +1,29 @@
+app/Services/Project/ProjectValidationService.php
+  s_4b517e6edeec44::t_24d55e012ebc0d 108-112
+  s_4b517e6edeec44::t_1adbe976a93ed5 170
+  s_4b517e6edeec44::t_9890319beaee97 113,115,122-123,125-169,171-174,176,179-181,184-187,198,200,211,214-221,223-225,227-228,232-328
+  s_4b517e6edeec44::t_76cd7e03059d53 114
+  s_4b517e6edeec44::t_8cf91d30b16181 116-121
+  s_4b517e6edeec44::t_a62c59ddf583f9 124
+tests/Services/Project/ProjectValidationServiceTest.php
+  s_4b517e6edeec44::t_14c68283066b8f 110-177
+app/Http/Controllers/Api/Project/ProjectController.php
+  s_4b517e6edeec44::t_d3d83fc4cf47a1 14
+  s_4b517e6edeec44::t_f44210ec9c1c02 315-316,318,325,327-328,331
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "78a7a0ec61c142e1be738ca56269f3a7c4e449ee",
+  "prompts": {},
+  "sessions": {
+    "s_4b517e6edeec44": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fc7a7df82ffeMmTlUMz7gOWYey",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
