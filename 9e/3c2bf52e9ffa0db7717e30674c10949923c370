@@ -1,0 +1,16 @@
+public/dataviewer/js/dataviewer.js
+  h_2231ff2aa93473 7,66-75
+public/dataviewer/js/dataviewer.js.map
+  h_2231ff2aa93473 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "9e3c2bf52e9ffa0db7717e30674c10949923c370",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
