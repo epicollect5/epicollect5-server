@@ -30,28 +30,24 @@ class RuleDateInput extends RuleInputBase
 
     public function additionalChecks($inputDetails, $answer, ProjectDTO $project, EntryStructureDTO $entryStructure): array|string|null
     {
-
         //if this question is not required, skip extra checks
         if ($inputDetails['is_required'] === false && $answer === '') {
             return $answer;
         }
 
+        $failedChecks = [];
+        $exceptionMessage = null;
+
         //ISO 8601 format only -> 1977-05-22T00:00:00.000
         $regex = '/([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3})+/';
         if (!preg_match_all($regex, $answer)) {
-            Log::error('Date wrong format uploaded - regex failed', [
-                'project slug' => $project->slug,
-                'date' => $answer
-            ]);
+            $failedChecks[] = 'regex';
             $this->errors[$inputDetails['ref']] = ['ec5_79'];
         }
 
         //valid date?
         if (!strtotime($answer)) {
-            Log::error('Date wrong format uploaded - strtotime failed', [
-                'project slug' => $project->slug,
-                'date' => $answer
-            ]);
+            $failedChecks[] = 'strtotime';
             $this->errors[$inputDetails['ref']] = ['ec5_79'];
         }
 
@@ -60,20 +56,31 @@ class RuleDateInput extends RuleInputBase
         try {
             $datePart = explode('T', $answer ?? '')[0];
         } catch (Throwable $e) {
-            Log::error('Date wrong format uploaded - validateDate failed', [
-                'project slug' => $project->slug,
-                'date' => $answer,
-                'exception' => $e->getMessage()
-            ]);
+            if (!in_array('validateDate', $failedChecks, true)) {
+                $failedChecks[] = 'validateDate';
+            }
+            $exceptionMessage = $e->getMessage();
             $this->errors[$inputDetails['ref']] = ['ec5_79'];
         }
 
         if (!$this->validateDate($datePart)) {
-            Log::error('Date wrong format uploaded - validateDate failed', [
-                'project slug' => $project->slug,
-                'date' => $answer
-            ]);
+            if (!in_array('validateDate', $failedChecks, true)) {
+                $failedChecks[] = 'validateDate';
+            }
             $this->errors[$inputDetails['ref']] = ['ec5_79'];
+        }
+
+        if (!empty($failedChecks)) {
+            $context = [
+                'project_slug' => $project->slug,
+                'input_ref' => $inputDetails['ref'],
+                'date' => $answer,
+                'failed_checks' => $failedChecks,
+            ];
+            if ($exceptionMessage !== null) {
+                $context['exception'] = $exceptionMessage;
+            }
+            Log::warning('Date wrong format uploaded', $context);
         }
 
         return $answer;
