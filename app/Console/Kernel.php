@@ -74,9 +74,9 @@ class Kernel extends ConsoleKernel
                 ->timezone('UTC')
                 ->withoutOverlapping();
 
-            //clear laravel expired cache files on Sunday at 04:00 UTC
+            //clear laravel expired cache files daily at 04:00 UTC
             $schedule->command('cache:gc')
-                ->weeklyOn(0, '04:00')
+                ->dailyAt('04:00')
                 ->timezone('UTC')
                 ->withoutOverlapping();
         } else {
