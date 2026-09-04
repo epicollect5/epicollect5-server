@@ -58,6 +58,27 @@ class ProjectExtraDTO extends ProjectDTOBase
         return $this->data['forms'][$ref][$which] ?? [];
     }
 
+    public function getPossibleAnswerRefs(string $formRef, ?string $branchRef = null): array
+    {
+        $multipleChoiceInputs = $this->data['forms'][$formRef]['lists']['multiple_choice_inputs']
+            ?? [];
+        $inputList = $this->getMultipleChoiceInputList(
+            $formRef,
+            $multipleChoiceInputs,
+            $branchRef
+        );
+
+        $possibleAnswerRefs = [];
+        foreach ($this->getOrderedInputRefs($inputList) as $inputRef) {
+            $answerRefs = array_keys($inputList[$inputRef]['possible_answers'] ?? []);
+            foreach ($answerRefs as $possibleAnswerRef) {
+                $possibleAnswerRefs[] = $possibleAnswerRef;
+            }
+        }
+
+        return array_values(array_unique($possibleAnswerRefs));
+    }
+
     /**
      * Add form, form_ref and add details from data.
      * data should contain things like name, ref etc.
@@ -79,6 +100,65 @@ class ProjectExtraDTO extends ProjectDTOBase
         ];
         $this->data['forms'][$formRef]['branch'] = [];
         $this->data['forms'][$formRef]['group'] = [];
+    }
+
+    private function getMultipleChoiceInputList(
+        string $formRef,
+        array $multipleChoiceInputs,
+        ?string $branchRef
+    ): array {
+        if ($branchRef === null || $branchRef === '') {
+            return $multipleChoiceInputs['form'] ?? [];
+        }
+
+        $branchInputs = $multipleChoiceInputs['branch'] ?? [];
+        if (isset($branchInputs[$branchRef])) {
+            return $branchInputs[$branchRef];
+        }
+
+        return $this->filterInputList(
+            $branchInputs,
+            $this->getBranchInputRefs($formRef, $branchRef)
+        );
+    }
+
+    private function getOrderedInputRefs(array $inputList): array
+    {
+        $inputRefs = $inputList['order'] ?? [];
+
+        foreach (array_keys($inputList) as $inputRef) {
+            if ($inputRef !== 'order' && !in_array($inputRef, $inputRefs, true)) {
+                $inputRefs[] = $inputRef;
+            }
+        }
+
+        return $inputRefs;
+    }
+
+    private function filterInputList(array $inputList, array $allowedInputRefs): array
+    {
+        $filteredList = [];
+
+        foreach ($this->getOrderedInputRefs($inputList) as $inputRef) {
+            if (in_array($inputRef, $allowedInputRefs, true) && isset($inputList[$inputRef])) {
+                $filteredList['order'][] = $inputRef;
+                $filteredList[$inputRef] = $inputList[$inputRef];
+            }
+        }
+
+        return $filteredList;
+    }
+
+    private function getBranchInputRefs(string $formRef, string $branchRef): array
+    {
+        $inputRefs = $this->data['forms'][$formRef]['branch'][$branchRef] ?? [];
+
+        foreach ($inputRefs as $inputRef) {
+            $groupInputRefs = $this->data['forms'][$formRef]['group'][$inputRef] ?? [];
+            $inputRefs = array_merge($inputRefs, $groupInputRefs);
+        }
+
+        return array_values(array_unique($inputRefs));
     }
 
     /** @noinspection PhpUnused */

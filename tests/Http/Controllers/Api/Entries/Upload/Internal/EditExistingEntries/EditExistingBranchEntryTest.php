@@ -18,13 +18,14 @@ use ec5\Traits\Assertions;
 use Faker\Factory as Faker;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
+use Throwable;
 
 class EditExistingBranchEntryTest extends TestCase
 {
     use DatabaseTransactions;
     use Assertions;
 
-    private $endpoint = 'api/internal/web-upload/';
+    private string $endpoint = 'api/internal/web-upload/';
 
     public function setUp(): void
     {
@@ -92,6 +93,9 @@ class EditExistingBranchEntryTest extends TestCase
         $this->projectExtra = $projectExtra;
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_branch_entry_text_by_app_upload_same_user()
     {
         //get project definition
@@ -103,7 +107,7 @@ class EditExistingBranchEntryTest extends TestCase
         $inputText = [];
         $editedInputAnswer = [];
         $branchInputs = [];
-        foreach ($inputs as $index => $input) {
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.branch')) {
                 $ownerInputRef = $input['ref'];
                 $branchInputs = $input['branch'];
@@ -216,11 +220,14 @@ class EditExistingBranchEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($branchEntryFromDB->user_id, $editedBranchEntryFromDB->user_id);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_branch_entry_integer_by_app_upload_same_user()
     {
         //get project definition
@@ -231,7 +238,8 @@ class EditExistingBranchEntryTest extends TestCase
         $ownerInputRef = '';
         $inputInteger = [];
         $editedInputAnswer = [];
-        foreach ($inputs as $index => $input) {
+        $branchInputs = [];
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.branch')) {
                 $ownerInputRef = $input['ref'];
                 $branchInputs = $input['branch'];
@@ -344,11 +352,14 @@ class EditExistingBranchEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($branchEntryFromDB->user_id, $editedBranchEntryFromDB->user_id);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_branch_entry_decimal_by_app_upload_same_user()
     {
         //get project definition
@@ -359,7 +370,8 @@ class EditExistingBranchEntryTest extends TestCase
         $ownerInputRef = '';
         $inputDecimal = [];
         $editedInputAnswer = [];
-        foreach ($inputs as $index => $input) {
+        $branchInputs = [];
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.branch')) {
                 $ownerInputRef = $input['ref'];
                 $branchInputs = $input['branch'];
@@ -472,11 +484,14 @@ class EditExistingBranchEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($branchEntryFromDB->user_id, $editedBranchEntryFromDB->user_id);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_branch_entry_phone_by_app_upload_same_user()
     {
         //get project definition
@@ -487,7 +502,8 @@ class EditExistingBranchEntryTest extends TestCase
         $ownerInputRef = '';
         $inputPhone = [];
         $editedInputAnswer = [];
-        foreach ($inputs as $index => $input) {
+        $branchInputs = [];
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.branch')) {
                 $ownerInputRef = $input['ref'];
                 $branchInputs = $input['branch'];
@@ -600,11 +616,14 @@ class EditExistingBranchEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($branchEntryFromDB->user_id, $editedBranchEntryFromDB->user_id);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_branch_entry_date_by_app_upload_same_user()
     {
         //get project definition
@@ -615,7 +634,8 @@ class EditExistingBranchEntryTest extends TestCase
         $ownerInputRef = '';
         $inputDate = [];
         $editedInputAnswer = [];
-        foreach ($inputs as $index => $input) {
+        $branchInputs = [];
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.branch')) {
                 $ownerInputRef = $input['ref'];
                 $branchInputs = $input['branch'];
@@ -728,11 +748,14 @@ class EditExistingBranchEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($branchEntryFromDB->user_id, $editedBranchEntryFromDB->user_id);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_branch_entry_time_by_app_upload_same_user()
     {
         //get project definition
@@ -743,7 +766,8 @@ class EditExistingBranchEntryTest extends TestCase
         $ownerInputRef = '';
         $inputTime = [];
         $editedInputAnswer = [];
-        foreach ($inputs as $index => $input) {
+        $branchInputs = [];
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.branch')) {
                 $ownerInputRef = $input['ref'];
                 $branchInputs = $input['branch'];
@@ -856,11 +880,14 @@ class EditExistingBranchEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($branchEntryFromDB->user_id, $editedBranchEntryFromDB->user_id);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_branch_entry_dropdown_by_app_upload_same_user()
     {
         //get project definition
@@ -871,7 +898,8 @@ class EditExistingBranchEntryTest extends TestCase
         $ownerInputRef = '';
         $inputDropdown = [];
         $editedInputAnswer = [];
-        foreach ($inputs as $index => $input) {
+        $branchInputs = [];
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.branch')) {
                 $ownerInputRef = $input['ref'];
                 $branchInputs = $input['branch'];
@@ -984,11 +1012,14 @@ class EditExistingBranchEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($branchEntryFromDB->user_id, $editedBranchEntryFromDB->user_id);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_branch_entry_radio_by_app_upload_same_user()
     {
         //get project definition
@@ -999,7 +1030,8 @@ class EditExistingBranchEntryTest extends TestCase
         $ownerInputRef = '';
         $inputRadio = [];
         $editedInputAnswer = [];
-        foreach ($inputs as $index => $input) {
+        $branchInputs = [];
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.branch')) {
                 $ownerInputRef = $input['ref'];
                 $branchInputs = $input['branch'];
@@ -1112,11 +1144,14 @@ class EditExistingBranchEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($branchEntryFromDB->user_id, $editedBranchEntryFromDB->user_id);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_branch_entry_checkbox_by_app_upload_same_user()
     {
         //get project definition
@@ -1127,7 +1162,8 @@ class EditExistingBranchEntryTest extends TestCase
         $ownerInputRef = '';
         $inputCheckbox = [];
         $editedInputAnswer = [];
-        foreach ($inputs as $index => $input) {
+        $branchInputs = [];
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.branch')) {
                 $ownerInputRef = $input['ref'];
                 $branchInputs = $input['branch'];
@@ -1240,11 +1276,14 @@ class EditExistingBranchEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($branchEntryFromDB->user_id, $editedBranchEntryFromDB->user_id);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_branch_entry_searchsingle_by_app_upload_same_user()
     {
         //get project definition
@@ -1255,6 +1294,7 @@ class EditExistingBranchEntryTest extends TestCase
         $ownerInputRef = '';
         $inputSearchsingle = [];
         $editedInputAnswer = [];
+        $branchInputs = [];
         foreach ($inputs as $index => $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.branch')) {
                 $ownerInputRef = $input['ref'];
@@ -1378,11 +1418,14 @@ class EditExistingBranchEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($branchEntryFromDB->user_id, $editedBranchEntryFromDB->user_id);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_branch_entry_searchmultiple_by_app_upload_same_user()
     {
         //get project definition
@@ -1393,6 +1436,7 @@ class EditExistingBranchEntryTest extends TestCase
         $ownerInputRef = '';
         $inputSearchsingle = [];
         $editedInputAnswer = [];
+        $branchInputs = [];
         foreach ($inputs as $index => $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.branch')) {
                 $ownerInputRef = $input['ref'];
@@ -1516,11 +1560,14 @@ class EditExistingBranchEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($branchEntryFromDB->user_id, $editedBranchEntryFromDB->user_id);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_branch_entry_textbox_by_app_upload_same_user()
     {
         //get project definition
@@ -1532,7 +1579,7 @@ class EditExistingBranchEntryTest extends TestCase
         $inputTextarea = [];
         $editedInputAnswer = [];
         $branchInputs = [];
-        foreach ($inputs as $index => $input) {
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.branch')) {
                 $ownerInputRef = $input['ref'];
                 $branchInputs = $input['branch'];
@@ -1645,11 +1692,14 @@ class EditExistingBranchEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($branchEntryFromDB->user_id, $editedBranchEntryFromDB->user_id);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_branch_entry_location_by_app_upload_same_user()
     {
         //get project definition
@@ -1661,7 +1711,7 @@ class EditExistingBranchEntryTest extends TestCase
         $inputTextarea = [];
         $editedInputAnswer = [];
         $branchInputs = [];
-        foreach ($inputs as $index => $input) {
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.branch')) {
                 $ownerInputRef = $input['ref'];
                 $branchInputs = $input['branch'];
@@ -1774,11 +1824,14 @@ class EditExistingBranchEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($branchEntryFromDB->user_id, $editedBranchEntryFromDB->user_id);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_branch_entry_audio_by_app_upload_same_user()
     {
         //get project definition
@@ -1790,7 +1843,7 @@ class EditExistingBranchEntryTest extends TestCase
         $inputTextarea = [];
         $editedInputAnswer = [];
         $branchInputs = [];
-        foreach ($inputs as $index => $input) {
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.branch')) {
                 $ownerInputRef = $input['ref'];
                 $branchInputs = $input['branch'];
@@ -1903,11 +1956,14 @@ class EditExistingBranchEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($branchEntryFromDB->user_id, $editedBranchEntryFromDB->user_id);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_branch_entry_photo_by_app_upload_same_user()
     {
         //get project definition
@@ -1919,7 +1975,7 @@ class EditExistingBranchEntryTest extends TestCase
         $inputTextarea = [];
         $editedInputAnswer = [];
         $branchInputs = [];
-        foreach ($inputs as $index => $input) {
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.branch')) {
                 $ownerInputRef = $input['ref'];
                 $branchInputs = $input['branch'];
@@ -2032,11 +2088,14 @@ class EditExistingBranchEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($branchEntryFromDB->user_id, $editedBranchEntryFromDB->user_id);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_branch_entry_video_by_app_upload_same_user()
     {
         //get project definition
@@ -2048,7 +2107,7 @@ class EditExistingBranchEntryTest extends TestCase
         $inputTextarea = [];
         $editedInputAnswer = [];
         $branchInputs = [];
-        foreach ($inputs as $index => $input) {
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.branch')) {
                 $ownerInputRef = $input['ref'];
                 $branchInputs = $input['branch'];
@@ -2161,11 +2220,14 @@ class EditExistingBranchEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($branchEntryFromDB->user_id, $editedBranchEntryFromDB->user_id);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_branch_entry_barcode_by_app_upload_same_user()
     {
         //get project definition
@@ -2177,7 +2239,7 @@ class EditExistingBranchEntryTest extends TestCase
         $inputTextarea = [];
         $editedInputAnswer = [];
         $branchInputs = [];
-        foreach ($inputs as $index => $input) {
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.branch')) {
                 $ownerInputRef = $input['ref'];
                 $branchInputs = $input['branch'];
@@ -2290,11 +2352,14 @@ class EditExistingBranchEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($branchEntryFromDB->user_id, $editedBranchEntryFromDB->user_id);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_branch_entry_text_by_app_upload_manager_role()
     {
         //add a manager to the project
@@ -2314,7 +2379,7 @@ class EditExistingBranchEntryTest extends TestCase
         $inputTextarea = [];
         $editedInputAnswer = [];
         $branchInputs = [];
-        foreach ($inputs as $index => $input) {
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.branch')) {
                 $ownerInputRef = $input['ref'];
                 $branchInputs = $input['branch'];
@@ -2430,11 +2495,14 @@ class EditExistingBranchEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($branchEntryFromDB->user_id, $editedBranchEntryFromDB->user_id);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_branch_entry_text_by_app_upload_curator_role()
     {
         //add a curator to the project
@@ -2454,7 +2522,7 @@ class EditExistingBranchEntryTest extends TestCase
         $inputTextarea = [];
         $editedInputAnswer = [];
         $branchInputs = [];
-        foreach ($inputs as $index => $input) {
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.branch')) {
                 $ownerInputRef = $input['ref'];
                 $branchInputs = $input['branch'];
@@ -2570,11 +2638,14 @@ class EditExistingBranchEntryTest extends TestCase
             //assert user matches
             $this->assertEquals($branchEntryFromDB->user_id, $editedBranchEntryFromDB->user_id);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_branch_entry_text_by_app_upload_same_collector()
     {
         //add a collector to the project
@@ -2594,7 +2665,7 @@ class EditExistingBranchEntryTest extends TestCase
         $inputTextarea = [];
         $editedInputAnswer = [];
         $branchInputs = [];
-        foreach ($inputs as $index => $input) {
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.branch')) {
                 $ownerInputRef = $input['ref'];
                 $branchInputs = $input['branch'];
@@ -2711,11 +2782,14 @@ class EditExistingBranchEntryTest extends TestCase
             $this->assertEquals($branchEntryFromDB->user_id, $editedBranchEntryFromDB->user_id);
             //assert user is collector
             $this->assertEquals($branchEntryFromDB->user_id, $collector->id);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_branch_entry_text_by_app_upload_different_collector_must_fail()
     {
         //add a collectorA to the project
@@ -2743,7 +2817,7 @@ class EditExistingBranchEntryTest extends TestCase
         $inputTextarea = [];
         $editedInputAnswer = [];
         $branchInputs = [];
-        foreach ($inputs as $index => $input) {
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.branch')) {
                 $ownerInputRef = $input['ref'];
                 $branchInputs = $input['branch'];
@@ -2860,11 +2934,14 @@ class EditExistingBranchEntryTest extends TestCase
             //assert entry belongs to collector A
             $this->assertEquals($editedBranchEntryFromDB->user_id, $branchEntryFromDB->user_id);
             $this->assertEquals($editedBranchEntryFromDB->user_id, $collectorA->id);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_edit_existing_branch_entry_text_by_app_upload_same_device_logged_in_collector()
     {
         $collector = factory(User::class)->create();
@@ -2883,7 +2960,7 @@ class EditExistingBranchEntryTest extends TestCase
         $inputText = [];
         $editedInputAnswer = [];
         $branchInputs = [];
-        foreach ($inputs as $index => $input) {
+        foreach ($inputs as $input) {
             if ($input['type'] === config('epicollect.strings.inputs_type.branch')) {
                 $ownerInputRef = $input['ref'];
                 $branchInputs = $input['branch'];
@@ -2998,7 +3075,7 @@ class EditExistingBranchEntryTest extends TestCase
             //assert the user ID was updated
             $this->assertEquals($collector->id, $editedBranchEntryFromDB->user_id);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
