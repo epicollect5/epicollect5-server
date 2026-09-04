@@ -83,6 +83,18 @@ class ProjectMappingDTO extends ProjectDTOBase
         }
     }
 
+    public function addImportedMapping(array $mapping): void
+    {
+        end($this->data);
+        $nextAvailableMapIndex = key($this->data) + 1;
+
+        $mapping['map_index'] = $nextAvailableMapIndex;
+        $mapping['is_default'] = true;
+
+        $this->data[$nextAvailableMapIndex] = $mapping;
+        $this->setDefault($nextAvailableMapIndex);
+    }
+
     public function setDefault(int $mapIndex): void
     {
         // Set all mappings as default false
@@ -103,6 +115,7 @@ class ProjectMappingDTO extends ProjectDTOBase
     {
         //preserve default mapping
         $map['is_default'] = $this->data[$mapIndex]['is_default'];
+        $map['map_index'] = $this->data[$mapIndex]['map_index'] ?? $mapIndex;
         $this->data[$mapIndex] = $map;
     }
 

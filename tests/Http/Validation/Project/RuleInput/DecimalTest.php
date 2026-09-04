@@ -48,7 +48,6 @@ class DecimalTest extends GeneralTest
 
     public function test_min_max()
     {
-
         // Integers allowed
         $this->inputDetails['min'] = 1;
         $this->inputDetails['max'] = 2;
@@ -89,6 +88,14 @@ class DecimalTest extends GeneralTest
         $this->assertTrue($this->validator->hasErrors());
         $this->validator->resetErrors();
 
+        // Shared range upper bound enforced
+        $this->inputDetails['min'] = '2' . str_repeat('0', 308);
+        $this->inputDetails['max'] = '2' . str_repeat('0', 308);
+        $this->validator->validate($this->inputDetails);
+        $this->validator->additionalChecks($this->parentRef);
+        $this->assertContains('ec5_28', $this->validator->errors['xxx_123456789abcd']);
+        $this->validator->resetErrors();
+
         $this->reset();
     }
 
@@ -106,6 +113,13 @@ class DecimalTest extends GeneralTest
         $this->validator->validate($this->inputDetails);
         $this->validator->additionalChecks($this->parentRef);
         $this->assertTrue($this->validator->hasErrors());
+        $this->validator->resetErrors();
+
+        // Shared range upper bound enforced
+        $this->inputDetails['default'] = '2' . str_repeat('0', 308);
+        $this->validator->validate($this->inputDetails);
+        $this->validator->additionalChecks($this->parentRef);
+        $this->assertContains('ec5_28', $this->validator->errors['xxx_123456789abcd']);
         $this->validator->resetErrors();
 
         // Default with min/max pass

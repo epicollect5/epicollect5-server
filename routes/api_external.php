@@ -49,9 +49,6 @@ Route::group(['middleware' => ['throttle:api-external-global']], function () {
         // Project (this is used by the mobile apps to download a project)
         Route::get('api/project/{project_slug}', 'Api\Project\ProjectController@show');
 
-        //Datasets (used by mobile app to download datasets zip archive)
-        //   Route::get('api/datasets/{project_slug}', 'Api\Project\DatasetController@download');
-
         // Entry uploads
         Route::group(['middleware' => ['throttle:api-external-upload']], function () {
             Route::post('api/upload/{project_slug}', 'Api\Entries\Upload\UploadAppController@postUpload');
@@ -148,15 +145,16 @@ Route::group(['middleware' => ['throttle:api-export-media']], function () {
     });
 });
 
-// Throttle WRITE endpoints - 240 requests per minute
+// Throttle WRITE endpoints - 600 requests per minute
 // For CGPS use only, this is not documented
-Route::group(['middleware' => ['throttle:240,1']], function () {
+Route::group(['middleware' => ['throttle:600,1']], function () {
     /* Import endpoints */
     // Set project permissions api middleware
     Route::group(['middleware' => ['project.permissions.api']], function () {
         //COG-UK uploads (private imports)
         Route::post('api/import/entries/{project_slug}', 'Api\Entries\Upload\UploadAppController@import')->name('private-import');
     });
+    Route::post('api/import/project/validate', 'Api\Project\ProjectController@validateImport')->name('api-import-project-validate');
 });
 
 //Following routes required authentication (to be logged in)

@@ -25,13 +25,14 @@ class DeleteControllerMediaS3Test extends TestCase
 
     private string $endpoint = 'api/internal/deletion/media/';
     private Carbon $baseTimestamp;
+    private array $mediaCleanupDisks = ['photo', 'audio', 'video'];
 
     public function setUp(): void
     {
         parent::setUp();
 
         $this->clearDatabase([]);
-        $this->baseTimestamp = now(); // Get a Carbon instance
+        $this->baseTimestamp = Carbon::now();
 
         $user = factory(User::class)->create();
         $projectDefinition = ProjectDefinitionGenerator::createProject(5);
@@ -107,6 +108,94 @@ class DeleteControllerMediaS3Test extends TestCase
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
+    }
+
+    protected function tearDown(): void
+    {
+        $this->deleteProjectMediaPrefixes();
+
+        parent::tearDown();
+    }
+
+    private function deleteProjectMediaPrefixes(): void
+    {
+        if (!isset($this->project) || !isset($this->project->ref)) {
+            return;
+        }
+
+        foreach ($this->mediaCleanupDisks as $disk) {
+            Storage::disk($disk)->deleteDirectory($this->project->ref);
+        }
+    }
+
+    private function assertMediaCountsEventually(
+        int $expectedPhotos,
+        int $expectedAudios,
+        int $expectedVideos,
+        int $timeoutSeconds = 5,
+        int $pollMilliseconds = 250
+    ): void {
+        $deadline = microtime(true) + $timeoutSeconds;
+
+        do {
+            $lastPhotos = Storage::disk('photo')->files($this->project->ref);
+            $lastAudios = Storage::disk('audio')->files($this->project->ref);
+            $lastVideos = Storage::disk('video')->files($this->project->ref);
+
+            if (
+                count($lastPhotos) === $expectedPhotos &&
+                count($lastAudios) === $expectedAudios &&
+                count($lastVideos) === $expectedVideos
+            ) {
+                $totalRemaining = count($lastPhotos) + count($lastAudios) + count($lastVideos);
+                $expectedTotal = $expectedPhotos + $expectedAudios + $expectedVideos;
+
+                $this->assertEquals($expectedTotal, $totalRemaining, 'Total remaining media files count mismatch');
+                $this->assertCount($expectedPhotos, $lastPhotos, 'Unexpected number of photo files remaining');
+                $this->assertCount($expectedAudios, $lastAudios, 'Unexpected number of audio files remaining');
+                $this->assertCount($expectedVideos, $lastVideos, 'Unexpected number of video files remaining');
+
+                return;
+            }
+
+            usleep($pollMilliseconds * 1000);
+        } while (microtime(true) < $deadline);
+
+        $totalRemaining = count($lastPhotos) + count($lastAudios) + count($lastVideos);
+        $expectedTotal = $expectedPhotos + $expectedAudios + $expectedVideos;
+
+        $this->assertEquals($expectedTotal, $totalRemaining, 'Total remaining media files count mismatch');
+        $this->assertCount($expectedPhotos, $lastPhotos, 'Unexpected number of photo files remaining');
+        $this->assertCount($expectedAudios, $lastAudios, 'Unexpected number of audio files remaining');
+        $this->assertCount($expectedVideos, $lastVideos, 'Unexpected number of video files remaining');
+    }
+
+    //Sanity guard: confirm the full media fixture set is present on every disk
+    //before calling the deletion endpoint, failing fast with the actual per-disk
+    //counts if it is not. Polls briefly to absorb any listing latency.
+    private function waitForMediaFixturesVisible(
+        int $expectedPerDisk,
+        int $timeoutSeconds = 60,
+        int $pollMilliseconds = 250
+    ): void {
+        $deadline = microtime(true) + $timeoutSeconds;
+
+        do {
+            $photos = count(Storage::disk('photo')->files($this->project->ref));
+            $audios = count(Storage::disk('audio')->files($this->project->ref));
+            $videos = count(Storage::disk('video')->files($this->project->ref));
+
+            if ($photos === $expectedPerDisk && $audios === $expectedPerDisk && $videos === $expectedPerDisk) {
+                return;
+            }
+
+            usleep($pollMilliseconds * 1000);
+        } while (microtime(true) < $deadline);
+
+        $this->fail(
+            "S3 fixtures not fully visible before deletion after $timeoutSeconds s. " .
+            "Expected $expectedPerDisk per disk, saw photo=$photos audio=$audios video=$videos."
+        );
     }
 
     public function test_it_should_catch_wrong_project_name()
@@ -348,8 +437,12 @@ class DeleteControllerMediaS3Test extends TestCase
     {
         $formRef = $this->projectDefinition['data']['project']['forms'][0]['ref'];
         $chunkSize = config('epicollect.setup.bulk_deletion.chunk_size_media');
+        $expectedPhotosRemaining = 100;
+        $expectedAudiosRemaining = $chunkSize + 100;
+        $expectedVideosRemaining = $chunkSize + 100;
 
-        $numOfEntries = rand(1000, 1500);
+        //imp: need at least ($chunkSize + 100) entries so the full 1100-file fixture set is created below
+        $numOfEntries = rand($chunkSize + 100, 1500);
         for ($i = 0; $i < $numOfEntries; $i++) {
             $entry = factory(Entry::class)->create(
                 [
@@ -365,15 +458,18 @@ class DeleteControllerMediaS3Test extends TestCase
                 // Simulate files created 1 second apart
                 $timestamp = $this->baseTimestamp->copy()->addSeconds($i)->timestamp;
                 //photo
-                Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . $timestamp . '.jpg', '');
+                Storage::disk('photo')->put($this->project->ref . '/' . $entry->uuid . '_' . $timestamp . '.jpg', str_repeat('A', 1024));
                 //audio
-                Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . $timestamp. '.mp4', '');
+                Storage::disk('audio')->put($this->project->ref . '/' . $entry->uuid . '_' . $timestamp. '.mp4', str_repeat('A', 2048));
                 //video
-                Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '_' . $timestamp . '.mp4', '');
+                Storage::disk('video')->put($this->project->ref . '/' . $entry->uuid . '_' . $timestamp . '.mp4', str_repeat('A', 4096));
 
             }
         }
         $this->assertCount($numOfEntries, Entry::where('project_id', $this->project->id)->get());
+
+        //Wait for the S3 listing to be consistent before calling the deletion endpoint.
+        $this->waitForMediaFixturesVisible($chunkSize + 100);
 
         //hit the delete media endpoint
         $payload = [
@@ -395,23 +491,15 @@ class DeleteControllerMediaS3Test extends TestCase
             ]);
             $this->assertCount($numOfEntries, Entry::where('project_id', $this->project->id)->get());
 
-            //assert media files are deleted, up to 1000
-            $photos = Storage::disk('photo')->files($this->project->ref);
-            $audios = Storage::disk('audio')->files($this->project->ref);
-            $videos = Storage::disk('video')->files($this->project->ref);
-
-            $totalRemaining = sizeof($photos) +  sizeof($audios) + sizeof($videos);
-            $this->assertEquals(3 * ($chunkSize  + 100) - $chunkSize, $totalRemaining, 'Total remaining media files count mismatch');
-            $this->assertCount(100, $photos, 'Unexpected number of photo files remaining');
-            $this->assertCount($chunkSize + 100, $audios, 'Unexpected number of audio files remaining');
-            $this->assertCount($chunkSize + 100, $videos, 'Unexpected number of video files remaining');
-
-            //now remove all the leftover fake files
-            Storage::disk('photo')->deleteDirectory($this->project->ref);
-            Storage::disk('audio')->deleteDirectory($this->project->ref);
-            Storage::disk('video')->deleteDirectory($this->project->ref);
+            $this->assertMediaCountsEventually(
+                $expectedPhotosRemaining,
+                $expectedAudiosRemaining,
+                $expectedVideosRemaining
+            );
         } catch (Throwable $e) {
             $this->logTestError($e, $response);
+        } finally {
+            $this->deleteProjectMediaPrefixes();
         }
     }
 

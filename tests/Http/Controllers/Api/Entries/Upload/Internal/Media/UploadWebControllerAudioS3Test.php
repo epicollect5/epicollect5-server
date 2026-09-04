@@ -274,7 +274,7 @@ class UploadWebControllerAudioS3Test extends TestCase
             //get the test audio file
             $sampleAudioFilePath = base_path('tests/Files/audio.mp4');
             // Get the size before copying
-            $audioFileSize = filesize($sampleAudioFilePath);
+            filesize($sampleAudioFilePath);
 
             Storage::disk('temp')->putFileAs(
                 dirname($audioPath),            // target directory
@@ -288,7 +288,7 @@ class UploadWebControllerAudioS3Test extends TestCase
             //get the test audio file
             $sampleVideoFilePath = base_path('tests/Files/video.mp4');
             // Get the size before copying
-            $videoFileSize = filesize($sampleVideoFilePath);
+            filesize($sampleVideoFilePath);
 
             Storage::disk('temp')->putFileAs(
                 dirname($videoPath),            // target directory

@@ -191,6 +191,8 @@ return [
         ec5\Providers\Macros\Response\ToEntryThumbS3Macro::class,
         ec5\Providers\Macros\Response\ToProjectMobileLogoLocalMacro::class,
         ec5\Providers\Macros\Response\ToProjectMobileLogoS3Macro::class,
+        ec5\Providers\Macros\Response\ApiSchemaError::class,
+        ec5\Providers\Macros\Response\ApiSchemaSuccess::class,
 
         //Rate Limiter
         ec5\Providers\RateLimiterServiceProvider::class,

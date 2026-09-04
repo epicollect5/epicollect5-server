@@ -273,4 +273,5 @@ return [
     'server_staff_login' => 'Staff Login',
     'leave' => 'Leave',
     'storage' => 'Storage',
+    'export' => 'Export',
 ];

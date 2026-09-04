@@ -3,7 +3,6 @@
 namespace ec5\Http\Controllers\Web\Project;
 
 use ec5\Http\Validation\Project\RuleName;
-use ec5\Models\Project\Project;
 use ec5\Services\Project\ProjectAvatarService;
 use ec5\Services\Project\ProjectService;
 use ec5\Traits\Requests\RequestAttributes;
@@ -38,11 +37,11 @@ class ProjectCloneController
      * @param ProjectService $projectService
      * @return Factory|Application|RedirectResponse|View
      */
-    public function store(Request        $request,
-                          RuleName       $ruleName,
-                          ProjectService $projectService
-    )
-    {
+    public function store(
+        Request        $request,
+        RuleName       $ruleName,
+        ProjectService $projectService
+    ) {
         if (!$this->requestedProjectRole()->canEditProject()) {
             return view('errors.gen_error')->withErrors(['errors' => ['ec5_91']]);
         }
@@ -85,10 +84,7 @@ class ProjectCloneController
             $request->flash();
             return Redirect::to('myprojects/clone')->withErrors(['avatar' => ['ec5_348']]);
         }
-        //update logo_url as we are creating an avatar placeholder
-        Project::where('id', $clonedProjectId)->update([
-            'logo_url' => $clonedProject->ref
-        ]);
+
         //success
         return Redirect::to('myprojects')->with('message', 'ec5_200');
     }

@@ -26,22 +26,22 @@ class ListedProjectsController extends Controller
             $category = config('epicollect.strings.project_categories.general');
         }
 
-        $projects = $this->projectModel->publicAndListed($category,
+        $projects = $this->projectModel->publicAndListed(
+            $category,
             [
                 'projects.name',
                 'projects.slug',
-                'projects.logo_url',
                 'projects.created_at',
                 'projects.access',
                 'projects.status',
                 'projects.visibility',
                 'projects.small_description',
-                'projects.logo_url',
                 'projects.category'
             ]
         );
 
-        return view('projects.projects_list',
+        return view(
+            'projects.projects_list',
             [
                 'projects' => $projects,
                 'selectedCategory' => $category

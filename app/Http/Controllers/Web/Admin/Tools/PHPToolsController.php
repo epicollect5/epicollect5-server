@@ -79,18 +79,6 @@ class PHPToolsController
             $wasCreated = $avatarCreator->generate($ref, $name);
 
             // dd($wasCreated, $ref, $name);
-
-            if ($wasCreated) {
-                //update logo_url as we are creating an avatar placeholder
-                $input['logo_url'] = $ref;
-
-                if ($this->doUpdate($input)) {
-                    return 'Logo created for ' . $name;
-                } else {
-                    // Return db update errors
-                    return 'Error creating logo for ' . $name;
-                }
-            }
         }
         return 'Project "' . $name . '" already has a logo';
     }

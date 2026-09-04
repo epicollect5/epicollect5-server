@@ -17,15 +17,18 @@ class RuleMappingUpdate extends ValidationBase
 
     public function additionalChecks(ProjectMappingDTO $projectMapping, array $newMapDetails): void
     {
+        $mapIndex = $newMapDetails['map_index'] ?? null;
+        $mapIndex = is_numeric($mapIndex) ? (int) $mapIndex : null;
+
         // Cant rename or update the default mapping (map_index 0)
-        if (($this->data['action'] === 'rename' || $this->data['action'] === 'update') && $newMapDetails['map_index'] == 0) {
+        if (($this->data['action'] === 'rename' || $this->data['action'] === 'update') && $mapIndex === 0) {
             $this->addAdditionalError('mapping', 'ec5_91');
             return;
         }
 
         // Check the map_index exists
-        if (isset($newMapDetails['map_index'])) {
-            if (!in_array($newMapDetails['map_index'], array_keys($projectMapping->getData()))) {
+        if ($mapIndex !== null) {
+            if (!in_array($mapIndex, array_keys($projectMapping->getData()), true)) {
                 $this->addAdditionalError('mapping', 'ec5_230');
                 return;
             }

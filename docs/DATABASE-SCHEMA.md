@@ -96,6 +96,7 @@ Columns:
 - `ref`: `VARCHAR(100)`, not null
 - `description`: `TEXT`, not null
 - `small_description`: `TEXT`, not null
+- `has_logo`: `BOOLEAN`, default `TRUE`, indicates whether the project has a logo file in object storage
 - `access`: `ENUM('public','private')`, default `public`
 - `visibility`: `ENUM('listed','hidden')`, default `listed`
 - `category`: `VARCHAR(100)`, default `general`
@@ -112,7 +113,7 @@ Indexes:
 - Non-unique index `fk_projects_user_id` on `created_by`
 
 Notes:
-- `logo_url` was dropped in 2026.
+- `logo_url` (legacy `VARCHAR`) was replaced by `has_logo` (boolean) in 2026 to reflect that the value was only ever a sentinel for "logo file exists in object storage".
 - The original foreign key from `created_by` to `users.id` was removed in 2023 and not restored.
 
 ### `project_roles`
@@ -241,10 +242,13 @@ Indexes:
 - Index `fk_entries_project_id` on `project_id`
 - Composite index `entries_search` on `project_id`, `form_ref`, `created_at`
 - Composite index `idx_entries_project_form_ref_id` on `project_id`, `form_ref`, `id`
+- Composite index `idx_entries_project_parent_uuid_created_at` on `project_id`, `parent_uuid`, `created_at`
+- Composite index `idx_entries_project_form_ref_uploaded_at` on `project_id`, `form_ref`, `uploaded_at`
 
 Notes:
 - The foreign key from `project_id` to `projects.id` was dropped in 2023.
 - The original migration sets compressed row format for this table.
+- The redundant non-unique `index_uuid` index was removed; the unique `uuid` index serves all uuid lookups.
 
 Persisted JSON contracts:
 - `entry_data` stores the normalised entry envelope described by `public/schemas/entry-data.schema.json`
@@ -363,6 +367,8 @@ Foreign keys:
 Notes:
 - The foreign key from `project_id` to `projects.id` was dropped in 2023.
 - The original migration sets compressed row format for this table.
+- The redundant non-unique `index_uuid` index was removed; the unique `uuid` index serves all uuid lookups.
+- `removeLeftoverBranchEntries()` filters on `project_id`, `form_ref`, `owner_uuid` and `owner_input_ref in (...)` and forces the `branch_entries_optimized_search` index `(project_id, form_ref, owner_input_ref)` so the lookup stays a small range scan. Keep `project_id` and `form_ref` in that query's WHERE clause so the forced index stays usable.
 
 `branch_entries.entry_data` and `branch_entries.geo_json_data` use the same published schemas as `entries`, with `type` set to `branch_entry` and the branch ownership fields populated under `relationships.branch.data`.
 

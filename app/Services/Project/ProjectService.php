@@ -41,7 +41,6 @@ class ProjectService
             $projectStored->ref = $projectDetails['ref'];
             $projectStored->description = $projectDetails['description'];
             $projectStored->small_description = $projectDetails['small_description'];
-            $projectStored->logo_url = $projectDetails['logo_url'];
             $projectStored->access = $projectDetails['access'];
             $projectStored->visibility = $projectDetails['visibility'];
             $projectStored->category = $projectDetails['category'];
@@ -242,5 +241,10 @@ class ProjectService
             DB::rollBack();
             return false;
         }
+    }
+
+    public function sanitiseProjectDefinitionForExport(array $projectDefinition): array
+    {
+        return ProjectDTO::sanitiseProjectDefinitionForExport($projectDefinition);
     }
 }

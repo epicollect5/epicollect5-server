@@ -389,6 +389,45 @@ class EntryTest extends TestCase
         }
     }
 
+    public function test_should_sort_entries_deterministically_when_created_at_matches()
+    {
+        $collector = factory(User::class)->create();
+        $createdAt = Carbon::create(2024, 1, 1, 12, 0, 0)->toIso8601String();
+        $createdEntries = [];
+
+        for ($i = 0; $i < 3; $i++) {
+            $createdEntries[] = factory(Entry::class)->create([
+                'project_id' => $this->project->id,
+                'user_id' => $collector->id,
+                'form_ref' => $this->formRef,
+                'title' => 'Same timestamp ' . $i,
+                'created_at' => $createdAt,
+            ]);
+        }
+
+        $entriesAsc = $this->entryModel->getEntriesByForm($this->project->id, [
+            'form_ref' => $this->formRef,
+            'sort_by' => 'created_at',
+            'sort_order' => 'asc'
+        ])->get();
+
+        $this->assertEquals(
+            array_map(fn ($entry) => $entry->id, $createdEntries),
+            $entriesAsc->pluck('id')->all()
+        );
+
+        $entriesDesc = $this->entryModel->getEntriesByForm($this->project->id, [
+            'form_ref' => $this->formRef,
+            'sort_by' => 'created_at',
+            'sort_order' => 'desc'
+        ])->get();
+
+        $this->assertEquals(
+            array_reverse(array_map(fn ($entry) => $entry->id, $createdEntries)),
+            $entriesDesc->pluck('id')->all()
+        );
+    }
+
     public function test_should_get_today_entries_for_archive()
     {
         //create fake entries from last week

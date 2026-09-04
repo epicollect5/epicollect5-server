@@ -3,6 +3,7 @@
 namespace Tests\Traits\Eloquent;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class IndexPresenceTest extends TestCase
@@ -109,5 +110,33 @@ class IndexPresenceTest extends TestCase
         }
 
         $this->assertTrue($foundAny, "Expected an index on $entriesTable covering at least (project_id, form_ref[, parent_uuid]). Available indexes: " . json_encode($indexes));
+    }
+
+    public function test_entries_has_new_child_and_uploaded_at_indexes(): void
+    {
+        $entriesTable = config('epicollect.tables.entries');
+
+        $this->assertTrue(
+            Schema::hasIndex($entriesTable, 'idx_entries_project_parent_uuid_created_at'),
+            "Expected index idx_entries_project_parent_uuid_created_at on $entriesTable"
+        );
+        $this->assertTrue(
+            Schema::hasIndex($entriesTable, 'idx_entries_project_form_ref_uploaded_at'),
+            "Expected index idx_entries_project_form_ref_uploaded_at on $entriesTable"
+        );
+        $this->assertFalse(
+            Schema::hasIndex($entriesTable, 'index_uuid'),
+            "Redundant index_uuid should have been dropped from $entriesTable"
+        );
+    }
+
+    public function test_branch_entries_index_uuid_dropped(): void
+    {
+        $branchTable = config('epicollect.tables.branch_entries');
+
+        $this->assertFalse(
+            Schema::hasIndex($branchTable, 'index_uuid'),
+            "Redundant index_uuid should have been dropped from $branchTable"
+        );
     }
 }

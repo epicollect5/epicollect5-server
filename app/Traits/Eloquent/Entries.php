@@ -8,11 +8,14 @@ use ec5\DTO\EntryStructureDTO;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Database\QueryException;
 use Log;
 use Throwable;
 
 trait Entries
 {
+    protected bool $duplicateUuidInsertFailed = false;
+
     /**
      * Check whether the project has any hierarchy or branch entries stored.
      *
@@ -164,15 +167,19 @@ trait Entries
             } else {
                 $q->orderBy($filters['sort_by'], $filters['sort_order']);
             }
+            $q->orderBy('id', $filters['sort_order']);
         } else {
             //default sorting, most recent first
             $q->orderBy('created_at', 'DESC');
+            $q->orderBy('id', 'DESC');
         }
         return $q;
     }
 
     public function storeEntry(EntryStructureDTO $entryStructure, array $entry): int
     {
+        $this->duplicateUuidInsertFailed = false;
+
         // Set the entry params to be added
         $entry['uuid'] = $entryStructure->getEntryUuid();
         $entry['form_ref'] = $entryStructure->getFormRef();
@@ -182,17 +189,39 @@ trait Entries
         $entry['platform'] = $entryStructure->getPlatform();
         $entry['user_id'] = $entryStructure->getUserId();
 
-        //Save entry to database
+        // A concurrent upload may lose the UUID insert race. The failed transaction is rolled back,
+        // so the client can safely retry; do not turn this insert failure into an update here.
         try {
             $table = config('epicollect.tables.entries');
             if ($entryStructure->isBranch()) {
                 $table = config('epicollect.tables.branch_entries');
             }
             return DB::table($table)->insertGetId($entry);
+        } catch (QueryException $e) {
+            if ($this->isDuplicateKeyError($e)) {
+                $this->duplicateUuidInsertFailed = true;
+                Log::debug(__METHOD__ . ' duplicate UUID during concurrent insert.', [
+                    'uuid' => $entryStructure->getEntryUuid()
+                ]);
+                return 0;
+            }
+
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
+            return 0;
         } catch (Throwable $e) {
             Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
             return 0;
         }
+    }
+
+    protected function isDuplicateUuidInsertFailure(): bool
+    {
+        return $this->duplicateUuidInsertFailed;
+    }
+
+    private function isDuplicateKeyError(QueryException $e): bool
+    {
+        return (int) ($e->errorInfo[1] ?? 0) === 1062;
     }
 
     public function filteringForArchive(Builder $q, array $params): Builder
