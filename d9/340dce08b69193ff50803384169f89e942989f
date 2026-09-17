@@ -1,0 +1,30 @@
+.opencode/commands/qa.md
+  s_42982893fe2df3::t_36358e75899b49 1-4,6,8-10
+.opencode/commands/issue.md
+  s_42982893fe2df3::t_c8f986c6959277 3,6,8,10
+.opencode/commands/publish-issue.md
+  s_42982893fe2df3::t_11abba13e962e3 3,6,8,10
+.opencode/commands/review.md
+  s_42982893fe2df3::t_0ece29d8addcd4 1-4,6,8-10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "d9340dce08b69193ff50803384169f89e942989f",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_42982893fe2df3": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f5124a475ffeO4OKcwnV5QoxOp",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
