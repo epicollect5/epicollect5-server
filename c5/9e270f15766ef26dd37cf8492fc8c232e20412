@@ -1,0 +1,43 @@
+.opencode/commands/false-positive.md
+  s_42982893fe2df3::t_2bea7da9f93c68 1-10
+.agents/skills/false-positive/SKILL.md
+  s_42982893fe2df3::t_477118198e92a5 14
+  s_42982893fe2df3::t_24c40324de107a 1-13
+.agents/skills/review/SKILL.md
+  s_42982893fe2df3::t_85dd50907befa6 1-10
+.agents/skills/qa/SKILL.md
+  s_42982893fe2df3::t_8b517f59c44fbe 1-10
+.opencode/commands/commit.md
+  s_42982893fe2df3::t_9c26cfc3361926 1-10
+.agents/skills/issue/SKILL.md
+  s_42982893fe2df3::t_bc503f2ab7722f 1-15
+.agents/skills/commit/SKILL.md
+  s_42982893fe2df3::t_506f0670a5216b 1-24
+.agents/README.md
+  s_42982893fe2df3::t_383b956d090084 1-29
+.agents/skills/plan-review/SKILL.md
+  s_42982893fe2df3::t_fe65cea1234906 1-72
+.agents/skills/publish-issue/SKILL.md
+  s_42982893fe2df3::t_c49c2ec40dd684 1-36
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "c59e270f15766ef26dd37cf8492fc8c232e20412",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_42982893fe2df3": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f5124a475ffeO4OKcwnV5QoxOp",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
