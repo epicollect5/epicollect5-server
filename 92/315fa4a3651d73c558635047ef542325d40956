@@ -1,0 +1,29 @@
+AGENTS.md
+  s_42982893fe2df3::t_56fde69104685e 122-129
+  s_42982893fe2df3::t_6033804e0247f9 149-151
+  s_42982893fe2df3::t_8bf39620f3c95e 32-33,84
+  s_42982893fe2df3::t_f631bdc5b4c1f1 147
+  s_42982893fe2df3::t_198c1a15ac2789 118
+  s_42982893fe2df3::t_c971d1904dc927 136-141
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "92315fa4a3651d73c558635047ef542325d40956",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_42982893fe2df3": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f5124a475ffeO4OKcwnV5QoxOp",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
