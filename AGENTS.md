@@ -29,29 +29,12 @@
 
 ## Project-Specific Conventions
 
+- PHP/Laravel style is defined in `docs/code-style.md` — follow it for every PHP change.
+  If generic PHP/Laravel guidance conflicts with that file, the file wins.
 - **Trait-Heavy Logic**: Shared functionality is often found in `app/Traits/` (e.g., `ec5\Traits\Eloquent\Entries` for
   entry database operations).
-- **Configuration**: Domain-specific config is under `config/epicollect/` (e.g., `limits.php`, `codes.php`,
-  `tables.php`). Always reference these instead of hardcoding values.
-- **Domain Enums**: Refer to `config/epicollect/strings.php` for project roles, access levels, statuses,
-  and input types. Refer to `config/epicollect/permissions.php` for role hierarchy and management rules.
-- **Error Handling**: Uses custom error codes defined in `config/epicollect/codes.php`.
 - **Front-end**: Public assets and views are in `public/` and `resources/views/`. Uses Gulp for asset management (
   `gulpfile.js`).
-- **Conventions**: Use `camelCase` for variable names, `snake_case` for configuration keys, JSON keys, database columns.
-- **Code Style**: Use PSR-12 (and Laravel Pint)
-- **Naming**: Do NOT prefix private/protected methods or properties with `_`
-- **Typed Properties**: Use typed properties on classes. Eloquent model boilerplate (`$fillable`, `$casts`,
-  `$table`) may remain untyped.
-- **Return Types**: Declare explicit return types on all methods, including `void`.
-- **Early Returns**: Prefer early returns over nested if/else. Handle error conditions first, success last.
-- **Docblocks**: Do not add docblocks when the method signature already conveys the information. Use docblocks
-  only to explain purpose, not to restate types.
-- **Blade Templates**: Indent with 4 spaces. No space after Blade control structures: `@if($condition)`,
-  not `@if ($condition)`.
-- **Avoid N+1 queries**: When building new queries or refactoring, be alert to the N+1 query problem (lazy-loading
-  relations inside loops). Eager load relationships with `with()`/`load()`, use `withCount`, or select only needed
-  columns. Watch for it in services and controllers that iterate over collections of models.
 
 ## Integration & Communication
 
@@ -98,21 +81,7 @@
 
 ## PHP style: string interpolation
 
-When writing PHP strings:
-
-- **Do not use curly braces for simple variables** inside double-quoted strings.
-    - Prefer: `"Expected an index on $entriesTable ..."`
-    - Avoid: `"Expected an index on {$entriesTable} ..."`
-
-- Use curly braces **only when required** to disambiguate complex expressions or adjacent characters (property/array
-  access, method calls, or when immediately followed by letters/numbers/underscore).
-    - Examples where braces may be needed:
-        - `"Hello {$user->name}"`
-        - `"Value: {$arr['key']}"`
-        - `"table_${suffix}"` (or `"table_{$suffix}"` if needed for clarity)
-
-- If the string contains mixed dynamic parts and reads better, prefer **explicit concatenation**:
-    - `"Expected an index on " . $entriesTable . " covering ... Available indexes: " . json_encode($indexes)`
+Follow `docs/code-style.md` (Strings section) for PHP string interpolation rules.
 
 ## Release candidate reviews
 
@@ -146,36 +115,40 @@ Agents must follow these workflow definitions when executing tasks.
 ## Repository Skills
 
 Repository skills are the operational instructions for how agents plan and implement work in
-this repo. They are shared across every coding agent (OpenCode and Codex).
+this repo. They are shared across every coding agent (Codex, OpenCode, CommandCode, JetBrains AI).
 
 ### Where skills live
 
-- **Canonical skills**: `docs/skills/<skill-name>/SKILL.md` — the single source of truth.
-  Always author and edit skill content here, never anywhere else.
-- **Agent integration**: `.opencode/skills/<skill-name>/SKILL.md` and
-  `.codex/skills/<skill-name>/SKILL.md` are thin wrappers (auto-trigger frontmatter plus a
-  pointer to the canonical file). Never duplicate skill content in wrappers.
+- **Canonical skills**: `.agents/skills/<skill-name>/SKILL.md` — the single source of truth.
+  Always author and edit skill content here, never anywhere else. This is the
+  [Agent Skills](https://agentskills.io) standard, discovered natively by Codex
+  (`$<name>` / `/skills`), OpenCode (skill tool), CommandCode (`/<name>`), and
+  JetBrains AI shared skills (`+ > Skills` import).
+- **Agent integration**: `.opencode/commands/<skill-name>.md` are thin wrappers
+  (frontmatter `description` + `agent: build`, body forwards to the canonical file
+  and passes `$ARGUMENTS` through verbatim). Never duplicate skill content in wrappers.
 
 ### Available skills
 
 - `plan-review` — before any non-trivial plan or implementation: identify the real
   goal, avoid blindly following the proposed implementation, find existing patterns, evaluate
   simpler alternatives, recommend the simplest solution, then plan.
-- `ec5-api-endpoint` — adding or modifying API endpoints (routes, controllers, validation,
-  services, DTOs, error codes, tests).
-- `ec5-code-style` — Epicollect5 PHP/Laravel code style on every PHP change.
-- `ec5-testing` — PHPUnit testing conventions and the mandatory targeted-run command.
-- `migration-safety` — safe Laravel/first-party package upgrades and migration changes.
+- `issue` — draft the current plan as a GitHub-issue-ready document, saved to `docs/issues/draft/`.
+- `publish-issue` — publish a drafted issue from `docs/issues/draft/` to GitHub via `gh` (confirmation required).
+- `qa` — generate QA documentation from a codebase change or QA spec file.
+- `review` — review local changes against the repository base branch.
+- `commit` — create Conventional Commits from changes, splitting by type and scope.
+- `false-positive` — mark a review finding as false positive with a code comment and reason.
 
 ### Requirements
 
 - Consult the relevant skill(s) when planning or implementing changes.
 - **Plan review is required before creating any implementation plan.** For any
-  non-trivial change, load `docs/skills/plan-review/SKILL.md` and follow its output
+  non-trivial change, load `.agents/skills/plan-review/SKILL.md` and follow its output
   structure first. Trivial changes (typos, formatting, one-line fixes) may skip it.
-- To add a new skill: author the canonical `docs/skills/<name>/SKILL.md`, then add a matching
-  thin wrapper to `.opencode/skills/<name>/SKILL.md` and `.codex/skills/<name>/SKILL.md`
-  (same `name`/`description` frontmatter).
+- To add a new skill: author the canonical `.agents/skills/<name>/SKILL.md`, then add a matching
+  thin wrapper to `.opencode/commands/<name>.md`
+  (same `description` frontmatter plus `agent: build`).
 
 ## Restrictions
 
