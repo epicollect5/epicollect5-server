@@ -1,0 +1,18 @@
+database/migrations/2026_10_07_000001_add_slow_queries_indexes.php
+  h_2231ff2aa93473 1-33
+docs/database-schema.md
+  h_2231ff2aa93473 33,245,361
+tests/Traits/Eloquent/IndexPresenceTest.php
+  h_2231ff2aa93473 6,114-129
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "09ae9734762b867e9e64534ffd14d0550f110d1b",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
