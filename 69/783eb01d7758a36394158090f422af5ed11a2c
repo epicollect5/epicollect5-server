@@ -1,0 +1,16 @@
+.github/workflows/releases.yml
+  h_2231ff2aa93473 12,15,23-25,27-31,52
+CHANGELOG.md
+  h_2231ff2aa93473 3-6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "69783eb01d7758a36394158090f422af5ed11a2c",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
