@@ -9,10 +9,10 @@ permissions:
 
 jobs:
   generate-release-notes:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0  # Fetch all history for proper changelog extraction
       
@@ -20,12 +20,15 @@ jobs:
         id: changelog
         run: |
           TAG_VERSION=${GITHUB_REF#refs/tags/}
-          echo "Extracting release notes for version: $TAG_VERSION"
+          # Strip optional leading "v" so tags like v13.0.1 match "# 13.0.1" entries
+          VERSION=${TAG_VERSION#v}
+          echo "Extracting release notes for version: $TAG_VERSION (changelog: $VERSION)"
           
-          # Extract release notes using awk
-          RELEASE_NOTES=$(awk -v version="$TAG_VERSION" '
-          $0 ~ "^# " version {flag=1; next}
-          $0 ~ "^# " && flag {exit}
+          # Extract release notes using exact header match
+          RELEASE_NOTES=$(awk -v version="$VERSION" '
+          { sub(/\r$/, "") }
+          $0 == "# " version {flag=1; next}
+          $0 ~ /^# / && flag {exit}
           flag {print}
           ' CHANGELOG.md)
           
@@ -46,7 +49,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
       
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2.4.2
+        uses: softprops/action-gh-release@v3.0.3
         with:
           body_path: RELEASE_NOTES.md
           draft: false
