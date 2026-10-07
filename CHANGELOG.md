@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 13.0.1
+
+- Fixed DataViewer CARTO API key (updated dataviewer.js).
+
 # 13.0.0
 
 - Laravel 12 → 13 framework upgrade with required dependency bumps
