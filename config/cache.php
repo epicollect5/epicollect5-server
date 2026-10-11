@@ -15,6 +15,10 @@ return [
 
     'default' => env('CACHE_DRIVER', 'file'),
 
+    'export_entries_cache_enabled' => env('EXPORT_ENTRIES_CACHE_ENABLED', false),
+
+    'export_entries_cache_ttl' => (int) env('EXPORT_ENTRIES_CACHE_TTL', 3600),
+
     /*
     |--------------------------------------------------------------------------
     | Cache Stores

@@ -78,6 +78,12 @@ Guard and middleware:
 Public media routes have an additional media limiter. The global external API limiter is IP-scoped, while project-scoped
 read/media limiters are keyed by project slug so rotating client IPs do not bypass project-level throttles.
 
+The documented entries export endpoint (`/api/export/entries/{project_slug}`) may use an application response cache, but
+that cache is reached only after the external route middleware has run. Private projects must pass
+`project.permissions.api`, including OAuth token validation and client-project authorization, before the controller can
+read from or write to the export entries cache. Public projects are intentionally not auth-restricted for this endpoint
+and are controlled by the configured export rate limiter.
+
 ## Media Caching
 
 **Photo** URLs support cache versioning via the `v` parameter.
