@@ -2,13 +2,12 @@
 
 namespace Tests\Http\Validation\Project\Mapping;
 
-use Faker\Factory as Faker;
-use Tests\TestCase;
 use ec5\Http\Validation\Project\Mapping\RuleMappingDelete;
+use Tests\TestCase;
 
 class RuleMappingDeleteTest extends TestCase
 {
-    protected $ruleMappingCreate;
+    protected RuleMappingDelete $ruleMappingCreate;
 
     public function setUp(): void
     {

@@ -83,8 +83,8 @@ class ProjectExtraService
                         }
 
                         if (in_array($groupInput['type'], $multipleChoiceQuestionTypes)) {
-                            $multipleChoiceBranchInputRefsInOrder[] = $groupInput['ref'];
-                            $multipleChoiceBranchInputs[$groupInput['ref']] = [
+                            $multipleChoiceInputRefsInOrder[] = $groupInput['ref'];
+                            $multipleChoiceInputs[$groupInput['ref']] = [
                                 'question' => $groupInput['question'],
                                 'possible_answers' => $this->convertToHashMap($groupInput['possible_answers'])
                             ];

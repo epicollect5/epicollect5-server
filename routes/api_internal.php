@@ -47,6 +47,12 @@ Route::group(['middleware' => ['project.permissions']], function () {
     // Entries for map (dataviewer)
     Route::get('api/internal/entries-locations/{project_slug}', 'Api\Entries\View\ViewEntriesLocationsController@show');
 
+    // Entries for map (dataviewer, compact payload)
+    Route::get(
+        'api/internal/entries-locations-compact/{project_slug}',
+        'Api\Entries\View\ViewEntriesLocationsCompactController@show'
+    );
+
     // Web entry uploads, for data editor and bulk upload from dataviewer
     Route::post('api/internal/web-upload/{project_slug}', 'Api\Entries\Upload\UploadWebController@store');
 

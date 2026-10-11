@@ -39,6 +39,7 @@ return [
     ],
     'entries_map' => [
         'per_page' => env('ENTRIES_MAP_PER_PAGE', 50000),
+        'per_chunk' => (int) env('ENTRIES_MAP_PER_CHUNK', 5000),
     ], //this is a test with new dataviewer
     'entries_export_per_page_json' => 1000,
     'entries_export_chunk' => 100,

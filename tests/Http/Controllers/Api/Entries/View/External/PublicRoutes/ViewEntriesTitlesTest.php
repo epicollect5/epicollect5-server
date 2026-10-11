@@ -17,13 +17,14 @@ use ec5\Traits\Assertions;
 use Faker\Factory as Faker;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
+use Throwable;
 
 class ViewEntriesTitlesTest extends TestCase
 {
     use DatabaseTransactions;
     use Assertions;
 
-    private $endpoint = 'api/entries/';
+    private string $endpoint = 'api/entries/';
 
     public function setUp(): void
     {
@@ -91,6 +92,9 @@ class ViewEntriesTitlesTest extends TestCase
     }
 
 
+    /**
+     * @throws Throwable
+     */
     public function test_entries_public_endpoint_form_0_single_entry()
     {
         //generate entry
@@ -147,11 +151,14 @@ class ViewEntriesTitlesTest extends TestCase
             $this->assertEquals(Project::version($this->project->slug), $entryFromResponse['entry']['project_version']);
             //user id
             $this->assertEquals($entryFromDB->user_id, $entryFromResponse['relationships']['user']['data']['id']);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_entries_public_endpoint_child_form_1_single_entry()
     {
         //set the project as public
@@ -241,12 +248,16 @@ class ViewEntriesTitlesTest extends TestCase
             //parent
             $this->assertEquals($childEntryFromDB->parent_uuid, $entryFromResponse['relationships']['parent']['data']['parent_entry_uuid']);
             $this->assertEquals($childEntryFromDB->parent_form_ref, $entryFromResponse['relationships']['parent']['data']['parent_form_ref']);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
     //branches
+
+    /**
+     * @throws Throwable
+     */
     public function test_entries_public_endpoint_branch_of_form_0_single_entry()
     {
         //set the project as public
@@ -350,11 +361,14 @@ class ViewEntriesTitlesTest extends TestCase
             //owner entry
             $this->assertEquals($branchEntryFromDB->owner_uuid, $entryFromResponse['relationships']['branch']['data']['owner_entry_uuid']);
             $this->assertEquals($branchEntryFromDB->owner_input_ref, $entryFromResponse['relationships']['branch']['data']['owner_input_ref']);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function test_branch_entries_internal_filter_by_title()
     {
         //set the project as public
@@ -463,7 +477,7 @@ class ViewEntriesTitlesTest extends TestCase
                 );
 
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logTestError($e, $response);
         }
     }
