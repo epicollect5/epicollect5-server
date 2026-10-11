@@ -335,6 +335,60 @@ class ProjectMappingControllerTest extends TestCase
         }
     }
 
+    public function test_existing_mapping_is_updated_with_full_mapping_payload()
+    {
+        $projectStructures = ProjectStructure::where('project_id', $this->project->id)
+            ->first();
+        $projectMappings = json_decode($projectStructures->project_mapping, true);
+        $this->assertCount(1, $projectMappings);
+
+        $projectMappings[] = [
+            'name' => 'Random Name',
+            'forms' => $projectMappings[0]['forms'],
+            'map_index' => 1,
+            'is_default' => false
+        ];
+
+        ProjectStructure::where('project_id', $this->project->id)->update(
+            [
+                'project_mapping' => json_encode($projectMappings)
+            ]
+        );
+
+        $projectStructures = ProjectStructure::where('project_id', $this->project->id)
+            ->first();
+        $projectMappings = json_decode($projectStructures->project_mapping, true);
+        $this->assertCount(2, $projectMappings);
+
+        // Mapping payload must include is_default and map_index (required by RuleMappingStructure).
+        // The server still preserves the existing is_default via ProjectMappingDTO::updateMap
+        // when the client echoes the current value, which the web UI does.
+        $modifiedMapping = $this->getModifiedMapping($projectMappings[1]);
+
+        $params = [
+            'action' => 'update',
+            'map_index' => 1,
+            'mapping' => $modifiedMapping
+        ];
+
+        $response = [];
+        try {
+            $response[] = $this->actingAs($this->user)
+                ->post('myprojects/' . $this->project->slug . '/mapping-data/update', $params);
+            $response[0]->assertStatus(200);
+
+            $jsonResponse = json_decode($response[0]->getContent(), true);
+            $this->assertFalse($jsonResponse['data']['mapping'][1]['is_default']);
+            $this->assertEquals(1, $jsonResponse['data']['mapping'][1]['map_index']);
+            $this->assertEquals(
+                $modifiedMapping['forms'],
+                $jsonResponse['data']['mapping'][1]['forms']
+            );
+        } catch (Throwable $e) {
+            $this->logTestError($e, $response);
+        }
+    }
+
     public function test_existing_mapping_is_set_as_default()
     {
         //get mapping
@@ -819,6 +873,47 @@ class ProjectMappingControllerTest extends TestCase
                         ]
                     ]
                 ]
+            );
+        } catch (Throwable $e) {
+            $this->logTestError($e, $response);
+        }
+    }
+
+    /**
+     * Regression: form-encoded POSTs deliver map_index as a string.
+     * Renaming the default EC5_AUTO mapping (map_index 0) must return ec5_91
+     * regardless of whether map_index arrives as the string "0" or the int 0.
+     */
+    public function test_rename_default_mapping_is_rejected_when_map_index_is_string_zero()
+    {
+        $response = [];
+        try {
+            $response[] = $this->actingAs($this->user)
+                ->post('myprojects/' . $this->project->slug . '/mapping-data/update', [
+                    'action' => 'rename',
+                    'map_index' => '0',
+                    'name' => 'Renamed'
+                ]);
+            $response[0]->assertStatus(422);
+            $response[0]->assertExactJson(
+                [
+                    "errors" => [
+                        [
+                            "code" => "ec5_91",
+                            "title" => "Sorry, you cannot perform this operation.",
+                            "source" => "mapping"
+                        ]
+                    ]
+                ]
+            );
+
+            //assert the default mapping is unchanged in the db
+            $projectStructures = ProjectStructure::where('project_id', $this->project->id)
+                ->first();
+            $projectMappings = json_decode($projectStructures->project_mapping, true);
+            $this->assertEquals(
+                config('epicollect.mappings.default_mapping_name'),
+                $projectMappings[0]['name']
             );
         } catch (Throwable $e) {
             $this->logTestError($e, $response);

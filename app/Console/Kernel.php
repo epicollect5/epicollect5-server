@@ -11,6 +11,7 @@ use ec5\Console\Commands\SystemCheckStorageCommand;
 use ec5\Console\Commands\SystemClearOpcache;
 use ec5\Console\Commands\SystemProjectStorageCommand;
 use ec5\Console\Commands\SystemStatsCommand;
+use ec5\Console\Commands\ProjectsValidateCommand;
 use ec5\Console\Commands\SystemStatsUploadCommand;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
@@ -32,6 +33,7 @@ class Kernel extends ConsoleKernel
         SystemCheckStorageCommand::class,
         SystemClearOpcache::class,
         SystemProjectStorageCommand::class,
+        ProjectsValidateCommand::class,
         SeedEntriesCommand::class,
         SeedMediaCommand::class,
         SeedSuperadminCommand::class,

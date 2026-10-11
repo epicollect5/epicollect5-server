@@ -29,17 +29,20 @@ use ec5\Models\User\UserPasswordlessWeb;
 use ec5\Models\User\UserProvider;
 use Illuminate\Database\Eloquent\Factory;
 use Illuminate\Support\Str;
+use Tests\Support\TestUserIdSequence;
 
 /** @var Factory $factory */
 
 $factory->define(User::class, function (Faker\Generator $faker) {
 
     static $password;
+    $testUserId = TestUserIdSequence::next();
 
     return [
+        'id' => $testUserId,
         'name' => $faker->name,
         'last_name' => $faker->lastName,
-        'email' => $faker->safeEmail,
+        'email' => $faker->unique()->safeEmail,
         'password' => $password ?: $password = bcrypt('secret'),
         'remember_token' => Str::random(10),
         'state' => 'active',
@@ -87,7 +90,9 @@ $factory->define(Project::class, function (Faker\Generator $faker) {
     $smallDescMin = (int)$ec5Limits['project']['small_desc']['min'];
     $smallDescMax = (int)$ec5Limits['project']['small_desc']['max'];
     //$name = Generators::projectRef();//to be unique
-    $name = $faker->unique()->regexify('[A-Za-z0-9]{10}');
+    // Prefix with PHPUNIT so test projects can be reliably identified and cleared
+    // by the test suite cleanup (see Tests\TestCase::clearDatabase).
+    $name = 'PHPUNIT' . $faker->unique()->regexify('[A-Za-z0-9]{5}');
 
     return [
         'name' => $name,
@@ -95,7 +100,6 @@ $factory->define(Project::class, function (Faker\Generator $faker) {
         'ref' => Generators::projectRef(),
         'description' => $faker->sentence,
         'small_description' => $faker->text($smallDescMin) . $faker->text($smallDescMax - $smallDescMin),
-        'logo_url' => '',
         'access' => config('epicollect.strings.project_access.private'),
         'visibility' => config('epicollect.strings.project_visibility.hidden'),
         'category' => config('epicollect.strings.project_categories.general'),
@@ -120,7 +124,6 @@ $factory->define(ProjectDTO::class, function (Faker\Generator $faker) {
         'ref' => Generators::projectRef(),
         'description' => $faker->sentence,
         'small_description' => $faker->text($smallDescMin) . $faker->text($smallDescMax - $smallDescMin),
-        'logo_url' => '',
         'access' => 'public',
         'visibility' => 'listed',
         'category' => 'general',
@@ -145,7 +148,6 @@ $factory->define(ProjectStructure::class, function (Faker\Generator $faker, $par
             'id' => $projectRef,
             'type' => 'project',
             'project' => [
-                'logo_url' => '',
                 'category' => 'general',
                 'forms' => [
                     [
@@ -185,10 +187,10 @@ $factory->define(ProjectStructure::class, function (Faker\Generator $faker, $par
                 'access' => $project->access,
                 'entries_limits' => [],
                 'slug' => $project->slug,
-                'visibility' => $project->listed,
+                'visibility' => $project->visibility,
                 'ref' => $projectRef,
                 'name' => $project->name,
-                'status' => $project->active
+                'status' => $project->status
             ]
         ]),
         'project_extra' => json_encode([
@@ -285,7 +287,6 @@ $factory->define(ProjectStructure::class, function (Faker\Generator $faker, $par
                     'access' => $project->access,
                     'status' => $project->status,
                     'category' => $project->category,
-                    'logo_url' => '',
                     'visibility' => $project->category,
                     'description' => $project->description,
                     'small_description' => $project->small_description

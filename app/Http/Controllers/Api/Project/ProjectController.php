@@ -4,8 +4,19 @@ namespace ec5\Http\Controllers\Api\Project;
 
 use Auth;
 use Carbon\Carbon;
+use ec5\DTO\ProjectDTO;
+use ec5\DTO\ProjectDefinitionDTO;
+use ec5\DTO\ProjectExtraDTO;
+use ec5\DTO\ProjectMappingDTO;
+use ec5\DTO\ProjectStatsDTO;
 use ec5\Http\Validation\Entries\Upload\RuleCanBulkUpload;
+use ec5\Services\Mapping\ProjectMappingService;
+use ec5\Http\Validation\Project\Mapping\RuleImportProjectMapping as ImportProjectMappingValidator;
+use ec5\Http\Validation\Project\RuleImportJson as ImportJsonValidator;
 use ec5\Http\Validation\Project\RuleName;
+use ec5\Http\Validation\Project\RuleProjectDefinition as ProjectDefinitionValidator;
+use ec5\Http\Validation\Schemas\ProjectSchemaValidator;
+use ec5\Libraries\Utilities\DateFormatConverter;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectStats;
 use ec5\Services\Media\MediaCounterService;
@@ -13,8 +24,10 @@ use ec5\Services\Project\ProjectLogoService;
 use ec5\Traits\Eloquent\StatsRefresher;
 use ec5\Traits\Requests\RequestAttributes;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
+use Log;
 use Response;
 use Throwable;
 
@@ -31,20 +44,7 @@ class ProjectController
     {
         // Project metadata responses include project_stats, so refresh and reload the DTO first.
         $this->refreshProjectStats($this->requestedProject());
-
-        $data = $this->requestedProject()->getProjectDefinition()->getData();
-
-        //HACK:, we needed to expose the creation date of a project at a later stage, and this was the laziest way ;)
-        $data['project']['created_at'] = $this->requestedProject()->getCreatedAt();
-
-        //HACK:, we needed to expose the can_bulk_upload property of a project at a later stage, and this was the laziest way ;)
-        $data['project']['can_bulk_upload'] = $this->requestedProject()->getCanBulkUpload();
-
-        //HACK:, we needed to expose the project homepage property of a project at a later stage, and this was the laziest way ;)
-        $homepage = config('app.url') . '/project/' . $this->requestedProject()->slug;
-        $data['project']['homepage'] = $homepage;
-
-        $projectExtra = $this->requestedProject()->getProjectExtra()->getData();
+        $data = $this->getProjectResponseData(true);
 
         try {
             $userName = Auth::user()->name;
@@ -60,7 +60,7 @@ class ProjectController
         }
 
         $meta = [
-            'project_extra' => $projectExtra,
+            'project_extra' => $this->requestedProject()->getProjectExtra()->getData(),
             'project_user' => [
                 'name' => $userName,
                 'avatar' => $userAvatar,
@@ -68,9 +68,7 @@ class ProjectController
                 'id' => $this->requestedProjectRole()->getUser()->id ?? null,
             ],
             'project_mapping' => $this->requestedProject()->getProjectMapping()->getData(),
-            'project_stats' => array_merge($this->requestedProject()->getProjectStats()->toArray(), [
-                'structure_last_updated' => $this->requestedProject()->getProjectStats()->structure_last_updated
-            ])
+            'project_stats' => $this->getProjectStatsMeta(),
         ];
 
         return Response::apiData($data, $meta);
@@ -84,23 +82,41 @@ class ProjectController
     {
         // Project export is not paginated and includes project_stats metadata.
         $this->refreshProjectStats($this->requestedProject());
-
-        $data = $this->requestedProject()->getProjectDefinition()->getData();
-        //todo HACK!!!, we needed to expose the creation date of a project at a later stage and this was the laziest way ;)
-        $data['project']['created_at'] = $this->requestedProject()->getCreatedAt();
-
-        //todo HACK!!!, we needed to expose the project homepage property of a project at a later stage and this was the laziest way ;)
-        $homepage = config('app.url') . '/project/' . $this->requestedProject()->slug;
-        $data['project']['homepage'] = $homepage;
+        $data = $this->getProjectResponseData();
 
         $meta = [
             'project_mapping' => $this->requestedProject()->getProjectMapping()->getData(),
-            'project_stats' => array_merge($this->requestedProject()->getProjectStats()->toArray(), [
-                'structure_last_updated' => $this->requestedProject()->getProjectStats()->structure_last_updated
-            ])
+            'project_stats' => $this->getProjectStatsMeta(),
         ];
 
         return Response::apiData($data, $meta);
+    }
+
+    private function getProjectResponseData(bool $includeCanBulkUpload = false): array
+    {
+        // We need to sanitise the project definition due to legacy bugs that went through over the years
+        $project = $this->requestedProject();
+        $data = $project->getSanitisedProjectDefinition();
+
+        // HACK: expose fields added after the original API contract was defined.
+        $data['project']['created_at'] = $project->getCreatedAt();
+        $data['project']['homepage'] = config('app.url') . '/project/' . $project->slug;
+
+        if ($includeCanBulkUpload) {
+            $data['project']['can_bulk_upload'] = $project->getCanBulkUpload();
+        }
+
+        return $data;
+    }
+
+    private function getProjectStatsMeta(): array
+    {
+        $projectStats = $this->requestedProject()->getProjectStats();
+
+        return array_merge($projectStats->toArray(), [
+            'structure_last_updated' => $projectStats->structure_last_updated,
+            'project_definition_version' => $projectStats->project_definition_version,
+        ]);
     }
 
     public function search($name = '')
@@ -116,7 +132,7 @@ class ProjectController
 
         if (!empty($name)) {
             $columns = $logoBase64Enabled
-                ? ['projects.name', 'projects.slug', 'projects.access', 'projects.ref', 'projects.logo_url']
+                ? ['projects.name', 'projects.slug', 'projects.access', 'projects.ref', 'projects.has_logo']
                 : ['name', 'slug', 'access', 'ref'];
 
             if ($exactMatch) {
@@ -153,7 +169,7 @@ class ProjectController
         foreach ($hits as $hit) {
             if ($hit->access === $privateAccess) {
                 $hit->logo_base64 = null;
-            } elseif (empty($hit->logo_url)) {
+            } elseif (empty($hit->has_logo)) {
                 $hit->logo_base64 = null;
             } elseif (!empty($hit->structure_last_updated)) {
                 $version = Carbon::parse($hit->structure_last_updated)->getTimestamp();
@@ -183,7 +199,7 @@ class ProjectController
             }
 
             unset($hit->structure_last_updated);
-            unset($hit->logo_url);
+            unset($hit->has_logo);
 
             $data['type'] = 'project';
             $data['id'] = $hit->ref;
@@ -222,8 +238,9 @@ class ProjectController
             'type' => 'project-version',
             'id' => $slug,
             'attributes' => [
-                'structure_last_updated' => $version,//legacy
-                'version' => (string)strtotime($version)
+                'structure_last_updated' => $version, // legacy
+                'project_definition_version' => DateFormatConverter::isoToUnixTimestamp($version),
+                'version' => DateFormatConverter::isoToUnixTimestamp($version)
             ]
 
         ];
@@ -302,5 +319,201 @@ class ProjectController
 
         $data = ['message' => config('epicollect.codes.ec5_362')];
         return Response::apiData($data);
+    }
+
+    public function validateImport(
+        Request                    $request,
+        ProjectDefinitionValidator $projectDefinitionValidator,
+        ImportProjectMappingValidator $importProjectMappingValidator,
+        ImportJsonValidator        $importJsonValidator,
+        ProjectSchemaValidator     $projectSchemaValidator,
+        ProjectDTO                 $projectDTO
+    ): JsonResponse {
+        // 1. Check Authorization Header
+        $token = $request->bearerToken();
+        $expectedToken = config('epicollect.setup.api.import_project.validation_key');
+        if (!$token || !hash_equals($expectedToken, $token)) {
+            return Response::apiErrorCode('400', ['error' => ['ec5_257']]);
+        }
+
+        $data = $request->all();
+
+        // 2. Basic structure check — is the payload shaped like a project request?
+        //    Checks: data required, data.type = 'project', data.project is array
+        $importJsonValidator->validate($data);
+
+        if ($importJsonValidator->hasErrors()) {
+            $warning = $this->legacyAutoFixWarning($data, $projectSchemaValidator, $projectDefinitionValidator, $importProjectMappingValidator);
+
+            return $this->warningErrorResponse('400', $this->parseKeyedErrors($importJsonValidator->errors()), $warning);
+        }
+
+        // 3. JSON Schema validation — full structural gate
+        //    Validates against public/schemas/project.schema.json
+        //    Checks: ref patterns, input keys, possible_answers limits,
+        //    enums, string lengths, emoji/< > restrictions etc.
+        if (!$projectSchemaValidator->validate($data)) {
+            // Capture the raw violations BEFORE the warning check: legacyAutoFixWarning
+            // re-runs the shared schema validator on the sanitised copy and would
+            // otherwise clobber these.
+            $schemaId = $projectSchemaValidator->schemaId();
+            $violations = $projectSchemaValidator->violations();
+            $warning = $this->legacyAutoFixWarning($data, $projectSchemaValidator, $projectDefinitionValidator, $importProjectMappingValidator);
+            $errors = array_map(function (string $message) use ($schemaId) {
+                return [
+                    'schema' => $schemaId,
+                    'title' => $message,
+                    'source' => 'project-json-validator',
+                ];
+            }, $violations);
+
+            return $this->warningErrorResponse('400', $errors, $warning);
+        }
+
+        $name = data_get($data, 'data.project.name', 'Imported Project');
+        $projectDefinitionData = $data['data'];
+
+        // We are validating, not importing: keep the payload's own project ref
+        // intact and echo it back, rather than generating and assigning a new one.
+        $projectRef = data_get($projectDefinitionData, 'project.ref', '');
+
+        try {
+            $projectDTO->validateProjectDefinitionAndMappings(
+                $projectDefinitionData,
+                $projectDefinitionValidator,
+                data_get($data, 'meta.project_mapping'),
+                $importProjectMappingValidator
+            );
+        } catch (Throwable $e) {
+            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
+            $errors = $importProjectMappingValidator->errors();
+            if (empty($errors)) {
+                $errors = $projectDefinitionValidator->errors();
+            }
+            if (empty($errors)) {
+                $errors = [
+                    'validation' => ['ec5_39']
+                ];
+            }
+            $warning = $this->legacyAutoFixWarning($data, $projectSchemaValidator, $projectDefinitionValidator, $importProjectMappingValidator);
+
+            return $this->warningErrorResponse('400', $this->parseKeyedErrors($errors), $warning);
+        }
+
+        return Response::apiSchemaSuccess(
+            $projectRef,
+            $name,
+            $projectSchemaValidator->schemaId()
+        );
+    }
+
+    /**
+     * If the raw payload fails validation solely because of legacy issues that
+     * are automatically fixed during import (see ProjectDTO::sanitiseProjectDefinitionForExport),
+     * return a warning so clients know the payload would import successfully.
+     * Returns null when the failure is not fully auto-fixable.
+     */
+    private function legacyAutoFixWarning(
+        array $data,
+        ProjectSchemaValidator $projectSchemaValidator,
+        ProjectDefinitionValidator $projectDefinitionValidator,
+        ImportProjectMappingValidator $importProjectMappingValidator
+    ): ?string {
+        // Auto-fixable issues only ever live inside data.project; if the basic
+        // structure is missing, this is a genuine error with nothing to fix.
+        $project = data_get($data, 'data.project');
+        if (!is_array($project)) {
+            return null;
+        }
+
+        // Build a sanitised copy of the definition — mirrors what the import path applies.
+        $sanitised = $data;
+        if (isset($sanitised['data'])) {
+            $sanitised['data'] = ProjectDTO::sanitiseProjectDefinitionForExport($sanitised['data']);
+        }
+
+        // Schema gate on the sanitised copy.
+        $schemaValid = $projectSchemaValidator->validate($sanitised);
+        if (!$schemaValid) {
+            return null;
+        }
+
+        // Definition + mapping gate on the sanitised copy, using a fresh DTO so we do not
+        // mutate the validated one passed in by the container.
+        $sanitisedDTO = new ProjectDTO(
+            new ProjectDefinitionDTO(),
+            new ProjectExtraDTO(),
+            new ProjectMappingDTO(),
+            new ProjectStatsDTO(),
+            new ProjectMappingService()
+        );
+
+        try {
+            $sanitisedDTO->validateProjectDefinitionAndMappings(
+                $sanitised['data'],
+                $projectDefinitionValidator,
+                data_get($sanitised, 'meta.project_mapping'),
+                $importProjectMappingValidator
+            );
+        } catch (Throwable) {
+            return null;
+        }
+
+        // If the sanitised copy passes, every raw failure was auto-fixable.
+        return config('epicollect.codes.ec5_409');
+    }
+
+    /**
+     * Parse a keyed error structure (['source' => ['ec5_xxx', ...]]) into the
+     * flat error objects used by the response, mirroring Response::apiErrorCode.
+     */
+    private function parseKeyedErrors(array $errors): array
+    {
+        $parsed = [];
+        foreach ($errors as $key => $error) {
+            if (!is_array($error)) {
+                continue;
+            }
+            foreach ($error as $errorValue) {
+                if ($key === 'question') {
+                    $parsed[] = [
+                        'code' => 'question',
+                        'title' => $errorValue,
+                        'source' => 'question',
+                    ];
+                } else {
+                    $parsed[] = [
+                        'code' => $errorValue,
+                        'title' => str_contains($errorValue, 'ec5_')
+                            ? config('epicollect.codes.' . $errorValue)
+                            : $errorValue,
+                        'source' => $key,
+                    ];
+                }
+            }
+        }
+        return $parsed;
+    }
+
+    /**
+     * Build a 400 error response, embedding the legacy-auto-fix warning (if any)
+     * inside each error object. No macro is used so the warning travels through the
+     * data argument rather than a dedicated macro parameter.
+     */
+    private function warningErrorResponse(string $httpStatusCode, array $errors, ?string $warning): JsonResponse
+    {
+        if ($warning !== null) {
+            foreach ($errors as &$error) {
+                $error['warning'] = $warning;
+            }
+            unset($error);
+        }
+
+        return new JsonResponse(
+            ['errors' => $errors],
+            (int) $httpStatusCode,
+            ['Content-Type' => 'application/vnd.api+json; charset=utf-8'],
+            0
+        );
     }
 }

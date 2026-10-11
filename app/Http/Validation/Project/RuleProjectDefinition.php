@@ -65,6 +65,14 @@ class RuleProjectDefinition
      */
     public function validate(ProjectDTO $project): bool
     {
+        $this->errors = [];
+        $this->hasJumps = [];
+        $this->hasLocation = [];
+        $this->formNames = [];
+        $this->formRefs = [];
+        $this->counterSearchInputs = 0;
+        $this->counterTitles = [];
+
         $this->projectExtra = $project->getProjectExtra();
         // Reset the existing data, ready to rebuild
         $this->projectExtra->reset();
@@ -89,17 +97,26 @@ class RuleProjectDefinition
             return false;
         }
 
+
+        //if category key doesn't exist or is not in the allowed categories, return error
+        if (!isset($projectData['category'])) {
+            $this->errors['validation'] = ['ec5_408'];
+            return false;
+        }
+        //does it have a valid category?
+        $category = $projectData['category'];
+        $categories = array_keys(config('epicollect.strings.project_categories'));
+        if (!in_array($category, $categories)) {
+            $this->errors['validation'] = ['ec5_408'];
+            return false;
+        }
+
         // Test projectDetails, has to have existing ref as ref, bail if error
         $test = $this->validateProjectDetails($project->ref, $projectData);
         if (!$test) {
             return false;
         }
 
-        $this->formNames = [];
-        $this->formRefs = [];
-        //search inputs currently 5 max per project
-        $this->counterSearchInputs = 0;
-        $this->counterTitles = [];
         foreach ($forms as $form) {
             //cannot have a form name empty
             if (empty($form['name'])) {

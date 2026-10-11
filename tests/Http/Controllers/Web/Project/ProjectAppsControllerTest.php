@@ -113,6 +113,102 @@ class ProjectAppsControllerTest extends TestCase
         }
     }
 
+    public function test_application_name_leading_trailing_spaces_are_trimmed()
+    {
+        $startingUrl = url('myprojects/' . $this->project->slug . '/apps');
+        $this->app['session']->setPreviousUrl($startingUrl);
+
+        $applicationName = '  Test App  ';
+
+        $payload = [
+            '_token' => csrf_token(),
+            'application_name' => $applicationName
+        ];
+
+        $response = [];
+        try {
+            $response[] = $this->actingAs($this->user)
+                ->post('myprojects/' . $this->project->slug . '/apps', $payload);
+            $response[0]->assertStatus(302);
+            $response[0]->assertRedirect('/myprojects/' . $this->project->slug . '/apps')
+                ->assertSessionHas('message', 'ec5_259');
+
+            //assert OAuth client is created with trimmed name
+            $this->assertDatabaseHas('oauth_clients', ['name' => 'Test App']);
+            //assert the original name with leading/trailing spaces was not saved
+            $this->assertDatabaseMissing('oauth_clients', ['name' => $applicationName]);
+
+            //assert rows are created
+            $this->assertCount(1, OAuthClientProject::where('project_id', $this->project->id)->get());
+        } catch (Throwable $e) {
+            $this->logTestError($e, $response);
+        }
+    }
+
+    public function test_application_name_extra_spaces_are_collapsed()
+    {
+        $startingUrl = url('myprojects/' . $this->project->slug . '/apps');
+        $this->app['session']->setPreviousUrl($startingUrl);
+
+        $applicationName = 'Test      App';
+
+        $payload = [
+            '_token' => csrf_token(),
+            'application_name' => $applicationName
+        ];
+
+        $response = [];
+        try {
+            $response[] = $this->actingAs($this->user)
+                ->post('myprojects/' . $this->project->slug . '/apps', $payload);
+            $response[0]->assertStatus(302);
+            $response[0]->assertRedirect('/myprojects/' . $this->project->slug . '/apps')
+                ->assertSessionHas('message', 'ec5_259');
+
+            //assert OAuth client is created with collapsed name
+            $this->assertDatabaseHas('oauth_clients', ['name' => 'Test App']);
+            //assert the original name with extra spaces was not saved
+            $this->assertDatabaseMissing('oauth_clients', ['name' => $applicationName]);
+
+            //assert rows are created
+            $this->assertCount(1, OAuthClientProject::where('project_id', $this->project->id)->get());
+        } catch (Throwable $e) {
+            $this->logTestError($e, $response);
+        }
+    }
+
+    public function test_application_name_is_trimmed_and_collapsed()
+    {
+        $startingUrl = url('myprojects/' . $this->project->slug . '/apps');
+        $this->app['session']->setPreviousUrl($startingUrl);
+
+        $applicationName = '  Multiple    Spaces   ';
+
+        $payload = [
+            '_token' => csrf_token(),
+            'application_name' => $applicationName
+        ];
+
+        $response = [];
+        try {
+            $response[] = $this->actingAs($this->user)
+                ->post('myprojects/' . $this->project->slug . '/apps', $payload);
+            $response[0]->assertStatus(302);
+            $response[0]->assertRedirect('/myprojects/' . $this->project->slug . '/apps')
+                ->assertSessionHas('message', 'ec5_259');
+
+            //assert OAuth client is created with trimmed and collapsed name
+            $this->assertDatabaseHas('oauth_clients', ['name' => 'Multiple Spaces']);
+            //assert the original name with leading/trailing and extra spaces was not saved
+            $this->assertDatabaseMissing('oauth_clients', ['name' => $applicationName]);
+
+            //assert rows are created
+            $this->assertCount(1, OAuthClientProject::where('project_id', $this->project->id)->get());
+        } catch (Throwable $e) {
+            $this->logTestError($e, $response);
+        }
+    }
+
     public function test_app_is_removed()
     {
         $startingUrl = url('myprojects/' . $this->project->slug . '/apps'); // Set the starting URL

@@ -10,7 +10,7 @@
                                 <img class="projects-list__project-logo img-responsive img-circle" width="128"
                                      height="128"
                                      alt="{{$project->name}}"
-                                     src="{{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb&v=' . strtotime($project->structure_last_updated)) }}
+                                     src="{{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb&v=' . $project->project_definition_version) }}
                                ">
                             </div>
                             <span class="project-name">@if ($project->status == 'trashed')
@@ -121,7 +121,7 @@
                                         <img class="projects-list__project-logo img-responsive img-circle" width="128"
                                              height="128"
                                              alt="{{$project->name}}"
-                                             src="{{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb&v=' . strtotime($project->structure_last_updated)) }}">
+                                             src="{{ url('/api/internal/media/' . $project->slug . '?type=photo&name=logo.jpg&format=project_thumb&v=' . $project->project_definition_version) }}">
                                     </div>
                                     <span class="project-name">@if ($project->status == 'trashed')
                                             {{ $project->name }}

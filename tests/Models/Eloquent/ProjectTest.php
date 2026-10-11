@@ -169,7 +169,7 @@ class ProjectTest extends TestCase
             ]);
         }
 
-        $hits = Project::startsWith($baseName, ['name', 'slug', 'access', 'ref', 'logo_url']);
+        $hits = Project::startsWith($baseName, ['name', 'slug', 'access', 'ref', 'has_logo']);
 
         $this->assertCount(20, $hits);
         $this->assertIsString($hits->first()->structure_last_updated);
@@ -194,7 +194,7 @@ class ProjectTest extends TestCase
             'updated_at' => $updatedAt,
         ]);
 
-        $hits = Project::matches($name, ['name', 'slug', 'access', 'ref', 'logo_url']);
+        $hits = Project::matches($name, ['name', 'slug', 'access', 'ref', 'has_logo']);
 
         $this->assertCount(1, $hits);
         $this->assertSame($project->ref, $hits->first()->ref);
@@ -214,9 +214,41 @@ class ProjectTest extends TestCase
             'name' => $name,
         ]);
 
-        $hits = Project::startsWith($name, ['name', 'slug', 'access', 'ref', 'logo_url']);
+        $hits = Project::startsWith($name, ['name', 'slug', 'access', 'ref', 'has_logo']);
 
         $this->assertCount(1, $hits);
         $this->assertNull($hits->first()->structure_last_updated);
+    }
+
+    public function test_find_by_slug_returns_date_string_project_definition_version_matching_structure_last_updated()
+    {
+        $creator = User::where('email', config('testing.SUPER_ADMIN_EMAIL'))->first();
+        $updatedAt = '2026-05-08 10:11:12';
+        $slug = 'find-by-slug-version-test';
+
+        $project = factory(Project::class)->create([
+            'created_by' => $creator->id,
+            'name' => 'Find By Slug Version Test',
+            'slug' => $slug,
+        ]);
+        factory(ProjectStats::class)->create([
+            'project_id' => $project->id,
+        ]);
+        factory(ProjectStructure::class)->create([
+            'project_id' => $project->id,
+            'updated_at' => $updatedAt,
+        ]);
+
+        $found = Project::findBySlug($slug);
+
+        $this->assertNotNull($found);
+        // findBySlug returns the raw DATE_FORMAT string; normalisation to a unix
+        // timestamp happens downstream (ProjectStatsDTO / list endpoints).
+        $this->assertNotNull($found->project_definition_version);
+        $this->assertNotEmpty($found->project_definition_version);
+        $this->assertSame(
+            (string)strtotime($found->project_definition_version),
+            (string)strtotime($found->structure_last_updated)
+        );
     }
 }

@@ -5,6 +5,7 @@ namespace ec5\Models\Project;
 use Carbon\Carbon;
 use DB;
 use ec5\DTO\ProjectDTO;
+use ec5\Libraries\Utilities\DateFormatConverter;
 use ec5\Traits\Models\SerializeDates;
 use Exception;
 use Illuminate\Contracts\Pagination\Paginator;
@@ -22,7 +23,6 @@ class Project extends Model
      * @property string $ref
      * @property string $description
      * @property string $small_description
-     * @property string $logo_url
      * @property string $access
      * @property string $visibility
      * @property string $category
@@ -47,6 +47,14 @@ class Project extends Model
         'created_at' => 'datetime:Y-m-d H:i:s',
         'updated_at' => 'datetime:Y-m-d H:i:s',
     ];
+
+    private static function normalizeProjectDefinitionVersion(object $project): object
+    {
+        $projectDefinitionVersion = $project->project_definition_version ?? $project->structure_last_updated ?? '';
+        $project->project_definition_version = DateFormatConverter::isoToUnixTimestamp($projectDefinitionVersion);
+
+        return $project;
+    }
 
     //used to init ProjectDTO, returns a bundle with data from multiple tables
     public static function findBySlug($slug): ?object
@@ -75,6 +83,7 @@ class Project extends Model
             'project_stats.id AS stats_id',
             'project_stats.*',
             'project_structures.*',
+            DB::raw('DATE_FORMAT(project_structures.updated_at, "%Y-%m-%d %H:%i:%s") as project_definition_version'),
             DB::raw('DATE_FORMAT(project_structures.updated_at, "%Y-%m-%d %H:%i:%s") as structure_last_updated'),
             DB::raw('DATE_FORMAT(projects.created_at, "%Y-%m-%d %H:%i:%s") as created_at'),
             DB::raw('DATE_FORMAT(projects.updated_at, "%Y-%m-%d %H:%i:%s") as updated_at'),
@@ -86,7 +95,7 @@ class Project extends Model
 
     public function myProjects($perPage, $userId, $params): Paginator
     {
-        return DB::table($this->getTable())
+        $projects = DB::table($this->getTable())
             ->leftJoin(config('epicollect.tables.project_roles'), $this->getQualifiedKeyName(), '=', 'project_roles.project_id')
             ->leftJoin(config('epicollect.tables.project_structures'), 'projects.id', '=', 'project_structures.project_id')
             ->where('project_roles.user_id', $userId)
@@ -105,9 +114,16 @@ class Project extends Model
             ->select(
                 'projects.*',
                 'project_roles.role',
+                DB::raw('DATE_FORMAT(project_structures.updated_at, "%Y-%m-%d %H:%i:%s") as project_definition_version'),
                 DB::raw('DATE_FORMAT(project_structures.updated_at, "%Y-%m-%d %H:%i:%s") as structure_last_updated')
             )
             ->simplePaginate($perPage);
+
+        $projects->setCollection(
+            $projects->getCollection()->map(fn ($project) => self::normalizeProjectDefinitionVersion($project))
+        );
+
+        return $projects;
     }
 
     public function publicAndListed($category = null, $params = []): Paginator
@@ -132,6 +148,7 @@ class Project extends Model
             ->select(
                 'projects.*',
                 'project_stats.total_entries',
+                DB::raw('DATE_FORMAT(project_structures.updated_at, "%Y-%m-%d %H:%i:%s") as project_definition_version'),
                 DB::raw('DATE_FORMAT(project_structures.updated_at, "%Y-%m-%d %H:%i:%s") as structure_last_updated')
             );
 
@@ -160,7 +177,13 @@ class Project extends Model
         };
         $query->orderBy($qualifiedSortBy, $sortOrder);
 
-        return $query->simplePaginate($projectsPerPage);
+        $projects = $query->simplePaginate($projectsPerPage);
+
+        $projects->setCollection(
+            $projects->getCollection()->map(fn ($project) => self::normalizeProjectDefinitionVersion($project))
+        );
+
+        return $projects;
     }
 
     public function featured(): Collection|array
@@ -170,9 +193,11 @@ class Project extends Model
             ->orderBy('projects_featured.id', 'asc')
             ->select(
                 'projects.*',
+                DB::raw('DATE_FORMAT(project_structures.updated_at, "%Y-%m-%d %H:%i:%s") as project_definition_version'),
                 DB::raw('DATE_FORMAT(project_structures.updated_at, "%Y-%m-%d %H:%i:%s") as structure_last_updated')
             )
-            ->get();
+            ->get()
+            ->map(fn ($project) => self::normalizeProjectDefinitionVersion($project));
     }
 
     public static function creatorEmail($projectId)

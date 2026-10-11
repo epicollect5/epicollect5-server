@@ -427,7 +427,6 @@ class ProjectEditControllerTest extends TestCase
         $projectAfterUpdate = Project::find($this->project->id);
         $this->assertEquals($projectAfterUpdate->small_description, $payload['small_description']);
         $this->assertEquals($projectAfterUpdate->description, $payload['description']);
-        $this->assertNotEmpty($projectAfterUpdate->logo_url);
     }
 
     public function test_should_detect_small_description_too_long()

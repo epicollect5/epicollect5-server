@@ -17,18 +17,19 @@
                         <p>
                             <a href="
                             https://play.google.com/store/apps/details?id=uk.ac.imperial.epicollect.five">
-                            <img src="{{ static_asset('/images/more-pages/play-store-badge.jpg') }}" width="140"
-                                alt="Epicollect5 Play Store badge" />
+
+                                <img src="{{ static_asset('/images/more-pages/play-store-badge.jpg') }}" width="140"
+                                     alt="Epicollect5 Play Store badge"/>
                             </a>
 
                             <a href="https://itunes.apple.com/us/app/epicollect5/id1183858199?mt=8">
                                 <img src="{{ static_asset('/images/more-pages/app-store-badge.jpg') }}" width="140"
-                                    alt="Epicollect5 App Store badge" />
+                                     alt="Epicollect5 App Store badge"/>
                             </a>
 
-                            <p>The app is completely <strong>free.</strong></p>
+                        <p>The app is completely <strong>free.</strong></p>
 
-                            <p>Use it on as many devices as you like, <strong>no limits.</strong></p>
+                        <p>Use it on as many devices as you like, <strong>no limits.</strong></p>
                     </div>
                 </div>
             </div>
@@ -36,7 +37,7 @@
                 <div class="panel panel-default">
                     <div class="panel-body text-center">
                         <img src="{{ static_asset('/images/more-pages/more-collect-1.jpg') }}" class="img-responsive"
-                            alt="Download the app">
+                             alt="Download the app">
                     </div>
                 </div>
             </div>
@@ -52,19 +53,20 @@
                         <p>Just click "
                             Add project" on the app home page</p>
 
-                            <p>Search for your project</p>
+                        <p>Search for your project</p>
 
-                            <p>Tap on it to download it.</p>
+                        <p>Tap on it to download it.</p>
 
-                            <p>Yor are good to go.</p>
+                        <p>Yor are good to go.</p>
                     </div>
                 </div>
             </div>
             <div class="col-md-6 col-md-pull-6">
                 <div class="panel panel-default">
                     <div class="panel-body text-left">
+
                         <img src="{{ static_asset('/images/more-pages/more-collect-2.jpg') }}"
-                            class="img-responsive img-with-border" alt="Add your project">
+                             class="img-responsive img-with-border" alt="Add your project">
                     </div>
                 </div>
             </div>
@@ -85,14 +87,14 @@
 
                         <p>View and download your data from the server.</p>
 
-                        <p> <a class="
+                        <p><a class="
                             underline" href="{{ url('/more-view') }}">More info on viewing and downloading data.</a></p>
 
-                            <p>
-                                <a class="underline" href="https://docs.epicollect.net/">
-                                    Read full Epicollect5 User Guide.
-                                </a>
-                            </p>
+                        <p>
+                            <a class="underline" href="https://docs.epicollect.net/">
+                                Read full Epicollect5 User Guide.
+                            </a>
+                        </p>
                     </div>
                 </div>
             </div>
@@ -100,8 +102,51 @@
             <div class="col-md-6">
                 <div class="panel panel-default">
                     <div class="panel-body text-center">
-                        <img src="{{ static_asset('/images/more-pages/more-collect-3.jpg') }}"
-                            class="img-responsive img-with-border" alt="Collect data">
+                        <img src="{{ asset('/images/more-pages/more-collect-3.jpg') }}"
+                             class="img-responsive img-with-border" alt="Collect data">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+
+            <div class="col-md-6">
+                <div class="panel panel-default">
+                    <div class="panel-body text-center">
+                        <img src="{{ asset('/images/more-pages/more-collect-4.jpg') }}"
+                             class="img-responsive img-with-border" alt="Collect data">
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 ">
+                <div class="panel panel-default">
+                    <div class="panel-body text-left">
+                        <h2 class="">4. Export your data & media</h2>
+
+                        <p>Export your project entries and media directly from the app.</p>
+
+                        <p>Save your data to your device for <strong>offline access</strong> and external syncing.</p>
+
+                        <p>Create a <strong>ZIP archive</strong> to share or back up your data in one step.</p>
+
+                        <p>Access your exported files anytime on your device.</p>
+
+                        <p>
+                            <a class="underline"
+                               target="_blank"
+                               href="https://docs.epicollect.net/mobile-application/export-entries-mobile">
+                                More info on exporting data and media.
+                            </a>
+                        </p>
+
+                        <p>
+                            <a class="underline"
+                               href="https://docs.epicollect.net">
+                                Read full Epicollect5 User Guide.
+                            </a>
+                        </p>
                     </div>
                 </div>
             </div>

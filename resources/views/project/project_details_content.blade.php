@@ -3,6 +3,7 @@
     $updatedAt = $requestAttributes->requestedProject->getUpdatedAt();
     $createdAtUTC = Carbon::parse($requestAttributes->requestedProject->created_at)->setTimezone('UTC');
     $createdOnForHumans = $createdAtUTC->format('D d M Y, H:i');
+    $logoUrl = url('/api/internal/media/' . $requestAttributes->requestedProject->slug . '?type=photo&name=logo.jpg&format=project_thumb&v=' . $requestAttributes->requestedProject->project_definition_version);
 @endphp
 {{-- Success Message --}}
 @if (session('projectCreated') && session('tab') === 'create')
@@ -38,11 +39,7 @@
                         <div class="project-logo-wrapper">
                             <img class="project-logo img-responsive img-circle" width="128" height="128"
                                  alt="Project logo"
-                                 src="@if($requestAttributes->requestedProject->logo_url == '')
-                         {{ url('/images/' . 'ec5-placeholder-256x256.jpg') }}
-                              @else
-                              {{ url('/api/internal/media/'.$requestAttributes->requestedProject->slug . '?type=photo&name=logo.jpg&format=project_thumb&v=' . strtotime($requestAttributes->requestedProject->structure_last_updated)) }}
-                              @endif"
+                                 src="{{ $logoUrl }}"
                             >
 
                             <div class="loader"></div>
@@ -291,93 +288,55 @@
 
 
 </div><!-- end row -->
-@if(config('epicollect.setup.system.app_link_enabled'))
-    <div class="row flexbox">
-        <div class="col-sm-12 col-md-12 col-lg-7 app-link-view__wrapper equal-height">
-            <div id="app-link-view" class="panel panel-default">
-                <div class="panel-heading">
-                    <div class="panel-title">App Link <sup>Beta</sup>
-                        <a href="https://docs.epicollect.net/web-application/projects-as-app-links"
-                           target="_blank">
-                            <i class="material-symbols-outlined">help</i></a>
-                    </div>
 
-                </div>
-                <div class="panel-body deeplink-btn-panel">
-                    <p><strong>On a mobile device</strong>, tapping the link below will open the Epicollect5 app and
-                        load the
-                        project automatically. </p>
-
-                    <span class="deeplink-copy-btn"
-                          data-url="{{ url('/open/project') . '/' . $requestAttributes->requestedProject->slug }}">
-                            <button class="btn btn-sm btn-action">
-                                <i class="material-icons" data-toggle="tooltip" data-placement="top"
-                                   title="Copied!"
-                                   data-trigger="manual">
-                            content_copy
-                        </i>
-                                Copy App Link
-                            </button>
-                    </span>
-
-                    <p>
-                    <pre> {{ url('/open/project/'.$requestAttributes->requestedProject->slug) }}</pre>
-                    </p>
-
-
-                    <p>Alternatively, you can scan the QR code using your device's camera or a QR code scanner to
-                        achieve the same result.</p>
-                    <div id="qrcode"
-                         data-url=" {{ url('/open/project/'.$requestAttributes->requestedProject->slug) }}">
-                    </div>
-                    <a class="btn btn-action margin-top-sm" id="qrcode-download" href="#"
-                       download={{$requestAttributes->requestedProject->slug.'.qr.png'}}>
-                        <i class="material-icons">
-                            download
-                        </i>
-                        Download
+<div class="row flexbox">
+    <div class="col-sm-12 col-md-12 col-lg-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">Project Definition</div>
+            <div class="panel-body">
+                <p class="project-tools-panel__description">
+                    Share a project, reuse it as a template, and more.</p>
+                <div class="project-tools-panel__actions">
+                    <a class="btn btn-action btn-sm btn-180"
+                       href="{{ url('/myprojects/'.$requestAttributes->requestedProject->slug.'/download-project-definition')}}">
+                        <i class="material-icons">data_object</i>
+                        Download JSON
                     </a>
                 </div>
             </div>
         </div>
-        <div class="col-sm-12 col-md-12 col-lg-5 equal-height">
-            <div id="app-link-settings" class="panel panel-default">
-                <div class="panel-heading">
-                    <div class="panel-title">App Link Settings <sup>Beta</sup>
-                        <a href="https://docs.epicollect.net/web-application/projects-as-app-links#app-link-visibility"
-                           target="_blank">
-                            <i class="material-symbols-outlined">help</i></a>
-                    </div>
-                </div>
-                <div class="panel-body">
-                    <div class="table-responsive table-app-link-settings">
-                        <table class="table">
-                            <tbody>
-                            <tr>
-                                <th>Visibility</th>
-                                <td>
+    </div>
+</div>
 
-                                    <div class="btn-group">
-                                        @foreach (array_keys(config('epicollect.strings.app_link_visibility')) as $value)
-                                            <div data-setting-type="app_link_visibility" data-value="{{ $value}}"
-                                                 class="btn btn-default btn-sm settings-app_link_visibility btn-settings-submit">
-                                                {{ $value }}
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
+<div class="row flexbox">
+    <div class="col-sm-12 col-md-12 col-lg-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">Mobile Local Exports</div>
+            <div class="panel-body">
+                <p class="project-tools-panel__description">
+                    Export your project data and media directly from
+                    the mobile app.</p>
+                <div class="project-tools-panel__actions">
+                    <a class="btn btn-action btn-sm btn-180"
+                       target="_blank"
+                       href="https://docs.epicollect.net/mobile-application/export-entries-mobile">
+                        <i class="material-icons">launch</i>
+                        Learn More
+                    </a>
                 </div>
             </div>
         </div>
     </div>
+</div>
+
+
+
+@if(config('epicollect.setup.system.app_link_enabled'))
+    @include('project.deeplinks.app_link')
 @endif
 
 @if (auth()->check() && auth()->user()->server_role == 'superadmin')
-    <div class="row">
+    <div class="row margin-top-lg">
         <div class="col-sm-12 col-md-12 col-lg-12">
             <div class="panel panel-default">
                 <div class="panel-heading">
@@ -410,7 +369,7 @@
      data-js-status="{{ $requestAttributes->requestedProject->status }}"
      data-js-access="{{ $requestAttributes->requestedProject->access }}"
      data-js-visibility="{{ $requestAttributes->requestedProject->visibility }}"
-     data-js-logo_url="{{ $requestAttributes->requestedProject->logo_url }}"
+     data-js-logo_url="{{ $logoUrl }}"
      data-js-category="{{ $requestAttributes->requestedProject->category }}"
      data-js-slug="{{ $requestAttributes->requestedProject->slug }}"
      data-js-app_link_visibility="{{ $requestAttributes->requestedProject->app_link_visibility }}">

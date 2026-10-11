@@ -292,6 +292,7 @@ class ProjectControllerTest extends TestCase
                     'id' => $this->project->slug,
                     'attributes' => [
                         'structure_last_updated' => $this->projectStructure->updated_at->toDateTimeString(),
+                        'project_definition_version' => (string)$this->projectStructure->updated_at->timestamp,
                         'version' => (string)$this->projectStructure->updated_at->timestamp
                     ]
                 ]
@@ -301,6 +302,7 @@ class ProjectControllerTest extends TestCase
                 'id',
                 'attributes' => [
                     'structure_last_updated',
+                    'project_definition_version',
                     'version',
                 ]
             ]]);
@@ -665,7 +667,7 @@ class ProjectControllerTest extends TestCase
     public function test_search_caches_generated_logo_with_positive_ttl(): void
     {
         $this->project->access = config('epicollect.strings.project_access.public');
-        $this->project->logo_url = 'logo.jpg';
+        $this->project->has_logo = true;
         $this->project->save();
 
         Storage::fake('project');
@@ -704,7 +706,7 @@ class ProjectControllerTest extends TestCase
     public function test_search_negative_caches_missing_logo_with_short_ttl(): void
     {
         $this->project->access = config('epicollect.strings.project_access.public');
-        $this->project->logo_url = 'logo.jpg';
+        $this->project->has_logo = true;
         $this->project->save();
 
         Storage::fake('project');

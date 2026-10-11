@@ -9,6 +9,7 @@ use ec5\Libraries\Utilities\DateFormatConverter;
 use ec5\Models\Counters\BranchEntryCounter;
 use ec5\Models\Entries\BranchEntry;
 use ec5\Models\Entries\Entry;
+use DB;
 use Exception;
 use File;
 use Illuminate\Http\JsonResponse;
@@ -198,7 +199,8 @@ class UploadWebController extends UploadControllerBase
     /**
      * Removes leftover branch entries that were skipped due to form logic jumps during entry editing.
      *
-     * Identifies branch input references that were skipped ("jumped") in the validated answers and deletes any associated branch entries for the current owner entry. Updates branch entry counters after deletion. No action is taken if the entry is a branch, not an edit, or if no branches were skipped.
+     * Identifies branch input references that were skipped ("jumped") in the validated answers and deletes any associated branch entries for the current owner entry.
+     * Updates branch entry counters after deletion. No action is taken if the entry is a branch, not an edit, or if no branches were skipped.
      */
     private function removeLeftoverBranchEntries($formRef, $projectExtra)
     {
@@ -249,14 +251,18 @@ class UploadWebController extends UploadControllerBase
 
         //perform the deletion
         try {
-            //delete leftover branch entries
-            $leftoverBranchEntries = BranchEntry::where('owner_uuid', $this->entryStructure->getEntryUuid())
+            //identify leftover branch entries using the optimized index,
+            //then delete them in bounded batches by primary key
+            BranchEntry::from(
+                DB::raw(config('epicollect.tables.branch_entries') . ' FORCE INDEX (branch_entries_optimized_search)')
+            )
+                ->where('project_id', $this->entryStructure->getProjectId())
+                ->where('form_ref', $formRef)
+                ->where('owner_uuid', $this->entryStructure->getEntryUuid())
                 ->whereIn('owner_input_ref', $skippedBranchRefs)
-                ->get();
-
-            $leftoverBranchEntries->each(function ($entry) {
-                $entry->delete();
-            });
+                ->chunkById(500, function ($rows) {
+                    BranchEntry::whereIn('id', $rows->pluck('id'))->delete();
+                });
 
             //update branch counts
             /**

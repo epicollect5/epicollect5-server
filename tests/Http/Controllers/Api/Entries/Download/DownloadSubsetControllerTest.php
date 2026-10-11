@@ -10,6 +10,7 @@ use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
 use ec5\Traits\Assertions;
+use Exception;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Str;
 use Storage;
@@ -142,7 +143,7 @@ class DownloadSubsetControllerTest extends TestCase
         // Get the downloaded file's path
         $filePath = $responseContent->getPathname();
 
-        $this->assertZipContent($filePath, $format, 1, 0);
+        $this->assertZipContent($filePath, $format, 0, 0);
 
         Storage::delete($filePath);
     }
@@ -205,7 +206,7 @@ class DownloadSubsetControllerTest extends TestCase
         // Get the downloaded file's path
         $filePath = $responseContent->getPathname();
 
-        $this->assertZipContent($filePath, $format, 1, 0);
+        $this->assertZipContent($filePath, $format, 0, 0);
 
         Storage::delete($filePath);
     }
@@ -268,7 +269,7 @@ class DownloadSubsetControllerTest extends TestCase
         // Get the downloaded file's path
         $filePath = $responseContent->getPathname();
 
-        $this->assertZipContent($filePath, $format, 1, 0);
+        $this->assertZipContent($filePath, $format, 0, 0);
 
         Storage::delete($filePath);
     }
@@ -331,7 +332,7 @@ class DownloadSubsetControllerTest extends TestCase
         // Get the downloaded file's path
         $filePath = $responseContent->getPathname();
 
-        $this->assertZipContent($filePath, $format, 1, 0);
+        $this->assertZipContent($filePath, $format, 0, 0);
 
         Storage::delete($filePath);
     }
@@ -343,16 +344,8 @@ class DownloadSubsetControllerTest extends TestCase
         $user = factory(User::class)->create();
         //create a project with a random number of forms and branches (min 1)
         $projectDefinition = ProjectDefinitionGenerator::createProject(rand(1, 5));
-        $forms = $projectDefinition['data']['project']['forms'];
-        $filesCountForm = sizeof($forms);
+        $filesCountForm = 0;
         $filesCountBranch = 0;
-        foreach ($forms as $form) {
-            foreach ($form['inputs'] as $input) {
-                if ($input['type'] === config('epicollect.strings.branch')) {
-                    $filesCountBranch++;
-                }
-            }
-        }
         //create a project with existing name, slug and ref
         $project = factory(Project::class)->create(
             [
@@ -400,7 +393,7 @@ class DownloadSubsetControllerTest extends TestCase
             );
         try {
             $response->assertStatus(200);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->logTestError($exception, $response);
         }
 
@@ -440,16 +433,8 @@ class DownloadSubsetControllerTest extends TestCase
         $user = factory(User::class)->create();
         //create a project with a random number of forms and branches (min 1)
         $projectDefinition = ProjectDefinitionGenerator::createProject(rand(1, 5));
-        $forms = $projectDefinition['data']['project']['forms'];
-        $filesCountForm = sizeof($forms);
+        $filesCountForm = 0;
         $filesCountBranch = 0;
-        foreach ($forms as $form) {
-            foreach ($form['inputs'] as $input) {
-                if ($input['type'] === config('epicollect.strings.branch')) {
-                    $filesCountBranch++;
-                }
-            }
-        }
         //create a project with existing name, slug and ref
         $project = factory(Project::class)->create(
             [
@@ -497,7 +482,7 @@ class DownloadSubsetControllerTest extends TestCase
             );
         try {
             $response->assertStatus(200);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->logTestError($exception, $response);
         }
 
@@ -708,7 +693,16 @@ class DownloadSubsetControllerTest extends TestCase
         $zip = new ZipArchive();
         $zip->open($filePath);
         $fileFound = false;
-        $this->assertEquals($zip->numFiles, ($filesCountForm + $filesCountBranch));
+        $expectedFilesCount = $filesCountForm + $filesCountBranch;
+        if ($expectedFilesCount === 0) {
+            $this->assertEquals(1, $zip->numFiles);
+            $this->assertEquals('readme.txt', $zip->statIndex(0)['name']);
+            $this->assertEquals('No entries found', $zip->getFromIndex(0));
+            $zip->close();
+            return;
+        }
+
+        $this->assertEquals($expectedFilesCount, $zip->numFiles);
         $filenamesForm = [];
         $filenamesBranch = [];
 

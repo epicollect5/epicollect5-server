@@ -106,10 +106,12 @@ class EntriesUploadService
                 $this->isBulkUpload
             )
             ) {
-                Log::error(__METHOD__ . ' failed.', [
-                    'error' => $this->errors,
-                    'data' => $payload
-                ]);
+                if (!$createEntryService->hasDuplicateUuidInsertFailure()) {
+                    Log::error(__METHOD__ . ' failed.', [
+                        'error' => $this->errors,
+                        'data' => $payload
+                    ]);
+                }
                 $this->errors = $createEntryService->errors;
                 return false;
             }

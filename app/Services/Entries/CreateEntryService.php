@@ -134,12 +134,19 @@ class CreateEntryService
             DB::commit();
             return true;
         } catch (Throwable $e) {
-            Log::error(json_last_error_msg(), ['$entryData' => $entryData]);
-            Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
+            if (!$this->isDuplicateUuidInsertFailure()) {
+                Log::error(json_last_error_msg(), ['$entryData' => $entryData]);
+                Log::error(__METHOD__ . ' failed.', ['exception' => $e->getMessage()]);
+            }
             $this->errors['create-entry-service'] = ['ec5_45'];
             DB::rollBack();
             return false;
         }
+    }
+
+    public function hasDuplicateUuidInsertFailure(): bool
+    {
+        return $this->isDuplicateUuidInsertFailure();
     }
 
     protected function updateEntriesCounts(ProjectDTO $project, EntryStructureDTO $entryStructure): bool

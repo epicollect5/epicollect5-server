@@ -10,7 +10,8 @@
       "Shell(git branch *)",
       "Shell(git rev-parse *)",
       "Shell(git ls-files *)",
-      "Shell(vendor/bin/phpunit:*)"
+      "Shell(vendor/bin/phpunit:*)",
+      "Shell(vendor/bin/pint:*)"
     ],
     "deny": [],
     "defaultMode": "default"

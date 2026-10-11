@@ -12,7 +12,6 @@ use File;
 use Illuminate\Database\Query\Builder;
 use Log;
 use RuntimeException;
-use Storage;
 use Throwable;
 use ZipArchive;
 
@@ -56,8 +55,10 @@ class EntriesDownloadService
         $this->totalDuration = 0;
         $this->totalEntries = 0;
         $this->project = $project;
-        // Delete all existing files for this user
-        Storage::deleteDirectory($projectDir);
+        // Reset the archive workspace using the real filesystem path.
+        if (File::exists($projectDir)) {
+            File::deleteDirectory($projectDir);
+        }
 
         $format = $params['format'];
         $mapIndex = $params['map_index'];
@@ -71,7 +72,6 @@ class EntriesDownloadService
         ]);
 
         foreach ($forms as $form) {
-
             // Set the form ref into the params
             $params['form_ref'] = $form['ref'];
             // Let's start with forms first
@@ -93,6 +93,10 @@ class EntriesDownloadService
             Log::info("Query for form entries completed: {$form['ref']}", [
                 'duration_seconds' => $duration,
             ]);
+
+            if (!$query->exists()) {
+                continue;
+            }
 
             // Write to file
             if (!$this->writeToFile($query, $projectDir, $fileName, $format)) {
@@ -141,6 +145,10 @@ class EntriesDownloadService
                     'duration_seconds' => $duration,
                 ]);
 
+                if (!$query->exists()) {
+                    continue;
+                }
+
                 // Write to file
                 if (!$this->writeToFile($query, $projectDir, $fileName, $format)) {
                     return false;
@@ -164,9 +172,13 @@ class EntriesDownloadService
 
     private function buildZipArchive($projectDir, $projectSlug, $format): void
     {
+        if (!File::exists($projectDir)) {
+            File::makeDirectory($projectDir, 0755, true);
+        }
+
         $zip = new ZipArchive();
         $zipFileName = $projectSlug . '-' . $format . '.zip';
-        $zip->open($projectDir . '/' . $zipFileName, ZipArchive::CREATE);
+        $zip->open($projectDir . '/' . $zipFileName, ZipArchive::CREATE | ZipArchive::OVERWRITE);
         $toDeleteLater = [];
 
         foreach (glob($projectDir . '/*.' . $format) as $file) {
@@ -174,6 +186,11 @@ class EntriesDownloadService
             //save file names for deletion
             $toDeleteLater[] = $file;
         }
+
+        if (count($toDeleteLater) === 0) {
+            $zip->addFromString('readme.txt', 'No entries found');
+        }
+
         $zip->close();
 
         //delete csv files as they got copied into the zip already

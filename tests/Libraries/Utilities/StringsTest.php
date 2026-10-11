@@ -65,4 +65,22 @@ class StringsTest extends TestCase
         $this->assertFalse(Strings::isValidUuid('+16e84680-f05-483b-90f7-b5ef50ac49cd'));
         $this->assertFalse(Strings::isValidUuid('116e84680-f05-=83b-90f7-b5ef50ac49cd'));
     }
+
+    public function testCollapseWhitespaceCollapsesRunsAndTrims()
+    {
+        $this->assertSame('a b c', Strings::collapseWhitespace("a\t\n  b   c"));
+    }
+
+    public function testCollapseWhitespaceReturnsEmptyForEmpty()
+    {
+        $this->assertSame('', Strings::collapseWhitespace(''));
+    }
+
+    public function testCollapseWhitespaceThrowsOnMalformedUtf8()
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/preg_replace failed/');
+        // "\xC3\x28" is a known invalid UTF-8 sequence that trips PCRE under the /u modifier
+        Strings::collapseWhitespace("\xC3\x28");
+    }
 }

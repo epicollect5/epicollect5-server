@@ -20,6 +20,7 @@ use Faker\Factory as Faker;
 use Faker\Generator;
 use Illuminate\Http\UploadedFile;
 use Ramsey\Uuid\Uuid;
+use Random\RandomException;
 use Throwable;
 
 class EntryGenerator
@@ -34,8 +35,9 @@ class EntryGenerator
     private array $projectDefinition;
     private array $multipleChoiceQuestionTypes;
     private array $multipleChoiceInputRefs;
+    private bool $generateCreatedAtWithinPastNinetyDays;
 
-    public function __construct(array $projectDefinition)
+    public function __construct(array $projectDefinition, bool $generateCreatedAtWithinPastNinetyDays = false)
     {
         // Pick a random locale from the array
         $this->randomLocale = self::LOCALES[array_rand(self::LOCALES)];
@@ -43,7 +45,7 @@ class EntryGenerator
         $this->faker = Faker::create($this->randomLocale);
         $this->projectDefinition = $projectDefinition;
         $this->multipleChoiceQuestionTypes = array_keys(config('epicollect.strings.multiple_choice_question_types'));
-
+        $this->generateCreatedAtWithinPastNinetyDays = $generateCreatedAtWithinPastNinetyDays;
     }
 
     public function createAnswer($input, $uuid): array
@@ -285,7 +287,7 @@ class EntryGenerator
                 ],
                 'entry' => [
                     'entry_uuid' => $uuid,
-                    'created_at' => Carbon::now()->format(config('epicollect.mappings.carbon_formats.ISO')),
+                    'created_at' => $this->generateCreatedAt(),
                     'device_id' => $deviceId,
                     'platform' => empty($deviceId) ? 'WEB' : $this->faker->randomElement(self::PLATFORMS),
                     'title' => $title,
@@ -364,7 +366,7 @@ class EntryGenerator
                     "type" => $type,
                     "input_ref" => $inputRef,
                     "project_version" => Project::version($projectSlug),
-                    "created_at" => Carbon::now()->format(config('epicollect.mappings.carbon_formats.ISO')),
+                    "created_at" => $this->generateCreatedAt(),
                     'device_id' => $deviceId,
                     'platform' => empty($deviceId) ? 'WEB' : $this->faker->randomElement(self::PLATFORMS),
                 ]
@@ -455,7 +457,7 @@ class EntryGenerator
                 ],
                 'entry' => [
                     'entry_uuid' => $uuid,
-                    'created_at' => Carbon::now()->format(config('epicollect.mappings.carbon_formats.ISO')),
+                    'created_at' => $this->generateCreatedAt(),
                     'device_id' => $deviceId,
                     'platform' => empty($deviceId) ? 'WEB' : $this->faker->randomElement(self::PLATFORMS),
                     'title' => $title,
@@ -495,7 +497,7 @@ class EntryGenerator
                 ],
                 'branch_entry' => [
                     'entry_uuid' => $uuid,
-                    'created_at' => Carbon::now()->format(config('epicollect.mappings.carbon_formats.ISO')),
+                    'created_at' => $this->generateCreatedAt(),
                     'device_id' => $deviceId,
                     'platform' => empty($deviceId) ? 'WEB' : $this->faker->randomElement(self::PLATFORMS),
                     'title' => $title,
@@ -610,6 +612,22 @@ class EntryGenerator
                 break;
         }
         return $uuid . '_' . Carbon::now()->timestamp . $ext;
+    }
+
+
+
+    private function generateCreatedAt(): string
+    {
+        if ($this->generateCreatedAtWithinPastNinetyDays) {
+            $secondsInNinetyDays = 90 * 24 * 60 * 60;
+            $randomPastSeconds = random_int(0, $secondsInNinetyDays);
+
+            return Carbon::now()
+                ->subSeconds($randomPastSeconds)
+                ->format(config('epicollect.mappings.carbon_formats.ISO'));
+        }
+
+        return Carbon::now()->format(config('epicollect.mappings.carbon_formats.ISO'));
     }
 
     private function generateStringFromRegex($regex): string

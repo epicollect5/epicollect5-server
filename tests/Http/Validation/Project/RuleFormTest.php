@@ -23,7 +23,7 @@ class RuleFormTest extends TestCase
         $this->validator = new RuleForm();
     }
 
-    public function resetForm()
+    public function resetForm(): void
     {
         // Form has 3 inputs
         // Input 1 has jump to Input 3
@@ -226,5 +226,88 @@ class RuleFormTest extends TestCase
         $this->validator->resetErrors();
         $this->resetForm();
 
+    }
+
+    public function test_form_name_min_length_allows_short_names()
+    {
+        // A single-character form name ("A", "1", ...) is valid: min length is 1
+        $this->form['name'] = 'A';
+        $this->validator->validate($this->form, true);
+        $this->assertFalse($this->validator->hasErrors(), 'A single-character form name should be valid');
+
+        $this->validator->resetErrors();
+
+        // An empty form name fails the required|min rule
+        $this->form['name'] = '';
+        $this->validator->validate($this->form, true);
+        $this->assertTrue($this->validator->hasErrors());
+    }
+
+    public function test_terminal_end_jumps_are_silently_accepted()
+    {
+        $this->form['inputs'][3]['jumps'] = [
+            [
+                "to" => "END",
+                "when" => "ALL",
+                "answer_ref" => null
+            ]
+        ];
+
+        $this->validator->validateJumps($this->form['inputs']);
+        $this->assertFalse($this->validator->hasErrors());
+
+        $this->validator->resetErrors();
+        $this->resetForm();
+
+        $this->form['inputs'][1]['type'] = 'branch';
+        $this->form['inputs'][1]['branch'] = [
+            [
+                "max" => null,
+                "min" => null,
+                "ref" => "branch_input_1",
+                "type" => "text",
+                "group" => [],
+                "jumps" => [],
+                "regex" => null,
+                "branch" => [],
+                "verify" => false,
+                "default" => null,
+                "is_title" => false,
+                "question" => "branch-text-1",
+                "uniqueness" => "none",
+                "is_required" => false,
+                "datetime_format" => null,
+                "possible_answers" => [],
+                "set_to_current_datetime" => false
+            ],
+            [
+                "max" => null,
+                "min" => null,
+                "ref" => "branch_input_2",
+                "type" => "text",
+                "group" => [],
+                "jumps" => [
+                    [
+                        "to" => "END",
+                        "when" => "ALL",
+                        "answer_ref" => null
+                    ]
+                ],
+                "regex" => null,
+                "branch" => [],
+                "verify" => false,
+                "default" => null,
+                "is_title" => false,
+                "question" => "branch-text-2",
+                "uniqueness" => "none",
+                "is_required" => false,
+                "datetime_format" => null,
+                "possible_answers" => [],
+                "set_to_current_datetime" => false
+            ]
+        ];
+
+        $this->validator->validateJumps($this->form['inputs']);
+        $this->assertFalse($this->validator->hasErrors());
     }
 }

@@ -87,7 +87,7 @@ class EntryStructureDTO
          */
 
         try {
-            $type = $payload['type']; // entry, branch_entry, file_entry, archive
+            $type = $payload['type']; // entry, branch_entry, file_entry, delete
             // Common data structure
             $this->data = [
                 'type' => $payload['type'],

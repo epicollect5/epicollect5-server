@@ -80,6 +80,11 @@ window.EC5.mapping = window.EC5.mapping || {};
                     }
                 );
 
+                //keep group header inputs disabled (group headers/owners are never exported)
+                defaultMappingMarkup.find('tr[data-top-level-input][data-input-type="group"] td input')
+                    .prop('disabled', true)
+                    .prop('readonly', true);
+
                 //add markup
                 tabContentWrapper.append(defaultMappingMarkup);
 

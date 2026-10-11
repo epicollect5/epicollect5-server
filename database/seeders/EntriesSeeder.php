@@ -87,7 +87,7 @@ class EntriesSeeder extends Seeder
             ->pluck('user_id')
             ->toArray();
         $projectDefinition = ['data' => json_decode($projectStructure->project_definition, true)];
-        $entryGenerator = new EntryGenerator($projectDefinition);
+        $entryGenerator = new EntryGenerator($projectDefinition, true);
 
         $formRef = array_get($projectDefinition, 'data.project.forms.0.ref');
         //get any branch inputs
@@ -147,7 +147,7 @@ class EntriesSeeder extends Seeder
             unset($entryGenerator);
 
             // Reinitialize entry generator to free up memory
-            $entryGenerator = new EntryGenerator($projectDefinition);
+            $entryGenerator = new EntryGenerator($projectDefinition, true);
 
             // Manually trigger garbage collection
             gc_collect_cycles();

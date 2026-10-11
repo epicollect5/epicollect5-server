@@ -185,8 +185,12 @@ class Entry extends Model
             $columns[] = 'id';
         }
 
-        // Use raw SQL to apply FORCE INDEX
-        $q = DB::table(DB::raw(config('epicollect.tables.entries') . ' FORCE INDEX (idx_entries_project_form_ref_id)'))
+        // Force the index matching the timeframe column so the archive range scan stays a small index range
+        $forcedIndex = ($params['filter_by'] ?? null) === 'created_at'
+            ? 'entries_search'
+            : 'idx_entries_project_form_ref_uploaded_at';
+
+        $q = DB::table(DB::raw(config('epicollect.tables.entries') . ' FORCE INDEX (' . $forcedIndex . ')'))
              ->where('project_id', '=', $projectId)
              ->where('form_ref', '=', $params['form_ref'])
             ->where(function ($query) use ($params) {

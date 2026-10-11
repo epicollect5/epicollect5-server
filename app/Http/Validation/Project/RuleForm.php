@@ -18,7 +18,7 @@ class RuleForm extends ValidationBase
      */
     public function __construct()
     {
-        $this->rules['name'] = 'required|max:' . config('epicollect.limits.form_name_maxlength');
+        $this->rules['name'] = 'required|min:' . config('epicollect.limits.project.form.name.min') . '|max:' . config('epicollect.limits.form_name_maxlength');
     }
 
     /**
@@ -64,7 +64,6 @@ class RuleForm extends ValidationBase
      */
     public function validateJumps(array $inputs): void
     {
-
         $inputRefs = [];
 
         // Loop all inputs and create map of input refs
@@ -100,7 +99,6 @@ class RuleForm extends ValidationBase
 
                 foreach ($input['jumps'] as $jumpDetails) {
 
-                    // END of form is ok
                     if ($jumpDetails['to'] == 'END') {
                         continue;
                     }
