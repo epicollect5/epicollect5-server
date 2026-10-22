@@ -914,6 +914,8 @@ Post-deploy, `.env` must be updated manually (new keys, `RELEASE` number) before
 
 See `README.md` → **Deployment** for the full deployment workflow.
 
+Server-side PHP operations — routine security patches, the ImageMagick hold policy, and moving to a new PHP version — are covered in `docs/php-upgrade-runbook.md`. The web tier runs Apache `mod_php`; `php8.3-fpm` is not installed and must not be.
+
 ## Extending the System
 
 When adding new functionality, follow the existing architecture:
