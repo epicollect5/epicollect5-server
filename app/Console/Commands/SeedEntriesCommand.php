@@ -2,6 +2,7 @@
 
 namespace ec5\Console\Commands;
 
+use Database\Seeders\EntriesSeeder;
 use Illuminate\Console\Command;
 
 class SeedEntriesCommand extends Command
@@ -13,7 +14,7 @@ class SeedEntriesCommand extends Command
     {
         // Call the db:seed command, which will invoke EntriesSeeder
         $this->call('db:seed', [
-            '--class' => 'EntriesSeeder',
+            '--class' => EntriesSeeder::class,
         ]);
     }
 }

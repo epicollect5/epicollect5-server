@@ -2,6 +2,7 @@
 
 namespace ec5\Console\Commands;
 
+use Database\Seeders\MediaSeeder;
 use Illuminate\Console\Command;
 
 class SeedMediaCommand extends Command
@@ -13,7 +14,7 @@ class SeedMediaCommand extends Command
     {
         // Call the db:seed command, which will invoke EntriesSeeder
         $this->call('db:seed', [
-            '--class' => 'MediaSeeder',
+            '--class' => MediaSeeder::class,
         ]);
     }
 }
