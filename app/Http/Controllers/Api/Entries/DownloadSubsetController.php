@@ -92,16 +92,40 @@ class DownloadSubsetController
         if ($params['branch_ref'] !== '') {
             $columns = ['uuid', 'title', 'entry_data', 'user_id', 'uploaded_at'];
             // Get the query for these branch entries
-            $query = (new BranchEntry())->getBranchEntriesByBranchRef(
-                $this->requestedProject()->getId(),
-                $params,
-                $columns
-            );
+            if (!empty($params['branch_owner_uuid'])) {
+                // Branch entries owned by the given parent entry
+                $query = (new BranchEntry())->getBranchEntriesForBranchRefAndOwner(
+                    $this->requestedProject()->getId(),
+                    $params,
+                    $columns
+                );
+            } else {
+                // All branch entries for the branch ref
+                $query = (new BranchEntry())->getBranchEntriesByBranchRef(
+                    $this->requestedProject()->getId(),
+                    $params,
+                    $columns
+                );
+            }
         } else {
             //hierarchy
             $columns = ['title', 'entry_data', 'branch_counts', 'child_counts', 'user_id', 'uploaded_at'];
             // Get the query for these entries
-            $query = (new Entry())->getEntriesByForm($this->requestedProject()->getId(), $params, $columns);
+            if (!empty($params['parent_uuid'])) {
+                // Child entries of the given parent
+                $query = (new Entry())->getChildEntriesForParent(
+                    $this->requestedProject()->getId(),
+                    $params,
+                    $columns
+                );
+            } else {
+                // All form entries
+                $query = (new Entry())->getEntriesByForm(
+                    $this->requestedProject()->getId(),
+                    $params,
+                    $columns
+                );
+            }
         }
 
         $filepath = $this->createSubsetArchive($query, $filename);
