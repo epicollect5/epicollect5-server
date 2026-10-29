@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App;
+use DB;
 use ec5\Libraries\Generators\EntryGenerator;
 use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
@@ -87,7 +88,7 @@ class EntriesSeeder extends Seeder
             ->pluck('user_id')
             ->toArray();
         $projectDefinition = ['data' => json_decode($projectStructure->project_definition, true)];
-        $entryGenerator = new EntryGenerator($projectDefinition);
+        $entryGenerator = new EntryGenerator($projectDefinition, true);
 
         $formRef = array_get($projectDefinition, 'data.project.forms.0.ref');
         //get any branch inputs
@@ -147,7 +148,7 @@ class EntriesSeeder extends Seeder
             unset($entryGenerator);
 
             // Reinitialize entry generator to free up memory
-            $entryGenerator = new EntryGenerator($projectDefinition);
+            $entryGenerator = new EntryGenerator($projectDefinition, true);
 
             // Manually trigger garbage collection
             gc_collect_cycles();
@@ -195,6 +196,54 @@ class EntriesSeeder extends Seeder
                     }
                 }
             }
+        }
+
+        // Recompute child_counts and branch_counts for every entry directly from the DB.
+        // Incremental counter updates triggered during inserts are conditional and
+        // order-dependent, so a final pass guarantees correct values (e.g. for multi-form projects).
+        $branchEntriesTable = config('epicollect.tables.branch_entries');
+        $entriesTable = config('epicollect.tables.entries');
+
+        // Build a form_ref => branch input refs map from the project definition
+        $forms = array_get($projectDefinition, 'data.project.forms');
+        $formBranchesMap = [];
+        foreach ($forms as $formIndex => $form) {
+            $formBranchesMap[$form['ref']] = array_keys($this->getFormBranches($projectDefinition, $formIndex));
+        }
+
+        $allEntries = Entry::where('project_id', $project->id)->get();
+        foreach ($allEntries as $entry) {
+            // child counts: direct children (regardless of child form)
+            $childCount = Entry::where('project_id', $project->id)
+                ->where('parent_uuid', $entry->uuid)
+                ->count();
+
+            // branch counts per branch input ref for this form
+            $branchCounts = [];
+            foreach ($formBranchesMap[$entry->form_ref] ?? [] as $branchRef) {
+                $branchCounts[$branchRef] = 0;
+            }
+
+            $branchStats = DB::table($branchEntriesTable)
+                ->select(DB::raw('COUNT(*) as cnt, owner_input_ref'))
+                ->where('project_id', '=', $project->id)
+                ->where('owner_uuid', '=', $entry->uuid)
+                ->groupBy('owner_input_ref')
+                ->get();
+            foreach ($branchStats as $stat) {
+                $branchCounts[$stat->owner_input_ref] = (int) $stat->cnt;
+            }
+
+            $update = ['child_counts' => $childCount];
+            // Only touch branch_counts when this form actually defines branch inputs
+            if (!empty($formBranchesMap[$entry->form_ref] ?? [])) {
+                $update['branch_counts'] = json_encode($branchCounts);
+            }
+
+            DB::table($entriesTable)
+                ->where('project_id', '=', $project->id)
+                ->where('uuid', '=', $entry->uuid)
+                ->update($update);
         }
 
         $proceed = strtolower($this->command->ask("Generate media files? (y/n)", 'n'));
