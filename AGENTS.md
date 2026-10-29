@@ -214,7 +214,8 @@ laravel/telescope, league/oauth2-server, etc.):
 
 Always use these flags when running CLI tools:
 
-- Tests: `vendor/bin/phpunit --no-progress`
+- Tests: clear shell env overrides so `.env.testing` takes over:
+  `env -u APP_ENV -u APP_URL -u APP_DEBUG -u APP_KEY -u APP_NAME -u APP_LOG -u APP_LOG_LEVEL -u APP_LOG_MAX_FILES -u APP_LINK_ENABLED -u DB_CONNECTION -u DB_HOST -u DB_PORT -u DB_DATABASE -u DB_USERNAME -u DB_PASSWORD -u DB_SOCKET vendor/bin/phpunit --no-progress`
 - Code style: `vendor/bin/pint` (PSR-12 preset, configured in `pint.json`)
 
 ## Branching and Commit Conventions
@@ -225,7 +226,7 @@ Always use these flags when running CLI tools:
 - **Commit messages**: Use Conventional Commits format: `feat: add entry export filters`,
   `fix: handle null project mapping`, `test: cover edge case in upload validation`.
 - **Environments**: `dev` → `staging` → `production` (promotion order). `master` is the canonical branch.
-- **PRs**: Keep PRs focused on a single change. Run `vendor/bin/phpunit --no-progress` (targeted) before submitting.
+- **PRs**: Keep PRs focused on a single change. Run the targeted test command above before submitting.
 
 ## Test Suite
 
@@ -233,7 +234,7 @@ Always use these flags when running CLI tools:
 - NEVER run `php artisan test` or `vendor/bin/phpunit` with no filter — it runs the full suite, UNLESS specified.
 - NEVER run tests as a baseline check or between upgrade steps.
 - ALWAYS run targeted tests after modifying a file, using the file path as filter:
-  vendor/bin/phpunit --no-progress tests/Services/Project/ProjectExtraServiceTest.php
+  env -u APP_ENV -u APP_URL -u APP_DEBUG -u APP_KEY -u APP_NAME -u APP_LOG -u APP_LOG_LEVEL -u APP_LOG_MAX_FILES -u APP_LINK_ENABLED -u DB_CONNECTION -u DB_HOST -u DB_PORT -u DB_DATABASE -u DB_USERNAME -u DB_PASSWORD -u DB_SOCKET vendor/bin/phpunit --no-progress tests/Services/Project/ProjectExtraServiceTest.php
 - If you need to verify the app boots without running tests, use `php artisan about`.
 - Only run the full suite if the user explicitly types "run the full test suite" in the chat.
 
