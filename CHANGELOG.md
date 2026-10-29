@@ -1,5 +1,13 @@
 ## Release Notes
 
+# 13.0.2
+
+- Filter download subset by parent or owner uuid.
+- DataViewer 0.3.0 (updated dataviewer.js; removed tracked source map).
+- Seeders recompute child and branch counts after seeding.
+- Libraries: support created_at within past 90 days.
+- Tests: cover subset filtering by parent and owner.
+
 # 13.0.1
 
 - Fixed DataViewer CARTO API key (updated dataviewer.js).
