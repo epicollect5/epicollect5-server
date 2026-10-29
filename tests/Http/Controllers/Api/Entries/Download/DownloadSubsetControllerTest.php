@@ -3,12 +3,17 @@
 namespace Tests\Http\Controllers\Api\Entries\Download;
 
 use Carbon\Carbon;
+use ec5\Libraries\Generators\EntryGenerator;
 use ec5\Libraries\Generators\ProjectDefinitionGenerator;
+use ec5\Models\Entries\BranchEntry;
+use ec5\Models\Entries\Entry;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
 use ec5\Models\Project\ProjectStructure;
 use ec5\Models\User\User;
+use ec5\Services\Mapping\ProjectMappingService;
+use ec5\Services\Project\ProjectExtraService;
 use ec5\Traits\Assertions;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Str;
@@ -528,6 +533,186 @@ class DownloadSubsetControllerTest extends TestCase
         $this->assertZipContent($filePath, $format, $filesCountForm, $filesCountBranch);
 
         Storage::delete($filePath);
+    }
+
+    public function test_subset_filters_child_entries_by_parent_uuid()
+    {
+        $setup = $this->createSubsetTestProject(2);
+        $user = $setup['user'];
+        $project = $setup['project'];
+        $entryGenerator = $setup['entryGenerator'];
+        $parentFormRef = $setup['forms'][0];
+        $childFormRef = $setup['forms'][1];
+        $role = config('epicollect.strings.project_roles.creator');
+
+        // Two parents, each with one child
+        $parentUuids = [];
+        $childUuids = [];
+        foreach ([0, 1] as $i) {
+            $parentPayload = $entryGenerator->createParentEntryPayload($parentFormRef);
+            $entryGenerator->createParentEntryRow($user, $project, $role, $setup['projectDefinition'], $parentPayload);
+            $parentUuids[$i] = $parentPayload['data']['id'];
+
+            $childPayload = $entryGenerator->createChildEntryPayload($childFormRef, $parentFormRef, $parentUuids[$i]);
+            $entryGenerator->createChildEntryRow($user, $project, $role, $setup['projectDefinition'], $childPayload);
+            $childUuids[$i] = $childPayload['data']['id'];
+        }
+
+        $response = [];
+        try {
+            $params = $this->subsetParams([
+                'form_ref' => $childFormRef,
+                'parent_form_ref' => $parentFormRef,
+                'parent_uuid' => $parentUuids[0],
+            ]);
+            $cookies = [config('epicollect.setup.cookies.download_entries') => $params[config('epicollect.setup.cookies.download_entries')]];
+            $response[] = $this->actingAs($user)->call('GET', 'api/internal/download-entries-subset/' . $project->slug, $params, $cookies);
+            $response[0]->assertStatus(200);
+
+            $uuids = $this->subsetCsvUuids($response[0]->getFile()->getPathname());
+            $this->assertEquals([$childUuids[0]], $uuids);
+        } catch (Throwable $e) {
+            $this->logTestError($e, $response);
+        }
+    }
+
+    public function test_subset_filters_branch_entries_by_branch_owner_uuid()
+    {
+        $setup = $this->createSubsetTestProject(1);
+        $user = $setup['user'];
+        $project = $setup['project'];
+        $entryGenerator = $setup['entryGenerator'];
+        $formRef = $setup['forms'][0];
+        $role = config('epicollect.strings.project_roles.creator');
+
+        // Resolve a branch input on form 0
+        $branchRef = null;
+        $branchInputs = null;
+        foreach ($setup['projectDefinition']['data']['project']['forms'][0]['inputs'] as $input) {
+            if ($input['type'] === config('epicollect.strings.branch')) {
+                $branchRef = $input['ref'];
+                $branchInputs = $input['branch'];
+                break;
+            }
+        }
+        $this->assertNotNull($branchRef, 'Expected at least one branch input in form 0');
+
+        // Two owners, each with one branch entry
+        $branchUuids = [];
+        $ownerUuids = [];
+        foreach ([0, 1] as $i) {
+            $ownerPayload = $entryGenerator->createParentEntryPayload($formRef);
+            $entryGenerator->createParentEntryRow($user, $project, $role, $setup['projectDefinition'], $ownerPayload);
+            $ownerUuids[$i] = $ownerPayload['data']['id'];
+
+            $branchPayload = $entryGenerator->createBranchEntryPayload($formRef, $branchInputs, $ownerUuids[$i], $branchRef);
+            $entryGenerator->createBranchEntryRow($user, $project, $role, $setup['projectDefinition'], $branchPayload);
+            $branchUuids[$i] = $branchPayload['data']['id'];
+        }
+
+        $response = [];
+        try {
+            $params = $this->subsetParams([
+                'form_ref' => $formRef,
+                'branch_ref' => $branchRef,
+                'branch_owner_uuid' => $ownerUuids[1],
+            ]);
+            $cookies = [config('epicollect.setup.cookies.download_entries') => $params[config('epicollect.setup.cookies.download_entries')]];
+            $response[] = $this->actingAs($user)->call('GET', 'api/internal/download-entries-subset/' . $project->slug, $params, $cookies);
+            $response[0]->assertStatus(200);
+
+            $uuids = $this->subsetCsvUuids($response[0]->getFile()->getPathname());
+            $this->assertEquals([$branchUuids[1]], $uuids);
+        } catch (Throwable $e) {
+            $this->logTestError($e, $response);
+        }
+    }
+
+    private function createSubsetTestProject(int $formsCount): array
+    {
+        $user = factory(User::class)->create();
+        $projectDefinition = ProjectDefinitionGenerator::createProject($formsCount);
+        $project = factory(Project::class)->create([
+            'created_by' => $user->id,
+            'name' => array_get($projectDefinition, 'data.project.name'),
+            'slug' => array_get($projectDefinition, 'data.project.slug'),
+            'ref' => array_get($projectDefinition, 'data.project.ref'),
+            'access' => config('epicollect.strings.project_access.public'),
+        ]);
+        factory(ProjectRole::class)->create([
+            'user_id' => $user->id,
+            'project_id' => $project->id,
+            'role' => config('epicollect.strings.project_roles.creator'),
+        ]);
+
+        $projectExtraService = new ProjectExtraService();
+        $projectExtra = $projectExtraService->generateExtraStructure($projectDefinition['data']);
+        $projectMappingService = new ProjectMappingService();
+        $projectMapping = [$projectMappingService->createEC5AUTOMapping($projectExtra)];
+        factory(ProjectStructure::class)->create([
+            'project_id' => $project->id,
+            'project_definition' => json_encode($projectDefinition['data']),
+            'project_extra' => json_encode($projectExtra),
+            'project_mapping' => json_encode($projectMapping),
+        ]);
+        factory(ProjectStats::class)->create([
+            'project_id' => $project->id,
+            'total_entries' => 0,
+        ]);
+
+        $forms = [];
+        for ($i = 0; $i < $formsCount; $i++) {
+            $forms[] = array_get($projectDefinition, 'data.project.forms.' . $i . '.ref');
+        }
+
+        return [
+            'user' => $user,
+            'project' => $project,
+            'projectDefinition' => $projectDefinition,
+            'entryGenerator' => new EntryGenerator($projectDefinition),
+            'forms' => $forms,
+        ];
+    }
+
+    private function subsetParams(array $overrides): array
+    {
+        $timestamp = Carbon::now()->timestamp;
+
+        return array_merge([
+            config('epicollect.setup.cookies.download_entries') => $timestamp,
+            'format' => 'csv',
+            'map_index' => 0,
+            'filename' => 'subset-test.zip',
+            'sort_by' => 'created_at',
+            'sort_order' => 'DESC',
+        ], $overrides);
+    }
+
+    private function subsetCsvUuids(string $zipFilepath): array
+    {
+        $zip = new ZipArchive();
+        $zip->open($zipFilepath);
+        $this->assertEquals(1, $zip->numFiles);
+        $content = $zip->getFromIndex(0);
+        $zip->close();
+        Storage::delete($zipFilepath);
+
+        $lines = array_values(array_filter(array_map('trim', explode("\n", (string) $content))));
+        $header = str_getcsv(array_shift($lines));
+        // Entry uuid column: ec5_uuid (form) or ec5_branch_uuid (branch)
+        $uuidIndex = array_search('ec5_branch_uuid', $header);
+        if ($uuidIndex === false) {
+            $uuidIndex = array_search('ec5_uuid', $header);
+        }
+        $this->assertNotFalse($uuidIndex, 'Expected a uuid column in subset CSV header');
+        $uuids = [];
+        foreach ($lines as $line) {
+            $row = str_getcsv($line);
+            $uuids[] = $row[$uuidIndex];
+        }
+        sort($uuids);
+
+        return $uuids;
     }
 
     public function test_error_response_with_wrong_params()
