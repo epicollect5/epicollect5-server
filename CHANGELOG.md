@@ -1,5 +1,10 @@
 ## Release Notes
 
+# 13.0.3
+
+- Data editor (legacy) 0.0.7 (updated data-editor.js bundle).
+- Updated composer dependencies.
+
 # 13.0.2
 
 - Filter download subset by parent or owner uuid.
