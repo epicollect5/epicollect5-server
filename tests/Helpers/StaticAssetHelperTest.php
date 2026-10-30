@@ -5,6 +5,8 @@ namespace Tests\Helpers;
 use Illuminate\Support\Facades\Config;
 use Tests\TestCase;
 
+use function static_asset;
+
 class StaticAssetHelperTest extends TestCase
 {
     private array $originalStaticAssetsConfig = [];
@@ -28,7 +30,7 @@ class StaticAssetHelperTest extends TestCase
 
         $path = '/images/brand.png';
 
-        $this->assertSame(asset($path), \static_asset($path));
+        $this->assertSame(asset($path), static_asset($path));
     }
 
     public function test_static_asset_returns_cdn_url_when_driver_is_cdn_and_endpoint_is_set(): void
@@ -38,7 +40,7 @@ class StaticAssetHelperTest extends TestCase
 
         $this->assertSame(
             'https://cdn.example.com/static/images/brand.png',
-            \static_asset('/images/brand.png')
+            static_asset('/images/brand.png')
         );
     }
 
@@ -49,7 +51,7 @@ class StaticAssetHelperTest extends TestCase
 
         $path = '/images/brand.png';
 
-        $this->assertSame(asset($path), \static_asset($path));
+        $this->assertSame(asset($path), static_asset($path));
     }
 
     public function test_static_asset_returns_absolute_url_unchanged_when_cdn_is_enabled(): void
@@ -59,6 +61,6 @@ class StaticAssetHelperTest extends TestCase
 
         $url = 'https://example.com/images/brand.png';
 
-        $this->assertSame($url, \static_asset($url));
+        $this->assertSame($url, static_asset($url));
     }
 }
