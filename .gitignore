@@ -28,3 +28,4 @@ plan-*.md
 *.log
 .aiassistant
 docs/QA-*
+tools/qa
