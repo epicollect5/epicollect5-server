@@ -18,10 +18,10 @@
     @include('favicon')
 
     <link rel="stylesheet" type="text/css" href="{{ asset('css/vendor-site.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('css/site.css').'?'.config('app.release') }}">
+    <link rel="stylesheet" type="text/css" href="{{ asset('css/site.css').'?v='.config('app.release') }}">
 
     <link rel="stylesheet" type="text/css"
-          href="{{ asset('data-editor/vendor/css/leaflet.css').'?'.config('app.release') }}">
+          href="{{ asset('data-editor/vendor/css/leaflet.css').'?v='.config('app.release') }}">
 
 
     <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
@@ -32,7 +32,7 @@
 
 <div id="root"></div>
 
-<script src="{{ asset('data-editor/data-editor.js').'?'.config('app.release') }}"></script>
+<script src="{{ asset('data-editor/data-editor.js').'?v='.config('app.release') }}"></script>
 </body>
 
 </html>

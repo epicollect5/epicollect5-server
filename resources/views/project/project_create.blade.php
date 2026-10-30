@@ -64,6 +64,6 @@
 @stop
 
 @section('scripts')
-    <script type="text/javascript" src="{{ asset('js/project/project.js').'?'.config('app.release') }}"></script>
+    <script type="text/javascript" src="{{ asset('js/project/project.js').'?v='.config('app.release') }}"></script>
 @stop
 

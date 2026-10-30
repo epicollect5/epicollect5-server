@@ -113,5 +113,5 @@
     @if ($isGoogleRecaptchaEnabled)
         <script src="https://www.google.com/recaptcha/api.js?render={{ config('auth.google.recaptcha_site_key') }}"></script>
     @endif
-    <script type="text/javascript" src="{{ asset('js/users/users.js') . '?' . config('app.release') }}"></script>
+    <script type="text/javascript" src="{{ asset('js/users/users.js') . '?v=' . config('app.release') }}"></script>
 @stop

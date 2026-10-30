@@ -55,10 +55,10 @@
 
 <meta name="description" content="@yield('description')">
 <link rel="stylesheet" type="text/css" href="{{ asset('css/vendor-site.css') }}">
-<link rel="stylesheet" type="text/css" href="{{ asset('css/site.css').'?'.config('app.release') }}">
+<link rel="stylesheet" type="text/css" href="{{ asset('css/site.css').'?v='.config('app.release') }}">
 
-<script src="{{asset('/js/vendor-site.js').'?'.config('app.release') }}"></script>
-<script src="{{asset('/js/site.js').'?'.config('app.release') }}"></script>
+<script src="{{asset('/js/vendor-site.js').'?v='.config('app.release') }}"></script>
+<script src="{{asset('/js/site.js').'?v='.config('app.release') }}"></script>
 <script>
     window.EC5 = window.EC5 || {};
     window.EC5.SITE_URL = '{{url('')}}';

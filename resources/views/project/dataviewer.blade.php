@@ -34,22 +34,22 @@
     @include('favicon')
 
     {{-- Bootstrap theme for Epicollect5 --}}
-    <link rel="stylesheet" type="text/css" href="{{ asset('css/vendor-site.css').'?'.config('app.release') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('css/site.css').'?'.config('app.release') }}">
+    <link rel="stylesheet" type="text/css" href="{{ asset('css/vendor-site.css').'?v='.config('app.release') }}">
+    <link rel="stylesheet" type="text/css" href="{{ asset('css/site.css').'?v='.config('app.release') }}">
 
     {{-- dataviewer css --}}
     <link rel="stylesheet"
           type="text/css"
-          href="{{ asset('dataviewer/css/vendor-dataviewer.css').'?'.config('app.release') }}">
+          href="{{ asset('dataviewer/css/vendor-dataviewer.css').'?v='.config('app.release') }}">
     <link rel="stylesheet"
           type="text/css"
-          href="{{ asset('dataviewer/css/dataviewer.css').'?'.config('app.release') }}">
+          href="{{ asset('dataviewer/css/dataviewer.css').'?v='.config('app.release') }}">
 
     {{-- Leaflet--}}
     <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
     <!--DEFER is important, otherwise markerClusterGroup will be undefined -->
     <!--Loading library locally as it is not maintained anymore, I made some changes to zoomToLayer() see t.ly/PPHk -->
-    <script src="{{asset('dataviewer/js/leaflet.markercluster.min.js').'?'.config('app.release')}}" defer></script>
+    <script src="{{asset('dataviewer/js/leaflet.markercluster.min.js').'?v='.config('app.release')}}" defer></script>
 
 
     <script>
@@ -66,6 +66,6 @@
 
 <body>
 <div id="app"></div>
-<script src="{{asset('dataviewer/js/dataviewer.js').'?'.config('app.release')}}"></script>
+<script src="{{asset('dataviewer/js/dataviewer.js').'?v='.config('app.release')}}"></script>
 </body>
 </html>

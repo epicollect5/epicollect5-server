@@ -354,5 +354,5 @@ help
 
 @section('scripts')
     <script type="text/javascript"
-            src="{{ asset('js/project/project.js') . '?' . config('app.release') }}"></script>
+            src="{{ asset('js/project/project.js') . '?v=' . config('app.release') }}"></script>
 @stop
