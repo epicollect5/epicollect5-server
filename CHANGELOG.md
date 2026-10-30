@@ -1,5 +1,11 @@
 ## Release Notes
 
+# 13.0.4
+
+- Use `v` query param for asset cache busting across views.
+- Remove focus ring on mouse click (public CSS).
+- Tests: use unqualified static_asset calls.
+
 # 13.0.3
 
 - Data editor (legacy) 0.0.7 (updated data-editor.js bundle).
