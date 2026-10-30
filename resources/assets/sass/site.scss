@@ -191,6 +191,15 @@ body {
   outline: none !important;
 }
 
+/* Remove focus ring on mouse click, keep for keyboard navigation */
+a:focus:not(:focus-visible),
+a.btn:focus:not(:focus-visible),
+.btn:focus:not(:focus-visible) {
+  outline: none !important;
+  box-shadow: none !important;
+  opacity: 80%;
+}
+
 .panel-default > .panel-heading {
   //background-color: $light-green;
   color: $dark-grey;
