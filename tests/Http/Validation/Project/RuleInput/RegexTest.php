@@ -2,6 +2,8 @@
 
 namespace Tests\Http\Validation\Project\RuleInput;
 
+use ec5\Http\Validation\Entries\Upload\InputRules\RuleTextInput;
+
 class RegexTest extends InputTest
 {
     public function setUp(): void
@@ -38,9 +40,12 @@ class RegexTest extends InputTest
         $this->validator->resetErrors();
     }
 
+    /**
+     * @throws \Throwable
+     */
     public function test_regex_containing_slash_validates_answers_on_upload()
     {
-        $rule = new \ec5\Http\Validation\Entries\Upload\InputRules\RuleTextInput();
+        $rule = new RuleTextInput();
         $project = \Mockery::mock('\ec5\DTO\ProjectDTO');
         $inputDetails = ['ref' => 'xxx', 'type' => 'text', 'regex' => 'a/b'];
         $rule->setRules($inputDetails, 'a/b', $project);
