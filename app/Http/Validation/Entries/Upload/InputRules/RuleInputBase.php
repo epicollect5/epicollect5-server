@@ -5,6 +5,7 @@ namespace ec5\Http\Validation\Entries\Upload\InputRules;
 use ec5\DTO\EntryStructureDTO;
 use ec5\DTO\ProjectDTO;
 use ec5\Http\Validation\ValidationBase;
+use ec5\Libraries\Utilities\ProjectRegex;
 
 class RuleInputBase extends ValidationBase
 {
@@ -66,7 +67,7 @@ class RuleInputBase extends ValidationBase
 
         // If we have a regex set, add to rules
         if ($inputDetails['regex'] != null) {
-            $this->rules[$inputDetails['ref']][] = 'regex:' . '/' . $inputDetails['regex'] . '/';
+            $this->rules[$inputDetails['ref']][] = ProjectRegex::toRule($inputDetails['regex']);
         }
     }
 }

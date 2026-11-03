@@ -3,6 +3,7 @@
 namespace ec5\Http\Validation\Entries\Upload\InputRules;
 
 use ec5\DTO\ProjectDTO;
+use ec5\Libraries\Utilities\ProjectRegex;
 
 class RuleTextInput extends RuleInputBase
 {
@@ -19,7 +20,7 @@ class RuleTextInput extends RuleInputBase
 
         // If we have a regex set, add to rules
         if ($inputDetails['regex']) {
-            $this->rules[$inputDetails['ref']][] = 'regex:' . '/' . $inputDetails['regex'] . '/';
+            $this->rules[$inputDetails['ref']][] = ProjectRegex::toRule($inputDetails['regex']);
         }
 
         // Set remaining rules in the parent class
