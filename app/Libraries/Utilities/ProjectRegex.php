@@ -4,12 +4,12 @@ namespace ec5\Libraries\Utilities;
 
 final class ProjectRegex
 {
-    private const DELIMITERS = [
+    private const array DELIMITERS = [
         '/', '#', '~', '%', '!', ';', ':', ',', '=', '@',
         '|', '^', '+', '*', '-', "'", '`', '?', '&',
     ];
 
-    private const COMPILE_WARNING = 'Compilation failed';
+    private const string COMPILE_WARNING = 'Compilation failed';
 
     public static function compile(string $pattern): string
     {
