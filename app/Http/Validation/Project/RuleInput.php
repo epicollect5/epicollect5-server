@@ -3,6 +3,7 @@
 namespace ec5\Http\Validation\Project;
 
 use ec5\Http\Validation\ValidationBase;
+use ec5\Libraries\Utilities\ProjectRegex;
 
 class RuleInput extends ValidationBase
 {
@@ -65,6 +66,11 @@ class RuleInput extends ValidationBase
         // Check the length
         if (mb_strlen($question, 'UTF-8') > $questionLengthLimit) {
             $this->addAdditionalError($this->data['ref'], 'ec5_244');
+            return;
+        }
+
+        if (isset($this->data['regex']) && !ProjectRegex::isValid($this->data['regex'])) {
+            $this->addAdditionalError($this->data['ref'], 'ec5_392');
             return;
         }
 
