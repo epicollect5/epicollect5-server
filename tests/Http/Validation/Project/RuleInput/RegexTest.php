@@ -38,6 +38,19 @@ class RegexTest extends InputTest
         $this->validator->resetErrors();
     }
 
+    public function test_regex_containing_slash_validates_answers_on_upload()
+    {
+        $rule = new \ec5\Http\Validation\Entries\Upload\InputRules\RuleTextInput();
+        $project = \Mockery::mock('\ec5\DTO\ProjectDTO');
+        $inputDetails = ['ref' => 'xxx', 'type' => 'text', 'regex' => 'a/b'];
+        $rule->setRules($inputDetails, 'a/b', $project);
+        $this->assertTrue($rule->validate(['xxx' => 'a/b']));
+        $rule->resetErrors();
+        $rule->setRules($inputDetails, 'axb', $project);
+        $this->assertFalse($rule->validate(['xxx' => 'axb']));
+        \Mockery::close();
+    }
+
     public function test_malformed_regex_returns_ec5_392()
     {
         $this->inputDetails['regex'] = '[0-9';

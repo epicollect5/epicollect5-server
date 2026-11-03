@@ -19,6 +19,35 @@ class ProjectRegexTest extends TestCase
         $this->assertTrue(ProjectRegex::isValid(123));
     }
 
+    public function test_compile_picks_delimiter_free_of_pattern()
+    {
+        $this->assertSame('#a/b#u', ProjectRegex::compile('a/b'));
+        $this->assertSame('/a#b/u', ProjectRegex::compile('a#b'));
+        $this->assertSame('regex:#a/b#u', ProjectRegex::toRule('a/b'));
+    }
+
+    public function test_compile_escapes_delimiter_when_all_present()
+    {
+        $pattern = '[a/#~%!;:,=@|^+*\\-\'`?&\d]+';
+        $compiled = ProjectRegex::compile($pattern);
+        $this->assertSame('/' . str_replace('/', '\\/', $pattern) . '/u', $compiled);
+        $this->assertNotSame('cannot validate: pattern contains every candidate delimiter', ProjectRegex::error($pattern));
+        $this->assertNull(ProjectRegex::error($pattern));
+    }
+
+    public function test_compiled_rule_matches_same_as_builtin()
+    {
+        $cases = [
+            'a/b' => ['a/b', 'axb'],
+            '\d+/\d+' => ['12/34', 'nomatchhere'],
+        ];
+        foreach ($cases as $pattern => [$match, $noMatch]) {
+            $compiled = ProjectRegex::compile($pattern);
+            $this->assertSame(1, preg_match($compiled, $match));
+            $this->assertSame(0, preg_match($compiled, $noMatch));
+        }
+    }
+
     public function test_valid_patterns()
     {
         $this->assertTrue(ProjectRegex::isValid('[0-9]+'));
