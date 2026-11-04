@@ -8,6 +8,9 @@ YELLOW='\033[1;33m'
 # ANSI escape code to reset text color to default
 RESET='\033[0m'
 
+echo -e "${YELLOW}Checking shared schema versions...${RESET}"
+php artisan system:check-schemas
+
 
 composer dump-autoload -o;
 echo -e "${YELLOW}composer dump-autoload -  check permissions in framework/cache for any folder with root instead of www-data ownership${RESET}"

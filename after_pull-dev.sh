@@ -25,6 +25,9 @@ list_files() {
 # Log start time
 print_message "$GREEN" "Starting cache clearing process at $(date)"
 
+print_message "$YELLOW" "Checking shared schema versions..."
+php artisan system:check-schemas
+
 # Log the status of each command and file operations
 
 print_message "$YELLOW" "Running composer dump-autoload"
