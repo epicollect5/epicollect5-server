@@ -7,10 +7,10 @@ use ec5\Console\Commands\RemoveUnverifiedUsersCommand;
 use ec5\Console\Commands\SeedEntriesCommand;
 use ec5\Console\Commands\SeedMediaCommand;
 use ec5\Console\Commands\SeedSuperadminCommand;
+use ec5\Console\Commands\SystemCheckSchemasCommand;
 use ec5\Console\Commands\SystemCheckStorageCommand;
 use ec5\Console\Commands\SystemClearOpcache;
 use ec5\Console\Commands\SystemProjectStorageCommand;
-use ec5\Console\Commands\System\CheckSchemasCommand;
 use ec5\Console\Commands\SystemStatsCommand;
 use ec5\Console\Commands\SystemStatsUploadCommand;
 use Illuminate\Console\Scheduling\Schedule;
@@ -36,7 +36,7 @@ class Kernel extends ConsoleKernel
         SeedEntriesCommand::class,
         SeedMediaCommand::class,
         SeedSuperadminCommand::class,
-        CheckSchemasCommand::class,
+        SystemCheckSchemasCommand::class,
         LaravelCacheGarbageCollector::class
     ];
 

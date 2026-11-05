@@ -1,6 +1,6 @@
 <?php
 
-namespace ec5\Console\Commands\System;
+namespace ec5\Console\Commands;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Promise\PromiseInterface;
@@ -8,7 +8,7 @@ use Illuminate\Console\Command;
 use RuntimeException;
 use Throwable;
 
-class CheckSchemasCommand extends Command
+class SystemCheckSchemasCommand extends Command
 {
     protected $signature = 'system:check-schemas';
 
