@@ -283,6 +283,11 @@ These validators enforce domain rules such as:
 This layer is important because many rules depend on project structure JSON, user role, and entry type rather than
 simple field constraints.
 
+User-supplied question regex is compiled in one place, `ec5\Libraries\Utilities\ProjectRegex::compile()`, which
+wraps the stored pattern with PCRE delimiters and forces the `u` (UTF-8) modifier. Both formbuilder save-time
+validation (`isValid`) and entry-upload answer matching (`toRule`, via Laravel's `regex` rule and `preg_match`)
+go through it, so both sides agree on UTF-8 character semantics for non-ASCII answers.
+
 ### 5. DTO layer
 
 DTOs in `app/DTO` are a major part of the architecture.
