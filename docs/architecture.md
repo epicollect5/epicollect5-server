@@ -283,10 +283,33 @@ These validators enforce domain rules such as:
 This layer is important because many rules depend on project structure JSON, user role, and entry type rather than
 simple field constraints.
 
+#### Question regex validation
+
 User-supplied question regex is compiled in one place, `ec5\Libraries\Utilities\ProjectRegex::compile()`, which
-wraps the stored pattern with PCRE delimiters and forces the `u` (UTF-8) modifier. Both formbuilder save-time
+wraps the stored pattern with PCRE delimiters and prepends the `(*UTF)` verb. Both formbuilder save-time
 validation (`isValid`) and entry-upload answer matching (`toRule`, via Laravel's `regex` rule and `preg_match`)
 go through it, so both sides agree on UTF-8 character semantics for non-ASCII answers.
+
+The mode is chosen to match the other two engines in the system:
+
+- the legacy upload gate compiled `regex:/{pattern}/` — byte mode, ASCII shorthand classes;
+- the mobile app uses `pcre2-wasm` with `FLAGS.UTF` (`PCRE2_UTF` without `PCRE2_UCP`) — UTF-8 codepoints, ASCII
+  shorthand classes.
+
+`(*UTF)` is PCRE2_UTF without PCRE2_UCP, so it matches both: `.` and quantifiers count UTF-8 codepoints while
+`\d` `\w` `\s` stay ASCII. PHP's `u` modifier must not be used here because it also enables UCP, which would
+make those shorthands match non-ASCII characters (full-width/Arabic-Indic digits, accented letters, NBSP) and
+diverge from the clients. A pattern that opts into UCP itself (`(*UCP)`) still gets it.
+
+Audit of every stored, non-empty question pattern (1,267 distinct across all projects):
+
+- 1,229 valid; 38 malformed. The malformed ones were saved before the form-builder gate existed and are now
+  rejected at save time with `ec5_392`.
+- 0 patterns that compiled under the legacy byte-mode gate fail under `(*UTF)`.
+- 26 patterns containing `/` (rejected outright by the legacy gate) now compile.
+
+These patterns are pinned as fixtures in `tests/Fixtures/legacy-question-regex-*.php` and exercised on the upload
+path by `RuleTextInputLegacyRegexTest`.
 
 ### 5. DTO layer
 
@@ -884,6 +907,8 @@ The codebase carries forward legacy behaviors in several places:
 - response formatting compatibility
 - mixed Eloquent and raw query patterns
 - migration history that evolves JSON structures in place
+- question regex compiled in `(*UTF)` mode to preserve the mobile app's `pcre2-wasm` semantics and the legacy
+  gate (see [Question regex validation](#question-regex-validation))
 
 This means changes should preserve behavior for existing clients, especially:
 
@@ -954,6 +979,24 @@ Main directories and their architectural role:
 - `config/epicollect`: domain configuration and constants
 - `routes`: route maps for the three application surfaces
 - `database/migrations`: relational schema evolution
+
+## Known review false positives
+
+Findings that look like defects but are intentional. Cross-check candidates against this list (and the linked
+sections) before raising them. Each entry has a matching `// False positive:` comment at the relevant code.
+
+### Question regex compiled in UTF mode
+
+Reviews sometimes flag `ProjectRegex::toRule()` / `RuleInputBase` for changing the matching semantics of existing
+question patterns — e.g. warning that byte-mode patterns such as `(?<=\C)2` will break, or that valid answers
+such as `12` will now be rejected with `ec5_392`.
+
+This is by design. `ProjectRegex::compile()` deliberately compiles in `(*UTF)` mode (`PCRE2_UTF` without
+`PCRE2_UCP`) to match the mobile app (`pcre2-wasm` `FLAGS.UTF`) and the legacy gate; see
+[Question regex validation](#question-regex-validation). An audit of every stored pattern found no
+byte-mode-compatible pattern that fails to compile. The code comment lives in
+`app/Http/Validation/Entries/Upload/InputRules/RuleInputBase.php`, and the behavior is pinned by
+`RuleTextInputLegacyRegexTest`.
 
 ## Summary
 
