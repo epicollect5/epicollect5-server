@@ -1,8 +1,9 @@
 {
   "private": true,
   "scripts": {
-    "prod": "gulp --production",
-    "dev": "gulp watch"
+    "prod": "npm run schemas:check && gulp --production",
+    "dev": "npm run schemas:check && gulp watch",
+    "schemas:check": "php artisan system:check-schemas"
   },
   "devDependencies": {
     "gulp": "^4.0.2",
