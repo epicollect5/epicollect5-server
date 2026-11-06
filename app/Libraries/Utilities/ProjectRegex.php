@@ -9,8 +9,6 @@ final class ProjectRegex
         '|', '^', '+', '*', '-', "'", '`', '?', '&',
     ];
 
-    private const string COMPILE_WARNING = 'Compilation failed';
-
     public static function compile(string $pattern): string
     {
         foreach (self::DELIMITERS as $delimiter) {
@@ -46,11 +44,15 @@ final class ProjectRegex
             restore_error_handler();
         }
 
-        if ($warning === null || !str_contains($warning, self::COMPILE_WARNING)) {
+        if ($warning === null) {
             return null;
         }
 
-        return str_replace('preg_match(): Compilation failed: ', '', $warning);
+        return str_replace(
+            ['preg_match(): Compilation failed: ', 'preg_match(): '],
+            '',
+            $warning
+        );
     }
 
     public static function isValid(mixed $pattern): bool
