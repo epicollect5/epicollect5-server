@@ -5,6 +5,7 @@ namespace ec5\Http\Validation\Entries\Upload\InputRules;
 use ec5\DTO\EntryStructureDTO;
 use ec5\DTO\ProjectDTO;
 use ec5\Http\Validation\ValidationBase;
+use ec5\Libraries\Utilities\ProjectRegex;
 
 class RuleInputBase extends ValidationBase
 {
@@ -65,8 +66,11 @@ class RuleInputBase extends ValidationBase
         }
 
         // If we have a regex set, add to rules
+        // False positive: ProjectRegex::toRule() intentionally compiles patterns in UTF mode
+        // (PCRE2_UTF without UCP, matching the mobile app); no legacy pattern regresses
+        // (see RuleTextInputLegacyRegexTest and "Known review false positives" in docs/architecture.md).
         if ($inputDetails['regex'] != null) {
-            $this->rules[$inputDetails['ref']][] = 'regex:' . '/' . $inputDetails['regex'] . '/';
+            $this->rules[$inputDetails['ref']][] = ProjectRegex::toRule($inputDetails['regex']);
         }
     }
 }
