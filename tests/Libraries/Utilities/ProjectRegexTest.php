@@ -7,35 +7,52 @@ use PHPUnit\Framework\TestCase;
 
 class ProjectRegexTest extends TestCase
 {
-    public function test_empty_pattern_is_valid()
+    public function test_empty_pattern_is_valid(): void
     {
         $this->assertTrue(ProjectRegex::isValid(''));
         $this->assertNull(ProjectRegex::error(''));
     }
 
-    public function test_non_string_pattern_is_valid()
+    public function test_non_string_pattern_is_valid(): void
     {
         $this->assertTrue(ProjectRegex::isValid(null));
         $this->assertTrue(ProjectRegex::isValid(123));
     }
 
-    public function test_compile_picks_delimiter_free_of_pattern()
+    public function test_compile_picks_delimiter_free_of_pattern(): void
     {
-        $this->assertSame('#a/b#u', ProjectRegex::compile('a/b'));
-        $this->assertSame('/a#b/u', ProjectRegex::compile('a#b'));
-        $this->assertSame('regex:#a/b#u', ProjectRegex::toRule('a/b'));
+        $this->assertSame('#(*UTF)a/b#', ProjectRegex::compile('a/b'));
+        $this->assertSame('/(*UTF)a#b/', ProjectRegex::compile('a#b'));
+        $this->assertSame('regex:#(*UTF)a/b#', ProjectRegex::toRule('a/b'));
     }
 
-    public function test_compile_escapes_delimiter_when_all_present()
+    public function test_compile_escapes_delimiter_when_all_present(): void
     {
         $pattern = '[a/#~%!;:,=@|^+*\\-\'`?&\d]+';
         $compiled = ProjectRegex::compile($pattern);
-        $this->assertSame('/' . str_replace('/', '\\/', $pattern) . '/u', $compiled);
+        $this->assertSame('/(*UTF)' . str_replace('/', '\\/', $pattern) . '/', $compiled);
         $this->assertNotSame('cannot validate: pattern contains every candidate delimiter', ProjectRegex::error($pattern));
         $this->assertNull(ProjectRegex::error($pattern));
     }
 
-    public function test_compiled_rule_matches_same_as_builtin()
+    public function test_compiled_patterns_use_utf_without_ucp(): void
+    {
+        // Shorthand classes stay ASCII, matching the mobile app (pcre2-wasm FLAGS.UTF)
+        // and the legacy byte-mode gate.
+        $this->assertSame(1, preg_match(ProjectRegex::compile('^\d+$'), '12'));
+        $this->assertSame(0, preg_match(ProjectRegex::compile('^\d+$'), '１２'));
+        $this->assertSame(1, preg_match(ProjectRegex::compile('^\w+$'), 'abc'));
+        $this->assertSame(0, preg_match(ProjectRegex::compile('^\w+$'), 'é'));
+        $this->assertSame(0, preg_match(ProjectRegex::compile('^\s$'), "\u{00A0}"));
+
+        // UTF-8 codepoint semantics for . and quantifiers are preserved.
+        $this->assertSame(1, preg_match(ProjectRegex::compile('^.{2}$'), 'éé'));
+
+        // A project pattern that opts into UCP still gets it.
+        $this->assertSame(1, preg_match(ProjectRegex::compile('(*UCP)^\d+$'), '１２'));
+    }
+
+    public function test_compiled_rule_matches_same_as_builtin(): void
     {
         $cases = [
             'a/b' => ['a/b', 'axb'],
@@ -48,33 +65,33 @@ class ProjectRegexTest extends TestCase
         }
     }
 
-    public function test_valid_patterns()
+    public function test_valid_patterns(): void
     {
         $this->assertTrue(ProjectRegex::isValid('[0-9]+'));
         $this->assertTrue(ProjectRegex::isValid('^[A-Z]{2,4}$'));
     }
 
-    public function test_valid_pattern_containing_slash()
+    public function test_valid_pattern_containing_slash(): void
     {
         $this->assertTrue(ProjectRegex::isValid('a/b'));
         $this->assertTrue(ProjectRegex::isValid('\d+/\d+'));
     }
 
-    public function test_malformed_patterns()
+    public function test_malformed_patterns(): void
     {
         $this->assertFalse(ProjectRegex::isValid('[0-9'));
         $this->assertFalse(ProjectRegex::isValid('(abc'));
         $this->assertNotNull(ProjectRegex::error('[0-9'));
     }
 
-    public function test_trailing_backslash_is_invalid()
+    public function test_trailing_backslash_is_invalid(): void
     {
         $this->assertFalse(ProjectRegex::isValid('abc\\'));
         $this->assertFalse(ProjectRegex::isValid('a/b\\'));
         $this->assertNotNull(ProjectRegex::error('abc\\'));
     }
 
-    public function test_production_malformed_patterns_are_invalid()
+    public function test_legacy_malformed_patterns_are_invalid(): void
     {
         $patterns = [
             '^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/(19|20',
