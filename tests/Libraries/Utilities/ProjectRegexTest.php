@@ -67,6 +67,13 @@ class ProjectRegexTest extends TestCase
         $this->assertNotNull(ProjectRegex::error('[0-9'));
     }
 
+    public function test_trailing_backslash_is_invalid()
+    {
+        $this->assertFalse(ProjectRegex::isValid('abc\\'));
+        $this->assertFalse(ProjectRegex::isValid('a/b\\'));
+        $this->assertNotNull(ProjectRegex::error('abc\\'));
+    }
+
     public function test_production_malformed_patterns_are_invalid()
     {
         $patterns = [
