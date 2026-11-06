@@ -66,6 +66,9 @@ class RuleInputBase extends ValidationBase
         }
 
         // If we have a regex set, add to rules
+        // False positive: ProjectRegex::toRule() intentionally compiles patterns in UTF mode
+        // (PCRE2_UTF without UCP, matching the mobile app); no legacy pattern regresses
+        // (see RuleTextInputLegacyRegexTest and "Known review false positives" in docs/architecture.md).
         if ($inputDetails['regex'] != null) {
             $this->rules[$inputDetails['ref']][] = ProjectRegex::toRule($inputDetails['regex']);
         }

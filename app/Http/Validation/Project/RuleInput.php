@@ -12,7 +12,7 @@ class RuleInput extends ValidationBase
         'question' => 'required', // Question length checked in additionalChecks()
         'is_title' => 'boolean',
         'is_required' => 'boolean',
-        'regex' => '',
+        'regex' => 'nullable|string',
         'default' => '',
         'verify' => 'boolean',
         'max' => 'nullable|numeric|ec5_greater_than_field:min',
