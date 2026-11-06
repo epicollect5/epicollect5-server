@@ -9,15 +9,21 @@ final class ProjectRegex
         '|', '^', '+', '*', '-', "'", '`', '?', '&',
     ];
 
+    // PCRE2_UTF without PCRE2_UCP, i.e. the same as the mobile app's pcre2-wasm
+    // FLAGS.UTF. PHP's "u" modifier would additionally enable UCP, which makes
+    // \d \w \s match non-ASCII characters; this mode keeps them ASCII while
+    // preserving UTF-8 codepoint semantics for . and quantifiers.
+    private const string UTF_MODE = '(*UTF)';
+
     public static function compile(string $pattern): string
     {
         foreach (self::DELIMITERS as $delimiter) {
             if (!str_contains($pattern, $delimiter)) {
-                return $delimiter . $pattern . $delimiter . 'u';
+                return $delimiter . self::UTF_MODE . $pattern . $delimiter;
             }
         }
 
-        return '/' . self::escapeDelimiter($pattern, '/') . '/u';
+        return '/' . self::UTF_MODE . self::escapeDelimiter($pattern, '/') . '/';
     }
 
     public static function toRule(string $pattern): string
@@ -39,19 +45,21 @@ final class ProjectRegex
         });
 
         try {
-            preg_match(self::compile($pattern), '');
+            $result = preg_match(self::compile($pattern), '');
         } finally {
             restore_error_handler();
         }
 
-        if ($warning === null) {
+        // Reject on a failed match attempt, or on any captured warning (not only
+        // "Compilation failed" ones). Valid patterns without a warning are accepted.
+        if ($warning === null && $result !== false) {
             return null;
         }
 
         return str_replace(
             ['preg_match(): Compilation failed: ', 'preg_match(): '],
             '',
-            $warning
+            $warning ?? 'invalid regular expression'
         );
     }
 
