@@ -50,9 +50,11 @@ final class ProjectRegex
             restore_error_handler();
         }
 
-        // Reject on a failed match attempt, or on any captured warning (not only
-        // "Compilation failed" ones). Valid patterns without a warning are accepted.
-        if ($warning === null && $result !== false) {
+        // The match result is authoritative: preg_match() returns false only when the
+        // pattern cannot be evaluated (a compile failure or a runtime limit such as the
+        // backtrack/JIT-stack limits). A warning captured alongside a real result (for
+        // example the PCRE JIT allocation notice) must not make the pattern invalid.
+        if ($result !== false) {
             return null;
         }
 
