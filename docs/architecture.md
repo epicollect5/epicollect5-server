@@ -311,6 +311,22 @@ Audit of every stored, non-empty question pattern (1,267 distinct across all pro
 These patterns are pinned as fixtures in `tests/Fixtures/legacy-question-regex-*.php` and exercised on the upload
 path by `RuleTextInputLegacyRegexTest`.
 
+Upload matching itself runs through Laravel's `regex` rule — `preg_match($compiled, $answer) > 0` — so a PCRE
+runtime limit matters there too, and is handled differently from a malformed pattern:
+
+- a malformed pattern emits a "Compilation failed" warning, which Laravel converts into an exception that
+  `ValidationBase::validate()` maps to `ec5_392`;
+- a genuine runtime limit (`pcre.backtrack_limit`, `pcre.recursion_limit`, or the JIT stack limit) makes
+  `preg_match()` return `false` *without* a warning, so the rule merely fails and the answer is rejected as
+  `ec5_29` ("Value invalid.") — indistinguishable from a real mismatch.
+
+This is deliberately left as-is (fail-safe): the work stays bounded by `pcre.backtrack_limit` (1,000,000) and we
+do not raise the limits or retry, which would turn a project pattern into an attacker-controlled CPU amplifier.
+A probe of all 1,229 stored patterns against hostile max-length answers (255–1000 chars) produced no limit hits.
+`isValid()` only checks that a pattern compiles, so a project could still save a catastrophic pattern; the
+(bounded) cost then lands on each upload that matches it, and the mobile app's own PCRE limits may make it
+behave differently there.
+
 ### 5. DTO layer
 
 DTOs in `app/DTO` are a major part of the architecture.
