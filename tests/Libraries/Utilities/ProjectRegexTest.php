@@ -91,6 +91,14 @@ class ProjectRegexTest extends TestCase
         $this->assertNotNull(ProjectRegex::error('abc\\'));
     }
 
+    public function test_indeterminate_pcre_error_is_not_treated_as_a_match(): void
+    {
+        // (?R) compiles but hits the recursion / JIT stack limit on the probe match, so
+        // preg_match() returns false without a warning. An error must not be accepted.
+        $this->assertFalse(ProjectRegex::isValid('(?R)'));
+        $this->assertSame('invalid regular expression', ProjectRegex::error('(?R)'));
+    }
+
     public function test_legacy_malformed_patterns_are_invalid(): void
     {
         $patterns = [
