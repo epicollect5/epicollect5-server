@@ -1,5 +1,11 @@
 ## Release Notes
 
+# 13.0.5
+
+- Add Postmark mailer support.
+- Add `system:check-schemas` command and platform JSON schemas for payload validation.
+- Run schema checks in deploy/build scripts and before the test suite.
+
 # 13.0.4
 
 - Use `v` query param for asset cache busting across views.
