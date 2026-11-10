@@ -32,7 +32,7 @@ class DebugEmailSending extends Mailable
                 config('mail.from.address'),
                 config('mail.from.name')
             )
-            ->subject('This is a test email using Mailgun')
+            ->subject('This is a test email')
             ->view('emails.debug_email_sending');
     }
 }

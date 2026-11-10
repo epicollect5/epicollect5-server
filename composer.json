@@ -30,6 +30,7 @@
     "laravel/legacy-factories": "^1.4",
     "laminas/laminas-diactoros": "^3.0",
     "symfony/mailgun-mailer": "^7.1",
+    "symfony/postmark-mailer": "^7.1",
     "symfony/http-client": "7.1.8.0",
     "ext-posix": "*",
     "laravolt/avatar": "^6.0",

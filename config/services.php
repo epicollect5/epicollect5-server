@@ -22,6 +22,10 @@ return [
         'zone' => env('MAILGUN_ZONE'),
     ],
 
+    'postmark' => [
+        'token' => env('POSTMARK_TOKEN'),
+    ],
+
     //Google credentials for web auth
     //Google only accepts https in production!
     'google' => [

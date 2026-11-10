@@ -42,6 +42,11 @@ return [
             'scheme' => 'https',
         ],
 
+        'postmark' => [
+            'transport' => 'postmark',
+            'token' => env('POSTMARK_TOKEN'),
+        ],
+
         'smtp' => [
             'transport' => 'smtp',
             'host' => env('MAIL_HOST', 'smtp.mailgun.org'),
