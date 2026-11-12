@@ -3,9 +3,7 @@ description: Cut a server release — prepend changelog release notes, tag it, a
 agent: build
 ---
 
-Execute the `release` skill defined in `.agents/skills/release/SKILL.md` exactly as written.
-
-Forward the arguments below verbatim to the skill as-is, without parsing, restructuring, or interpreting them:
+Run the `release` skill exactly as written. Load it with the `skill` tool using id `release`; its instructions are in `.agents/skills/release/SKILL.md`. The skill works from the repository state, so no arguments are needed — anything the user adds is appended at the end.
 
 $ARGUMENTS
 ```<|end|><|start|><|start|>assistant<|channel|>analysis<|message|>Both files created. Let me verify they exist and look right.<|end|><|start|><|start|>assistant to=shell_command<|channel|>analysis <|constrain|>xml<|message|><rfl:parameter name="command">
