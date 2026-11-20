@@ -1,0 +1,87 @@
+{
+  "__vite-browser-external": {
+    "file": "assets/__vite-browser-external-DpGQI3o_.js",
+    "name": "__vite-browser-external",
+    "src": "__vite-browser-external",
+    "isDynamicEntry": true,
+    "imports": [
+      "_rolldown-runtime-CRqgUL4m.js"
+    ]
+  },
+  "_app-BhYGWIjM.js": {
+    "file": "assets/app-BhYGWIjM.js",
+    "name": "app",
+    "imports": [
+      "_rolldown-runtime-CRqgUL4m.js"
+    ],
+    "dynamicImports": [
+      "_app-BhYGWIjM.js",
+      "_vendor-ionic-aaHvOzyu.js",
+      "_vendor-capacitor-DNx7HRUU.js",
+      "_vendor-pcre2-CMo_nIXO.js",
+      "_vendor-common-D5bMIRnd.js"
+    ],
+    "css": [
+      "assets/app-bua9cMWw.css"
+    ]
+  },
+  "_app-bua9cMWw.css": {
+    "file": "assets/app-bua9cMWw.css",
+    "src": "_app-bua9cMWw.css"
+  },
+  "_rolldown-runtime-CRqgUL4m.js": {
+    "file": "assets/rolldown-runtime-CRqgUL4m.js",
+    "name": "rolldown-runtime"
+  },
+  "_vendor-capacitor-DNx7HRUU.js": {
+    "file": "assets/vendor-capacitor-DNx7HRUU.js",
+    "name": "vendor-capacitor",
+    "imports": [
+      "_rolldown-runtime-CRqgUL4m.js",
+      "_app-BhYGWIjM.js"
+    ]
+  },
+  "_vendor-common-B88k3CRb.css": {
+    "file": "assets/vendor-common-B88k3CRb.css",
+    "src": "_vendor-common-B88k3CRb.css"
+  },
+  "_vendor-common-D5bMIRnd.js": {
+    "file": "assets/vendor-common-D5bMIRnd.js",
+    "name": "vendor-common",
+    "imports": [
+      "_rolldown-runtime-CRqgUL4m.js",
+      "_app-BhYGWIjM.js"
+    ],
+    "css": [
+      "assets/vendor-common-B88k3CRb.css"
+    ]
+  },
+  "_vendor-ionic-aaHvOzyu.js": {
+    "file": "assets/vendor-ionic-aaHvOzyu.js",
+    "name": "vendor-ionic",
+    "imports": [
+      "_rolldown-runtime-CRqgUL4m.js",
+      "_app-BhYGWIjM.js"
+    ]
+  },
+  "_vendor-pcre2-CMo_nIXO.js": {
+    "file": "assets/vendor-pcre2-CMo_nIXO.js",
+    "name": "vendor-pcre2",
+    "imports": [
+      "_rolldown-runtime-CRqgUL4m.js",
+      "_app-BhYGWIjM.js"
+    ],
+    "dynamicImports": [
+      "__vite-browser-external"
+    ]
+  },
+  "index.html": {
+    "file": "assets/index--xGqSglF.js",
+    "name": "index",
+    "src": "index.html",
+    "isEntry": true,
+    "imports": [
+      "_app-BhYGWIjM.js"
+    ]
+  }
+}
