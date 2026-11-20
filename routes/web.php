@@ -227,9 +227,13 @@ Route::group(['middleware' => 'auth'], function () {
     //Also the viewer role cannot add/edit entries
     Route::group(['middleware' => ['project.permissions', 'project.permissions.viewer.role']], function () {
         // Data editor Add/Edit
-        Route::get('project/{project_slug}/add-entry', 'Web\Project\ProjectDataController@add')->name('data-editor-add');
-        Route::get('project/{project_slug}/edit-entry', 'Web\Project\ProjectDataController@edit')->name('data-editor-edit');
+        //Route::get('project/{project_slug}/add-entry', 'Web\Project\ProjectDataController@add')->name('data-editor-add');
+        //  Route::get('project/{project_slug}/edit-entry', 'Web\Project\ProjectDataController@edit')->name('data-editor-edit');
+        Route::get('project/{project_slug}/add-entry', 'Web\Project\ProjectDataController@pwaAdd')->name('pwa-add');
+        Route::get('project/{project_slug}/edit-entry', 'Web\Project\ProjectDataController@pwaEdit')->name('pwa-edit');
+
     });
+
 });
 // END My Project routes
 

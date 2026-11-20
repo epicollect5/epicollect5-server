@@ -112,7 +112,10 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('api/internal/exists/{project_slug}', 'Api\Project\ProjectController@exists');
 
     // Proxies.
+    //legacy, to be removed
     Route::get('api/proxies/opencage/{search}', 'Api\Proxies\OpenCageController@fetchAPI');
+    //Used by PWA
+    Route::get('api/internal/proxies/opencage/{search}', 'Api\Proxies\OpenCageController@fetchAPI');
 });
 
 //This route has a rate limiter to prevent abuse
