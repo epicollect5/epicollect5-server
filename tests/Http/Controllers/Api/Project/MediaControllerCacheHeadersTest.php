@@ -58,7 +58,7 @@ class MediaControllerCacheHeadersTest extends TestCase
     }
 
     #[DataProvider('multipleRunProvider')]
-    public function test_audio_file_has_no_cache_directive()
+    public function test_audio_file_has_24h_cache_directive()
     {
         $entry = factory(Entry::class)->create([
             'project_id' => $this->project->id,
@@ -72,14 +72,16 @@ class MediaControllerCacheHeadersTest extends TestCase
 
         $response->assertStatus(206);
         $response->assertHeader('Content-Type', config('epicollect.media.content_type.audio'));
+        //same policy as photos: the PWA media players remount on every
+        //prev/next navigation and would re-download the file each time
         $cacheControl = $response->headers->get('Cache-Control');
-        $this->assertStringContainsString('no-cache', $cacheControl);
+        $this->assertStringContainsString('max-age=86400', $cacheControl);
 
         Storage::disk('audio')->deleteDirectory($this->project->ref);
     }
 
     #[DataProvider('multipleRunProvider')]
-    public function test_video_file_has_no_cache_directive()
+    public function test_video_file_has_24h_cache_directive()
     {
         $entry = factory(Entry::class)->create([
             'project_id' => $this->project->id,
@@ -93,8 +95,10 @@ class MediaControllerCacheHeadersTest extends TestCase
 
         $response->assertStatus(206);
         $response->assertHeader('Content-Type', config('epicollect.media.content_type.video'));
+        //same policy as photos: the PWA media players remount on every
+        //prev/next navigation and would re-download the file each time
         $cacheControl = $response->headers->get('Cache-Control');
-        $this->assertStringContainsString('no-cache', $cacheControl);
+        $this->assertStringContainsString('max-age=86400', $cacheControl);
 
         Storage::disk('video')->deleteDirectory($this->project->ref);
     }
