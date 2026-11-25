@@ -8,29 +8,29 @@
       "_rolldown-runtime-CRqgUL4m.js"
     ]
   },
-  "_app-B_Ep6t4N.css": {
-    "file": "assets/app-B_Ep6t4N.css",
-    "src": "_app-B_Ep6t4N.css"
-  },
-  "_app-CoUUUuDP.js": {
-    "file": "assets/app-CoUUUuDP.js",
+  "_app-Ro9A92Xj.js": {
+    "file": "assets/app-Ro9A92Xj.js",
     "name": "app",
     "imports": [
       "_rolldown-runtime-CRqgUL4m.js",
       "_vendor-vue-P7qXd40B.js",
-      "_vendor-common-mifDt_NC.js",
+      "_vendor-common-D0spwWIM.js",
       "_vendor-ionic-CgH5BKy7.js",
       "_vendor-pcre2-YoDgJwnd.js",
       "_vendor-capacitor-BWemZWoo.js"
     ],
     "dynamicImports": [
       "_vendor-pcre2-YoDgJwnd.js",
-      "_vendor-common-mifDt_NC.js",
-      "_app-CoUUUuDP.js"
+      "src/components/modals/ModalPhoto.vue",
+      "_app-Ro9A92Xj.js"
     ],
     "css": [
-      "assets/app-B_Ep6t4N.css"
+      "assets/app-oz3qp_vT.css"
     ]
+  },
+  "_app-oz3qp_vT.css": {
+    "file": "assets/app-oz3qp_vT.css",
+    "src": "_app-oz3qp_vT.css"
   },
   "_rolldown-runtime-CRqgUL4m.js": {
     "file": "assets/rolldown-runtime-CRqgUL4m.js",
@@ -47,25 +47,24 @@
       "_vendor-capacitor-BWemZWoo.js"
     ]
   },
-  "_vendor-common-D4piYQyM.css": {
-    "file": "assets/vendor-common-D4piYQyM.css",
-    "src": "_vendor-common-D4piYQyM.css"
+  "_vendor-common-BOFYT9wj.css": {
+    "file": "assets/vendor-common-BOFYT9wj.css",
+    "src": "_vendor-common-BOFYT9wj.css"
   },
-  "_vendor-common-mifDt_NC.js": {
-    "file": "assets/vendor-common-mifDt_NC.js",
+  "_vendor-common-D0spwWIM.js": {
+    "file": "assets/vendor-common-D0spwWIM.js",
     "name": "vendor-common",
     "imports": [
       "_rolldown-runtime-CRqgUL4m.js",
       "_vendor-vue-P7qXd40B.js",
-      "_vendor-ionic-CgH5BKy7.js",
       "_vendor-pcre2-YoDgJwnd.js",
       "_vendor-capacitor-BWemZWoo.js"
     ],
     "dynamicImports": [
-      "_vendor-common-mifDt_NC.js"
+      "_vendor-common-D0spwWIM.js"
     ],
     "css": [
-      "assets/vendor-common-D4piYQyM.css"
+      "assets/vendor-common-BOFYT9wj.css"
     ]
   },
   "_vendor-ionic-CgH5BKy7.js": {
@@ -95,12 +94,28 @@
     "name": "vendor-vue"
   },
   "index.html": {
-    "file": "assets/index-CxFJ0YZr.js",
+    "file": "assets/index-xa-bQnkO.js",
     "name": "index",
     "src": "index.html",
     "isEntry": true,
     "imports": [
-      "_app-CoUUUuDP.js"
+      "_app-Ro9A92Xj.js"
+    ]
+  },
+  "src/components/modals/ModalPhoto.vue": {
+    "file": "assets/ModalPhoto-AoMlBatq.js",
+    "name": "ModalPhoto",
+    "src": "src/components/modals/ModalPhoto.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_vendor-vue-P7qXd40B.js",
+      "_vendor-ionic-CgH5BKy7.js",
+      "_vendor-capacitor-BWemZWoo.js",
+      "_vendor-common-D0spwWIM.js",
+      "_app-Ro9A92Xj.js"
+    ],
+    "css": [
+      "assets/ModalPhoto-BuzmSROS.css"
     ]
   }
 }
