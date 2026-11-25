@@ -13,6 +13,7 @@ public/.htaccess
 /public/dataviewer/css/dataviewer.css.map
 /public/dataviewer/js/dataviewer.js.map
 /public/data-editor/app/**/*.map
+/public/pwa/hot
 public/robots.txt
 storage/
 resources/assets/data-admin/node_modules/
