@@ -1,0 +1,34 @@
+.gitignore
+  h_2231ff2aa93473 16
+public/pwa/.vite/manifest.json
+  h_2231ff2aa93473 11-16,19-24,27-29,32,39-40,44-47,50-52,54-55,59-65,68,71-72,76-80,83-84,87,93-96,98,103
+public/pwa/assets/app-B_Ep6t4N.css
+  h_2231ff2aa93473 1
+public/pwa/assets/app-CoUUUuDP.js
+  h_2231ff2aa93473 1-44
+public/pwa/assets/index-CxFJ0YZr.js
+  h_2231ff2aa93473 1
+public/pwa/assets/vendor-capacitor-BWemZWoo.js
+  h_2231ff2aa93473 1-2,4
+public/pwa/assets/vendor-common-D4piYQyM.css
+  h_2231ff2aa93473 1
+public/pwa/assets/vendor-common-mifDt_NC.js
+  h_2231ff2aa93473 1-395
+public/pwa/assets/vendor-ionic-CgH5BKy7.js
+  h_2231ff2aa93473 1,5,7-8,11-12,14-15,17,19
+public/pwa/assets/vendor-pcre2-YoDgJwnd.js
+  h_2231ff2aa93473 2,716,718
+public/pwa/assets/vendor-vue-P7qXd40B.js
+  h_2231ff2aa93473 1-4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "79b38a77455713b34500242d4ef182721af82d03",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
