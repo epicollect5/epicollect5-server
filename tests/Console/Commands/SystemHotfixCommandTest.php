@@ -2,6 +2,7 @@
 
 namespace Tests\Console\Commands;
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
@@ -33,7 +34,7 @@ class SystemHotfixCommandTest extends TestCase
     public function test_download_mode_requires_env_url(): void
     {
         config()->set('app.env', 'testing');
-        putenv('HOTFIX_PWA_URL=');
+        config()->set('epicollect.setup.hotfix.pwa_url', '');
 
         $this->artisan('system:hotfix', ['target' => 'pwa', '--release' => '1.0.0'])
             ->expectsOutputToContain('Missing required env var HOTFIX_PWA_URL')
@@ -57,7 +58,7 @@ class SystemHotfixCommandTest extends TestCase
         Http::fake([
             $url => Http::response(File::get($archivePath), 200),
         ]);
-        putenv('HOTFIX_PWA_URL=' . $url);
+        config()->set('epicollect.setup.hotfix.pwa_url', $url);
 
         $this->app->usePublicPath($this->tempDir . '/public');
 
@@ -88,7 +89,7 @@ class SystemHotfixCommandTest extends TestCase
 
         $url = 'https://example.test/pwa-99.0.0.tar.gz';
         Http::fake([$url => Http::response(File::get($archivePath), 200)]);
-        putenv('HOTFIX_PWA_URL=' . $url);
+        config()->set('epicollect.setup.hotfix.pwa_url', $url);
         $this->app->usePublicPath($public);
 
         $this->artisan('system:hotfix', ['target' => 'pwa', '--release' => '99.0.0'])
@@ -149,12 +150,79 @@ class SystemHotfixCommandTest extends TestCase
         ]);
         $url = 'https://example.test/pwa-99.0.0.tar.gz';
         Http::fake([$url => Http::response(File::get($archivePath), 200)]);
-        putenv('HOTFIX_PWA_URL=' . $url);
+        config()->set('epicollect.setup.hotfix.pwa_url', $url);
         $this->app->usePublicPath($public);
 
         $this->artisan('system:hotfix', ['target' => 'pwa', '--release' => '99.0.0'])
             ->expectsOutputToContain('Required marker file missing')
             ->assertExitCode(1);
+    }
+
+    public function test_concurrent_run_bails_out_without_touching_destination(): void
+    {
+        $public = $this->tempDir . '/public';
+        $dest = $public . '/pwa';
+        File::ensureDirectoryExists($dest . '/assets');
+        File::ensureDirectoryExists($dest . '/.vite');
+        File::put($dest . '/.vite/manifest.json', '{"old":true}');
+
+        $archivePath = $this->makeArchive('pwa', '99.0.0', [
+            '.vite/manifest.json' => '{"new":true}',
+        ]);
+        $url = 'https://example.test/pwa-99.0.0.tar.gz';
+        Http::fake([$url => Http::response(File::get($archivePath), 200)]);
+        config()->set('epicollect.setup.hotfix.pwa_url', $url);
+        $this->app->usePublicPath($public);
+
+        $lock = Cache::lock(
+            'system-hotfix-pwa',
+            (int) config('epicollect.setup.locks.duration_system_hotfix_lock', 300)
+        );
+        $this->assertTrue($lock->get());
+
+        try {
+            $this->artisan('system:hotfix', ['target' => 'pwa', '--release' => '99.0.0'])
+                ->expectsOutputToContain('already running')
+                ->assertExitCode(1);
+        } finally {
+            $lock->release();
+        }
+
+        $this->assertSame('{"old":true}', File::get($dest . '/.vite/manifest.json'));
+    }
+
+    public function test_stale_work_dirs_are_removed_before_replace(): void
+    {
+        $public = $this->tempDir . '/public';
+        $dest = $public . '/pwa';
+        File::ensureDirectoryExists($dest . '/assets');
+        File::ensureDirectoryExists($dest . '/releases');
+        File::ensureDirectoryExists($dest . '/.vite');
+        File::put($dest . '/.vite/manifest.json', '{"old":true}');
+
+        File::ensureDirectoryExists($public . '/.hotfix-stage-pwa-crashed/assets');
+        File::put($public . '/.hotfix-stage-pwa-crashed/leftover.js', 'stale');
+        File::ensureDirectoryExists($public . '/.hotfix-backup-pwa-crashed/assets');
+        File::put($public . '/.hotfix-backup-pwa-crashed/leftover.js', 'stale');
+
+        $archivePath = $this->makeArchive('pwa', '99.0.0', [
+            '.vite/manifest.json' => '{"new":true}',
+            'assets/new.js' => 'new',
+        ]);
+        $url = 'https://example.test/pwa-99.0.0.tar.gz';
+        Http::fake([$url => Http::response(File::get($archivePath), 200)]);
+        config()->set('epicollect.setup.hotfix.pwa_url', $url);
+        $this->app->usePublicPath($public);
+
+        $this->artisan('system:hotfix', ['target' => 'pwa', '--release' => '99.0.0'])
+            ->expectsOutputToContain('Hotfix applied successfully')
+            ->assertExitCode(0);
+
+        $this->assertSame('{"new":true}', File::get($dest . '/.vite/manifest.json'));
+        $this->assertFalse(File::exists($public . '/.hotfix-stage-pwa-crashed'));
+        $this->assertFalse(File::exists($public . '/.hotfix-backup-pwa-crashed'));
+        $this->assertCount(0, glob($public . '/.hotfix-stage-pwa-*') ?: []);
+        $this->assertCount(0, glob($public . '/.hotfix-backup-pwa-*') ?: []);
     }
 
     /**
