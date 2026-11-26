@@ -3,6 +3,7 @@
 namespace ec5\Console\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -20,7 +21,7 @@ class SystemHotfixCommand extends Command
     protected $description = 'Hotfix PWA/formbuilder/dataviewer from a versioned release archive';
 
     /**
-     * @var array<string, array{env: string, dest: string, releases: string, prefix: string, marker: string}>
+     * @var array<string, array{env: string, config: string, dest: string, releases: string, prefix: string, marker: string}>
      */
     private array $targets = [];
 
@@ -55,11 +56,11 @@ class SystemHotfixCommand extends Command
     }
 
     /**
-     * @param array{env: string, dest: string, releases: string, prefix: string, marker: string} $config
+     * @param array{env: string, config: string, dest: string, releases: string, prefix: string, marker: string} $config
      */
     private function handleDownload(string $target, array $config, bool $isDryRun): int
     {
-        $url = (string) env($config['env'], '');
+        $url = (string) config($config['config'], '');
         if ($url === '') {
             $this->error('Missing required env var ' . $config['env'] . '.');
             return 1;
@@ -91,8 +92,20 @@ class SystemHotfixCommand extends Command
                 return 0;
             }
 
-            $this->atomicReplace($sourceDir, $config['dest']);
-            $releaseArchivePath = $this->storeReleaseArchive($archivePath, $config, $version);
+            $lock = Cache::lock(
+                'system-hotfix-' . $target,
+                (int) config('epicollect.setup.locks.duration_system_hotfix_lock', 300)
+            );
+            if (!$lock->get()) {
+                throw new \RuntimeException('Another hotfix operation is already running for target ' . $target . '.');
+            }
+
+            try {
+                $this->atomicReplace($sourceDir, $config['dest']);
+                $releaseArchivePath = $this->storeReleaseArchive($archivePath, $config, $version);
+            } finally {
+                $lock->release();
+            }
 
             Log::info('system:hotfix applied', [
                 'target' => $target,
@@ -122,7 +135,7 @@ class SystemHotfixCommand extends Command
     }
 
     /**
-     * @param array{env: string, dest: string, releases: string, prefix: string, marker: string} $config
+     * @param array{env: string, config: string, dest: string, releases: string, prefix: string, marker: string} $config
      */
     private function handleRollback(string $target, array $config, string $version, bool $isDryRun): int
     {
@@ -154,7 +167,19 @@ class SystemHotfixCommand extends Command
                 return 0;
             }
 
-            $this->atomicReplace($sourceDir, $config['dest']);
+            $lock = Cache::lock(
+                'system-hotfix-' . $target,
+                (int) config('epicollect.setup.locks.duration_system_hotfix_lock', 300)
+            );
+            if (!$lock->get()) {
+                throw new \RuntimeException('Another hotfix operation is already running for target ' . $target . '.');
+            }
+
+            try {
+                $this->atomicReplace($sourceDir, $config['dest']);
+            } finally {
+                $lock->release();
+            }
 
             Log::info('system:hotfix rollback applied', [
                 'target' => $target,
@@ -182,13 +207,14 @@ class SystemHotfixCommand extends Command
     }
 
     /**
-     * @return array<string, array{env: string, dest: string, releases: string, prefix: string, marker: string}>
+     * @return array<string, array{env: string, config: string, dest: string, releases: string, prefix: string, marker: string}>
      */
     private function targetMap(): array
     {
         return [
             'pwa' => [
                 'env' => 'HOTFIX_PWA_URL',
+                'config' => 'epicollect.setup.hotfix.pwa_url',
                 'dest' => public_path('pwa'),
                 'releases' => public_path('pwa/releases'),
                 'prefix' => 'pwa',
@@ -196,6 +222,7 @@ class SystemHotfixCommand extends Command
             ],
             'fb' => [
                 'env' => 'HOTFIX_FORMBUILDER_URL',
+                'config' => 'epicollect.setup.hotfix.formbuilder_url',
                 'dest' => public_path('formbuilder'),
                 'releases' => public_path('formbuilder/releases'),
                 'prefix' => 'fb',
@@ -203,6 +230,7 @@ class SystemHotfixCommand extends Command
             ],
             'dw' => [
                 'env' => 'HOTFIX_DATAVIEWER_URL',
+                'config' => 'epicollect.setup.hotfix.dataviewer_url',
                 'dest' => public_path('dataviewer'),
                 'releases' => public_path('dataviewer/releases'),
                 'prefix' => 'dv',
@@ -238,7 +266,7 @@ class SystemHotfixCommand extends Command
 
     private function downloadArchive(string $url, string $archivePath): void
     {
-        $timeout = (int) env('HOTFIX_HTTP_TIMEOUT', 60);
+        $timeout = (int) config('epicollect.setup.hotfix.http_timeout', 60);
         $response = Http::timeout($timeout)
             ->retry(2, 1000)
             ->withOptions(['sink' => $archivePath])
@@ -254,7 +282,7 @@ class SystemHotfixCommand extends Command
     }
 
     /**
-     * @param array{env: string, dest: string, releases: string, prefix: string, marker: string} $config
+     * @param array{env: string, config: string, dest: string, releases: string, prefix: string, marker: string} $config
      */
     private function extractAndLocateSource(string $archivePath, string $tempWorkspace, string $target, array $config): string
     {
@@ -335,7 +363,7 @@ class SystemHotfixCommand extends Command
     private function extractWithTarCommand(string $archivePath, string $extractDir): void
     {
         $command = 'tar -xzf ' . escapeshellarg($archivePath) . ' -C ' . escapeshellarg($extractDir);
-        $result = Process::timeout((int) env('HOTFIX_HTTP_TIMEOUT', 60))->run($command);
+        $result = Process::timeout((int) config('epicollect.setup.hotfix.http_timeout', 60))->run($command);
         if (!$result->successful()) {
             throw new \RuntimeException('Unable to extract archive with tar: ' . trim($result->errorOutput() . ' ' . $result->output()));
         }
@@ -419,7 +447,7 @@ class SystemHotfixCommand extends Command
     }
 
     /**
-     * @param array{env: string, dest: string, releases: string, prefix: string, marker: string} $config
+     * @param array{env: string, config: string, dest: string, releases: string, prefix: string, marker: string} $config
      */
     private function storeReleaseArchive(string $archivePath, array $config, string $version): string
     {
@@ -436,15 +464,19 @@ class SystemHotfixCommand extends Command
         $parentDir = dirname($destination);
         File::ensureDirectoryExists($parentDir);
 
+        $this->removeStaleWorkDirs($parentDir, basename($destination));
+
         $stagedDir = $parentDir . DIRECTORY_SEPARATOR . '.hotfix-stage-' . basename($destination) . '-' . bin2hex(random_bytes(4));
         $backupDir = $parentDir . DIRECTORY_SEPARATOR . '.hotfix-backup-' . basename($destination) . '-' . bin2hex(random_bytes(4));
-
-        File::copyDirectory($sourceDir, $stagedDir);
 
         $releasesDirName = 'releases';
         $hasDestination = is_dir($destination);
 
         try {
+            if (!File::copyDirectory($sourceDir, $stagedDir)) {
+                throw new \RuntimeException('Unable to stage hotfix files: ' . $destination);
+            }
+
             if ($hasDestination) {
                 if (!@rename($destination, $backupDir)) {
                     throw new \RuntimeException('Unable to move current destination to backup: ' . $destination);
@@ -463,6 +495,10 @@ class SystemHotfixCommand extends Command
             if (is_dir($backupDir)) {
                 File::deleteDirectory($backupDir);
             }
+
+            if (is_dir($stagedDir)) {
+                File::deleteDirectory($stagedDir);
+            }
         } catch (Throwable $e) {
             if (is_dir($backupDir) && !is_dir($destination)) {
                 @rename($backupDir, $destination);
@@ -476,6 +512,22 @@ class SystemHotfixCommand extends Command
             }
 
             throw $e;
+        }
+    }
+
+    private function removeStaleWorkDirs(string $parentDir, string $basename): void
+    {
+        $entries = scandir($parentDir) ?: [];
+        foreach ($entries as $entry) {
+            if (!str_starts_with($entry, '.hotfix-stage-' . $basename . '-') &&
+                !str_starts_with($entry, '.hotfix-backup-' . $basename . '-')) {
+                continue;
+            }
+
+            $path = $parentDir . DIRECTORY_SEPARATOR . $entry;
+            if (is_dir($path) && !is_link($path)) {
+                File::deleteDirectory($path);
+            }
         }
     }
 
