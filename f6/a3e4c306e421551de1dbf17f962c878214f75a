@@ -1,0 +1,18 @@
+app/Http/Controllers/Web/Auth/LogoutController.php
+  h_2231ff2aa93473 36-38,41-42
+app/Http/Controllers/Web/Project/ProjectDataController.php
+  h_2231ff2aa93473 13-17,22,24-28,30
+routes/web.php
+  h_2231ff2aa93473 229-231
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f6a3e4c306e421551de1dbf17f962c878214f75a",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
