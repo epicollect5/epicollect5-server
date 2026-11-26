@@ -1,0 +1,14 @@
+config/epicollect/setup.php
+  h_2231ff2aa93473 85
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4efc69488c51c1949748c9745372c13ec47965df",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
