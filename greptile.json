@@ -1,9 +1,0 @@
-{
-  "ignorePatterns": [
-    "public/pwa/**",
-    "vendor/**",
-    "node_modules/**",
-    "storage/**",
-    "bootstrap/cache/**"
-  ]
-}
