@@ -1,0 +1,14 @@
+.greptile/config.json
+  h_2231ff2aa93473 2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5defab6354c32fde6f2f3eb278c36a2b848b492b",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
