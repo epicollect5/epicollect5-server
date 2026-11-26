@@ -1,0 +1,14 @@
+app/Console/Commands/SystemHotfixCommand.php
+  h_2231ff2aa93473 6,24,59,63,95-108,138,170-182,210,217,225,233,269,285,366,450,467-468,476-479,498-501,518-533
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "cc1fb0f7717680de49cf0c29f58b0a309bd03c43",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
