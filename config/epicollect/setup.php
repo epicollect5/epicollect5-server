@@ -83,9 +83,16 @@ return [
         'enabled' => (bool) env('PHPINFO_ENABLED', false),
     ],
     'pwa_enabled' => (bool) env('PWA_ENABLED', true),
+    'hotfix' => [
+        'pwa_url' => env('HOTFIX_PWA_URL', ''),
+        'formbuilder_url' => env('HOTFIX_FORMBUILDER_URL', ''),
+        'dataviewer_url' => env('HOTFIX_DATAVIEWER_URL', ''),
+        'http_timeout' => (int) env('HOTFIX_HTTP_TIMEOUT', 60),
+    ],
     'locks' => [
         'duration_bulk_upload_lock' => (int) env('DURATION_BULK_UPLOAD_LOCK', 300),
         'duration_archive_download_lock' => (int) env('DURATION_ARCHIVE_DOWNLOAD_LOCK', 300),
-        'duration_bulk_entries_deletion_lock' => (int) env('DURATION_BULK_ENTRIES_DELETION_LOCK', 600)
+        'duration_bulk_entries_deletion_lock' => (int) env('DURATION_BULK_ENTRIES_DELETION_LOCK', 600),
+        'duration_system_hotfix_lock' => (int) env('DURATION_SYSTEM_HOTFIX_LOCK', 300)
     ]
 ];
