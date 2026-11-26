@@ -1,0 +1,16 @@
+.coderabbit.yml
+  h_2231ff2aa93473 17
+greptile.json
+  h_2231ff2aa93473 1-3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4693f504eef1f24c3e861ae9f4928fc01e673de9",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
