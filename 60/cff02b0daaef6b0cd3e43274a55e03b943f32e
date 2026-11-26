@@ -1,0 +1,16 @@
+tests/Console/Commands/SystemHotfixCommandTest.php
+  h_2231ff2aa93473 1-190
+tests/Http/Controllers/Web/Project/ProjectDataControllerPwaTest.php
+  h_2231ff2aa93473 1-85
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "60cff02b0daaef6b0cd3e43274a55e03b943f32e",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
