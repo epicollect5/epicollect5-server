@@ -82,6 +82,7 @@ return [
     'phpinfo' => [
         'enabled' => (bool) env('PHPINFO_ENABLED', false),
     ],
+    'pwa_enabled' => (bool) env('PWA_ENABLED', true),
     'locks' => [
         'duration_bulk_upload_lock' => (int) env('DURATION_BULK_UPLOAD_LOCK', 300),
         'duration_archive_download_lock' => (int) env('DURATION_ARCHIVE_DOWNLOAD_LOCK', 300),
