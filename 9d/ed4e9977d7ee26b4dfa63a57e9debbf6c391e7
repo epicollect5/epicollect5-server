@@ -1,0 +1,14 @@
+tests/Console/Commands/SystemHotfixCommandTest.php
+  h_2231ff2aa93473 5,37,61,92,153,161-227
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9ded4e9977d7ee26b4dfa63a57e9debbf6c391e7",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
