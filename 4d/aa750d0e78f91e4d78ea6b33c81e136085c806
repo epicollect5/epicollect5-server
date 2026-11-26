@@ -1,0 +1,16 @@
+app/Console/Commands/SystemHotfixCommand.php
+  h_2231ff2aa93473 1-518
+app/Console/Kernel.php
+  h_2231ff2aa93473 13,36
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4daa750d0e78f91e4d78ea6b33c81e136085c806",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
