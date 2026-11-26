@@ -10,25 +10,23 @@ class ProjectDataController
 
     public function edit()
     {
+        if (config('epicollect.setup.pwa_enabled')) {
+            return view('project.pwa', [
+                'projectName' => $this->requestedProject()->name
+            ]);
+        }
+
         return view('project.data_editor');
     }
 
     public function add()
     {
+        if (config('epicollect.setup.pwa_enabled')) {
+            return view('project.pwa', [
+                'projectName' => $this->requestedProject()->name
+            ]);
+        }
+
         return view('project.data_editor');
-    }
-
-    public function pwaEdit()
-    {
-        return view('project.pwa', [
-            'projectName' => $this->requestedProject()->name
-        ]);
-    }
-
-    public function pwaAdd()
-    {
-        return view('project.pwa', [
-            'projectName' => $this->requestedProject()->name
-        ]);
     }
 }

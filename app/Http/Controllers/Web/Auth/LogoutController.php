@@ -33,20 +33,14 @@ class LogoutController extends AuthController
             return redirect()->route('dataviewer', ['project_slug' => $projectSlug]);
         }
 
-        //handle PWA (add-entry)
-        //todo: this is useless as after logging out I cannot add or edit an entry?
-        if (Str::startsWith(end($parts), 'add-entry')) {
+        //handle add/edit entry pages (PWA or legacy data editor, depending on PWA_ENABLED)
+        $lastPart = (string) end($parts);
+        if (Str::startsWith($lastPart, 'add-entry') || Str::startsWith($lastPart, 'edit-entry')) {
             array_pop($parts);
             $projectSlug = end($parts);
-            return redirect()->route('data-editor-add', ['project_slug' => $projectSlug]);
+            $routeName = Str::startsWith($lastPart, 'add-entry') ? 'data-editor-add' : 'data-editor-edit';
+            return redirect()->route($routeName, ['project_slug' => $projectSlug]);
         }
-        //todo: handle PWA (edit-entry)
-        //I guess this is not needed
-        // if (Str::startsWith(end($parts), 'edit-entry')) {
-        //     array_pop($parts);
-        //     $projectSlug = end($parts);
-        //     return redirect()->route('data-editor-edit', ['project_slug' => $projectSlug]);
-        // }
 
         return redirect()->route('home');
     }
