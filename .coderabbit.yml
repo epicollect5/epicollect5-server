@@ -14,6 +14,7 @@ reviews:
     - "!node_modules/**"
     - "!storage/**"
     - "!bootstrap/cache/**"
+    - "!public/pwa/**"
   # Disable PHPMD (PHP Mess Detector) checks
   tools:
     phpmd:

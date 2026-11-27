@@ -10,6 +10,7 @@ use ec5\Console\Commands\SeedSuperadminCommand;
 use ec5\Console\Commands\SystemCheckSchemasCommand;
 use ec5\Console\Commands\SystemCheckStorageCommand;
 use ec5\Console\Commands\SystemClearOpcache;
+use ec5\Console\Commands\SystemHotfixCommand;
 use ec5\Console\Commands\SystemProjectStorageCommand;
 use ec5\Console\Commands\SystemStatsCommand;
 use ec5\Console\Commands\SystemStatsUploadCommand;
@@ -32,6 +33,7 @@ class Kernel extends ConsoleKernel
         RemoveUnverifiedUsersCommand::class,
         SystemCheckStorageCommand::class,
         SystemClearOpcache::class,
+        SystemHotfixCommand::class,
         SystemProjectStorageCommand::class,
         SeedEntriesCommand::class,
         SeedMediaCommand::class,

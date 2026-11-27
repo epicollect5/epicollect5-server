@@ -1,0 +1,121 @@
+{
+  "__vite-browser-external": {
+    "file": "assets/__vite-browser-external-BDfy7Drd.js",
+    "name": "__vite-browser-external",
+    "src": "__vite-browser-external",
+    "isDynamicEntry": true,
+    "imports": [
+      "_rolldown-runtime-XKyaHtl9.js"
+    ]
+  },
+  "_app-BU9SBQnu.js": {
+    "file": "assets/app-BU9SBQnu.js",
+    "name": "app",
+    "imports": [
+      "_rolldown-runtime-XKyaHtl9.js",
+      "_vendor-vue-9GBAcIed.js",
+      "_vendor-common-BIGxlulC.js",
+      "_vendor-ionic-Cb9YqMYS.js",
+      "_vendor-pcre2-BxxQkIq3.js",
+      "_vendor-capacitor-DZhRKqeT.js"
+    ],
+    "dynamicImports": [
+      "_vendor-pcre2-BxxQkIq3.js",
+      "src/components/modals/ModalPhoto.vue",
+      "_app-BU9SBQnu.js"
+    ],
+    "css": [
+      "assets/app-CAiKe_Ro.css"
+    ]
+  },
+  "_app-CAiKe_Ro.css": {
+    "file": "assets/app-CAiKe_Ro.css",
+    "src": "_app-CAiKe_Ro.css"
+  },
+  "_rolldown-runtime-XKyaHtl9.js": {
+    "file": "assets/rolldown-runtime-XKyaHtl9.js",
+    "name": "rolldown-runtime"
+  },
+  "_vendor-capacitor-DZhRKqeT.js": {
+    "file": "assets/vendor-capacitor-DZhRKqeT.js",
+    "name": "vendor-capacitor",
+    "imports": [
+      "_rolldown-runtime-XKyaHtl9.js",
+      "_vendor-pcre2-BxxQkIq3.js"
+    ],
+    "dynamicImports": [
+      "_vendor-capacitor-DZhRKqeT.js"
+    ]
+  },
+  "_vendor-common-BIGxlulC.js": {
+    "file": "assets/vendor-common-BIGxlulC.js",
+    "name": "vendor-common",
+    "imports": [
+      "_rolldown-runtime-XKyaHtl9.js",
+      "_vendor-vue-9GBAcIed.js",
+      "_vendor-pcre2-BxxQkIq3.js",
+      "_vendor-capacitor-DZhRKqeT.js"
+    ],
+    "dynamicImports": [
+      "_vendor-common-BIGxlulC.js"
+    ],
+    "css": [
+      "assets/vendor-common-BOFYT9wj.css"
+    ]
+  },
+  "_vendor-common-BOFYT9wj.css": {
+    "file": "assets/vendor-common-BOFYT9wj.css",
+    "src": "_vendor-common-BOFYT9wj.css"
+  },
+  "_vendor-ionic-Cb9YqMYS.js": {
+    "file": "assets/vendor-ionic-Cb9YqMYS.js",
+    "name": "vendor-ionic",
+    "imports": [
+      "_rolldown-runtime-XKyaHtl9.js",
+      "_vendor-vue-9GBAcIed.js",
+      "_vendor-pcre2-BxxQkIq3.js"
+    ],
+    "dynamicImports": [
+      "_vendor-ionic-Cb9YqMYS.js"
+    ]
+  },
+  "_vendor-pcre2-BxxQkIq3.js": {
+    "file": "assets/vendor-pcre2-BxxQkIq3.js",
+    "name": "vendor-pcre2",
+    "imports": [
+      "_rolldown-runtime-XKyaHtl9.js"
+    ],
+    "dynamicImports": [
+      "__vite-browser-external"
+    ]
+  },
+  "_vendor-vue-9GBAcIed.js": {
+    "file": "assets/vendor-vue-9GBAcIed.js",
+    "name": "vendor-vue"
+  },
+  "index.html": {
+    "file": "assets/index-BFKeHAYg.js",
+    "name": "index",
+    "src": "index.html",
+    "isEntry": true,
+    "imports": [
+      "_app-BU9SBQnu.js"
+    ]
+  },
+  "src/components/modals/ModalPhoto.vue": {
+    "file": "assets/ModalPhoto-DvedRWwv.js",
+    "name": "ModalPhoto",
+    "src": "src/components/modals/ModalPhoto.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_vendor-vue-9GBAcIed.js",
+      "_vendor-ionic-Cb9YqMYS.js",
+      "_vendor-capacitor-DZhRKqeT.js",
+      "_vendor-common-BIGxlulC.js",
+      "_app-BU9SBQnu.js"
+    ],
+    "css": [
+      "assets/ModalPhoto-BuzmSROS.css"
+    ]
+  }
+}
