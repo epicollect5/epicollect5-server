@@ -1,0 +1,16 @@
+tests/Console/Commands/SystemHotfixCommandTest.php
+  h_2231ff2aa93473 49,52,66,68,78,82,93-94,100-122,130-131,133,142-143,147-167,196,201,204,211-248,263-264,274,281,291,298-400
+tests/Http/Controllers/Web/Project/ProjectDataControllerPwaTest.php
+  h_2231ff2aa93473 5,75,83-86
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "788885498852a94acf73f41ef1ca70846c30757f",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
