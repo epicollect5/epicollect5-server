@@ -1,0 +1,22 @@
+public/pwa/.vite/manifest.json
+  h_2231ff2aa93473 11-12,25,28,31-33,97,102,106,115
+public/pwa/assets/ModalPhoto-DvedRWwv.js
+  h_2231ff2aa93473 1-2
+public/pwa/assets/app-BU9SBQnu.js
+  h_2231ff2aa93473 1,38,42
+public/pwa/assets/app-CAiKe_Ro.css
+  h_2231ff2aa93473 1
+public/pwa/assets/index-BFKeHAYg.js
+  h_2231ff2aa93473 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "eb988093e0583c82529b18592b923965de4976e4",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
