@@ -2,6 +2,7 @@
 
 namespace ec5\Console\Commands;
 
+use Illuminate\Cache\Lock;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
@@ -19,6 +20,8 @@ class SystemHotfixCommand extends Command
         {--dry-run : Validate and report actions without modifying files}';
 
     protected $description = 'Hotfix PWA/formbuilder/dataviewer from a versioned release archive';
+
+    private const RELEASES_DIR = 'releases';
 
     /**
      * @var array<string, array{env: string, config: string, dest: string, releases: string, prefix: string, marker: string}>
@@ -92,17 +95,13 @@ class SystemHotfixCommand extends Command
                 return 0;
             }
 
-            $lock = Cache::lock(
-                'system-hotfix-' . $target,
-                (int) config('epicollect.setup.locks.duration_system_hotfix_lock', 300)
-            );
-            if (!$lock->get()) {
-                throw new \RuntimeException('Another hotfix operation is already running for target ' . $target . '.');
-            }
+            $lock = $this->acquireLock($target);
 
             try {
-                $this->atomicReplace($sourceDir, $config['dest']);
+                //store the archive first: a failed copy must not leave the live
+                //build switched without the release needed to roll it back
                 $releaseArchivePath = $this->storeReleaseArchive($archivePath, $config, $version);
+                $this->atomicReplace($sourceDir, $config['dest'], $lock, $target);
             } finally {
                 $lock->release();
             }
@@ -145,52 +144,61 @@ class SystemHotfixCommand extends Command
             return 1;
         }
 
-        $archivePath = $config['releases'] . DIRECTORY_SEPARATOR . $config['prefix'] . '-' . $version . '.tar.gz';
-        if (!is_file($archivePath)) {
-            $this->error('Rollback archive not found: ' . $archivePath);
-            return 1;
-        }
+        $archivePath = $this->releaseArchivePath($config, $version);
 
-        $tempWorkspace = $this->createTempWorkspace($target);
+        //take the lock before reading the archive: a concurrent run would
+        //otherwise rewrite the release store between validation and replace
         try {
-            $this->info('Mode: rollback');
-            $this->line('Target: ' . $target);
-            $this->line('Version: ' . $version);
-            $this->line('Archive: ' . $archivePath);
-            $this->line('Destination: ' . $config['dest']);
-
-            $sourceDir = $this->extractAndLocateSource($archivePath, $tempWorkspace, $target, $config);
-            $this->validateMarker($sourceDir, $config['marker']);
-
-            if ($isDryRun) {
-                $this->info('Dry run: validation passed, no files modified.');
-                return 0;
-            }
-
-            $lock = Cache::lock(
-                'system-hotfix-' . $target,
-                (int) config('epicollect.setup.locks.duration_system_hotfix_lock', 300)
-            );
-            if (!$lock->get()) {
-                throw new \RuntimeException('Another hotfix operation is already running for target ' . $target . '.');
-            }
-
-            try {
-                $this->atomicReplace($sourceDir, $config['dest']);
-            } finally {
-                $lock->release();
-            }
-
-            Log::info('system:hotfix rollback applied', [
+            $lock = $this->acquireLock($target);
+        } catch (Throwable $e) {
+            Log::error('system:hotfix rollback failed', [
                 'target' => $target,
                 'mode' => 'rollback',
                 'version' => $version,
                 'archive' => $archivePath,
-                'destination' => $config['dest'],
+                'error' => $e->getMessage(),
             ]);
+            $this->error($e->getMessage());
+            return 1;
+        }
 
-            $this->info('Rollback applied successfully for ' . $target . ' version ' . $version . '.');
-            return 0;
+        try {
+            if (!is_file($archivePath)) {
+                $this->error('Rollback archive not found: ' . $archivePath);
+                return 1;
+            }
+
+            $tempWorkspace = $this->createTempWorkspace($target);
+            try {
+                $this->info('Mode: rollback');
+                $this->line('Target: ' . $target);
+                $this->line('Version: ' . $version);
+                $this->line('Archive: ' . $archivePath);
+                $this->line('Destination: ' . $config['dest']);
+
+                $sourceDir = $this->extractAndLocateSource($archivePath, $tempWorkspace, $target, $config);
+                $this->validateMarker($sourceDir, $config['marker']);
+
+                if ($isDryRun) {
+                    $this->info('Dry run: validation passed, no files modified.');
+                    return 0;
+                }
+
+                $this->atomicReplace($sourceDir, $config['dest'], $lock, $target);
+
+                Log::info('system:hotfix rollback applied', [
+                    'target' => $target,
+                    'mode' => 'rollback',
+                    'version' => $version,
+                    'archive' => $archivePath,
+                    'destination' => $config['dest'],
+                ]);
+
+                $this->info('Rollback applied successfully for ' . $target . ' version ' . $version . '.');
+                return 0;
+            } finally {
+                File::deleteDirectory($tempWorkspace);
+            }
         } catch (Throwable $e) {
             Log::error('system:hotfix rollback failed', [
                 'target' => $target,
@@ -202,7 +210,7 @@ class SystemHotfixCommand extends Command
             $this->error($e->getMessage());
             return 1;
         } finally {
-            File::deleteDirectory($tempWorkspace);
+            $lock->release();
         }
     }
 
@@ -239,11 +247,41 @@ class SystemHotfixCommand extends Command
         ];
     }
 
+    /**
+     * @throws \RuntimeException when another run holds the lock
+     */
+    private function acquireLock(string $target): Lock
+    {
+        $lock = Cache::lock(
+            'system-hotfix-' . $target,
+            (int) config('epicollect.setup.locks.duration_system_hotfix_lock', 300)
+        );
+
+        if (!$lock->get()) {
+            throw new \RuntimeException('Another hotfix operation is already running for target ' . $target . '.');
+        }
+
+        return $lock;
+    }
+
+    /**
+     * Keeps the lease alive for the whole critical section: a replace outliving
+     * the configured duration would otherwise let a second run in.
+     */
+    private function refreshLock(Lock $lock, string $target): void
+    {
+        if (!$lock->refresh()) {
+            throw new \RuntimeException(
+                'Lost the hotfix lock for target ' . $target . '; the release was not applied. Retry the command.'
+            );
+        }
+    }
+
     private function resolveVersion(string $url): ?string
     {
         $optionVersion = $this->option('release');
         if ($optionVersion !== null && trim((string) $optionVersion) !== '') {
-            return trim((string) $optionVersion);
+            return trim($optionVersion);
         }
 
         $path = (string) parse_url($url, PHP_URL_PATH);
@@ -402,15 +440,12 @@ class SystemHotfixCommand extends Command
     {
         $targetDirName = $this->targets[$target]['dest'];
         $targetBasename = basename($targetDirName);
+        $marker = $this->targets[$target]['marker'];
         $entries = array_values(array_diff(scandir($extractDir) ?: [], ['.', '..']));
 
-        $hasMarkerHere = is_file($extractDir . DIRECTORY_SEPARATOR . $this->targets[$target]['marker']);
-        $hasExpectedTopDirs = is_dir($extractDir . DIRECTORY_SEPARATOR . 'assets') || is_dir($extractDir . DIRECTORY_SEPARATOR . '.vite');
-        if ($hasMarkerHere || $hasExpectedTopDirs) {
-            return $extractDir;
-        }
-
-        $candidates = [];
+        //the marker wins over shape hints: an archive root holding assets/ but
+        //no marker must not shadow a valid build nested under public/pwa/
+        $candidates = [$extractDir];
         $candidates[] = $extractDir . DIRECTORY_SEPARATOR . $targetBasename;
         $candidates[] = $extractDir . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . $targetBasename;
 
@@ -424,9 +459,15 @@ class SystemHotfixCommand extends Command
         }
 
         foreach ($candidates as $candidate) {
-            if (is_dir($candidate) && is_file($candidate . DIRECTORY_SEPARATOR . $this->targets[$target]['marker'])) {
+            if (is_dir($candidate) && is_file($candidate . DIRECTORY_SEPARATOR . $marker)) {
                 return $candidate;
             }
+        }
+
+        //flat builds without the marker still have to fail as a missing marker,
+        //not as an unlocatable source directory
+        if (is_dir($extractDir . DIRECTORY_SEPARATOR . 'assets') || is_dir($extractDir . DIRECTORY_SEPARATOR . '.vite')) {
+            return $extractDir;
         }
 
         foreach ($candidates as $candidate) {
@@ -444,6 +485,35 @@ class SystemHotfixCommand extends Command
         if (!is_file($markerPath)) {
             throw new \RuntimeException('Required marker file missing in archive: ' . $marker);
         }
+
+        if ($marker !== '.vite/manifest.json') {
+            return;
+        }
+
+        //the shell reads the manifest at request time: publishing an unparsable
+        //one, or one whose html entry is not shipped, breaks every PWA page
+        $manifest = json_decode((string) file_get_contents($markerPath), true);
+        if (!is_array($manifest)) {
+            throw new \RuntimeException('PWA manifest is not valid JSON: ' . $marker);
+        }
+
+        $entryFile = $manifest['index.html']['file'] ?? null;
+        if (!is_string($entryFile) || $entryFile === '') {
+            throw new \RuntimeException('PWA manifest has no index.html entry file: ' . $marker);
+        }
+
+        $entryPath = $sourceDir . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $entryFile);
+        if (!is_file($entryPath)) {
+            throw new \RuntimeException('PWA manifest entry file missing in archive: ' . $entryFile);
+        }
+    }
+
+    /**
+     * @param array{env: string, config: string, dest: string, releases: string, prefix: string, marker: string} $config
+     */
+    private function releaseArchivePath(array $config, string $version): string
+    {
+        return $config['releases'] . DIRECTORY_SEPARATOR . $config['prefix'] . '-' . $version . '.tar.gz';
     }
 
     /**
@@ -452,30 +522,47 @@ class SystemHotfixCommand extends Command
     private function storeReleaseArchive(string $archivePath, array $config, string $version): string
     {
         File::ensureDirectoryExists($config['releases']);
-        $destination = $config['releases'] . DIRECTORY_SEPARATOR . $config['prefix'] . '-' . $version . '.tar.gz';
-        if (realpath($archivePath) !== realpath($destination)) {
-            File::copy($archivePath, $destination);
+        $destination = $this->releaseArchivePath($config, $version);
+        if (realpath($archivePath) === realpath($destination)) {
+            return $destination;
         }
+
+        if (!File::copy($archivePath, $destination)) {
+            throw new \RuntimeException('Unable to store release archive: ' . $destination);
+        }
+
         return $destination;
     }
 
-    private function atomicReplace(string $sourceDir, string $destination): void
+    private function atomicReplace(string $sourceDir, string $destination, Lock $lock, string $target): void
     {
         $parentDir = dirname($destination);
         File::ensureDirectoryExists($parentDir);
 
-        $this->removeStaleWorkDirs($parentDir, basename($destination));
+        $targetName = basename($destination);
+        $this->removeStaleWorkDirs($parentDir, $targetName);
 
-        $stagedDir = $parentDir . DIRECTORY_SEPARATOR . '.hotfix-stage-' . basename($destination) . '-' . bin2hex(random_bytes(4));
-        $backupDir = $parentDir . DIRECTORY_SEPARATOR . '.hotfix-backup-' . basename($destination) . '-' . bin2hex(random_bytes(4));
+        $stagedDir = $parentDir . DIRECTORY_SEPARATOR . '.hotfix-stage-' . $targetName . '-' . bin2hex(random_bytes(4));
+        $backupDir = $parentDir . DIRECTORY_SEPARATOR . '.hotfix-backup-' . $targetName . '-' . bin2hex(random_bytes(4));
 
-        $releasesDirName = 'releases';
         $hasDestination = is_dir($destination);
 
         try {
             if (!File::copyDirectory($sourceDir, $stagedDir)) {
                 throw new \RuntimeException('Unable to stage hotfix files: ' . $destination);
             }
+
+            //the command owns the release store: drop an incoming one instead of
+            //letting it shadow the archives --rollback reads
+            $incomingReleases = $stagedDir . DIRECTORY_SEPARATOR . self::RELEASES_DIR;
+            if (is_dir($incomingReleases)) {
+                Log::warning('system:hotfix archive contains a releases directory, ignoring it', [
+                    'target' => $target,
+                ]);
+                File::deleteDirectory($incomingReleases);
+            }
+
+            $this->refreshLock($lock, $target);
 
             if ($hasDestination) {
                 if (!@rename($destination, $backupDir)) {
@@ -488,8 +575,8 @@ class SystemHotfixCommand extends Command
             }
 
             $this->restoreReleases(
-                $backupDir . DIRECTORY_SEPARATOR . $releasesDirName,
-                $destination . DIRECTORY_SEPARATOR . $releasesDirName
+                $backupDir . DIRECTORY_SEPARATOR . self::RELEASES_DIR,
+                $destination . DIRECTORY_SEPARATOR . self::RELEASES_DIR
             );
 
             if (is_dir($backupDir)) {
@@ -500,18 +587,35 @@ class SystemHotfixCommand extends Command
                 File::deleteDirectory($stagedDir);
             }
         } catch (Throwable $e) {
-            if (is_dir($backupDir) && !is_dir($destination)) {
-                @rename($backupDir, $destination);
-            } elseif (is_dir($backupDir) && is_dir($destination)) {
-                File::deleteDirectory($destination);
-                @rename($backupDir, $destination);
-            }
+            $this->recoverFromFailedReplace($destination, $backupDir);
 
             if (is_dir($stagedDir)) {
                 File::deleteDirectory($stagedDir);
             }
 
             throw $e;
+        }
+    }
+
+    /**
+     * Puts the previous build back after a failed replace. A backup that cannot
+     * be restored is left in place and reported instead of being removed.
+     */
+    private function recoverFromFailedReplace(string $destination, string $backupDir): void
+    {
+        if (!is_dir($backupDir)) {
+            return;
+        }
+
+        if (is_dir($destination)) {
+            File::deleteDirectory($destination);
+        }
+
+        if (!@rename($backupDir, $destination)) {
+            Log::error('system:hotfix recovery failed, previous build kept in backup', [
+                'destination' => $destination,
+                'backup' => $backupDir,
+            ]);
         }
     }
 
@@ -525,9 +629,25 @@ class SystemHotfixCommand extends Command
             }
 
             $path = $parentDir . DIRECTORY_SEPARATOR . $entry;
-            if (is_dir($path) && !is_link($path)) {
-                File::deleteDirectory($path);
+            if (!is_dir($path) || is_link($path)) {
+                continue;
             }
+
+            //a backup can be the only copy left after a crash: restore it when
+            //the live tree is gone, never delete it
+            $isBackup = str_starts_with($entry, '.hotfix-backup-');
+            $livePath = $parentDir . DIRECTORY_SEPARATOR . $basename;
+
+            if ($isBackup && !is_dir($livePath)) {
+                if (@rename($path, $livePath)) {
+                    continue;
+                }
+
+                $this->warn('Could not restore crashed hotfix backup, leaving it in place: ' . $path);
+                continue;
+            }
+
+            File::deleteDirectory($path);
         }
     }
 
@@ -546,10 +666,14 @@ class SystemHotfixCommand extends Command
                 continue;
             }
 
-            if (is_dir($from)) {
-                File::copyDirectory($from, $to);
-            } else {
-                File::copy($from, $to);
+            $copied = is_dir($from)
+                ? File::copyDirectory($from, $to)
+                : File::copy($from, $to);
+
+            //a silent failure would delete the backup below and lose the
+            //archives --rollback depends on
+            if (!$copied) {
+                throw new \RuntimeException('Unable to restore stored release: ' . $from);
             }
         }
     }
