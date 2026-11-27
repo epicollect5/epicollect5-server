@@ -2,6 +2,7 @@
 
 namespace Tests\Http\Controllers\Web\Project;
 
+use ec5\Libraries\Generators\ProjectDefinitionGenerator;
 use ec5\Models\Project\Project;
 use ec5\Models\Project\ProjectRole;
 use ec5\Models\Project\ProjectStats;
@@ -71,6 +72,7 @@ class ProjectDataControllerPwaTest extends TestCase
 
     private function createProjectForUser(User $user): Project
     {
+        $projectDefinition = ProjectDefinitionGenerator::createProject(1);
         $project = factory(Project::class)->create(['access' => config('epicollect.strings.project_access.private')]);
         factory(ProjectRole::class)->create([
             'user_id' => $user->id,
@@ -78,7 +80,10 @@ class ProjectDataControllerPwaTest extends TestCase
             'role' => config('epicollect.strings.project_roles.collector'),
         ]);
         factory(ProjectStats::class)->create(['project_id' => $project->id]);
-        factory(ProjectStructure::class)->create(['project_id' => $project->id]);
+        factory(ProjectStructure::class)->create([
+            'project_id' => $project->id,
+            'project_definition' => json_encode($projectDefinition['data']),
+        ]);
 
         return $project;
     }
